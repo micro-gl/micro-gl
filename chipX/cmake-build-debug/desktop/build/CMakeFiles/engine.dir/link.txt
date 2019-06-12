@@ -1,0 +1,2 @@
+/Library/Developer/CommandLineTools/usr/bin/ar qc libengine.a  CMakeFiles/engine.dir/BaseAudioEngine.cpp.o CMakeFiles/engine.dir/ss.cpp.o
+/Library/Developer/CommandLineTools/usr/bin/ranlib libengine.a

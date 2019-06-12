@@ -1,0 +1,8 @@
+/Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug/desktop/CMakeFiles/rebuild_cache.dir
+/Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug/desktop/CMakeFiles/edit_cache.dir
+/Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug/desktop/CMakeFiles/chipX_desktop.dir
+/Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug/desktop/build/CMakeFiles/rebuild_cache.dir
+/Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug/desktop/build/CMakeFiles/edit_cache.dir
+/Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug/desktop/build/CMakeFiles/chipxengine.dir
