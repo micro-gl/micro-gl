@@ -1,2 +1,0 @@
-/Library/Developer/CommandLineTools/usr/bin/ar qc libchipxengine.a  CMakeFiles/chipxengine.dir/BaseAudioEngine.cpp.o CMakeFiles/chipxengine.dir/ss.cpp.o
-/Library/Developer/CommandLineTools/usr/bin/ranlib libchipxengine.a

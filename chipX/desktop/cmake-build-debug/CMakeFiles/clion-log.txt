@@ -1,8 +1,0 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /Users/tshalev/hendrix/Nyquist/chipX/desktop
--- Found PkgConfig: /usr/local/bin/pkg-config (found version "0.29.2") 
--- Checking for module 'rtaudio'
---   Found rtaudio, version 5.1.0
--- Found RtAudio: /usr/local/Cellar/rt-audio/5.1.0/lib/librtaudio.dylib (found version "5.1.0") 
--- Configuring done
--- Generating done
--- Build files have been written to: /Users/tshalev/hendrix/Nyquist/chipX/desktop/cmake-build-debug

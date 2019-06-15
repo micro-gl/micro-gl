@@ -1,6 +1,0 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /Users/tshalev/hendrix/Nyquist/chipX
- 2221
-/Users/tshalev/hendrix/Nyquist/chipX/engine
--- Configuring done
--- Generating done
--- Build files have been written to: /Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug
