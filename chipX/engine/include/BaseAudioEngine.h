@@ -6,9 +6,10 @@
 
 
 class BaseAudioEngine {
+
+public:
     BaseAudioEngine();
     ~BaseAudioEngine();
 
     virtual void init() = 0;
-
 };

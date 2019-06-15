@@ -152,6 +152,33 @@ main.cpp.s:
 	cd /Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug && $(MAKE) -f desktop/CMakeFiles/chipX_desktop.dir/build.make desktop/CMakeFiles/chipX_desktop.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+src/DesktopAudioEngine.o: src/DesktopAudioEngine.cpp.o
+
+.PHONY : src/DesktopAudioEngine.o
+
+# target to build an object file
+src/DesktopAudioEngine.cpp.o:
+	cd /Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug && $(MAKE) -f desktop/CMakeFiles/chipX_desktop.dir/build.make desktop/CMakeFiles/chipX_desktop.dir/src/DesktopAudioEngine.cpp.o
+.PHONY : src/DesktopAudioEngine.cpp.o
+
+src/DesktopAudioEngine.i: src/DesktopAudioEngine.cpp.i
+
+.PHONY : src/DesktopAudioEngine.i
+
+# target to preprocess a source file
+src/DesktopAudioEngine.cpp.i:
+	cd /Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug && $(MAKE) -f desktop/CMakeFiles/chipX_desktop.dir/build.make desktop/CMakeFiles/chipX_desktop.dir/src/DesktopAudioEngine.cpp.i
+.PHONY : src/DesktopAudioEngine.cpp.i
+
+src/DesktopAudioEngine.s: src/DesktopAudioEngine.cpp.s
+
+.PHONY : src/DesktopAudioEngine.s
+
+# target to generate assembly for a file
+src/DesktopAudioEngine.cpp.s:
+	cd /Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug && $(MAKE) -f desktop/CMakeFiles/chipX_desktop.dir/build.make desktop/CMakeFiles/chipX_desktop.dir/src/DesktopAudioEngine.cpp.s
+.PHONY : src/DesktopAudioEngine.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -164,6 +191,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... src/DesktopAudioEngine.o"
+	@echo "... src/DesktopAudioEngine.i"
+	@echo "... src/DesktopAudioEngine.s"
 .PHONY : help
 
 

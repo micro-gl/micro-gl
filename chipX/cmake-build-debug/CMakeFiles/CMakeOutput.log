@@ -630,3 +630,17 @@ Linking CXX executable cmTC_9fd00
     Feature record: CXX_FEATURE:0cxx_variable_templates
     Feature record: CXX_FEATURE:0cxx_variadic_macros
     Feature record: CXX_FEATURE:0cxx_variadic_templates
+Performing C++ SOURCE FILE Test PORTAUDIO2_FOUND succeeded with the following output:
+Change Dir: /Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_38889/fast 
+/Library/Developer/CommandLineTools/usr/bin/make -f CMakeFiles/cmTC_38889.dir/build.make CMakeFiles/cmTC_38889.dir/build
+Building CXX object CMakeFiles/cmTC_38889.dir/src.cxx.o
+/Library/Developer/CommandLineTools/usr/bin/c++   -I/usr/local/Cellar/portaudio/19.6.0/include  -DPORTAUDIO2_FOUND   -std=gnu++11 -o CMakeFiles/cmTC_38889.dir/src.cxx.o -c /Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_38889
+/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -E cmake_link_script CMakeFiles/cmTC_38889.dir/link.txt --verbose=1
+/Library/Developer/CommandLineTools/usr/bin/c++   -DPORTAUDIO2_FOUND -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTC_38889.dir/src.cxx.o  -o cmTC_38889 
+
+Source file was:
+#include <portaudio.h>
+PaDeviceIndex pa_find_device_by_name(const char *name); int main () {return 0;}

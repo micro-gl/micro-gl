@@ -32,8 +32,3 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
-if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  # Include the install script for the subdirectory.
-  include("/Users/tshalev/hendrix/Nyquist/chipX/cmake-build-debug/desktop/build/cmake_install.cmake")
-endif()
-

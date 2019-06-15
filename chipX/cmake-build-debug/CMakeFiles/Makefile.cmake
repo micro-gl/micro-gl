@@ -18,6 +18,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.14/Modules/CMakeLanguageInformation.cmake"
   "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.14/Modules/CMakeSystemSpecificInformation.cmake"
   "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.14/Modules/CMakeSystemSpecificInitialize.cmake"
+  "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.14/Modules/CheckCXXSourceCompiles.cmake"
   "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.14/Modules/Compiler/AppleClang-C.cmake"
   "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.14/Modules/Compiler/AppleClang-CXX.cmake"
   "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.14/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
@@ -41,7 +42,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.14.3/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.14.3/CMakeSystem.cmake"
   "../desktop/CMakeLists.txt"
-  "../desktop/cmake/FindRTAUDIO.cmake"
+  "../desktop/cmake/FindPORTAUDIO.cmake"
   "../engine/CMakeLists.txt"
   )
 
@@ -54,12 +55,12 @@ set(CMAKE_MAKEFILE_OUTPUTS
 # Byproducts of CMake generate step:
 set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/CMakeDirectoryInformation.cmake"
+  "engine/CMakeFiles/CMakeDirectoryInformation.cmake"
   "desktop/CMakeFiles/CMakeDirectoryInformation.cmake"
-  "desktop/build/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
+  "engine/CMakeFiles/chipxengine.dir/DependInfo.cmake"
   "desktop/CMakeFiles/chipX_desktop.dir/DependInfo.cmake"
-  "desktop/build/CMakeFiles/chipxengine.dir/DependInfo.cmake"
   )

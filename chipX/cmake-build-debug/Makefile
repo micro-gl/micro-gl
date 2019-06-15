@@ -111,6 +111,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named chipxengine
+
+# Build rule for target.
+chipxengine: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 chipxengine
+.PHONY : chipxengine
+
+# fast build rule for target.
+chipxengine/fast:
+	$(MAKE) -f engine/CMakeFiles/chipxengine.dir/build.make engine/CMakeFiles/chipxengine.dir/build
+.PHONY : chipxengine/fast
+
+#=============================================================================
 # Target rules for targets named chipX_desktop
 
 # Build rule for target.
@@ -123,19 +136,6 @@ chipX_desktop/fast:
 	$(MAKE) -f desktop/CMakeFiles/chipX_desktop.dir/build.make desktop/CMakeFiles/chipX_desktop.dir/build
 .PHONY : chipX_desktop/fast
 
-#=============================================================================
-# Target rules for targets named chipxengine
-
-# Build rule for target.
-chipxengine: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 chipxengine
-.PHONY : chipxengine
-
-# fast build rule for target.
-chipxengine/fast:
-	$(MAKE) -f desktop/build/CMakeFiles/chipxengine.dir/build.make desktop/build/CMakeFiles/chipxengine.dir/build
-.PHONY : chipxengine/fast
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -144,8 +144,8 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... chipX_desktop"
 	@echo "... chipxengine"
+	@echo "... chipX_desktop"
 .PHONY : help
 
 

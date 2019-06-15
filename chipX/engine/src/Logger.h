@@ -20,5 +20,3 @@ private:
 
 };
 
-
-#endif //CHIPX_LOGGER_H

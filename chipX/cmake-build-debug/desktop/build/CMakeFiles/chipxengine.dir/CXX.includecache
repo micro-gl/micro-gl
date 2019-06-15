@@ -6,15 +6,23 @@
 
 #IncludeRegexTransform: 
 
-/Users/tshalev/hendrix/Nyquist/chipX/engine/BaseAudioEngine.cpp
+../engine/include/BaseAudioEngine.h
+
+/Users/tshalev/hendrix/Nyquist/chipX/engine/src/BaseAudioEngine.cpp
 BaseAudioEngine.h
-/Users/tshalev/hendrix/Nyquist/chipX/engine/BaseAudioEngine.h
+/Users/tshalev/hendrix/Nyquist/chipX/engine/src/BaseAudioEngine.h
 
-/Users/tshalev/hendrix/Nyquist/chipX/engine/BaseAudioEngine.h
+/Users/tshalev/hendrix/Nyquist/chipX/engine/src/Logger.cpp
+Logger.h
+/Users/tshalev/hendrix/Nyquist/chipX/engine/src/Logger.h
 
-/Users/tshalev/hendrix/Nyquist/chipX/engine/ss.cpp
-ss.h
-/Users/tshalev/hendrix/Nyquist/chipX/engine/ss.h
-
-/Users/tshalev/hendrix/Nyquist/chipX/engine/ss.h
+/Users/tshalev/hendrix/Nyquist/chipX/engine/src/Logger.h
+iostream
+-
+stdio.h
+-
+fstream
+-
+stdarg.h
+-
 
