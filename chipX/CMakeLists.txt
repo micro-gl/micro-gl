@@ -3,5 +3,6 @@ project(chipX)
 
 add_subdirectory(engine)
 add_subdirectory(desktop)
+add_subdirectory(gfx)
 
 message("${engine_SOURCE_DIR}")
