@@ -28,20 +28,23 @@ int main() {
 
     color_f_t RED{1.0,0.0,0.0, 1.0};
     color_f_t YELLOW{1.0,1.0,0.0, 1.0};
-    color_f_t WHITE{1.0,1.0,1.0, 0.0};
+    color_f_t WHITE{1.0,1.0,1.0, 1.0};
     color_f_t GREEN{0.0,1.0,0.0, 1.0};
+    color_f_t BLUE{0.0,0.0,1.0, 1.0};
 
 
 //    Canvas16Bit * canvas = new Canvas16Bit(640, 480, PixelFormat::RGB565);
     auto * canvas = new Canvas32Bit(640, 480, PixelFormat::RGBA8888);
 
-    canvas->clear(WHITE);
+    canvas->setAntialiasing(true);
+//    canvas->clear(WHITE);
     canvas->drawQuad(WHITE, 0, 0, 640, 480);
     canvas->drawQuad(YELLOW, 0, 0, 320, 240);
     canvas->drawGradient(YELLOW, RED, 0, 240, 640, 140);
     canvas->setBlendMode(BlendMode::Normal);
-    canvas->setPorterDuffMode(PorterDuff::DestinationAtop);
-    canvas->drawCircle(GREEN, 320, 240, 240/5);
+    canvas->setPorterDuffMode(PorterDuff::SourceOver);
+    canvas->drawCircle(GREEN, 320, 240, 240/2);
+    canvas->drawTriangle(BLUE, 0, 300, 300, 300, 0, 0);
 
     SDL_UpdateTexture(texture, nullptr, canvas->pixels(), 640 * canvas->sizeofPixel());
 //    SDL_UpdateTexture(texture, nullptr, buffer->pixels(), 640 * sizeof(Uint32));
@@ -54,6 +57,10 @@ int main() {
         {
             case SDL_QUIT:
                 quit = true;
+                break;
+            case SDL_KEYUP:
+                if( event.key.keysym.sym == SDLK_ESCAPE )
+                    quit = true;
                 break;
         }
 

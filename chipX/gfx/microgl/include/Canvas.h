@@ -29,6 +29,8 @@ public:
     void setPorterDuffMode(const PorterDuff & mode);
     PorterDuff & getPorterDuffMode();
     bool hasAlphaChannel();
+    bool hasAntialiasing();
+    void setAntialiasing(bool value);
 
     void clear(const color_f_t &color);
     void drawPixel(const color_f_t &val, int x, int y);
@@ -36,12 +38,15 @@ public:
     void drawQuad(const color_f_t &color, int left, int top, int w, int h);
     void drawGradient(const color_f_t &startColor, const color_f_t &endColor, int left, int top, int w, int h);
     void drawCircle(const color_f_t & color, int centerX, int centerY, int radius);
+    void drawTriangle(const color_f_t & color, int x0, int y0, int x1, int y1, int x2, int y2);
+//    void drawTriangle(FrameBuffer<T> * bitmap, int x0, int y0, int x1, int y1, int x2, int y2, );
 
 private:
     FrameBuffer<T> * _fb = nullptr;
     BlendMode _blend_mode = BlendMode::Normal;
     PorterDuff _porter_duff_mode = PorterDuff::SourceOver;
     bool _flag_hasAlphaChannel = false;
+    bool _flag_antiAlias = false;
 };
 
 typedef Canvas<uint8_t> Canvas8Bit;

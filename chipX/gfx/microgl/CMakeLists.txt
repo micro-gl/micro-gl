@@ -3,6 +3,15 @@ project(microgl)
 
 enable_language(CXX)
 set (CMAKE_CXX_STANDARD 11)
+#if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+#endif()
+
+message(${CMAKE_BUILD_TYPE})
+
+set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(sources
         src/FrameBuffer.tpp
@@ -12,7 +21,7 @@ set(sources
         src/Functions.cpp
         src/PixelFormat.cpp
         src/BlendMode.cpp
-        src/PorterDuff.cpp)
+        src/PorterDuff.cpp include/Fixed.h)
 
 add_library(${PROJECT_NAME} ${sources})
 

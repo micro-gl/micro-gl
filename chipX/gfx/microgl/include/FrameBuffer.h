@@ -10,6 +10,7 @@ template<typename T>
 class FrameBuffer {
 public:
     FrameBuffer(int w, int h, PixelFormat format = PixelFormat::RGBA8888);
+    FrameBuffer(T* $pixels, int w, int h, PixelFormat format = PixelFormat::RGBA8888);
     ~FrameBuffer();
     int width();
     int height();

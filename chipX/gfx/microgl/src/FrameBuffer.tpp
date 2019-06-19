@@ -2,8 +2,14 @@
 #include "../include/FrameBuffer.h"
 
 template<typename T>
-FrameBuffer<T>::FrameBuffer(int w, int h, PixelFormat format) : _width{w}, _height{h}, _format{format}{
-    _pixels = new T[_width*_height];
+FrameBuffer<T>::FrameBuffer(int w, int h, PixelFormat format) :
+                    FrameBuffer<T>(new T[w*h], w, h, format) {
+}
+
+template<typename T>
+FrameBuffer<T>::FrameBuffer(T *$pixels, int w, int h, PixelFormat format)
+                            : _pixels{$pixels}, _width{w}, _height{h}, _format{format} {
+
 }
 
 template<typename T>
@@ -56,3 +62,4 @@ template<typename T>
 PixelFormat FrameBuffer<T>::format() {
     return _format;
 }
+
