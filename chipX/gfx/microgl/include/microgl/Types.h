@@ -3,6 +3,10 @@
 #include <cstdint>
 
 typedef struct {
+    uint8_t a1,a2,a3;
+} U8A;
+
+typedef struct {
     uint8_t r, g, b, a;
 } color_t;
 

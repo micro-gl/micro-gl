@@ -1,65 +1,51 @@
 
-#include "../include/FrameBuffer.h"
+#include "../include/microgl/FrameBuffer.h"
 
 template<typename T>
-FrameBuffer<T>::FrameBuffer(int w, int h, PixelFormat format) :
-                    FrameBuffer<T>(new T[w*h], w, h, format) {
+FrameBuffer<T>::FrameBuffer(int size) :
+                    FrameBuffer<T>(new T[size], size) {
 }
 
 template<typename T>
-FrameBuffer<T>::FrameBuffer(T *$pixels, int w, int h, PixelFormat format)
-                            : _pixels{$pixels}, _width{w}, _height{h}, _format{format} {
-
+FrameBuffer<T>::FrameBuffer(T *$data, int size)
+                            : _data{$data}, _size{size} {
+    _bpe = sizeof(T);
 }
 
 template<typename T>
 FrameBuffer<T>::~FrameBuffer() {
-    delete [] _pixels;
+    delete [] _data;
 }
 
 template<typename T>
-int FrameBuffer<T>::width() {
-    return _width;
+int FrameBuffer<T>::size() {
+    return _size;
 }
 
 template<typename T>
-int FrameBuffer<T>::height() {
-    return _height;
+T &FrameBuffer<T>::readAt(int index) {
+    return _data[index];
 }
 
 template<typename T>
-T &FrameBuffer<T>::readAt(int x, int y) {
-    return _pixels[indexOf(x, y)];
+void FrameBuffer<T>::writeAt(const T &value, int index) {
+    _data[index] = value;
 }
 
 template<typename T>
-void FrameBuffer<T>::writeAt(const T &value, int x, int y) {
-    _pixels[y*_width + x] = value;
+const T &FrameBuffer<T>::operator()(int index) const {
+    return _data[index];
 }
 
 template<typename T>
-const T &FrameBuffer<T>::operator()(int x, int y) const {
-    return readAt(x, y);
+T *FrameBuffer<T>::data() {
+    return _data;
 }
 
 template<typename T>
-T *FrameBuffer<T>::pixels() {
-    return _pixels;
+void FrameBuffer<T>::fill(const T &value) {
+    memset(_data, value, _size * sizeof(T));
+//    std::fill(_pixels, &_pixels[_width*_height], value);
 }
 
-template<typename T>
-void FrameBuffer<T>::fill(const T value) {
-//    memset(_pixels, value, _width*_height* sizeof(T));
-    std::fill(_pixels, &_pixels[_width*_height], value);
-}
-
-template<typename T>
-int FrameBuffer<T>::indexOf(int x, int y) {
-    return y*_width + x;
-}
-
-template<typename T>
-PixelFormat FrameBuffer<T>::format() {
-    return _format;
-}
 

@@ -1,88 +1,110 @@
-#include "../include/Canvas.h"
+#include "../include/microgl/Canvas.h"
 
-template<typename T>
-Canvas<T>::Canvas(FrameBuffer<T> *frameBuffer) : _fb(frameBuffer) {
+template<typename P>
+Canvas<P>::Canvas(Bitmap<P> *$bmp, int width, int height)
+                        : _bitmap($bmp), _width{width}, _height{height} {
+
     _flag_hasAlphaChannel = (pixelFormat()==PixelFormat::RGBA8888) ||
                             (pixelFormat()==PixelFormat::RGBA4444) ||
                             (pixelFormat()==PixelFormat::RGBA5551);
 }
 
-template<typename T>
-Canvas<T>::Canvas(int width, int height, PixelFormat format) :
-            Canvas<T>(new FrameBuffer<T>(width, height, format)) {
+template<typename P>
+Canvas<P>::Canvas(int width, int height, PixelCoder<P> * $coder) :
+            Canvas<P>(new Bitmap<P>(width, height, $coder), width, height) {
 
 }
 
-template<typename T>
-PixelFormat Canvas<T>::pixelFormat() {
-    return _fb->format();
+template<typename P>
+inline PixelCoder<P> *Canvas<P>::coder() {
+    return _bitmap->coder();
 }
 
-template<typename T>
-unsigned int Canvas<T>::sizeofPixel() {
-    return sizeof(T{});
+template<typename P>
+inline Bitmap<P> *Canvas<P>::bitmap() {
+    return _bitmap;
 }
 
-template<typename T>
-T Canvas<T>::getPixel(int x, int y) {
-    return _fb->readAt(x, y);
+template<typename P>
+PixelFormat Canvas<P>::pixelFormat() {
+    return coder()->format();
 }
 
-template<typename T>
-bool Canvas<T>::hasAlphaChannel() {
+template<typename P>
+unsigned int Canvas<P>::sizeofPixel() {
+    return sizeof(P{});
+}
+
+template<typename P>
+P Canvas<P>::getPixel(int x, int y) {
+    return _bitmap->readAt(y*_width + x);
+}
+
+template<typename P>
+bool Canvas<P>::hasAlphaChannel() {
     return _flag_hasAlphaChannel;
 }
 
-template<typename T>
-bool Canvas<T>::hasAntialiasing() {
+template<typename P>
+bool Canvas<P>::hasAntialiasing() {
     return _flag_antiAlias;
 }
 
-template<typename T>
-void Canvas<T>::setAntialiasing(bool value) {
+template<typename P>
+void Canvas<P>::setAntialiasing(bool value) {
     _flag_antiAlias = value;
 }
 
-template<typename T>
-color_f_t Canvas<T>::getPixelColor(int x, int y) {
-    return decodeFloatRGB(getPixel(x, y), pixelFormat());
+template<typename P>
+color_f_t Canvas<P>::getPixelColor(int x, int y) {
+    return this->_bitmap->coder()->decode(getPixel(x, y));
 }
 
-template<typename T>
-int Canvas<T>::width() {
-    return _fb->width();
+template<typename P>
+int Canvas<P>::width() {
+    return _width;
 }
 
-template<typename T>
-int Canvas<T>::height() {
-    return _fb->height();
+template<typename P>
+int Canvas<P>::height() {
+    return _height;
 }
 
-template<typename T>
-void Canvas<T>::setBlendMode(const BlendMode &mode) {
+template<typename P>
+void Canvas<P>::setBlendMode(const BlendMode &mode) {
     _blend_mode = mode;
 }
 
-template<typename T>
-void Canvas<T>::setPorterDuffMode(const PorterDuff &mode) {
+template<typename P>
+void Canvas<P>::setPorterDuffMode(const PorterDuff &mode) {
     _porter_duff_mode = mode;
 }
 
-template<typename T>
-BlendMode &Canvas<T>::getBlendMode() {
+template<typename P>
+BlendMode &Canvas<P>::getBlendMode() {
     return _blend_mode;
 }
 
-template<typename T>
-PorterDuff &Canvas<T>::getPorterDuffMode() {
+template<typename P>
+PorterDuff &Canvas<P>::getPorterDuffMode() {
     return _porter_duff_mode;
 }
 
-template<typename T>
-inline void Canvas<T>::drawPixel(const color_f_t & val, int x, int y) {
+template<typename P>
+P *Canvas<P>::pixels() {
+    return _bitmap->data();
+}
+
+template<typename P>
+void Canvas<P>::clear(const color_f_t &color) {
+    _bitmap->fill(encodeFloatRGB(color, pixelFormat()));
+}
+
+template<typename P>
+inline void Canvas<P>::drawPixel(const color_f_t & val, int x, int y) {
     color_f_t result = val;
 
-    if(hasAlphaChannel()) {
+    if(true || hasAlphaChannel()) {
         color_f_t backdrop = getPixelColor(x, y);
         const color_f_t & src = val;
         color_f_t blended = blend_mode_apply(_blend_mode, backdrop, src);
@@ -96,28 +118,22 @@ inline void Canvas<T>::drawPixel(const color_f_t & val, int x, int y) {
         result = porter_duff_apply(_porter_duff_mode, backdrop, blend_in_place);
     }
 
-    drawPixel(encodeFloatRGB(result, pixelFormat()), x, y);
+//    int index = (y * width() + x);
+    P output = coder()->encodeFloat(result.r, result.g, result.b, result.a);
+
+    drawPixel(output, x, y);
+//    drawPixel(encodeFloatRGB(result, pixelFormat()), x, y);
 }
 
-template<typename T>
-void Canvas<T>::drawPixel(const T & val, int x, int y) {
-
-
-    _fb->writeAt(val, x, y);
+template<typename P>
+void Canvas<P>::drawPixel(const P & val, int x, int y) {
+    int index = (y * width() + x);
+    _bitmap->writeAt(val, index);
 }
 
-template<typename T>
-T *Canvas<T>::pixels() {
-    return _fb->pixels();
-}
 
-template<typename T>
-void Canvas<T>::clear(const color_f_t &color) {
-    _fb->fill(encodeFloatRGB(color, pixelFormat()));
-}
-
-template<typename T>
-void Canvas<T>::drawQuad(const color_f_t & color, int left, int top, int w, int h) {
+template<typename P>
+void Canvas<P>::drawQuad(const color_f_t & color, int left, int top, int w, int h) {
     for (int y = top; y < top + h; ++y) {
         for (int x = left; x < left + w; ++x) {
             drawPixel(color, x, y);
@@ -127,8 +143,8 @@ void Canvas<T>::drawQuad(const color_f_t & color, int left, int top, int w, int 
 
 }
 
-template<typename T>
-void Canvas<T>::drawCircle(const color_f_t & color,
+template<typename P>
+void Canvas<P>::drawCircle(const color_f_t & color,
                            int centerX, int centerY,
                            int radius) {
     uint8_t nSubpixelsX ,nSubpixelsY;
@@ -173,8 +189,8 @@ void Canvas<T>::drawCircle(const color_f_t & color,
 
 }
 
-template<typename T>
-void Canvas<T>::drawGradient(const color_f_t & startColor,
+template<typename P>
+void Canvas<P>::drawGradient(const color_f_t & startColor,
                              const color_f_t & endColor,
                              int left, int top, int w, int h) {
     float t;
@@ -196,8 +212,8 @@ void Canvas<T>::drawGradient(const color_f_t & startColor,
 
 }
 
-template<typename T>
-void Canvas<T>::drawTriangle(const color_f_t &color,
+template<typename P>
+void Canvas<P>::drawTriangle(const color_f_t &color,
                              int v0_x, int v0_y, int v1_x,
                              int v1_y, int v2_x, int v2_y) {
 
@@ -248,8 +264,116 @@ void Canvas<T>::drawTriangle(const color_f_t &color,
 
 }
 
-//template<typename T>
-//void Canvas<T>::drawTriangle(const color_f_t &color,
+template<typename P>
+void
+Canvas<P>::drawTriangle(const unsigned char *bmp, int w, int h,
+                        int v0_x, int v0_y, float u0, float v0,
+                        int v1_x, int v1_y, float u1, float v1,
+                        int v2_x, int v2_y, float u2, float v2) {
+    float area = edgeFunction(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
+
+    // bounding box
+    int x1 = std::min({v0_x, v1_x, v2_x});
+    int y1 = std::min({v0_y, v1_y, v2_y});
+    int x2 = std::max({v0_x, v1_x, v2_x});
+    int y2 = std::max({v0_y, v1_y, v2_y});
+
+    for (uint32_t y = y1; y < y2; ++y) {
+        for (uint32_t x = x1; x < x2; ++x) {
+            vec3_f p = {x + 0.5f, y + 0.5f, 0};
+
+            float w0 = edgeFunction<float>(v1_x, v1_y, v2_x, v2_y, p.x, p.y);
+            float w1 = edgeFunction<float>(v2_x, v2_y, v0_x, v0_y, p.x, p.y);
+            float w2 = edgeFunction<float>(v0_x, v0_y, v1_x, v1_y, p.x, p.y);
+
+            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+                w0 /= area;
+                w1 /= area;
+                w2 /= area;
+
+                float u = w0 * u0 + w1 * u1 + w2 * u2;
+                float v = w0 * v0 + w1 * v1 + w2 * v2;
+                int u_i = (int)(u * (float)w);
+                int v_i = (int)(v * (float)h);
+
+                int index = (v_i * w + u_i)*3;
+
+
+                color_f_t color{};
+
+                // normalize to recode it to our format later
+                color.r = bmp[index + 0] / 255.0;
+                color.g = bmp[index + 1] / 255.0;
+                color.b = bmp[index + 2] / 255.0;
+                color.a = 0.5f;//bmp[index + 3] / 255.0;;
+//
+                drawPixel(color, x, y);
+
+
+            }
+
+        }
+
+    }
+
+}
+
+template<typename P>
+void
+Canvas<P>::drawTriangle2(Bitmap<P> & bmp,
+                         int v0_x, int v0_y, float u0, float v0,
+                         int v1_x, int v1_y, float u1, float v1,
+                         int v2_x, int v2_y, float u2, float v2) {
+    float area = edgeFunction(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
+
+    // bounding box
+    int x1 = std::min({v0_x, v1_x, v2_x});
+    int y1 = std::min({v0_y, v1_y, v2_y});
+    int x2 = std::max({v0_x, v1_x, v2_x});
+    int y2 = std::max({v0_y, v1_y, v2_y});
+
+    for (uint32_t y = y1; y < y2; ++y) {
+        for (uint32_t x = x1; x < x2; ++x) {
+            vec3_f p = {x + 0.5f, y + 0.5f, 0};
+
+            float w0 = edgeFunction<float>(v1_x, v1_y, v2_x, v2_y, p.x, p.y);
+            float w1 = edgeFunction<float>(v2_x, v2_y, v0_x, v0_y, p.x, p.y);
+            float w2 = edgeFunction<float>(v0_x, v0_y, v1_x, v1_y, p.x, p.y);
+
+            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+                w0 /= area;
+                w1 /= area;
+                w2 /= area;
+
+                float u = w0 * u0 + w1 * u1 + w2 * u2;
+                float v = w0 * v0 + w1 * v1 + w2 * v2;
+                int u_i = (int)(u * (float)bmp.width());
+                int v_i = (int)(v * (float)bmp.height());
+
+                int index = (v_i * bmp.width() + u_i);
+
+
+                color_f_t color{};
+
+                // normalize to recode it to our format later
+                P d = bmp.readAt(index);
+
+                drawPixel(d, x, y);
+//                drawPixel(color, x, y);
+
+
+            }
+
+        }
+
+    }
+
+}
+
+
+
+//template<typename P>
+//void Canvas<P>::drawTriangle(const color_f_t &color,
 //                             int v0_x, int v0_y, int v1_x,
 //                             int v1_y, int v2_x, int v2_y) {
 //

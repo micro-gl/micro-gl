@@ -15,13 +15,18 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(sources
         src/FrameBuffer.tpp
-        include/FrameBuffer.h
+        include/microgl/FrameBuffer.h
+        src/Bitmap.tpp
+        include/microgl/Bitmap.h
+        src/Buffer.tpp
+        include/microgl/Buffer.h
         src/Canvas.tpp
-        include/Canvas.h
+        include/microgl/Canvas.h
         src/Functions.cpp
         src/PixelFormat.cpp
         src/BlendMode.cpp
-        src/PorterDuff.cpp include/Fixed.h)
+        src/PorterDuff.cpp
+        )
 
 add_library(${PROJECT_NAME} ${sources})
 
@@ -35,7 +40,7 @@ target_include_directories(${PROJECT_NAME}
 # private include directory
 target_include_directories(${PROJECT_NAME}
         PRIVATE
-        ${PROJECT_SOURCE_DIR}/src . ${PROJECT_SOURCE_DIR}/include)
+        ${PROJECT_SOURCE_DIR}/src . ${PROJECT_SOURCE_DIR}/include/microgl)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 

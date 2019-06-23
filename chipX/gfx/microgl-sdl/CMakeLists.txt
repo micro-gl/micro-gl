@@ -18,10 +18,21 @@ set(libs ${SDL2_LIBRARY})
 include_directories(${SDL2_INCLUDE_DIR})
 
 include_directories("${PROJECT_SOURCE_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/src")
+include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
 include_directories("${PROJECT_BINARY_DIR}")
 
+set(SOURCES main.cpp
+        libs/stb_image/stb_image.cpp
+        src/Resources.cpp
+        )
+
 add_executable(${PROJECT_NAME}
-                main.cpp
+               ${SOURCES}
                 )
 
 target_link_libraries(${PROJECT_NAME} ${libs} microgl)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND
+        ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets)

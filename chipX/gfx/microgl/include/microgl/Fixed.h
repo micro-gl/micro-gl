@@ -45,4 +45,6 @@ returning the result in q3 format */
 #define fixed_mul_fixed_3(a,b,q1,q2,q3) (fixed_convert_fixed((a)*(b), (q1)+(q2), q3))
 #define fixed_div_fixed_3(a,b,q1,q2,q3) (fixed_convert_fixed(a, q1, (q2)+(q3))/(b))
 
+#define fixed_half float_to_fixed(0.5f)
+
 #pragma clang diagnostic pop

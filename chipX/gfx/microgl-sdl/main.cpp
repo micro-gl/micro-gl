@@ -1,40 +1,41 @@
 //
 // Created by Tomer Shalev on 2019-06-15.
+// this is a sandbox for playing with microgl lib
 //
 
 #include <stdio.h>
 #include <iostream>
+#include "src/Resources.h"
 #include <SDL2/SDL.h>
-#include <FrameBuffer.h>
-#include <Canvas.h>
-#include <Types.h>
-#include <PixelFormat.h>
+#include <microgl/FrameBuffer.h>
+#include <microgl/Canvas.h>
+#include <microgl/Types.h>
+#include <microgl/PixelFormat.h>
+#include <microgl/PixelCoder.h>
+#include <microgl/Bitmap.h>
 
-typedef FrameBuffer<uint32_t> FrameBuffer32;
-FrameBuffer32 * buffer = nullptr;
+SDL_Window * window;
+SDL_Renderer * renderer;
+SDL_Texture * texture;
+//Canvas16Bit * canvas;
+Canvas24BitU8 * canvas;
+//Canvas32Bit * canvas;
+Resources resources{};
 
-int main() {
-    bool quit = false;
-    SDL_Event event;
+color_f_t RED{1.0,0.0,0.0, 1.0};
+color_f_t YELLOW{1.0,1.0,0.0, 1.0};
+color_f_t WHITE{1.0,1.0,1.0, 1.0};
+color_f_t GREEN{0.0,1.0,0.0, 1.0};
+color_f_t BLUE{0.0,0.0,1.0, 1.0};
 
-    SDL_Init(SDL_INIT_VIDEO);
+void loop();
+void init_sdl(int width, int height);
 
-    SDL_Window * window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
-    SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, 0);
-    SDL_Texture * texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, 640, 480);
-//    SDL_PIXELFORMAT_RGBA8888
-//    Uint32 * pixels = new Uint32[640 * 480];
-    int x = 0b11111;
+inline void render() {
 
-    color_f_t RED{1.0,0.0,0.0, 1.0};
-    color_f_t YELLOW{1.0,1.0,0.0, 1.0};
-    color_f_t WHITE{1.0,1.0,1.0, 1.0};
-    color_f_t GREEN{0.0,1.0,0.0, 1.0};
-    color_f_t BLUE{0.0,0.0,1.0, 1.0};
+    Resources::image_info_t img_1 = resources.loadImageFromCompressedPath("charsprites.png");
 
-
-//    Canvas16Bit * canvas = new Canvas16Bit(640, 480, PixelFormat::RGB565);
-    auto * canvas = new Canvas32Bit(640, 480, PixelFormat::RGBA8888);
+    Bitmap<vec3<uint8_t>> bmp(img_1.data, img_1.width, img_1.height, new RGB888_ARRAY());
 
     canvas->setAntialiasing(true);
 //    canvas->clear(WHITE);
@@ -44,10 +45,41 @@ int main() {
     canvas->setBlendMode(BlendMode::Normal);
     canvas->setPorterDuffMode(PorterDuff::SourceOver);
     canvas->drawCircle(GREEN, 320, 240, 240/2);
-    canvas->drawTriangle(BLUE, 0, 300, 300, 300, 0, 0);
+//    canvas->drawTriangle(BLUE, 0, 300, 300, 300, 0, 0);
+//    canvas->drawTriangle(img_1.data, img_1.width, img_1.height,0, 300,0.0,0.0, 300, 300,1.0,0.0, 0, 0,0.0,1.0);
+    canvas->drawTriangle2(bmp,0, 300,0.0,0.0, 300, 300,1.0,0.0, 0, 0,0.0,1.0);
 
-    SDL_UpdateTexture(texture, nullptr, canvas->pixels(), 640 * canvas->sizeofPixel());
-//    SDL_UpdateTexture(texture, nullptr, buffer->pixels(), 640 * sizeof(Uint32));
+}
+
+
+
+
+int main() {
+    init_sdl(640, 480);
+    loop();
+}
+
+void init_sdl(int width, int height) {
+    SDL_Init(SDL_INIT_VIDEO);
+
+    window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
+    renderer = SDL_CreateRenderer(window, -1, 0);
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STATIC, width, height);
+//    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
+
+
+//    canvas = new Canvas16Bit(width, height, PixelFormat::RGB565, new RGB565_PACKED_16());
+    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
+//    canvas = new Canvas32Bit(width, height, PixelFormat::RGBA8888, new RGBA8888_PACKED());
+
+    resources.init();
+}
+
+void loop() {
+    bool quit = false;
+    SDL_Event event;
+
+    render();
 
     while (!quit)
     {
@@ -64,8 +96,9 @@ int main() {
                 break;
         }
 
+        SDL_UpdateTexture(texture, nullptr, canvas->pixels(), canvas->width() * canvas->sizeofPixel());
         SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, texture, NULL, NULL);
+        SDL_RenderCopy(renderer, texture, nullptr, nullptr);
         SDL_RenderPresent(renderer);
     }
 
@@ -74,6 +107,4 @@ int main() {
 
     SDL_DestroyWindow(window);
     SDL_Quit();
-
-    return 0;
 }
