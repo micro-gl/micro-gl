@@ -49,4 +49,29 @@ PixelCoder<P> *Bitmap<P>::coder() {
     return _coder;
 }
 
+template<typename P>
+P Bitmap<P>::pixelAt(int index) {
+    return this->_data[index];
+}
+
+template<typename P>
+color_t Bitmap<P>::decodePixelAt(int x, int y) {
+    return _coder->decode();
+}
+
+template<typename P>
+color_t Bitmap<P>::decodePixelAt(int index) {
+    return color_t();
+}
+
+template<typename P>
+color_f_t Bitmap<P>::decodeNormalizedPixelAt(int x, int y) {
+    return _coder->decode(pixelAt(x, y));
+}
+
+template<typename P>
+color_f_t Bitmap<P>::decodeNormalizedPixelAt(int index) {
+    return _coder->decode(pixelAt(index));
+}
+
 

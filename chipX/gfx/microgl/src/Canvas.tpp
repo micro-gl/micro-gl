@@ -1,8 +1,8 @@
 #include "../include/microgl/Canvas.h"
 
 template<typename P>
-Canvas<P>::Canvas(Bitmap<P> *$bmp, int width, int height)
-                        : _bitmap($bmp), _width{width}, _height{height} {
+Canvas<P>::Canvas(Bitmap<P> *$bmp)
+                        : _bitmap($bmp), _width{$bmp->width()}, _height{$bmp->height()} {
 
     _flag_hasAlphaChannel = (pixelFormat()==PixelFormat::RGBA8888) ||
                             (pixelFormat()==PixelFormat::RGBA4444) ||
@@ -11,7 +11,7 @@ Canvas<P>::Canvas(Bitmap<P> *$bmp, int width, int height)
 
 template<typename P>
 Canvas<P>::Canvas(int width, int height, PixelCoder<P> * $coder) :
-            Canvas<P>(new Bitmap<P>(width, height, $coder), width, height) {
+            Canvas<P>(new Bitmap<P>(width, height, $coder)) {
 
 }
 
@@ -57,7 +57,7 @@ void Canvas<P>::setAntialiasing(bool value) {
 
 template<typename P>
 color_f_t Canvas<P>::getPixelColor(int x, int y) {
-    return this->_bitmap->coder()->decode(getPixel(x, y));
+    return this->_bitmap->coder()->decode_to_normalized(getPixel(x, y));
 }
 
 template<typename P>
@@ -119,7 +119,7 @@ inline void Canvas<P>::drawPixel(const color_f_t & val, int x, int y) {
     }
 
 //    int index = (y * width() + x);
-    P output = coder()->encodeFloat(result.r, result.g, result.b, result.a);
+    P output = coder()->encode_from_normalized(result.r, result.g, result.b, result.a);
 
     drawPixel(output, x, y);
 //    drawPixel(encodeFloatRGB(result, pixelFormat()), x, y);
@@ -128,6 +128,11 @@ inline void Canvas<P>::drawPixel(const color_f_t & val, int x, int y) {
 template<typename P>
 void Canvas<P>::drawPixel(const P & val, int x, int y) {
     int index = (y * width() + x);
+    _bitmap->writeAt(val, index);
+}
+
+template<typename P>
+void Canvas<P>::drawPixel(const P & val, int index) {
     _bitmap->writeAt(val, index);
 }
 
@@ -266,60 +271,6 @@ void Canvas<P>::drawTriangle(const color_f_t &color,
 
 template<typename P>
 void
-Canvas<P>::drawTriangle(const unsigned char *bmp, int w, int h,
-                        int v0_x, int v0_y, float u0, float v0,
-                        int v1_x, int v1_y, float u1, float v1,
-                        int v2_x, int v2_y, float u2, float v2) {
-    float area = edgeFunction(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
-
-    // bounding box
-    int x1 = std::min({v0_x, v1_x, v2_x});
-    int y1 = std::min({v0_y, v1_y, v2_y});
-    int x2 = std::max({v0_x, v1_x, v2_x});
-    int y2 = std::max({v0_y, v1_y, v2_y});
-
-    for (uint32_t y = y1; y < y2; ++y) {
-        for (uint32_t x = x1; x < x2; ++x) {
-            vec3_f p = {x + 0.5f, y + 0.5f, 0};
-
-            float w0 = edgeFunction<float>(v1_x, v1_y, v2_x, v2_y, p.x, p.y);
-            float w1 = edgeFunction<float>(v2_x, v2_y, v0_x, v0_y, p.x, p.y);
-            float w2 = edgeFunction<float>(v0_x, v0_y, v1_x, v1_y, p.x, p.y);
-
-            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-                w0 /= area;
-                w1 /= area;
-                w2 /= area;
-
-                float u = w0 * u0 + w1 * u1 + w2 * u2;
-                float v = w0 * v0 + w1 * v1 + w2 * v2;
-                int u_i = (int)(u * (float)w);
-                int v_i = (int)(v * (float)h);
-
-                int index = (v_i * w + u_i)*3;
-
-
-                color_f_t color{};
-
-                // normalize to recode it to our format later
-                color.r = bmp[index + 0] / 255.0;
-                color.g = bmp[index + 1] / 255.0;
-                color.b = bmp[index + 2] / 255.0;
-                color.a = 0.5f;//bmp[index + 3] / 255.0;;
-//
-                drawPixel(color, x, y);
-
-
-            }
-
-        }
-
-    }
-
-}
-
-template<typename P>
-void
 Canvas<P>::drawTriangle2(Bitmap<P> & bmp,
                          int v0_x, int v0_y, float u0, float v0,
                          int v1_x, int v1_y, float u1, float v1,
@@ -355,7 +306,13 @@ Canvas<P>::drawTriangle2(Bitmap<P> & bmp,
 
                 color_f_t color{};
 
+                // todo: also connect to compositing
                 // normalize to recode it to our format later
+                // get rid of this, we should only care to read
+                // rgba values and should not care about the bitmap
+                // internal pixels type P. this way we can use different
+                // bitmap types and recode them for our purposes in case
+                // their internal type is different
                 P d = bmp.readAt(index);
 
                 drawPixel(d, x, y);
@@ -364,6 +321,29 @@ Canvas<P>::drawTriangle2(Bitmap<P> & bmp,
 
             }
 
+        }
+
+    }
+
+}
+
+template<typename P>
+void Canvas<P>::drawQuad2(Bitmap<P> &bmp, int left, int top, int w, int h) {
+    float u = 0.0, v = 0.0;
+
+    for (int y = top; y < top + h; y++) {
+        v = 1.0f-(float(y - top) / (h));
+        for (int x = left; x < left + w; x++) {
+            u = float(x - left) / (w);
+
+            int v_i = v*(bmp.height()-1);
+            int u_i = u*bmp.width();
+            int index = v_i * bmp.width() + u_i;
+
+            P d = bmp.readAt(index);
+//            P d = bmp.pixelAt(u_i, v_i);
+
+            drawPixel(d, x, y);
         }
 
     }

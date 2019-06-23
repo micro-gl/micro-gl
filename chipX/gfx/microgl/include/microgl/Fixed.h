@@ -16,8 +16,8 @@ point q format returning the answer in q format */
 
 #define float_to_fixed(a) (float_to_fixed_2(d, Q))
 #define fixed_to_float(a) (fixed_to_float_2(d, Q))
-#define int_to_fixed(a) (int_to_fixed_2(d, Q))
-#define fixed_to_int(a) (fixed_to_int_2(d, Q))
+#define int_to_fixed(a) (int_to_fixed_2(a, Q))
+#define fixed_to_int(a) (fixed_to_int_2(a, Q))
 
 #define fixed_add_fixed(a,b) ((a)+(b))
 #define fixed_sub_fixed(a,b) (fixed_add_fixed(a,-b))

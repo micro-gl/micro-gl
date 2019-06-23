@@ -1,7 +1,3 @@
-//
-// Created by Tomer Shalev on 2019-06-16.
-//
-
 #pragma once
 
 #include "Types.h"
@@ -17,8 +13,7 @@ template<typename P>
 class Canvas {
 public:
 
-//    Canvas(FrameBuffer<P> * frameBuffer, int width, int height, PixelCoder<P> *encoder);
-    Canvas(Bitmap<P> * $bmp, int width, int height);
+    Canvas(Bitmap<P> * $bmp);
     Canvas(int width, int height, PixelCoder<P> * $coder);
     int width();
     int height();
@@ -41,18 +36,16 @@ public:
     void clear(const color_f_t &color);
     void drawPixel(const color_f_t &val, int x, int y);
     void drawPixel(const P &val, int x, int y);
+    void drawPixel(const P &val, int index);
     void drawQuad(const color_f_t &color, int left, int top, int w, int h);
     void drawGradient(const color_f_t &startColor, const color_f_t &endColor, int left, int top, int w, int h);
     void drawCircle(const color_f_t & color, int centerX, int centerY, int radius);
     void drawTriangle(const color_f_t & color, int x0, int y0, int x1, int y1, int x2, int y2);
-    void drawTriangle(const unsigned char *bmp, int w, int h,
-                      int v0_x, int v0_y, float u0, float v0,
-                      int v1_x, int v1_y, float u1, float v1,
-                      int v2_x, int v2_y, float u2, float v2);
     void drawTriangle2(Bitmap<P> &bmp,
                        int v0_x, int v0_y, float u0, float v0,
                        int v1_x, int v1_y, float u1, float v1,
                        int v2_x, int v2_y, float u2, float v2);
+    void drawQuad2(Bitmap<P> &bmp, int left, int top, int w, int h);
 
 //    void drawTriangle(FrameBuffer<T> * bitmap, int x0, int y0, int x1, int y1, int x2, int y2, );
 

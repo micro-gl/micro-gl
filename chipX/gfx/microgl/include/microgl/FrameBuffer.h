@@ -25,9 +25,4 @@ protected:
     uint8_t _bpe = sizeof(T);
 };
 
-//typedef FrameBuffer<uint8_t> FrameBuffer8Bit;
-//typedef FrameBuffer<uint16_t> FrameBuffer16Bit;
-//typedef FrameBuffer<uint32_t> FrameBuffer32Bit;
-
-
 #include "../src/FrameBuffer.tpp"

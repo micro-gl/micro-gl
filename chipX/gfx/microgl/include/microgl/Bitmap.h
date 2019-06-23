@@ -16,6 +16,11 @@ public:
     ~Bitmap();
 
     P pixelAt(int x, int y);
+    P pixelAt(int index);
+    color_t decodePixelAt(int x, int y);
+    color_t decodePixelAt(int index);
+    color_f_t decodeNormalizedPixelAt(int x, int y);
+    color_f_t decodeNormalizedPixelAt(int index);
     int width();
     int height();
     PixelFormat & format();
@@ -27,5 +32,10 @@ protected:
     PixelCoder<P> * _coder;
 
 };
+
+typedef Bitmap<vec3<uint8_t>> Bitmap24bitU8;
+typedef Bitmap<uint32_t> Bitmap32bitPacked;
+typedef Bitmap<uint16_t> Bitmap16BitPacked;
+typedef Bitmap<uint8_t> Bitmap8Bit;
 
 #include "../src/Bitmap.tpp"

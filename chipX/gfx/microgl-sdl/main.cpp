@@ -48,11 +48,8 @@ inline void render() {
 //    canvas->drawTriangle(BLUE, 0, 300, 300, 300, 0, 0);
 //    canvas->drawTriangle(img_1.data, img_1.width, img_1.height,0, 300,0.0,0.0, 300, 300,1.0,0.0, 0, 0,0.0,1.0);
     canvas->drawTriangle2(bmp,0, 300,0.0,0.0, 300, 300,1.0,0.0, 0, 0,0.0,1.0);
-
+    canvas->drawQuad2(bmp, 300, 50, 300, 300);
 }
-
-
-
 
 int main() {
     init_sdl(640, 480);
@@ -71,6 +68,12 @@ void init_sdl(int width, int height) {
 //    canvas = new Canvas16Bit(width, height, PixelFormat::RGB565, new RGB565_PACKED_16());
     canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
 //    canvas = new Canvas32Bit(width, height, PixelFormat::RGBA8888, new RGBA8888_PACKED());
+
+
+
+    // 24 bit with given bitmap canvas
+//    auto * bmp = new Bitmap24bitU8(width, height, new RGB888_ARRAY());
+//    canvas = new Canvas24BitU8(bmp);
 
     resources.init();
 }
