@@ -8,6 +8,154 @@
 #include "PixelFormat.h"
 
 template<typename P>
+class PixelCoder2 {
+public:
+//    static inline P S_encode_from_normalized(const color_f_t & input) {
+//        return IMPL::S_encode_from_normalized(input);
+//    }
+    PixelCoder2() {
+    }
+
+//    virtual inline void encode(const color_t & input, P& output) = 0;
+//    virtual inline void decode(const P & input, color_t & output) = 0;
+//    virtual inline void encode_from_normalized(const color_f_t & input, P & output) = 0;
+//    virtual inline P encode_from_normalized2(const color_f_t & input) = 0;
+//    virtual inline void encode_from_normalized3(const color_f_t & input, P * output) = 0;
+//    virtual inline void decode_to_normalized(const P & input, color_f_t & output) = 0;
+//    virtual inline PixelFormat format() = 0;
+
+
+    std::function<P(const color_f_t & input)> handler_encode;
+};
+
+class PixelCoder2__: public PixelCoder2<uint32_t > {
+public:
+    PixelCoder2__() {
+        handler_encode = [] (const color_f_t & input) -> uint32_t {
+            return (uint8_t (input.r*255) << 16) + (uint8_t (input.g*255) << 8) + uint8_t (input.b*255);
+        };
+
+    }
+};
+
+
+template<typename P, typename IMPL>
+class PixelCoder  {
+public:
+    static inline P S_encode_from_normalized(const color_f_t & input) {
+        return IMPL::S_encode_from_normalized(input);
+    }
+
+    virtual inline void encode(const color_t & input, P& output) = 0;
+    virtual inline void decode(const P & input, color_t & output) = 0;
+    virtual inline void encode_from_normalized(const color_f_t & input, P & output) = 0;
+    virtual inline P encode_from_normalized2(const color_f_t & input) = 0;
+    virtual inline void encode_from_normalized3(const color_f_t & input, P * output) = 0;
+    virtual inline void decode_to_normalized(const P & input, color_f_t & output) = 0;
+    virtual inline PixelFormat format() = 0;
+private:
+};
+
+
+// array coders
+class RGB888_ARRAY : public PixelCoder<vec3<uint8_t>, RGB888_ARRAY> {
+public:
+    uint8_t MAX = (2 << 8) - 1;
+
+    inline void encode(const color_t & input, vec3<uint8_t> & output) override {
+        output.x = input.r; output.y=input.g;output.z=input.b;
+    }
+
+    inline void decode(const vec3<uint8_t> & input, color_t & output) override {
+        output = {input.x, input.y, input.z, 255};
+    };
+
+    inline void encode_from_normalized(const color_f_t & input, vec3<uint8_t> & output) override {
+
+        output.x =  uint8_t(input.r*MAX);
+        output.y = uint8_t(input.g*MAX);
+        output.z = uint8_t(input.b*MAX);
+    }
+
+    inline vec3<uint8_t> encode_from_normalized2(const color_f_t & input) override {
+
+        return {uint8_t(input.r*MAX), uint8_t(input.g*MAX), uint8_t(input.b*MAX)};
+    }
+
+    inline void encode_from_normalized3(const color_f_t & input, vec3<uint8_t> * output) override {
+
+        output->x =  uint8_t(input.r*MAX);
+        output->y = uint8_t(input.g*MAX);
+        output->z = uint8_t(input.b*MAX);
+    }
+
+    inline void decode_to_normalized(const vec3<uint8_t> & input, color_f_t & output) override {
+        color_t temp{};
+        decode(input, temp);
+        output.r = float(temp.r)/MAX;
+        output.g = float(temp.g)/MAX;
+        output.b = float(temp.b)/MAX;
+        output.a = 1.0f;
+    };
+
+    inline PixelFormat format() override {
+        return PixelFormat::RGB888;
+    }
+
+};
+
+
+// 32 bit coders
+
+class RGB888_PACKED_32 : public PixelCoder<uint32_t, RGB888_PACKED_32> {
+public:
+    uint8_t MAX = (2 << 8) - 1;
+
+    static inline uint32_t S_encode_from_normalized(const color_f_t & input) {
+        return (uint8_t (input.r*255) << 16) + (uint8_t (input.g*255) << 8) + uint8_t (input.b*255);
+    }
+
+    inline void encode(const color_t & input, uint32_t & output) override {
+
+        output = (input.r << 16) + (input.g << 8) + input.b;
+    }
+
+    inline void decode(const uint32_t & input, color_t & output) override {
+        output.r = (input & 0xFF0000) >> 16;
+        output.g = (input & 0x00FF00) >> 8;
+        output.b = (input & 0x0000FF);
+        output.a = 255;
+    };
+
+    inline void encode_from_normalized(const color_f_t & input, uint32_t & output) override {
+        output = (uint8_t (input.r*MAX) << 16) + (uint8_t (input.g*MAX) << 8) + uint8_t (input.b*MAX);
+    }
+
+    inline uint32_t encode_from_normalized2(const color_f_t & input) override {
+        return (uint8_t (input.r*MAX) << 16) + (uint8_t (input.g*MAX) << 8) + uint8_t (input.b*MAX);
+    }
+
+    inline void encode_from_normalized3(const color_f_t & input, uint32_t * output) override {
+        *output = (uint8_t (input.r*MAX) << 16) + (uint8_t (input.g*MAX) << 8) + uint8_t (input.b*MAX);
+    }
+
+    inline void decode_to_normalized(const uint32_t & input, color_f_t & output) override {
+        color_t temp;
+
+        decode(input, temp);
+
+        output = {float(temp.r)/MAX, float(temp.g)/MAX, float(temp.b)/MAX, 1.0f};
+    };
+
+    inline PixelFormat format() override {
+        return PixelFormat::RGB888;
+    }
+
+};
+
+/*
+
+template<typename P>
 class PixelCoder {
 public:
     virtual inline P encode(uint8_t r, uint8_t g, uint8_t b, uint8_t a) = 0;
@@ -118,6 +266,10 @@ public:
         return {float(res.r)/MAX, float(res.g)/MAX, float(res.b)/MAX, 1.0f};
     };
 
+    inline PixelFormat format() override {
+        return PixelFormat::RGBA8888;
+    }
+
 };
 
 /// 16 bit coders
@@ -154,6 +306,10 @@ public:
         return {float(res.r)/MAX_R, float(res.g)/MAX_G, float(res.b)/MAX_B, 1.0f};
     };
 
+    inline PixelFormat format() override {
+        return PixelFormat::RGB565;
+    }
+
 };
 
 class RGB555_PACKED_16 : public PixelCoder<uint16_t> {
@@ -185,6 +341,10 @@ public:
 
         return {float(res.r)/MAX, float(res.g)/MAX, float(res.b)/MAX, 1.0f};
     };
+
+    inline PixelFormat format() override {
+        return PixelFormat::RGB555;
+    }
 
 };
 
@@ -220,6 +380,10 @@ public:
         return {float(res.r)/MAX, float(res.g)/MAX, float(res.b)/MAX, float(res.a)};
     };
 
+    inline PixelFormat format() override {
+        return PixelFormat::RGBA5551;
+    }
+
 };
 
 class RGBA1555_PACKED_16 : public PixelCoder<uint16_t> {
@@ -254,6 +418,10 @@ public:
         return {float(res.r)/MAX, float(res.g)/MAX, float(res.b)/MAX, float(res.a)};
     };
 
+    inline PixelFormat format() override {
+        return PixelFormat::ARGB1555;
+    }
+
 };
 
 class RGBA4444_PACKED_16 : public PixelCoder<uint16_t> {
@@ -286,6 +454,10 @@ public:
 
         return {float(res.r)/MAX, float(res.g)/MAX, float(res.b)/MAX, float(res.a)/MAX};
     };
+
+    inline PixelFormat format() override {
+        return PixelFormat::RGBA4444;
+    }
 
 };
 
@@ -323,6 +495,10 @@ public:
         return {float(res.r)/MAX_R, float(res.g)/MAX_G, float(res.b)/MAX_B, 1.0f};
     };
 
+    inline PixelFormat format() override {
+        return PixelFormat::RGB332;
+    }
+
 };
 
 class RGB8bit : public PixelCoder<uint8_t > {
@@ -350,6 +526,10 @@ public:
         return {float(res.r)/MAX, float(res.g)/MAX, float(res.b)/MAX, 1.0f};
     };
 
-};
+    inline PixelFormat format() override {
+        return PixelFormat::RGB8;
+    }
 
+};
+*/
 #pragma clang diagnostic pop

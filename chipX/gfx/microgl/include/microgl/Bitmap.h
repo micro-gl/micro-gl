@@ -7,12 +7,12 @@
 #include "FrameBuffer.h"
 #include "PixelCoder.h"
 
-template <typename P>
+template <typename P, typename CODER>
 class Bitmap : public FrameBuffer<P> {
 public:
-    Bitmap(int w, int h, PixelCoder<P> * $coder);
-    Bitmap(P* $pixels, int w, int h, PixelCoder<P> * $coder);
-    Bitmap(uint8_t* $pixels, int w, int h, PixelCoder<P> * $coder);
+    Bitmap(int w, int h, PixelCoder<P, CODER> * $coder);
+    Bitmap(P* $pixels, int w, int h, PixelCoder<P, CODER> * $coder);
+    Bitmap(uint8_t* $pixels, int w, int h, PixelCoder<P, CODER> * $coder);
     ~Bitmap();
 
     P pixelAt(int x, int y);
@@ -24,18 +24,19 @@ public:
     int width();
     int height();
     PixelFormat & format();
-    PixelCoder<P> * coder();
+    PixelCoder<P, CODER> * coder();
 
 protected:
     int _width = 0, _height = 0;
     PixelFormat _format;
-    PixelCoder<P> * _coder;
+    PixelCoder<P, CODER> * _coder;
 
 };
 
-typedef Bitmap<vec3<uint8_t>> Bitmap24bitU8;
-typedef Bitmap<uint32_t> Bitmap32bitPacked;
-typedef Bitmap<uint16_t> Bitmap16BitPacked;
-typedef Bitmap<uint8_t> Bitmap8Bit;
+//
+//typedef Bitmap<vec3<uint8_t>, CODER> Bitmap24bitU8<CODER>;
+//typedef Bitmap<uint32_t, CODER> Bitmap32bitPacked;
+//typedef Bitmap<uint16_t, CODER> Bitmap16BitPacked;
+//typedef Bitmap<uint8_t, CODER> Bitmap8Bit;
 
 #include "../src/Bitmap.tpp"

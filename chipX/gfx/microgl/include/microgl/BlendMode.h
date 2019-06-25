@@ -295,8 +295,8 @@ inline color_f_t blend_HardMix(const color_f_t &b, const color_f_t &s) {
 inline color_f_t blend_mode_apply(BlendMode mode, const color_f_t &b, const color_f_t &s) {
     switch (mode) {
 
-        case PassThrough:return s;
-        case None:return s;
+//        case PassThrough:return s;
+//        case None:return s;
         case Normal:return s;
         case Dissolve:return s;
         case Darken:return blend_Darken(b, s);
