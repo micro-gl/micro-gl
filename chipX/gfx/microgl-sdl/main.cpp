@@ -15,7 +15,7 @@
 #include <microgl/PixelCoder.h>
 #include <microgl/Bitmap.h>
 
-#define TEST_ITERATIONS 10
+#define TEST_ITERATIONS 1
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
@@ -82,9 +82,20 @@ int main() {
 
 }
 
+class A{
+public:
+    template <typename T>
+     T hi(T val) {
+        return val;
+    }
+};
 
 void init_sdl(int width, int height) {
     SDL_Init(SDL_INIT_VIDEO);
+    A aaa;
+    float u = aaa.hi<float>(5);
+
+
 
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, 0);
@@ -95,12 +106,6 @@ void init_sdl(int width, int height) {
 
 //    canvas = new Canvas16Bit(width, height, PixelFormat::RGB565, new RGB565_PACKED_16());
 //    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
-    PixelCoder<uint32_t , RGB888_PACKED_32> *a =  new RGB888_PACKED_32();
-    a->S_encode_from_normalized(color_f_t{});
-    PixelCoder<uint32_t , RGB888_PACKED_32>::S_encode_from_normalized(color_f_t{});
-    RGB888_PACKED_32::S_encode_from_normalized(color_f_t{});
-
-
 
 //    canvas = new Canvas32Bit(width, height, new RGB888_PACKED_32());
     canvas = new Canvas32Bit(width, height, new RGB888_PACKED_32());

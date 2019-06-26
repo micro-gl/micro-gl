@@ -8,6 +8,9 @@ Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
                             (pixelFormat()==PixelFormat::RGBA4444) ||
                             (pixelFormat()==PixelFormat::RGBA5551);
 
+    handler_encode = [] (const color_f_t & input) -> uint32_t {
+        return (uint8_t (input.r*255) << 16) + (uint8_t (input.g*255) << 8) + uint8_t (input.b*255);
+    };
 }
 
 template<typename P, typename CODER>
@@ -183,8 +186,13 @@ inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index) {
 
     output = coder()->S_encode_from_normalized(result);
 
-//    coder()->encode_from_normalized(result, output);
+//    output = hi.encode_from_normalized2(result);
+
+//    output = _bitmap_canvas->hi()->encode_from_normalized2(result);
+//    output = hi.encode_from_normalized2(result);
 //    output = coder()->encode_from_normalized2(result);
+
+//    coder()->encode_from_normalized(result, output);
 //    coder()->encode_from_normalized3(result, &output);
 //
 //    output = hi.handler_encode(result);
@@ -219,11 +227,16 @@ inline void Canvas<P, CODER>::drawPixel(const P & val, int index) {
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawQuad(const color_f_t & color, int left, int top, int w, int h) {
+    P output = coder()->S_encode_from_normalized(color);
+    color_f_t col = color;
+
     int index;
     for (int y = top; y < top + h; ++y) {
         index = y * _width;
+//            col.r+=0.01f;
         for (int x = left; x < left + w; ++x) {
             blendColor(color, index + x);
+//_bitmap_canvas->_data[index+x] = coder()->S_encode_from_normalized(col);
 //            blendColor(color, x, y);
         }
 
@@ -414,7 +427,10 @@ Canvas<P, CODER>::drawTriangle2(Bitmap<P, CODER> & bmp,
 }
 
 template<typename P, typename CODER>
-void Canvas<P, CODER>::drawQuad2(Bitmap<P, CODER> &bmp, int left, int top, int w, int h) {
+template<typename P2, typename CODER2>
+void Canvas<P, CODER>::drawQuad2(Bitmap<P2, CODER2> &bmp, int left, int top, int w, int h) {
+    bool compatible_bmp_formats = bmp.format()==pixelFormat();
+
     float u = 0.0, v = 0.0;
 
     for (int y = top; y < top + h; y++) {
@@ -426,8 +442,14 @@ void Canvas<P, CODER>::drawQuad2(Bitmap<P, CODER> &bmp, int left, int top, int w
             int u_i = u*bmp.width();
             int index = v_i * bmp.width() + u_i;
 
-            P d = bmp.readAt(index);
-//            P d = bmp.pixelAt(u_i, v_i);
+            P d{};
+
+//            if(compatible_bmp_formats)
+//                d = bmp.pixelAt(u_i, v_i);
+//            else {
+//                color_f_t decoded = bmp.decodeNormalizedPixelAt(index);
+//                d = coder()->encode_from_normalized2(decoded);
+//            }
 
             drawPixel(d, x, y);
         }

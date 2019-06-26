@@ -8,7 +8,7 @@ set (CMAKE_CXX_STANDARD 11)
 #endif()
 
 message(${CMAKE_BUILD_TYPE})
-
+#use this - should warn on inline functions that were not inlined -Winline
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")

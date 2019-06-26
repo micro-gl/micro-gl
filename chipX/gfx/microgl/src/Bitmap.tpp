@@ -3,7 +3,7 @@
 template<typename P, typename CODER>
 Bitmap<P, CODER>::Bitmap(P* $pixels, int w, int h, PixelCoder<P, CODER> * $coder) :
         FrameBuffer<P>($pixels, w * h), _width{w}, _height{h}, _coder{$coder}, _format{$coder->format()} {
-
+    _hi = new RGB888_PACKED_32();
 }
 
 template<typename P, typename CODER>
@@ -35,7 +35,7 @@ int Bitmap<P, CODER>::height() {
 }
 
 template<typename P, typename CODER>
-PixelFormat &Bitmap<P, CODER>::format() {
+PixelFormat Bitmap<P, CODER>::format() {
     return _coder->format();
 }
 

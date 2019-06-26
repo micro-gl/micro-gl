@@ -23,10 +23,15 @@ public:
     color_f_t decodeNormalizedPixelAt(int index);
     int width();
     int height();
-    PixelFormat & format();
+    PixelFormat format();
     PixelCoder<P, CODER> * coder();
 
+    RGB888_PACKED_32 * hi() {
+        return _hi;
+    }
+
 protected:
+    RGB888_PACKED_32 *_hi;
     int _width = 0, _height = 0;
     PixelFormat _format;
     PixelCoder<P, CODER> * _coder;
