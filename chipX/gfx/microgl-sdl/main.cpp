@@ -33,9 +33,12 @@ void init_sdl(int width, int height);
 
 inline void render() {
 
+//    Resources::image_info_t img_1 = resources.loadImageFromCompressedPath("a.png");
     Resources::image_info_t img_1 = resources.loadImageFromCompressedPath("charsprites.png");
 
     Bitmap<vec3<uint8_t>> bmp(img_1.data, img_1.width, img_1.height, new RGB888_ARRAY());
+//    Bitmap<vec4<uint8_t>> bmp(img_1.data, img_1.width, img_1.height, new RGBA8888_ARRAY());
+//    Bitmap<uint32_t > bmp(img_1.data, img_1.width, img_1.height, new RGBA8888_PACKED_32());
 
     canvas->setAntialiasing(true);
 //    canvas->clear(WHITE);
@@ -45,9 +48,10 @@ inline void render() {
     canvas->setBlendMode(BlendMode::Normal);
     canvas->setPorterDuffMode(PorterDuff::SourceOver);
     canvas->drawCircle(GREEN, 320, 240, 240/2);
+
 //    canvas->drawTriangle(BLUE, 0, 300, 300, 300, 0, 0);
 //    canvas->drawTriangle(img_1.data, img_1.width, img_1.height,0, 300,0.0,0.0, 300, 300,1.0,0.0, 0, 0,0.0,1.0);
-    canvas->drawTriangle2(bmp,0, 300,0.0,0.0, 300, 300,1.0,0.0, 0, 0,0.0,1.0);
+//    canvas->drawTriangle2(bmp,0, 300,0.0,0.0, 300, 300,1.0,0.0, 0, 0,0.0,1.0);
     canvas->drawQuad2(bmp, 300, 50, 300, 300);
 }
 

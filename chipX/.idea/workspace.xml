@@ -16,11 +16,9 @@
   <component name="ChangeListManager">
     <list default="true" id="05462924-bf73-4af8-ac02-6c8577e498a4" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/gfx/microgl-sdl/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl-sdl/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/Bitmap.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/Bitmap.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/Fixed.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/Fixed.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/FrameBuffer.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/FrameBuffer.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/PixelCoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/PixelCoder.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/Types.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/Types.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gfx/microgl/src/Bitmap.tpp" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/src/Bitmap.tpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp" afterDir="false" />
     </list>
@@ -42,8 +40,11 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="297">
-              <caret line="38" column="42" selection-start-line="38" selection-start-column="42" selection-end-line="38" selection-end-column="42" />
+            <state relative-caret-position="182">
+              <caret line="35" column="9" selection-start-line="35" selection-start-column="9" selection-end-line="35" selection-end-column="9" />
+              <folding>
+                <element signature="e#1645#1657#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -51,11 +52,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/main.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="426">
-              <caret line="66" lean-forward="true" selection-start-line="66" selection-end-line="66" />
-              <folding>
-                <element signature="e#99#117#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="355">
+              <caret line="40" column="59" lean-forward="true" selection-start-line="40" selection-start-column="59" selection-end-line="40" selection-end-column="59" />
             </state>
           </provider>
         </entry>
@@ -63,70 +61,11 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="315">
-              <caret line="188" selection-start-line="188" selection-end-line="188" />
+            <state relative-caret-position="223">
+              <caret line="106" column="11" selection-start-line="106" selection-start-column="7" selection-end-line="106" selection-end-column="11" />
               <folding>
-                <element signature="e#11129#11141#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/PixelCoder.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1073">
-              <caret line="348" selection-start-line="348" selection-end-line="348" />
-              <folding>
-                <element signature="e#62#80#0" expanded="true" />
-                <element signature="e#115#127#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/PixelFormat.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="618">
-              <caret line="235" selection-start-line="235" selection-end-line="235" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Fixed.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="595">
-              <caret line="36" lean-forward="true" selection-start-line="36" selection-end-line="36" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Bitmap.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="374">
-              <caret line="22" column="17" selection-start-line="22" selection-start-column="17" selection-end-line="22" selection-end-column="17" />
-              <folding>
-                <element signature="e#63#87#0" expanded="true" />
-                <element signature="e#122#134#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gfx/microgl/src/Bitmap.tpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="636">
-              <caret line="71" column="20" selection-start-line="71" selection-start-column="20" selection-end-line="71" selection-end-column="20" />
-              <folding>
-                <element signature="e#744#756#0" expanded="true" />
-                <element signature="e#1169#1181#0" expanded="true" />
-                <element signature="e#1264#1276#0" expanded="true" />
-                <element signature="e#1356#1368#0" expanded="true" />
-                <element signature="e#1465#1477#0" expanded="true" />
+                <element signature="e#9629#9641#0" expanded="true" />
+                <element signature="e#9651#9663#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -135,11 +74,62 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gfx/microgl/src/FrameBuffer.tpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="319">
-              <caret line="25" column="19" selection-start-line="25" selection-start-column="19" selection-end-line="25" selection-end-column="19" />
+            <state relative-caret-position="360">
+              <caret line="46" column="14" selection-start-line="46" selection-start-column="14" selection-end-line="46" selection-end-column="14" />
               <folding>
                 <element signature="e#54#66#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file:///usr/include/string.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="190">
+              <caret line="73" column="9" selection-start-line="73" selection-start-column="9" selection-end-line="73" selection-end-column="9" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gfx/microgl/src/Bitmap.tpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="377">
+              <caret line="73" column="40" selection-start-line="73" selection-start-column="40" selection-end-line="73" selection-end-column="40" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Bitmap.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="468">
+              <caret line="40" selection-start-line="40" selection-end-line="40" />
+              <folding>
+                <element signature="e#63#87#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/PixelCoder.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="124">
+              <caret line="52" column="20" selection-start-line="52" selection-start-column="6" selection-end-line="52" selection-end-column="20" />
+              <folding>
+                <element signature="e#266#278#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Types.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="629">
+              <caret line="37" column="16" selection-start-line="37" selection-start-column="16" selection-end-line="37" selection-end-column="16" />
             </state>
           </provider>
         </entry>
@@ -180,6 +170,11 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$/.." value="new_arch_2" />
+      </map>
+    </option>
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp" root0="FORCE_HIGHLIGHTING" />
@@ -216,7 +211,6 @@
         <option value="$PROJECT_DIR$/gfx/microgl/src/Buffer.tpp" />
         <option value="$PROJECT_DIR$/gfx/microgl/src/FrameBuffer2.tpp" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/FrameBuffer2.h" />
-        <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/Types.h" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/PixelEncoder.h" />
         <option value="$PROJECT_DIR$/gfx/microgl/src/PorterDuff.cpp" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/PorterDuff.h" />
@@ -225,26 +219,24 @@
         <option value="$PROJECT_DIR$/gfx/microgl/src/Functions.cpp" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/Functions.h" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/Buffer.h" />
-        <option value="$PROJECT_DIR$/gfx/microgl/src/FrameBuffer.tpp" />
         <option value="$PROJECT_DIR$/gfx/microgl/src/PixelFormat.cpp" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/PixelFormat.h" />
         <option value="$PROJECT_DIR$/gfx/microgl/src/Bitmap.cpp" />
         <option value="$PROJECT_DIR$/gfx/microgl/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/FrameBuffer.h" />
-        <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h" />
-        <option value="$PROJECT_DIR$/gfx/microgl-sdl/main.cpp" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/Bitmap.h" />
-        <option value="$PROJECT_DIR$/gfx/microgl/src/Bitmap.tpp" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/Fixed.h" />
-        <option value="$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp" />
+        <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h" />
+        <option value="$PROJECT_DIR$/gfx/microgl/src/Bitmap.tpp" />
+        <option value="$PROJECT_DIR$/gfx/microgl/src/FrameBuffer.tpp" />
+        <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/Types.h" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/PixelCoder.h" />
+        <option value="$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp" />
+        <option value="$PROJECT_DIR$/gfx/microgl-sdl/main.cpp" />
       </list>
     </option>
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
-  <component name="OCResolveContextSettings">
-    <option name="configuration" value="0-microgl" />
-  </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="1" />
     <option name="y" value="23" />
@@ -309,13 +301,6 @@
               <item name="gfx" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="microgl-sdl" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="assets" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-            </path>
-            <path>
-              <item name="chipX" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
-              <item name="~/hendrix/Nyquist/chipX" type="442cc68d:ScopeViewTreeModel$RootNode" />
-              <item name="gfx" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="microgl-sdl" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
           </expand>
           <select />
@@ -455,7 +440,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="181773000" />
+    <option name="totallyTimeSpent" value="183691000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -467,10 +452,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1" y="23" width="1645" height="980" extended-state="0" />
+    <frame x="0" y="23" width="1645" height="980" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16843419" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16656269" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -494,18 +479,6 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <condition expression="src.a==0.5f" language="ObjectiveC" />
-          <url>file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp</url>
-          <line>115</line>
-          <option name="timeStamp" value="72" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="breakpointCondition">
@@ -619,9 +592,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/src/GLResources.cpp">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/src/GLResources.cpp" />
     <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/libs/stb_image/stb_image.cpp">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -638,9 +609,6 @@
           <caret line="199" column="27" selection-start-line="199" selection-start-column="27" selection-end-line="199" selection-end-column="27" />
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/assets/a.png">
-      <provider selected="true" editor-type-id="images" />
     </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/assets/hqdefault.png">
       <provider selected="true" editor-type-id="images" />
@@ -682,23 +650,8 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl/src/FrameBuffer2.tpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="260">
-          <caret line="13" selection-start-line="13" selection-end-line="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/FrameBuffer2.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="80">
-          <caret line="11" column="42" selection-start-line="11" selection-start-column="29" selection-end-line="11" selection-end-column="42" />
-          <folding>
-            <element signature="e#97#109#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl/src/FrameBuffer2.tpp" />
+    <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/FrameBuffer2.h" />
     <entry file="file:///usr/local/include/SDL2/SDL_stdinc.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="287">
@@ -713,13 +666,6 @@
           <folding>
             <element signature="e#10396#10611#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/include/string.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="287">
-          <caret line="71" column="12" selection-start-line="71" selection-start-column="12" selection-end-line="71" selection-end-column="12" />
         </state>
       </provider>
     </entry>
@@ -758,13 +704,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="102">
           <caret line="6" selection-start-line="6" selection-end-line="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Types.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="544">
-          <caret line="32" column="12" selection-start-line="32" selection-start-column="12" selection-end-line="32" selection-end-column="12" />
         </state>
       </provider>
     </entry>
@@ -809,12 +748,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/assets/bw2.png">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/assets/bw.png">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
     <entry file="file:///usr/include/sys/errno.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="190">
@@ -845,58 +778,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/FrameBuffer.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="459">
-          <caret line="27" selection-start-line="27" selection-end-line="27" />
+        <state relative-caret-position="500">
+          <caret line="20" selection-start-line="20" selection-end-line="20" />
           <folding>
             <element signature="e#97#109#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl/src/FrameBuffer.tpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="319">
-          <caret line="25" column="19" selection-start-line="25" selection-start-column="19" selection-end-line="25" selection-end-column="19" />
-          <folding>
-            <element signature="e#54#66#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="297">
-          <caret line="38" column="42" selection-start-line="38" selection-start-column="42" selection-end-line="38" selection-end-column="42" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/assets/charsprites.png">
       <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Bitmap.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="22" column="17" selection-start-line="22" selection-start-column="17" selection-end-line="22" selection-end-column="17" />
-          <folding>
-            <element signature="e#63#87#0" expanded="true" />
-            <element signature="e#122#134#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl/src/Bitmap.tpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="636">
-          <caret line="71" column="20" selection-start-line="71" selection-start-column="20" selection-end-line="71" selection-end-column="20" />
-          <folding>
-            <element signature="e#744#756#0" expanded="true" />
-            <element signature="e#1169#1181#0" expanded="true" />
-            <element signature="e#1264#1276#0" expanded="true" />
-            <element signature="e#1356#1368#0" expanded="true" />
-            <element signature="e#1465#1477#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Fixed.h">
       <provider selected="true" editor-type-id="text-editor">
@@ -912,16 +803,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="188" selection-start-line="188" selection-end-line="188" />
-          <folding>
-            <element signature="e#11129#11141#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/PixelFormat.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="618">
@@ -929,24 +810,91 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Bitmap.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="468">
+          <caret line="40" selection-start-line="40" selection-end-line="40" />
+          <folding>
+            <element signature="e#63#87#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl/src/Bitmap.tpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="377">
+          <caret line="73" column="40" selection-start-line="73" selection-start-column="40" selection-end-line="73" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/assets/bw.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/assets/bw2.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="182">
+          <caret line="35" column="9" selection-start-line="35" selection-start-column="9" selection-end-line="35" selection-end-column="9" />
+          <folding>
+            <element signature="e#1645#1657#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/string.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="190">
+          <caret line="73" column="9" selection-start-line="73" selection-start-column="9" selection-end-line="73" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl/src/FrameBuffer.tpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="46" column="14" selection-start-line="46" selection-start-column="14" selection-end-line="46" selection-end-column="14" />
+          <folding>
+            <element signature="e#54#66#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/assets/a.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Types.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="629">
+          <caret line="37" column="16" selection-start-line="37" selection-start-column="16" selection-end-line="37" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/PixelCoder.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1073">
-          <caret line="348" selection-start-line="348" selection-end-line="348" />
+        <state relative-caret-position="124">
+          <caret line="52" column="20" selection-start-line="52" selection-start-column="6" selection-end-line="52" selection-end-column="20" />
           <folding>
-            <element signature="e#62#80#0" expanded="true" />
-            <element signature="e#115#127#0" expanded="true" />
+            <element signature="e#266#278#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="223">
+          <caret line="106" column="11" selection-start-line="106" selection-start-column="7" selection-end-line="106" selection-end-column="11" />
+          <folding>
+            <element signature="e#9629#9641#0" expanded="true" />
+            <element signature="e#9651#9663#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/main.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="426">
-          <caret line="66" lean-forward="true" selection-start-line="66" selection-end-line="66" />
-          <folding>
-            <element signature="e#99#117#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="355">
+          <caret line="40" column="59" lean-forward="true" selection-start-line="40" selection-start-column="59" selection-end-line="40" selection-end-column="59" />
         </state>
       </provider>
     </entry>

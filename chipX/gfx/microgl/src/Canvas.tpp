@@ -97,7 +97,7 @@ P *Canvas<P>::pixels() {
 
 template<typename P>
 void Canvas<P>::clear(const color_f_t &color) {
-    _bitmap->fill(encodeFloatRGB(color, pixelFormat()));
+    _bitmap->fill(this->coder()->encode_from_normalized(color.r,color.g,color.b,color.a));
 }
 
 template<typename P>
@@ -328,7 +328,8 @@ Canvas<P>::drawTriangle2(Bitmap<P> & bmp,
 }
 
 template<typename P>
-void Canvas<P>::drawQuad2(Bitmap<P> &bmp, int left, int top, int w, int h) {
+template <typename Q>
+void Canvas<P>::drawQuad2(Bitmap<Q> &bmp, int left, int top, int w, int h) {
     float u = 0.0, v = 0.0;
 
     for (int y = top; y < top + h; y++) {
@@ -340,10 +341,15 @@ void Canvas<P>::drawQuad2(Bitmap<P> &bmp, int left, int top, int w, int h) {
             int u_i = u*bmp.width();
             int index = v_i * bmp.width() + u_i;
 
-            P d = bmp.readAt(index);
+//            P d = bmp.readAt(index);
+            color_f_t col = bmp.decodeNormalizedPixelAt(index);
+            P d = coder()->encode_from_normalized(col.r,col.g,col.b,col.a);
+
+
 //            P d = bmp.pixelAt(u_i, v_i);
 
-            drawPixel(d, x, y);
+            drawPixel(col, x, y);
+//            drawPixel(d, x, y);
         }
 
     }

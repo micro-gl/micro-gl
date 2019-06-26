@@ -49,6 +49,37 @@ public:
 
 };
 
+// array coders
+class RGBA8888_ARRAY : public PixelCoder<vec4<uint8_t>> {
+public:
+    uint8_t MAX = (2 << 8) - 1;
+
+    inline vec4<uint8_t> encode(uint8_t r, uint8_t g, uint8_t b, uint8_t a) override {
+
+        return vec4<uint8_t>{r,g,b,a};
+    }
+
+    inline color_t decode(const vec4<uint8_t> & input) override {
+
+        return color_t{input.x, input.y, input.z, input.w};
+    };
+
+    inline vec4<uint8_t> encode_from_normalized(float r, float g, float b, float a) override {
+
+        return encode(r*MAX, g*MAX, b*MAX, a*MAX);
+    }
+
+    inline color_f_t decode_to_normalized(const vec4<uint8_t> & input) override {
+
+        return color_f_t{float(input.x)/MAX, float(input.y)/MAX, float(input.z)/MAX, float(input.w)/MAX };
+    };
+
+    inline PixelFormat format() override {
+        return PixelFormat::RGBA8888;
+    }
+
+};
+
 // 32 bit coders
 
 class RGB888_PACKED_32 : public PixelCoder<uint32_t > {
@@ -115,8 +146,12 @@ public:
     inline color_f_t decode_to_normalized(const uint32_t & input) override {
         color_t res = decode(input);
 
-        return {float(res.r)/MAX, float(res.g)/MAX, float(res.b)/MAX, 1.0f};
+        return {float(res.r)/MAX, float(res.g)/MAX, float(res.b)/MAX, float(res.a)/MAX};
     };
+
+    inline PixelFormat format() override {
+        return PixelFormat::RGBA8888;
+    }
 
 };
 

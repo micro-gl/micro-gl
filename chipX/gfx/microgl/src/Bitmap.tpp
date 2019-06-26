@@ -71,7 +71,7 @@ color_f_t Bitmap<P>::decodeNormalizedPixelAt(int x, int y) {
 
 template<typename P>
 color_f_t Bitmap<P>::decodeNormalizedPixelAt(int index) {
-    return _coder->decode(pixelAt(index));
+    return _coder->decode_to_normalized(pixelAt(index));
 }
 
 

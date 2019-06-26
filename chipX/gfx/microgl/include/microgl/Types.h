@@ -33,6 +33,11 @@ struct vec3 {
     T x, y, z;
 };
 
+template<typename T>
+struct vec4 {
+    T x, y, z, w;
+};
+
 typedef vec2<float> vec2_f;
 typedef vec2<uint8_t > vec2_8i;
 typedef vec2<uint16_t > vec2_16i;

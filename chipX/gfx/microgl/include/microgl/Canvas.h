@@ -45,7 +45,9 @@ public:
                        int v0_x, int v0_y, float u0, float v0,
                        int v1_x, int v1_y, float u1, float v1,
                        int v2_x, int v2_y, float u2, float v2);
-    void drawQuad2(Bitmap<P> &bmp, int left, int top, int w, int h);
+
+    template <typename Q>
+    void drawQuad2(Bitmap<Q> &bmp, int left, int top, int w, int h);
 
 //    void drawTriangle(FrameBuffer<T> * bitmap, int x0, int y0, int x1, int y1, int x2, int y2, );
 
