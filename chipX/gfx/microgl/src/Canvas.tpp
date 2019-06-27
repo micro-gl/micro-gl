@@ -87,7 +87,7 @@ void Canvas<P, CODER>::getPixelColor(int x, int y, color_f_t & output) {
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::getPixelColor(int index, color_f_t & output) {
-    this->_bitmap_canvas->coder()->decode_to_normalized(getPixel(index), output);
+    this->_bitmap_canvas->coder()->decode_to_normalized(getPixel(index));
 }
 
 template<typename P, typename CODER>
@@ -184,7 +184,7 @@ inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index) {
 //    int index = (y * width() + x);
     P output{};
 
-    output = coder()->S_encode_from_normalized(result);
+    output = coder()->encode_from_normalized(result);
 
 //    output = hi.encode_from_normalized2(result);
 
@@ -208,9 +208,9 @@ inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index) {
 //output.y =encodeFloatRGB(val.r, val.g + 1, val.b, val.a, PixelFormat::RGBA8888);
 //output.z =encodeFloatRGB(val.r, val.g, val.b, val.a, PixelFormat::RGBA8888);
 
-    _bitmap_canvas->_data[index] = output;
-
-//    drawPixel(output, index);
+//    _bitmap_canvas->_data[index] = output;
+//
+    drawPixel(output, index);
 }
 
 template<typename P, typename CODER>
@@ -227,8 +227,8 @@ inline void Canvas<P, CODER>::drawPixel(const P & val, int index) {
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawQuad(const color_f_t & color, int left, int top, int w, int h) {
-    P output = coder()->S_encode_from_normalized(color);
-    color_f_t col = color;
+//    P output = coder()->S_encode_from_normalized(color);
+//    color_f_t col = color;
 
     int index;
     for (int y = top; y < top + h; ++y) {

@@ -82,27 +82,41 @@ int main() {
 
 }
 
-class A{
-public:
-    template <typename T>
-     T hi(T val) {
-        return val;
+template<typename Derived>
+class Base {
+
+    static inline void hello() {
+        Derived::hello();
     }
 };
 
+class ExampleDerived : public Base<ExampleDerived> {
+
+    static inline void hello() {
+        cout << "hello";
+    }
+};
+
+class ExampleDerived2 : public Base<ExampleDerived2> {
+
+    static inline void hello() {
+        cout << "hello";
+    }
+};
+
+
+
 void init_sdl(int width, int height) {
+    Base<ExampleDerived2> *a = new ExampleDerived2();
+
+
     SDL_Init(SDL_INIT_VIDEO);
-    A aaa;
-    float u = aaa.hi<float>(5);
-
-
 
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, 0);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
 //    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STATIC, width, height);
 //    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
-
 
 //    canvas = new Canvas16Bit(width, height, PixelFormat::RGB565, new RGB565_PACKED_16());
 //    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
