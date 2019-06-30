@@ -17,10 +17,10 @@ public:
 
     P pixelAt(int x, int y);
     P pixelAt(int index);
-    color_t decodePixelAt(int x, int y);
-    color_t decodePixelAt(int index);
-    color_f_t decodeNormalizedPixelAt(int x, int y);
-    color_f_t decodeNormalizedPixelAt(int index);
+    void decodePixelColorAt(int x, int y, color_t &output);
+    void decodePixelColorAt(int index, color_t &output);
+    void decodePixelToNormalizedColorAt(int x, int y, color_f_t &output);
+    void decodePixelToNormalizedColorAt(int index, color_f_t &output);
     int width();
     int height();
     PixelFormat format();

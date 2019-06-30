@@ -55,23 +55,23 @@ P Bitmap<P, CODER>::pixelAt(int index) {
 }
 
 template<typename P, typename CODER>
-color_t Bitmap<P, CODER>::decodePixelAt(int x, int y) {
-    return _coder->decode();
+void Bitmap<P, CODER>::decodePixelColorAt(int x, int y, color_t &output) {
+    _coder->decode(pixelAt(x, y), output);
 }
 
 template<typename P, typename CODER>
-color_t Bitmap<P, CODER>::decodePixelAt(int index) {
-    return color_t();
+void Bitmap<P, CODER>::decodePixelColorAt(int index, color_t &output) {
+    _coder->decode(pixelAt(index), output);
 }
 
 template<typename P, typename CODER>
-color_f_t Bitmap<P, CODER>::decodeNormalizedPixelAt(int x, int y) {
-    return _coder->decode(pixelAt(x, y));
+void Bitmap<P, CODER>::decodePixelToNormalizedColorAt(int x, int y, color_f_t &output) {
+    _coder->decode_to_normalized(pixelAt(x, y), output);
 }
 
 template<typename P, typename CODER>
-color_f_t Bitmap<P, CODER>::decodeNormalizedPixelAt(int index) {
-    return _coder->decode(pixelAt(index));
+void Bitmap<P, CODER>::decodePixelToNormalizedColorAt(int index, color_f_t &output) {
+    _coder->decode_to_normalized(pixelAt(index), output);
 }
 
 

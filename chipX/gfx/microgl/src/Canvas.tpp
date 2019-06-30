@@ -178,33 +178,9 @@ inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index) {
         result = porter_duff_apply(_porter_duff_mode, backdrop, blend_in_place);
     }
 
-//    int index = (y * width() + x);
     P output{};
 
-//    output = coder()->encode_from_normalized(result);
     coder()->encode_from_normalized(result, output);
-
-//    output = hi.encode_from_normalized2(result);
-
-//    output = _bitmap_canvas->hi()->encode_from_normalized2(result);
-//    output = hi.encode_from_normalized2(result);
-//    output = coder()->encode_from_normalized2(result);
-
-//    coder()->encode_from_normalized(result, output);
-//    coder()->encode_from_normalized3(result, &output);
-//
-//    output = hi.handler_encode(result);
-//    output = handler_encode(result);
-//    output = encodeFloatRGB(result, PixelFormat::RGB888);
-
-//    output = encode_RGB888_f(result);
-//    output = (uint8_t (result.r*255.0) << 16) + (uint8_t (result.g*255.0) << 8) + uint8_t (result.b*255.0);
-
-//    color_f_t rr;
-//    coder()->decode_to_normalized(output, rr);
-//output.x =encodeFloatRGB(val.r, val.g, val.b, val.a, PixelFormat::RGBA8888);
-//output.y =encodeFloatRGB(val.r, val.g + 1, val.b, val.a, PixelFormat::RGBA8888);
-//output.z =encodeFloatRGB(val.r, val.g, val.b, val.a, PixelFormat::RGBA8888);
 
 //    _bitmap_canvas->_data[index] = output;
 //
@@ -407,18 +383,13 @@ Canvas<P, CODER>::drawTriangle2(Bitmap<P, CODER> & bmp,
 
 
 template<typename P, typename CODER>
-void Canvas<P, CODER>::drawQuad(const color_f_t & color, int left, int top, int w, int h) {
-//    P output = coder()->S_encode_from_normalized(color);
-//    color_f_t col = color;
-
+void Canvas<P, CODER>::drawQuad(const color_f_t & color,
+                                int left, int top, int w, int h) {
     int index;
     for (int y = top; y < top + h; ++y) {
         index = y * _width;
-//            col.r+=0.01f;
         for (int x = left; x < left + w; ++x) {
             blendColor(color, index + x);
-//_bitmap_canvas->_data[index+x] = coder()->S_encode_from_normalized(col);
-//            blendColor(color, x, y);
         }
 
     }
@@ -428,30 +399,45 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color, int left, int top, int 
 template<typename P, typename CODER>
 template<typename P2, typename CODER2>
 void Canvas<P, CODER>::drawQuad2(Bitmap<P2, CODER2> &bmp, int left, int top, int w, int h) {
-    bool compatible_bmp_formats = bmp.format()==pixelFormat();
+    color_f_t col_bmp;
+    P converted{};
 
-    float u = 0.0, v = 0.0;
+    float bmp_width = bmp.width();
+    float bmp_height = bmp.height();
+    float du = bmp_width/w; // 64/640, 64/480
+    float dv = (1*bmp_height)/h;
+    float u = -du, v = -dv;
+
+    //
+
+    float m =
+
+    // 433 fill rate
 
     for (int y = top; y < top + h; y++) {
-        v = 1.0f-(float(y - top) / (h));
+        v += dv;
         for (int x = left; x < left + w; x++) {
-            u = float(x - left) / (w);
+//            u = float(x - left) / (w);
+            u += du;
 
-            int v_i = v*(bmp.height()-1);
-            int u_i = u*bmp.width();
-            int index = v_i * bmp.width() + u_i;
+//            int v_i = (1.0-v)*(bmp.height()-1);
+//            int u_i = u*bmp.width();
 
-            P d{};
+            int v_i = (v);//*(bmp.height()-1);
+            int u_i = u;
+            int index_bmp = (v_i* bmp_width)  + u_i;
 
-//            if(compatible_bmp_formats)
-//                d = bmp.pixelAt(u_i, v_i);
-//            else {
-//                color_f_t decoded = bmp.decodeNormalizedPixelAt(index);
-//                d = coder()->encode_from_normalized2(decoded);
-//            }
 
-            drawPixel(d, x, y);
+            int index_bmp_2 = (v* bmp_width)  + u_i;
+
+            // decode the bitmap and encode it for the canvas
+            bmp.decodePixelToNormalizedColorAt(index_bmp, col_bmp);
+            coder()->encode_from_normalized(col_bmp, converted);
+
+            drawPixel(converted, x, y);
         }
+
+        u = -du;
 
     }
 

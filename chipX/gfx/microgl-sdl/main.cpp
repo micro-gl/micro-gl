@@ -22,15 +22,15 @@ SDL_Texture * texture;
 
 typedef Bitmap<vec3<uint8_t>, RGB888_ARRAY> Bitmap24bitU8;
 typedef Bitmap<uint32_t, RGB888_PACKED_32> Bitmap32bitPacked;
-typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas32Bit;
+typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
 typedef Canvas<vec3<uint8_t >, RGB888_ARRAY> Canvas24BitU8;
 //typedef Bitmap<uint16_t, CODER> Bitmap16BitPacked;
 //typedef Bitmap<uint8_t, CODER> Bitmap8Bit;
 
 
 //Canvas16Bit * canvas;
-Canvas24BitU8 * canvas;
-//Canvas32Bit * canvas;
+//Canvas24BitU8 * canvas;
+Canvas24Bit_Packed32 * canvas;
 
 Bitmap24bitU8 * bmp_1;
 
@@ -54,6 +54,7 @@ inline void render() {
 //    canvas->clear(WHITE);
 
     for (int ix = 0; ix < 100; ++ix) {
+        /*
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
@@ -64,16 +65,17 @@ inline void render() {
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(GREEN, 0, 0, 640, 480);
+         */
 
 
-//    canvas->drawQuad(YELLOW, 0, 0, 320, 240);
+//    canvas->drawQuad(YELLOW, 0, 0, 640, 480);
 //    canvas->drawGradient(YELLOW, RED, 0, 240, 640, 140);
 //    canvas->setBlendMode(BlendMode::Normal);
 //    canvas->setPorterDuffMode(PorterDuff::SourceOver);
 //    canvas->drawCircle(GREEN, 320, 240, 240/2);
 //    canvas->drawTriangle(BLUE, 0, 300, 300, 300, 0, 0);
 //    canvas->drawTriangle2(*bmp_1,0, 300,0.0,0.0, 300, 300,1.0,0.0, 0, 0,0.0,1.0);
-//    canvas->drawQuad2(*bmp_1, 300, 50, 300, 300);
+    canvas->drawQuad2(*bmp_1, 0, 0, 640, 480);
 
     }
 }
@@ -119,13 +121,13 @@ void init_sdl(int width, int height) {
 
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, 0);
-//    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STATIC, width, height);
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
+//    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STATIC, width, height);
 //    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
 
 //    canvas = new Canvas16Bit(width, height, PixelFormat::RGB565, new RGB565_PACKED_16());
-//    canvas = new Canvas32Bit(width, height, new RGB888_PACKED_32());
-    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
+    canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
+//    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
 
 
     img_1 = resources.loadImageFromCompressedPath("charsprites.png");

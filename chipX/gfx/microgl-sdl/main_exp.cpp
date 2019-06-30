@@ -15,7 +15,7 @@ using namespace std;
 }  ;
 
 //typedef uint32_t RGB[3]  __attribute__((aligned(8)));
-int N = 640*480/2;
+int N = 640*480*1;
 
 uint32_t * buf_1 = new uint32_t[N] ;
 vec * buf_2 = new vec[N];
@@ -26,10 +26,10 @@ void render_1() noexcept {
     for (int jx = 0; jx < 1000; ++jx) {
 
         for (int ix = 0; ix < N; ++ix) {
-//            buf_1[ix] =  5;
-            buf_2[ix].x =  ix;
-            buf_2[ix].y =  ix;
-            buf_2[ix].z =  ix;
+            buf_1[ix] =  5;
+//            buf_2[ix].x =  ix;
+//            buf_2[ix].y =  ix;
+//            buf_2[ix].z =  ix;
         }
 
     }

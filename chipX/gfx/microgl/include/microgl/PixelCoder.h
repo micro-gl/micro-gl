@@ -64,7 +64,7 @@ public:
 
     inline void decode_to_normalized(const vec3<uint8_t> & input, color_f_t & output) {
 
-        output.r=float(input.x)/MAX, output.g=float(input.y)/MAX, output.a=float(input.z)/MAX;
+        output.r=float(input.x)/MAX, output.g=float(input.y)/MAX, output.b=float(input.z)/MAX;
     };
 
     inline PixelFormat format() {
