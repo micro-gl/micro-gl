@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 project(microgl-sdl)
 
 set(CMAKE_CXX_STANDARD 11)
-
+message("using compiler: ${CMAKE_CXX_COMPILER_ID}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
 # I added FindSDL2.cmake module so it can find sdl2 in a platform agnostic manner

@@ -20,20 +20,16 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-typedef Bitmap<vec3<uint8_t>, RGB888_ARRAY> Bitmap24bitU8;
+//typedef Bitmap<vec3<uint8_t>, CODER> Bitmap24bitU8<CODER>;
 typedef Bitmap<uint32_t, RGB888_PACKED_32> Bitmap32bitPacked;
 typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas32Bit;
-typedef Canvas<vec3<uint8_t >, RGB888_ARRAY> Canvas24BitU8;
 //typedef Bitmap<uint16_t, CODER> Bitmap16BitPacked;
 //typedef Bitmap<uint8_t, CODER> Bitmap8Bit;
 
 
 //Canvas16Bit * canvas;
-Canvas24BitU8 * canvas;
-//Canvas32Bit * canvas;
-
-Bitmap24bitU8 * bmp_1;
-
+//Canvas24BitU8 * canvas;
+Canvas32Bit * canvas;
 Resources resources{};
 Resources::image_info_t img_1;
 
@@ -65,6 +61,7 @@ inline void render() {
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(GREEN, 0, 0, 640, 480);
 
+    }
 
 //    canvas->drawQuad(YELLOW, 0, 0, 320, 240);
 //    canvas->drawGradient(YELLOW, RED, 0, 240, 640, 140);
@@ -74,8 +71,6 @@ inline void render() {
 //    canvas->drawTriangle(BLUE, 0, 300, 300, 300, 0, 0);
 //    canvas->drawTriangle2(*bmp_1,0, 300,0.0,0.0, 300, 300,1.0,0.0, 0, 0,0.0,1.0);
 //    canvas->drawQuad2(*bmp_1, 300, 50, 300, 300);
-
-    }
 }
 
 
@@ -119,21 +114,28 @@ void init_sdl(int width, int height) {
 
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, 0);
-//    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STATIC, width, height);
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
+//    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STATIC, width, height);
 //    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
 
 //    canvas = new Canvas16Bit(width, height, PixelFormat::RGB565, new RGB565_PACKED_16());
-//    canvas = new Canvas32Bit(width, height, new RGB888_PACKED_32());
-    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
+//    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
 
+//    canvas = new Canvas32Bit(width, height, new RGB888_PACKED_32());
+    canvas = new Canvas32Bit(width, height, new RGB888_PACKED_32());
 
     img_1 = resources.loadImageFromCompressedPath("charsprites.png");
 
 
-//    auto * bmp_1 = new Bitmap<uint32_t , RGB888_PACKED_32>(img_1.data, img_1.width, img_1.height, new RGB888_PACKED_32());
-    bmp_1 = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_1.data, img_1.width, img_1.height, new RGB888_ARRAY());
+    auto * bmp_1 = new Bitmap<uint32_t , RGB888_PACKED_32>(img_1.data, img_1.width, img_1.height, new RGB888_PACKED_32());
+    auto * bmp_2 = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_1.data, img_1.width, img_1.height, new RGB888_ARRAY());
 
+    canvas->drawQuad2(*bmp_1,0,0,0,0);
+    canvas->drawQuad2(*bmp_2,0,0,0,0);
+
+    // 24 bit with given bitmap canvas
+//    auto * bmp = new Bitmap24bitU8(width, height, new RGB888_ARRAY());
+//    canvas = new Canvas24BitU8(bmp);
 
     resources.init();
 }

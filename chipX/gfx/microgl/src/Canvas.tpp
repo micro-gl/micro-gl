@@ -8,9 +8,6 @@ Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
                             (pixelFormat()==PixelFormat::RGBA4444) ||
                             (pixelFormat()==PixelFormat::RGBA5551);
 
-    handler_encode = [] (const color_f_t & input) -> uint32_t {
-        return (uint8_t (input.r*255) << 16) + (uint8_t (input.g*255) << 8) + uint8_t (input.b*255);
-    };
 }
 
 template<typename P, typename CODER>
@@ -87,7 +84,7 @@ void Canvas<P, CODER>::getPixelColor(int x, int y, color_f_t & output) {
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::getPixelColor(int index, color_f_t & output) {
-    this->_bitmap_canvas->coder()->decode_to_normalized(getPixel(index));
+    this->_bitmap_canvas->coder()->decode_to_normalized(getPixel(index), output);
 }
 
 template<typename P, typename CODER>
@@ -184,7 +181,8 @@ inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index) {
 //    int index = (y * width() + x);
     P output{};
 
-    output = coder()->encode_from_normalized(result);
+//    output = coder()->encode_from_normalized(result);
+    coder()->encode_from_normalized(result, output);
 
 //    output = hi.encode_from_normalized2(result);
 
@@ -224,25 +222,6 @@ inline void Canvas<P, CODER>::drawPixel(const P & val, int index) {
     _bitmap_canvas->writeAt(val, index);
 }
 
-
-template<typename P, typename CODER>
-void Canvas<P, CODER>::drawQuad(const color_f_t & color, int left, int top, int w, int h) {
-//    P output = coder()->S_encode_from_normalized(color);
-//    color_f_t col = color;
-
-    int index;
-    for (int y = top; y < top + h; ++y) {
-        index = y * _width;
-//            col.r+=0.01f;
-        for (int x = left; x < left + w; ++x) {
-            blendColor(color, index + x);
-//_bitmap_canvas->_data[index+x] = coder()->S_encode_from_normalized(col);
-//            blendColor(color, x, y);
-        }
-
-    }
-
-}
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawCircle(const color_f_t & color,
@@ -420,6 +399,26 @@ Canvas<P, CODER>::drawTriangle2(Bitmap<P, CODER> & bmp,
 
             }
 
+        }
+
+    }
+
+}
+
+
+template<typename P, typename CODER>
+void Canvas<P, CODER>::drawQuad(const color_f_t & color, int left, int top, int w, int h) {
+//    P output = coder()->S_encode_from_normalized(color);
+//    color_f_t col = color;
+
+    int index;
+    for (int y = top; y < top + h; ++y) {
+        index = y * _width;
+//            col.r+=0.01f;
+        for (int x = left; x < left + w; ++x) {
+            blendColor(color, index + x);
+//_bitmap_canvas->_data[index+x] = coder()->S_encode_from_normalized(col);
+//            blendColor(color, x, y);
         }
 
     }

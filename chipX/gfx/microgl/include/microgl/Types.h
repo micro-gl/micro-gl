@@ -31,6 +31,14 @@ struct vec2 {
 template<typename T>
 struct vec3 {
     T x, y, z;
+
+    vec3 &operator=(const vec3 & a) {
+        x=a.x;
+        y=a.y;
+        z=a.z;
+
+        return *this;
+    }
 };
 
 typedef vec2<float> vec2_f;

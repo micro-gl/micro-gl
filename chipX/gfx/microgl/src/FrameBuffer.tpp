@@ -30,6 +30,9 @@ T &FrameBuffer<T>::readAt(int index) {
 template<typename T>
 void FrameBuffer<T>::writeAt(const T &value, int index) {
     _data[index] = value;
+//    _data[index].x = value.x;
+//    _data[index].y = value.y;
+//    _data[index].z = value.z;
 }
 
 template<typename T>

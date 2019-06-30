@@ -30,3 +30,7 @@ class ExampleDerived : Base<ExampleDerived> {
 }
 
 https://www.desmos.com/calculator/afoxmvnpk0
+
+#### structure alignment
+- every type's relative memory address should be a multiple of the number of it's bytes, that's what alignment means !!!
+- https://software.intel.com/en-us/articles/coding-for-performance-data-alignment-and-structures

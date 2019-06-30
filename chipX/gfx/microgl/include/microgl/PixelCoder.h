@@ -22,20 +22,20 @@ template<typename P, typename IMPL>
 class PixelCoder : public CRPT<IMPL> {
 public:
 
-    P encode(const color_t & input) {
-        return this->derived().encode(input);
+    void encode(const color_t & input, P & output) {
+        return this->derived().encode(input, output);
     }
 
-    P encode_from_normalized(const color_f_t & input) {
-        return this->derived().encode_from_normalized(input);
+    void encode_from_normalized(const color_f_t & input, P & output) {
+        return this->derived().encode_from_normalized(input, output);
     }
 
-    color_t decode(const P & input) {
-        return this->derived().decode(input);
+    void decode(const P & input, color_t & output) {
+        return this->derived().decode(input, output);
     }
 
-    color_f_t decode_to_normalized(const P & input) {
-        return this->derived().decode_to_normalized(input);
+    void decode_to_normalized(const P & input, color_f_t & output) {
+        return this->derived().decode_to_normalized(input, output);
     }
 
     inline PixelFormat format() {
@@ -49,22 +49,22 @@ class RGB888_ARRAY : public PixelCoder<vec3<uint8_t>, RGB888_ARRAY> {
 public:
     uint8_t MAX = (2 << 8) - 1;
 
-    inline vec3<uint8_t> encode(const color_t & input) {
-        return {input.r, input.g, input.b};
+    inline void encode(const color_t & input, vec3<uint8_t> & output) {
+        output.x=input.r, output.y=input.g, output.z=input.b;
     }
 
-    inline color_t decode(const vec3<uint8_t> & input) {
-        return {input.x, input.y, input.z, 255};
+    inline void decode(const vec3<uint8_t> & input, color_t & output) {
+        output.r=input.x, output.g=input.y, output.b=input.z, output.a=255;
     };
 
-    inline vec3<uint8_t> encode_from_normalized(const color_f_t & input) {
+    inline void encode_from_normalized(const color_f_t & input, vec3<uint8_t> & output) {
 
-        return {uint8_t(input.r*MAX), uint8_t(input.g*MAX), uint8_t(input.b*MAX)};
+        output.x=uint8_t(input.r*MAX), output.y=uint8_t(input.g*MAX), output.z=uint8_t(input.b*MAX);
     }
 
-    inline color_f_t decode_to_normalized(const vec3<uint8_t> & input) {
+    inline void decode_to_normalized(const vec3<uint8_t> & input, color_f_t & output) {
 
-        return {float(input.x)/MAX, float(input.y)/MAX, float(input.z)/MAX};
+        output.r=float(input.x)/MAX, output.g=float(input.y)/MAX, output.a=float(input.z)/MAX;
     };
 
     inline PixelFormat format() {
@@ -80,33 +80,27 @@ class RGB888_PACKED_32 : public PixelCoder<uint32_t, RGB888_PACKED_32> {
 public:
     uint8_t MAX = (2 << 8) - 1;
 
-    inline uint32_t encode(const color_t & input) {
+    inline void encode(const color_t & input, uint32_t & output) {
 
-        return (input.r << 16) + (input.g << 8) + input.b;
+        output = (input.r << 16) + (input.g << 8) + input.b;
     }
 
-    inline color_t decode(const uint32_t & input) {
-        color_t res;
-        res.r = (input & 0xFF0000) >> 16;
-        res.g = (input & 0x00FF00) >> 8;
-        res.b = (input & 0x0000FF);
-        res.a = 255;
-
-        return res;
+    inline void decode(const uint32_t & input, color_t & output) {
+        output.r = (input & 0xFF0000) >> 16;
+        output.g = (input & 0x00FF00) >> 8;
+        output.b = (input & 0x0000FF);
+        output.a = 255;
     };
 
-    inline uint32_t encode_from_normalized(const color_f_t & input) {
-        return (uint8_t (input.r*MAX) << 16) + (uint8_t (input.g*MAX) << 8) + uint8_t (input.b*MAX);
+    inline void encode_from_normalized(const color_f_t & input, uint32_t & output) {
+        output = (uint8_t (input.r*MAX) << 16) + (uint8_t (input.g*MAX) << 8) + uint8_t (input.b*MAX);
     }
 
-    inline color_f_t decode_to_normalized(const uint32_t & input) {
-        color_t res;
-        res.r = (input & 0xFF0000) >> 16;
-        res.g = (input & 0x00FF00) >> 8;
-        res.b = (input & 0x0000FF);
-        res.a = 255;
-
-        return {float(res.r)/MAX, float(res.g)/MAX, float(res.b)/MAX, 1.0f};
+    inline void decode_to_normalized(const uint32_t & input, color_f_t & output) {
+        output.r = (input & 0xFF0000) >> 16;
+        output.g = (input & 0x00FF00) >> 8;
+        output.b = (input & 0x0000FF);
+        output.a = 255;
     };
 
     inline PixelFormat format() {
