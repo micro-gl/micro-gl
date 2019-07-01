@@ -398,6 +398,8 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
 #include "../include/microgl/Fixed.h"
 typedef int fixed;
 
+///*
+
 template<typename P, typename CODER>
 template<typename P2, typename CODER2>
 void Canvas<P, CODER>::drawQuad2(Bitmap<P2, CODER2> &bmp,
@@ -408,47 +410,61 @@ void Canvas<P, CODER>::drawQuad2(Bitmap<P2, CODER2> &bmp,
 
     int bmp_width = (bmp.width());
     int bmp_height = (bmp.height());
+
     fixed du = fixed_div_int(int_to_fixed(bmp_width), right-left);
     fixed dv = fixed_div_int(int_to_fixed(bmp_height), bottom - top);
-
     fixed u = -du, v = -dv;
-    int u_i, v_i;
+
+    int u_i=0, v_i=0, v_f_i=0,v_f_i_last=0;
     int index_bmp, index;
 
     index = top * _width;
 
     for (int y = top; y < bottom; y++) {
         v += dv;
-        v_i = fixed_to_int(v)*(bmp_width);
+        // v_i with multiplication
+//        v_i = fixed_to_int(v)*(bmp_width);
+
+        /// v_i without multiplication
+        v_f_i = fixed_to_int(v);
+
+        // things have changed
+        if(v_f_i>v_f_i_last) {
+            v_i += bmp_width;
+        }
+
+        v_f_i_last = v_f_i;
+        ///
+
 
         for (int x = left; x < right; x++) {
             u += du;
             u_i = fixed_to_int(u);
-            index_bmp = (v_i)  + u_i;
+            index_bmp = (v_i) + u_i;
 
 
             // decode the bitmap
-            bmp.decode(index_bmp, col_bmp);
+//            bmp.decode(index_bmp, col_bmp);
             // re-encode for a different canvas
-            blendColor(col_bmp, index + x);
+//            blendColor(col_bmp, index + x);
 
             //
             // TODO:: optimization note,
             // if we copy from same bitmap formats without blending/compositing, than it is
             // 10% of the running with composting etc... so use it for optimization.
-            // converted= bmp.pixelAt(index_bmp);
-            // drawPixel(converted, index + x);
+             converted= bmp.pixelAt(index_bmp);
+             drawPixel(converted, index + x);
 
 
         }
-
         u = -du;
         index += _width;
+
 
     }
 
 }
-
+//*/
 
 //template<typename P, typename CODER>
 //template<typename P2, typename CODER2>
@@ -458,11 +474,11 @@ void Canvas<P, CODER>::drawQuad2(Bitmap<P2, CODER2> &bmp,
 //    color_f_t col_bmp{};
 //    P converted{};
 //
-//    float bmp_width = bmp.width();
-//    float bmp_height = bmp.height();
-//    float du = (bmp_width)/(right-left);
-//    float dv = (bmp_height)/(bottom - top);
-//    float u = -du, v = -dv;
+//    int bmp_width = bmp.width();
+//    int bmp_height = bmp.height();
+//    int du = (bmp_width)/(right-left);
+//    int dv = (bmp_height)/(bottom - top);
+//    int u = -du, v = -dv;
 //    int u_i, v_i;
 //    int index_bmp, index;
 //
@@ -478,8 +494,11 @@ void Canvas<P, CODER>::drawQuad2(Bitmap<P2, CODER2> &bmp,
 //            index_bmp = (v_i)  + u_i;
 //
 //            // decode the bitmap and encode it for the canvas
-//            bmp.decodePixelToNormalizedColorAt(index_bmp, col_bmp);
-//            coder()->encode_from_normalized(col_bmp, converted);
+////            bmp.decodePixelToNormalizedColorAt(index_bmp, col_bmp);
+////            coder()->encode_from_normalized(col_bmp, converted);
+//
+//            converted= bmp.pixelAt(index_bmp);
+//
 //            drawPixel(converted, index + x);
 //        }
 //
@@ -490,6 +509,6 @@ void Canvas<P, CODER>::drawQuad2(Bitmap<P2, CODER2> &bmp,
 //
 //}
 //
-//
+
 
 #pragma clang diagnostic pop
