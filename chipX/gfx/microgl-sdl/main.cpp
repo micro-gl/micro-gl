@@ -21,11 +21,10 @@ SDL_Renderer * renderer;
 SDL_Texture * texture;
 
 typedef Bitmap<vec3<uint8_t>, RGB888_ARRAY> Bitmap24bitU8;
-typedef Bitmap<uint32_t, RGB888_PACKED_32> Bitmap32bitPacked;
+typedef Bitmap<uint32_t, RGB888_PACKED_32> Bitmap24bit_Packed32;
+
 typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
 typedef Canvas<vec3<uint8_t >, RGB888_ARRAY> Canvas24BitU8;
-//typedef Bitmap<uint16_t, CODER> Bitmap16BitPacked;
-//typedef Bitmap<uint8_t, CODER> Bitmap8Bit;
 
 
 //Canvas16Bit * canvas;
@@ -33,6 +32,7 @@ typedef Canvas<vec3<uint8_t >, RGB888_ARRAY> Canvas24BitU8;
 Canvas24Bit_Packed32 * canvas;
 
 Bitmap24bitU8 * bmp_1;
+Bitmap24bit_Packed32 * bmp_2;
 
 Resources resources{};
 Resources::image_info_t img_1;
@@ -75,7 +75,8 @@ inline void render() {
 //    canvas->drawCircle(GREEN, 320, 240, 240/2);
 //    canvas->drawTriangle(BLUE, 0, 300, 300, 300, 0, 0);
 //    canvas->drawTriangle2(*bmp_1,0, 300,0.0,0.0, 300, 300,1.0,0.0, 0, 0,0.0,1.0);
-        canvas->drawQuad2(*bmp_1, 0, 0, 640, 480);
+//        canvas->drawQuad2(*bmp_1, 0, 0, 640, 480);
+        canvas->drawQuad2(*bmp_2, 0, 0, 640, 480);
 
     }
 }
@@ -104,7 +105,7 @@ void init_sdl(int width, int height) {
 
 //    auto * bmp_1 = new Bitmap<uint32_t , RGB888_PACKED_32>(img_1.data, img_1.width, img_1.height, new RGB888_PACKED_32());
     bmp_1 = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_1.data, img_1.width, img_1.height, new RGB888_ARRAY());
-
+    bmp_2 = bmp_1->convertToBitmap<uint32_t , RGB888_PACKED_32>();
 
     resources.init();
 }

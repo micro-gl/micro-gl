@@ -26,16 +26,16 @@ public:
         return this->derived().encode(input, output);
     }
 
-    void encode_from_normalized(const color_f_t & input, P & output) {
-        return this->derived().encode_from_normalized(input, output);
+    void encode(const color_f_t & input, P & output) {
+        return this->derived().encode(input, output);
     }
 
     void decode(const P & input, color_t & output) {
         return this->derived().decode(input, output);
     }
 
-    void decode_to_normalized(const P & input, color_f_t & output) {
-        return this->derived().decode_to_normalized(input, output);
+    void decode(const P & input, color_f_t & output) {
+        return this->derived().decode(input, output);
     }
 
     inline PixelFormat format() {
@@ -57,12 +57,12 @@ public:
         output.r=input.x, output.g=input.y, output.b=input.z, output.a=255;
     };
 
-    inline void encode_from_normalized(const color_f_t & input, vec3<uint8_t> & output) {
+    inline void encode(const color_f_t & input, vec3<uint8_t> & output) {
 
         output.x=uint8_t(input.r*MAX), output.y=uint8_t(input.g*MAX), output.z=uint8_t(input.b*MAX);
     }
 
-    inline void decode_to_normalized(const vec3<uint8_t> & input, color_f_t & output) {
+    inline void decode(const vec3<uint8_t> & input, color_f_t & output) {
 
         output.r=float(input.x)/MAX, output.g=float(input.y)/MAX, output.b=float(input.z)/MAX;
     };
@@ -92,15 +92,15 @@ public:
         output.a = 255;
     };
 
-    inline void encode_from_normalized(const color_f_t & input, uint32_t & output) {
+    inline void encode(const color_f_t & input, uint32_t & output) {
         output = (uint8_t (input.r*MAX) << 16) + (uint8_t (input.g*MAX) << 8) + uint8_t (input.b*MAX);
     }
 
-    inline void decode_to_normalized(const uint32_t & input, color_f_t & output) {
-        output.r = (input & 0xFF0000) >> 16;
-        output.g = (input & 0x00FF00) >> 8;
-        output.b = (input & 0x0000FF);
-        output.a = 255;
+    inline void decode(const uint32_t & input, color_f_t & output) {
+        output.r = ((input & 0xFF0000) >> 16)/float(MAX);
+        output.g = ((input & 0x00FF00) >> 8)/float(MAX);
+        output.b = (input & 0x0000FF)/float(MAX);
+        output.a = 1.0f;
     };
 
 //    inline void decode_to_normalized(const uint32_t & input, color_f_t & output) {

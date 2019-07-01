@@ -14,20 +14,6 @@
 - https://eli.thegreenplace.net/2011/05/17/the-curiously-recurring-template-pattern-in-c
 
 
-template<typename Derived>
-class Base {
-
-    static inline void hello() {
-        Derived::hello();
-    }
-}
-
-class ExampleDerived : Base<ExampleDerived> {
-
-    static inline void hello() {
-        cout << "hello";
-    }
-}
 
 https://www.desmos.com/calculator/afoxmvnpk0
 
@@ -37,4 +23,13 @@ https://www.desmos.com/calculator/afoxmvnpk0
 
 
 #### performance
-- storing and accessing 32bit is faster than 8 bit values
+```
+storing and accessing 32bit pixels is faster than 8 bit values, much faster.
+```
+
+```
+if we copy from same bitmap formats without blending/compositing, than it is
+10% of the running with composting etc... so use it for optimization.
+
+I witnessed 220 vs 25 fill rate
+```

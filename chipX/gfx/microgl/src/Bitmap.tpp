@@ -1,9 +1,36 @@
 #include "../include/microgl/Bitmap.h"
 
 template<typename P, typename CODER>
+template<typename P2, typename CODER2>
+Bitmap<P2, CODER2> * Bitmap<P, CODER>::convertToBitmap() {
+    auto * bmp_2 = new Bitmap<P2, CODER2>(_width, _height, new CODER2());
+
+    copyToBitmap(*bmp_2);
+
+    return bmp_2;
+}
+
+template<typename P, typename CODER>
+template<typename P2, typename CODER2>
+void Bitmap<P, CODER>::copyToBitmap(Bitmap<P2, CODER2> & bmp) {
+
+    bool size_is_same = bmp.size()==this->size();
+    if(!size_is_same)
+        throw std::invalid_argument("sizes are not the same !!!");
+
+    int size = this->size();
+    color_f_t color_bmp_1{};
+
+    for (int index = 0; index < size; ++index) {
+        this->decode(index, color_bmp_1);
+        bmp.writeColor(index, color_bmp_1);
+    }
+
+}
+
+template<typename P, typename CODER>
 Bitmap<P, CODER>::Bitmap(P* $pixels, int w, int h, PixelCoder<P, CODER> * $coder) :
         FrameBuffer<P>($pixels, w * h), _width{w}, _height{h}, _coder{$coder}, _format{$coder->format()} {
-    _hi = new RGB888_PACKED_32();
 }
 
 template<typename P, typename CODER>
@@ -55,23 +82,50 @@ P Bitmap<P, CODER>::pixelAt(int index) {
 }
 
 template<typename P, typename CODER>
-void Bitmap<P, CODER>::decodePixelColorAt(int x, int y, color_t &output) {
+void Bitmap<P, CODER>::decode(int x, int y, color_t &output) {
     _coder->decode(pixelAt(x, y), output);
 }
 
 template<typename P, typename CODER>
-void Bitmap<P, CODER>::decodePixelColorAt(int index, color_t &output) {
+void Bitmap<P, CODER>::decode(int index, color_t &output) {
     _coder->decode(pixelAt(index), output);
 }
 
 template<typename P, typename CODER>
-void Bitmap<P, CODER>::decodePixelToNormalizedColorAt(int x, int y, color_f_t &output) {
-    _coder->decode_to_normalized(pixelAt(x, y), output);
+void Bitmap<P, CODER>::decode(int x, int y, color_f_t &output) {
+    _coder->decode(pixelAt(x, y), output);
 }
 
 template<typename P, typename CODER>
-void Bitmap<P, CODER>::decodePixelToNormalizedColorAt(int index, color_f_t &output) {
-    _coder->decode_to_normalized(pixelAt(index), output);
+void Bitmap<P, CODER>::decode(int index, color_f_t &output) {
+    _coder->decode(pixelAt(index), output);
 }
 
+template<typename P, typename CODER>
+void Bitmap<P, CODER>::writeColor(int index, const color_t &color) {
+    P output;
+    _coder->encode(color, output);
+    this->_data[index] = output;
+}
+
+template<typename P, typename CODER>
+void Bitmap<P, CODER>::writeColor(int x, int y, const color_t &color) {
+    P output;
+    _coder->encode(color, output);
+    this->_data[index] = output;
+}
+
+template<typename P, typename CODER>
+void Bitmap<P, CODER>::writeColor(int index, const color_f_t &color) {
+    P output;
+    _coder->encode(color, output);
+    this->_data[index] = output;
+}
+
+template<typename P, typename CODER>
+void Bitmap<P, CODER>::writeColor(int x, int y, const color_f_t &color) {
+    P output;
+    _coder->encode(color, output);
+    this->_data[index] = output;
+}
 

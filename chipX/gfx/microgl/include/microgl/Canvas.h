@@ -23,8 +23,8 @@ public:
     P* pixels();
     P &getPixel(int x, int y);
     P &getPixel(int index);
-    color_f_t getPixelColor(int index);
-    color_f_t getPixelColor(int x, int y);
+    void getPixelColor(int index, color_t & output);
+    void getPixelColor(int x, int y, color_t & output);
     void getPixelColor(int x, int y, color_f_t & output);
     void getPixelColor(int index, color_f_t & output);
 

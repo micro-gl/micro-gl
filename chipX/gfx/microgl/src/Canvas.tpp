@@ -66,27 +66,23 @@ void Canvas<P, CODER>::setAntialiasing(bool value) {
 }
 
 template<typename P, typename CODER>
-color_f_t Canvas<P, CODER>::getPixelColor(int x, int y) {
-    color_f_t output;
-    this->_bitmap_canvas->coder()->decode_to_normalized(getPixel(x, y), output);
-    return output;
+void Canvas<P, CODER>::getPixelColor(int x, int y, color_t & output) {
+    this->_bitmap_canvas->decode(x, y, output);
 }
 
 template<typename P, typename CODER>
-color_f_t Canvas<P, CODER>::getPixelColor(int index) {
-    color_f_t output;
-    this->_bitmap_canvas->coder()->decode_to_normalized(getPixel(index), output);
-    return output;
+void Canvas<P, CODER>::getPixelColor(int index, color_t & output) {
+    this->_bitmap_canvas->decode(index, output);
 }
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::getPixelColor(int x, int y, color_f_t & output) {
-    this->_bitmap_canvas->coder()->decode_to_normalized(getPixel(x, y), output);
+    this->_bitmap_canvas->decode(x, y, output);
 }
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::getPixelColor(int index, color_f_t & output) {
-    this->_bitmap_canvas->coder()->decode_to_normalized(getPixel(index), output);
+    this->_bitmap_canvas->decode(index, output);
 }
 
 template<typename P, typename CODER>
@@ -129,7 +125,7 @@ void Canvas<P, CODER>::clear(const color_f_t &color) {
 //    _bitmap_canvas->fill(encodeFloatRGB(color, pixelFormat()));
 
     P output;
-    _bitmap_canvas->coder()->encode_from_normalized(color, output);
+    _bitmap_canvas->coder()->encode(color, output);
     _bitmap_canvas->fill(output);
 }
 
@@ -155,7 +151,7 @@ inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y) {
 //    int index = (y * width() + x);
     P output;
 //    coder()->encode_from_normalized(result, output);
-    output = coder()->encode_from_normalized2(result);
+    output = coder()->encode(result);
 
     drawPixel(output, x, y);
 }
@@ -182,7 +178,7 @@ inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index) {
 
     P output{};
 
-    coder()->encode_from_normalized(result, output);
+    coder()->encode(result, output);
 
 //    _bitmap_canvas->_data[index] = output;
 //
@@ -430,10 +426,20 @@ void Canvas<P, CODER>::drawQuad2(Bitmap<P2, CODER2> &bmp,
             u_i = fixed_to_int(u);
             index_bmp = (v_i)  + u_i;
 
-            // decode the bitmap and encode it for the canvas
-            bmp.decodePixelToNormalizedColorAt(index_bmp, col_bmp);
-            coder()->encode_from_normalized(col_bmp, converted);
-            drawPixel(converted, index + x);
+
+            // decode the bitmap
+            bmp.decode(index_bmp, col_bmp);
+            // re-encode for a different canvas
+            blendColor(col_bmp, index + x);
+
+            //
+            // TODO:: optimization note,
+            // if we copy from same bitmap formats without blending/compositing, than it is
+            // 10% of the running with composting etc... so use it for optimization.
+            // converted= bmp.pixelAt(index_bmp);
+            // drawPixel(converted, index + x);
+
+
         }
 
         u = -du;
