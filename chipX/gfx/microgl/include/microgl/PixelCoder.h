@@ -103,6 +103,13 @@ public:
         output.a = 255;
     };
 
+//    inline void decode_to_normalized(const uint32_t & input, color_f_t & output) {
+//        output.r = (input & 0xFF0000) >> 16;
+//        output.g = (input & 0x00FF00) >> 8;
+//        output.b = (input & 0x0000FF);
+//        output.a = 255;
+//    };
+//
     inline PixelFormat format() {
         return PixelFormat::RGB888;
     }

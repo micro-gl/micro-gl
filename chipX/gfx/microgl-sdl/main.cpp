@@ -75,48 +75,17 @@ inline void render() {
 //    canvas->drawCircle(GREEN, 320, 240, 240/2);
 //    canvas->drawTriangle(BLUE, 0, 300, 300, 300, 0, 0);
 //    canvas->drawTriangle2(*bmp_1,0, 300,0.0,0.0, 300, 300,1.0,0.0, 0, 0,0.0,1.0);
-    canvas->drawQuad2(*bmp_1, 0, 0, 640, 480);
+        canvas->drawQuad2(*bmp_1, 0, 0, 640, 480);
 
     }
 }
-
-
 
 int main() {
     init_sdl(640, 480);
     loop();
-
-
 }
 
-template<typename Derived>
-class Base {
-
-    static inline void hello() {
-        Derived::hello();
-    }
-};
-
-class ExampleDerived : public Base<ExampleDerived> {
-
-    static inline void hello() {
-        cout << "hello";
-    }
-};
-
-class ExampleDerived2 : public Base<ExampleDerived2> {
-
-    static inline void hello() {
-        cout << "hello";
-    }
-};
-
-
-
 void init_sdl(int width, int height) {
-    Base<ExampleDerived2> *a = new ExampleDerived2();
-
-
     SDL_Init(SDL_INIT_VIDEO);
 
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);

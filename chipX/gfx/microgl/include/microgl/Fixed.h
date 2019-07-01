@@ -7,7 +7,7 @@
 /* DEFINE THE MACROS */
 /* The basic operations perfomed on two numbers a and b of fixed
 point q format returning the answer in q format */
-#define Q 16
+#define Q 16 // number of bits for fractional part
 
 #define float_to_fixed_2(a, q) ((int)( (a)*(float)(1<<(q)) ))
 #define fixed_to_float_2(a, q) ( (float)(a) / (float)(1<<(q)) )

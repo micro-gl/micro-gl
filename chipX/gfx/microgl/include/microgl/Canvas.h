@@ -44,7 +44,7 @@ public:
     void blendColor(const color_f_t &val, int index);
     void drawPixel(const P &val, int x, int y);
     void drawPixel(const P &val, int index);
-    void drawQuad(const color_f_t &color, int left, int top, int w, int h);
+    void drawQuad(const color_f_t &color, const int left, const int top, const int right, const int bottom);
     void drawGradient(const color_f_t &startColor, const color_f_t &endColor, int left, int top, int w, int h);
     void drawCircle(const color_f_t & color, int centerX, int centerY, int radius);
     void drawTriangle(const color_f_t & color, int x0, int y0, int x1, int y1, int x2, int y2);
@@ -54,7 +54,7 @@ public:
                        int v2_x, int v2_y, float u2, float v2);
 
     template <typename P2, typename CODER2>
-    void drawQuad2(Bitmap<P2, CODER2> &bmp, int left, int top, int w, int h);
+    void drawQuad2(Bitmap<P2, CODER2> &bmp, const int left, const int top, const int right, const int bottom);
 
 //    void drawTriangle(FrameBuffer<T> * bitmap, int x0, int y0, int x1, int y1, int x2, int y2, );
 

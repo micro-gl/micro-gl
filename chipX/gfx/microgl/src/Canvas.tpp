@@ -1,5 +1,7 @@
 #include "../include/microgl/Canvas.h"
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
                         : _bitmap_canvas($bmp), _width{$bmp->width()}, _height{$bmp->height()} {
@@ -384,116 +386,104 @@ Canvas<P, CODER>::drawTriangle2(Bitmap<P, CODER> & bmp,
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawQuad(const color_f_t & color,
-                                int left, int top, int w, int h) {
-    int index;
-    for (int y = top; y < top + h; ++y) {
-        index = y * _width;
-        for (int x = left; x < left + w; ++x) {
+                                const int left, const int top,
+                                const int right, const int bottom) {
+    int index = top * _width;
+    for (int y = top; y < bottom; ++y) {
+        for (int x = left; x < right; ++x) {
             blendColor(color, index + x);
         }
 
+        index += _width;
     }
 
 }
 
+#include "../include/microgl/Fixed.h"
+typedef int fixed;
+
 template<typename P, typename CODER>
 template<typename P2, typename CODER2>
-void Canvas<P, CODER>::drawQuad2(Bitmap<P2, CODER2> &bmp, int left, int top, int w, int h) {
-    color_f_t col_bmp;
+void Canvas<P, CODER>::drawQuad2(Bitmap<P2, CODER2> &bmp,
+                                 const int left, const int top,
+                                 const int right, const int bottom) {
+    color_f_t col_bmp{};
     P converted{};
 
-    float bmp_width = bmp.width();
-    float bmp_height = bmp.height();
-    float du = bmp_width/w; // 64/640, 64/480
-    float dv = (1*bmp_height)/h;
-    float u = -du, v = -dv;
+    int bmp_width = (bmp.width());
+    int bmp_height = (bmp.height());
+    fixed du = fixed_div_int(int_to_fixed(bmp_width), right-left);
+    fixed dv = fixed_div_int(int_to_fixed(bmp_height), bottom - top);
 
-    //
+    fixed u = -du, v = -dv;
+    int u_i, v_i;
+    int index_bmp, index;
 
-    float m =
+    index = top * _width;
 
-    // 433 fill rate
-
-    for (int y = top; y < top + h; y++) {
+    for (int y = top; y < bottom; y++) {
         v += dv;
-        for (int x = left; x < left + w; x++) {
-//            u = float(x - left) / (w);
+        v_i = fixed_to_int(v)*(bmp_width);
+
+        for (int x = left; x < right; x++) {
             u += du;
-
-//            int v_i = (1.0-v)*(bmp.height()-1);
-//            int u_i = u*bmp.width();
-
-            int v_i = (v);//*(bmp.height()-1);
-            int u_i = u;
-            int index_bmp = (v_i* bmp_width)  + u_i;
-
-
-            int index_bmp_2 = (v* bmp_width)  + u_i;
+            u_i = fixed_to_int(u);
+            index_bmp = (v_i)  + u_i;
 
             // decode the bitmap and encode it for the canvas
             bmp.decodePixelToNormalizedColorAt(index_bmp, col_bmp);
             coder()->encode_from_normalized(col_bmp, converted);
-
-            drawPixel(converted, x, y);
+            drawPixel(converted, index + x);
         }
 
         u = -du;
+        index += _width;
 
     }
 
 }
 
 
-
 //template<typename P, typename CODER>
-//void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
-//                             int v0_x, int v0_y, int v1_x,
-//                             int v1_y, int v2_x, int v2_y) {
+//template<typename P2, typename CODER2>
+//void Canvas<P, CODER>::drawQuad2(Bitmap<P2, CODER2> &bmp,
+//                                 const int left, const int top,
+//                                 const int right, const int bottom) {
+//    color_f_t col_bmp{};
+//    P converted{};
 //
-//    float area = edgeFunction(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
+//    float bmp_width = bmp.width();
+//    float bmp_height = bmp.height();
+//    float du = (bmp_width)/(right-left);
+//    float dv = (bmp_height)/(bottom - top);
+//    float u = -du, v = -dv;
+//    int u_i, v_i;
+//    int index_bmp, index;
 //
-//    // bounding box
-//    int x1 = std::min({v0_x, v1_x, v2_x});
-//    int y1 = std::min({v0_y, v1_y, v2_y});
-//    int x2 = std::max({v0_x, v1_x, v2_x});
-//    int y2 = std::max({v0_y, v1_y, v2_y});
+//    index = top * _width;
 //
-//    for (uint32_t y = y1; y < y2; ++y) {
-//        for (uint32_t x = x1; x < x2; ++x) {
-//            vec3_f p = {x + 0.5f, y + 0.5f, 0};
+//    for (int y = top; y < bottom; y++) {
+//        v += dv;
+//        v_i = int(v)*bmp_width;
 //
-//            float w0 = edgeFunction<float>(v1_x, v1_y, v2_x, v2_y, p.x, p.y);
-//            float w1 = edgeFunction<float>(v2_x, v2_y, v0_x, v0_y, p.x, p.y);
-//            float w2 = edgeFunction<float>(v0_x, v0_y, v1_x, v1_y, p.x, p.y);
+//        for (int x = left; x < right; x++) {
+//            u += du;
+//            u_i = u;
+//            index_bmp = (v_i)  + u_i;
 //
-//            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-//                w0 /= area;
-//                w1 /= area;
-//                w2 /= area;
-//
-////                float r = w0 * c0[0] + w1 * c1[0] + w2 * c2[0];
-////                float g = w0 * c0[1] + w1 * c1[1] + w2 * c2[1];
-////                float b = w0 * c0[2] + w1 * c1[2] + w2 * c2[2];
-//
-//                drawPixel(color, x, y);
-//
-//                /*
-//#ifdef PERSP_CORRECT
-//                float z = 1 / (w0 * v0[2] + w1 * v1[2] + w2 * v2[2]);
-//                // if we use perspective correct interpolation we need to
-//                // multiply the result of this interpolation by z, the depth
-//                // of the point on the 3D triangle that the pixel overlaps.
-//                r *= z, g *= z, b *= z;
-//#endif
-//                framebuffer[j * w + i][0] = (unsigned char)(r * 255);
-//                framebuffer[j * w + i][1] = (unsigned char)(g * 255);
-//                framebuffer[j * w + i][2] = (unsigned char)(b * 255);
-//
-//                 */
-//
-//            }
+//            // decode the bitmap and encode it for the canvas
+//            bmp.decodePixelToNormalizedColorAt(index_bmp, col_bmp);
+//            coder()->encode_from_normalized(col_bmp, converted);
+//            drawPixel(converted, index + x);
 //        }
+//
+//        u = -du;
+//        index += _width;
+//
 //    }
 //
 //}
 //
+//
+
+#pragma clang diagnostic pop
