@@ -354,7 +354,6 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
                                int v1_x, int v1_y, float u1, float v1,
                                int v2_x, int v2_y, float u2, float v2) {
 
-//    float area = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y});
     float area = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y});
     int bmp_width = bmp.width();
     // bounding box
@@ -405,23 +404,7 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
     int w1_row = orient2d({v2_x, v2_y}, {v0_x, v0_y}, p);
     int w2_row = orient2d({v0_x, v0_y}, {v1_x, v1_y}, p);
 
-//    fixed w0_row_u = fixed_mul_int(u0_F ,orient2d({v1_x, v1_y}, {v2_x, v2_y}, p));
-//    fixed w1_row_u = fixed_mul_int(u1_F ,orient2d({v2_x, v2_y}, {v0_x, v0_y}, p));
-//    fixed w2_row_u = fixed_mul_int(u2_F ,orient2d({v0_x, v0_y}, {v1_x, v1_y}, p));
-//
-//    fixed w0_row_v = fixed_mul_int(v0_F ,orient2d({v1_x, v1_y}, {v2_x, v2_y}, p));
-//    fixed w1_row_v = fixed_mul_int(v1_F ,orient2d({v2_x, v2_y}, {v0_x, v0_y}, p));
-//    fixed w2_row_v = fixed_mul_int(v2_F ,orient2d({v0_x, v0_y}, {v1_x, v1_y}, p));
-//
-
-    int index;
-
-
-bool pik = false;
-
-//    fixed w0u = fixed_mul_fixed()
-
-    index = p.y*_width;
+    int index = p.y*_width;
 
     for (p.y = minY; p.y <= maxY; p.y++) {
 
@@ -438,25 +421,19 @@ bool pik = false;
         int w1 = w1_row;
         int w2 = w2_row;
 
-        int v_i = bmp_width * fixed_to_int((w0_v + w1_v + w2_v));//(int)(v * (float)bmp.height());
-
         for (p.x = minX; p.x <= maxX; p.x++) {
-//            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-            // same as (w0 >= 0 && w1 >= 0 && w2 >= 0), but use only MSB,
-            // this turns three conditionals into one !!!
-//            if ((w0 | w1 | w2) >= 0) {
             if ((w0 | w1 | w2) >= 0) {
 
                 int u_i = fixed_to_int((w0_u + w1_u + w2_u));//(int)(u * (float)bmp.width());
-//                int v_i = bmp_width * fixed_to_int((w0_v + w1_v + w2_v));//(int)(u * (float)bmp.width());
+                int v_i = bmp_width * fixed_to_int((w0_v + w1_v + w2_v));//(int)(v * (float)bmp.height());
                 int index_bmp = (v_i + u_i);
 
-                color_f_t col_bmp;
-                bmp.decode(index_bmp, col_bmp);
-                blendColor(col_bmp, index + p.x);
+//                color_f_t col_bmp;
+//                bmp.decode(index_bmp, col_bmp);
+//                blendColor(col_bmp, index + p.x);
 
                 // this is faster if we don't use blending
-//                drawPixel(bmp.pixelAt(index_bmp), index + p.x);
+                drawPixel(bmp.pixelAt(index_bmp), index + p.x);
             }
 
             // One step to the right
@@ -464,19 +441,14 @@ bool pik = false;
             w1_u += A20_u1;
             w2_u += A01_u2;
 
-        w0_v += A12_v0;
-        w1_v += A20_v1;
-        w2_v += A01_v2;
+            w0_v += A12_v0;
+            w1_v += A20_v1;
+            w2_v += A01_v2;
 
             w0 += A12;
             w1 += A20;
             w2 += A01;
-
         }
-
-//        w0_v += A12_v0;
-//        w1_v += A20_v1;
-//        w2_v += A01_v2;
 
         // One row step
         w0_row_u += B12_u0;
@@ -748,6 +720,145 @@ void Canvas<P, CODER>::drawQuad(Bitmap<P2, CODER2> &bmp,
 
     }
 
+}
+
+template<typename P, typename CODER>
+void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, int y1) {
+    short X0 = x0, Y0 = y0, X1 = x1, Y1=y1, BaseColor=0xFF00FF, NumLevels=16;
+
+    unsigned short IntensityBits=4;
+    unsigned short IntensityShift, ErrorAdj, ErrorAcc;
+    unsigned short ErrorAccTemp, Weighting, WeightingComplementMask;
+    short DeltaX, DeltaY, Temp, XDir;
+
+    // Make sure the line runs top to bottom
+    if (Y0 > Y1) {
+        Temp = Y0; Y0 = Y1; Y1 = Temp;
+        Temp = X0; X0 = X1; X1 = Temp;
+    }
+
+    // Draw the initial pixel, which is always exactly intersected by
+    // the line and so needs no weighting
+//    DrawPixel(X0, Y0, BaseColor);
+    drawPixel(BaseColor, X0, Y0);
+    if ((DeltaX = X1 - X0) >= 0) {
+        XDir = 1;
+    } else {
+        XDir = -1;
+        DeltaX = -DeltaX; // make DeltaX positive
+    }
+    DeltaY = Y1 - Y0;
+
+    /*
+    // Special-case horizontal, vertical, and diagonal lines, which
+    // require no weighting because they go right through the center of
+    // every pixel
+    if ((Y1 - Y0) == 0) {
+        // Horizontal line
+        while (DeltaX-- != 0) {
+            X0 += XDir;
+//            DrawPixel(X0, Y0, BaseColor);
+            drawPixel(BaseColor, X0, Y0);
+
+        }
+        return;
+    }
+    if (DeltaX == 0) {
+        // Vertical line
+        do {
+            Y0++;
+//            DrawPixel(X0, Y0, BaseColor);
+            drawPixel(BaseColor, X0, Y0);
+        } while (--DeltaY != 0);
+        return;
+    }
+    if (DeltaX == DeltaY) {
+        // Diagonal line
+        do {
+            X0 += XDir;
+            Y0++;
+//            DrawPixel(X0, Y0, BaseColor);
+            drawPixel(BaseColor, X0, Y0);
+        } while (--DeltaY != 0);
+        return;
+    }
+
+    */
+
+    // line is not horizontal, diagonal, or vertical
+    ErrorAcc = 0; // initialize the line error accumulator to 0
+    // # of bits by which to shift ErrorAcc to get intensity level
+    IntensityShift = 16 - IntensityBits;
+    // Mask used to flip all bits in an intensity weighting, producing the
+    // result (1 - intensity weighting)
+    WeightingComplementMask = NumLevels - 1;
+
+    /*
+    // Is this an X-major or Y-major line?
+    if (DeltaY > DeltaX) {
+        // Y-major line; calculate 16-bit fixed-point fractional part of a
+        // pixel that X advances each time Y advances 1 pixel, truncating the
+        // result so that we won't overrun the endpoint along the X axis
+        ErrorAdj = ((unsigned long) DeltaX << 16) / (unsigned long) DeltaY;
+        // Draw all pixels other than the first and last
+        while (--DeltaY) {
+            ErrorAccTemp = ErrorAcc; // remember currrent accumulated error
+            ErrorAcc += ErrorAdj; // calculate error for next pixel
+            if (ErrorAcc <= ErrorAccTemp) {
+                // The error accumulator turned over, so advance the X coord
+                X0 += XDir;
+            }
+            Y0++; // Y-major, so always advance Y
+            // The IntensityBits most significant bits of ErrorAcc give us the
+            // intensity weighting for this pixel, and the complement of the
+            // weighting for the paired pixel
+            Weighting = ErrorAcc >> IntensityShift;
+            drawPixel(BaseColor+Weighting, X0, Y0);
+            drawPixel(BaseColor + (Weighting ^ WeightingComplementMask), X0 + XDir, Y0);
+//            DrawPixel(X0, Y0, BaseColor + Weighting);
+//            DrawPixel(X0 + XDir, Y0,
+//                      BaseColor + (Weighting ^ WeightingComplementMask));
+        }
+
+        // Draw the final pixel, which is always exactly intersected by the line
+        // and so needs no weighting
+        drawPixel(BaseColor, X1, Y1);
+//        DrawPixel(X1, Y1, BaseColor);
+        return;
+    }
+
+    */
+
+    // It's an X-major line; calculate 16-bit fixed-point fractional part of a
+    // pixel that Y advances each time X advances 1 pixel, truncating the
+    // result to avoid overrunning the endpoint along the X axis
+    ErrorAdj = ((unsigned int) DeltaY << 16) / (unsigned int) DeltaX;
+
+    // Draw all pixels other than the first and last
+    while (--DeltaX) {
+        ErrorAccTemp = ErrorAcc; // remember currrent accumulated error
+        ErrorAcc += ErrorAdj; // calculate error for next pixel
+        if (ErrorAcc <= ErrorAccTemp) {
+            // The error accumulator turned over, so advance the Y coord
+            Y0++;
+        }
+        X0 += XDir; // X-major, so always advance X
+
+        // The IntensityBits most significant bits of ErrorAcc give us the
+        // intensity weighting for this pixel, and the complement of the
+        // weighting for the paired pixel
+        Weighting = ErrorAcc >> IntensityShift;
+        drawPixel(BaseColor + Weighting, X0, Y0);
+        drawPixel(BaseColor + (Weighting ^ WeightingComplementMask), X0, Y0 + 1);
+//        DrawPixel(X0, Y0, BaseColor + Weighting);
+//        DrawPixel(X0, Y0 + 1,
+//                  BaseColor + (Weighting ^ WeightingComplementMask));
+    }
+
+    // Draw the final pixel, which is always exactly intersected by the line
+    // and so needs no weighting
+    drawPixel(BaseColor, X1, Y1);
+//    DrawPixel(X1, Y1, BaseColor);
 }
 
 #pragma clang diagnostic pop
