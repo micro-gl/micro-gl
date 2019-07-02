@@ -16,6 +16,9 @@
 #include <microgl/Bitmap.h>
 
 #define TEST_ITERATIONS 1
+#define W 640
+#define H 480
+
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
@@ -74,15 +77,26 @@ inline void render() {
 //    canvas->setPorterDuffMode(PorterDuff::SourceOver);
 //    canvas->drawCircle(GREEN, 320, 240, 240/2);
 //    canvas->drawTriangle(BLUE, 0, 300, 300, 300, 0, 0);
-//    canvas->drawTriangle2(*bmp_1,0, 300,0.0,0.0, 300, 300,1.0,0.0, 0, 0,0.0,1.0);
-//        canvas->drawQuad2(*bmp_1, 0, 0, 640, 480);
-        canvas->drawQuad2(*bmp_2, 0, 0, 640, 480);
+
+// STARTED 420,
+        canvas->drawTriangle(*bmp_2, 0, 0, 0.0, 1.0,
+                                     W, H, 1.0, 0.0,
+                                     0, H, 0.0, 0.0 );
+
+// started 150, then 80 with coding (and 32 without coding)
+//        canvas->drawTriangle(YELLOW, 0, 0,
+//                                     W, H,
+//                                     0, H);
+
+//        canvas->drawQuad(*bmp_1, 0, 0, 640, 480);
+// started 400, then 230 with re-coding, then 21 without recoding and blending
+//        canvas->drawQuad(*bmp_2, 0, 0, 640, 480);
 
     }
 }
 
 int main() {
-    init_sdl(640, 480);
+    init_sdl(W, H);
     loop();
 }
 

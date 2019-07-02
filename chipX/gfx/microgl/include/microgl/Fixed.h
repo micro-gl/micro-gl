@@ -14,8 +14,8 @@ point q format returning the answer in q format */
 #define int_to_fixed_2(a, q) ( (a)<<(q) )
 #define fixed_to_int_2(a, q) ( (a)>>(q) )
 
-#define float_to_fixed(a) (float_to_fixed_2(d, Q))
-#define fixed_to_float(a) (fixed_to_float_2(d, Q))
+#define float_to_fixed(a) (float_to_fixed_2(a, Q))
+#define fixed_to_float(a) (fixed_to_float_2(a, Q))
 #define int_to_fixed(a) (int_to_fixed_2(a, Q))
 #define fixed_to_int(a) (fixed_to_int_2(a, Q))
 
@@ -32,6 +32,7 @@ an integer */
 #define fixed_sub_int2(a,b,q) (fixed_add_int2(a, -b, q))
 #define fixed_mul_int(a,b) ((a)*(b))
 #define fixed_div_int(a,b) ((a)/(b))
+#define fixed_one_over_int(a) fixed_div_int(fixed_one, a)
 #define fixed_add_int(a,b) (fixed_add_int2(a,b,Q))
 #define fixed_sub_int(a,b) (fixed_add_int(a, -b))
 
@@ -46,5 +47,6 @@ returning the result in q3 format */
 #define fixed_div_fixed_3(a,b,q1,q2,q3) (fixed_convert_fixed(a, q1, (q2)+(q3))/(b))
 
 #define fixed_half float_to_fixed(0.5f)
+#define fixed_one int_to_fixed(1)
 
 #pragma clang diagnostic pop

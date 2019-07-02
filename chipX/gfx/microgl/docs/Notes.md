@@ -33,3 +33,13 @@ if we copy from same bitmap formats without blending/compositing, than it is
 
 I witnessed 220 vs 25 fill rate
 ```
+
+```
+optimize normalized decoders of float points to use fixed point
+
+```
+
+```
+always try to avoid multiplies in inner loops
+
+```
