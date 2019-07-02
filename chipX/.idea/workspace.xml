@@ -16,11 +16,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="05462924-bf73-4af8-ac02-6c8577e498a4" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gfx/microgl-sdl/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl-sdl/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gfx/microgl/docs/Notes.md" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/docs/Notes.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/Fixed.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/Fixed.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/Types.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/Types.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -42,11 +39,23 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="327">
-              <caret line="461" column="61" selection-start-line="461" selection-start-column="61" selection-end-line="461" selection-end-column="61" />
+            <state relative-caret-position="269">
+              <caret line="367" column="11" selection-start-line="367" selection-start-column="11" selection-end-line="367" selection-end-column="11" />
               <folding>
                 <element signature="e#10517#10545#0" expanded="true" />
                 <element signature="e#10554#10584#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gfx/microgl/src/FrameBuffer.tpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="297">
+              <caret line="31" selection-start-line="31" selection-end-line="31" />
+              <folding>
+                <element signature="e#54#66#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -127,8 +136,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/main.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="150">
-              <caret line="81" column="24" selection-start-line="81" selection-start-column="24" selection-end-line="81" selection-end-column="24" />
+            <state relative-caret-position="419">
+              <caret line="84" column="42" selection-start-line="84" selection-start-column="42" selection-end-line="84" selection-end-column="42" />
               <folding>
                 <element signature="e#99#117#0" expanded="true" />
               </folding>
@@ -233,9 +242,9 @@
         <option value="$PROJECT_DIR$/gfx/microgl/src/Bitmap.tpp" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/Types.h" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h" />
-        <option value="$PROJECT_DIR$/gfx/microgl-sdl/main.cpp" />
         <option value="$PROJECT_DIR$/gfx/microgl/docs/Notes.md" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/Fixed.h" />
+        <option value="$PROJECT_DIR$/gfx/microgl-sdl/main.cpp" />
         <option value="$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp" />
       </list>
     </option>
@@ -454,12 +463,12 @@
       <workItem from="1560281212200" duration="28611000" />
       <workItem from="1560704404822" duration="2273000" />
       <workItem from="1560708801925" duration="204265000" />
-      <workItem from="1561897427088" duration="54068000" />
+      <workItem from="1561897427088" duration="58416000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="304812000" />
+    <option name="totallyTimeSpent" value="309160000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -507,11 +516,6 @@
           <line>299</line>
           <option name="timeStamp" value="88" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp</url>
-          <line>455</line>
-          <option name="timeStamp" value="130" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
@@ -535,47 +539,52 @@
     </expressions>
     <expressions id="evaluateExpression">
       <expression>
-        <expression-string>orient2d({v1_x, v1_y}, {v2_x, v2_y}, p)</expression-string>
+        <expression-string>4096/64</expression-string>
         <language-id>ObjectiveC</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>orient2d({v2_x, v2_y}, {v0_x, v0_y}, p)</expression-string>
+        <expression-string>1024*(65000)*(orient2d({v2_x, v2_y}, {v0_x, v0_y}, p)/area)</expression-string>
         <language-id>ObjectiveC</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>(b.x-a.x)*(c.y-a.y) - (b.y-a.y)*(c.x-a.x)</expression-string>
+        <expression-string>512*(65000)*(orient2d({v2_x, v2_y}, {v0_x, v0_y}, p)/area)</expression-string>
         <language-id>ObjectiveC</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>orient2d({v0_x, v0_y}, {v1_x, v1_y}, {minX, minY})</expression-string>
+        <expression-string>512*(65000)*orient2d({v2_x, v2_y}, {v0_x, v0_y}, p)/area</expression-string>
         <language-id>ObjectiveC</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>orient2d({v0_x, v0_y}, {v1_x, v1_y}, {0,0})</expression-string>
+        <expression-string>512*(2^16)*orient2d({v2_x, v2_y}, {v0_x, v0_y}, p)/area</expression-string>
         <language-id>ObjectiveC</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>orient2d({v0_x, v0_y}, {v1_x, v1_y}, p)</expression-string>
+        <expression-string>512*orient2d({v2_x, v2_y}, {v0_x, v0_y}, p)/area</expression-string>
         <language-id>ObjectiveC</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>fixed_to_int(v)</expression-string>
+        <expression-string>64*orient2d({v2_x, v2_y}, {v0_x, v0_y}, p)/area</expression-string>
         <language-id>ObjectiveC</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>v*bmp_width + u_i</expression-string>
+        <expression-string>orient2d({v2_x, v2_y}, {v0_x, v0_y}, p)/area</expression-string>
         <language-id>ObjectiveC</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>v_i</expression-string>
+        <expression-string>orient2d({v2_x, v2_y}, {v0_x, v0_y}, p))</expression-string>
+        <language-id>ObjectiveC</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>orient2d({v2_x, v2_y}, {v0_x, v0_y}, p))/area)</expression-string>
         <language-id>ObjectiveC</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -833,16 +842,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl/src/FrameBuffer.tpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="280">
-          <caret line="30" column="21" selection-start-line="30" selection-start-column="21" selection-end-line="30" selection-end-column="21" />
-          <folding>
-            <element signature="e#54#66#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/FrameBuffer.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="272">
@@ -901,16 +900,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/main.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="81" column="24" selection-start-line="81" selection-start-column="24" selection-end-line="81" selection-end-column="24" />
-          <folding>
-            <element signature="e#99#117#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl/src/Bitmap.tpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="280">
@@ -935,10 +924,30 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl/src/FrameBuffer.tpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="297">
+          <caret line="31" selection-start-line="31" selection-end-line="31" />
+          <folding>
+            <element signature="e#54#66#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="419">
+          <caret line="84" column="42" selection-start-line="84" selection-start-column="42" selection-end-line="84" selection-end-column="42" />
+          <folding>
+            <element signature="e#99#117#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="327">
-          <caret line="461" column="61" selection-start-line="461" selection-start-column="61" selection-end-line="461" selection-end-column="61" />
+        <state relative-caret-position="269">
+          <caret line="367" column="11" selection-start-line="367" selection-start-column="11" selection-end-line="367" selection-end-column="11" />
           <folding>
             <element signature="e#10517#10545#0" expanded="true" />
             <element signature="e#10554#10584#0" expanded="true" />

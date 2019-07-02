@@ -363,6 +363,15 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
     int maxX = std::max({v0_x, v1_x, v2_x});
     int maxY = std::max({v0_y, v1_y, v2_y});
 
+//    minX = 0; minY = 210;
+//    maxX = 200;maxY=260;
+
+    // clipping
+    minX = std::max(minX, 0);
+    minY = std::max(minY, 0);
+    maxX = std::min(maxX, this->width() - 1);
+    maxY = std::min(maxY, this->height() - 1);
+
     fixed one_over_area = fixed_one_over_int(area);
 
     // Triangle setup
@@ -438,18 +447,8 @@ bool pik = false;
 //            if ((w0 | w1 | w2) >= 0) {
             if ((w0 | w1 | w2) >= 0) {
 
-//                float u = (w0 * u0 + w1 * u1 + w2 * u2)/area;
-//                float v = (w0 * v0 + w1 * v1 + w2 * v2)/area;
-//                int u_i = (int)(u * (float)bmp.width());
-//                int v_i = (int)(v * (float)bmp.height());
-//                int index_bmp = (v_i * bmp.width() + u_i);
-
-//                float u = (w0 * u0 + w1 * u1 + w2 * u2)/area;
-//                float v = (w0 * v0 + w1 * v1 + w2 * v2)/area;
-
-//                float u = fixed_to_float((w0_u + w1_u + w2_u));
-//                float v = fixed_to_float((w0_v + w1_v + w2_v));
                 int u_i = fixed_to_int((w0_u + w1_u + w2_u));//(int)(u * (float)bmp.width());
+//                int v_i = bmp_width * fixed_to_int((w0_v + w1_v + w2_v));//(int)(u * (float)bmp.width());
                 int index_bmp = (v_i + u_i);
 
                 color_f_t col_bmp;
@@ -457,8 +456,6 @@ bool pik = false;
                 blendColor(col_bmp, index + p.x);
 
                 // this is faster if we don't use blending
-//                P output{};
-//
 //                drawPixel(bmp.pixelAt(index_bmp), index + p.x);
             }
 
@@ -466,6 +463,10 @@ bool pik = false;
             w0_u += A12_u0;
             w1_u += A20_u1;
             w2_u += A01_u2;
+
+        w0_v += A12_v0;
+        w1_v += A20_v1;
+        w2_v += A01_v2;
 
             w0 += A12;
             w1 += A20;

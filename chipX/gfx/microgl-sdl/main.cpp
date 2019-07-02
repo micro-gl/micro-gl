@@ -16,8 +16,8 @@
 #include <microgl/Bitmap.h>
 
 #define TEST_ITERATIONS 1
-#define W 640
-#define H 480
+#define W 1000
+#define H 700
 
 SDL_Window * window;
 SDL_Renderer * renderer;
@@ -79,9 +79,12 @@ inline void render() {
 //    canvas->drawTriangle(BLUE, 0, 300, 300, 300, 0, 0);
 
 // STARTED 420,
-        canvas->drawTriangle(*bmp_2, 0, 0, 0.0, 1.0,
-                                     W, H, 1.0, 0.0,
-                                     0, H, 0.0, 0.0 );
+//        canvas->drawTriangle(*bmp_2, 0, 0, 0.0, 1.0,
+//                             W, H, 1.0, 0.0,
+//                             0, H, 0.0, 0.0 );
+        canvas->drawTriangle(*bmp_2, 0, -0, 0.0, 1.0,
+                                     W, H-0, 1.0, 0.0,
+                                     0, H-0, 0.0, 0.0 );
 
 // started 150, then 80 with coding (and 32 without coding)
 //        canvas->drawTriangle(YELLOW, 0, 0,
