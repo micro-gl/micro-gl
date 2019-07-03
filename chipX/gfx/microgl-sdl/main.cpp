@@ -47,6 +47,7 @@ color_f_t YELLOW{1.0,1.0,0.0, 1.0};
 color_f_t WHITE{1.0,1.0,1.0, 1.0};
 color_f_t GREEN{0.0,1.0,0.0, 1.0};
 color_f_t BLUE{0.0,0.0,1.0, 1.0};
+color_f_t BLACK{0.0,0.0,0.0, 1.0};
 
 void loop();
 void init_sdl(int width, int height);
@@ -56,7 +57,7 @@ inline void render() {
     canvas->setAntialiasing(false);
 //    canvas->clear(WHITE);
 
-    for (int ix = 0; ix < 100; ++ix) {
+    for (int ix = 0; ix < 1000; ++ix) {
         /*
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
@@ -97,7 +98,11 @@ inline void render() {
 // started 400, then 230 with re-coding, then 21 without recoding and blending
 //        canvas->drawQuad(*bmp_2, 0, 0, 640, 480);
 
-//        canvas->drawLine(GREEN, 0, 0, W, H/2);
+//        canvas->drawLine(RED, 0, 0, W, H/2);
+        canvas->drawLine(BLACK, 80 , 200 , 550, 150);
+        canvas->drawLine(BLACK, 80 , 80 , 180, 400);
+        canvas->drawLine(BLACK, 80 , 80 , 600, 80);
+        canvas->drawLine(BLACK, 80 , 80 , 80, 450);
 
     }
 }

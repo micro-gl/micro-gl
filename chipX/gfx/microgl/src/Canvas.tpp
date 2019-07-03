@@ -133,7 +133,7 @@ template<typename P, typename CODER>
 inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y) {
     color_f_t result = val;
 
-    if(false && hasAlphaChannel()) {
+    if(true){// && hasAlphaChannel()) {
         color_f_t backdrop;
         getPixelColor(x, y, backdrop);
         const color_f_t & src = val;
@@ -724,12 +724,22 @@ void Canvas<P, CODER>::drawQuad(Bitmap<P2, CODER2> &bmp,
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, int y1) {
-    short X0 = x0, Y0 = y0, X1 = x1, Y1=y1, BaseColor=0xFF00FF, NumLevels=16;
+    int X0 = x0, Y0 = y0, X1 = x1, Y1=y1;
+    uint32_t BaseColor = 0x00;
 
-    unsigned short IntensityBits=4;
-    unsigned short IntensityShift, ErrorAdj, ErrorAcc;
-    unsigned short ErrorAccTemp, Weighting, WeightingComplementMask;
-    short DeltaX, DeltaY, Temp, XDir;
+    color_t color_input;
+
+    coder()->convert(color, color_input);
+
+    unsigned int IntensityBits=5;
+    unsigned int NumLevels = 1<<5;
+    unsigned int maxIntensity = NumLevels - 1;
+    unsigned int IntensityShift, ErrorAdj, ErrorAcc;
+    unsigned int ErrorAccTemp, Weighting, WeightingComplementMask;
+    int DeltaX, DeltaY, Temp, XDir;
+    color_t color_previous;
+    color_t color_output;
+    P output;
 
     // Make sure the line runs top to bottom
     if (Y0 > Y1) {
@@ -740,7 +750,9 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
     // Draw the initial pixel, which is always exactly intersected by
     // the line and so needs no weighting
 //    DrawPixel(X0, Y0, BaseColor);
-    drawPixel(BaseColor, X0, Y0);
+    blendColor(color, X0, Y0);
+
+
     if ((DeltaX = X1 - X0) >= 0) {
         XDir = 1;
     } else {
@@ -749,7 +761,7 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
     }
     DeltaY = Y1 - Y0;
 
-    /*
+//    /*
     // Special-case horizontal, vertical, and diagonal lines, which
     // require no weighting because they go right through the center of
     // every pixel
@@ -783,23 +795,22 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
         return;
     }
 
-    */
+//    */
 
     // line is not horizontal, diagonal, or vertical
     ErrorAcc = 0; // initialize the line error accumulator to 0
     // # of bits by which to shift ErrorAcc to get intensity level
-    IntensityShift = 16 - IntensityBits;
+    IntensityShift = 32 - IntensityBits;
     // Mask used to flip all bits in an intensity weighting, producing the
     // result (1 - intensity weighting)
-    WeightingComplementMask = NumLevels - 1;
+    WeightingComplementMask = maxIntensity;
 
-    /*
     // Is this an X-major or Y-major line?
     if (DeltaY > DeltaX) {
         // Y-major line; calculate 16-bit fixed-point fractional part of a
         // pixel that X advances each time Y advances 1 pixel, truncating the
         // result so that we won't overrun the endpoint along the X axis
-        ErrorAdj = ((unsigned long) DeltaX << 16) / (unsigned long) DeltaY;
+        ErrorAdj = ((unsigned long) DeltaX << 32) / (unsigned long) DeltaY;
         // Draw all pixels other than the first and last
         while (--DeltaY) {
             ErrorAccTemp = ErrorAcc; // remember currrent accumulated error
@@ -813,26 +824,44 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
             // intensity weighting for this pixel, and the complement of the
             // weighting for the paired pixel
             Weighting = ErrorAcc >> IntensityShift;
-            drawPixel(BaseColor+Weighting, X0, Y0);
-            drawPixel(BaseColor + (Weighting ^ WeightingComplementMask), X0 + XDir, Y0);
-//            DrawPixel(X0, Y0, BaseColor + Weighting);
-//            DrawPixel(X0 + XDir, Y0,
-//                      BaseColor + (Weighting ^ WeightingComplementMask));
+
+            unsigned int mix = (Weighting ^ WeightingComplementMask);
+            // this equals Weighting, but I write it like that for clarity for now
+            unsigned int mix_complement = maxIntensity - mix;
+
+            this->getPixelColor(X0, Y0, color_previous);
+
+            color_output.r = (color_input.r * mix + color_previous.r * mix_complement) >> IntensityBits;
+            color_output.g = (color_input.g * mix + color_previous.g * mix_complement) >> IntensityBits;
+            color_output.b = (color_input.b * mix + color_previous.b * mix_complement) >> IntensityBits;
+            color_output.a = 255;
+
+            coder()->encode(color_output, output);
+
+            drawPixel(output, X0 ,Y0);
+
+            this->getPixelColor(X0, X0+XDir, color_previous);
+
+            color_output.r = (color_input.r * mix_complement + color_previous.r * mix) >> IntensityBits;
+            color_output.g = (color_input.g * mix_complement + color_previous.g * mix) >> IntensityBits;
+            color_output.b = (color_input.b * mix_complement + color_previous.b * mix) >> IntensityBits;
+            color_output.a = 255;
+
+            coder()->encode(color_output, output);
+
+            drawPixel(output, X0+XDir ,Y0);
         }
 
         // Draw the final pixel, which is always exactly intersected by the line
         // and so needs no weighting
         drawPixel(BaseColor, X1, Y1);
-//        DrawPixel(X1, Y1, BaseColor);
         return;
     }
-
-    */
 
     // It's an X-major line; calculate 16-bit fixed-point fractional part of a
     // pixel that Y advances each time X advances 1 pixel, truncating the
     // result to avoid overrunning the endpoint along the X axis
-    ErrorAdj = ((unsigned int) DeltaY << 16) / (unsigned int) DeltaX;
+    ErrorAdj = ((unsigned long) DeltaY << 32) / (unsigned long) DeltaX;
 
     // Draw all pixels other than the first and last
     while (--DeltaX) {
@@ -847,17 +876,42 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
         // The IntensityBits most significant bits of ErrorAcc give us the
         // intensity weighting for this pixel, and the complement of the
         // weighting for the paired pixel
-        Weighting = ErrorAcc >> IntensityShift;
-        drawPixel(BaseColor + Weighting, X0, Y0);
-        drawPixel(BaseColor + (Weighting ^ WeightingComplementMask), X0, Y0 + 1);
-//        DrawPixel(X0, Y0, BaseColor + Weighting);
-//        DrawPixel(X0, Y0 + 1,
-//                  BaseColor + (Weighting ^ WeightingComplementMask));
+        Weighting = (ErrorAcc >> IntensityShift);
+
+        // Tomer notes:
+        // 1. i inverted the order because i do not use palettes like Michael.
+        // 2. we can halve the multiplications, but add more verbosity and unreadable code
+        //
+        unsigned int mix = (Weighting ^ WeightingComplementMask);
+        unsigned int mix_complement = maxIntensity - mix;
+
+        this->getPixelColor(X0, Y0, color_previous);
+
+        color_output.r = (color_input.r * mix + color_previous.r * mix_complement) >> IntensityBits;
+        color_output.g = (color_input.g * mix + color_previous.g * mix_complement) >> IntensityBits;
+        color_output.b = (color_input.b * mix + color_previous.b * mix_complement) >> IntensityBits;
+        color_output.a = 255;
+
+        coder()->encode(color_output, output);
+
+        drawPixel(output, X0 ,Y0);
+
+        this->getPixelColor(X0, Y0+1, color_previous);
+
+        color_output.r = (color_input.r * mix_complement + color_previous.r * mix) >> IntensityBits;
+        color_output.g = (color_input.g * mix_complement + color_previous.g * mix) >> IntensityBits;
+        color_output.b = (color_input.b * mix_complement + color_previous.b * mix) >> IntensityBits;
+        color_output.a = 255;
+
+        coder()->encode(color_output, output);
+
+        drawPixel(output, X0 ,Y0+1);
+
     }
 
     // Draw the final pixel, which is always exactly intersected by the line
     // and so needs no weighting
-    drawPixel(BaseColor, X1, Y1);
+    blendColor(color, X1, Y1);
 //    DrawPixel(X1, Y1, BaseColor);
 }
 

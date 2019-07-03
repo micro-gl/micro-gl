@@ -38,6 +38,18 @@ public:
         return this->derived().decode(input, output);
     }
 
+    void convert(const color_f_t & input, color_t & output) {
+        P pixel;
+        encode(input, pixel);
+        decode(pixel, output);
+    }
+
+    void convert(const color_t & input, color_f_t & output) {
+        P pixel;
+        encode(input, pixel);
+        decode(pixel, output);
+    }
+
     inline PixelFormat format() {
         return this->derived().format();
     };
@@ -103,7 +115,10 @@ public:
         output.a = 1.0f;
     };
 
-//    inline void decode_to_normalized(const uint32_t & input, color_f_t & output) {
+//    inline void convert(const color_f_t & input, color_t & output) {
+//    }
+
+    //    inline void decode_to_normalized(const uint32_t & input, color_f_t & output) {
 //        output.r = (input & 0xFF0000) >> 16;
 //        output.g = (input & 0x00FF00) >> 8;
 //        output.b = (input & 0x0000FF);
