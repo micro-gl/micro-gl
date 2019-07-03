@@ -21,6 +21,11 @@ protected:
 template<typename P, typename IMPL>
 class PixelCoder : public CRPT<IMPL> {
 public:
+    PixelCoder(uint8_t bits_red, uint8_t bits_green, uint8_t bits_blue, uint8_t bits_alpha)
+                : _bits_per_red{bits_red}, _bits_per_green{bits_green},
+                _bits_per_blue{bits_blue}, _bits_per_alpha{bits_alpha} {
+        _bpp = _bits_per_red + _bits_per_green + _bits_per_blue + _bits_per_alpha;
+    }
 
     void encode(const color_t & input, P & output) {
         return this->derived().encode(input, output);
@@ -36,6 +41,26 @@ public:
 
     void decode(const P & input, color_f_t & output) {
         return this->derived().decode(input, output);
+    }
+
+    uint8_t bpp() {
+        return this->_bpp;
+    }
+
+    uint8_t bits_per_red() {
+        return this->_bits_per_red;
+    }
+
+    uint8_t bits_per_green() {
+        return this->_bits_per_green;
+    }
+
+    uint8_t bits_per_blue() {
+        return this->_bits_per_blue;
+    }
+
+    uint8_t bits_per_alpha() {
+        return this->_bits_per_alpha;
     }
 
     void convert(const color_f_t & input, color_t & output) {
@@ -54,12 +79,23 @@ public:
         return this->derived().format();
     };
 
+protected:
+    uint8_t _bpp;
+    uint8_t _bits_per_red;
+    uint8_t _bits_per_green;
+    uint8_t _bits_per_blue;
+    uint8_t _bits_per_alpha;
+
 };
 
 // array coders
 class RGB888_ARRAY : public PixelCoder<vec3<uint8_t>, RGB888_ARRAY> {
 public:
     uint8_t MAX = (2 << 8) - 1;
+
+    RGB888_ARRAY() : PixelCoder<vec3<uint8_t>, RGB888_ARRAY>(8, 8, 8, 0) {
+
+    }
 
     inline void encode(const color_t & input, vec3<uint8_t> & output) {
         output.x=input.r, output.y=input.g, output.z=input.b;
@@ -92,6 +128,10 @@ class RGB888_PACKED_32 : public PixelCoder<uint32_t, RGB888_PACKED_32> {
 public:
     uint8_t MAX = (2 << 8) - 1;
 
+    RGB888_PACKED_32() : PixelCoder<uint32_t, RGB888_PACKED_32>(8, 8, 8, 0) {
+
+    }
+
     inline void encode(const color_t & input, uint32_t & output) {
 
         output = (input.r << 16) + (input.g << 8) + input.b;
@@ -115,16 +155,6 @@ public:
         output.a = 1.0f;
     };
 
-//    inline void convert(const color_f_t & input, color_t & output) {
-//    }
-
-    //    inline void decode_to_normalized(const uint32_t & input, color_f_t & output) {
-//        output.r = (input & 0xFF0000) >> 16;
-//        output.g = (input & 0x00FF00) >> 8;
-//        output.b = (input & 0x0000FF);
-//        output.a = 255;
-//    };
-//
     inline PixelFormat format() {
         return PixelFormat::RGB888;
     }

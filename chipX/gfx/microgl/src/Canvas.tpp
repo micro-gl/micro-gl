@@ -131,57 +131,85 @@ void Canvas<P, CODER>::clear(const color_f_t &color) {
 
 template<typename P, typename CODER>
 inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y) {
-    color_f_t result = val;
-
-    if(true){// && hasAlphaChannel()) {
-        color_f_t backdrop;
-        getPixelColor(x, y, backdrop);
-        const color_f_t & src = val;
-        color_f_t blended = blend_mode_apply(_blend_mode, backdrop, src);
-
-        color_f_t blend_in_place{};
-        blend_in_place.r = (1.0 - backdrop.a) * src.r + backdrop.a*blended.r;
-        blend_in_place.g = (1.0 - backdrop.a) * src.g + backdrop.a*blended.g;
-        blend_in_place.b = (1.0 - backdrop.a) * src.b + backdrop.a*blended.b;
-        blend_in_place.a = float(src.a);
-
-        result = porter_duff_apply(_porter_duff_mode, backdrop, blend_in_place);
-    }
-
-//    int index = (y * width() + x);
-    P output;
-//    coder()->encode_from_normalized(result, output);
-    coder()->encode(result, output);
-
-    drawPixel(output, x, y);
+    blendColor(val, y*_width + x);
 }
 
 
 template<typename P, typename CODER>
 inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index) {
-    color_f_t result = val;
+    color_f_t result;
 
-    if(false &&  hasAlphaChannel()) {
+    if(false){// && hasAlphaChannel()) {
         color_f_t backdrop;
         getPixelColor(index, backdrop);
         const color_f_t & src = val;
-        color_f_t blended = blend_mode_apply(_blend_mode, backdrop, src);
+        color_f_t blended;
 
-        color_f_t blend_in_place{};
-        blend_in_place.r = (1.0 - backdrop.a) * src.r + backdrop.a*blended.r;
-        blend_in_place.g = (1.0 - backdrop.a) * src.g + backdrop.a*blended.g;
-        blend_in_place.b = (1.0 - backdrop.a) * src.b + backdrop.a*blended.b;
-        blend_in_place.a = float(src.a);
+        // if we are normal then do nothing
+        if(_blend_mode!=BlendMode::Normal) { //  or backdrop alpha is zero is also valid
+            blended = blend_mode_apply(_blend_mode, backdrop, src);
 
-        result = porter_duff_apply(_porter_duff_mode, backdrop, blend_in_place);
-    }
+            if(backdrop.a!=1.0) {
+                blended.r = (1.0 - backdrop.a) * src.r + backdrop.a*blended.r;
+                blended.g = (1.0 - backdrop.a) * src.g + backdrop.a*blended.g;
+                blended.b = (1.0 - backdrop.a) * src.b + backdrop.a*blended.b;
+            }
+
+            blended.a = float(src.a);
+        }
+        else
+            blended = src;
+
+        result = porter_duff_apply(_porter_duff_mode, backdrop, blended);
+    } else
+        result = val;
 
     P output{};
 
     coder()->encode(result, output);
 
-//    _bitmap_canvas->_data[index] = output;
+    drawPixel(output, index);
+}
+
+template<typename P, typename CODER>
+inline void Canvas<P, CODER>::blendColor(const color_t &val, int x, int y) {
+    blendColor(val, y*_width + x);
+}
+
+
+template<typename P, typename CODER>
+inline void Canvas<P, CODER>::blendColor(const color_t &val, int index) {
+    color_t result;
+
+//    if(false){// && hasAlphaChannel()) {
+//        color_t backdrop;
+//        getPixelColor(index, backdrop);
+//        const color_t & src = val;
+//        color_t blended;
 //
+//        // if we are normal then do nothing
+//        if(_blend_mode!=BlendMode::Normal) { //  or backdrop alpha is zero is also valid
+//            blended = blend_mode_apply(_blend_mode, backdrop, src);
+//
+//            if(backdrop.a!=1.0) {
+//                blended.r = (1.0 - backdrop.a) * src.r + backdrop.a*blended.r;
+//                blended.g = (1.0 - backdrop.a) * src.g + backdrop.a*blended.g;
+//                blended.b = (1.0 - backdrop.a) * src.b + backdrop.a*blended.b;
+//            }
+//
+//            blended.a = float(src.a);
+//        }
+//        else
+//            blended = src;
+//
+//        result = porter_duff_apply(_porter_duff_mode, backdrop, blended);
+//    } else
+        result = val;
+
+    P output{};
+
+    coder()->encode(result, output);
+
     drawPixel(output, index);
 }
 
@@ -661,7 +689,7 @@ template<typename P2, typename CODER2>
 void Canvas<P, CODER>::drawQuad(Bitmap<P2, CODER2> &bmp,
                                  const int left, const int top,
                                  const int right, const int bottom) {
-    color_f_t col_bmp{};
+    color_t col_bmp{};
     P converted{};
 
     int bmp_width = (bmp.width());
@@ -699,7 +727,6 @@ void Canvas<P, CODER>::drawQuad(Bitmap<P2, CODER2> &bmp,
             u_i = fixed_to_int(u);
             index_bmp = (v_i) + u_i;
 
-
             // decode the bitmap
             bmp.decode(index_bmp, col_bmp);
             // re-encode for a different canvas
@@ -731,8 +758,8 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
 
     coder()->convert(color, color_input);
 
-    unsigned int IntensityBits=5;
-    unsigned int NumLevels = 1<<5;
+    unsigned int IntensityBits = 5;
+    unsigned int NumLevels = 1 << IntensityBits;
     unsigned int maxIntensity = NumLevels - 1;
     unsigned int IntensityShift, ErrorAdj, ErrorAcc;
     unsigned int ErrorAccTemp, Weighting, WeightingComplementMask;
@@ -751,7 +778,6 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
     // the line and so needs no weighting
 //    DrawPixel(X0, Y0, BaseColor);
     blendColor(color, X0, Y0);
-
 
     if ((DeltaX = X1 - X0) >= 0) {
         XDir = 1;
@@ -794,8 +820,6 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
         } while (--DeltaY != 0);
         return;
     }
-
-//    */
 
     // line is not horizontal, diagonal, or vertical
     ErrorAcc = 0; // initialize the line error accumulator to 0
@@ -840,7 +864,7 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
 
             drawPixel(output, X0 ,Y0);
 
-            this->getPixelColor(X0, X0+XDir, color_previous);
+            this->getPixelColor(X0, X0 + XDir, color_previous);
 
             color_output.r = (color_input.r * mix_complement + color_previous.r * mix) >> IntensityBits;
             color_output.g = (color_input.g * mix_complement + color_previous.g * mix) >> IntensityBits;
@@ -849,7 +873,7 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
 
             coder()->encode(color_output, output);
 
-            drawPixel(output, X0+XDir ,Y0);
+            drawPixel(output, X0 + XDir ,Y0);
         }
 
         // Draw the final pixel, which is always exactly intersected by the line

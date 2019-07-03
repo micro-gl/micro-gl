@@ -48,5 +48,7 @@ returning the result in q3 format */
 
 #define fixed_half float_to_fixed(0.5f)
 #define fixed_one int_to_fixed(1)
+#define fixed_floor(a) ((int)((a) & ((1<<Q) - 1)))
+#define fixed_round(a) (fixed_floor((a) + fixed_half))
 
 #pragma clang diagnostic pop

@@ -57,7 +57,7 @@ inline void render() {
     canvas->setAntialiasing(false);
 //    canvas->clear(WHITE);
 
-    for (int ix = 0; ix < 1000; ++ix) {
+    for (int ix = 0; ix < 100; ++ix) {
         /*
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
@@ -72,7 +72,7 @@ inline void render() {
          */
 
 
-        canvas->clear(WHITE);
+//        canvas->clear(WHITE);
 //    canvas->drawQuad(YELLOW, 0, 0, W, H);
 //    canvas->drawGradient(YELLOW, RED, 0, 240, 640, 140);
 //    canvas->setBlendMode(BlendMode::Normal);
@@ -96,13 +96,12 @@ inline void render() {
 
 //        canvas->drawQuad(*bmp_1, 0, 0, 640, 480);
 // started 400, then 230 with re-coding, then 21 without recoding and blending
-//        canvas->drawQuad(*bmp_2, 0, 0, 640, 480);
+        canvas->drawQuad(*bmp_2, 0, 0, 640, 480);
 
-//        canvas->drawLine(RED, 0, 0, W, H/2);
-        canvas->drawLine(BLACK, 80 , 200 , 550, 150);
-        canvas->drawLine(BLACK, 80 , 80 , 180, 400);
-        canvas->drawLine(BLACK, 80 , 80 , 600, 80);
-        canvas->drawLine(BLACK, 80 , 80 , 80, 450);
+//        canvas->drawLine(BLACK, 80 , 200 , 550, 150);
+//        canvas->drawLine(BLACK, 80 , 80 , 180, 400);
+//        canvas->drawLine(BLACK, 80 , 80 , 600, 80);
+//        canvas->drawLine(BLACK, 80 , 80 , 80, 450);
 
     }
 }

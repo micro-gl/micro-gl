@@ -39,10 +39,15 @@ inline color_f_t porter_duff(float Fa, float Fb, const color_f_t & b, const colo
         // in pre-multiplied alpha colors
         //result.rgb = (as * Fa * Cs + ab * Fb * Cb) / result.a;
 
+        result.r = (as_Fa * s.r + ab_Fb * b.r);
+        result.g = (as_Fa * s.g + ab_Fb * b.g);
+        result.b = (as_Fa * s.b + ab_Fb * b.b);
 
-        result.r = (as_Fa * s.r + ab_Fb * b.r) / result.a;
-        result.g = (as_Fa * s.g + ab_Fb * b.g) / result.a;
-        result.b = (as_Fa * s.b + ab_Fb * b.b) / result.a;
+        if(result.a != 1.0f) {
+            result.r /= result.a;
+            result.g /= result.a;
+            result.b /= result.a;
+        }
     }
 
     return result;
@@ -121,11 +126,10 @@ inline color_f_t porter_duff_Lighter(const color_f_t & b, const color_f_t & s) {
 // select porter duff by mode identifier
 inline color_f_t porter_duff_apply(PorterDuff mode, const color_f_t & b, const color_f_t & s) {
     switch (mode) {
-
+        case SourceOver:return porter_duff_SourceOver(b, s);
         case Clear:return porter_duff_Clear(b, s);
         case Copy:return porter_duff_Copy(b, s);
         case Destination:return porter_duff_Destination(b, s);
-        case SourceOver:return porter_duff_SourceOver(b, s);
         case DestinationOver:return porter_duff_DestinationOver(b, s);
         case SourceIn:return porter_duff_SourceIn(b, s);
         case DestinationIn:return porter_duff_DestinationIn(b, s);

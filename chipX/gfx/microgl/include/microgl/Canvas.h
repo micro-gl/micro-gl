@@ -42,6 +42,8 @@ public:
     void clear(const color_f_t &color);
     void blendColor(const color_f_t &val, int x, int y);
     void blendColor(const color_f_t &val, int index);
+    void blendColor(const color_t &val, int x, int y);
+    void blendColor(const color_t &val, int index);
     void drawPixel(const P &val, int x, int y);
     void drawPixel(const P &val, int index);
 
