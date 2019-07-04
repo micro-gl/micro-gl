@@ -139,7 +139,7 @@ template<typename P, typename CODER>
 inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index) {
     color_f_t result;
 
-    if(false){// && hasAlphaChannel()) {
+    if(true){// && hasAlphaChannel()) {
         color_f_t backdrop;
         getPixelColor(index, backdrop);
         const color_f_t & src = val;
@@ -147,7 +147,7 @@ inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index) {
 
         // if we are normal then do nothing
         if(_blend_mode!=BlendMode::Normal) { //  or backdrop alpha is zero is also valid
-            blended = blend_mode_apply(_blend_mode, backdrop, src);
+            blend_mode_apply(_blend_mode, backdrop, src, blended);
 
             if(backdrop.a!=1.0) {
                 blended.r = (1.0 - backdrop.a) * src.r + backdrop.a*blended.r;
@@ -160,7 +160,7 @@ inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index) {
         else
             blended = src;
 
-        result = porter_duff_apply(_porter_duff_mode, backdrop, blended);
+        porter_duff_apply(_porter_duff_mode, backdrop, blended, result);
     } else
         result = val;
 
@@ -181,29 +181,29 @@ template<typename P, typename CODER>
 inline void Canvas<P, CODER>::blendColor(const color_t &val, int index) {
     color_t result;
 
-//    if(false){// && hasAlphaChannel()) {
-//        color_t backdrop;
-//        getPixelColor(index, backdrop);
-//        const color_t & src = val;
-//        color_t blended;
-//
-//        // if we are normal then do nothing
-//        if(_blend_mode!=BlendMode::Normal) { //  or backdrop alpha is zero is also valid
-//            blended = blend_mode_apply(_blend_mode, backdrop, src);
-//
-//            if(backdrop.a!=1.0) {
-//                blended.r = (1.0 - backdrop.a) * src.r + backdrop.a*blended.r;
-//                blended.g = (1.0 - backdrop.a) * src.g + backdrop.a*blended.g;
-//                blended.b = (1.0 - backdrop.a) * src.b + backdrop.a*blended.b;
-//            }
-//
-//            blended.a = float(src.a);
-//        }
-//        else
-//            blended = src;
-//
-//        result = porter_duff_apply(_porter_duff_mode, backdrop, blended);
-//    } else
+    if(true){// && hasAlphaChannel()) {
+        color_t backdrop;
+        getPixelColor(index, backdrop);
+        const color_t & src = val;
+        color_t blended;
+
+        // if we are normal then do nothing
+        if(_blend_mode!=BlendMode::Normal) { //  or backdrop alpha is zero is also valid
+            blended = blend_mode_apply(_blend_mode, backdrop, src);
+
+            if(backdrop.a!=1.0) {
+                blended.r = (1.0 - backdrop.a) * src.r + backdrop.a*blended.r;
+                blended.g = (1.0 - backdrop.a) * src.g + backdrop.a*blended.g;
+                blended.b = (1.0 - backdrop.a) * src.b + backdrop.a*blended.b;
+            }
+
+            blended.a = float(src.a);
+        }
+        else
+            blended = src;
+
+        porter_duff_apply(_porter_duff_mode, backdrop, blended, result);
+    } else
         result = val;
 
     P output{};
@@ -292,7 +292,7 @@ void Canvas<P, CODER>::drawGradient(const color_f_t & startColor,
 
         res = {r, g, b, a};
 
-        drawQuad(res, x, top, 1, h);
+        drawQuad(res, x, top, x+ 1, top+h);
     }
 
 }

@@ -42,7 +42,7 @@ Resources::image_info_t img_1;
 
 //Bitmap<vec3<uint8_t>> *bmp_1;
 
-color_f_t RED{1.0,0.0,0.0, 1.0};
+color_f_t RED{1.0,0.0,0.0, .5};
 color_f_t YELLOW{1.0,1.0,0.0, 1.0};
 color_f_t WHITE{1.0,1.0,1.0, 1.0};
 color_f_t GREEN{0.0,1.0,0.0, 1.0};
@@ -72,13 +72,17 @@ inline void render() {
          */
 
 
-//        canvas->clear(WHITE);
-//    canvas->drawQuad(YELLOW, 0, 0, W, H);
-//    canvas->drawGradient(YELLOW, RED, 0, 240, 640, 140);
-//    canvas->setBlendMode(BlendMode::Normal);
-//    canvas->setPorterDuffMode(PorterDuff::SourceOver);
-//    canvas->drawCircle(GREEN, 320, 240, 240/2);
-//    canvas->drawTriangle(BLUE, 0, 300, 300, 300, 0, 0);
+        canvas->setBlendMode(BlendMode::Multiply);
+        canvas->setPorterDuffMode(PorterDuff::SourceOver);
+        canvas->clear(WHITE);
+        canvas->drawQuad(YELLOW, 0, 0, W/2, H/2);
+        canvas->drawQuad(GREEN, W/2, 0, W, H/2);
+        canvas->drawQuad(RED, W/4, 0,W/4+ W/2, H/2);
+
+//        canvas->drawQuad(YELLOW, 0, 0, W, H);
+//        canvas->drawGradient(YELLOW, RED, 0, 240, 640, 140);
+//        canvas->drawCircle(GREEN, 320, 240, 240/2);
+//        canvas->drawTriangle(RED, 0, 0, 300, 0, 300, 300);
 
 // STARTED 420,
 //        canvas->drawTriangle(*bmp_2, 0, 0, 0.0, 1.0,
@@ -96,7 +100,7 @@ inline void render() {
 
 //        canvas->drawQuad(*bmp_1, 0, 0, 640, 480);
 // started 400, then 230 with re-coding, then 21 without recoding and blending
-        canvas->drawQuad(*bmp_2, 0, 0, 640, 480);
+//        canvas->drawQuad(*bmp_2, 0, 0, 640, 480);
 
 //        canvas->drawLine(BLACK, 80 , 200 , 550, 150);
 //        canvas->drawLine(BLACK, 80 , 80 , 180, 400);

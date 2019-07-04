@@ -21,7 +21,7 @@ point q format returning the answer in q format */
 
 #define fixed_add_fixed(a,b) ((a)+(b))
 #define fixed_sub_fixed(a,b) (fixed_add_fixed(a,-b))
-#define fixed_mul_fixed_2(a,b,q) (((a)*(b))>>(q))
+#define fixed_mul_fixed_2(a,b,q) ((long)((a)*(b))>>(q))
 #define fixed_div_fixed_2(a,b,q) (((a)<<(q))/(b))
 #define fixed_mul_fixed(a,b) (fixed_mul_fixed_2(a,b,Q))
 #define fixed_div_fixed(a,b) (fixed_div_fixed_2(a,b,Q))
@@ -46,6 +46,10 @@ returning the result in q3 format */
 #define fixed_mul_fixed_3(a,b,q1,q2,q3) (fixed_convert_fixed((a)*(b), (q1)+(q2), q3))
 #define fixed_div_fixed_3(a,b,q1,q2,q3) (fixed_convert_fixed(a, q1, (q2)+(q3))/(b))
 
+#define MASK_FRAC_BITS ((1<<Q) - 1)
+
+#define fixed_frac_part(a) ((a) & MASK_FRAC_BITS)
+#define fixed_int_part(a) (fixed_to_int(a))
 #define fixed_half float_to_fixed(0.5f)
 #define fixed_one int_to_fixed(1)
 #define fixed_floor(a) ((int)((a) & ((1<<Q) - 1)))
