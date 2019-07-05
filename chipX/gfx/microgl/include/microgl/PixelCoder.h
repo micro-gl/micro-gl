@@ -9,14 +9,7 @@
 
 #include "Types.h"
 #include "PixelFormat.h"
-
-template <typename T>
-class CRPT
-{
-protected:
-    T& derived() { return static_cast<T&>(*this); }
-    T const& derived() const { return static_cast<T const&>(*this); }
-};
+#include "CRPT.h"
 
 template<typename P, typename IMPL>
 class PixelCoder : public CRPT<IMPL> {

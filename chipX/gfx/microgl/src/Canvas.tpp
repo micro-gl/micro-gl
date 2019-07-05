@@ -180,7 +180,7 @@ template<typename P, typename CODER>
 inline void Canvas<P, CODER>::blendColor(const color_t &val, int index) {
     color_t result=val;
 
-    if(true){
+    if(false){
         color_t backdrop, blended;
         const color_t & src = val;
 
@@ -204,6 +204,90 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index) {
         if(!skip_blending) { //  or backdrop alpha is zero is also valid
             blend_mode_apply(getBlendMode(),
                              backdrop, src, blended,
+                             coder()->bits_per_red(),
+                             coder()->bits_per_green(),
+                             coder()->bits_per_blue());
+
+            unsigned int r_bits = coder()->bits_per_red();
+//            unsigned int g_bits = coder()->bits_per_green();
+//            unsigned int b_bits = coder()->bits_per_blue();
+
+            // get maximal integer value for alpha
+            int max_alpha = (1<<alpha_bits) - 1;
+
+            // if backdrop alpha!= max_alpha let's first composite the blended color, this is
+            // an intermidiate step before Porter-Duff
+            if(backdrop.a < max_alpha) {
+                blended.r = ((max_alpha - backdrop.a) * src.r + backdrop.a * blended.r) >> alpha_bits;
+                blended.g = ((max_alpha - backdrop.a) * src.g + backdrop.a * blended.g) >> alpha_bits;
+                blended.b = ((max_alpha - backdrop.a) * src.b + backdrop.a * blended.b) >> alpha_bits;
+            }
+            else {
+                // do nothing if background is opaque (backdrop alpha==max_alpha) then it will equal blended
+            }
+
+        }
+        else {
+            // skipped blending therefore use src color
+            blended.r = src.r;
+            blended.g = src.g;
+            blended.b = src.b;
+        }
+
+        // preserve src alpha before Porter-Duff
+        blended.a = src.a;
+
+        // finally alpha composite with Porter-Duff equations
+//        porter_duff_apply(_porter_duff_mode, backdrop, blended, result, alpha_bits);
+// todo: disable porter-duff for now
+        result.r=blended.r;
+        result.g=blended.g;
+        result.b=blended.b;
+        result.a=blended.a;
+    } else
+        result = val;
+
+    P output{};
+
+    coder()->encode(result, output);
+
+    drawPixel(output, index);
+}
+
+template<typename P, typename CODER>
+template<typename BlendMode>
+inline void Canvas<P, CODER>::blendColor(const color_t &val, int index) {
+    color_t result=val;
+
+    if(true){
+        color_t backdrop, blended;
+        const color_t & src = val;
+
+        // get backdrop color
+        getPixelColor(index, backdrop);
+
+        uint8_t alpha_bits = coder()->bits_per_alpha();
+
+        // fix alpha bits depth in case we don't natively
+        // support alpha, this is correct because we want to
+        // support compositing even if the surface is opaque.
+        if(alpha_bits==0) {
+            backdrop.a = 255; alpha_bits = 8;
+        }
+
+        // if blend-mode is normal or the backdrop is completely transparent
+        // then we don't need to blend
+        bool skip_blending = false;//getBlendMode()==BlendMode::Normal || backdrop.a==0;
+
+        // if we are normal then do nothing
+        if(!skip_blending) { //  or backdrop alpha is zero is also valid
+//            blend_mode_apply(getBlendMode(),
+//                             backdrop, src, blended,
+//                             coder()->bits_per_red(),
+//                             coder()->bits_per_green(),
+//                             coder()->bits_per_blue());
+
+            BlendMode::blend(backdrop, src, blended,
                              coder()->bits_per_red(),
                              coder()->bits_per_green(),
                              coder()->bits_per_blue());
@@ -718,7 +802,7 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
     int index = top * _width;
     for (int y = top; y < bottom; ++y) {
         for (int x = left; x < right; ++x) {
-            blendColor(color_int, index + x);
+            blendColor<blendmode::Normal>(color_int, index + x);
         }
 
         index += _width;

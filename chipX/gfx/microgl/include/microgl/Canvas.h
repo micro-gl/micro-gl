@@ -8,6 +8,7 @@
 #include "BlendMode.h"
 #include "PixelCoder.h"
 #include "Bitmap.h"
+#include "BlendMode2.h"
 
 template<typename P, typename CODER>
 class Canvas {
@@ -43,6 +44,9 @@ public:
     void blendColor(const color_f_t &val, int x, int y);
     void blendColor(const color_f_t &val, int index);
     void blendColor(const color_t &val, int x, int y);
+    void blendColor(const color_t &val, int index);
+
+    template<typename BlendMode>
     void blendColor(const color_t &val, int index);
     void drawPixel(const P &val, int x, int y);
     void drawPixel(const P &val, int index);
