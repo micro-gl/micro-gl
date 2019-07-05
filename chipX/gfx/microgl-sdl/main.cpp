@@ -42,7 +42,7 @@ Resources::image_info_t img_1;
 
 //Bitmap<vec3<uint8_t>> *bmp_1;
 
-color_f_t RED{1.0,0.0,0.0, .5};
+color_f_t RED{1.0,0.0,0.0, 1.0};
 color_f_t YELLOW{1.0,1.0,0.0, 1.0};
 color_f_t WHITE{1.0,1.0,1.0, 1.0};
 color_f_t GREEN{0.0,1.0,0.0, 1.0};

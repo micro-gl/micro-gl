@@ -25,6 +25,7 @@ public:
                 : _bits_per_red{bits_red}, _bits_per_green{bits_green},
                 _bits_per_blue{bits_blue}, _bits_per_alpha{bits_alpha} {
         _bpp = _bits_per_red + _bits_per_green + _bits_per_blue + _bits_per_alpha;
+        _has_uniform_color_bits = (_bits_per_red==_bits_per_green)&&(_bits_per_red==_bits_per_blue);
     }
 
     void encode(const color_t & input, P & output) {
@@ -63,6 +64,10 @@ public:
         return this->_bits_per_alpha;
     }
 
+    uint8_t has_uniform_color_bits() {
+        return this->_has_uniform_color_bits;
+    }
+
     void convert(const color_f_t & input, color_t & output) {
         P pixel;
         encode(input, pixel);
@@ -85,7 +90,7 @@ protected:
     uint8_t _bits_per_green;
     uint8_t _bits_per_blue;
     uint8_t _bits_per_alpha;
-
+    bool _has_uniform_color_bits;
 };
 
 // array coders
