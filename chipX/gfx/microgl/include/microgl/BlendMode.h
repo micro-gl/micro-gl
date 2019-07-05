@@ -325,10 +325,6 @@ inline void blend_Multiply(const color_t &b,
     output.r = (b.r * s.r)>>r_bits;
     output.g = (b.g * s.g)>>g_bits;
     output.b = (b.b * s.b)>>b_bits;
-
-//    output.r += r_bits;
-//    output.g += g_bits;
-//    output.b += b_bits;
 }
 
 inline void blend_Darken(const color_t &b, const color_t &s, color_t & output) {
@@ -427,8 +423,8 @@ inline void blend_LinearDodge(const color_t &b,
     output.g = std::min(b.g + s.g, (1<<g_bits) - 1);
     output.b = std::min(b.b + s.b, (1<<b_bits) - 1);
 }
+#define MAX_VAL_BITS(bits) ((1<<(bits)) - 1)
 
-#define MAX_VAL_BITS(a) ((1<<(bits)) - 1)
 
 // overlay s
 inline int blend_Overlay(int b, int s, int bits) {

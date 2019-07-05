@@ -72,7 +72,7 @@ inline void render() {
          */
 
 
-        canvas->setBlendMode(BlendMode::Multiply);
+        canvas->setBlendMode(BlendMode::Normal);
         canvas->setPorterDuffMode(PorterDuff::SourceOver);
         canvas->clear(WHITE);
         canvas->drawQuad(YELLOW, 0, 0, W/2, H/2);
