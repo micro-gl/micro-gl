@@ -15,14 +15,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="05462924-bf73-4af8-ac02-6c8577e498a4" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gfx/microgl-sdl/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl-sdl/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/PixelCoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/PixelCoder.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/PorterDuff.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/PorterDuff.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp" afterDir="false" />
-    </list>
+    <list default="true" id="05462924-bf73-4af8-ac02-6c8577e498a4" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <ignored path="$PROJECT_DIR$/desktop/cmake-build-debug/" />
     <ignored path="$PROJECT_DIR$/engine/cmake-build-debug/" />
@@ -42,11 +35,9 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="170">
-              <caret line="204" column="24" selection-start-line="204" selection-start-column="24" selection-end-line="204" selection-end-column="24" />
+            <state relative-caret-position="-661">
+              <caret line="250" selection-start-line="250" selection-end-line="250" />
               <folding>
-                <element signature="e#12713#12741#0" expanded="true" />
-                <element signature="e#12750#12780#0" expanded="true" />
                 <element signature="e#25806#25834#0" expanded="true" />
               </folding>
             </state>
@@ -56,10 +47,10 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="540">
-              <caret line="74" column="22" selection-start-line="74" selection-start-column="22" selection-end-line="74" selection-end-column="22" />
+            <state relative-caret-position="132">
+              <caret line="62" selection-start-line="62" selection-end-line="62" />
               <folding>
-                <element signature="e#206#234#0" expanded="true" />
+                <element signature="e#14#32#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -68,8 +59,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/PorterDuff.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1266">
-              <caret line="271" selection-start-line="271" selection-end-line="271" />
+            <state relative-caret-position="466">
+              <caret line="268" selection-start-line="268" selection-end-line="268" />
               <folding>
                 <element signature="e#14#32#0" expanded="true" />
               </folding>
@@ -77,13 +68,13 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode.h">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/PorterDuff2.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="241">
-              <caret line="469" lean-forward="true" selection-start-line="469" selection-end-line="469" />
+            <state relative-caret-position="250">
+              <caret line="170" selection-start-line="170" selection-end-line="170" />
               <folding>
-                <element signature="e#108#126#0" expanded="true" />
+                <element signature="e#409#427#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -92,17 +83,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Fixed.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="280">
+            <state relative-caret-position="391">
               <caret line="24" column="8" selection-start-line="24" selection-start-column="8" selection-end-line="24" selection-end-column="8" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file:///Library/Developer/CommandLineTools/usr/include/c++/v1/math.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="287">
-              <caret line="1171" selection-start-line="1171" selection-end-line="1171" />
             </state>
           </provider>
         </entry>
@@ -114,6 +96,7 @@
               <caret line="10" column="6" selection-start-line="10" selection-start-column="6" selection-end-line="10" selection-end-column="6" />
               <folding>
                 <element signature="e#63#87#0" expanded="true" />
+                <element signature="e#211#241#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -133,10 +116,26 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/PixelCoder.h">
+        <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="340">
-              <caret line="21" column="35" selection-start-line="21" selection-start-column="31" selection-end-line="21" selection-end-column="35" />
+            <state relative-caret-position="297">
+              <caret line="79" column="35" selection-start-line="79" selection-start-column="35" selection-end-line="79" selection-end-column="35" />
+              <folding>
+                <element signature="e#108#126#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode2.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="92">
+              <caret line="614" column="50" lean-forward="true" selection-start-line="614" selection-start-column="50" selection-end-line="614" selection-end-column="50" />
+              <folding>
+                <element signature="e#409#427#0" expanded="true" />
+                <element signature="e#524#539#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -144,8 +143,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/main.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="26" column="12" selection-start-line="26" selection-start-column="12" selection-end-line="26" selection-end-column="12" />
+            <state relative-caret-position="271">
+              <caret line="79" column="22" selection-start-line="79" selection-start-column="22" selection-end-line="79" selection-end-column="22" />
               <folding>
                 <element signature="e#99#117#0" expanded="true" />
               </folding>
@@ -284,6 +283,17 @@
             <path>
               <item name="chipX" type="b2602c69:ProjectViewProjectNode" />
               <item name="chipX" type="462c0819:PsiDirectoryNode" />
+              <item name="cmake-build-release" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="chipX" type="b2602c69:ProjectViewProjectNode" />
+              <item name="chipX" type="462c0819:PsiDirectoryNode" />
+              <item name="cmake-build-release" type="462c0819:PsiDirectoryNode" />
+              <item name="gfx" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="chipX" type="b2602c69:ProjectViewProjectNode" />
+              <item name="chipX" type="462c0819:PsiDirectoryNode" />
               <item name="gfx" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -326,6 +336,13 @@
               <item name="chipX" type="462c0819:PsiDirectoryNode" />
               <item name="gfx" type="462c0819:PsiDirectoryNode" />
               <item name="microgl-sdl" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="chipX" type="b2602c69:ProjectViewProjectNode" />
+              <item name="chipX" type="462c0819:PsiDirectoryNode" />
+              <item name="gfx" type="462c0819:PsiDirectoryNode" />
+              <item name="microgl-sdl" type="462c0819:PsiDirectoryNode" />
+              <item name="bin" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -409,19 +426,19 @@
     <property name="settings.editor.selected.configurable" value="CMakeSettings" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/gfx/microgl-sdl/assets" />
-      <recent name="$PROJECT_DIR$/gfx/microgl/src" />
-      <recent name="$PROJECT_DIR$/gfx/microgl/include/microgl" />
-      <recent name="$PROJECT_DIR$/gfx/microgl-sdl/libs" />
-      <recent name="$PROJECT_DIR$/gfx/microgl-sdl/src" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/gfx/microgl/include/microgl" />
       <recent name="$PROJECT_DIR$/gfx/microgl/include" />
       <recent name="$PROJECT_DIR$/gfx" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/desktop/cmake" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/gfx/microgl-sdl/assets" />
+      <recent name="$PROJECT_DIR$/gfx/microgl/src" />
+      <recent name="$PROJECT_DIR$/gfx/microgl/include/microgl" />
+      <recent name="$PROJECT_DIR$/gfx/microgl-sdl/libs" />
+      <recent name="$PROJECT_DIR$/gfx/microgl-sdl/src" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -482,7 +499,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="389537000" />
+    <option name="totallyTimeSpent" value="389584000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -502,7 +519,7 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32995495" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4978166" weight="0.32995495" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4978166" visible="true" weight="0.32995495" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.4984404" weight="0.39977476" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -905,17 +922,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Fixed.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="280">
+        <state relative-caret-position="391">
           <caret line="24" column="8" selection-start-line="24" selection-start-column="8" selection-end-line="24" selection-end-column="8" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="540">
-          <caret line="74" column="22" selection-start-line="74" selection-start-column="22" selection-end-line="74" selection-end-column="22" />
+        <state relative-caret-position="132">
+          <caret line="62" selection-start-line="62" selection-end-line="62" />
           <folding>
-            <element signature="e#206#234#0" expanded="true" />
+            <element signature="e#14#32#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -933,8 +950,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/PorterDuff.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1266">
-          <caret line="271" selection-start-line="271" selection-end-line="271" />
+        <state relative-caret-position="466">
+          <caret line="268" selection-start-line="268" selection-end-line="268" />
           <folding>
             <element signature="e#14#32#0" expanded="true" />
           </folding>
@@ -954,14 +971,15 @@
           <caret line="10" column="6" selection-start-line="10" selection-start-column="6" selection-end-line="10" selection-end-column="6" />
           <folding>
             <element signature="e#63#87#0" expanded="true" />
+            <element signature="e#211#241#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/main.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="26" column="12" selection-start-line="26" selection-start-column="12" selection-end-line="26" selection-end-column="12" />
+        <state relative-caret-position="271">
+          <caret line="79" column="22" selection-start-line="79" selection-start-column="22" selection-end-line="79" selection-end-column="22" />
           <folding>
             <element signature="e#99#117#0" expanded="true" />
           </folding>
@@ -970,11 +988,9 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="204" column="24" selection-start-line="204" selection-start-column="24" selection-end-line="204" selection-end-column="24" />
+        <state relative-caret-position="-661">
+          <caret line="250" selection-start-line="250" selection-end-line="250" />
           <folding>
-            <element signature="e#12713#12741#0" expanded="true" />
-            <element signature="e#12750#12780#0" expanded="true" />
             <element signature="e#25806#25834#0" expanded="true" />
           </folding>
         </state>
@@ -982,8 +998,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="241">
-          <caret line="469" lean-forward="true" selection-start-line="469" selection-end-line="469" />
+        <state relative-caret-position="297">
+          <caret line="79" column="35" selection-start-line="79" selection-start-column="35" selection-end-line="79" selection-end-column="35" />
           <folding>
             <element signature="e#108#126#0" expanded="true" />
           </folding>
