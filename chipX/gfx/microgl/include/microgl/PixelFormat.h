@@ -48,6 +48,10 @@ inline uint32_t encode_RGB888(uint8_t r, uint8_t g, uint8_t b) {
     return (r << 16) + (g << 8) + b;
 }
 
+inline uint32_t encode_RGB888_f(color_f_t &col) {
+    return (uint8_t(col.r*255) << 16) + (uint8_t(col.g*255) << 8) + uint8_t(col.b*255);
+}
+
 inline uint16_t encode_RGB565(uint8_t r, uint8_t g, uint8_t b) {
     return ((r & 0x1F) << 11) + ((g & 0x3F) << 5) + ((b & 0x1F));
 }

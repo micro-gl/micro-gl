@@ -31,6 +31,14 @@ struct vec2 {
 template<typename T>
 struct vec3 {
     T x, y, z;
+
+    vec3 &operator=(const vec3 & a) {
+        x=a.x;
+        y=a.y;
+        z=a.z;
+
+        return *this;
+    }
 };
 
 template<typename T>
@@ -41,7 +49,8 @@ struct vec4 {
 typedef vec2<float> vec2_f;
 typedef vec2<uint8_t > vec2_8i;
 typedef vec2<uint16_t > vec2_16i;
-typedef vec2<uint32_t > vec2_32i;
+typedef vec2<uint32_t > vec2_32ui;
+typedef vec2<int32_t > vec2_32i;
 
 typedef vec3<float> vec3_f;
 typedef vec3<uint8_t > vec3_8i;

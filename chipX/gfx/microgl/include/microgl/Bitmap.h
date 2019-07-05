@@ -7,35 +7,60 @@
 #include "FrameBuffer.h"
 #include "PixelCoder.h"
 
-template <typename P>
+template <typename P, typename CODER>
 class Bitmap : public FrameBuffer<P> {
 public:
-    Bitmap(int w, int h, PixelCoder<P> * $coder);
-    Bitmap(P* $pixels, int w, int h, PixelCoder<P> * $coder);
-    Bitmap(uint8_t* $pixels, int w, int h, PixelCoder<P> * $coder);
+    template <typename P2, typename CODER2>
+    Bitmap<P2, CODER2> * convertToBitmap();
+
+    template <typename P2, typename CODER2>
+    void copyToBitmap(Bitmap<P2, CODER2> & bmp);
+
+    Bitmap(int w, int h, PixelCoder<P, CODER> * $coder);
+    Bitmap(P* $pixels, int w, int h, PixelCoder<P, CODER> * $coder);
+    Bitmap(uint8_t* $pixels, int w, int h, PixelCoder<P, CODER> * $coder);
     ~Bitmap();
 
     P pixelAt(int x, int y);
     P pixelAt(int index);
-    color_t decodePixelAt(int x, int y);
-    color_t decodePixelAt(int index);
-    color_f_t decodeNormalizedPixelAt(int x, int y);
-    color_f_t decodeNormalizedPixelAt(int index);
+
+    // decoders
+    void decode(int x, int y, color_t &output);
+    void decode(int index, color_t &output);
+    void decode(int x, int y, color_f_t &output);
+    void decode(int index, color_f_t &output);
+    // encoders
+//    void encodeColorToPixel(color_t &color, P & output);
+//    void encodeColorToPixel(int index, color_t &output);
+//    void encodeNormalizedColorToPixel(int x, int y, color_f_t &output);
+//    void encodeNormalizedColorToPixel(int index, color_f_t &output);
+
+    void writeColor(int index, const color_t & color);
+    void writeColor(int x, int y, const color_t & color);
+    void writeColor(int index, const color_f_t & color);
+    void writeColor(int x, int y, const color_f_t & color);
+
     int width();
     int height();
-    PixelFormat & format();
-    PixelCoder<P> * coder();
+    PixelFormat format();
+    PixelCoder<P, CODER> * coder();
+
+    RGB888_PACKED_32 * hi() {
+        return _hi;
+    }
 
 protected:
+    RGB888_PACKED_32 *_hi;
     int _width = 0, _height = 0;
     PixelFormat _format;
-    PixelCoder<P> * _coder;
+    PixelCoder<P, CODER> * _coder;
 
 };
 
-typedef Bitmap<vec3<uint8_t>> Bitmap24bitU8;
-typedef Bitmap<uint32_t> Bitmap32bitPacked;
-typedef Bitmap<uint16_t> Bitmap16BitPacked;
-typedef Bitmap<uint8_t> Bitmap8Bit;
+//
+//typedef Bitmap<vec3<uint8_t>, CODER> Bitmap24bitU8<CODER>;
+//typedef Bitmap<uint32_t, CODER> Bitmap32bitPacked;
+//typedef Bitmap<uint16_t, CODER> Bitmap16BitPacked;
+//typedef Bitmap<uint8_t, CODER> Bitmap8Bit;
 
 #include "../src/Bitmap.tpp"

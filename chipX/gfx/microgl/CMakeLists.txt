@@ -8,7 +8,7 @@ set (CMAKE_CXX_STANDARD 11)
 #endif()
 
 message(${CMAKE_BUILD_TYPE})
-
+#use this - should warn on inline functions that were not inlined -Winline
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -26,7 +26,7 @@ set(sources
         src/PixelFormat.cpp
         src/BlendMode.cpp
         src/PorterDuff.cpp
-        )
+        include/microgl/CRPT.h)
 
 add_library(${PROJECT_NAME} ${sources})
 

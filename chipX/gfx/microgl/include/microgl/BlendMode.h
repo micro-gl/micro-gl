@@ -4,6 +4,8 @@
 
 #include "Types.h"
 #include <math.h>
+#include <algorithm>
+
 
 enum BlendMode {
     PassThrough = -2,
@@ -43,15 +45,18 @@ enum BlendMode {
     Luminosity = 26,
 };
 
+// float point version
+
 // overlay s
 inline float blend_Overlay(float b, float s) {
     return b<0.5?(2.0*b*s):(1.0-2.0*(1.0-b)*(1.0-s));
 }
 
-inline color_f_t blend_Overlay(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{blend_Overlay(b.r,s.r),
-                     blend_Overlay(b.g,s.g),
-                     blend_Overlay(b.b,s.b)};
+inline void blend_Overlay(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+
+    output.r=blend_Overlay(b.r,s.r);
+    output.g=blend_Overlay(b.g,s.g);
+    output.b=blend_Overlay(b.b,s.b);
 }
 
 // normal s
@@ -59,12 +64,11 @@ inline color_f_t blend_Normal(const color_f_t &b, const color_f_t &s) {
     return s;
 }
 
-
 // multiply s
-inline color_f_t blend_Multiply(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{   .r=b.r*s.r,
-            .g=b.g*s.g,
-            .b=b.b*s.b };
+inline void blend_Multiply(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=b.r*s.r;
+    output.g=b.g*s.g;
+    output.b=b.b*s.b;
 }
 
 // divide s
@@ -72,10 +76,10 @@ inline float blend_Divide(float b, float s) {
     return (s==0.0) ? 1.0 : (b/s);
 }
 
-inline color_f_t blend_Divide(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{ blend_Divide(b.r,s.r),
-                      blend_Divide(b.g,s.g),
-                      blend_Divide(b.b,s.b)};
+inline void blend_Divide(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=blend_Divide(b.r,s.r);
+    output.g=blend_Divide(b.g,s.g);
+    output.b=blend_Divide(b.b,s.b);
 }
 
 // screen s
@@ -83,10 +87,10 @@ inline float blend_Screen(float b, float s) {
     return 1.0-((1.0-b)*(1.0-s));
 }
 
-inline color_f_t blend_Screen(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{blend_Screen(b.r,s.r),
-                     blend_Screen(b.g,s.g),
-                     blend_Screen(b.b,s.b)};
+inline void blend_Screen(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=blend_Screen(b.r,s.r);
+    output.g=blend_Screen(b.g,s.g);
+    output.b=blend_Screen(b.b,s.b);
 }
 
 // darken s
@@ -94,10 +98,10 @@ inline float blend_Darken(float b, float s) {
     return fmin(s,b);
 }
 
-inline color_f_t blend_Darken(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{blend_Darken(b.r,s.r),
-                     blend_Darken(b.g,s.g),
-                     blend_Darken(b.b,s.b)};
+inline void blend_Darken(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=blend_Darken(b.r,s.r);
+    output.g=blend_Darken(b.g,s.g);
+    output.b=blend_Darken(b.b,s.b);
 }
 
 // lighten s
@@ -105,10 +109,10 @@ inline float blend_Lighten(float b, float s) {
     return fmax(s,b);
 }
 
-inline color_f_t blend_Lighten(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{blend_Lighten(b.r,s.r),
-                     blend_Lighten(b.g,s.g),
-                     blend_Lighten(b.b,s.b)};
+inline void blend_Lighten(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=blend_Lighten(b.r,s.r);
+    output.g=blend_Lighten(b.g,s.g);
+    output.b=blend_Lighten(b.b,s.b);
 }
 
 // color-dodge s
@@ -116,10 +120,10 @@ inline float blend_ColorDodge(float b, float s) {
     return (s==1.0)?s:fmin(b/(1.0-s),1.0);
 }
 
-inline color_f_t blend_ColorDodge(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{blend_ColorDodge(b.r,s.r),
-                     blend_ColorDodge(b.g,s.g),
-                     blend_ColorDodge(b.b,s.b)};
+inline void blend_ColorDodge(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=blend_ColorDodge(b.r,s.r);
+    output.g=blend_ColorDodge(b.g,s.g);
+    output.b=blend_ColorDodge(b.b,s.b);
 }
 
 // color-burn s
@@ -127,15 +131,15 @@ inline float blend_ColorBurn(float b, float s) {
     return (s==0.0)?s:fmax((1.0-((1.0-b)/s)),0.0);
 }
 
-inline color_f_t blend_ColorBurn(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{blend_ColorBurn(b.r,s.r),
-                     blend_ColorBurn(b.g,s.g),
-                     blend_ColorBurn(b.b,s.b)};
+inline void blend_ColorBurn(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=blend_ColorBurn(b.r,s.r);
+    output.g=blend_ColorBurn(b.g,s.g);
+    output.b=blend_ColorBurn(b.b,s.b);
 }
 
 // hard-light s
-inline color_f_t blend_HardLight(const color_f_t &b, const color_f_t &s) {
-    return blend_Overlay(s,b);
+inline void blend_HardLight(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    blend_Overlay(s,b, output);
 }
 
 // soft-light s
@@ -143,28 +147,24 @@ inline float blend_SoftLight(float b, float s) {
     return (s<0.5) ? (2.0*b*s+b*b*(1.0-2.0*s)) : (sqrt(b)*(2.0*s-1.0)+2.0*b*(1.0-s));
 }
 
-inline color_f_t blend_SoftLight(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{blend_SoftLight(b.r,s.r),
-                     blend_SoftLight(b.g,s.g),
-                     blend_SoftLight(b.b,s.b)};
+inline void blend_SoftLight(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=blend_SoftLight(b.r,s.r);
+    output.g=blend_SoftLight(b.g,s.g);
+    output.b=blend_SoftLight(b.b,s.b);
 }
 
 // difference s
-inline color_f_t blend_Difference(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{abs(b.r-s.r),
-                     abs(b.g-s.g),
-                     abs(b.b-s.b)};
+inline void blend_Difference(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=abs(b.r-s.r);
+    output.g=abs(b.g-s.g);
+    output.b=abs(b.b-s.b);
 }
 
 // exclusion s
-inline color_f_t blend_Exclusion(const color_f_t &b, const color_f_t &s) {
-    color_f_t res;
-
-    res.r = b.r + s.r - 2.0*b.r*s.r;
-    res.g = b.g + s.g - 2.0*b.g*s.g;
-    res.b = b.b + s.b - 2.0*b.b*s.b;
-
-    return res;
+inline void blend_Exclusion(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r = b.r + s.r - 2.0*b.r*s.r;
+    output.g = b.g + s.g - 2.0*b.g*s.g;
+    output.b = b.b + s.b - 2.0*b.b*s.b;
 }
 
 // linear-burn
@@ -173,14 +173,10 @@ inline float blend_LinearBurn(float b, float s) {
     return fmax(b + s - 1.0, 0.0f);
 }
 
-inline color_f_t blend_LinearBurn(const color_f_t &b, const color_f_t &s) {
-    color_f_t res;
-
-    res.r = fmax(b.r + s.r - 1.0, 0.0f);
-    res.g = fmax(b.g + s.g - 1.0, 0.0f);
-    res.b = fmax(b.b + s.b - 1.0, 0.0f);
-
-    return res;
+inline void blend_LinearBurn(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r = fmax(b.r + s.r - 1.0, 0.0f);
+    output.g = fmax(b.g + s.g - 1.0, 0.0f);
+    output.b = fmax(b.b + s.b - 1.0, 0.0f);
 }
 
 // linear-dodge s
@@ -189,15 +185,10 @@ inline float blend_LinearDodge(float b, float s) {
     return fmin(b+s,1.0);
 }
 
-inline color_f_t blend_LinearDodge(const color_f_t &b, const color_f_t &s) {
-    // Note : Same implementation as sAdd
-    color_f_t res;
-
-    res.r = fmin(b.r + s.r, 1.0f);
-    res.g = fmin(b.g + s.g, 1.0f);
-    res.b = fmin(b.b + s.b, 1.0f);
-
-    return res;
+inline void blend_LinearDodge(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r = fmin(b.r + s.r, 1.0f);
+    output.g = fmin(b.g + s.g, 1.0f);
+    output.b = fmin(b.b + s.b, 1.0f);
 }
 
 // linear-light s
@@ -205,21 +196,17 @@ inline float blend_LinearLight(float b, float s) {
     return (s < 0.5) ? blend_LinearBurn(b,(2.0*s)) : blend_LinearBurn(b,(2.0*(s-0.5)));
 }
 
-inline color_f_t blend_LinearLight(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{blend_LinearLight(b.r,s.r),
-                     blend_LinearLight(b.g,s.g),
-                     blend_LinearLight(b.b,s.b)};
+inline void blend_LinearLight(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=blend_LinearLight(b.r,s.r);
+    output.g=blend_LinearLight(b.g,s.g);
+    output.b=blend_LinearLight(b.b,s.b);
 }
 
 // negation s
-inline color_f_t blend_Negation(const color_f_t &b, const color_f_t &s) {
-    color_f_t res;
-
-    res.r = 1.0 - abs(1.0 - b.r - s.r);
-    res.g = 1.0 - abs(1.0 - b.g - s.g);
-    res.b = 1.0 - abs(1.0 - b.b - s.b);
-
-    return res;
+inline void blend_Negation(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r = 1.0 - abs(1.0 - b.r - s.r);
+    output.g = 1.0 - abs(1.0 - b.g - s.g);
+    output.b = 1.0 - abs(1.0 - b.b - s.b);
 }
 
 // pin-light s
@@ -227,10 +214,10 @@ inline float blend_PinLight(float b, float s) {
     return (s < 0.5) ? blend_Darken(b,(2.0*s)) : blend_Lighten(b,(2.0*(s-0.5)));
 }
 
-inline color_f_t blend_PinLight(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{blend_PinLight(b.r,s.r),
-                     blend_PinLight(b.g,s.g),
-                     blend_PinLight(b.b,s.b)};
+inline void blend_PinLight(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=blend_PinLight(b.r,s.r);
+    output.g=blend_PinLight(b.g,s.g);
+    output.b=blend_PinLight(b.b,s.b);
 }
 
 // reflect s
@@ -238,10 +225,10 @@ inline float blend_Reflect(float b, float s) {
     return (s==1.0)?s:fmin(b*b/(1.0-s),1.0);
 }
 
-inline color_f_t blend_Reflect(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{blend_Reflect(b.r,s.r),
-                     blend_Reflect(b.g,s.g),
-                     blend_Reflect(b.b,s.b)};
+inline void blend_Reflect(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=blend_Reflect(b.r,s.r);
+    output.g=blend_Reflect(b.g,s.g);
+    output.b=blend_Reflect(b.b,s.b);
 }
 
 // substract s
@@ -249,11 +236,11 @@ inline float blend_Substract(float b, float s) {
     return fmax(b+s-1.0,0.0);
 }
 
-inline color_f_t blend_Substract(const color_f_t &b, const color_f_t &s) {
+inline void blend_Substract(const color_f_t &b, const color_f_t &s, color_f_t & output) {
 
-    return color_f_t {blend_Substract(b.r, s.r),
-                      blend_Substract(b.g, s.g),
-                      blend_Substract(b.b, s.b)};
+    output.r=blend_Substract(b.r, s.r);
+    output.g=blend_Substract(b.g, s.g);
+    output.b=blend_Substract(b.b, s.b);
 }
 
 // substract s
@@ -261,10 +248,10 @@ inline float blend_Subtract(float b, float s) {
     return fmax(b-s, 0.0);
 }
 
-inline color_f_t blend_Subtract(const color_f_t &b, const color_f_t &s) {
-    return color_f_t {blend_Subtract(b.r, s.r),
-                      blend_Subtract(b.g, s.g),
-                      blend_Subtract(b.b, s.b)};
+inline void blend_Subtract(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=blend_Subtract(b.r, s.r);
+    output.g=blend_Subtract(b.g, s.g);
+    output.b=blend_Subtract(b.b, s.b);
 }
 
 // vivid-light s
@@ -272,10 +259,10 @@ inline float blend_VividLight(float b, float s) {
     return (s < 0.5) ? blend_ColorBurn(b, (2.0*s)) : blend_ColorDodge(b,(2.0*(s-0.5)));
 }
 
-inline color_f_t blend_VividLight(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{blend_VividLight(b.r,s.r),
-                     blend_VividLight(b.g,s.g),
-                     blend_VividLight(b.b,s.b)};
+inline void blend_VividLight(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=blend_VividLight(b.r,s.r);
+    output.g=blend_VividLight(b.g,s.g);
+    output.b=blend_VividLight(b.b,s.b);
 }
 
 // hard-mix s
@@ -283,50 +270,231 @@ inline float blend_HardMix(float b, float s) {
     return (blend_VividLight(b,s)<0.5)?0.0:1.0;
 }
 
-inline color_f_t blend_HardMix(const color_f_t &b, const color_f_t &s) {
-    return color_f_t{blend_HardMix(b.r,s.r),
-                     blend_HardMix(b.g,s.g),
-                     blend_HardMix(b.b,s.b)};
+inline void blend_HardMix(const color_f_t &b, const color_f_t &s, color_f_t & output) {
+    output.r=blend_HardMix(b.r,s.r);
+    output.g=blend_HardMix(b.g,s.g);
+    output.b=blend_HardMix(b.b,s.b);
 }
-
 
 // select and apply s mode by identifier.
 // sing assumes that colors are NOT alpha pre-multiplied
-inline color_f_t blend_mode_apply(BlendMode mode, const color_f_t &b, const color_f_t &s) {
+inline void blend_mode_apply(BlendMode mode,
+                             const color_f_t &b,
+                             const color_f_t &s,
+                             color_f_t & output) {
     switch (mode) {
-
-        case PassThrough:return s;
-        case None:return s;
-        case Normal:return s;
-        case Dissolve:return s;
-        case Darken:return blend_Darken(b, s);
-        case Multiply:return blend_Multiply(b, s);
-        case ColorBurn:return blend_ColorBurn(b, s);
-        case LinearBurn:return blend_LinearBurn(b, s);
-        case DarkerColor:return s;
-        case Lighten:return blend_Lighten(b, s);
-        case Screen:return blend_Screen(b, s);
-        case ColorDodge:return blend_ColorDodge(b, s);
-        case LinearDodge:return blend_LinearDodge(b, s);
-        case LighterColor:return s;
-        case Overlay:return blend_Overlay(b, s);
-        case SoftLight:return blend_SoftLight(b, s);
-        case HardLight: return blend_HardLight(b, s);
-        case VividLight:return blend_VividLight(b, s);
-        case LinearLight:return blend_LinearLight(b, s);
-        case PinLight:return blend_PinLight(b, s);
-        case HardMix:return blend_HardMix(b, s);
-        case Difference:return blend_Difference(b, s);
-        case Exclusion:return blend_Exclusion(b, s);
-        case Subtract:return blend_Subtract(b, s);
-        case Divide:return blend_Divide(b, s);
-        case Hue:return s;
-        case Saturation:return s;
-        case Color:return s;
-        case Luminosity:return s;
+//        case PassThrough:return s;
+//        case None:return s;
+        case Multiply: blend_Multiply(b, s, output);break;
+        case Normal:output=s;break;
+        case Dissolve:output=s;break;
+        case Darken: blend_Darken(b, s, output);break;
+        case ColorBurn: blend_ColorBurn(b, s, output);break;
+        case LinearBurn: blend_LinearBurn(b, s, output);break;
+        case DarkerColor: output=s;break;
+        case Lighten: blend_Lighten(b, s, output);break;
+        case Screen: blend_Screen(b, s, output);break;
+        case ColorDodge: blend_ColorDodge(b, s, output);break;
+        case LinearDodge: blend_LinearDodge(b, s, output);break;
+        case LighterColor: output=s;break;
+        case Overlay: blend_Overlay(b, s, output);break;
+        case SoftLight: blend_SoftLight(b, s, output);break;
+        case HardLight:  blend_HardLight(b, s, output);break;
+        case VividLight: blend_VividLight(b, s, output);break;
+        case LinearLight: blend_LinearLight(b, s, output);break;
+        case PinLight: blend_PinLight(b, s, output);break;
+        case HardMix: blend_HardMix(b, s, output);break;
+        case Difference: blend_Difference(b, s, output);break;
+        case Exclusion: blend_Exclusion(b, s, output);break;
+        case Subtract: blend_Subtract(b, s, output);break;
+        case Divide: blend_Divide(b, s, output);break;
+        default: output=s;break;
     }
 
-    return s;
 }
+
+// integer blending
+
+// multiply s
+inline void blend_Multiply(const color_t &b,
+                           const color_t &s,
+                           color_t & output,
+                           const uint8_t r_bits,
+                           const uint8_t g_bits,
+                           const uint8_t b_bits) {
+    output.r = (b.r * s.r)>>r_bits;
+    output.g = (b.g * s.g)>>g_bits;
+    output.b = (b.b * s.b)>>b_bits;
+}
+
+inline void blend_Darken(const color_t &b, const color_t &s, color_t & output) {
+    output.r=std::min(b.r,s.r);
+    output.g=std::min(b.g,s.g);
+    output.b=std::min(b.b,s.b);
+}
+
+inline int blend_ColorBurn(int b, int s, uint8_t bits) {
+    int max = (1<<bits) - 1;
+
+    return (s==0) ? s : std::max((max - ((max-b)<<bits)/s), 0);
+
+//    return (s==0.0)?s:fmax((1.0-((1.0-b)/s)),0.0);
+}
+
+inline void blend_ColorBurn(const color_t &b,
+                            const color_t &s,
+                            color_t & output,
+                            uint8_t r_bits,
+                            uint8_t g_bits,
+                            uint8_t b_bits) {
+    output.r=blend_ColorBurn(b.r, s.r, r_bits);
+    output.g=blend_ColorBurn(b.g, s.g, g_bits);
+    output.b=blend_ColorBurn(b.b, s.b, b_bits);
+}
+
+inline int blend_LinearBurn(int b, int s, uint8_t bits) {
+    return std::max(b + s - (1<<bits) - 1, 0);
+}
+
+inline void blend_LinearBurn(const color_t &b,
+                             const color_t &s,
+                             color_t & output,
+                             uint8_t r_bits,
+                             uint8_t g_bits,
+                             uint8_t b_bits) {
+    output.r = blend_LinearBurn(b.r, s.r, r_bits);
+    output.g = blend_LinearBurn(b.g, s.g, g_bits);
+    output.b = blend_LinearBurn(b.b, s.b, b_bits);
+}
+
+inline void blend_Lighten(const color_t &b, const color_t &s, color_t & output) {
+    output.r=std::max(b.r,s.r);
+    output.g=std::max(b.g,s.g);
+    output.b=std::max(b.b,s.b);
+}
+
+// screen s
+inline int blend_Screen(int b, int s, int bits) {
+    int max = (1<<bits) - 1;
+
+    return max-(((max-b)*(max-s))>>bits);
+
+//    return 1.0-((1.0-b)*(1.0-s));
+}
+
+inline void blend_Screen(const color_t &b,
+                         const color_t &s,
+                         color_t & output,
+                         uint8_t r_bits,
+                         uint8_t g_bits,
+                         uint8_t b_bits) {
+    output.r=blend_Screen(b.r,s.r,r_bits);
+    output.g=blend_Screen(b.g,s.g,g_bits);
+    output.b=blend_Screen(b.b,s.b,b_bits);
+}
+
+// color-dodge s
+inline int blend_ColorDodge(int b, int s, int bits) {
+    int max = (1<<bits) - 1;
+
+    return (s==max) ? s : std::min((b<<bits)/(max-s), max);
+
+//    return (s==1.0)?s:fmin(b/(1.0-s),1.0);
+}
+
+inline void blend_ColorDodge(const color_t &b,
+                             const color_t &s,
+                             color_t & output,
+                             uint8_t r_bits,
+                             uint8_t g_bits,
+                             uint8_t b_bits) {
+    output.r=blend_ColorDodge(b.r, s.r, r_bits);
+    output.g=blend_ColorDodge(b.g, s.g, g_bits);
+    output.b=blend_ColorDodge(b.b, s.b, b_bits);
+}
+
+inline void blend_LinearDodge(const color_t &b,
+                              const color_t &s,
+                              color_t & output,
+                              uint8_t r_bits,
+                              uint8_t g_bits,
+                              uint8_t b_bits) {
+    output.r = std::min(b.r + s.r, (1<<r_bits) - 1);
+    output.g = std::min(b.g + s.g, (1<<g_bits) - 1);
+    output.b = std::min(b.b + s.b, (1<<b_bits) - 1);
+}
+#define MAX_VAL_BITS(bits) ((1<<(bits)) - 1)
+
+
+// overlay s
+inline int blend_Overlay(int b, int s, int bits) {
+    int max = MAX_VAL_BITS(bits);
+
+    return 2*b<max ? ((2*b*s)>>bits) : (max - ((2*(max-b)*(max-s))>>bits));
+}
+
+inline void blend_Overlay(const color_t &b,
+                          const color_t &s,
+                          color_t & output,
+                          uint8_t r_bits,
+                          uint8_t g_bits,
+                          uint8_t b_bits) {
+
+    output.r=blend_Overlay(b.r,s.r, r_bits);
+    output.g=blend_Overlay(b.g,s.g, g_bits);
+    output.b=blend_Overlay(b.b,s.b, b_bits);
+}
+
+inline void blend_Subtract(const color_t &b, const color_t &s, color_t & output) {
+    output.r=std::max(b.r-s.r, 0);
+    output.g=std::max(b.g-s.g, 0);
+    output.b=std::max(b.b-s.b, 0);
+}
+
+// select and apply s mode by identifier.
+// sing assumes that colors are NOT alpha pre-multiplied
+inline void blend_mode_apply(BlendMode mode,
+                             const color_t &b,
+                             const color_t &s,
+                             color_t & output,
+                             uint8_t r_bits,
+                             uint8_t g_bits,
+                             uint8_t b_bits) {
+//    blend_Multiply(b, s, output, r_bits, g_bits, b_bits);
+//
+//return;
+    switch (mode) {
+//        case PassThrough:return s;
+//        case None:return s;
+        case Multiply: blend_Multiply(b, s, output, r_bits, g_bits, b_bits);break;
+        case Normal:output=s;break;
+        case Dissolve:output=s;break;
+        case Darken: blend_Darken(b, s, output);break;
+        case ColorBurn: blend_ColorBurn(b, s, output, r_bits, g_bits, b_bits);break;
+        case LinearBurn: blend_LinearBurn(b, s, output, r_bits, g_bits, b_bits);break;
+        case DarkerColor: output=s;break;
+        case Lighten: blend_Lighten(b, s, output);break;
+        case Screen: blend_Screen(b, s, output, r_bits, g_bits, b_bits);break;
+        case ColorDodge: blend_ColorDodge(b, s, output, r_bits, g_bits, b_bits);break;
+        case LinearDodge: blend_LinearDodge(b, s, output, r_bits, g_bits, b_bits);break;
+        case LighterColor: output=s;break;
+        case Overlay: blend_Overlay(b, s, output, r_bits, g_bits, b_bits);break;
+        case Subtract: blend_Subtract(b, s, output);break;
+
+
+//        case SoftLight: blend_SoftLight(b, s, output);break;
+//        case HardLight:  blend_HardLight(b, s, output);break;
+//        case VividLight: blend_VividLight(b, s, output);break;
+//        case LinearLight: blend_LinearLight(b, s, output);break;
+//        case PinLight: blend_PinLight(b, s, output);break;
+//        case HardMix: blend_HardMix(b, s, output);break;
+//        case Difference: blend_Difference(b, s, output);break;
+//        case Exclusion: blend_Exclusion(b, s, output);break;
+//        case Divide: blend_Divide(b, s, output);break;
+        default: output=s;break;
+    }
+
+}
+
 
 #pragma clang diagnostic pop

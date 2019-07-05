@@ -44,8 +44,14 @@ T *FrameBuffer<T>::data() {
 
 template<typename T>
 void FrameBuffer<T>::fill(const T &value) {
-    memset(_data, value, _size * sizeof(T));
+//    memset(_data, value, _size * sizeof(T));
+//    memcpy(_data, value, _size * sizeof(T));
 //    std::fill(_pixels, &_pixels[_width*_height], value);
+
+    int size2 = _size;
+    for (int ix = 0; ix < size2; ++ix) {
+        _data[ix] = value;
+    }
 }
 
 

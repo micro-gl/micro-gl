@@ -16,27 +16,20 @@
 #include <microgl/Bitmap.h>
 
 #define TEST_ITERATIONS 1
-#define W 640
-#define H 480
-
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-typedef Bitmap<vec3<uint8_t>, RGB888_ARRAY> Bitmap24bitU8;
-typedef Bitmap<uint32_t, RGB888_PACKED_32> Bitmap24bit_Packed32;
-
-typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
-typedef Canvas<vec3<uint8_t >, RGB888_ARRAY> Canvas24BitU8;
+//typedef Bitmap<vec3<uint8_t>, CODER> Bitmap24bitU8<CODER>;
+typedef Bitmap<uint32_t, RGB888_PACKED_32> Bitmap32bitPacked;
+typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas32Bit;
+//typedef Bitmap<uint16_t, CODER> Bitmap16BitPacked;
+//typedef Bitmap<uint8_t, CODER> Bitmap8Bit;
 
 
 //Canvas16Bit * canvas;
 //Canvas24BitU8 * canvas;
-Canvas24Bit_Packed32 * canvas;
-
-Bitmap24bitU8 * bmp_1;
-Bitmap24bit_Packed32 * bmp_2;
-
+Canvas32Bit * canvas;
 Resources resources{};
 Resources::image_info_t img_1;
 
@@ -47,7 +40,6 @@ color_f_t YELLOW{1.0,1.0,0.0, 1.0};
 color_f_t WHITE{1.0,1.0,1.0, 1.0};
 color_f_t GREEN{0.0,1.0,0.0, 1.0};
 color_f_t BLUE{0.0,0.0,1.0, 1.0};
-color_f_t BLACK{0.0,0.0,0.0, 1.0};
 
 void loop();
 void init_sdl(int width, int height);
@@ -58,7 +50,6 @@ inline void render() {
 //    canvas->clear(WHITE);
 
     for (int ix = 0; ix < 100; ++ix) {
-        /*
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
@@ -69,54 +60,56 @@ inline void render() {
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(GREEN, 0, 0, 640, 480);
-         */
-
-
-        canvas->setBlendMode(BlendMode::Normal);
-        canvas->setPorterDuffMode(PorterDuff::SourceOver);
-        canvas->clear(WHITE);
-        canvas->drawQuad(YELLOW, 0, 0, W/2, H/2);
-        canvas->drawQuad(GREEN, W/2, 0, W, H/2);
-        canvas->drawQuad(RED, W/4, 0,W/4+ W/2, H/2);
-
-//        canvas->drawQuad(YELLOW, 0, 0, W, H);
-//        canvas->drawGradient(YELLOW, RED, 0, 240, 640, 140);
-//        canvas->drawCircle(GREEN, 320, 240, 240/2);
-//        canvas->drawTriangle(RED, 0, 0, 300, 0, 300, 300);
-
-// STARTED 420,
-//        canvas->drawTriangle(*bmp_2, 0, 0, 0.0, 1.0,
-//                             W, H, 1.0, 0.0,
-//                             0, H, 0.0, 0.0 );
-// clock-wise
-//        canvas->drawTriangle(*bmp_2, 0, 448, 0.0, 0.0,
-//                                     252, 138, 0.0, 1.0,
-//                                     560, 391, 1.0, 1.0 );
-
-// started 150, then 80 with coding (and 32 without coding)
-//        canvas->drawTriangle(YELLOW, 0, 0,
-//                                     W, H,
-//                                     0, H);
-
-//        canvas->drawQuad(*bmp_1, 0, 0, 640, 480);
-// started 400, then 230 with re-coding, then 21 without recoding and blending
-//        canvas->drawQuad(*bmp_2, 0, 0, 640, 480);
-
-//        canvas->drawLine(BLACK, 80 , 200 , 550, 150);
-//        canvas->drawLine(BLACK, 80 , 80 , 180, 400);
-//        canvas->drawLine(BLACK, 80 , 80 , 600, 80);
-//        canvas->drawLine(BLACK, 80 , 80 , 80, 450);
 
     }
-    
+
+//    canvas->drawQuad(YELLOW, 0, 0, 320, 240);
+//    canvas->drawGradient(YELLOW, RED, 0, 240, 640, 140);
+//    canvas->setBlendMode(BlendMode::Normal);
+//    canvas->setPorterDuffMode(PorterDuff::SourceOver);
+//    canvas->drawCircle(GREEN, 320, 240, 240/2);
+//    canvas->drawTriangle(BLUE, 0, 300, 300, 300, 0, 0);
+//    canvas->drawTriangle2(*bmp_1,0, 300,0.0,0.0, 300, 300,1.0,0.0, 0, 0,0.0,1.0);
+//    canvas->drawQuad2(*bmp_1, 300, 50, 300, 300);
 }
+
+
 
 int main() {
-    init_sdl(W, H);
+    init_sdl(640, 480);
     loop();
+
+
 }
 
+template<typename Derived>
+class Base {
+
+    static inline void hello() {
+        Derived::hello();
+    }
+};
+
+class ExampleDerived : public Base<ExampleDerived> {
+
+    static inline void hello() {
+        cout << "hello";
+    }
+};
+
+class ExampleDerived2 : public Base<ExampleDerived2> {
+
+    static inline void hello() {
+        cout << "hello";
+    }
+};
+
+
+
 void init_sdl(int width, int height) {
+    Base<ExampleDerived2> *a = new ExampleDerived2();
+
+
     SDL_Init(SDL_INIT_VIDEO);
 
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
@@ -126,16 +119,23 @@ void init_sdl(int width, int height) {
 //    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
 
 //    canvas = new Canvas16Bit(width, height, PixelFormat::RGB565, new RGB565_PACKED_16());
-    canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
 //    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
 
+//    canvas = new Canvas32Bit(width, height, new RGB888_PACKED_32());
+    canvas = new Canvas32Bit(width, height, new RGB888_PACKED_32());
 
     img_1 = resources.loadImageFromCompressedPath("charsprites.png");
 
 
-//    auto * bmp_1 = new Bitmap<uint32_t , RGB888_PACKED_32>(img_1.data, img_1.width, img_1.height, new RGB888_PACKED_32());
-    bmp_1 = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_1.data, img_1.width, img_1.height, new RGB888_ARRAY());
-    bmp_2 = bmp_1->convertToBitmap<uint32_t , RGB888_PACKED_32>();
+    auto * bmp_1 = new Bitmap<uint32_t , RGB888_PACKED_32>(img_1.data, img_1.width, img_1.height, new RGB888_PACKED_32());
+    auto * bmp_2 = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_1.data, img_1.width, img_1.height, new RGB888_ARRAY());
+
+    canvas->drawQuad2(*bmp_1,0,0,0,0);
+    canvas->drawQuad2(*bmp_2,0,0,0,0);
+
+    // 24 bit with given bitmap canvas
+//    auto * bmp = new Bitmap24bitU8(width, height, new RGB888_ARRAY());
+//    canvas = new Canvas24BitU8(bmp);
 
     resources.init();
 }
