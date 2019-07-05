@@ -16,9 +16,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="05462924-bf73-4af8-ac02-6c8577e498a4" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/gfx/microgl/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/PixelCoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/PixelCoder.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode.h" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp" beforeDir="false" afterPath="$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -34,15 +33,16 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="280">
-              <caret line="289" column="28" selection-start-line="289" selection-start-column="28" selection-end-line="289" selection-end-column="28" />
+              <caret line="805" column="42" selection-start-line="805" selection-start-column="42" selection-end-line="805" selection-end-column="42" />
               <folding>
+                <element signature="e#0#31#0" expanded="true" />
                 <element signature="e#7713#7741#0" expanded="true" />
                 <element signature="e#7750#7770#0" expanded="true" />
                 <element signature="e#12713#12741#0" expanded="true" />
@@ -80,18 +80,6 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="433">
-              <caret line="327" selection-start-line="324" selection-end-line="327" />
-              <folding>
-                <element signature="e#108#126#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/Bitmap.h">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="170">
@@ -120,13 +108,23 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode2.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="500">
-              <caret line="80" column="16" selection-start-line="80" selection-start-column="10" selection-end-line="80" selection-end-column="16" />
+            <state relative-caret-position="66">
+              <caret line="124" column="10" selection-start-line="124" selection-start-column="10" selection-end-line="124" selection-end-column="10" />
               <folding>
                 <element signature="e#409#427#0" expanded="true" />
-                <element signature="e#482#513#0" expanded="true" />
-                <element signature="e#929#944#0" expanded="true" />
-                <element signature="e#1391#1406#0" expanded="true" />
+                <element signature="e#524#539#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="349">
+              <caret line="53" selection-start-line="50" selection-end-line="53" />
+              <folding>
+                <element signature="e#108#126#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -160,8 +158,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>ticks</find>
-      <find>block</find>
       <find>paex_write_sine.c</find>
       <find>PaSampleFormat</find>
       <find>sine</find>
@@ -187,6 +183,11 @@
       <find>drawquad</find>
       <find>inline color_f_t</find>
       <find>return</find>
+      <find>blend_ColorBurn</find>
+      <find>blend_LinearBurn</find>
+      <find>LinearDodge</find>
+      <find>blend_Overlay</find>
+      <find>IntegerBlendModeBase</find>
     </findStrings>
     <replaceStrings>
       <replace>s</replace>
@@ -200,6 +201,7 @@
       <replace>typename P, typename CODER&gt;</replace>
       <replace>&lt;P, CODER&gt;</replace>
       <replace>inline void</replace>
+      <replace>BlendModeBase</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -256,10 +258,10 @@
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/Fixed.h" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/PorterDuff.h" />
         <option value="$PROJECT_DIR$/gfx/microgl-sdl/main.cpp" />
-        <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode.h" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/CRPT.h" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/PixelCoder.h" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/Canvas.h" />
+        <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode.h" />
         <option value="$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode2.h" />
         <option value="$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp" />
       </list>
@@ -480,12 +482,12 @@
       <workItem from="1560281212200" duration="28611000" />
       <workItem from="1560704404822" duration="2273000" />
       <workItem from="1560708801925" duration="204265000" />
-      <workItem from="1561897427088" duration="140344000" />
+      <workItem from="1561897427088" duration="145206000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="391088000" />
+    <option name="totallyTimeSpent" value="395950000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -505,13 +507,13 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32995495" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4978166" weight="0.32995495" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4978166" visible="true" weight="0.32995495" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.4984404" weight="0.39977476" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32995495" />
       <window_info anchor="bottom" id="Database Changes" order="7" />
-      <window_info active="true" anchor="bottom" id="Messages" order="8" visible="true" weight="0.32995495" />
+      <window_info anchor="bottom" id="Messages" order="8" weight="0.32995495" />
       <window_info anchor="bottom" id="Terminal" order="9" weight="0.32995495" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50155956" side_tool="true" weight="0.39977476" />
       <window_info anchor="bottom" id="Version Control" order="11" />
@@ -530,22 +532,22 @@
       <breakpoints>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp</url>
-          <line>477</line>
+          <line>478</line>
           <option name="timeStamp" value="162" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp</url>
-          <line>140</line>
+          <line>141</line>
           <option name="timeStamp" value="169" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/gfx/microgl-sdl/main.cpp</url>
           <line>79</line>
           <option name="timeStamp" value="172" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp</url>
-          <line>182</line>
+          <line>183</line>
           <option name="timeStamp" value="184" />
         </line-breakpoint>
       </breakpoints>
@@ -928,16 +930,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="433">
-          <caret line="327" selection-start-line="324" selection-end-line="327" />
-          <folding>
-            <element signature="e#108#126#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/PixelCoder.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="802">
@@ -982,19 +974,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode2.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="500">
-          <caret line="80" column="16" selection-start-line="80" selection-start-column="10" selection-end-line="80" selection-end-column="16" />
-          <folding>
-            <element signature="e#409#427#0" expanded="true" />
-            <element signature="e#482#513#0" expanded="true" />
-            <element signature="e#929#944#0" expanded="true" />
-            <element signature="e#1391#1406#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl-sdl/main.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="244">
@@ -1005,11 +984,33 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="349">
+          <caret line="53" selection-start-line="50" selection-end-line="53" />
+          <folding>
+            <element signature="e#108#126#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gfx/microgl/include/microgl/BlendMode2.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="66">
+          <caret line="124" column="10" selection-start-line="124" selection-start-column="10" selection-end-line="124" selection-end-column="10" />
+          <folding>
+            <element signature="e#409#427#0" expanded="true" />
+            <element signature="e#524#539#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/gfx/microgl/src/Canvas.tpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="280">
-          <caret line="289" column="28" selection-start-line="289" selection-start-column="28" selection-end-line="289" selection-end-column="28" />
+          <caret line="805" column="42" selection-start-line="805" selection-start-column="42" selection-end-line="805" selection-end-column="42" />
           <folding>
+            <element signature="e#0#31#0" expanded="true" />
             <element signature="e#7713#7741#0" expanded="true" />
             <element signature="e#7750#7770#0" expanded="true" />
             <element signature="e#12713#12741#0" expanded="true" />

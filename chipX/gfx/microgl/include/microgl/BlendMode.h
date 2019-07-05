@@ -325,10 +325,6 @@ inline void blend_Multiply(const color_t &b,
     output.r = (b.r * s.r)>>r_bits;
     output.g = (b.g * s.g)>>g_bits;
     output.b = (b.b * s.b)>>b_bits;
-
-//    output.r += r_bits;
-//    output.g += g_bits;
-//    output.b += b_bits;
 }
 
 inline void blend_Darken(const color_t &b, const color_t &s, color_t & output) {

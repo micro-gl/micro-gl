@@ -1,3 +1,4 @@
+#include <microgl/BlendMode2.h>
 #include "../include/microgl/Canvas.h"
 
 #pragma clang diagnostic push
