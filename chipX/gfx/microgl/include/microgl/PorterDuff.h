@@ -266,11 +266,6 @@ inline void porter_duff_Lighter(const color_t & b, const color_t & s, color_t &o
 // select porter duff by mode identifier
 inline void porter_duff_apply(PorterDuff mode, const color_t & b, const color_t & s, color_t &output, uint8_t alpha_bits) {
 
-    output.r = s.r;
-    output.g = s.g;
-    output.b = s.b;
-
-    return;
     switch (mode) {
         case SourceOver:porter_duff_SourceOver(b, s, output, alpha_bits); break;
         case Clear:porter_duff_Clear(b, s, output, alpha_bits); break;

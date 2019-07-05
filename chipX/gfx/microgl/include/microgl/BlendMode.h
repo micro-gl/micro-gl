@@ -423,8 +423,8 @@ inline void blend_LinearDodge(const color_t &b,
     output.g = std::min(b.g + s.g, (1<<g_bits) - 1);
     output.b = std::min(b.b + s.b, (1<<b_bits) - 1);
 }
+#define MAX_VAL_BITS(bits) ((1<<(bits)) - 1)
 
-#define MAX_VAL_BITS(a) ((1<<(bits)) - 1)
 
 // overlay s
 inline int blend_Overlay(int b, int s, int bits) {
