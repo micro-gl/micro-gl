@@ -1,4 +1,4 @@
-#include <microgl/BlendMode2.h>
+#include <microgl/BlendMode.h>
 #include "../include/microgl/Canvas.h"
 
 #pragma clang diagnostic push
@@ -95,95 +95,33 @@ int Canvas<P, CODER>::height() {
 }
 
 template<typename P, typename CODER>
-void Canvas<P, CODER>::setBlendMode(const BlendMode &mode) {
-    _blend_mode = mode;
-}
-
-template<typename P, typename CODER>
-void Canvas<P, CODER>::setPorterDuffMode(const PorterDuff &mode) {
-    _porter_duff_mode = mode;
-}
-
-template<typename P, typename CODER>
-BlendMode &Canvas<P, CODER>::getBlendMode() {
-    return _blend_mode;
-}
-
-template<typename P, typename CODER>
-PorterDuff &Canvas<P, CODER>::getPorterDuffMode() {
-    return _porter_duff_mode;
-}
-
-template<typename P, typename CODER>
 P *Canvas<P, CODER>::pixels() {
     return _bitmap_canvas->data();
 }
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::clear(const color_f_t &color) {
-//    _bitmap_canvas->fill(encodeFloatRGB(color, pixelFormat()));
-
     P output;
     _bitmap_canvas->coder()->encode(color, output);
     _bitmap_canvas->fill(output);
 }
 
 template<typename P, typename CODER>
-inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y) {
-    blendColor(val, y*_width + x);
+template<typename BlendMode, typename PorterDuff>
+inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y, float opacity) {
+    blendColor(val, y*_width + x, opacity);
 }
 
 
 template<typename P, typename CODER>
-inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index) {
-    color_f_t result;
+template<typename BlendMode, typename PorterDuff>
+inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index, float opacity) {
+    color_f_t result;//=val;
+    P output;
 
-    if(true){// && hasAlphaChannel()) {
-        color_f_t backdrop;
-        getPixelColor(index, backdrop);
+    if(true){
+        color_f_t backdrop, blended;
         const color_f_t & src = val;
-        color_f_t blended;
-
-        // if we are normal then do nothing
-        if(_blend_mode!=BlendMode::Normal) { //  or backdrop alpha is zero is also valid
-            blend_mode_apply(_blend_mode, backdrop, src, blended);
-
-            if(backdrop.a!=1.0) {
-                blended.r = (1.0 - backdrop.a) * src.r + backdrop.a*blended.r;
-                blended.g = (1.0 - backdrop.a) * src.g + backdrop.a*blended.g;
-                blended.b = (1.0 - backdrop.a) * src.b + backdrop.a*blended.b;
-            }
-
-        }
-        else
-            blended = src;
-
-        blended.a = float(src.a);
-
-        porter_duff_apply(_porter_duff_mode, backdrop, blended, result);
-    } else
-        result = val;
-
-    P output{};
-
-    coder()->encode(result, output);
-
-    drawPixel(output, index);
-}
-
-template<typename P, typename CODER>
-inline void Canvas<P, CODER>::blendColor(const color_t &val, int x, int y) {
-    blendColor(val, y*_width + x);
-}
-
-
-template<typename P, typename CODER>
-inline void Canvas<P, CODER>::blendColor(const color_t &val, int index) {
-    color_t result=val;
-
-    if(false){
-        color_t backdrop, blended;
-        const color_t & src = val;
 
         // get backdrop color
         getPixelColor(index, backdrop);
@@ -194,34 +132,30 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index) {
         // support alpha, this is correct because we want to
         // support compositing even if the surface is opaque.
         if(alpha_bits==0) {
-            backdrop.a = 255; alpha_bits = 8;
+            backdrop.a = 1.0f;
         }
 
         // if blend-mode is normal or the backdrop is completely transparent
         // then we don't need to blend
-        bool skip_blending = getBlendMode()==BlendMode::Normal || backdrop.a==0;
+        bool skip_blending = backdrop.a==0;
 
         // if we are normal then do nothing
         if(!skip_blending) { //  or backdrop alpha is zero is also valid
-            blend_mode_apply(getBlendMode(),
-                             backdrop, src, blended,
-                             coder()->bits_per_red(),
-                             coder()->bits_per_green(),
-                             coder()->bits_per_blue());
+//            blend_mode_apply(getBlendMode(),
+//                             backdrop, src, blended,
+//                             coder()->bits_per_red(),
+//                             coder()->bits_per_green(),
+//                             coder()->bits_per_blue());
 
-            unsigned int r_bits = coder()->bits_per_red();
-//            unsigned int g_bits = coder()->bits_per_green();
-//            unsigned int b_bits = coder()->bits_per_blue();
-
-            // get maximal integer value for alpha
-            int max_alpha = (1<<alpha_bits) - 1;
+            BlendMode::blend(backdrop, src, blended);
 
             // if backdrop alpha!= max_alpha let's first composite the blended color, this is
             // an intermidiate step before Porter-Duff
-            if(backdrop.a < max_alpha) {
-                blended.r = ((max_alpha - backdrop.a) * src.r + backdrop.a * blended.r) >> alpha_bits;
-                blended.g = ((max_alpha - backdrop.a) * src.g + backdrop.a * blended.g) >> alpha_bits;
-                blended.b = ((max_alpha - backdrop.a) * src.b + backdrop.a * blended.b) >> alpha_bits;
+            if(backdrop.a < 1.0f) {
+                unsigned int comp = 1.0f - backdrop.a;
+                blended.r = (comp * src.r + backdrop.a * blended.r);
+                blended.g = (comp * src.g + backdrop.a * blended.g);
+                blended.b = (comp * src.b + backdrop.a * blended.b);
             }
             else {
                 // do nothing if background is opaque (backdrop alpha==max_alpha) then it will equal blended
@@ -236,19 +170,13 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index) {
         }
 
         // preserve src alpha before Porter-Duff
-        blended.a = src.a;
+        blended.a = src.a * opacity;
 
         // finally alpha composite with Porter-Duff equations
-//        porter_duff_apply(_porter_duff_mode, backdrop, blended, result, alpha_bits);
-// todo: disable porter-duff for now
-        result.r=blended.r;
-        result.g=blended.g;
-        result.b=blended.b;
-        result.a=blended.a;
+        PorterDuff::composite(backdrop, blended, result);
+
     } else
         result = val;
-
-    P output{};
 
     coder()->encode(result, output);
 
@@ -257,7 +185,13 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index) {
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
-inline void Canvas<P, CODER>::blendColor(const color_t &val, int index) {
+inline void Canvas<P, CODER>::blendColor(const color_t &val, int x, int y, uint8_t opacity) {
+    blendColor<BlendMode, PorterDuff>(val, y*_width + x, opacity);
+}
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff>
+inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, uint8_t opacity) {
     color_t result;//=val;
     P output;
 
@@ -319,6 +253,12 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index) {
 
         // preserve src alpha before Porter-Duff
         blended.a = src.a;
+
+        // apply opacity
+        // I fixed opacity is always 8 bits no matter what the alpha depth of the
+        // native canvas
+        if(opacity < 255)
+            blended.a =  (blended.a * opacity) >> 8;
 
         // finally alpha composite with Porter-Duff equations
         PorterDuff::composite(backdrop, blended, result, alpha_bits);
@@ -787,16 +727,18 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
 
 
 template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff>
 void Canvas<P, CODER>::drawQuad(const color_f_t & color,
                                 const int left, const int top,
-                                const int right, const int bottom) {
+                                const int right, const int bottom,
+                                const uint8_t opacity) {
     color_t color_int;
     this->coder()->convert(color, color_int);
 
     int index = top * _width;
     for (int y = top; y < bottom; ++y) {
         for (int x = left; x < right; ++x) {
-            blendColor<blendmode::Normal, porterduff::SourceOverOnOpaque>(color_int, index + x);
+            blendColor<BlendMode, PorterDuff>(color_int, index + x, opacity);
         }
 
         index += _width;

@@ -43,3 +43,4 @@ optimize normalized decoders of float points to use fixed point
 always try to avoid multiplies in inner loops
 
 ```
+- read this https://cellperformance.beyond3d.com/articles/2006/06/understanding-strict-aliasing.html

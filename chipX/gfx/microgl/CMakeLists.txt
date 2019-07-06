@@ -11,7 +11,7 @@ message(${CMAKE_BUILD_TYPE})
 #use this - should warn on inline functions that were not inlined -Winline
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-fstrict-aliasing -O3 -Wstrict-aliasing")
 
 set(sources
         src/FrameBuffer.tpp
@@ -26,7 +26,7 @@ set(sources
         src/PixelFormat.cpp
         src/BlendMode.cpp
         src/PorterDuff.cpp
-        include/microgl/CRPT.h)
+        )
 
 add_library(${PROJECT_NAME} ${sources})
 

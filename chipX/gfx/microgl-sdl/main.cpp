@@ -72,12 +72,10 @@ inline void render() {
          */
 
 
-        canvas->setBlendMode(BlendMode::Normal);
-        canvas->setPorterDuffMode(PorterDuff::SourceOver);
         canvas->clear(WHITE);
-        canvas->drawQuad(YELLOW, 0, 0, W/2, H/2);
-        canvas->drawQuad(GREEN, W/2, 0, W, H/2);
-        canvas->drawQuad(RED, W/4, 0,W/4+ W/2, H/2);
+        canvas->drawQuad<blendmode::Normal>(YELLOW, 0, 0, W/2, H/2,255);
+        canvas->drawQuad<blendmode::Normal>(GREEN, W/2, 0, W, H/2);
+        canvas->drawQuad<blendmode::Normal>(RED, W/4, 0,W/4+ W/2, H/2,128);
 
 //        canvas->drawQuad(YELLOW, 0, 0, W, H);
 //        canvas->drawGradient(YELLOW, RED, 0, 240, 640, 140);
@@ -108,7 +106,7 @@ inline void render() {
 //        canvas->drawLine(BLACK, 80 , 80 , 80, 450);
 
     }
-    
+
 }
 
 int main() {
