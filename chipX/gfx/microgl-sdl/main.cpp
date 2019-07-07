@@ -72,7 +72,7 @@ inline void render() {
          */
 
 
-        canvas->clear(WHITE);
+        canvas->clear(YELLOW);
 //        canvas->drawQuad(YELLOW, 0, 0, W/2, H/2,255);
 //        canvas->drawQuad<blendmode::Normal>(GREEN, W/2, 0, W, H/2);
 //        canvas->drawQuad<blendmode::Normal>(RED, W/4, 0,W/4+ W/2, H/2,128);
@@ -87,9 +87,9 @@ inline void render() {
 //                             W, H, 1.0, 0.0,
 //                             0, H, 0.0, 0.0 );
 // clock-wise
-        canvas->drawTriangle<blendmode::Normal, porterduff::None>(*bmp_2, 0, 448, 0.0, 0.0,
-                                     252, 138, 0.0, 1.0,
-                                     560, 391, 1.0, 1.0 );
+//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque>(*bmp_2, 0, 448, 0.0, 0.0,
+//                                     252, 138, 0.0, 1.0,
+//                                     560, 391, 1.0, 1.0 );
 //
 // started 150, then 80 with coding (and 32 without coding)
 //        canvas->drawTriangle<blendmode::Normal, porterduff::None>(YELLOW, 0, 0,
@@ -100,10 +100,10 @@ inline void render() {
 // started 400, then 230 with re-coding, then 21 without recoding and blending
 //        canvas->drawQuad<blendmode::Normal, porterduff::None>(*bmp_2, 0, 0, 640, 480, 128);
 
-//        canvas->drawLine(BLACK, 80 , 200 , 550, 150);
-//        canvas->drawLine(BLACK, 80 , 80 , 180, 400);
-//        canvas->drawLine(BLACK, 80 , 80 , 600, 80);
-//        canvas->drawLine(BLACK, 80 , 80 , 80, 450);
+        canvas->drawLine(BLACK, 80 , 200 , 550, 150);
+        canvas->drawLine(BLACK, 80 , 80 , 180, 400);
+        canvas->drawLine(BLACK, 80 , 80 , 600, 80);
+        canvas->drawLine(BLACK, 80 , 80 , 80, 450);
 
     }
 
