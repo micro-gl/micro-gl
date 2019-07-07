@@ -109,7 +109,7 @@ void Canvas<P, CODER>::clear(const color_f_t &color) {
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
 inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y, float opacity) {
-    blendColor(val, y*_width + x, opacity);
+    blendColor<BlendMode, PorterDuff>(val, y*_width + x, opacity);
 }
 
 
@@ -141,18 +141,13 @@ inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index, float 
 
         // if we are normal then do nothing
         if(!skip_blending) { //  or backdrop alpha is zero is also valid
-//            blend_mode_apply(getBlendMode(),
-//                             backdrop, src, blended,
-//                             coder()->bits_per_red(),
-//                             coder()->bits_per_green(),
-//                             coder()->bits_per_blue());
 
             BlendMode::blend(backdrop, src, blended);
 
             // if backdrop alpha!= max_alpha let's first composite the blended color, this is
             // an intermidiate step before Porter-Duff
             if(backdrop.a < 1.0f) {
-                unsigned int comp = 1.0f - backdrop.a;
+                float comp = 1.0f - backdrop.a;
                 blended.r = (comp * src.r + backdrop.a * blended.r);
                 blended.g = (comp * src.g + backdrop.a * blended.g);
                 blended.b = (comp * src.b + backdrop.a * blended.b);
@@ -217,11 +212,6 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, uint8_t 
 
         // if we are normal then do nothing
         if(!skip_blending) { //  or backdrop alpha is zero is also valid
-//            blend_mode_apply(getBlendMode(),
-//                             backdrop, src, blended,
-//                             coder()->bits_per_red(),
-//                             coder()->bits_per_green(),
-//                             coder()->bits_per_blue());
 
             BlendMode::blend(backdrop, src, blended,
                              coder()->bits_per_red(),
@@ -262,8 +252,6 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, uint8_t 
 
         // finally alpha composite with Porter-Duff equations
         PorterDuff::composite(backdrop, blended, result, alpha_bits);
-
-//        porter_duff_apply(_porter_duff_mode, backdrop, blended, result, alpha_bits);
     } else
         result = val;
 
@@ -367,11 +355,14 @@ int orient2d(const vec2_32i& a, const vec2_32i& b, const vec2_32i& c)
 
 
 template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff>
 void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     const int v0_x, const int v0_y,
                                     const int v1_x, const int v1_y,
-                                    const int v2_x, const int v2_y) {
-
+                                    const int v2_x, const int v2_y,
+                                    const uint8_t opacity) {
+    color_t color_int;
+    coder()->convert(color, color_int);
     // bounding box
     int minX = std::min({v0_x, v1_x, v2_x});
     int minY = std::min({v0_y, v1_y, v2_y});
@@ -409,9 +400,10 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
             // same as (w0 >= 0 && w1 >= 0 && w2 >= 0), but use only MSB,
             // this turns three conditionals into one !!!
             if ((w0 | w1 | w2) >= 0) {
-                blendColor(color, index + p.x);
+                blendColor<BlendMode, PorterDuff>(color_int, index + p.x, opacity);
 
                 // this is faster if we don't use blending
+                // if porterDuff==none and blendmode==normal && alpha==1
 //                P output{};
 //                drawPixel(0xff, p.x, p.y);
             }
@@ -434,12 +426,14 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
 
 template<typename P, typename CODER>
-template<typename P2, typename CODER2>
+template<typename BlendMode, typename PorterDuff,
+         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
                                int v0_x, int v0_y, float u0, float v0,
                                int v1_x, int v1_y, float u1, float v1,
-                               int v2_x, int v2_y, float u2, float v2) {
+                               int v2_x, int v2_y, float u2, float v2,
+                               const uint8_t opacity) {
 
     float area = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y});
     int bmp_width = bmp.width();
@@ -515,12 +509,12 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
                 int v_i = bmp_width * fixed_to_int((w0_v + w1_v + w2_v));//(int)(v * (float)bmp.height());
                 int index_bmp = (v_i + u_i);
 
-//                color_f_t col_bmp;
-//                bmp.decode(index_bmp, col_bmp);
-//                blendColor(col_bmp, index + p.x);
+                color_t col_bmp;
+                bmp.decode(index_bmp, col_bmp);
+                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
 
                 // this is faster if we don't use blending
-                drawPixel(bmp.pixelAt(index_bmp), index + p.x);
+//                drawPixel(bmp.pixelAt(index_bmp), index + p.x);
             }
 
             // One step to the right
@@ -556,176 +550,6 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
 }
 
 
-
-//template<typename P, typename CODER>
-//template<typename P2, typename CODER2>
-//void
-//Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
-//                               int v0_x, int v0_y, float u0, float v0,
-//                               int v1_x, int v1_y, float u1, float v1,
-//                               int v2_x, int v2_y, float u2, float v2) {
-//
-////    float area = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y});
-//    float area = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y});
-//
-//    // bounding box
-//    int minX = std::min({v0_x, v1_x, v2_x});
-//    int minY = std::min({v0_y, v1_y, v2_y});
-//    int maxX = std::max({v0_x, v1_x, v2_x});
-//    int maxY = std::max({v0_y, v1_y, v2_y});
-//
-//    // Triangle setup
-//    int A01 = v0_y - v1_y, B01 = v1_x - v0_x;
-//    int A12 = v1_y - v2_y, B12 = v2_x - v1_x;
-//    int A20 = v2_y - v0_y, B20 = v0_x - v2_x;
-//
-//    // Barycentric coordinates at minX/minY corner
-//    vec2_32i p = { minX, minY };
-//
-//    // overflow safety safe_bits>=(p-2)/2, i.e 15 bits (0..32,768) for 32 bits integers.
-//    // https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
-//    // for 16 bits computer this is safe for 7 bits input [0..127] - not good
-//    int w0_row = orient2d({v1_x, v1_y}, {v2_x, v2_y}, p);
-//    int w1_row = orient2d({v2_x, v2_y}, {v0_x, v0_y}, p);
-//    int w2_row = orient2d({v0_x, v0_y}, {v1_x, v1_y}, p);
-//    int index;
-//
-//    fixed one_over_area = fixed_one_over_int(area);
-//    fixed u0_F = float_to_fixed(u0);
-//    fixed u1_F = float_to_fixed(u1);
-//    fixed u2_F = float_to_fixed(u1);
-//
-////    fixed w0u = fixed_mul_fixed()
-//
-//    index = p.y*_width;
-//
-//    for (p.y = minY; p.y <= maxY; p.y++) {
-//
-//        // Barycentric coordinates at start of row
-//        fixed w0 = w0_row;
-//        fixed w1 = w1_row;
-//        fixed w2 = w2_row;
-//
-//
-//        for (p.x = minX; p.x <= maxX; p.x++) {
-////            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-//            // same as (w0 >= 0 && w1 >= 0 && w2 >= 0), but use only MSB,
-//            // this turns three conditionals into one !!!
-//            if ((w0 | w1 | w2) >= 0) {
-//
-////                float w0_n = w0/area;
-////                float w1_n = w1/area;
-////                float w2_n = w2/area;
-////                float u = w0_n * u0 + w1_n * u1 + w2_n * u2;
-////                float v = w0_n * v0 + w1_n * v1 + w2_n * v2;
-////                int u_i = (int)(u * (float)bmp.width());
-////                int v_i = (int)(v * (float)bmp.height());
-////                int index_bmp = (v_i * bmp.width() + u_i);
-//
-////                fixed w0_n = fixed_mul_int(w0, one_over_area);
-////                fixed w1_n = fixed_mul_int(w1, one_over_area);
-////                fixed w2_n = fixed_mul_int(w2, one_over_area);
-////                float u = (w0_n * u0 + w1_n * u1 + w2_n * u2);
-////                float v = (w0_n * v0 + w1_n * v1 + w2_n * v2);
-//
-//                float u = (w0 * u0 + w1 * u1 + w2 * u2)/area;
-//                float v = (w0 * v0 + w1 * v1 + w2 * v2)/area;
-//                int u_i = (int)(u * (float)bmp.width());
-//                int v_i = (int)(v * (float)bmp.height());
-//                int index_bmp = (v_i * bmp.width() + u_i);
-//
-//                color_f_t col_bmp;
-//                bmp.decode(index_bmp, col_bmp);
-//                blendColor(col_bmp, index + p.x);
-//
-//                // this is faster if we don't use blending
-////                P output{};
-//
-////                drawPixel(bmp.pixelAt(index_bmp), p.x, p.y);
-//            }
-//
-//            // One step to the right
-//            w0 += A12;
-//            w1 += A20;
-//            w2 += A01;
-//
-//        }
-//
-//        // One row step
-//        w0_row += B12;
-//        w1_row += B20;
-//        w2_row += B01;
-//        index += _width;
-//    }
-//
-//}
-
-
-
-//
-//template<typename P, typename CODER>
-//template<typename P2, typename CODER2>
-//void
-//Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
-//                                int v0_x, int v0_y, float u0, float v0,
-//                                int v1_x, int v1_y, float u1, float v1,
-//                                int v2_x, int v2_y, float u2, float v2) {
-//    color_f_t col_bmp;
-//
-//    float area = edgeFunction(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
-//
-//    // bounding box
-//    int x1 = std::min({v0_x, v1_x, v2_x});
-//    int y1 = std::min({v0_y, v1_y, v2_y});
-//    int x2 = std::max({v0_x, v1_x, v2_x});
-//    int y2 = std::max({v0_y, v1_y, v2_y});
-//
-//    for (uint32_t y = y1; y < y2; ++y) {
-//        for (uint32_t x = x1; x < x2; ++x) {
-//            vec3_f p = {x + 0.5f, y + 0.5f, 0};
-//
-//            float w0 = edgeFunction<float>(v1_x, v1_y, v2_x, v2_y, p.x, p.y);
-//            float w1 = edgeFunction<float>(v2_x, v2_y, v0_x, v0_y, p.x, p.y);
-//            float w2 = edgeFunction<float>(v0_x, v0_y, v1_x, v1_y, p.x, p.y);
-//
-//            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-//                w0 /= area;
-//                w1 /= area;
-//                w2 /= area;
-//
-//                float u = w0 * u0 + w1 * u1 + w2 * u2;
-//                float v = w0 * v0 + w1 * v1 + w2 * v2;
-//                int u_i = (int)(u * (float)bmp.width());
-//                int v_i = (int)(v * (float)bmp.height());
-//
-//                int index_bmp = (v_i * bmp.width() + u_i);
-//
-//
-//                // decode the bitmap
-//                bmp.decode(index_bmp, col_bmp);
-//                // re-encode for a different canvas
-//                blendColor(col_bmp, x, y);
-//
-//                // todo: also connect to compositing
-//                // normalize to recode it to our format later
-//                // get rid of this, we should only care to read
-//                // rgba values and should not care about the bitmap
-//                // internal pixels type P. this way we can use different
-//                // bitmap types and recode them for our purposes in case
-//                // their internal type is different
-////                P d = bmp.readAt(index_bmp);
-////                drawPixel(d, x, y);
-//
-//
-//            }
-//
-//        }
-//
-//    }
-//
-//}
-
-
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
 void Canvas<P, CODER>::drawQuad(const color_f_t & color,
@@ -739,6 +563,7 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
     for (int y = top; y < bottom; ++y) {
         for (int x = left; x < right; ++x) {
             blendColor<BlendMode, PorterDuff>(color_int, index + x, opacity);
+//            blendColor<BlendMode, PorterDuff>(color, index + x, float(opacity/255.0));
         }
 
         index += _width;
@@ -749,10 +574,12 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
 ///*
 
 template<typename P, typename CODER>
-template<typename P2, typename CODER2>
+template <typename BlendMode, typename PorterDuff,
+          typename P2, typename CODER2>
 void Canvas<P, CODER>::drawQuad(Bitmap<P2, CODER2> &bmp,
-                                 const int left, const int top,
-                                 const int right, const int bottom) {
+                                const int left, const int top,
+                                const int right, const int bottom,
+                                const uint8_t opacity) {
     color_t col_bmp{};
     P converted{};
 
@@ -794,7 +621,7 @@ void Canvas<P, CODER>::drawQuad(Bitmap<P2, CODER2> &bmp,
             // decode the bitmap
             bmp.decode(index_bmp, col_bmp);
             // re-encode for a different canvas
-            blendColor(col_bmp, index + x);
+            blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
 
             //
             // TODO:: optimization note,
@@ -807,8 +634,6 @@ void Canvas<P, CODER>::drawQuad(Bitmap<P2, CODER2> &bmp,
         }
         u = -du;
         index += _width;
-
-
     }
 
 }
@@ -1002,5 +827,178 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
     blendColor(color, X1, Y1);
 //    DrawPixel(X1, Y1, BaseColor);
 }
+
+
+
+
+//template<typename P, typename CODER>
+//template<typename P2, typename CODER2>
+//void
+//Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
+//                               int v0_x, int v0_y, float u0, float v0,
+//                               int v1_x, int v1_y, float u1, float v1,
+//                               int v2_x, int v2_y, float u2, float v2) {
+//
+////    float area = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y});
+//    float area = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y});
+//
+//    // bounding box
+//    int minX = std::min({v0_x, v1_x, v2_x});
+//    int minY = std::min({v0_y, v1_y, v2_y});
+//    int maxX = std::max({v0_x, v1_x, v2_x});
+//    int maxY = std::max({v0_y, v1_y, v2_y});
+//
+//    // Triangle setup
+//    int A01 = v0_y - v1_y, B01 = v1_x - v0_x;
+//    int A12 = v1_y - v2_y, B12 = v2_x - v1_x;
+//    int A20 = v2_y - v0_y, B20 = v0_x - v2_x;
+//
+//    // Barycentric coordinates at minX/minY corner
+//    vec2_32i p = { minX, minY };
+//
+//    // overflow safety safe_bits>=(p-2)/2, i.e 15 bits (0..32,768) for 32 bits integers.
+//    // https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
+//    // for 16 bits computer this is safe for 7 bits input [0..127] - not good
+//    int w0_row = orient2d({v1_x, v1_y}, {v2_x, v2_y}, p);
+//    int w1_row = orient2d({v2_x, v2_y}, {v0_x, v0_y}, p);
+//    int w2_row = orient2d({v0_x, v0_y}, {v1_x, v1_y}, p);
+//    int index;
+//
+//    fixed one_over_area = fixed_one_over_int(area);
+//    fixed u0_F = float_to_fixed(u0);
+//    fixed u1_F = float_to_fixed(u1);
+//    fixed u2_F = float_to_fixed(u1);
+//
+////    fixed w0u = fixed_mul_fixed()
+//
+//    index = p.y*_width;
+//
+//    for (p.y = minY; p.y <= maxY; p.y++) {
+//
+//        // Barycentric coordinates at start of row
+//        fixed w0 = w0_row;
+//        fixed w1 = w1_row;
+//        fixed w2 = w2_row;
+//
+//
+//        for (p.x = minX; p.x <= maxX; p.x++) {
+////            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+//            // same as (w0 >= 0 && w1 >= 0 && w2 >= 0), but use only MSB,
+//            // this turns three conditionals into one !!!
+//            if ((w0 | w1 | w2) >= 0) {
+//
+////                float w0_n = w0/area;
+////                float w1_n = w1/area;
+////                float w2_n = w2/area;
+////                float u = w0_n * u0 + w1_n * u1 + w2_n * u2;
+////                float v = w0_n * v0 + w1_n * v1 + w2_n * v2;
+////                int u_i = (int)(u * (float)bmp.width());
+////                int v_i = (int)(v * (float)bmp.height());
+////                int index_bmp = (v_i * bmp.width() + u_i);
+//
+////                fixed w0_n = fixed_mul_int(w0, one_over_area);
+////                fixed w1_n = fixed_mul_int(w1, one_over_area);
+////                fixed w2_n = fixed_mul_int(w2, one_over_area);
+////                float u = (w0_n * u0 + w1_n * u1 + w2_n * u2);
+////                float v = (w0_n * v0 + w1_n * v1 + w2_n * v2);
+//
+//                float u = (w0 * u0 + w1 * u1 + w2 * u2)/area;
+//                float v = (w0 * v0 + w1 * v1 + w2 * v2)/area;
+//                int u_i = (int)(u * (float)bmp.width());
+//                int v_i = (int)(v * (float)bmp.height());
+//                int index_bmp = (v_i * bmp.width() + u_i);
+//
+//                color_f_t col_bmp;
+//                bmp.decode(index_bmp, col_bmp);
+//                blendColor(col_bmp, index + p.x);
+//
+//                // this is faster if we don't use blending
+////                P output{};
+//
+////                drawPixel(bmp.pixelAt(index_bmp), p.x, p.y);
+//            }
+//
+//            // One step to the right
+//            w0 += A12;
+//            w1 += A20;
+//            w2 += A01;
+//
+//        }
+//
+//        // One row step
+//        w0_row += B12;
+//        w1_row += B20;
+//        w2_row += B01;
+//        index += _width;
+//    }
+//
+//}
+
+
+
+//
+//template<typename P, typename CODER>
+//template<typename P2, typename CODER2>
+//void
+//Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
+//                                int v0_x, int v0_y, float u0, float v0,
+//                                int v1_x, int v1_y, float u1, float v1,
+//                                int v2_x, int v2_y, float u2, float v2) {
+//    color_f_t col_bmp;
+//
+//    float area = edgeFunction(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
+//
+//    // bounding box
+//    int x1 = std::min({v0_x, v1_x, v2_x});
+//    int y1 = std::min({v0_y, v1_y, v2_y});
+//    int x2 = std::max({v0_x, v1_x, v2_x});
+//    int y2 = std::max({v0_y, v1_y, v2_y});
+//
+//    for (uint32_t y = y1; y < y2; ++y) {
+//        for (uint32_t x = x1; x < x2; ++x) {
+//            vec3_f p = {x + 0.5f, y + 0.5f, 0};
+//
+//            float w0 = edgeFunction<float>(v1_x, v1_y, v2_x, v2_y, p.x, p.y);
+//            float w1 = edgeFunction<float>(v2_x, v2_y, v0_x, v0_y, p.x, p.y);
+//            float w2 = edgeFunction<float>(v0_x, v0_y, v1_x, v1_y, p.x, p.y);
+//
+//            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+//                w0 /= area;
+//                w1 /= area;
+//                w2 /= area;
+//
+//                float u = w0 * u0 + w1 * u1 + w2 * u2;
+//                float v = w0 * v0 + w1 * v1 + w2 * v2;
+//                int u_i = (int)(u * (float)bmp.width());
+//                int v_i = (int)(v * (float)bmp.height());
+//
+//                int index_bmp = (v_i * bmp.width() + u_i);
+//
+//
+//                // decode the bitmap
+//                bmp.decode(index_bmp, col_bmp);
+//                // re-encode for a different canvas
+//                blendColor(col_bmp, x, y);
+//
+//                // todo: also connect to compositing
+//                // normalize to recode it to our format later
+//                // get rid of this, we should only care to read
+//                // rgba values and should not care about the bitmap
+//                // internal pixels type P. this way we can use different
+//                // bitmap types and recode them for our purposes in case
+//                // their internal type is different
+////                P d = bmp.readAt(index_bmp);
+////                drawPixel(d, x, y);
+//
+//
+//            }
+//
+//        }
+//
+//    }
+//
+//}
+
+
 
 #pragma clang diagnostic pop

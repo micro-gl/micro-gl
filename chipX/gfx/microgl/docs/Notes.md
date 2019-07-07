@@ -43,4 +43,7 @@ optimize normalized decoders of float points to use fixed point
 always try to avoid multiplies in inner loops
 
 ```
+- if porter-duff==none and blend-mode==none and alpha=1 then we can avoid blending completely,
+this is a great optimization for texture mapping
 - read this https://cellperformance.beyond3d.com/articles/2006/06/understanding-strict-aliasing.html
+- make a ReadableBitmap interface

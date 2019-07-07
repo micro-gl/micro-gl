@@ -54,5 +54,6 @@ returning the result in q3 format */
 #define fixed_one int_to_fixed(1)
 #define fixed_floor(a) ((int)((a) & ((1<<Q) - 1)))
 #define fixed_round(a) (fixed_floor((a) + fixed_half))
+#define fixed_ceil(a) fixed_floor((a))==0 ? (a) : fixed_floor((a) + fixed_one)
 
 #pragma clang diagnostic pop

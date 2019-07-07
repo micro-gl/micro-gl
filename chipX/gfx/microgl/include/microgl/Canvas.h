@@ -40,43 +40,65 @@ public:
     void clear(const color_f_t &color);
 
     // float blenders
-    template<typename BlendMode, typename PorterDuff>
+    template<typename BlendMode=blendmode::Normal,
+             typename PorterDuff=porterduff::SourceOverOnOpaque>
     void blendColor(const color_f_t &val, int x, int y, float opacity=1.0f);
-    template<typename BlendMode, typename PorterDuff>
+    template<typename BlendMode=blendmode::Normal,
+             typename PorterDuff=porterduff::SourceOverOnOpaque>
     void blendColor(const color_f_t &val, int index, float opacity=1.0f);
 
     // integer blenders
-    template<typename BlendMode, typename PorterDuff>
+    template<typename BlendMode=blendmode::Normal,
+             typename PorterDuff=porterduff::SourceOverOnOpaque>
     void blendColor(const color_t &val, int x, int y, uint8_t opacity=255);
-    template<typename BlendMode, typename PorterDuff>
+    template<typename BlendMode=blendmode::Normal,
+             typename PorterDuff=porterduff::SourceOverOnOpaque>
     void blendColor(const color_t &val, int index, uint8_t opacity=255);
 
     void drawPixel(const P &val, int x, int y);
     void drawPixel(const P &val, int index);
 
-    void drawLine(const color_f_t & color, int x0, int y0, int x1, int y1);
+    void drawLine(const color_f_t & color,
+                  int x0, int y0, int x1, int y1);
 
-    void drawGradient(const color_f_t &startColor, const color_f_t &endColor,
+    void drawGradient(const color_f_t &startColor,
+                      const color_f_t &endColor,
                       int left, int top, int w, int h);
-    void drawCircle(const color_f_t & color, int centerX, int centerY, int radius);
 
-    void drawTriangle(const color_f_t & color, const int x0, const int y0,
-                                               const int x1, const int y1,
-                                               const int x2, const int y2);
-    template <typename P2, typename CODER2>
+    void drawCircle(const color_f_t & color,
+                    int centerX, int centerY, int radius);
+
+    template<typename BlendMode=blendmode::Normal,
+             typename PorterDuff=porterduff::SourceOverOnOpaque>
+    void drawTriangle(const color_f_t & color,
+                      const int x0, const int y0,
+                      const int x1, const int y1,
+                      const int x2, const int y2,
+                      const uint8_t opacity = 255);
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename P2, typename CODER2>
     void drawTriangle(Bitmap<P2, CODER2> &bmp,
-                       int v0_x, int v0_y, float u0, float v0,
-                       int v1_x, int v1_y, float u1, float v1,
-                       int v2_x, int v2_y, float u2, float v2);
+                      int v0_x, int v0_y, float u0, float v0,
+                      int v1_x, int v1_y, float u1, float v1,
+                      int v2_x, int v2_y, float u2, float v2,
+                      const uint8_t opacity = 255);
 
-    template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::SourceOverOnOpaque>
+    template<typename BlendMode=blendmode::Normal,
+             typename PorterDuff=porterduff::SourceOverOnOpaque>
     void drawQuad(const color_f_t &color,
                   const int left, const int top,
                   const int right, const int bottom,
                   const uint8_t opacity = 255);
 
-    template <typename P2, typename CODER2>
-    void drawQuad(Bitmap<P2, CODER2> &bmp, const int left, const int top, const int right, const int bottom);
+    template <typename BlendMode=blendmode::Normal,
+              typename PorterDuff=porterduff::SourceOverOnOpaque,
+              typename P2, typename CODER2>
+    void drawQuad(Bitmap<P2, CODER2> &bmp,
+                  const int left, const int top,
+                  const int right, const int bottom,
+                  const uint8_t opacity = 255);
 
 private:
     int _width = 0, _height = 0;
