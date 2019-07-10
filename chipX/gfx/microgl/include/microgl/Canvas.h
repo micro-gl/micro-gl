@@ -68,6 +68,9 @@ public:
     void drawCircle(const color_f_t & color,
                     int centerX, int centerY, int radius);
 
+    void drawCircle2(const color_f_t & color,
+                    int centerX, int centerY, int radius);
+
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>
     void drawTriangle(const color_f_t & color,

@@ -321,6 +321,51 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
 
 }
 
+#include "../include/microgl/Fixed.h"
+
+
+
+
+
+
+template<typename P, typename CODER>
+void Canvas<P, CODER>::drawCircle2(const color_f_t & color,
+                                  int centerX, int centerY,
+                                  int radius) {
+    color_t color_int;
+
+    coder()->convert(color, color_int);
+
+    unsigned int bits_for_antialias_distance = 0;
+    unsigned int max_blend = 1 << bits_for_antialias_distance;
+
+    int x1 = centerX - radius - max_blend, y1 = centerY - radius - max_blend;
+    int x2 = centerX + radius + max_blend, y2 = centerY + radius + max_blend;
+    int index;
+
+    for (int y = y1; y < y2; ++y) {
+        index = y * _width;
+        for (int x = x1; x < x2; ++x) {
+
+            int distance = sdCircle(x, y, centerX, centerY, radius);
+
+            if(distance<=0)
+                blendColor(color_int, index + x);
+            else if(distance<=max_blend){
+                // float point version
+//                float b = smoothstep(max_blend,0,distance);
+//                uint8_t blend = (b*255);
+
+                uint8_t blend = REMAP(max_blend - distance, bits_for_antialias_distance, 8);
+                blendColor(color_int, index + x, blend);
+            }
+
+        }
+
+    }
+
+}
+
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawGradient(const color_f_t & startColor,
                              const color_f_t & endColor,
@@ -345,8 +390,6 @@ void Canvas<P, CODER>::drawGradient(const color_f_t & startColor,
 }
 
 
-#include "../include/microgl/Fixed.h"
-typedef int fixed;
 
 int orient2d(const vec2_32i& a, const vec2_32i& b, const vec2_32i& c)
 {
