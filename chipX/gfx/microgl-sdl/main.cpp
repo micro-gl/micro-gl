@@ -56,6 +56,12 @@ inline void render() {
 
     canvas->setAntialiasing(false);
 //    canvas->clear(WHITE);
+    vec2_32i a[3] = {{5, H - 5}, {0, 225}, {W/2, H - 5}};
+    vec2_32i a_1[3] = {{a[0].x, a[0].y+1}, {a[1].x, a[1].y+1}, {a[2].x, a[2].y+1}};
+    vec2_32i a_2[3] = {{a[0].x, a[0].y+2}, {a[1].x, a[1].y+2}, {a[2].x, a[2].y+2}};
+    vec2_32i a_3[3] = {{a[0].x, a[0].y+3}, {a[1].x, a[1].y+3}, {a[2].x, a[2].y+3}};
+
+    vec2_32i b[4] = {{5, H - 5}, {W/3, 50}, {2*W/3, 200}, {W-5, 5}};
 
     for (int ix = 0; ix < 100; ++ix) {
         /*
@@ -72,7 +78,7 @@ inline void render() {
          */
 
 
-        canvas->clear(YELLOW);
+        canvas->clear(WHITE);
 //        canvas->drawQuad(YELLOW, 0, 0, W/2, H/2,255);
 //        canvas->drawQuad<blendmode::Normal>(GREEN, W/2, 0, W, H/2);
 //        canvas->drawQuad<blendmode::Normal>(RED, W/4, 0,W/4+ W/2, H/2,128);
@@ -93,12 +99,17 @@ inline void render() {
 
 
         // rotated cube
-        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque>(*bmp_2, 0, W/2, 0.0, 0.0,
-                                                                  W/2, 0, 0.0, 1.0,
-                                                                  W, W/2, 1.0, 1.0 , 128);
-        canvas->drawTriangle<blendmode::Normal, porterduff::None>(*bmp_2, W, W/2, 1.0, 1.0,
-                                                                  W/2, W, 1.0, 0.0,
-                                                                  0, W/2, 0.0, 0.0 );
+//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque>(*bmp_2, 0, W/2, 0.0, 0.0,
+//                                                                  W/2, 0, 0.0, 1.0,
+//                                                                  W, W/2, 1.0, 1.0 , 128);
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None>(*bmp_2, W, W/2, 1.0, 1.0,
+//                                                                  W/2, W, 1.0, 0.0,
+//                                                                  0, W/2, 0.0, 0.0 );
+//
+
+
+        canvas->drawQuadraticBezierCurve(BLACK, a);
+        canvas->drawCubicBezierCurve(BLACK, b);
 
 // started 150, then 80 with coding (and 32 without coding)
 //        canvas->drawTriangle<blendmode::Normal, porterduff::None>(YELLOW, 0, 0,

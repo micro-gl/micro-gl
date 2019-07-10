@@ -781,6 +781,77 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
     blendColor(color_input, X1, Y1, maxIntensity);
 }
 
+template<typename P, typename CODER>
+void Canvas<P, CODER>::drawQuadraticBezierCurve(color_f_t & color, vec2_32i *points, unsigned int resolution_bits) {
+
+    unsigned int resolution = resolution_bits;
+    unsigned int resolution_double = resolution<<1;
+    unsigned int N_SEG = (1 << resolution); // 64 resolution
+    unsigned int i;
+
+    vec3_32i previous;
+
+    for (i=0; i <= N_SEG; ++i)
+    {
+        unsigned int t = i;//(double)i / (double)N_SEG;
+        unsigned int comp = N_SEG - t;
+        unsigned int a = comp * comp;
+        unsigned int b = (t * comp) << 1;
+        unsigned int c = t*t;
+        unsigned int x = (a * points[0].x + b * points[1].x + c * points[2].x)>>resolution_double;
+        unsigned int y = (a * points[0].y + b * points[1].y + c * points[2].y)>>resolution_double;
+
+        if(i)
+            drawLine(color, previous.x, previous.y, x, y);
+
+        blendColor(color, x, y, 1.0f);
+
+        previous = {x, y};
+    }
+
+
+}
+
+
+template<typename P, typename CODER>
+void Canvas<P, CODER>::drawCubicBezierCurve(color_f_t & color, vec2_32i *points, unsigned int resolution_bits) {
+
+    unsigned int resolution = resolution_bits;
+    unsigned int resolution_triple = resolution*3;
+    unsigned int N_SEG = (1 << resolution); // 64 resolution
+    unsigned int i;
+
+    vec3_32i previous;
+
+    for (i=0; i <= N_SEG; ++i)
+    {
+// (n-t)^2 => n*n, t*t, n*t
+// (n-t)^3 => n*n*n, t*t*n, n*n*t, t*t*t
+//10
+        unsigned int t = i;//(double)i / (double)N_SEG;
+        unsigned int comp = N_SEG - t;
+        unsigned int comp_times_comp = comp * comp;
+        unsigned int t_times_t = t * t;
+        unsigned int a = comp * comp_times_comp;
+        unsigned int b = 3 * (t * comp_times_comp);
+        unsigned int c = 3*t_times_t*comp;
+        unsigned int d = t*t_times_t;
+
+        unsigned int x = (a * points[0].x + b * points[1].x + c * points[2].x + d * points[3].x)>>resolution_triple;
+        unsigned int y = (a * points[0].y + b * points[1].y + c * points[2].y + d * points[3].y)>>resolution_triple;
+
+        if(i)
+            drawLine(color, previous.x, previous.y, x, y);
+
+        blendColor(color, x, y, 1.0f);
+
+        previous = {x, y};
+    }
+
+
+}
+
+
 
 
 

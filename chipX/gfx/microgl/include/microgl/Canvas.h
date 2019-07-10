@@ -100,6 +100,11 @@ public:
                   const int right, const int bottom,
                   const uint8_t opacity = 255);
 
+
+    void drawQuadraticBezierCurve(color_f_t & color, vec2_32i *points, unsigned int resolution_bits = 5);
+    void drawCubicBezierCurve(color_f_t & color, vec2_32i *points, unsigned int resolution_bits = 5);
+
+
 private:
     int _width = 0, _height = 0;
     Bitmap<P, CODER> * _bitmap_canvas = nullptr;
