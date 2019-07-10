@@ -781,8 +781,10 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
     blendColor(color_input, X1, Y1, maxIntensity);
 }
 
+
 template<typename P, typename CODER>
-void Canvas<P, CODER>::drawQuadraticBezierCurve(color_f_t & color, vec2_32i *points, unsigned int resolution_bits) {
+void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *points,
+                                               unsigned int size, unsigned int resolution_bits) {
 
     unsigned int resolution = resolution_bits;
     unsigned int resolution_double = resolution<<1;
@@ -791,30 +793,34 @@ void Canvas<P, CODER>::drawQuadraticBezierCurve(color_f_t & color, vec2_32i *poi
 
     vec3_32i previous;
 
-    for (i=0; i <= N_SEG; ++i)
-    {
-        unsigned int t = i;//(double)i / (double)N_SEG;
-        unsigned int comp = N_SEG - t;
-        unsigned int a = comp * comp;
-        unsigned int b = (t * comp) << 1;
-        unsigned int c = t*t;
-        unsigned int x = (a * points[0].x + b * points[1].x + c * points[2].x)>>resolution_double;
-        unsigned int y = (a * points[0].y + b * points[1].y + c * points[2].y)>>resolution_double;
+    for (int jx = 0; jx < size-2; jx+=2) {
+        auto * point_anchor = &points[jx];
 
-        if(i)
-            drawLine(color, previous.x, previous.y, x, y);
+        for (i = 0; i <= N_SEG; ++i) {
+            unsigned int t = i;//(double)i / (double)N_SEG;
+            unsigned int comp = N_SEG - t;
+            unsigned int a = comp * comp;
+            unsigned int b = (t * comp) << 1;
+            unsigned int c = t * t;
+            unsigned int x = (a * point_anchor[0].x + b * point_anchor[1].x + c * point_anchor[2].x) >> resolution_double;
+            unsigned int y = (a * point_anchor[0].y + b * point_anchor[1].y + c * point_anchor[2].y) >> resolution_double;
 
-        blendColor(color, x, y, 1.0f);
+            if (i)
+                drawLine(color, previous.x, previous.y, x, y);
 
-        previous = {x, y};
+            blendColor(color, x, y, 1.0f);
+
+            previous = {x, y};
+        }
+
     }
-
 
 }
 
 
 template<typename P, typename CODER>
-void Canvas<P, CODER>::drawCubicBezierCurve(color_f_t & color, vec2_32i *points, unsigned int resolution_bits) {
+void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
+                                           unsigned int size, unsigned int resolution_bits) {
 
     unsigned int resolution = resolution_bits;
     unsigned int resolution_triple = resolution*3;
@@ -823,31 +829,54 @@ void Canvas<P, CODER>::drawCubicBezierCurve(color_f_t & color, vec2_32i *points,
 
     vec3_32i previous;
 
-    for (i=0; i <= N_SEG; ++i)
-    {
-// (n-t)^2 => n*n, t*t, n*t
-// (n-t)^3 => n*n*n, t*t*n, n*n*t, t*t*t
-//10
-        unsigned int t = i;//(double)i / (double)N_SEG;
-        unsigned int comp = N_SEG - t;
-        unsigned int comp_times_comp = comp * comp;
-        unsigned int t_times_t = t * t;
-        unsigned int a = comp * comp_times_comp;
-        unsigned int b = 3 * (t * comp_times_comp);
-        unsigned int c = 3*t_times_t*comp;
-        unsigned int d = t*t_times_t;
+    for (int jx = 0; jx < size-3; jx+=3) {
 
-        unsigned int x = (a * points[0].x + b * points[1].x + c * points[2].x + d * points[3].x)>>resolution_triple;
-        unsigned int y = (a * points[0].y + b * points[1].y + c * points[2].y + d * points[3].y)>>resolution_triple;
+        auto *point_anchor = &points[jx];
 
-        if(i)
-            drawLine(color, previous.x, previous.y, x, y);
+        for (i=0; i <= N_SEG; ++i)
+        {
 
-        blendColor(color, x, y, 1.0f);
+            // (n-t)^2 => n*n, t*t, n*t
+            // (n-t)^3 => n*n*n, t*t*n, n*n*t, t*t*t
+            //10
+            // todo: we can use a LUT if using more point batches
+            unsigned int t = i;//(double)i / (double)N_SEG;
+            unsigned int comp = N_SEG - t;
+            unsigned int comp_times_comp = comp * comp;
+            unsigned int t_times_t = t * t;
+            unsigned int a = comp * comp_times_comp;
+            unsigned int b = 3 * (t * comp_times_comp);
+            unsigned int c = 3*t_times_t*comp;
+            unsigned int d = t*t_times_t;
 
-        previous = {x, y};
+            unsigned int x = (a * point_anchor[0].x + b * point_anchor[1].x + c * point_anchor[2].x + d * point_anchor[3].x)>>resolution_triple;
+            unsigned int y = (a * point_anchor[0].y + b * point_anchor[1].y + c * point_anchor[2].y + d * point_anchor[3].y)>>resolution_triple;
+
+            if(i)
+                drawLine(color, previous.x, previous.y, x, y);
+
+            blendColor(color, x, y, 1.0f);
+
+            previous = {x, y};
+        }
+
+
     }
 
+
+}
+
+template<typename P, typename CODER>
+void
+Canvas<P, CODER>::drawLinePath(color_f_t &color, vec2_32i *points,
+                                unsigned int size) {
+
+    for (int jx = 0; jx < size; jx++) {
+
+        if(jx)
+            drawLine(color, points[jx-1].x, points[jx-1].y, points[jx].x, points[jx].y);
+
+    }
 
 }
 
