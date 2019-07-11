@@ -59,6 +59,7 @@ returning the result in q3 format */
 // remap a value from one bit range to another, this is scaling
 #define REMAP(value, bit_range, new_bit_range) ((value)<<((new_bit_range)-(bit_range)))
 typedef unsigned int fixed;
+typedef int fixed_signed;
 #define ABS(x) ((x)<0?(-(x)) :(x))
 
 #pragma clang diagnostic pop

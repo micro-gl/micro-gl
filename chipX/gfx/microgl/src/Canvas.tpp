@@ -279,7 +279,7 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
     uint8_t nSubpixelsX ,nSubpixelsY;
     color_f_t color_res = color;
 
-    nSubpixelsX = nSubpixelsY = hasAntialiasing() ? 4 : 1;
+    nSubpixelsX = nSubpixelsY = 3;//hasAntialiasing() ? 4 : 1;
 
     int x1 = centerX - radius, y1 = centerY - radius;
     int x2 = centerX + radius, y2 = centerY + radius;
@@ -297,8 +297,8 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
             for (int subpixelY = 0; subpixelY < nSubpixelsY; subpixelY++) {
                 for (int subpixelX = 0; subpixelX < nSubpixelsX; subpixelX++) {
                     // Sample the center of the subpixel.
-                    float sampX = x + ((subpixelX + 0.5) / nSubpixelsX);
-                    float sampY = y + ((subpixelY + 0.5) / nSubpixelsY);
+                    float sampX = x + ((subpixelX + 0.5f) / nSubpixelsX);
+                    float sampY = y + ((subpixelY + 0.5f) / nSubpixelsY);
                     if (insideCircle(sampX, sampY, centerX, centerY, radius))
                         coverage += 1;
                 }
@@ -330,34 +330,51 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawCircle2(const color_f_t & color,
-                                  int centerX, int centerY,
-                                  int radius) {
+                                   int centerX, int centerY,
+                                   int radius) {
     color_t color_int;
 
     coder()->convert(color, color_int);
 
-    unsigned int bits_for_antialias_distance = 0;
-    unsigned int max_blend = 1 << bits_for_antialias_distance;
+    unsigned int bits_for_antialias_distance = 1;
+    unsigned int max_blend_distance = 1 << bits_for_antialias_distance;
+    unsigned int max_blend_mapped_to_16_fixed = max_blend_distance << (16);
 
-    int x1 = centerX - radius - max_blend, y1 = centerY - radius - max_blend;
-    int x2 = centerX + radius + max_blend, y2 = centerY + radius + max_blend;
+    int x_min = centerX - radius - max_blend_distance, y_min = centerY - radius - max_blend_distance;
+    int x_max = centerX + radius + max_blend_distance, y_max = centerY + radius + max_blend_distance;
     int index;
 
-    for (int y = y1; y < y2; ++y) {
+    for (int y = y_min; y < y_max; ++y) {
         index = y * _width;
-        for (int x = x1; x < x2; ++x) {
+        for (int x = x_min; x < x_max; ++x) {
 
-            int distance = sdCircle(x, y, centerX, centerY, radius);
+//            float distance = sdCircle_f(x, y, centerX, centerY, radius);
+//            int distance = sdCircle(x, y, centerX, centerY, radius);
+
+            // 16 bit precision fixed point
+            fixed_signed distance = sdCircle_fixed(x, y, centerX, centerY, radius);
+//            int distance2 = sdCircle_int(x, y, centerX, centerY, radius);
+//            float distance3 = sdCircle_f(x, y, centerX, centerY, radius);
 
             if(distance<=0)
                 blendColor(color_int, index + x);
-            else if(distance<=max_blend){
+            else if(distance<=max_blend_mapped_to_16_fixed){
                 // float point version
-//                float b = smoothstep(max_blend,0,distance);
+//                float b = smoothstep(max_blend, 0, (int)distance>>16);
 //                uint8_t blend = (b*255);
 
-                uint8_t blend = REMAP(max_blend - distance, bits_for_antialias_distance, 8);
+                // integer version
+//                uint8_t blend = REMAP(max_blend - distance, bits_for_antialias_distance, 8);
+
+                uint8_t blend = (( (max_blend_mapped_to_16_fixed) - distance)<<(8-bits_for_antialias_distance))>>16;
+
+                // this works
+//                uint8_t blend = ( (max_blend_distance) - distance)<<(8-bits_for_antialias_distance);
+//                REMAP((max_blend<<12) - distance, bits_for_antialias_distance, 8);
+//
                 blendColor(color_int, index + x, blend);
+            } else {
+                printf("");
             }
 
         }
@@ -365,6 +382,46 @@ void Canvas<P, CODER>::drawCircle2(const color_f_t & color,
     }
 
 }
+
+
+//template<typename P, typename CODER>
+//void Canvas<P, CODER>::drawCircle2(const color_f_t & color,
+//                                   int centerX, int centerY,
+//                                   int radius) {
+//    color_t color_int;
+//
+//    coder()->convert(color, color_int);
+//
+//    unsigned int bits_for_antialias_distance = 2;
+//    unsigned int max_blend = 1 << bits_for_antialias_distance;
+//
+//    int x_min = centerX - radius - max_blend, y_min = centerY - radius - max_blend;
+//    int x_max = centerX + radius + max_blend, y_max = centerY + radius + max_blend;
+//    int index;
+//
+//    for (int y = y_min; y < y_max; ++y) {
+//        index = y * _width;
+//        for (int x = x_min; x < x_max; ++x) {
+//
+//            int distance = sdCircle(x, y, centerX, centerY, radius);
+//
+//            if(distance<=0)
+//                blendColor(color_int, index + x);
+//            else if(distance<=max_blend){
+//                // float point version
+////                float b = smoothstep(max_blend,0,distance);
+////                uint8_t blend = (b*255);
+//
+//                // integer version
+//                uint8_t blend = REMAP(max_blend - distance, bits_for_antialias_distance, 8);
+//                blendColor(color_int, index + x, blend);
+//            }
+//
+//        }
+//
+//    }
+//
+//}
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawGradient(const color_f_t & startColor,
