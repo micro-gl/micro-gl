@@ -329,6 +329,7 @@ inline void Canvas<P, CODER>::drawPixel(const P & val, int index) {
 
 
 template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff>
 void Canvas<P, CODER>::drawCircle(const color_f_t & color,
                                   int centerX, int centerY,
                                   int radius,
@@ -354,11 +355,8 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
             fixed_signed distance = sdCircle_fixed(x, y, centerX, centerY, radius);
 
             if(distance<=0)
-                blendColor(color_int, index + x, opacity);
+                blendColor<BlendMode, PorterDuff>(color_int, index + x, opacity);
             else if(distance<=max_blend_mapped_to_16_fixed){
-                // float point version
-//                float b = smoothstep(max_blend, 0, (int)distance>>16);
-//                uint8_t blend = (b*255);
 
                 // scale inner to 8 bit and then convert to integer
                 uint8_t blend = (( (max_blend_mapped_to_16_fixed) - distance)<<(8-bits_for_antialias_distance))>>16;
@@ -366,7 +364,7 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
                 if(apply_opacity)
                     blend = (blend*opacity)>>8;
 
-                blendColor(color_int, index + x, blend);
+                blendColor<BlendMode, PorterDuff>(color_int, index + x, blend);
             }
 
         }
@@ -377,6 +375,7 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
 
 
 template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff>
 void Canvas<P, CODER>::drawCircleFPU(const color_f_t & color,
                                   int centerX, int centerY,
                                   int radius,
@@ -392,15 +391,15 @@ void Canvas<P, CODER>::drawCircleFPU(const color_f_t & color,
         for (int x = x_min; x < x_max; ++x) {
 
             // 16 bit precision fixed point
-            float distance = sdCircle_f(x, y, centerX, centerY, radius);
+            float distance = sdCircle_float(x, y, centerX, centerY, radius);
 
             if(distance<=0)
-                blendColor(color, index + x, opacity);
+                blendColor<BlendMode, PorterDuff>(color, index + x, opacity);
             else if(distance<=max_blend){
                 // float point version
                 float blend = opacity*smoothstep(max_blend, 0, distance);
 
-                blendColor(color, index + x, blend);
+                blendColor<BlendMode, PorterDuff>(color, index + x, blend);
             }
 
         }

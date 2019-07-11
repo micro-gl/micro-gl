@@ -65,10 +65,14 @@ public:
                       const color_f_t &endColor,
                       int left, int top, int w, int h);
 
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque>
     void drawCircle(const color_f_t & color,
                     int centerX, int centerY,
                     int radius, uint8_t opacity=255);
 
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque>
     void drawCircleFPU(const color_f_t & color,
                     int centerX, int centerY,
                     int radius, float opacity=1.0f);

@@ -246,7 +246,7 @@ inline uint32_t sqrt_int_2(uint32_t n) {
 
 
 
-inline float sdCircle_f( int px, int py, int cx, int cy, unsigned int r )
+inline float sdCircle_float(int px, int py, int cx, int cy, unsigned int r)
 {
     int dx = (px-cx), dy = py-cy;
     return sqrt(dx*dx + dy*dy) - r;
@@ -259,7 +259,7 @@ inline int sdCircle_int( int px, int py, int cx, int cy, unsigned int r )
 }
 
 /**
- * perform distace to a circle, input is integer, output is a fixed point
+ * perform distance to a circle, input is integer, output is a fixed point
  * integer for precision
  *
  * @param px point x
