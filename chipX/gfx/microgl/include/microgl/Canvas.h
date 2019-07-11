@@ -33,7 +33,7 @@ public:
     PixelCoder<P, CODER> * coder();
     Bitmap<P, CODER> * bitmapCanvas();
 
-    bool hasAlphaChannel();
+    bool hasNativeAlphaChannel();
     bool hasAntialiasing();
     void setAntialiasing(bool value);
 
@@ -122,8 +122,13 @@ public:
 private:
     int _width = 0, _height = 0;
     Bitmap<P, CODER> * _bitmap_canvas = nullptr;
-    bool _flag_hasAlphaChannel = false;
     bool _flag_antiAlias = true;
+
+    // compositing
+    bool _flag_hasNativeAlphaChannel = false;
+    uint8_t _alpha_bits_for_compositing = 8;
+    unsigned int _max_alpha_value = 255;
+
 };
 
 #include "../src/Canvas.tpp"

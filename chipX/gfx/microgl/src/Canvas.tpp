@@ -7,8 +7,17 @@ template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
                         : _bitmap_canvas($bmp), _width{$bmp->width()}, _height{$bmp->height()} {
 
-    _flag_hasAlphaChannel = coder()->bits_per_alpha()!=0;
 
+    uint8_t alpha_bits = coder()->bits_per_alpha();
+
+    _flag_hasNativeAlphaChannel = alpha_bits!=0;
+
+    // fix alpha bits depth in case we don't natively
+    // support alpha, this is correct because we want to
+    // support compositing even if the surface is opaque.
+
+    _alpha_bits_for_compositing = _flag_hasNativeAlphaChannel ? alpha_bits : 8;
+    _max_alpha_value = (1<<_alpha_bits_for_compositing) - 1;
 }
 
 template<typename P, typename CODER>
@@ -50,8 +59,8 @@ P &Canvas<P, CODER>::getPixel(int index) {
 }
 
 template<typename P, typename CODER>
-bool Canvas<P, CODER>::hasAlphaChannel() {
-    return _flag_hasAlphaChannel;
+bool Canvas<P, CODER>::hasNativeAlphaChannel() {
+    return _flag_hasNativeAlphaChannel;
 }
 
 template<typename P, typename CODER>
@@ -137,7 +146,7 @@ inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index, float 
 
         // if blend-mode is normal or the backdrop is completely transparent
         // then we don't need to blend
-        bool skip_blending = backdrop.a==0;
+        bool skip_blending = BlendMode::type()==blendmode::type::Normal || backdrop.a==0;
 
         // if we are normal then do nothing
         if(!skip_blending) { //  or backdrop alpha is zero is also valid
@@ -202,13 +211,17 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, uint8_t 
         // fix alpha bits depth in case we don't natively
         // support alpha, this is correct because we want to
         // support compositing even if the surface is opaque.
-        if(alpha_bits==0) {
-            backdrop.a = 255; alpha_bits = 8;
+        if(!hasNativeAlphaChannel()) {
+            backdrop.a = _max_alpha_value; alpha_bits = _alpha_bits_for_compositing;
         }
 
         // if blend-mode is normal or the backdrop is completely transparent
-        // then we don't need to blend
-        bool skip_blending = backdrop.a==0;
+        // then we don't need to blend.
+        // the first conditional shouldbe resolved at compile-time therefore it is zero cost !!!
+        // this will help with avoiding the inner conditional of the backdrop alpha, the normal
+        // blending itself is zero-cost itself, but after it there is a branching which
+        // is unpredictable, therefore avoiding at compile-time is great.
+        bool skip_blending = BlendMode::type()==blendmode::type::Normal || backdrop.a==0;
 
         // if we are normal then do nothing
         if(!skip_blending) { //  or backdrop alpha is zero is also valid
@@ -218,12 +231,11 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, uint8_t 
                              coder()->bits_per_green(),
                              coder()->bits_per_blue());
 
-            // get maximal integer value for alpha
-            int max_alpha = (1<<alpha_bits) - 1;
-
             // if backdrop alpha!= max_alpha let's first composite the blended color, this is
             // an intermidiate step before Porter-Duff
-            if(backdrop.a < max_alpha) {
+            if(backdrop.a < _max_alpha_value) {
+                // if((backdrop.a ^ _max_alpha_value)) {
+                int max_alpha = _max_alpha_value;
                 unsigned int comp = max_alpha - backdrop.a;
                 blended.r = (comp * src.r + backdrop.a * blended.r) >> alpha_bits;
                 blended.g = (comp * src.g + backdrop.a * blended.g) >> alpha_bits;
@@ -250,7 +262,8 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, uint8_t 
         if(opacity < 255)
             blended.a =  (blended.a * opacity) >> 8;
 
-        // finally alpha composite with Porter-Duff equations
+        // finally alpha composite with Porter-Duff equations,
+        // this should be zero-cost for None option with compiler optimizations
         PorterDuff::composite(backdrop, blended, result, alpha_bits);
     } else
         result = val;

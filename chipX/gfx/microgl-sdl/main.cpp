@@ -76,7 +76,8 @@ inline void render() {
          */
 
 
-        canvas->clear(WHITE);
+//        canvas->clear(WHITE);
+        canvas->drawQuad<blendmode::Normal, porterduff::None>(GREEN, 0, 0, 640, 480);
 //        canvas->drawQuad(YELLOW, 0, 0, W/2, H/2,255);
 //        canvas->drawQuad<blendmode::Normal>(GREEN, W/2, 0, W, H/2);
 //        canvas->drawQuad<blendmode::Normal>(RED, W/4, 0,W/4+ W/2, H/2,128);
@@ -109,18 +110,18 @@ inline void render() {
 //        canvas->drawQuadraticBezierPath(BLACK, c, 3);
 //        canvas->drawCubicBezierPath(BLACK, b, 7);
 //        canvas->drawLinePath(RED, b, 7);
-        canvas->drawCircle(RED, 320, 240, 200);
+//        canvas->drawCircle(RED, 320, 240, 200);
 //        canvas->drawCircleFPU(RED, 320, 240, 200,0.5f);
 //        canvas->drawCircle(RED, 320, 240, 200);
 
 // started 150, then 80 with coding (and 32 without coding)
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None>(YELLOW, 0, 0,
-//                                     W, H,
-//                                     0, H, 128);
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None>(RED, 0, 0,
+//                                                                         W, H,
+//                                                                         0, H, 128);
 
 //        canvas->drawQuad(*bmp_1, 0, 0, 640, 480);
 // started 400, then 230 with re-coding, then 21 without recoding and blending
-//        canvas->drawQuad<blendmode::Normal, porterduff::None>(*bmp_2, 0, 0, 640, 480, 128);
+//        canvas->drawQuad<blendmode::Normal, porterduff::SourceOverOnOpaque>(*bmp_2, 0, 0, 640, 480, 128);
 
 //        canvas->drawLine(BLACK, 80 , 200 , 550, 150);
 //        canvas->drawLine(BLACK, 80 , 80 , 180, 400);
