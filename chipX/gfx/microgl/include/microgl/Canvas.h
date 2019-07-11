@@ -50,10 +50,10 @@ public:
     // integer blenders
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>
-    void blendColor(const color_t &val, int x, int y, uint8_t opacity=255);
+    void blendColor(const color_t &val, int x, int y, uint8_t opacity);
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>
-    void blendColor(const color_t &val, int index, uint8_t opacity=255);
+    void blendColor(const color_t &val, int index, uint8_t opacity);
 
     void drawPixel(const P &val, int x, int y);
     void drawPixel(const P &val, int index);
@@ -66,10 +66,12 @@ public:
                       int left, int top, int w, int h);
 
     void drawCircle(const color_f_t & color,
-                    int centerX, int centerY, int radius);
+                    int centerX, int centerY,
+                    int radius, uint8_t opacity=255);
 
-    void drawCircle2(const color_f_t & color,
-                    int centerX, int centerY, int radius);
+    void drawCircleFPU(const color_f_t & color,
+                    int centerX, int centerY,
+                    int radius, float opacity=1.0f);
 
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>

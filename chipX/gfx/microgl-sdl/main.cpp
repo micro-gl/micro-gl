@@ -109,8 +109,9 @@ inline void render() {
 //        canvas->drawQuadraticBezierPath(BLACK, c, 3);
 //        canvas->drawCubicBezierPath(BLACK, b, 7);
 //        canvas->drawLinePath(RED, b, 7);
-        canvas->drawCircle2(RED, 320, 240, 200);
-//        canvas->drawCircle(RED, 320, 240, 122);
+//        canvas->drawCircle(RED, 320, 240, 200);
+        canvas->drawCircleFPU(RED, 320, 240, 200);
+//        canvas->drawCircle(RED, 320, 240, 200);
 
 // started 150, then 80 with coding (and 32 without coding)
 //        canvas->drawTriangle<blendmode::Normal, porterduff::None>(YELLOW, 0, 0,

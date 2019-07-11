@@ -258,6 +258,18 @@ inline int sdCircle_int( int px, int py, int cx, int cy, unsigned int r )
     return sqrt_int(dx*dx + dy*dy) - (r);
 }
 
+/**
+ * perform distace to a circle, input is integer, output is a fixed point
+ * integer for precision
+ *
+ * @param px point x
+ * @param py point y
+ * @param cx center x of circle
+ * @param cy center y of circle
+ * @param r radius of circle
+ *
+ * @return  a fixed point distance
+ */
 inline int sdCircle_fixed( int px, int py, int cx, int cy, unsigned int r )
 {
     int dx = (px-cx), dy = py-cy;
