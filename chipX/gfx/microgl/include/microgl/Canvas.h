@@ -78,7 +78,7 @@ public:
                     int radius, float opacity=1.0f);
 
     template<typename BlendMode=blendmode::Normal,
-             typename PorterDuff=porterduff::SourceOverOnOpaque>
+             typename PorterDuff=porterduff::SourceOverOnOpaque, bool antialias=false>
     void drawTriangle(const color_f_t & color,
                       const int x0, const int y0,
                       const int x1, const int y1,

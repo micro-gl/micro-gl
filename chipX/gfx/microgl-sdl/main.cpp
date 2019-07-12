@@ -119,7 +119,11 @@ inline void render() {
 //                                                                                W, H,
 //                                                                                0, H, 255);
 //
-        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque>(RED, 80, 80,
+//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(BLACK, 80, 80,
+//                                                                                W-80, H-80,
+//                                                                                80, 280, 255);
+
+        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, 80, 80,
                                                                                 W-80, H-80,
                                                                                 80, 280, 255);
 

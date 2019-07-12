@@ -460,9 +460,28 @@ inline unsigned int length(const vec2_32i& a, const vec2_32i& b)
     return sqrt_int(dx*dx + dy*dy);
 }
 
+// this equals twice the triangle area - the parallogram
+template<typename T>
+inline vec2<T> intersect_lines(const vec2<T>& p1, const vec2<T>& p2,
+                              const vec2<T>& q1, const vec2<T>& q2)
+{
+    vec2<T> result;
+    T denominator = (p1.x - p2.x)*(q1.y - q2.y) - (p1.y-p2.y) * (q1.x-q2.x);
+    T a1 = (p1.x*p2.y - p1.y*p2.x), a2 = (q1.x*q2.y - q1.y*q2.x);
+
+
+    result.x = a1*(q1.x - q2.x) - (p1.x - p2.x) * a2;
+    result.x /= denominator;
+
+    result.y = a1*(q1.y - q2.y) - (p1.y - p2.y) * a2;
+    result.y /= denominator;
+
+    return result;
+}
+
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff>
+template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     const int v0_x, const int v0_y,
                                     const int v1_x, const int v1_y,
@@ -471,18 +490,22 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     color_t color_int;
     coder()->convert(color, color_int);
 
-    uint8_t bits_distance = 0;
-    unsigned int max_distance_anti_alias = 1 << bits_distance;
-
     // bounding box
     int minX = std::min({v0_x, v1_x, v2_x});
     int minY = std::min({v0_y, v1_y, v2_y});
     int maxX = std::max({v0_x, v1_x, v2_x});
     int maxY = std::max({v0_y, v1_y, v2_y});
 
-    // pad for distance calculation
-    minX-=max_distance_anti_alias;minY-=max_distance_anti_alias;
-    maxX+=max_distance_anti_alias;maxY+=max_distance_anti_alias;
+    // anti-alias pad for distance calculation
+    uint8_t bits_distance;
+    unsigned int max_distance_anti_alias;
+
+    if(antialias) {
+        bits_distance = 1;
+        max_distance_anti_alias = 1 << bits_distance;
+        minX-=max_distance_anti_alias*1;minY-=max_distance_anti_alias*1;
+        maxX+=max_distance_anti_alias*1;maxY+=max_distance_anti_alias*1;
+    }
 
     minX = std::max(0, minX); minY = std::max(0, minY);
     maxX = std::min(width(), maxX); maxY = std::min(height(), maxY);
@@ -502,7 +525,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
     // overflow safety safe_bits>=(p-2)/2, i.e 15 bits (0..32,768) for 32 bits integers.
     // https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
-    // for 16 bits computer this is safe for 7 bits input [0..127] - not good
+    // this is good for coordinates in the 15 bits range.
     int w0_row = ((long)int_to_fixed(orient2d({v0_x, v0_y}, {v1_x, v1_y}, p)))/length_w0;
     int w1_row = ((long)int_to_fixed(orient2d({v1_x, v1_y}, {v2_x, v2_y}, p)))/length_w1;
     int w2_row = ((long)int_to_fixed(orient2d({v2_x, v2_y}, {v0_x, v0_y}, p)))/length_w2;
@@ -515,9 +538,14 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     // L = length of the edge
     // this simple geometric identity can be derived from
     // area of triangle equation. We are going to interpolate
-    // the quantity (2*A) and we would like to evaluate h,
-    // interpolating (2*A) means h*L, so we will compare it with
-    // max_distance_anti_alias*L quantity which is precomputed (mdaa_v...)
+    // the quantity h and we would like to evaluate h.
+    // NOTE:: this is a cheap way to calculate anti-alias with
+    // perpendicular distance, this is of course not correct for
+    // points that are "beyond" the edges. The real calculation
+    // has to use distance to points hence a square root function
+    // which is expensive for integer version. This version seems to
+    // work best with minimal artifcats when used with bits_distance=0 or 1.
+
     //
 
 
@@ -540,29 +568,23 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
             if ((w0 | w1 | w2) >= 0) {
                 blendColor<BlendMode, PorterDuff>(color_int, index + p.x, opacity);
 
-                // this is faster if we don't use blending
-                // if porterDuff==none and blendmode==normal && alpha==1
-//                P output{};
-//                drawPixel(0xff, p.x, p.y);
-            } else {;// if(false){
+            } else if(antialias) {;// if(false){
                 // any of the distances are negative, we are outside.
                 // test if we can anti-alias
                 // take minimum of all meta distances
 
                 int distance = std::min({w0, w1, w2});
-                int delta = (distance)+ (max_distance_anti_alias<<(16-bits_distance));
+                int delta = (distance) + (max_distance_anti_alias<<(16));
 
                 if (delta >= 0) {
-                    uint8_t blend = ((delta) << (8 - bits_distance))>>16;
+                    uint8_t blend = ((long)((delta) << (8 - bits_distance)))>>16;
 
                     if (opacity < _max_alpha_value) {
                         blend = (blend * opacity) >> 8;
                     }
 
                     blendColor<BlendMode, PorterDuff>(color_int, index + p.x, blend);
-
                 }
-
 
             }
 
