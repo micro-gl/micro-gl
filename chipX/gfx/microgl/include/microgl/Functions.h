@@ -245,6 +245,12 @@ inline uint32_t sqrt_int_2(uint32_t n) {
 ////
 
 
+inline int signed_distance_circle_raised_quad( int px, int py, int cx, int cy, unsigned int r )
+{
+    int dx = (px-cx), dy = py-cy;
+    return (((dx*dx + dy*dy)) - ((r*r)));
+}
+
 
 inline float sdCircle_float(int px, int py, int cx, int cy, unsigned int r)
 {

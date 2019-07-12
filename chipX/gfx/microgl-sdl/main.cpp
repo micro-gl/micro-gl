@@ -112,7 +112,7 @@ inline void render() {
 //        canvas->drawLinePath(RED, b, 7);
 //        canvas->drawCircle(RED, 320, 240, 200);
 //        canvas->drawCircleFPU<blendmode::Normal, porterduff::SourceOver>(RED, 320, 240, 200,1.0f);
-//        canvas->drawCircle(RED, 320, 240, 200);
+        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, 320, 240, 200);
 
 // started 150, then 80 with coding (and 32 without coding)
 //        canvas->drawTriangle<blendmode::Normal, porterduff::None>(RED, 0, 0,
@@ -123,9 +123,9 @@ inline void render() {
 //                                                                                W-80, H-80,
 //                                                                                80, 280, 255);
 
-        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, 80, 80,
-                                                                                W-80, H-80,
-                                                                                80, 280, 255);
+//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, 80, 80,
+//                                                                                W-80, H-80,
+//                                                                                80, 280, 255);
 
 //        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque>(RED, 80, H-280,
 //                                                                                W-80, 80,

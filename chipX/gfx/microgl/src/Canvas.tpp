@@ -340,9 +340,8 @@ inline void Canvas<P, CODER>::drawPixel(const P & val, int index) {
 
 
 
-
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff>
+template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawCircle(const color_f_t & color,
                                   int centerX, int centerY,
                                   int radius,
@@ -351,14 +350,25 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
 
     coder()->convert(color, color_int);
 
-    unsigned int bits_for_antialias_distance = 1;
-    unsigned int max_blend_distance = 1 << bits_for_antialias_distance;
-    unsigned int max_blend_mapped_to_16_fixed = max_blend_distance << (16);
+    unsigned int bits_for_antialias_distance, max_blend_distance=0;
+    unsigned int a, b, c=0;
+
+    if(antialias) {
+        bits_for_antialias_distance = 1;
+        max_blend_distance = 1 << bits_for_antialias_distance;
+        a = radius*radius;
+        b = (radius+max_blend_distance)*(radius+max_blend_distance);
+        c = b - a;
+    }
+
     bool apply_opacity = opacity!=255;
-    fixed_signed delta;
+    int delta;
 
     int x_min = centerX - radius - max_blend_distance, y_min = centerY - radius - max_blend_distance;
     int x_max = centerX + radius + max_blend_distance, y_max = centerY + radius + max_blend_distance;
+    x_min = std::max(0, x_min); y_min = std::max(0, y_min);
+    x_max = std::min(width(), x_max); y_max = std::min(height(), y_max);
+
     int index;
 
     for (int y = y_min; y < y_max; ++y) {
@@ -366,15 +376,14 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
         for (int x = x_min; x < x_max; ++x) {
 
             // 16 bit precision fixed point
-            fixed_signed distance = sdCircle_fixed(x, y, centerX, centerY, radius);
+            int distance = signed_distance_circle_raised_quad(x, y, centerX, centerY, radius);
 
             if(distance<=0)
                 blendColor<BlendMode, PorterDuff>(color_int, index + x, opacity);
-//            else if(distance<=max_blend_mapped_to_16_fixed){
-            else if((delta=max_blend_mapped_to_16_fixed-distance)>=0){
+            else if(antialias && (delta=c-distance)>=0){
 
-                // scale inner to 8 bit and then convert to integer
-                uint8_t blend = ((delta)<<(8-bits_for_antialias_distance))>>16;
+//                 scale inner to 8 bit and then convert to integer
+                uint8_t blend = ((delta)<<(8))/c;
 
                 if(apply_opacity)
                     blend = (blend*opacity)>>8;

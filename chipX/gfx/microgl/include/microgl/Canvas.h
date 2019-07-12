@@ -66,7 +66,7 @@ public:
                       int left, int top, int w, int h);
 
     template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque>
+            typename PorterDuff=porterduff::SourceOverOnOpaque, bool antialias=false>
     void drawCircle(const color_f_t & color,
                     int centerX, int centerY,
                     int radius, uint8_t opacity=255);

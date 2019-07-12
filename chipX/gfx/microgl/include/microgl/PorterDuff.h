@@ -308,9 +308,16 @@ namespace porterduff {
 //            unsigned int comp = max_val - s.a;
             unsigned int comp = s.a^max_val; // flipping bits equals (max_val - s.a)
 
-            output.r = (s.a*s.r + comp * b.r) >> alpha_bits;
-            output.g = (s.a*s.g + comp * b.g) >> alpha_bits;
-            output.b = (s.a*s.b + comp * b.b) >> alpha_bits;
+            if(comp) {
+                output.r = (s.a*s.r + comp * b.r) >> alpha_bits;
+                output.g = (s.a*s.g + comp * b.g) >> alpha_bits;
+                output.b = (s.a*s.b + comp * b.b) >> alpha_bits;
+            } else {
+                output.r = s.r;
+                output.g = s.g;
+                output.b = s.b;
+            }
+
             output.a = max_val;
         }
 
