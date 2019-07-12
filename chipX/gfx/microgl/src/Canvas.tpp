@@ -471,7 +471,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     color_t color_int;
     coder()->convert(color, color_int);
 
-    uint8_t bits_distance = 5;
+    uint8_t bits_distance = 0;
     unsigned int max_distance_anti_alias = 1 << bits_distance;
 
     // bounding box
@@ -483,6 +483,9 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     // pad for distance calculation
     minX-=max_distance_anti_alias;minY-=max_distance_anti_alias;
     maxX+=max_distance_anti_alias;maxY+=max_distance_anti_alias;
+
+    minX = std::max(0, minX); minY = std::max(0, minY);
+    maxX = std::min(width(), maxX); maxY = std::min(height(), maxY);
 
     // Triangle setup
     int A01 = v0_y - v1_y, B01 = v1_x - v0_x;
@@ -521,7 +524,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
 
     // watch out for negative values
-    int index = p.y*_width;
+    int index = p.y * _width;
 
     for (p.y = minY; p.y <= maxY; p.y++) {
 
@@ -543,31 +546,72 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                 // if porterDuff==none and blendmode==normal && alpha==1
 //                P output{};
 //                drawPixel(0xff, p.x, p.y);
-            } else {
+            } else {// if(false){
                 // any of the distances are negative, we are outside.
                 // test if we can anti-alias
                 // take minimum of all meta distances
+
                 int distance = std::min({w0, w1, w2});
                 int delta;
 
-                if(distance==w2) {
-                    delta = distance + mdaa_w2;
+                if(distance==w0) {
+                    if ((w0 <= 0 && (w1 <= 0 || w2<=0))) {
+                    } else {
 
-                    if(delta>=0) {
-                        uint8_t blend = ((delta)<<(8-bits_distance))/length_v0_v1;
+                        delta = distance + mdaa_w0;
 
-                        if(opacity < _max_alpha_value) {
-                            blend = (blend*opacity)>>8;
+                        if (delta >= 0) {
+                            uint8_t blend = ((delta) << (8 - bits_distance)) / length_v1_v2;
+
+                            if (opacity < _max_alpha_value) {
+                                blend = (blend * opacity) >> 8;
+                            }
+
+                            blendColor<BlendMode, PorterDuff>(color_int, index + p.x, blend);
+
                         }
 
-                        blendColor<BlendMode, PorterDuff>(color_int, index + p.x, blend);
-
                     }
-                } else if(distance==w1) {
+                }
+                else if(distance==w2) {
 
-                } else {
+                    // we are in the corner
+                    if ((w2 <= 0 && ( w0<=0 || w1<=0))) {
+                    } else {
+                        delta = distance + mdaa_w2;
+
+                        if(delta>=0) {
+                                uint8_t blend = ((delta) << (8 - bits_distance)) / length_v0_v1;
+
+                                if (opacity < _max_alpha_value) {
+                                    blend = (blend * opacity) >> 8;
+                                }
+
+                                blendColor<BlendMode, PorterDuff>(color_int, index + p.x, blend);
+                        }
+                    }
+                }
+                else if(distance==w1) {
+                    if ((w1 <= 0 && (w0 <= 0 || w2<=0))) {
+                    } else {
+
+                        delta = distance + mdaa_w1;
+
+                        if (delta >= 0) {
+                            uint8_t blend = ((delta) << (8 - bits_distance)) / length_v0_v2;
+
+                            if (opacity < _max_alpha_value) {
+                                blend = (blend * opacity) >> 8;
+                            }
+
+                            blendColor<BlendMode, PorterDuff>(color_int, index + p.x, blend);
+
+                        }
+                    }
 
                 }
+//                */
+
 
             }
 
