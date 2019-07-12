@@ -11,7 +11,7 @@ point q format returning the answer in q format */
 
 #define float_to_fixed_2(a, q) ((int)( (a)*(float)(1<<(q)) ))
 #define fixed_to_float_2(a, q) ( (float)(a) / (float)(1<<(q)) )
-#define int_to_fixed_2(a, q) ( (a)<<(q) )
+#define int_to_fixed_2(a, q) ( (long)(a)<<(q) )
 #define fixed_to_int_2(a, q) ( (a)>>(q) )
 
 #define float_to_fixed(a) (float_to_fixed_2(a, Q))

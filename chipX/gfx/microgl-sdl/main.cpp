@@ -115,17 +115,21 @@ inline void render() {
 //        canvas->drawCircle(RED, 320, 240, 200);
 
 // started 150, then 80 with coding (and 32 without coding)
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque>(RED, 0, 0,
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None>(RED, 0, 0,
 //                                                                                W, H,
 //                                                                                0, H, 255);
-
+//
         canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque>(RED, 80, 80,
                                                                                 W-80, H-80,
                                                                                 80, 280, 255);
 
-        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque>(GREEN, 80, 80,
-                                                                                W/4, H/4,
-                                                                                80, H, 128);
+//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque>(RED, 80, H-280,
+//                                                                                W-80, 80,
+//                                                                                80, H-80,255);
+
+//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque>(GREEN, 80, 80,
+//        W/4, H/4,
+//        80, H, 255);
 
 //        canvas->drawQuad(*bmp_1, 0, 0, 640, 480);
 // started 400, then 230 with re-coding, then 21 without recoding and blending
