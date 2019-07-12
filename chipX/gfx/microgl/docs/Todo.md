@@ -1,0 +1,1 @@
+- do not raster outside the frame

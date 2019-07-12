@@ -355,6 +355,7 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
     unsigned int max_blend_distance = 1 << bits_for_antialias_distance;
     unsigned int max_blend_mapped_to_16_fixed = max_blend_distance << (16);
     bool apply_opacity = opacity!=255;
+    fixed_signed delta;
 
     int x_min = centerX - radius - max_blend_distance, y_min = centerY - radius - max_blend_distance;
     int x_max = centerX + radius + max_blend_distance, y_max = centerY + radius + max_blend_distance;
@@ -369,10 +370,11 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
 
             if(distance<=0)
                 blendColor<BlendMode, PorterDuff>(color_int, index + x, opacity);
-            else if(distance<=max_blend_mapped_to_16_fixed){
+//            else if(distance<=max_blend_mapped_to_16_fixed){
+            else if((delta=max_blend_mapped_to_16_fixed-distance)>=0){
 
                 // scale inner to 8 bit and then convert to integer
-                uint8_t blend = (( (max_blend_mapped_to_16_fixed) - distance)<<(8-bits_for_antialias_distance))>>16;
+                uint8_t blend = ((delta)<<(8-bits_for_antialias_distance))>>16;
 
                 if(apply_opacity)
                     blend = (blend*opacity)>>8;
@@ -445,13 +447,147 @@ void Canvas<P, CODER>::drawGradient(const color_f_t & startColor,
 }
 
 
-
-int orient2d(const vec2_32i& a, const vec2_32i& b, const vec2_32i& c)
+// this equals twice the triangle area - the parallogram
+inline int orient2d(const vec2_32i& a, const vec2_32i& b, const vec2_32i& c)
 {
     return (b.x-a.x)*(c.y-a.y) - (b.y-a.y)*(c.x-a.x);
 }
 
+// this equals twice the triangle area - the parallogram
+inline unsigned int length(const vec2_32i& a, const vec2_32i& b)
+{
+    int dx = (a.x-b.x), dy = (a.y-b.y);
+    return sqrt_int(dx*dx + dy*dy);
+}
 
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff>
+void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
+                                    const int v0_x, const int v0_y,
+                                    const int v1_x, const int v1_y,
+                                    const int v2_x, const int v2_y,
+                                    const uint8_t opacity) {
+    color_t color_int;
+    coder()->convert(color, color_int);
+
+    uint8_t bits_distance = 5;
+    unsigned int max_distance_anti_alias = 1 << bits_distance;
+
+    // bounding box
+    int minX = std::min({v0_x, v1_x, v2_x});
+    int minY = std::min({v0_y, v1_y, v2_y});
+    int maxX = std::max({v0_x, v1_x, v2_x});
+    int maxY = std::max({v0_y, v1_y, v2_y});
+
+    // pad for distance calculation
+    minX-=max_distance_anti_alias;minY-=max_distance_anti_alias;
+    maxX+=max_distance_anti_alias;maxY+=max_distance_anti_alias;
+
+    // Triangle setup
+    int A01 = v0_y - v1_y, B01 = v1_x - v0_x;
+    int A12 = v1_y - v2_y, B12 = v2_x - v1_x;
+    int A20 = v2_y - v0_y, B20 = v0_x - v2_x;
+
+    // Barycentric coordinates at minX/minY corner
+    vec2_32i p = { minX, minY };
+
+    // overflow safety safe_bits>=(p-2)/2, i.e 15 bits (0..32,768) for 32 bits integers.
+    // https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
+    // for 16 bits computer this is safe for 7 bits input [0..127] - not good
+    int w0_row = orient2d({v1_x, v1_y}, {v2_x, v2_y}, p);
+    int w1_row = orient2d({v2_x, v2_y}, {v0_x, v0_y}, p);
+    int w2_row = orient2d({v0_x, v0_y}, {v1_x, v1_y}, p);
+
+    // lengths of edges
+    unsigned int length_v0_v1 = length({v0_x, v0_y}, {v1_x, v1_y});
+    unsigned int length_v0_v2 = length({v0_x, v0_y}, {v2_x, v2_y});
+    unsigned int length_v1_v2 = length({v1_x, v1_y}, {v2_x, v2_y});
+    unsigned int mdaa_w2 = max_distance_anti_alias * length_v0_v1;
+    unsigned int mdaa_w1 = max_distance_anti_alias * length_v0_v2;
+    unsigned int mdaa_w0 = max_distance_anti_alias * length_v1_v2;
+
+    //
+    // distance to edge is always h= (2*A)/L, where:
+    // h=distance from point to edge
+    // A = triangle spanned by point and edge area
+    // L = length of the edge
+    // this simple geometric identity can be derived from
+    // area of triangle equation. We are going to interpolate
+    // the quantity (2*A) and we would like to evaluate h,
+    // interpolating (2*A) means h*L, so we will compare it with
+    // max_distance_anti_alias*L quantity which is precomputed (mdaa_v...)
+    //
+
+
+    // watch out for negative values
+    int index = p.y*_width;
+
+    for (p.y = minY; p.y <= maxY; p.y++) {
+
+        // Barycentric coordinates at start of row
+        int w0 = w0_row;
+        int w1 = w1_row;
+        int w2 = w2_row;
+
+
+        for (p.x = minX; p.x <= maxX; p.x++) {
+//            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+            // same as (w0 >= 0 && w1 >= 0 && w2 >= 0), but use only MSB,
+            // this turns three conditionals into one !!!
+            // if all are positive>=0 then we are inside the triangle
+            if ((w0 | w1 | w2) >= 0) {
+                blendColor<BlendMode, PorterDuff>(color_int, index + p.x, opacity);
+
+                // this is faster if we don't use blending
+                // if porterDuff==none and blendmode==normal && alpha==1
+//                P output{};
+//                drawPixel(0xff, p.x, p.y);
+            } else {
+                // any of the distances are negative, we are outside.
+                // test if we can anti-alias
+                // take minimum of all meta distances
+                int distance = std::min({w0, w1, w2});
+                int delta;
+
+                if(distance==w2) {
+                    delta = distance + mdaa_w2;
+
+                    if(delta>=0) {
+                        uint8_t blend = ((delta)<<(8-bits_distance))/length_v0_v1;
+
+                        if(opacity < _max_alpha_value) {
+                            blend = (blend*opacity)>>8;
+                        }
+
+                        blendColor<BlendMode, PorterDuff>(color_int, index + p.x, blend);
+
+                    }
+                } else if(distance==w1) {
+
+                } else {
+
+                }
+
+            }
+
+            // One step to the right
+            w0 += A12;
+            w1 += A20;
+            w2 += A01;
+
+        }
+
+        // One row step
+        w0_row += B12;
+        w1_row += B20;
+        w2_row += B01;
+        index += _width;
+    }
+
+}
+
+/*
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
 void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
@@ -522,6 +658,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
 }
 
+ */
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
