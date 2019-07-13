@@ -98,13 +98,14 @@ inline void render() {
 
 
         // rotated cube
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque>(*bmp_2, 0, W/2, 0.0, 0.0,
-//                                                                  W/2, 0, 0.0, 1.0,
-//                                                                  W, W/2, 1.0, 1.0 , 128);
+        canvas->drawTriangle<blendmode::Normal, porterduff::None>(*bmp_2, 0, W/2, 0.0, 0.0,
+                                                                  W/2, 0, 0.0, 1.0,
+                                                                  W, W/2, 1.0, 1.0 , 255);
+
 //        canvas->drawTriangle<blendmode::Normal, porterduff::None>(*bmp_2, W, W/2, 1.0, 1.0,
 //                                                                  W/2, W, 1.0, 0.0,
 //                                                                  0, W/2, 0.0, 0.0 );
-//
+
 
 
 //        canvas->drawQuadraticBezierPath(BLACK, c, 3);
@@ -112,7 +113,7 @@ inline void render() {
 //        canvas->drawLinePath(RED, b, 7);
 //        canvas->drawCircle(RED, 320, 240, 200);
 //        canvas->drawCircleFPU<blendmode::Normal, porterduff::SourceOver>(RED, 320, 240, 200,1.0f);
-        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, 320, 240, 200);
+//        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, 320, 240, 200);
 
 // started 150, then 80 with coding (and 32 without coding)
 //        canvas->drawTriangle<blendmode::Normal, porterduff::None>(RED, 0, 0,

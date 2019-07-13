@@ -6,6 +6,9 @@
 
 #include <math.h>
 #include <stdint.h>
+#include "Types.h"
+
+uint32_t sqrt_int(uint32_t a_nInput);
 
 template <typename T>
 inline T edgeFunction(T x0, T y0, T x1, T y1, T x2, T y2)
@@ -27,6 +30,39 @@ inline bool insideCircle(float x, float y, float centerX, float centerY, float r
     return (distance <= radius);
 
 }
+
+// this equals twice the triangle area - the parallogram
+inline int orient2d(const vec2_32i& a, const vec2_32i& b, const vec2_32i& c)
+{
+    return (b.x-a.x)*(c.y-a.y) - (b.y-a.y)*(c.x-a.x);
+}
+
+// this equals twice the triangle area - the parallogram
+inline unsigned int length(const vec2_32i& a, const vec2_32i& b)
+{
+    int dx = (a.x-b.x), dy = (a.y-b.y);
+    return sqrt_int(dx*dx + dy*dy);
+}
+
+// this equals twice the triangle area - the parallogram
+template<typename T>
+inline vec2<T> intersect_lines(const vec2<T>& p1, const vec2<T>& p2,
+                               const vec2<T>& q1, const vec2<T>& q2)
+{
+    vec2<T> result;
+    T denominator = (p1.x - p2.x)*(q1.y - q2.y) - (p1.y-p2.y) * (q1.x-q2.x);
+    T a1 = (p1.x*p2.y - p1.y*p2.x), a2 = (q1.x*q2.y - q1.y*q2.x);
+
+
+    result.x = a1*(q1.x - q2.x) - (p1.x - p2.x) * a2;
+    result.x /= denominator;
+
+    result.y = a1*(q1.y - q2.y) - (p1.y - p2.y) * a2;
+    result.y /= denominator;
+
+    return result;
+}
+
 
 inline uint32_t alpha_max_plus_beta_min(uint32_t x, uint32_t y) {
     return (x>y) ? (x + (y>>1)) : (y + (x>>1));
