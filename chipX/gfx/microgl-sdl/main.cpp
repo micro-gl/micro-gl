@@ -61,7 +61,7 @@ inline void render() {
 
     vec2_32i b[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2}, {W/2 + W/3, H/4}, {W-5, H - 5}};
 
-    for (int ix = 0; ix < 100; ++ix) {
+    for (int ix = 0; ix < 1000; ++ix) {
         /*
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
@@ -94,36 +94,57 @@ inline void render() {
 // clock-wise
 
         // rotated cube
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
 //                *bmp_2,
-//                0, W/2, 0.0, 0.0,
-//                W/2, 0, 0.0, 1.0,
-//                W, W/2, 1.0, 1.0,
+//                0, W/3, 0.0, 0.0,
+//                W/3, 0, 0.0, 1.0,
+//                2*W/3, W/3, 1.0, 1.0,
 //                255);
 //
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None>(
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None,false>(
 //                *bmp_2,
-//                W, W/2, 1.0, 1.0,
-//                W/2, W, 1.0, 0.0,
-//                0, W/2, 0.0, 0.0 );
+//                2*W/3, W/3, 1.0, 1.0,
+//                W/3, 2*W/3, 1.0, 0.0,
+//                0, W/3, 0.0, 0.0 );
+
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
+//                RED,
+//                0, W/3,
+//                W/3, 0,
+//                2*W/3, W/3,
+//                255);
+//
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None,false>(
+//                RED,
+//                2*W/3, W/3,
+//                W/3, 2*W/3,
+//                0, W/3);
 
         // filled Quadrilateral
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
 //                RED,
-//                0, W/2,
-//                W/2, 80,
-//                W, W/2,
-//                W/2, W,
+//                0, W/3,
+//                W/3, 0,
+//                2*W/3, W/3,
+//                W/3, 2*W/3,
 //                255);
 
         // texture mapped
-        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
+        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
                 *bmp_2,
-                0, W/2, 0.0, 0.0,
-                W/2, 0, 0.0, 1.0,
-                W, W/2, 1.0, 1.0,
-                W/2, W, 1.0, 0.0,
+                0, W/3, 0.0, 0.0,
+                W/3, 0, 0.0, 1.0,
+                2*W/3, W/3, 1.0, 1.0,
+                W/3, 2*W/3, 1.0, 0.0,
                 255);
+
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
+//                *bmp_2,
+//                0, 0, 0.0, 1.0,
+//                W, 0, 1.0, 1.0,
+//                W, H, 1.0, 0.0,
+//                0, H, 0.0, 0.0,
+//                255);
 
 
 //        canvas->drawQuadraticBezierPath(BLACK, c, 3);
