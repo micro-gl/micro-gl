@@ -107,14 +107,23 @@ inline void render() {
 //                W/2, W, 1.0, 0.0,
 //                0, W/2, 0.0, 0.0 );
 
-        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-                RED,
-                0, W/4,
-                W/4, 80,
-                W/2, W/4,
-                W/4, W/2,
-                255);
+        // filled Quadrilateral
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+//                RED,
+//                0, W/2,
+//                W/2, 80,
+//                W, W/2,
+//                W/2, W,
+//                255);
 
+        // texture mapped
+        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
+                *bmp_2,
+                0, W/2, 0.0, 0.0,
+                W/2, 0, 0.0, 1.0,
+                W, W/2, 1.0, 1.0,
+                W/2, W, 1.0, 0.0,
+                255);
 
 
 //        canvas->drawQuadraticBezierPath(BLACK, c, 3);

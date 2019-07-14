@@ -93,7 +93,7 @@ public:
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false,
             typename P2, typename CODER2>
-    void drawTriangle(Bitmap<P2, CODER2> &bmp,
+    void drawTriangle(const Bitmap<P2, CODER2> &bmp,
                       int v0_x, int v0_y, float u0, float v0,
                       int v1_x, int v1_y, float u1, float v1,
                       int v2_x, int v2_y, float u2, float v2,
@@ -109,6 +109,16 @@ public:
                            const int x1, const int y1,
                            const int x2, const int y2,
                            const int x3, const int y3,
+                           const uint8_t opacity = 255);
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false, typename P2, typename CODER2>
+    void drawQuadrilateral(const Bitmap<P2, CODER2> &bmp,
+                           const int x0, const int y0, float u0, float v0,
+                           const int x1, const int y1, float u1, float v1,
+                           const int x2, const int y2, float u2, float v2,
+                           const int x3, const int y3, float u3, float v3,
                            const uint8_t opacity = 255);
 
     // axis aligned quads

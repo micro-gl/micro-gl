@@ -52,12 +52,12 @@ Bitmap<P, CODER>::~Bitmap() {
 }
 
 template<typename P, typename CODER>
-int Bitmap<P, CODER>::width() {
+int Bitmap<P, CODER>::width() const {
     return _width;
 }
 
 template<typename P, typename CODER>
-int Bitmap<P, CODER>::height() {
+int Bitmap<P, CODER>::height() const {
     return _height;
 }
 
@@ -67,7 +67,7 @@ PixelFormat Bitmap<P, CODER>::format() {
 }
 
 template<typename P, typename CODER>
-P Bitmap<P, CODER>::pixelAt(int x, int y) {
+P Bitmap<P, CODER>::pixelAt(int x, int y) const {
     return this->_data[y*_width + x];
 }
 
@@ -77,27 +77,27 @@ PixelCoder<P, CODER> *Bitmap<P, CODER>::coder() {
 }
 
 template<typename P, typename CODER>
-P Bitmap<P, CODER>::pixelAt(int index) {
+P Bitmap<P, CODER>::pixelAt(int index) const {
     return this->_data[index];
 }
 
 template<typename P, typename CODER>
-void Bitmap<P, CODER>::decode(int x, int y, color_t &output) {
+void Bitmap<P, CODER>::decode(int x, int y, color_t &output)  const{
     _coder->decode(pixelAt(x, y), output);
 }
 
 template<typename P, typename CODER>
-void Bitmap<P, CODER>::decode(int index, color_t &output) {
+void Bitmap<P, CODER>::decode(int index, color_t &output)  const{
     _coder->decode(pixelAt(index), output);
 }
 
 template<typename P, typename CODER>
-void Bitmap<P, CODER>::decode(int x, int y, color_f_t &output) {
+void Bitmap<P, CODER>::decode(int x, int y, color_f_t &output) const {
     _coder->decode(pixelAt(x, y), output);
 }
 
 template<typename P, typename CODER>
-void Bitmap<P, CODER>::decode(int index, color_f_t &output) {
+void Bitmap<P, CODER>::decode(int index, color_f_t &output) const {
     _coder->decode(pixelAt(index), output);
 }
 

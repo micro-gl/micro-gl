@@ -21,14 +21,14 @@ public:
     Bitmap(uint8_t* $pixels, int w, int h, PixelCoder<P, CODER> * $coder);
     ~Bitmap();
 
-    P pixelAt(int x, int y);
-    P pixelAt(int index);
+    P pixelAt(int x, int y) const;
+    P pixelAt(int index) const;
 
     // decoders
-    void decode(int x, int y, color_t &output);
-    void decode(int index, color_t &output);
-    void decode(int x, int y, color_f_t &output);
-    void decode(int index, color_f_t &output);
+    void decode(int x, int y, color_t &output) const;
+    void decode(int index, color_t &output) const;
+    void decode(int x, int y, color_f_t &output) const;
+    void decode(int index, color_f_t &output) const;
     // encoders
 //    void encodeColorToPixel(color_t &color, P & output);
 //    void encodeColorToPixel(int index, color_t &output);
@@ -40,17 +40,12 @@ public:
     void writeColor(int index, const color_f_t & color);
     void writeColor(int x, int y, const color_f_t & color);
 
-    int width();
-    int height();
+    int width() const;
+    int height() const;
     PixelFormat format();
     PixelCoder<P, CODER> * coder();
 
-    RGB888_PACKED_32 * hi() {
-        return _hi;
-    }
-
 protected:
-    RGB888_PACKED_32 *_hi;
     int _width = 0, _height = 0;
     PixelFormat _format;
     PixelCoder<P, CODER> * _coder;
