@@ -92,18 +92,14 @@ inline void render() {
 //                             W, H, 1.0, 0.0,
 //                             0, H, 0.0, 0.0 );
 // clock-wise
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None>(*bmp_2, 0, 448, 0.0, 0.0,
-//                                                                  252, 138, 0.0, 1.0,
-//                                                                  560, 391, 1.0, 1.0 );
-
 
         // rotated cube
-        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque>(*bmp_2,
+        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(*bmp_2,
                 0, W/2, 0.0, 0.0,
                 W/2, 0, 0.0, 1.0,
                 W, W/2, 1.0, 1.0,
                 255);
-
+//
 //        canvas->drawTriangle<blendmode::Normal, porterduff::None>(*bmp_2, W, W/2, 1.0, 1.0,
 //                                                                  W/2, W, 1.0, 0.0,
 //                                                                  0, W/2, 0.0, 0.0 );

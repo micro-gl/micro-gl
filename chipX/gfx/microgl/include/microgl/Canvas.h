@@ -85,16 +85,9 @@ public:
                       const int x2, const int y2,
                       const uint8_t opacity = 255);
 
-    template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque, bool antialias=false>
-    void drawTriangleFPU(const color_f_t & color,
-                      const int x0, const int y0,
-                      const int x1, const int y1,
-                      const int x2, const int y2,
-                      const uint8_t opacity = 255);
-
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false,
             typename P2, typename CODER2>
     void drawTriangle(Bitmap<P2, CODER2> &bmp,
                       int v0_x, int v0_y, float u0, float v0,

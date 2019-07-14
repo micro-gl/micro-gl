@@ -585,6 +585,7 @@ inline int clamp(int val, int e0, int e1) {
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
+         bool antialias,
          typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
@@ -605,8 +606,8 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
     uint8_t bits_distance;
     unsigned int max_distance_anti_alias=0;
 
-    if(true) {
-        bits_distance = 4;
+    if(antialias) {
+        bits_distance = 1;
         max_distance_anti_alias = 1 << bits_distance;
         // we can solve padding analytically with distance=(max_distance_anti_alias/Cos(angle))
         // but I don't give a fuck about it since I am just using max value of 2
@@ -700,7 +701,7 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
 
                 // this is faster if we don't use blending
 //                drawPixel(bmp.pixelAt(index_bmp), index + p.x);
-            } else if(true) {;// if(false){
+            } else if(antialias) {;// if(false){
                 // any of the distances are negative, we are outside.
                 // test if we can anti-alias
                 // take minimum of all meta distances
