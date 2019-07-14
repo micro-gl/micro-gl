@@ -1,4 +1,5 @@
 #### GFX:
+- fix bitmap width erros ==> width -1
 - filled triangle FPU version
 - Filled Quadrilateral with AA
 - textured Quadrilateral AA and Z correction

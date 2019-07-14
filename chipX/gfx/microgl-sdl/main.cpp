@@ -36,6 +36,8 @@ Canvas24Bit_Packed32 * canvas;
 
 Bitmap24bitU8 * bmp_1;
 Bitmap24bit_Packed32 * bmp_2;
+Bitmap24bitU8 * bmp_uv_U8;
+Bitmap24bit_Packed32 * bmp_uv;
 
 Resources resources{};
 Resources::image_info_t img_1;
@@ -61,7 +63,7 @@ inline void render() {
 
     vec2_32i b[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2}, {W/2 + W/3, H/4}, {W-5, H - 5}};
 
-    for (int ix = 0; ix < 1000; ++ix) {
+    for (int ix = 0; ix < 100; ++ix) {
         /*
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
@@ -130,14 +132,22 @@ inline void render() {
 //                255);
 
         // texture mapped
-        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
                 *bmp_2,
-                0, W/3, 0.0, 0.0,
-                W/3, 0, 0.0, 1.0,
-                2*W/3, W/3, 1.0, 1.0,
-                W/3, 2*W/3, 1.0, 0.0,
+                4*W/10,   80,   0.0, 1.0,
+                6*W/10, 80,   1.0, 1.0,
+                W-80,     H-80, 1.0, 0.0,
+                80,    H-80, 0.0, 0.0,
                 255);
 
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
+//                *bmp_2,
+//                0, W/3, 0.0, 0.0,
+//                W/3, 0, 0.0, 1.0,
+//                2*W/3, W/3, 1.0, 1.0,
+//                W/3, 2*W/3, 1.0, 0.0,
+//                255);
+//
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
 //                *bmp_2,
 //                0, 0, 0.0, 1.0,
@@ -208,11 +218,15 @@ void init_sdl(int width, int height) {
 
 
     img_1 = resources.loadImageFromCompressedPath("charsprites.png");
+    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
 
 
 //    auto * bmp_1 = new Bitmap<uint32_t , RGB888_PACKED_32>(img_1.data, img_1.width, img_1.height, new RGB888_PACKED_32());
     bmp_1 = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_1.data, img_1.width, img_1.height, new RGB888_ARRAY());
     bmp_2 = bmp_1->convertToBitmap<uint32_t , RGB888_PACKED_32>();
+
+    bmp_uv_U8 = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_2.data, img_2.width, img_2.height, new RGB888_ARRAY());
+    bmp_uv = bmp_uv_U8->convertToBitmap<uint32_t , RGB888_PACKED_32>();
 
     resources.init();
 }

@@ -99,6 +99,16 @@ public:
                       int v2_x, int v2_y, float u2, float v2,
                       const uint8_t opacity = 255);
 
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false,
+            typename P2, typename CODER2>
+    void drawTriangle(const Bitmap<P2, CODER2> &bmp,
+                      int v0_x, int v0_y, float u0, float v0, float q0,
+                      int v1_x, int v1_y, float u1, float v1, float q1,
+                      int v2_x, int v2_y, float u2, float v2, float q2,
+                      const uint8_t opacity = 255);
+
     // quadrilaterals
 
     template <typename BlendMode=blendmode::Normal,
