@@ -1,1 +1,15 @@
+#### GFX:
+- filled triangle FPU version
+- Filled Quadrilateral with AA
+- textured Quadrilateral AA and Z correction
+- Bezier curves with adaptive algorithm
+- draw lines with SDF
+- draw lines with polygons
+- rounded rectangle (check inigo sd functions)
+- bilinear filtering for textures
+- draw text
+- filled polygon
+- draw masks
+- draw shadows
+- turn off AA for an EDGE (seful when rendering batch)
 - do not raster outside the frame
