@@ -1,8 +1,11 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+
 #include <microgl/BlendMode.h>
 #include "../include/microgl/Canvas.h"
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
                         : _bitmap_canvas($bmp), _width{$bmp->width()}, _height{$bmp->height()} {
@@ -619,6 +622,7 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
     minX = std::max(0, minX); minY = std::max(0, minY);
     maxX = std::min(width()-1, maxX); maxY = std::min(height()-1, maxY);
 
+    // todo:: optimize all of these recurring expressions
     // Triangle setup
     fixed_signed A01_u2 = float_to_fixed(u2*bmp.width()*(v0_y - v1_y)/area), B01_u2 = float_to_fixed(u2*bmp.width()*(v1_x - v0_x)/area); //w2
     fixed_signed A12_u0 = float_to_fixed(u0*bmp.width()*(v1_y - v2_y)/area), B12_u0 = float_to_fixed(u0*bmp.width()*(v2_x - v1_x)/area); // w0
@@ -627,10 +631,6 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
     fixed_signed A01_v2 = float_to_fixed(v2*bmp.height()*(v0_y - v1_y)/area), B01_v2 = float_to_fixed(v2*bmp.height()*(v1_x - v0_x)/area); //w2
     fixed_signed A12_v0 = float_to_fixed(v0*bmp.height()*(v1_y - v2_y)/area), B12_v0 = float_to_fixed(v0*bmp.height()*(v2_x - v1_x)/area); // w0
     fixed_signed A20_v1 = float_to_fixed(v1*bmp.height()*(v2_y - v0_y)/area), B20_v1 = float_to_fixed(v1*bmp.height()*(v0_x - v2_x)/area); // w1
-
-//    fixed_signed A01 = v0_y - v1_y, B01 = v1_x - v0_x; //w2
-//    fixed_signed A12 = v1_y - v2_y, B12 = v2_x - v1_x; // w0
-//    fixed_signed A20 = v2_y - v0_y, B20 = v0_x - v2_x; // w1
 
     // Barycentric coordinates at minX/minY corner
     vec2_32i p = { minX, minY };
@@ -646,11 +646,6 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
     fixed_signed w1_row_v = float_to_fixed(float(v1*bmp.height()*orient2d({v2_x, v2_y}, {v0_x, v0_y}, p))/area);
     fixed_signed w2_row_v = float_to_fixed(float(v2*bmp.height()*orient2d({v0_x, v0_y}, {v1_x, v1_y}, p))/area);
 
-    //
-//    int w0_row = orient2d({v1_x, v1_y}, {v2_x, v2_y}, p);
-//    int w1_row = orient2d({v2_x, v2_y}, {v0_x, v0_y}, p);
-//    int w2_row = orient2d({v0_x, v0_y}, {v1_x, v1_y}, p);
-
     // lengths of edges
     unsigned int length_w2 = length({v0_x, v0_y}, {v1_x, v1_y});
     unsigned int length_w0 = length({v1_x, v1_y}, {v2_x, v2_y});
@@ -664,6 +659,7 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
     // overflow safety safe_bits>=(p-2)/2, i.e 15 bits (0..32,768) for 32 bits integers.
     // https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
     // this is good for coordinates in the 15 bits range.
+    // this is distance to edges
     int w2_row = ((long)int_to_fixed(orient2d({v0_x, v0_y}, {v1_x, v1_y}, p)))/length_w2;
     int w0_row = ((long)int_to_fixed(orient2d({v1_x, v1_y}, {v2_x, v2_y}, p)))/length_w0;
     int w1_row = ((long)int_to_fixed(orient2d({v2_x, v2_y}, {v0_x, v0_y}, p)))/length_w1;
@@ -699,8 +695,6 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
                 bmp.decode(index_bmp, col_bmp);
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
 
-                // this is faster if we don't use blending
-//                drawPixel(bmp.pixelAt(index_bmp), index + p.x);
             } else if(antialias) {;// if(false){
                 // any of the distances are negative, we are outside.
                 // test if we can anti-alias
@@ -762,6 +756,141 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
 
 }
 
+// Quadrilaterals
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias>
+void Canvas<P, CODER>::drawQuadrilateral(const color_f_t &color,
+                                         const int v0_x, const int v0_y,
+                                         const int v1_x, const int v1_y,
+                                         const int v2_x, const int v2_y,
+                                         const int v3_x, const int v3_y,
+                                         const uint8_t opacity) {
+    color_t color_int;
+    coder()->convert(color, color_int);
+
+    // bounding box
+    int minX = std::min({v0_x, v1_x, v2_x, v3_x});
+    int minY = std::min({v0_y, v1_y, v2_y, v3_y});
+    int maxX = std::max({v0_x, v1_x, v2_x, v3_x});
+    int maxY = std::max({v0_y, v1_y, v2_y, v3_y});
+
+    // anti-alias pad for distance calculation
+    uint8_t bits_distance;
+    unsigned int max_distance_anti_alias=0;
+
+    if(antialias) {
+        bits_distance = 1;
+        max_distance_anti_alias = 1 << bits_distance;
+        // we can solve padding analytically with distance=(max_distance_anti_alias/Cos(angle))
+        // but I don't give a fuck about it since I am just using max value of 2
+        minX-=max_distance_anti_alias*2;minY-=max_distance_anti_alias*2;
+        maxX+=max_distance_anti_alias*2;maxY+=max_distance_anti_alias*2;
+    }
+
+    // clipping against canvas
+    minX = std::max(0, minX); minY = std::max(0, minY);
+    maxX = std::min(width()-1, maxX); maxY = std::min(height()-1, maxY);
+
+    // lengths of edges
+    unsigned int length_w0 = length({v0_x, v0_y}, {v1_x, v1_y});
+    unsigned int length_w1 = length({v1_x, v1_y}, {v2_x, v2_y});
+    unsigned int length_w2 = length({v2_x, v2_y}, {v3_x, v3_y});
+    unsigned int length_w3 = length({v3_x, v3_y}, {v0_x, v0_y});
+
+    // Triangle setup
+    int A01 = int_to_fixed(v0_y - v1_y)/length_w0, B01 = int_to_fixed(v1_x - v0_x)/length_w0;
+    int A12 = int_to_fixed(v1_y - v2_y)/length_w1, B12 = int_to_fixed(v2_x - v1_x)/length_w1;
+    int A23 = int_to_fixed(v2_y - v3_y)/length_w2, B23 = int_to_fixed(v3_x - v2_x)/length_w2;
+    int A30 = int_to_fixed(v3_y - v0_y)/length_w3, B30 = int_to_fixed(v0_x - v3_x)/length_w3;
+
+    // Barycentric coordinates at minX/minY corner
+    vec2_32i p = { minX, minY };
+
+    // overflow safety safe_bits>=(p-2)/2, i.e 15 bits (0..32,768) for 32 bits integers.
+    // https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
+    // this is good for coordinates in the 15 bits range.
+    int w0_row = ((long)int_to_fixed(orient2d({v0_x, v0_y}, {v1_x, v1_y}, p)))/length_w0;
+    int w1_row = ((long)int_to_fixed(orient2d({v1_x, v1_y}, {v2_x, v2_y}, p)))/length_w1;
+    int w2_row = ((long)int_to_fixed(orient2d({v2_x, v2_y}, {v3_x, v3_y}, p)))/length_w2;
+    int w3_row = ((long)int_to_fixed(orient2d({v3_x, v3_y}, {v0_x, v0_y}, p)))/length_w3;
+
+
+    //
+    // distance to edge is always h= (2*A)/L, where:
+    // h=distance from point to edge
+    // A = triangle spanned by point and edge area
+    // L = length of the edge
+    // this simple geometric identity can be derived from
+    // area of triangle equation. We are going to interpolate
+    // the quantity h and we would like to evaluate h.
+    // NOTE:: this is a cheap way to calculate anti-alias with
+    // perpendicular distance, this is of course not correct for
+    // points that are "beyond" the edges. The real calculation
+    // has to use distance to points hence a square root function
+    // which is expensive for integer version. This version seems to
+    // work best with minimal artifacts when used with bits_distance=0 or 1.
+
+    // watch out for negative values
+    int index = p.y * _width;
+
+    for (p.y = minY; p.y <= maxY; p.y++) {
+
+        // Barycentric coordinates at start of row
+        int w0 = w0_row;
+        int w1 = w1_row;
+        int w2 = w2_row;
+        int w3 = w3_row;
+
+
+        for (p.x = minX; p.x <= maxX; p.x++) {
+//            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+            // same as (w0 >= 0 && w1 >= 0 && w2 >= 0), but use only MSB,
+            // this turns three conditionals into one !!!
+            // if all are positive>=0 then we are inside the triangle
+            if ((w0 | w1 | w2 | w3) >= 0) {
+                blendColor<BlendMode, PorterDuff>(color_int, index + p.x, opacity);
+
+            } else if(antialias) {;// if(false){
+                // any of the distances are negative, we are outside.
+                // test if we can anti-alias
+                // take minimum of all meta distances
+
+                int distance = std::min({w0, w1, w2, w3});
+                int delta = (distance) + (max_distance_anti_alias<<(16));
+
+                if (delta >= 0) {
+                    uint8_t blend = ((long)((delta) << (8 - bits_distance)))>>16;
+
+                    if (opacity < _max_alpha_value) {
+                        blend = (blend * opacity) >> 8;
+                    }
+
+                    blendColor<BlendMode, PorterDuff>(color_int, index + p.x, blend);
+                }
+
+            }
+
+            // One step to the right
+            w0 += A01;
+            w1 += A12;
+            w2 += A23;
+            w3 += A30;
+
+        }
+
+        // One row step
+        w0_row += B01;
+        w1_row += B12;
+        w2_row += B23;
+        w3_row += B30;
+        index += _width;
+    }
+
+}
+
+
+// quads
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
@@ -1267,4 +1396,5 @@ Canvas<P, CODER>::drawLinePath(color_f_t &color, vec2_32i *points,
 
 
 
+#pragma clang diagnostic pop
 #pragma clang diagnostic pop

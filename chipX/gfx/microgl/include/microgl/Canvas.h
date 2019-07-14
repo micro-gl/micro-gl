@@ -65,8 +65,10 @@ public:
                       const color_f_t &endColor,
                       int left, int top, int w, int h);
 
+    // circles
     template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque, bool antialias=false>
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
     void drawCircle(const color_f_t & color,
                     int centerX, int centerY,
                     int radius, uint8_t opacity=255);
@@ -77,8 +79,10 @@ public:
                     int centerX, int centerY,
                     int radius, float opacity=1.0f);
 
+    // triangles
     template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque, bool antialias=false>
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
     void drawTriangle(const color_f_t & color,
                       const int x0, const int y0,
                       const int x1, const int y1,
@@ -95,6 +99,19 @@ public:
                       int v2_x, int v2_y, float u2, float v2,
                       const uint8_t opacity = 255);
 
+    // quadrilaterals
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
+    void drawQuadrilateral(const color_f_t & color,
+                           const int x0, const int y0,
+                           const int x1, const int y1,
+                           const int x2, const int y2,
+                           const int x3, const int y3,
+                           const uint8_t opacity = 255);
+
+    // axis aligned quads
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>
     void drawQuad(const color_f_t &color,
