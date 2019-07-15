@@ -668,7 +668,6 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
     //
 
-
     int index = p.y * _width;
 
     for (p.y = minY; p.y <= maxY; p.y++) {
@@ -687,29 +686,17 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
         int w2 = w2_row;
 
         for (p.x = minX; p.x <= maxX; p.x++) {
+
             if ((w0 | w1 | w2) >= 0) {
 
-                //                /*
-//                float ww0 = ((float)orient2d({v0_x, v0_y}, {v1_x, v1_y}, p))/area;
-//                float ww1 = ((float)orient2d({v1_x, v1_y}, {v2_x, v2_y}, p))/area;
-//                float ww2 = ((float)orient2d({v2_x, v2_y}, {v0_x, v0_y}, p))/area;
-//
-//                float qq =  ww0*q2 + ww1*q0 + ww2*q1;
-//
-//                float u__1 =  (ww0*u2 + ww1*u0 + ww2*u1)/qq;
-//                float v__1 =  (ww0*v2 + ww1*v0 + ww2*v1)/qq;
-//                fixed_signed qqs = float_to_fixed(qq);
-
-//                int u_i = (int)(u__1 * (float)(bmp.width()-1));
-//                int v_i = bmp_width * (int)(v__1*(float)(bmp.height()-1));//(int)(v * (float)bmp.height());
-//
-
-                int u_i = fixed_to_int((w0_u + w1_u + w2_u));
-                int v_i = fixed_to_int((w0_v + w1_v + w2_v));
+                // we round the numbers, which greatly improves things
+                int u_i = fixed_to_int(w0_u + w1_u + w2_u + fixed_half);
+                int v_i = fixed_to_int(w0_v + w1_v + w2_v + fixed_half);
                 // i should clamp if i see artifacts
-//                int u_i = clamp(fixed_to_int((w0_u + w1_u + w2_u)), 0, bmp_w_max);
-//                int v_i = clamp(fixed_to_int((w0_v + w1_v + w2_v)), 0, bmp_h_max);
+                // int u_i = clamp(fixed_to_int((w0_u + w1_u + w2_u)), 0, bmp_w_max);
+                // int v_i = clamp(fixed_to_int((w0_v + w1_v + w2_v)), 0, bmp_h_max);
                 int index_bmp = (bmp_width*v_i + u_i);
+//                */
 
                 color_t col_bmp;
                 bmp.decode(index_bmp, col_bmp);
@@ -726,7 +713,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                 if (delta >= 0) {
                     // we need to clip uv coords if they overflow dimension of texture so we
                     // can get the last texel of the boundary
-
+                    // I don't round since I don't care about it here
                     int u_i = clamp(fixed_to_int((w0_u + w1_u + w2_u)), 0, bmp_w_max);
                     int v_i = clamp(fixed_to_int((w0_v + w1_v + w2_v)), 0, bmp_h_max);
                     int index_bmp = bmp_width *v_i + u_i;
@@ -910,8 +897,9 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                 fixed_signed qqs = fixed_one_over_fixed(w0_q + w1_q + w2_q);
                 int uuu = fixed_mul_fixed(w0_u + w1_u + w2_u, qqs);
                 int vvv = fixed_mul_fixed(w0_v + w1_v + w2_v, qqs);
-                int u_i = clamp(fixed_to_int(uuu), 0 ,bmp_w_max);
-                int v_i = clamp(fixed_to_int(vvv),0, bmp_h_max);
+
+                int u_i = clamp(fixed_to_int(uuu+fixed_half), 0 ,bmp_w_max);
+                int v_i = clamp(fixed_to_int(vvv+fixed_half),0, bmp_h_max);
 
                 int index_bmp = (bmp_width * v_i + u_i);
 
@@ -1018,7 +1006,7 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
 
     if(isParallelogram_) {
 
-        if(!isAxisAlignedRectangle(p0, p1, p2, p3)) {
+        if(isAxisAlignedRectangle(p0, p1, p2, p3)) {
             drawQuad<BlendMode, PorterDuff>(bmp, p0.x, p0.y, p2.x, p2.y, opacity);
 
             return;
@@ -1236,11 +1224,13 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
     color_t col_bmp{};
     P converted{};
 
-    int bmp_width = (bmp.width());
-    int bmp_height = (bmp.height());
+    unsigned int bmp_width = bmp.width();
+    unsigned int bmp_height = bmp.height();
+    unsigned int bmp_w_max = bmp_width - 1;
+    unsigned int bmp_h_max = bmp_height - 1;
 
-    fixed du = fixed_div_int(int_to_fixed(bmp_width), right-left);
-    fixed dv = fixed_div_int(int_to_fixed(bmp_height), bottom-top);
+    fixed du = (right-left)==0 ? 0 : fixed_div_int(int_to_fixed(bmp_width-1), right-left);
+    fixed dv = (bottom-top)==0 ? 0 : fixed_div_int(int_to_fixed(bmp_height-1), bottom-top);
     fixed u = -du, v = -dv;
 
     int u_i=0, v_i=0;
@@ -1248,14 +1238,14 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
 
     index = top * _width;
 
-    for (int y = top; y < bottom; y++) {
+    for (int y = top; y <= bottom; y++) {
         v += dv;
         // v_i with multiplication
-        v_i = (bmp_height - 1 - fixed_to_int(v))*(bmp_width);
+        v_i = (bmp_h_max - fixed_to_int(v + fixed_half))*(bmp_width);
 
-        for (int x = left; x < right; x++) {
+        for (int x = left; x <= right; x++) {
             u += du;
-            u_i = fixed_to_int(u);
+            u_i = fixed_to_int(u + fixed_half);
             index_bmp = (v_i) + u_i;
 
             // decode the bitmap

@@ -140,7 +140,7 @@ inline void render() {
 //                4*W/10,    H-80, 0.0, 0.0,
 //                255);
 
-        int G = 600;
+        int G = 400;
         canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
                 *bmp_uv,
                 20,   20,   0.0, 1.0,

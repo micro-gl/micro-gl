@@ -14,3 +14,4 @@
 - draw shadows
 - turn off AA for an EDGE (seful when rendering batch)
 - do not raster outside the frame
+- round fixed points when sampling

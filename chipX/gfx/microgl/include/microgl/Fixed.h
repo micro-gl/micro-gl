@@ -46,13 +46,14 @@ returning the result in q3 format */
 #define fixed_mul_fixed_3(a,b,q1,q2,q3) (fixed_convert_fixed((a)*(b), (q1)+(q2), q3))
 #define fixed_div_fixed_3(a,b,q1,q2,q3) (fixed_convert_fixed(a, q1, (q2)+(q3))/(b))
 
-#define MASK_FRAC_BITS ((1<<Q) - 1)
+#define MASK_FRACTION_BITS ((1<<Q) - 1)
+#define MASK_INTEGRAL_BITS (MASK_FRACTION_BITS<<Q)
 
-#define fixed_frac_part(a) ((a) & MASK_FRAC_BITS)
-#define fixed_int_part(a) (fixed_to_int(a))
+#define fixed_frac_part(a) ((a) & MASK_FRACTION_BITS)
+#define fixed_int_part(a) ((a) & MASK_INTEGRAL_BITS)
 #define fixed_half float_to_fixed(0.5f)
 #define fixed_one int_to_fixed(1)
-#define fixed_floor(a) ((int)((a) & ((1<<Q) - 1)))
+#define fixed_floor(a) (fixed_int_part(a))
 #define fixed_round(a) (fixed_floor((a) + fixed_half))
 #define fixed_ceil(a) fixed_floor((a))==0 ? (a) : fixed_floor((a) + fixed_one)
 #define fixed_one_over_fixed(a) (((long)fixed_one<<Q)/(a))
