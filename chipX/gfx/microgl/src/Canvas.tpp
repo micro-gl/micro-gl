@@ -1203,8 +1203,8 @@ template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff,
           typename P2, typename CODER2>
 void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
-                                const int left, const int top,
-                                const int right, const int bottom,
+                                int left, int top,
+                                int right, int bottom,
                                 const uint8_t opacity) {
     color_t col_bmp{};
     P converted{};
@@ -1212,11 +1212,11 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
     int bmp_width = (bmp.width());
     int bmp_height = (bmp.height());
 
-    fixed du = fixed_div_int(int_to_fixed(bmp_width-1), right-left);
-    fixed dv = fixed_div_int(int_to_fixed(bmp_height-1), bottom-top);
+    fixed du = fixed_div_int(int_to_fixed(bmp_width), right-left);
+    fixed dv = fixed_div_int(int_to_fixed(bmp_height), bottom-top);
     fixed u = -du, v = -dv;
 
-    int u_i=0, v_i=0, v_f_i=0,v_f_i_last=0;
+    int u_i=0, v_i=0;
     int index_bmp, index;
 
     index = top * _width;
@@ -1224,20 +1224,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
     for (int y = top; y < bottom; y++) {
         v += dv;
         // v_i with multiplication
-//        v_i = fixed_to_int(v)*(bmp_width);
-
-//todo: this might be wrong
-        /// v_i without multiplication
-        v_f_i = fixed_to_int(v);
-
-        // things have changed
-        if(v_f_i>v_f_i_last) {
-            v_i += bmp_width;
-        }
-
-        v_f_i_last = v_f_i;
-        ///
-
+        v_i = (bmp_height - 1 - fixed_to_int(v))*(bmp_width);
 
         for (int x = left; x < right; x++) {
             u += du;

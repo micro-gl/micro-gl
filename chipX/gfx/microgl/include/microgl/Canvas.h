@@ -143,8 +143,8 @@ public:
               typename PorterDuff=porterduff::SourceOverOnOpaque,
               typename P2, typename CODER2>
     void drawQuad(const Bitmap<P2, CODER2> &bmp,
-                  const int left, const int top,
-                  const int right, const int bottom,
+                  int left, int top,
+                  int right, int bottom,
                   const uint8_t opacity = 255);
 
 

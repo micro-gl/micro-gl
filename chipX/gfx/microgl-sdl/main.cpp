@@ -150,11 +150,19 @@ inline void render() {
 
         canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
                 *bmp_uv,
-                400,      80,   0.0, 1.0,
-                600,      80,   1.0, 1.0,
-                280,   400, 1.0, 0.0,
+                80,      80,   0.0, 1.0,
+                400,      80,   1.0, 1.0,
+                400,   400, 1.0, 0.0,
                 80,       400, 0.0, 0.0,
                 255);
+
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
+//                *bmp_uv,
+//                400,      80,   0.0, 1.0,
+//                600,      80,   1.0, 1.0,
+//                280,   400, 1.0, 0.0,
+//                80,       400, 0.0, 0.0,
+//                255);
 
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
 //                *bmp_2,
