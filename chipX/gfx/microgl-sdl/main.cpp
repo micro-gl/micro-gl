@@ -140,12 +140,20 @@ inline void render() {
 //                80,    H-80, 0.0, 0.0,
 //                255);
 
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
+//                *bmp_uv,
+//                80,   80,   0.0, 1.0,
+//                W/2,  H/4,   1.0, 1.0,
+//                W/2,   2*H/4, 1.0, 0.0,
+//                80,   H-80, 0.0, 0.0,
+//                255);
+
         canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
                 *bmp_uv,
-                80,   80,   0.0, 1.0,
-                W/2,  H/4,   1.0, 1.0,
-                W/2,   2*H/4, 1.0, 0.0,
-                80,   H-80, 0.0, 0.0,
+                400,      80,   0.0, 1.0,
+                600,      80,   1.0, 1.0,
+                280,   400, 1.0, 0.0,
+                80,       400, 0.0, 0.0,
                 255);
 
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(

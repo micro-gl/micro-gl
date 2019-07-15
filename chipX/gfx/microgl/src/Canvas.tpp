@@ -621,15 +621,17 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     minX = std::max(0, minX); minY = std::max(0, minY);
     maxX = std::min(width()-1, maxX); maxY = std::min(height()-1, maxY);
 
+    unsigned int bmp_w_max = bmp.width() - 1, bmp_h_max = bmp.height() - 1;
+
     // todo:: optimize all of these recurring expressions
     // Triangle setup
-    fixed_signed A01_u2 = float_to_fixed(u2*bmp.width()*(v0_y - v1_y)/area), B01_u2 = float_to_fixed(u2*bmp.width()*(v1_x - v0_x)/area); //w2
-    fixed_signed A12_u0 = float_to_fixed(u0*bmp.width()*(v1_y - v2_y)/area), B12_u0 = float_to_fixed(u0*bmp.width()*(v2_x - v1_x)/area); // w0
-    fixed_signed A20_u1 = float_to_fixed(u1*bmp.width()*(v2_y - v0_y)/area), B20_u1 = float_to_fixed(u1*bmp.width()*(v0_x - v2_x)/area); // w1
+    fixed_signed A01_u2 = float_to_fixed(u2*bmp_w_max*(v0_y - v1_y)/area), B01_u2 = float_to_fixed(u2*bmp_w_max*(v1_x - v0_x)/area); //w2
+    fixed_signed A12_u0 = float_to_fixed(u0*bmp_w_max*(v1_y - v2_y)/area), B12_u0 = float_to_fixed(u0*bmp_w_max*(v2_x - v1_x)/area); // w0
+    fixed_signed A20_u1 = float_to_fixed(u1*bmp_w_max*(v2_y - v0_y)/area), B20_u1 = float_to_fixed(u1*bmp_w_max*(v0_x - v2_x)/area); // w1
 
-    fixed_signed A01_v2 = float_to_fixed(v2*bmp.height()*(v0_y - v1_y)/area), B01_v2 = float_to_fixed(v2*bmp.height()*(v1_x - v0_x)/area); //w2
-    fixed_signed A12_v0 = float_to_fixed(v0*bmp.height()*(v1_y - v2_y)/area), B12_v0 = float_to_fixed(v0*bmp.height()*(v2_x - v1_x)/area); // w0
-    fixed_signed A20_v1 = float_to_fixed(v1*bmp.height()*(v2_y - v0_y)/area), B20_v1 = float_to_fixed(v1*bmp.height()*(v0_x - v2_x)/area); // w1
+    fixed_signed A01_v2 = float_to_fixed(v2*bmp_h_max*(v0_y - v1_y)/area), B01_v2 = float_to_fixed(v2*bmp_h_max*(v1_x - v0_x)/area); //w2
+    fixed_signed A12_v0 = float_to_fixed(v0*bmp_h_max*(v1_y - v2_y)/area), B12_v0 = float_to_fixed(v0*bmp_h_max*(v2_x - v1_x)/area); // w0
+    fixed_signed A20_v1 = float_to_fixed(v1*bmp_h_max*(v2_y - v0_y)/area), B20_v1 = float_to_fixed(v1*bmp_h_max*(v0_x - v2_x)/area); // w1
 
     // Barycentric coordinates at minX/minY corner
     vec2_32i p = { minX, minY };
@@ -638,13 +640,13 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     // overflow safety safe_bits>=(p-2)/2, i.e 15 bits (0..32,768) for 32 bits integers.
     // https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
     // for 16 bits computer this is safe for 7 bits input [0..127] - not good
-    fixed_signed w1_row_u = float_to_fixed(float(u0*bmp.width()*orient2d({v1_x, v1_y}, {v2_x, v2_y}, p))/area);
-    fixed_signed w2_row_u = float_to_fixed(float(u1*bmp.width()*orient2d({v2_x, v2_y}, {v0_x, v0_y}, p))/area);
-    fixed_signed w0_row_u = float_to_fixed(float(u2*bmp.width()*orient2d({v0_x, v0_y}, {v1_x, v1_y}, p))/area);
+    fixed_signed w1_row_u = float_to_fixed(float(u0*bmp_w_max*orient2d({v1_x, v1_y}, {v2_x, v2_y}, p))/area);
+    fixed_signed w2_row_u = float_to_fixed(float(u1*bmp_w_max*orient2d({v2_x, v2_y}, {v0_x, v0_y}, p))/area);
+    fixed_signed w0_row_u = float_to_fixed(float(u2*bmp_w_max*orient2d({v0_x, v0_y}, {v1_x, v1_y}, p))/area);
 
-    fixed_signed w1_row_v = float_to_fixed(float(v0*bmp.height()*orient2d({v1_x, v1_y}, {v2_x, v2_y}, p))/area);
-    fixed_signed w2_row_v = float_to_fixed(float(v1*bmp.height()*orient2d({v2_x, v2_y}, {v0_x, v0_y}, p))/area);
-    fixed_signed w0_row_v = float_to_fixed(float(v2*bmp.height()*orient2d({v0_x, v0_y}, {v1_x, v1_y}, p))/area);
+    fixed_signed w1_row_v = float_to_fixed(float(v0*bmp_h_max*orient2d({v1_x, v1_y}, {v2_x, v2_y}, p))/area);
+    fixed_signed w2_row_v = float_to_fixed(float(v1*bmp_h_max*orient2d({v2_x, v2_y}, {v0_x, v0_y}, p))/area);
+    fixed_signed w0_row_v = float_to_fixed(float(v2*bmp_h_max*orient2d({v0_x, v0_y}, {v1_x, v1_y}, p))/area);
 
     // lengths of edges
     unsigned int length_w0 = length({v0_x, v0_y}, {v1_x, v1_y});
@@ -982,79 +984,84 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
                                int v3_x, int v3_y, float u3, float v3,
                                const uint8_t opacity) {
 
-    float q0 = 1, q1 = 1, q2 = 1, q3 = 1;
+    vec2_32i p0 {v0_x, v0_y}, p1{v1_x, v1_y}, p2{v2_x, v2_y}, p3{v3_x, v3_y};
 
-    float p0x = v0_x; float p0y = v0_y;
-    float p1x = v1_x; float p1y = v1_y;
-    float p2x = v2_x; float p2y = v2_y;
-    float p3x = v3_x; float p3y = v3_y;
+    bool isParallelogram_ = isParallelogram(p0, p1, p2, p3);
 
-    float ax = p2x - p0x;
-    float ay = p2y - p0y;
-    float bx = p3x - p1x;
-    float by = p3y - p1y;
-    float t, s;
+    if(isParallelogram_) {
+
+        if(isAxisAlignedRectangle(p0, p1, p2, p3)) {
+            drawQuad<BlendMode, PorterDuff>(bmp, p0.x, p0.y, p2.x, p2.y, opacity);
+
+            return;
+        }
+
+        // Note:: this was faster than rasterizing the two triangles
+        // in the same loop for some reason.
+        // todo:: turn off AA for common edge, since it causes an artifact at the boundary
+        // todo:: of common edges
+        drawTriangle<BlendMode, PorterDuff, antialias>(bmp,
+                                                       v0_x, v0_y, u0, v0,
+                                                       v1_x, v1_y, u1, v1,
+                                                       v2_x, v2_y, u2, v2,
+                                                       opacity);
+
+        drawTriangle<BlendMode, PorterDuff, antialias>(bmp,
+                                                       v2_x, v2_y, u2, v2,
+                                                       v3_x, v3_y, u3, v3,
+                                                       v0_x, v0_y, u0, v0,
+                                                       opacity);
+
+    } else {
+        float q0 = 1, q1 = 1, q2 = 1, q3 = 1;
+
+        float p0x = v0_x; float p0y = v0_y;
+        float p1x = v1_x; float p1y = v1_y;
+        float p2x = v2_x; float p2y = v2_y;
+        float p3x = v3_x; float p3y = v3_y;
+
+        float ax = p2x - p0x;
+        float ay = p2y - p0y;
+        float bx = p3x - p1x;
+        float by = p3y - p1y;
+        float t, s;
 //    float cross = ax * by - ay * bx;
-    float cross = ax * by - ay * bx;
+        float cross = ax * by - ay * bx;
 
-    if (cross != 0) {
-        float cy = p0y - p1y;
-        float cx = p0x - p1x;
+        if (cross != 0) {
+            float cy = p0y - p1y;
+            float cx = p0x - p1x;
 
-        s = (ax * cy - ay * cx) / cross;
-        if (s > 0 && s < 1) {
-            t = (bx * cy - by * cx) / cross;
+            s = (ax * cy - ay * cx) / cross;
+            if (s > 0 && s < 1) {
+                t = (bx * cy - by * cx) / cross;
 
-            if (t > 0 && t < 1) {
+                if (t > 0 && t < 1) {
 
-                q0 = 1 / (1 - t);
-                q1 = 1 / (1 - s);
-                q2 = 1 / t;
-                q3 = 1 / s;
+                    q0 = 1 / (1 - t);
+                    q1 = 1 / (1 - s);
+                    q2 = 1 / t;
+                    q3 = 1 / s;
 
-                // you can now pass (u * q, v * q, q) to OpenGL
+                }
             }
         }
+
+        // perspective correct version
+        drawTriangle<BlendMode, PorterDuff, antialias>(bmp,
+                                                       v0_x, v0_y, u0*q0, v0*q0, q0,
+                                                       v1_x, v1_y, u1*q1, v1*q1, q1,
+                                                       v2_x, v2_y, u2*q2, v2*q2, q2,
+                                                       opacity);
+
+        drawTriangle<BlendMode, PorterDuff, antialias>(bmp,
+                                                       v2_x, v2_y, u2*q2, v2*q2, q2,
+                                                       v3_x, v3_y, u3*q3, v3*q3, q3,
+                                                       v0_x, v0_y, u0*q0, v0*q0, q0,
+                                                       opacity);
+
     }
 
-    // regular
-//    GLfloat uv[12] =  {
-//            q0*tex_left,         q0*tex_bottom,     q0, // Bottom-left
-//            q1*tex_right,        q1*tex_bottom,     q1, // Bottom-right
-//            q2*tex_right,        q2*tex_top,        q2, // Top-right
-//            q3*tex_left,         q3*tex_top,        q3  // Top-left
-//    };
-
-    // perspective correct version
-    drawTriangle<BlendMode, PorterDuff, antialias>(bmp,
-                                                   v0_x, v0_y, u0*q0, v0*q0, q0,
-                                                   v1_x, v1_y, u1*q1, v1*q1, q1,
-                                                   v2_x, v2_y, u2*q2, v2*q2, q2,
-                                                   opacity);
-
-    drawTriangle<BlendMode, PorterDuff, antialias>(bmp,
-                                                   v2_x, v2_y, u2*q2, v2*q2, q2,
-                                                   v3_x, v3_y, u3*q3, v3*q3, q3,
-                                                   v0_x, v0_y, u0*q0, v0*q0, q0,
-                                                   opacity);
-
-    return;
-
-    // Note:: this was faster than rasterizing the two triangles
-    // in the same loop for some reason.
-    // todo:: turn off AA for common edge, since it causes an artifact at the boundary
-    // todo:: of common edges
-    drawTriangle<BlendMode, PorterDuff, antialias>(bmp,
-                                                   v0_x, v0_y, u0, v0,
-                                                   v1_x, v1_y, u1, v1,
-                                                   v2_x, v2_y, u2, v2,
-                                                   opacity);
-
-    drawTriangle<BlendMode, PorterDuff, antialias>(bmp,
-                                                   v2_x, v2_y, u2, v2,
-                                                   v3_x, v3_y, u3, v3,
-                                                   v0_x, v0_y, u0, v0,
-                                                   opacity);
 }
 
 
@@ -1195,7 +1202,7 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
 template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff,
           typename P2, typename CODER2>
-void Canvas<P, CODER>::drawQuad(Bitmap<P2, CODER2> &bmp,
+void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                                 const int left, const int top,
                                 const int right, const int bottom,
                                 const uint8_t opacity) {

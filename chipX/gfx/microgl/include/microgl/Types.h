@@ -26,6 +26,23 @@ struct color_f_t {
 template<typename T>
 struct vec2 {
     T x, y;
+
+    vec2 operator-(const vec2 & a) const {
+        return vec2{this->x-a.x, this->y - a.y};
+    }
+
+    vec2 operator+(const vec2 & a) const {
+        return vec2{this->x+a.x, this->y + a.y};
+    }
+
+    vec2 operator-(const vec2 & a) {
+        return vec2{this->x-a.x, this->y - a.y};
+    }
+
+    T operator*(const vec2 & a) {
+        return (this->x*a.x + this->y*a.y);
+    }
+
 };
 
 template<typename T>

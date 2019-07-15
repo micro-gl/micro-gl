@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdint.h>
 #include "Types.h"
+#include <cstdlib>
 
 uint32_t sqrt_int(uint32_t a_nInput);
 
@@ -31,18 +32,49 @@ inline bool insideCircle(float x, float y, float centerX, float centerY, float r
 
 }
 
+inline unsigned int length(const vec2_32i& a, const vec2_32i& b)
+{
+    int dx = (a.x-b.x), dy = (a.y-b.y);
+    return sqrt_int(dx*dx + dy*dy);
+}
+
+inline bool isParallelogram(const vec2_32i& p0, const vec2_32i& p1,
+                            const vec2_32i& p2, const vec2_32i& p3,
+                            int precisionRadius=2) {
+    auto e0 = p1 - p0, e2= p3-p2;
+    auto e1 = p2 - p1, e3= p0-p3;
+
+    int a1 = std::abs((int)(length(p1, p0) - length(p3, p2)));
+    int a2 = std::abs((int)(length(p2, p1) - length(p0, p3)));
+
+    return a1<=precisionRadius && a2<=precisionRadius;
+}
+
+inline bool isAxisAlignedRectangle(const vec2_32i& p0, const vec2_32i& p1,
+                                   const vec2_32i& p2, const vec2_32i& p3) {
+
+    return p0.x==p3.x && p1.x==p2.x && p0.y==p1.y && p3.y==p2.y;
+}
+
+inline bool isRectangle(const vec2_32i& p0, const vec2_32i& p1,
+                                   const vec2_32i& p2, const vec2_32i& p3) {
+
+    auto e0 = p1 - p0, e2= p3-p2;
+    auto e1 = p2 - p1, e3= p0-p3;
+
+    int dp_1 = e0*e1;
+    int dp_2 = e1*e2;
+    int dp_3 = e2*e3;
+
+    return ((dp_1 | dp_2 | dp_3)==0);
+}
+
 // this equals twice the triangle area - the parallogram
 inline int orient2d(const vec2_32i& a, const vec2_32i& b, const vec2_32i& c)
 {
     return (b.x-a.x)*(c.y-a.y) - (b.y-a.y)*(c.x-a.x);
 }
 
-// this equals twice the triangle area - the parallogram
-inline unsigned int length(const vec2_32i& a, const vec2_32i& b)
-{
-    int dx = (a.x-b.x), dy = (a.y-b.y);
-    return sqrt_int(dx*dx + dy*dy);
-}
 
 // this equals twice the triangle area - the parallogram
 template<typename T>
