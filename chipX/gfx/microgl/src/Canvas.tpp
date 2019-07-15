@@ -870,6 +870,8 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
         int w2 = w2_row;
 
         for (p.x = minX; p.x <= maxX; p.x++) {
+
+
             if ((w0 | w1 | w2) >= 0) {
 //                /*
 //                float ww0 = ((float)orient2d({v0_x, v0_y}, {v1_x, v1_y}, p))/area;
@@ -885,11 +887,11 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 //                int u_i = (int)(u__1 * (float)(bmp.width()-1));
 //                int v_i = bmp_width * (int)(v__1*(float)(bmp.height()-1));//(int)(v * (float)bmp.height());
 //*/
-
-                fixed_signed qqs = ((long)1<<32) / (w0_q + w1_q + w2_q);
-
-                int u_i = fixed_to_int(fixed_mul_fixed(w0_u + w1_u + w2_u, qqs));//(int)(u * (float)bmp.width());
-                int v_i = bmp_width * fixed_to_int(fixed_mul_fixed(w0_v + w1_v + w2_v,qqs));//(int)(v * (float)bmp.height());
+                fixed_signed qqs = fixed_one_over_fixed(w0_q + w1_q + w2_q);
+                int uuu = fixed_mul_fixed(w0_u + w1_u + w2_u, qqs);
+                int vvv = fixed_mul_fixed(w0_v + w1_v + w2_v, qqs);
+                int u_i = fixed_to_int(uuu);
+                int v_i = bmp_width * fixed_to_int(vvv);
 
                 int index_bmp = (v_i + u_i);
 

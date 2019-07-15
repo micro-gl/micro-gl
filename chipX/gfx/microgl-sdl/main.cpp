@@ -132,12 +132,20 @@ inline void render() {
 //                255);
 
         // texture mapped
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
+//                *bmp_uv,
+//                4*W/10,   80,   0.0, 1.0,
+//                6*W/10, 80,   1.0, 1.0,
+//                W-80,     H-80, 1.0, 0.0,
+//                80,    H-80, 0.0, 0.0,
+//                255);
+
         canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
-                *bmp_2,
-                4*W/10,   80,   0.0, 1.0,
-                6*W/10, 80,   1.0, 1.0,
-                W-80,     H-80, 1.0, 0.0,
-                80,    H-80, 0.0, 0.0,
+                *bmp_uv,
+                80,   80,   0.0, 1.0,
+                W/2,  H/4,   1.0, 1.0,
+                W/2,   2*H/4, 1.0, 0.0,
+                80,   H-80, 0.0, 0.0,
                 255);
 
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
