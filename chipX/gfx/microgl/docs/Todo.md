@@ -1,15 +1,14 @@
 #### GFX:
-- fix bitmap width erros ==> width -1
-- filled triangle FPU version
-- Filled Quadrilateral with AA
-- textured Quadrilateral AA and Z correction
+- DONE: fix bitmap width erros ==> width -1
+- DONE: Filled Quadrilateral with AA
+- DONE: textured Quadrilateral AA and Z correction
 - Bezier curves with adaptive algorithm
 - draw lines with SDF
 - draw lines with polygons
 - rounded rectangle (check inigo sd functions)
 - bilinear filtering for textures
 - draw text
-- filled polygon
+- filled polygon with AA
 - draw masks
 - draw shadows
 - turn off AA for an EDGE (useful when rendering batch)

@@ -609,12 +609,12 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     unsigned int max_distance_anti_alias=0;
 
     if(antialias) {
-        bits_distance = 1;
+        bits_distance = 0;
         max_distance_anti_alias = 1 << bits_distance;
         // we can solve padding analytically with distance=(max_distance_anti_alias/Cos(angle))
         // but I don't give a fuck about it since I am just using max value of 2
-        minX-=max_distance_anti_alias*2;minY-=max_distance_anti_alias*2;
-        maxX+=max_distance_anti_alias*2;maxY+=max_distance_anti_alias*2;
+//        minX-=max_distance_anti_alias*2;minY-=max_distance_anti_alias*2;
+//        maxX+=max_distance_anti_alias*2;maxY+=max_distance_anti_alias*2;
     }
 
     // clipping
@@ -793,8 +793,8 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
         max_distance_anti_alias = 1 << bits_distance;
         // we can solve padding analytically with distance=(max_distance_anti_alias/Cos(angle))
         // but I don't give a fuck about it since I am just using max value of 2
-        minX-=max_distance_anti_alias*2;minY-=max_distance_anti_alias*2;
-        maxX+=max_distance_anti_alias*2;maxY+=max_distance_anti_alias*2;
+//        minX-=max_distance_anti_alias*1;minY-=max_distance_anti_alias*1;
+//        maxX+=max_distance_anti_alias*1;maxY+=max_distance_anti_alias*1;
     }
 
     // clipping
@@ -921,7 +921,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                 // take minimum of all meta distances
 
                 int distance = std::min({w0, w1, w2});
-                bool avoid = distance==w2;
+                bool avoid = false;//distance==w2 || distance==w0;
                 int delta = (distance) + (max_distance_anti_alias<<(16));
 
                 if (!avoid && delta >= 0) {
@@ -1006,7 +1006,7 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
 
     bool isParallelogram_ = isParallelogram(p0, p1, p2, p3);
 
-    if(!isParallelogram_) {
+    if(isParallelogram_) {
 
         if(isAxisAlignedRectangle(p0, p1, p2, p3)) {
             drawQuad<BlendMode, PorterDuff>(bmp, p0.x, p0.y, p2.x, p2.y, opacity);
@@ -1033,26 +1033,26 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
     } else {
         float q0 = 1, q1 = 1, q2 = 1, q3 = 1;
 
-        float p0x = v0_x; float p0y = v0_y;
-        float p1x = v1_x; float p1y = v1_y;
-        float p2x = v2_x; float p2y = v2_y;
-        float p3x = v3_x; float p3y = v3_y;
+        int p0x = v0_x; float p0y = v0_y;
+        int p1x = v1_x; float p1y = v1_y;
+        int p2x = v2_x; float p2y = v2_y;
+        int p3x = v3_x; float p3y = v3_y;
 
-        float ax = p2x - p0x;
-        float ay = p2y - p0y;
-        float bx = p3x - p1x;
-        float by = p3y - p1y;
+        int ax = p2x - p0x;
+        int ay = p2y - p0y;
+        int bx = p3x - p1x;
+        int by = p3y - p1y;
         float t, s;
 //    float cross = ax * by - ay * bx;
-        float cross = ax * by - ay * bx;
+        int cross = ax * by - ay * bx;
 
         if (cross != 0) {
-            float cy = p0y - p1y;
-            float cx = p0x - p1x;
+            int cy = p0y - p1y;
+            int cx = p0x - p1x;
 
-            s = (ax * cy - ay * cx) / cross;
+            s = float(ax * cy - ay * cx) / cross;
             if (s > 0 && s < 1) {
-                t = (bx * cy - by * cx) / cross;
+                t = float(bx * cy - by * cx) / cross;
 
                 if (t > 0 && t < 1) {
 
