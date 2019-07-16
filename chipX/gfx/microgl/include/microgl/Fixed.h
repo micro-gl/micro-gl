@@ -30,7 +30,7 @@ point q format returning the answer in q format */
 an integer */
 #define fixed_add_int2(a,b,q) ((a)+int_to_fixed_2((b), (q)))
 #define fixed_sub_int2(a,b,q) (fixed_add_int2(a, -b, q))
-#define fixed_mul_int(a,b) ((a)*(b))
+#define fixed_mul_int(a,b) ((long)(a)*(b))
 #define fixed_div_int(a,b) ((a)/(b))
 #define fixed_one_over_int(a) fixed_div_int(fixed_one, a)
 #define fixed_add_int(a,b) (fixed_add_int2(a,b,Q))

@@ -12,6 +12,7 @@
 - filled polygon
 - draw masks
 - draw shadows
-- turn off AA for an EDGE (seful when rendering batch)
+- turn off AA for an EDGE (useful when rendering batch)
 - do not raster outside the frame
-- round fixed points when sampling
+- DONE: round fixed points when sampling
+- write a complete triangle rasterizer version with float points
