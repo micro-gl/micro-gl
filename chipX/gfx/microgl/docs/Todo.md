@@ -1,5 +1,5 @@
 #### GFX:
-- DONE: fix bitmap width erros ==> width -1
+- DONE: fix bitmap width errors ==> width -1
 - DONE: Filled Quadrilateral with AA
 - DONE: textured Quadrilateral AA and Z correction
 - Bezier curves with adaptive algorithm
@@ -15,3 +15,7 @@
 - do not raster outside the frame
 - DONE: round fixed points when sampling
 - write a complete triangle rasterizer version with float points
+
+#### triangle raster
+- try skipping lines
+- try 8x8 block rasterizer - https://web.archive.org/web/20120625103536/http://devmaster.net/forums/topic/1145-advanced-rasterization/

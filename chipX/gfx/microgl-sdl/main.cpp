@@ -133,21 +133,21 @@ inline void render() {
 //
         // texture mapped
         int G = 600;
-        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
-                *bmp_uv,
-                20,   20,   0.0, 1.0,
-                20+G, 20,   1.0, 1.0,
-                20+G, 20+G, 1.0, 0.0,
-                20,   20+G, 0.0, 0.0,
-                255);
-
-        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-                *bmp_uv,
-                4*W/10,   80,   0.0, 1.0,
-                6*W/10, 80,   1.0, 1.0,
-                W-80,     H-80, 1.0, 0.0,
-                4*W/10,    H-80, 0.0, 0.0,
-                255);
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
+//                *bmp_uv,
+//                20,   20,   0.0, 1.0,
+//                20+G, 20,   1.0, 1.0,
+//                20+G, 20+G, 1.0, 0.0,
+//                20,   20+G, 0.0, 0.0,
+//                255);
+//
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+//                *bmp_uv,
+//                4*W/10,   80,   0.0, 1.0,
+//                6*W/10, 80,   1.0, 1.0,
+//                W-80,     H-80, 1.0, 0.0,
+//                4*W/10,    H-80, 0.0, 0.0,
+//                255);
 
         canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
                 *bmp_uv,
@@ -155,16 +155,16 @@ inline void render() {
                 W/3, 0, 0.0, 1.0,
                 2*W/3, W/3, 1.0, 1.0,
                 W/3, 2*W/3, 1.0, 0.0,
-                255);
+                128);
 
 
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-//                *bmp_uv,
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
+//                *bmp_2,
 //                4*W/10,   80,   0.0, 1.0,
 //                6*W/10, 80,   1.0, 1.0,
 //                W-80,     H-80, 1.0, 0.0,
 //                80,    H-80, 0.0, 0.0,
-//                255);
+//                128);
 //
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
 //                *bmp_uv,
