@@ -16,8 +16,8 @@
 #include <microgl/Bitmap.h>
 
 #define TEST_ITERATIONS 1
-#define W 640
-#define H 480
+#define W 640*2
+#define H 480*2
 
 SDL_Window * window;
 SDL_Renderer * renderer;
@@ -63,7 +63,7 @@ inline void render() {
 
     vec2_32i b[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2}, {W/2 + W/3, H/4}, {W-5, H - 5}};
 
-    for (int ix = 0; ix < 100; ++ix) {
+    for (int ix = 0; ix < 1; ++ix) {
         /*
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
@@ -103,18 +103,29 @@ inline void render() {
 //                2*W/3, W/3, 1.0, 1.0,
 //                255);
 //
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None,false>(
-//                *bmp_2,
-//                2*W/3, W/3, 1.0, 1.0,
-//                W/3, 2*W/3, 1.0, 0.0,
-//                0, W/3, 0.0, 0.0 );
+        static long a = 0;
+        static float b = 2.0f*(float)W/3.0f;
+
+        a++;
+//
+        b = b + (float)1/2.0f;
+
+        cout << b <<endl;
 
         canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
-                RED,
-                (int)0, (int)W/3,
-                (int)W/3, (int)0,
-                (int)2*W/3, (int)W/3,
+                *bmp_uv,
+                2*W/3, W/3, 1.0, 1.0,
+                W/3, b, 1.0, 0.0,
+                0, W/3, 0.0, 0.0 ,
                 255);
+
+//
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
+//                RED,
+//                (int)0, (int)W/3,
+//                (int)W/3, (int)0,
+//                (int)2*W/3, (int)W/3,
+//                255);
 
 
 //        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
@@ -294,14 +305,12 @@ void loop() {
     SDL_Event event;
 
     // 100 Quads
-    int ms = render_test(TEST_ITERATIONS);
-
-
-    cout << ms << endl;
+//    int ms = render_test(TEST_ITERATIONS);
+//    cout << ms << endl;
 
     while (!quit)
     {
-        SDL_WaitEvent(&event);
+        SDL_PollEvent(&event);
 
         switch (event.type)
         {
@@ -313,6 +322,9 @@ void loop() {
                     quit = true;
                 break;
         }
+//
+//        cout<<"render"<< endl;
+        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(), canvas->width() * canvas->sizeofPixel());
         SDL_RenderClear(renderer);
