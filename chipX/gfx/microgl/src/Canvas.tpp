@@ -466,6 +466,14 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     const int v1_x, const int v1_y,
                                     const int v2_x, const int v2_y,
                                     const uint8_t opacity) {
+
+    drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                                                  v0_x, v0_y,
+                                                  v1_x, v1_y,
+                                                  v2_x, v2_y,
+                                                  opacity, 0);
+
+    return;
     color_t color_int;
     coder()->convert(color, color_int);
 
@@ -585,7 +593,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawTriangleSub(const color_f_t &color,
+void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                        const fixed_signed v0_x, const fixed_signed v0_y,
                                        const fixed_signed v1_x, const fixed_signed v1_y,
                                        const fixed_signed v2_x, const fixed_signed v2_y,
@@ -594,8 +602,10 @@ void Canvas<P, CODER>::drawTriangleSub(const color_f_t &color,
     color_t color_int;
     coder()->convert(color, color_int);
 
-//    sub_pixel_precision;
-    uint8_t PR = 16 - sub_pixel_precision;
+    // sub_pixel_precision;
+    // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
+    uint8_t MAX_BITS_FOR_PROCESSING_PRECISION = 16;
+    uint8_t PR = MAX_BITS_FOR_PROCESSING_PRECISION - sub_pixel_precision;
     unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
 
     // bounding box
@@ -606,11 +616,15 @@ void Canvas<P, CODER>::drawTriangleSub(const color_f_t &color,
 
     // anti-alias pad for distance calculation
     uint8_t bits_distance;
-    unsigned int max_distance_anti_alias=0;
+    // max distance to consider in canvas space
+    unsigned int max_distance_canvas_space_anti_alias=0;
+    // max distance to consider in scaled space
+    unsigned int max_distance_scaled_space_anti_alias=0;
 
     if(antialias) {
         bits_distance = 0;
-        max_distance_anti_alias = 1 << bits_distance;
+        max_distance_canvas_space_anti_alias = 1 << bits_distance;
+        max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias<<PR;
         // we can solve padding analytically with distance=(max_distance_anti_alias/Cos(angle))
         // but I don't give a fuck about it since I am just using max value of 2
 //        minX-=max_distance_anti_alias*2;minY-=max_distance_anti_alias*2;
@@ -626,17 +640,15 @@ void Canvas<P, CODER>::drawTriangleSub(const color_f_t &color,
     unsigned int length_w2 = length({v0_x, v0_y}, {v2_x, v2_y}, sub_pixel_precision);
 
     // Triangle setup
-    int A01 = int_to_fixed_2(v0_y - v1_y, PR)/ length_w0, B01 = int_to_fixed_2(v1_x - v0_x, PR)/length_w0;
-    int A12 = int_to_fixed_2(v1_y - v2_y, PR)/ length_w1, B12 = int_to_fixed_2(v2_x - v1_x, PR)/length_w1;
-    int A20 = int_to_fixed_2(v2_y - v0_y, PR)/ length_w2, B20 = int_to_fixed_2(v0_x - v2_x, PR)/length_w2;
+    int A01 = int_to_fixed_2(v0_y - v1_y, PR)/length_w0, B01 = int_to_fixed_2(v1_x - v0_x, PR)/length_w0;
+    int A12 = int_to_fixed_2(v1_y - v2_y, PR)/length_w1, B12 = int_to_fixed_2(v2_x - v1_x, PR)/length_w1;
+    int A20 = int_to_fixed_2(v2_y - v0_y, PR)/length_w2, B20 = int_to_fixed_2(v0_x - v2_x, PR)/length_w2;
 
     // Barycentric coordinates at minX/minY corner
     vec2_fixed_signed p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
     vec2_32i p = { minX, minY };
 
-    // overflow safety safe_bits>=(p-2)/2, i.e 15 bits (0..32,768) for 32 bits integers.
-    // https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
-    // this is good for coordinates in the 15 bits range.
+    // reshape
     int w0_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v0_x, v0_y}, vec2_fixed_signed{v1_x, v1_y}, p_fixed, sub_pixel_precision), PR))/length_w0;
     int w1_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v1_x, v1_y}, vec2_fixed_signed{v2_x, v2_y}, p_fixed, sub_pixel_precision), PR))/length_w1;
     int w2_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v2_x, v2_y}, vec2_fixed_signed{v0_x, v0_y}, p_fixed, sub_pixel_precision), PR))/length_w2;
@@ -656,6 +668,9 @@ void Canvas<P, CODER>::drawTriangleSub(const color_f_t &color,
     // has to use distance to points hence a square root function
     // which is expensive for integer version. This version seems to
     // work best with minimal artifacts when used with bits_distance=0 or 1.
+    //
+    // we interpolate in scaled precision so watch out. All of the working
+    // calculations are in 15 or 16 bits precision.
 
     // watch out for negative values
     int index = p.y * _width;
@@ -669,10 +684,7 @@ void Canvas<P, CODER>::drawTriangleSub(const color_f_t &color,
 
 
         for (p.x = minX; p.x <= maxX; p.x++) {
-//            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-            // same as (w0 >= 0 && w1 >= 0 && w2 >= 0), but use only MSB,
-            // this turns three conditionals into one !!!
-            // if all are positive>=0 then we are inside the triangle
+
             if ((w0 | w1 | w2) >= 0) {
                 blendColor<BlendMode, PorterDuff>(color_int, index + p.x, opacity);
 
@@ -682,9 +694,10 @@ void Canvas<P, CODER>::drawTriangleSub(const color_f_t &color,
                 // take minimum of all meta distances
 
                 int distance = std::min({w0, w1, w2});
-                int delta = (distance) + (max_distance_anti_alias<<(PR));
+                int delta = (distance) + max_distance_scaled_space_anti_alias;
 
                 if (delta >= 0) {
+                    // take the complement and rescale
                     uint8_t blend = ((long)((delta) << (8-bits_distance)))>>PR;
 
                     if (opacity < _max_alpha_value) {
@@ -714,7 +727,7 @@ void Canvas<P, CODER>::drawTriangleSub(const color_f_t &color,
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawTriangleSub(const color_f_t &color,
+void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                        const float v0_x, const float v0_y,
                                        const float v1_x, const float v1_y,
                                        const float v2_x, const float v2_y,
@@ -728,11 +741,11 @@ void Canvas<P, CODER>::drawTriangleSub(const color_f_t &color,
     fixed_signed v2_x_ = float_to_fixed_2(v2_x, precision);
     fixed_signed v2_y_ = float_to_fixed_2(v2_y, precision);
 
-    drawTriangleSub<BlendMode, PorterDuff, antialias>(color,
-                    v0_x_, v0_y_,
-                    v1_x_, v1_y_,
-                    v2_x_, v2_y_,
-                    opacity, precision);
+    drawTriangle<BlendMode, PorterDuff, antialias>(color,
+            v0_x_, v0_y_,
+            v1_x_, v1_y_,
+            v2_x_, v2_y_,
+            opacity, precision);
 }
 
 inline int clamp(int val, int e0, int e1) {

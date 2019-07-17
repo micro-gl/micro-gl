@@ -42,6 +42,7 @@ inline unsigned int length(const vec2_32i& a, const vec2_32i& b)
 inline unsigned int length(const vec2_32i& a, const vec2_32i& b, uint8_t precision)
 {
     int dx = (a.x-b.x), dy = (a.y-b.y);
+    // shift right since sqrt is compressing
     return sqrt_int(fixed_mul_fixed_2(dx, dx, precision) + fixed_mul_fixed_2(dy,dy, precision))<<(precision>>1);
 }
 

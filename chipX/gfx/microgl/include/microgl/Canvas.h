@@ -84,20 +84,20 @@ public:
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
-    void drawTriangleSub(const color_f_t & color,
-                         const fixed_signed x0, const fixed_signed y0,
-                         const fixed_signed x1, const fixed_signed y1,
-                         const fixed_signed x2, const fixed_signed y2,
-                         const uint8_t opacity = 255, const uint8_t precision=4);
+    void drawTriangle(const color_f_t & color,
+                     const fixed_signed x0, const fixed_signed y0,
+                     const fixed_signed x1, const fixed_signed y1,
+                     const fixed_signed x2, const fixed_signed y2,
+                     const uint8_t opacity = 255, const uint8_t precision=4);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
-    void drawTriangleSub(const color_f_t & color,
-                         const float x0, const float y0,
-                         const float x1, const float y1,
-                         const float x2, const float y2,
-                         const uint8_t opacity = 255);
+    void drawTriangle(const color_f_t & color,
+                     const float x0, const float y0,
+                     const float x1, const float y1,
+                     const float x2, const float y2,
+                     const uint8_t opacity = 255);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,

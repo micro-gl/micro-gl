@@ -109,21 +109,19 @@ inline void render() {
 //                W/3, 2*W/3, 1.0, 0.0,
 //                0, W/3, 0.0, 0.0 );
 
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
-//                RED,
-//                0, W/3,
-//                W/3, 0,
-//                2*W/3, W/3,
-//                255);
-//
-
-        vec2_f a{};
-
-        canvas->drawTriangleSub<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
                 RED,
-                2*(float)W/3, (float)W/3,
-                (float)W/3, (float)5*W/3,
-                (float)0, (float)W/3);
+                (int)0, (int)W/3,
+                (int)W/3, (int)0,
+                (int)2*W/3, (int)W/3,
+                255);
+
+
+//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+//                RED,
+//                2*(float)W/3, (float)W/3,
+//                (float)W/3, (float)5*W/3,
+//                (float)0, (float)2*W/3);
 
         // filled Quadrilateral
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
