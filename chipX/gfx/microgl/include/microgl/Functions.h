@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include "Types.h"
 #include <cstdlib>
+#include "Fixed.h"
 
 uint32_t sqrt_int(uint32_t a_nInput);
 
@@ -36,6 +37,12 @@ inline unsigned int length(const vec2_32i& a, const vec2_32i& b)
 {
     int dx = (a.x-b.x), dy = (a.y-b.y);
     return sqrt_int(dx*dx + dy*dy);
+}
+
+inline unsigned int length(const vec2_32i& a, const vec2_32i& b, uint8_t precision)
+{
+    int dx = (a.x-b.x), dy = (a.y-b.y);
+    return sqrt_int(fixed_mul_fixed_2(dx, dx, precision) + fixed_mul_fixed_2(dy,dy, precision))<<(precision>>1);
 }
 
 inline bool isParallelogram(const vec2_32i& p0, const vec2_32i& p1,
@@ -69,14 +76,27 @@ inline bool isRectangle(const vec2_32i& p0, const vec2_32i& p1,
     return ((dp_1 | dp_2 | dp_3)==0);
 }
 
-// this equals twice the triangle area - the parallogram
+
+
+
+typedef vec2<fixed_signed> vec2_fixed_signed;
+
+// this equals twice the triangle area - the parallelogram
+inline int orient2d(const vec2_fixed_signed& a, const vec2_fixed_signed& b,
+                    const vec2_fixed_signed& c, uint8_t precision)
+{
+    return fixed_mul_fixed_2(b.x-a.x, c.y-a.y, precision) - fixed_mul_fixed_2(b.y-a.y, c.x-a.x, precision);
+}
+
+
+// this equals twice the triangle area - the parallelogram
 inline int orient2d(const vec2_32i& a, const vec2_32i& b, const vec2_32i& c)
 {
     return (b.x-a.x)*(c.y-a.y) - (b.y-a.y)*(c.x-a.x);
 }
 
 
-// this equals twice the triangle area - the parallogram
+// this equals twice the triangle area - the parallelogram
 template<typename T>
 inline vec2<T> intersect_lines(const vec2<T>& p1, const vec2<T>& p2,
                                const vec2<T>& q1, const vec2<T>& q2)

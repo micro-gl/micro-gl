@@ -116,11 +116,14 @@ inline void render() {
 //                2*W/3, W/3,
 //                255);
 //
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None,false>(
-//                RED,
-//                2*W/3, W/3,
-//                W/3, 2*W/3,
-//                0, W/3);
+
+        vec2_f a{};
+
+        canvas->drawTriangleSub<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+                RED,
+                2*(float)W/3, (float)W/3,
+                (float)W/3, (float)5*W/3,
+                (float)0, (float)W/3);
 
         // filled Quadrilateral
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
@@ -149,13 +152,14 @@ inline void render() {
 //                4*W/10,    H-80, 0.0, 0.0,
 //                255);
 
-        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-                *bmp_uv,
-                0, W/3, 0.0, 0.0,
-                W/3, 0, 0.0, 1.0,
-                2*W/3, W/3, 1.0, 1.0,
-                W/3, 2*W/3, 1.0, 0.0,
-                128);
+// test fill rules withs this
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+//                *bmp_uv,
+//                0, W/3, 0.0, 0.0,
+//                W/3, 0, 0.0, 1.0,
+//                2*W/3, W/3, 1.0, 1.0,
+//                W/3, 2*W/3, 1.0, 0.0,
+//                128);
 
 
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(

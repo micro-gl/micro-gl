@@ -9,7 +9,7 @@
 point q format returning the answer in q format */
 #define Q 16 // number of bits for fractional part
 
-#define float_to_fixed_2(a, q) ((long)( (a)*(float)(1<<(q)) ))
+#define float_to_fixed_2(a, q) ((long)(0.5f + (a)*(float)(1<<(q)) ))
 #define fixed_to_float_2(a, q) ( (float)(a) / (float)(1<<(q)) )
 #define int_to_fixed_2(a, q) ( (long)(a)<<(q) )
 #define fixed_to_int_2(a, q) ( (a)>>(q) )
