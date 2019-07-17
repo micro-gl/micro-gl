@@ -474,6 +474,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                                   opacity, 0);
 
     return;
+    /*
     color_t color_int;
     coder()->convert(color, color_int);
 
@@ -587,7 +588,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
         w2_row += B20;
         index += _width;
     }
-
+*/
 }
 
 
