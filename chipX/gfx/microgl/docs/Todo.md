@@ -15,6 +15,7 @@
 - do not raster outside the frame
 - DONE: round fixed points when sampling
 - write a complete triangle rasterizer version with float points
+- options for reciprocal LUT
 
 #### triangle raster
 - try skipping lines

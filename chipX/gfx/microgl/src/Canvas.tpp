@@ -458,140 +458,6 @@ void Canvas<P, CODER>::drawGradient(const color_f_t & startColor,
 
 }
 
-
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
-                                    const int v0_x, const int v0_y,
-                                    const int v1_x, const int v1_y,
-                                    const int v2_x, const int v2_y,
-                                    const uint8_t opacity) {
-
-    drawTriangle<BlendMode, PorterDuff, antialias>(color,
-                                                  v0_x, v0_y,
-                                                  v1_x, v1_y,
-                                                  v2_x, v2_y,
-                                                  opacity, 0);
-
-    return;
-    /*
-    color_t color_int;
-    coder()->convert(color, color_int);
-
-    // bounding box
-    int minX = std::min({v0_x, v1_x, v2_x});
-    int minY = std::min({v0_y, v1_y, v2_y});
-    int maxX = std::max({v0_x, v1_x, v2_x});
-    int maxY = std::max({v0_y, v1_y, v2_y});
-
-    // anti-alias pad for distance calculation
-    uint8_t bits_distance;
-    unsigned int max_distance_anti_alias=0;
-
-    if(antialias) {
-        bits_distance = 1;
-        max_distance_anti_alias = 1 << bits_distance;
-        // we can solve padding analytically with distance=(max_distance_anti_alias/Cos(angle))
-        // but I don't give a fuck about it since I am just using max value of 2
-        minX-=max_distance_anti_alias*2;minY-=max_distance_anti_alias*2;
-        maxX+=max_distance_anti_alias*2;maxY+=max_distance_anti_alias*2;
-    }
-
-    minX = std::max(0, minX); minY = std::max(0, minY);
-    maxX = std::min(width()-1, maxX); maxY = std::min(height()-1, maxY);
-
-    // lengths of edges
-    unsigned int length_w0 = length({v0_x, v0_y}, {v1_x, v1_y});
-    unsigned int length_w1 = length({v1_x, v1_y}, {v2_x, v2_y});
-    unsigned int length_w2 = length({v0_x, v0_y}, {v2_x, v2_y});
-
-    // Triangle setup
-    int A01 = int_to_fixed(v0_y - v1_y)/length_w0, B01 = int_to_fixed(v1_x - v0_x)/length_w0;
-    int A12 = int_to_fixed(v1_y - v2_y)/length_w1, B12 = int_to_fixed(v2_x - v1_x)/length_w1;
-    int A20 = int_to_fixed(v2_y - v0_y)/length_w2, B20 = int_to_fixed(v0_x - v2_x)/length_w2;
-
-    // Barycentric coordinates at minX/minY corner
-    vec2_32i p = { minX, minY };
-
-    // overflow safety safe_bits>=(p-2)/2, i.e 15 bits (0..32,768) for 32 bits integers.
-    // https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
-    // this is good for coordinates in the 15 bits range.
-    int w0_row = ((long)int_to_fixed(orient2d({v0_x, v0_y}, {v1_x, v1_y}, p)))/length_w0;
-    int w1_row = ((long)int_to_fixed(orient2d({v1_x, v1_y}, {v2_x, v2_y}, p)))/length_w1;
-    int w2_row = ((long)int_to_fixed(orient2d({v2_x, v2_y}, {v0_x, v0_y}, p)))/length_w2;
-
-
-    //
-    // distance to edge is always h= (2*A)/L, where:
-    // h=distance from point to edge
-    // A = triangle area spanned by point and edge area
-    // L = length of the edge
-    // this simple geometric identity can be derived from
-    // area of triangle equation. We are going to interpolate
-    // the quantity h and we would like to evaluate h.
-    // NOTE:: this is a cheap way to calculate anti-alias with
-    // perpendicular distance, this is of course not correct for
-    // points that are "beyond" the edges. The real calculation
-    // has to use distance to points hence a square root function
-    // which is expensive for integer version. This version seems to
-    // work best with minimal artifacts when used with bits_distance=0 or 1.
-
-    // watch out for negative values
-    int index = p.y * _width;
-
-    for (p.y = minY; p.y <= maxY; p.y++) {
-
-        // Barycentric coordinates at start of row
-        int w0 = w0_row;
-        int w1 = w1_row;
-        int w2 = w2_row;
-
-
-        for (p.x = minX; p.x <= maxX; p.x++) {
-//            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-            // same as (w0 >= 0 && w1 >= 0 && w2 >= 0), but use only MSB,
-            // this turns three conditionals into one !!!
-            // if all are positive>=0 then we are inside the triangle
-            if ((w0 | w1 | w2) >= 0) {
-                blendColor<BlendMode, PorterDuff>(color_int, index + p.x, opacity);
-
-            } else if(antialias) {;// if(false){
-                // any of the distances are negative, we are outside.
-                // test if we can anti-alias
-                // take minimum of all meta distances
-
-                int distance = std::min({w0, w1, w2});
-                int delta = (distance) + (max_distance_anti_alias<<(16));
-
-                if (delta >= 0) {
-                    uint8_t blend = ((long)((delta) << (8 - bits_distance)))>>16;
-
-                    if (opacity < _max_alpha_value) {
-                        blend = (blend * opacity) >> 8;
-                    }
-
-                    blendColor<BlendMode, PorterDuff>(color_int, index + p.x, blend);
-                }
-
-            }
-
-            // One step to the right
-            w0 += A01;
-            w1 += A12;
-            w2 += A20;
-
-        }
-
-        // One row step
-        w0_row += B01;
-        w1_row += B12;
-        w2_row += B20;
-        index += _width;
-    }
-*/
-}
-
-
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
@@ -749,19 +615,35 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
             opacity, precision);
 }
 
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias>
+void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
+                                    const int v0_x, const int v0_y,
+                                    const int v1_x, const int v1_y,
+                                    const int v2_x, const int v2_y,
+                                    const uint8_t opacity) {
+
+    drawTriangle<BlendMode, PorterDuff, antialias>(color,
+            v0_x, v0_y,
+            v1_x, v1_y,
+            v2_x, v2_y,
+            opacity, 0);
+}
+
+
 inline int clamp(int val, int e0, int e1) {
     return std::min(std::max(val,e0),e1);
 }
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
-        bool antialias,
+        bool antialias, bool perspective_correct,
         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
-                               const fixed_signed v0_x, const fixed_signed v0_y, float u0, float v0,
-                               const fixed_signed v1_x, const fixed_signed v1_y, float u1, float v1,
-                               const fixed_signed v2_x, const fixed_signed v2_y, float u2, float v2,
+                               const fixed_signed v0_x, const fixed_signed v0_y, float u0, float v0, float q0,
+                               const fixed_signed v1_x, const fixed_signed v1_y, float u1, float v1, float q1,
+                               const fixed_signed v2_x, const fixed_signed v2_y, float u2, float v2, float q2,
                                const uint8_t opacity, const uint8_t sub_pixel_precision) {
 
     fixed_signed area = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
@@ -796,7 +678,6 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 //        maxX+=max_distance_anti_alias*2;maxY+=max_distance_anti_alias*2;
     }
 
-
     // clipping
     minX = std::max(0, minX); minY = std::max(0, minY);
     maxX = std::min(width()-1, maxX); maxY = std::min(height()-1, maxY);
@@ -811,6 +692,10 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     fixed_signed u0_fixed = float_to_fixed_2(u0, PR), v0_fixed = float_to_fixed_2(v0, PR);
     fixed_signed u1_fixed = float_to_fixed_2(u1, PR), v1_fixed = float_to_fixed_2(v1, PR);
     fixed_signed u2_fixed = float_to_fixed_2(u2, PR), v2_fixed = float_to_fixed_2(v2, PR);
+    fixed_signed q0_fixed, q1_fixed, q2_fixed;
+    if(perspective_correct) {
+        q0_fixed = float_to_fixed_2(q0, PR), q1_fixed = float_to_fixed_2(q1, PR), q2_fixed = float_to_fixed_2(q2, PR);
+    }
 
     fixed_signed A01_u2 = fixed_mul_int(u2_fixed, bmp_w_max*(v0_y - v1_y))/area, B01_u2 = fixed_mul_int(u2_fixed, bmp_w_max*(v1_x - v0_x))/area; // w0
     fixed_signed A12_u0 = fixed_mul_int(u0_fixed, bmp_w_max*(v1_y - v2_y))/area, B12_u0 = fixed_mul_int(u0_fixed, bmp_w_max*(v2_x - v1_x))/area; // w1
@@ -820,9 +705,13 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     fixed_signed A12_v0 = fixed_mul_int(v0_fixed, bmp_h_max*(v1_y - v2_y))/area, B12_v0 = fixed_mul_int(v0_fixed, bmp_h_max*(v2_x - v1_x))/area; // w1
     fixed_signed A20_v1 = fixed_mul_int(v1_fixed, bmp_h_max*(v2_y - v0_y))/area, B20_v1 = fixed_mul_int(v1_fixed, bmp_h_max*(v0_x - v2_x))/area; // w2
 
-    // overflow safety safe_bits>=(p-2)/2, i.e 15 bits (0..32,768) for 32 bits integers.
-    // https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
-    // for 16 bits computer this is safe for 7 bits input [0..127] - not good
+    fixed_signed A01_q2, A12_q0, A20_q1, B01_q2, B12_q0, B20_q1;
+    if(perspective_correct) {
+        A01_q2 = fixed_mul_int(q2_fixed, (v0_y - v1_y))/area, B01_q2 = fixed_mul_int(q2_fixed, (v1_x - v0_x))/area; // w0
+        A12_q0 = fixed_mul_int(q0_fixed, (v1_y - v2_y))/area, B12_q0 = fixed_mul_int(q0_fixed, (v2_x - v1_x))/area; // w1
+        A20_q1 = fixed_mul_int(q1_fixed, (v2_y - v0_y))/area, B20_q1 = fixed_mul_int(q1_fixed, (v0_x - v2_x))/area; // w2
+    }
+
     fixed_signed area_v1_v2_p = orient2d({v1_x, v1_y}, {v2_x, v2_y}, p_fixed, sub_pixel_precision),
                 area_v2_v0_p = orient2d({v2_x, v2_y}, {v0_x, v0_y}, p_fixed, sub_pixel_precision),
                 area_v0_v1_p = orient2d({v0_x, v0_y}, {v1_x, v1_y}, p_fixed, sub_pixel_precision);
@@ -834,6 +723,14 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     fixed_signed w1_row_v = fixed_mul_int(v0_fixed, bmp_h_max*area_v1_v2_p)/area;
     fixed_signed w2_row_v = fixed_mul_int(v1_fixed, bmp_h_max*area_v2_v0_p)/area;
     fixed_signed w0_row_v = fixed_mul_int(v2_fixed, bmp_h_max*area_v0_v1_p)/area;
+
+    fixed_signed w1_row_q, w2_row_q, w0_row_q;
+
+    if(perspective_correct) {
+        w1_row_q = fixed_mul_int(q0_fixed, area_v1_v2_p) / area;
+        w2_row_q = fixed_mul_int(q1_fixed, area_v2_v0_p) / area;
+        w0_row_q = fixed_mul_int(q2_fixed, area_v0_v1_p) / area;
+    }
 
     // lengths of edges
     unsigned int length_w0 = length({v0_x, v0_y}, {v1_x, v1_y}, sub_pixel_precision);
@@ -849,7 +746,21 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     int w1_row = int_to_fixed_2(area_v1_v2_p, PR)/length_w1;
     int w2_row = int_to_fixed_2(area_v2_v0_p, PR)/length_w2;
 
-    fixed_signed half = (1<<(PR>>1));
+    fixed_signed half = (1<<(PR))>>1;
+    long one_extended = (((long)1)<<((PR)<<1));
+
+    // LUT experiment
+    static fixed_signed dic[(2<<17)+1];
+    static bool filled=false;
+
+    if(!filled) {
+        for (int ix = 1; ix < (1<<17)+1; ++ix) {
+            dic[ix] = (fixed_signed) fixed_one_over_fixed_2(ix, PR);
+        }
+        filled=true;
+        return;
+    }
+
     //
 
     int index = p.y * _width;
@@ -865,6 +776,14 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
         fixed_signed w1_v = w1_row_v;
         fixed_signed w2_v = w2_row_v;
 
+        fixed_signed w0_q, w1_q, w2_q;
+
+        if(perspective_correct) {
+            w0_q = w0_row_q;
+            w1_q = w1_row_q;
+            w2_q = w2_row_q;
+        }
+
         int w0 = w0_row;
         int w1 = w1_row;
         int w2 = w2_row;
@@ -872,24 +791,26 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
         for (p.x = minX; p.x <= maxX; p.x++) {
 
             if ((w0 | w1 | w2) >= 0) {
+                fixed_signed u_fixed = w0_u + w1_u + w2_u + half;
+                fixed_signed v_fixed = w0_v + w1_v + w2_v + half;
+
+                if(perspective_correct) {
+                    // this optimizes fixed_one_over_fixed_2(w0_q + w1_q + w2_q, PR),
+                    // I basically save two shifts
+//                    fixed_signed qqs = one_extended/(w0_q + w1_q + w2_q);
+                    fixed_signed qqs = dic[(w0_q + w1_q + w2_q)];
+                    u_fixed = fixed_mul_fixed_2(u_fixed, qqs, PR);
+                    v_fixed = fixed_mul_fixed_2(v_fixed, qqs, PR);
+                }
 
                 // we round the numbers, which greatly improves things
-                 int u_i = clamp(fixed_to_int_2((w0_u + w1_u + w2_u + half), PR), 0, bmp_w_max);
-                 int v_i = clamp(fixed_to_int_2((w0_v + w1_v + w2_v + half), PR), 0, bmp_h_max);
-//                int u_i = fixed_to_int_2(w0_u + w1_u + w2_u + (1<<(PR>>1)), PR);
-//                int v_i = fixed_to_int_2(w0_v + w1_v + w2_v + (1<<(PR>>1)), PR);
-//                int u_i = fixed_to_int_2(w0_u + w1_u + w2_u + 0, PR);
-//                int v_i = fixed_to_int_2(w0_v + w1_v + w2_v + 0, PR);
-                // i should clamp if i see artifacts
-//                 int u_i = clamp(fixed_to_int_2((w0_u + w1_u + w2_u), PR), 0, bmp_w_max);
-//                 int v_i = clamp(fixed_to_int_2((w0_v + w1_v + w2_v), PR), 0, bmp_h_max);
+                 int u_i = clamp(fixed_to_int_2(u_fixed, PR), 0, bmp_w_max);
+                 int v_i = clamp(fixed_to_int_2(v_fixed, PR), 0, bmp_h_max);
                 int index_bmp = (bmp_width*v_i + u_i);
 
                 color_t col_bmp;
                 bmp.decode(index_bmp, col_bmp);
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
-
-//                drawPixel(0xFF00FF, index+p.x);
 
             } else if(antialias) {;// if(false){
                 // any of the distances are negative, we are outside.
@@ -903,8 +824,21 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                     // we need to clip uv coords if they overflow dimension of texture so we
                     // can get the last texel of the boundary
                     // I don't round since I don't care about it here
-                    int u_i = clamp(fixed_to_int_2(w0_u + w1_u + w2_u + half, PR), 0, bmp_w_max);
-                    int v_i = clamp(fixed_to_int_2(w0_v + w1_v + w2_v + half, PR), 0, bmp_h_max);
+
+                    fixed_signed u_fixed = w0_u + w1_u + w2_u + half;
+                    fixed_signed v_fixed = w0_v + w1_v + w2_v + half;
+
+                    if(perspective_correct) {
+                        // this optimizes fixed_one_over_fixed_2(w0_q + w1_q + w2_q, PR),
+                        // I basically save two shifts
+                        fixed_signed qqs = one_extended/(w0_q + w1_q + w2_q);
+
+                        u_fixed = fixed_mul_fixed_2(u_fixed, qqs, PR);
+                        v_fixed = fixed_mul_fixed_2(v_fixed, qqs, PR);
+                    }
+
+                    int u_i = clamp(fixed_to_int_2(u_fixed, PR), 0, bmp_w_max);
+                    int v_i = clamp(fixed_to_int_2(v_fixed, PR), 0, bmp_h_max);
                     int index_bmp = bmp_width *v_i + u_i;
 
                     uint8_t blend = ((long)((delta) << (8 - bits_distance)))>>PR;
@@ -929,6 +863,12 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
             w1_v += A12_v0;
             w2_v += A20_v1;
 
+            if(perspective_correct) {
+                w0_q += A01_q2;
+                w1_q += A12_q0;
+                w2_q += A20_q1;
+            }
+
             w0 += A01;
             w1 += A12;
             w2 += A20;
@@ -942,6 +882,12 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
         w0_row_v += B01_v2;
         w1_row_v += B12_v0;
         w2_row_v += B20_v1;
+
+        if(perspective_correct) {
+            w0_row_q += B01_q2;
+            w1_row_q += B12_q0;
+            w2_row_q += B20_q1;
+        }
 
         w0_row += B01;
         w1_row += B12;
@@ -963,7 +909,6 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                                const float v2_x, const float v2_y, float u2, float v2,
                                const uint8_t opacity) {
 
-
     uint8_t precision = 4;
     fixed_signed v0_x_ = float_to_fixed_2(v0_x, precision);
     fixed_signed v0_y_ = float_to_fixed_2(v0_y, precision);
@@ -972,181 +917,12 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     fixed_signed v2_x_ = float_to_fixed_2(v2_x, precision);
     fixed_signed v2_y_ = float_to_fixed_2(v2_y, precision);
 
-    drawTriangle<BlendMode, PorterDuff, antialias>(bmp,
-            v0_x_, v0_y_, u0, v0,
-            v1_x_, v1_y_, u1, v1,
-            v2_x_, v2_y_, u2, v2,
+    drawTriangle<BlendMode, PorterDuff, antialias, false>(bmp,
+            v0_x_, v0_y_, u0, v0, 1.0f,
+            v1_x_, v1_y_, u1, v1, 1.0f,
+            v2_x_, v2_y_, u2, v2, 1.0f,
             opacity, precision);
 
-    return;
-
-    /*
-    float area = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y});
-    int bmp_width = bmp.width();
-    // bounding box
-    int minX = std::min({v0_x, v1_x, v2_x});
-    int minY = std::min({v0_y, v1_y, v2_y});
-    int maxX = std::max({v0_x, v1_x, v2_x});
-    int maxY = std::max({v0_y, v1_y, v2_y});
-
-    // anti-alias pad for distance calculation
-    uint8_t bits_distance;
-    unsigned int max_distance_anti_alias=0;
-
-    if(antialias) {
-        bits_distance = 0;
-        max_distance_anti_alias = 1 << bits_distance;
-        // we can solve padding analytically with distance=(max_distance_anti_alias/Cos(angle))
-        // but I don't give a fuck about it since I am just using max value of 2
-//        minX-=max_distance_anti_alias*2;minY-=max_distance_anti_alias*2;
-//        maxX+=max_distance_anti_alias*2;maxY+=max_distance_anti_alias*2;
-    }
-
-    // clipping
-    minX = std::max(0, minX); minY = std::max(0, minY);
-    maxX = std::min(width()-1, maxX); maxY = std::min(height()-1, maxY);
-
-    // Barycentric coordinates at minX/minY corner
-    vec2_32i p = { minX, minY };
-
-    // todo:: investigate writing a Q class
-    int bmp_w_max = bmp.width() - 1, bmp_h_max = bmp.height() - 1;
-
-    // convert the floats to fixed point integers
-    fixed_signed u0_fixed = float_to_fixed(u0), v0_fixed = float_to_fixed(v0);
-    fixed_signed u1_fixed = float_to_fixed(u1), v1_fixed = float_to_fixed(v1);
-    fixed_signed u2_fixed = float_to_fixed(u2), v2_fixed = float_to_fixed(v2);
-
-    fixed_signed A01_u2 = fixed_mul_int(u2_fixed, bmp_w_max*(v0_y - v1_y))/area, B01_u2 = fixed_mul_int(u2_fixed, bmp_w_max*(v1_x - v0_x))/area; // w0
-    fixed_signed A12_u0 = fixed_mul_int(u0_fixed, bmp_w_max*(v1_y - v2_y))/area, B12_u0 = fixed_mul_int(u0_fixed, bmp_w_max*(v2_x - v1_x))/area; // w1
-    fixed_signed A20_u1 = fixed_mul_int(u1_fixed, bmp_w_max*(v2_y - v0_y))/area, B20_u1 = fixed_mul_int(u1_fixed, bmp_w_max*(v0_x - v2_x))/area; // w2
-
-    fixed_signed A01_v2 = fixed_mul_int(v2_fixed, bmp_h_max*(v0_y - v1_y))/area, B01_v2 = fixed_mul_int(v2_fixed, bmp_h_max*(v1_x - v0_x))/area; // w0
-    fixed_signed A12_v0 = fixed_mul_int(v0_fixed, bmp_h_max*(v1_y - v2_y))/area, B12_v0 = fixed_mul_int(v0_fixed, bmp_h_max*(v2_x - v1_x))/area; // w1
-    fixed_signed A20_v1 = fixed_mul_int(v1_fixed, bmp_h_max*(v2_y - v0_y))/area, B20_v1 = fixed_mul_int(v1_fixed, bmp_h_max*(v0_x - v2_x))/area; // w2
-
-    // overflow safety safe_bits>=(p-2)/2, i.e 15 bits (0..32,768) for 32 bits integers.
-    // https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
-    // for 16 bits computer this is safe for 7 bits input [0..127] - not good
-    int area_v1_v2_p = orient2d({v1_x, v1_y}, {v2_x, v2_y}, p), area_v2_v0_p = orient2d({v2_x, v2_y}, {v0_x, v0_y}, p),
-            area_v0_v1_p = orient2d({v0_x, v0_y}, {v1_x, v1_y}, p);
-
-    fixed_signed w1_row_u = fixed_mul_int(u0_fixed, bmp_w_max*area_v1_v2_p)/area;
-    fixed_signed w2_row_u = fixed_mul_int(u1_fixed, bmp_w_max*area_v2_v0_p)/area;
-    fixed_signed w0_row_u = fixed_mul_int(u2_fixed, bmp_w_max*area_v0_v1_p)/area;
-
-    fixed_signed w1_row_v = fixed_mul_int(v0_fixed, bmp_h_max*area_v1_v2_p)/area;
-    fixed_signed w2_row_v = fixed_mul_int(v1_fixed, bmp_h_max*area_v2_v0_p)/area;
-    fixed_signed w0_row_v = fixed_mul_int(v2_fixed, bmp_h_max*area_v0_v1_p)/area;
-
-    // lengths of edges
-    unsigned int length_w0 = length({v0_x, v0_y}, {v1_x, v1_y});
-    unsigned int length_w1 = length({v1_x, v1_y}, {v2_x, v2_y});
-    unsigned int length_w2 = length({v0_x, v0_y}, {v2_x, v2_y});
-
-    // Triangle setup
-    int A01 = int_to_fixed(v0_y - v1_y)/length_w0, B01 = int_to_fixed(v1_x - v0_x)/length_w0;
-    int A12 = int_to_fixed(v1_y - v2_y)/length_w1, B12 = int_to_fixed(v2_x - v1_x)/length_w1;
-    int A20 = int_to_fixed(v2_y - v0_y)/length_w2, B20 = int_to_fixed(v0_x - v2_x)/length_w2;
-
-    int w0_row = (int_to_fixed(area_v0_v1_p))/length_w0;
-    int w1_row = (int_to_fixed(area_v1_v2_p))/length_w1;
-    int w2_row = (int_to_fixed(area_v2_v0_p))/length_w2;
-
-    //
-
-    int index = p.y * _width;
-
-    for (p.y = minY; p.y <= maxY; p.y++) {
-
-        // Barycentric coordinates at start of row
-        fixed_signed w0_u = w0_row_u;
-        fixed_signed w1_u = w1_row_u;
-        fixed_signed w2_u = w2_row_u;
-
-        fixed_signed w0_v = w0_row_v;
-        fixed_signed w1_v = w1_row_v;
-        fixed_signed w2_v = w2_row_v;
-
-        int w0 = w0_row;
-        int w1 = w1_row;
-        int w2 = w2_row;
-
-        for (p.x = minX; p.x <= maxX; p.x++) {
-
-            if ((w0 | w1 | w2) >= 0) {
-
-                // we round the numbers, which greatly improves things
-                int u_i = fixed_to_int(w0_u + w1_u + w2_u + fixed_half);
-                int v_i = fixed_to_int(w0_v + w1_v + w2_v + fixed_half);
-                // i should clamp if i see artifacts
-                // int u_i = clamp(fixed_to_int((w0_u + w1_u + w2_u)), 0, bmp_w_max);
-                // int v_i = clamp(fixed_to_int((w0_v + w1_v + w2_v)), 0, bmp_h_max);
-                int index_bmp = (bmp_width*v_i + u_i);
-
-                color_t col_bmp;
-                bmp.decode(index_bmp, col_bmp);
-                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
-
-            } else if(antialias) {;// if(false){
-                // any of the distances are negative, we are outside.
-                // test if we can anti-alias
-                // take minimum of all meta distances
-
-                int distance = std::min({w0, w1, w2});
-                int delta = (distance) + (max_distance_anti_alias<<(16));
-
-                if (delta >= 0) {
-                    // we need to clip uv coords if they overflow dimension of texture so we
-                    // can get the last texel of the boundary
-                    // I don't round since I don't care about it here
-                    int u_i = clamp(fixed_to_int((w0_u + w1_u + w2_u)), 0, bmp_w_max);
-                    int v_i = clamp(fixed_to_int((w0_v + w1_v + w2_v)), 0, bmp_h_max);
-                    int index_bmp = bmp_width *v_i + u_i;
-
-                    uint8_t blend = ((long)((delta) << (8 - bits_distance)))>>16;
-
-                    if (opacity < _max_alpha_value) {
-                        blend = (blend * opacity) >> 8;
-                    }
-
-                    color_t col_bmp;
-                    bmp.decode(index_bmp, col_bmp);
-                    blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, blend);
-                }
-
-            }
-
-            // One step to the right
-            w0_u += A01_u2;
-            w1_u += A12_u0;
-            w2_u += A20_u1;
-
-            w0_v += A01_v2;
-            w1_v += A12_v0;
-            w2_v += A20_v1;
-
-            w0 += A01;
-            w1 += A12;
-            w2 += A20;
-        }
-
-        // One row step
-        w0_row_u += B01_u2;
-        w1_row_u += B12_u0;
-        w2_row_u += B20_u1;
-
-        w0_row_v += B01_v2;
-        w1_row_v += B12_v0;
-        w2_row_v += B20_v1;
-
-        w0_row += B01;
-        w1_row += B12;
-        w2_row += B20;
-
-        index += _width;
-    }
-*/
 }
 
 template<typename P, typename CODER>
@@ -1160,14 +936,16 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                                const int v2_x, const int v2_y, float u2, float v2,
                                const uint8_t opacity) {
 
-    drawTriangle < BlendMode, PorterDuff, antialias > (bmp,
-                                                        v0_x, v0_y, u0, v0,
-                                                        v1_x, v1_y, u1, v1,
-                                                        v2_x, v2_y, u2, v2,
-                                                        opacity, 0);
+    // draw without perspective
+    drawTriangle<BlendMode, PorterDuff, antialias, false>(bmp,
+                                                    v0_x, v0_y, u0, v0, 0.0f,
+                                                    v1_x, v1_y, u1, v1, 0.0f,
+                                                    v2_x, v2_y, u2, v2, 0.0f,
+                                                    opacity, 0);
 
 }
 
+/*
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
         bool antialias,
@@ -1291,7 +1069,6 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
 
             if ((w0 | w1 | w2) >= 0) {
-//                /*
 //                float ww0 = ((float)orient2d({v0_x, v0_y}, {v1_x, v1_y}, p))/area;
 //                float ww1 = ((float)orient2d({v1_x, v1_y}, {v2_x, v2_y}, p))/area;
 //                float ww2 = ((float)orient2d({v2_x, v2_y}, {v0_x, v0_y}, p))/area;
@@ -1390,6 +1167,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     }
 
 }
+*/
 
 // Quadrilaterals
 

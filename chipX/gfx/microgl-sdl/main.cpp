@@ -63,7 +63,7 @@ inline void render() {
 
     vec2_32i b[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2}, {W/2 + W/3, H/4}, {W-5, H - 5}};
 
-    for (int ix = 0; ix < 1; ++ix) {
+    for (int ix = 0; ix < 100; ++ix) {
         /*
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
@@ -106,9 +106,9 @@ inline void render() {
         static long a = 0;
         static float b = 2.0f*(float)W/3.0f;
 
-        a++;
+        a+=20;
 //
-        b = b + (float)1/10.0f;
+        b = b ;//+ (float)1/20.0f;
 
 //        cout << b <<endl;
 
@@ -323,8 +323,7 @@ void loop() {
                 break;
         }
 //
-        cout<<"render"<< endl;
-        render();
+//        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(), canvas->width() * canvas->sizeofPixel());
         SDL_RenderClear(renderer);

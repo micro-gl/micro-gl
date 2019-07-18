@@ -56,7 +56,8 @@ returning the result in q3 format */
 #define fixed_floor(a) (fixed_int_part(a))
 #define fixed_round(a) (fixed_floor((a) + fixed_half))
 #define fixed_ceil(a) fixed_floor((a))==0 ? (a) : fixed_floor((a) + fixed_one)
-#define fixed_one_over_fixed(a) (((long)fixed_one<<Q)/(a))
+#define fixed_one_over_fixed(a) ((((long)fixed_one)<<Q)/(a))
+#define fixed_one_over_fixed_2(a, q) ((((long)1)<<((q)<<1))/(a))
 
 // remap a value from one bit range to another, this is scaling
 #define REMAP(value, bit_range, new_bit_range) ((value)<<((new_bit_range)-(bit_range)))

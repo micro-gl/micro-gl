@@ -112,12 +112,12 @@ public:
     // main uv
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false,
+            bool antialias=false, bool perspective_correct=true,
             typename P2, typename CODER2>
     void drawTriangle(const Bitmap<P2, CODER2> &bmp,
-                      const fixed_signed v0_x, const fixed_signed v0_y, float u0, float v0,
-                      const fixed_signed v1_x, const fixed_signed v1_y, float u1, float v1,
-                      const fixed_signed v2_x, const fixed_signed v2_y, float u2, float v2,
+                      const fixed_signed v0_x, const fixed_signed v0_y, float u0, float v0, float q0,
+                      const fixed_signed v1_x, const fixed_signed v1_y, float u1, float v1, float q1,
+                      const fixed_signed v2_x, const fixed_signed v2_y, float u2, float v2, float q2,
                       const uint8_t opacity, const uint8_t sub_pixel_precision);
 
     template <typename BlendMode=blendmode::Normal,
