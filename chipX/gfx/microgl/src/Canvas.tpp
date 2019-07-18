@@ -1148,6 +1148,24 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 */
 }
 
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff,
+        bool antialias,
+        typename P2, typename CODER2>
+void
+Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
+                               const int v0_x, const int v0_y, float u0, float v0,
+                               const int v1_x, const int v1_y, float u1, float v1,
+                               const int v2_x, const int v2_y, float u2, float v2,
+                               const uint8_t opacity) {
+
+    drawTriangle < BlendMode, PorterDuff, antialias > (bmp,
+                                                        v0_x, v0_y, u0, v0,
+                                                        v1_x, v1_y, u1, v1,
+                                                        v2_x, v2_y, u2, v2,
+                                                        opacity, 0);
+
+}
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,

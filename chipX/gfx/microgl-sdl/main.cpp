@@ -108,15 +108,15 @@ inline void render() {
 
         a++;
 //
-        b = b + (float)1/2.0f;
+        b = b + (float)1/10.0f;
 
         cout << b <<endl;
 
         canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
                 *bmp_uv,
-                2*W/3, W/3, 1.0, 1.0,
-                W/3, b, 1.0, 0.0,
-                0, W/3, 0.0, 0.0 ,
+                (float)2*W/3, (float)W/3, 1.0, 1.0,
+                (float)W/3, (float)b, 1.0, 0.0,
+                (float)0, (float)W/3, 0.0, 0.0 ,
                 255);
 
 //

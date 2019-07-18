@@ -98,7 +98,7 @@ public:
                       const int x0, const int y0,
                       const int x1, const int y1,
                       const int x2, const int y2,
-                      const uint8_t opacity);
+                      const uint8_t opacity=255);
     // float version
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -128,6 +128,16 @@ public:
                       const float v0_x, const float v0_y, float u0, float v0,
                       const float v1_x, const float v1_y, float u1, float v1,
                       const float v2_x, const float v2_y, float u2, float v2,
+                      const uint8_t opacity = 255);
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false,
+            typename P2, typename CODER2>
+    void drawTriangle(const Bitmap<P2, CODER2> &bmp,
+                      const int v0_x, const int v0_y, float u0, float v0,
+                      const int v1_x, const int v1_y, float u1, float v1,
+                      const int v2_x, const int v2_y, float u2, float v2,
                       const uint8_t opacity = 255);
 
     // projective
