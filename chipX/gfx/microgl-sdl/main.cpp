@@ -16,8 +16,8 @@
 #include <microgl/Bitmap.h>
 
 #define TEST_ITERATIONS 1
-#define W 640*2
-#define H 480*2
+#define W 640*1
+#define H 480*1
 
 SDL_Window * window;
 SDL_Renderer * renderer;
@@ -110,9 +110,9 @@ inline void render() {
 //
         b = b + (float)1/10.0f;
 
-        cout << b <<endl;
+//        cout << b <<endl;
 
-        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
+        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
                 *bmp_uv,
                 (float)2*W/3, (float)W/3, 1.0, 1.0,
                 (float)W/3, (float)b, 1.0, 0.0,
@@ -305,8 +305,8 @@ void loop() {
     SDL_Event event;
 
     // 100 Quads
-//    int ms = render_test(TEST_ITERATIONS);
-//    cout << ms << endl;
+    int ms = render_test(TEST_ITERATIONS);
+    cout << ms << endl;
 
     while (!quit)
     {
@@ -323,7 +323,7 @@ void loop() {
                 break;
         }
 //
-//        cout<<"render"<< endl;
+        cout<<"render"<< endl;
         render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(), canvas->width() * canvas->sizeofPixel());

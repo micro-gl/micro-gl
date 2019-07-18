@@ -849,6 +849,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     int w1_row = int_to_fixed_2(area_v1_v2_p, PR)/length_w1;
     int w2_row = int_to_fixed_2(area_v2_v0_p, PR)/length_w2;
 
+    fixed_signed half = (1<<(PR>>1));
     //
 
     int index = p.y * _width;
@@ -873,8 +874,8 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
             if ((w0 | w1 | w2) >= 0) {
 
                 // we round the numbers, which greatly improves things
-                 int u_i = clamp(fixed_to_int_2((w0_u + w1_u + w2_u + (1<<(PR>>1))), PR), 0, bmp_w_max);
-                 int v_i = clamp(fixed_to_int_2((w0_v + w1_v + w2_v + (1<<(PR>>1))), PR), 0, bmp_h_max);
+                 int u_i = clamp(fixed_to_int_2((w0_u + w1_u + w2_u + half), PR), 0, bmp_w_max);
+                 int v_i = clamp(fixed_to_int_2((w0_v + w1_v + w2_v + half), PR), 0, bmp_h_max);
 //                int u_i = fixed_to_int_2(w0_u + w1_u + w2_u + (1<<(PR>>1)), PR);
 //                int v_i = fixed_to_int_2(w0_v + w1_v + w2_v + (1<<(PR>>1)), PR);
 //                int u_i = fixed_to_int_2(w0_u + w1_u + w2_u + 0, PR);
@@ -896,17 +897,17 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                 // take minimum of all meta distances
 
                 int distance = std::min({w0, w1, w2});
-                int delta = (distance) + (max_distance_canvas_space_anti_alias<<(16));
+                int delta = (distance) + max_distance_scaled_space_anti_alias;
 
                 if (delta >= 0) {
                     // we need to clip uv coords if they overflow dimension of texture so we
                     // can get the last texel of the boundary
                     // I don't round since I don't care about it here
-                    int u_i = clamp(fixed_to_int((w0_u + w1_u + w2_u)), 0, bmp_w_max);
-                    int v_i = clamp(fixed_to_int((w0_v + w1_v + w2_v)), 0, bmp_h_max);
+                    int u_i = clamp(fixed_to_int_2(w0_u + w1_u + w2_u + half, PR), 0, bmp_w_max);
+                    int v_i = clamp(fixed_to_int_2(w0_v + w1_v + w2_v + half, PR), 0, bmp_h_max);
                     int index_bmp = bmp_width *v_i + u_i;
 
-                    uint8_t blend = ((long)((delta) << (8 - bits_distance)))>>16;
+                    uint8_t blend = ((long)((delta) << (8 - bits_distance)))>>PR;
 
                     if (opacity < _max_alpha_value) {
                         blend = (blend * opacity) >> 8;
