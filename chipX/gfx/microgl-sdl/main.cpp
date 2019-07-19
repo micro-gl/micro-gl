@@ -108,16 +108,10 @@ inline void render() {
 
         a+=20;
 //
-        b = b + 10;//0.25f;///10.0f;//(float)1/20.0f;
+        b = b - 0.1;//0.25f;///10.0f;//(float)1/20.0f;
 
-        cout << b +400<<endl;
+//        cout << b +400<<endl;
 
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
-//                *bmp_uv,
-//                (float)2*W/3, (float)W/3, 1.0, 1.0,
-//                (float)W/3, (float)b, 1.0, 0.0,
-//                (float)0, (float)W/3, 0.0, 0.0 ,
-//                255);
 //
 // 400 is good
 
@@ -127,7 +121,7 @@ inline void render() {
 //                (float)400+b, (float)0, 1.0, 0.0,
 //                (float)400+b, (float)400, 0.0, 0.0 ,
 //                255);
-//
+
 //        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
 //                *bmp_uv,
 //                (float)0.0f, (float)0.0f, 1.0, 1.0,
@@ -135,12 +129,12 @@ inline void render() {
 //                (float)0, (float)400, 0.0, 0.0 ,
 //                255);
 //
-        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
-                *bmp_uv,
-                (float)0.0f, (float)0.0f, 1.0, 1.0,
-                (float)400+b, (float)200, 1.0, 0.0,
-                (float)0, (float)400, 0.0, 0.0 ,
-                255);
+//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+//                *bmp_uv,
+//                (float)0.0f, (float)0.0f, 1.0, 1.0,
+//                (float)400+b, (float)200, 1.0, 0.0,
+//                (float)0, (float)400, 0.0, 0.0 ,
+//                255);
 
         //
 //        int G2 = 400;
@@ -194,13 +188,13 @@ inline void render() {
 //                20,   20+G, 0.0, 0.0,
 //                255);
 //
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-//                *bmp_uv,
-//                4*W/10,   80,   0.0, 1.0,
-//                6*W/10, 80,   1.0, 1.0,
-//                W-80,     H-80, 1.0, 0.0,
-//                4*W/10,    H-80, 0.0, 0.0,
-//                255);
+        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+                *bmp_uv,
+                4*W/10,   80,   0.0, 1.0,
+                6*W/10 + b, 80,   1.0, 1.0,
+                W-80,     H-80, 1.0, 0.0,
+                4*W/10,    H-80, 0.0, 0.0,
+                255);
 
 // test fill rules withs this
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(

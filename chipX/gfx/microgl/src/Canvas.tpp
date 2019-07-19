@@ -657,10 +657,12 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     uint8_t BITS_BITMAP_H = 8;
     uint8_t BITS_UV_COORDS = 5;
 
-    uint8_t MAX_BITS_FOR_PROCESSING_PRECISION = 32;
-//    uint8_t PR = MAX_BITS_FOR_PROCESSING_PRECISION - (BITS_COORDS_INTEGRAL + BITS_COORDS_FRAC + BITS_BITMAP_W + BITS_UV_COORDS);
-    uint8_t PR = 16 - (BITS_COORDS_FRAC);
     unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
+
+    uint8_t BITS_DIV_PREC = 8;
+    uint8_t BITS_Q_DIV_PREC = 16 - BITS_UV_COORDS;
+    uint8_t PR = BITS_DIV_PREC + BITS_UV_COORDS;
+    uint8_t PR_Q = BITS_Q_DIV_PREC + BITS_UV_COORDS;
 
     // bounding box
     int minX = (std::min({v0_x, v1_x, v2_x}) + max_sub_pixel_precision_value) >> sub_pixel_precision;
@@ -689,15 +691,6 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     minX = std::max(0, minX); minY = std::max(0, minY);
     maxX = std::min(width()-1, maxX); maxY = std::min(height()-1, maxY);
 
-//    minX=maxX=450;
-//    minY=maxY=200;
-//
-//    minX=-0;
-//    minY=0;
-
-    uint8_t BITS_DIV_PREC = 16;
-    PR = BITS_DIV_PREC + BITS_UV_COORDS;
-
     // Barycentric coordinates at minX/minY corner
     vec2_32i p = { minX, minY };
     vec2_fixed_signed p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
@@ -709,32 +702,24 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     fixed_signed u1_fixed = float_to_fixed_2(u1, BITS_UV_COORDS), v1_fixed = float_to_fixed_2(v1, BITS_UV_COORDS);
     fixed_signed u2_fixed = float_to_fixed_2(u2, BITS_UV_COORDS), v2_fixed = float_to_fixed_2(v2, BITS_UV_COORDS);
     fixed_signed q0_fixed, q1_fixed, q2_fixed;
-    uint8_t Q_bits= 18;
+    uint8_t Q_bits= PR;
     if(perspective_correct) {
-        q0_fixed = float_to_fixed_2(q0, Q_bits), q1_fixed = float_to_fixed_2(q1, Q_bits), q2_fixed = float_to_fixed_2(q2, Q_bits);
+        q0_fixed = float_to_fixed_2(q0, BITS_UV_COORDS), q1_fixed = float_to_fixed_2(q1, BITS_UV_COORDS), q2_fixed = float_to_fixed_2(q2, BITS_UV_COORDS);
     }
 
-    fixed_signed A01_u2 = (long)(u2_fixed*(long)bmp_w_max)*(((long)(v0_y - v1_y)<<BITS_DIV_PREC)/area), B01_u2 = (long)(u2_fixed*(long)bmp_w_max)*(((long)(v1_x - v0_x)<<BITS_DIV_PREC)/area); // w0
-    fixed_signed A12_u0 = (long)(u0_fixed*(long)bmp_w_max)*(((long)(v1_y - v2_y)<<BITS_DIV_PREC)/area), B12_u0 = (long)(u0_fixed*(long)bmp_w_max)*(((long)(v2_x - v1_x)<<BITS_DIV_PREC)/area); // w1
-    fixed_signed A20_u1 = (long)(u1_fixed*(long)bmp_w_max)*(((long)(v2_y - v0_y)<<BITS_DIV_PREC)/area), B20_u1 = (long)(u1_fixed*(long)bmp_w_max)*(((long)(v0_x - v2_x)<<BITS_DIV_PREC)/area); // w2
+    fixed_signed A01_u2 = fixed_mul_int(u2_fixed, (long)bmp_w_max*((v0_y - v1_y)<<BITS_DIV_PREC))/area, B01_u2 = fixed_mul_int(u2_fixed, (long)bmp_w_max*((v1_x - v0_x)<<BITS_DIV_PREC))/area; // w0
+    fixed_signed A12_u0 = fixed_mul_int(u0_fixed, (long)bmp_w_max*((v1_y - v2_y)<<BITS_DIV_PREC))/area, B12_u0 = fixed_mul_int(u0_fixed, (long)bmp_w_max*((v2_x - v1_x)<<BITS_DIV_PREC))/area; // w1
+    fixed_signed A20_u1 = fixed_mul_int(u1_fixed, (long)bmp_w_max*((v2_y - v0_y)<<BITS_DIV_PREC))/area, B20_u1 = fixed_mul_int(u1_fixed, (long)bmp_w_max*((v0_x - v2_x)<<BITS_DIV_PREC))/area; // w2
 
-    fixed_signed A01_v2 = (long)(v2_fixed*(long)bmp_h_max)*(((long)(v0_y - v1_y)<<BITS_DIV_PREC)/area), B01_v2 = (long)(v2_fixed*(long)bmp_h_max)*(((long)(v1_x - v0_x)<<BITS_DIV_PREC)/area); // w0
-    fixed_signed A12_v0 = (long)(v0_fixed*(long)bmp_h_max)*(((long)(v1_y - v2_y)<<BITS_DIV_PREC)/area), B12_v0 = (long)(v0_fixed*(long)bmp_h_max)*(((long)(v2_x - v1_x)<<BITS_DIV_PREC)/area); // w1
-    fixed_signed A20_v1 = (long)(v1_fixed*(long)bmp_h_max)*(((long)(v2_y - v0_y)<<BITS_DIV_PREC)/area), B20_v1 = (long)(v1_fixed*(long)bmp_h_max)*(((long)(v0_x - v2_x)<<BITS_DIV_PREC)/area); // w2
+    fixed_signed A01_v2 = fixed_mul_int(v2_fixed, (long)bmp_h_max*((v0_y - v1_y)<<BITS_DIV_PREC))/area, B01_v2 = fixed_mul_int(v2_fixed, (long)bmp_h_max*((v1_x - v0_x)<<BITS_DIV_PREC))/area; // w0
+    fixed_signed A12_v0 = fixed_mul_int(v0_fixed, (long)bmp_h_max*((v1_y - v2_y)<<BITS_DIV_PREC))/area, B12_v0 = fixed_mul_int(v0_fixed, (long)bmp_h_max*((v2_x - v1_x)<<BITS_DIV_PREC))/area; // w1
+    fixed_signed A20_v1 = fixed_mul_int(v1_fixed, (long)bmp_h_max*((v2_y - v0_y)<<BITS_DIV_PREC))/area, B20_v1 = fixed_mul_int(v1_fixed, (long)bmp_h_max*((v0_x - v2_x)<<BITS_DIV_PREC))/area; // w2
 
-//    fixed_signed A01_u2 = fixed_mul_int(u2_fixed, (long)bmp_w_max*((v0_y - v1_y)<<BITS_DIV_PREC))/area, B01_u2 = fixed_mul_int(u2_fixed, (long)bmp_w_max*((v1_x - v0_x)<<BITS_DIV_PREC))/area; // w0
-//    fixed_signed A12_u0 = fixed_mul_int(u0_fixed, (long)bmp_w_max*((v1_y - v2_y)<<BITS_DIV_PREC))/area, B12_u0 = fixed_mul_int(u0_fixed, (long)bmp_w_max*((v2_x - v1_x)<<BITS_DIV_PREC))/area; // w1
-//    fixed_signed A20_u1 = fixed_mul_int(u1_fixed, (long)bmp_w_max*((v2_y - v0_y)<<BITS_DIV_PREC))/area, B20_u1 = fixed_mul_int(u1_fixed, (long)bmp_w_max*((v0_x - v2_x)<<BITS_DIV_PREC))/area; // w2
-//
-//    fixed_signed A01_v2 = fixed_mul_int(v2_fixed, (long)bmp_h_max*((v0_y - v1_y)<<BITS_DIV_PREC))/area, B01_v2 = fixed_mul_int(v2_fixed, (long)bmp_h_max*((v1_x - v0_x)<<BITS_DIV_PREC))/area; // w0
-//    fixed_signed A12_v0 = fixed_mul_int(v0_fixed, (long)bmp_h_max*((v1_y - v2_y)<<BITS_DIV_PREC))/area, B12_v0 = fixed_mul_int(v0_fixed, (long)bmp_h_max*((v2_x - v1_x)<<BITS_DIV_PREC))/area; // w1
-//    fixed_signed A20_v1 = fixed_mul_int(v1_fixed, (long)bmp_h_max*((v2_y - v0_y)<<BITS_DIV_PREC))/area, B20_v1 = fixed_mul_int(v1_fixed, (long)bmp_h_max*((v0_x - v2_x)<<BITS_DIV_PREC))/area; // w2
-//
     fixed_signed A01_q2, A12_q0, A20_q1, B01_q2, B12_q0, B20_q1;
     if(perspective_correct) {
-        A01_q2 = fixed_mul_int(q2_fixed, (v0_y - v1_y))/area, B01_q2 = fixed_mul_int(q2_fixed, (v1_x - v0_x))/area; // w0
-        A12_q0 = fixed_mul_int(q0_fixed, (v1_y - v2_y))/area, B12_q0 = fixed_mul_int(q0_fixed, (v2_x - v1_x))/area; // w1
-        A20_q1 = fixed_mul_int(q1_fixed, (v2_y - v0_y))/area, B20_q1 = fixed_mul_int(q1_fixed, (v0_x - v2_x))/area; // w2
+        A01_q2 = fixed_mul_int(q2_fixed, (long)(v0_y - v1_y)<<BITS_Q_DIV_PREC)/area, B01_q2 = fixed_mul_int(q2_fixed, (long)(v1_x - v0_x)<<BITS_Q_DIV_PREC)/area; // w0
+        A12_q0 = fixed_mul_int(q0_fixed, (long)(v1_y - v2_y)<<BITS_Q_DIV_PREC)/area, B12_q0 = fixed_mul_int(q0_fixed, (long)(v2_x - v1_x)<<BITS_Q_DIV_PREC)/area; // w1
+        A20_q1 = fixed_mul_int(q1_fixed, (long)(v2_y - v0_y)<<BITS_Q_DIV_PREC)/area, B20_q1 = fixed_mul_int(q1_fixed, (long)(v0_x - v2_x)<<BITS_Q_DIV_PREC)/area; // w2
     }
 
     // this can produce a 2P bits number if the points form a a perpendicular triangle
@@ -742,28 +727,20 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                 area_v2_v0_p = orient2d({v2_x, v2_y}, {v0_x, v0_y}, p_fixed, sub_pixel_precision),
                 area_v0_v1_p = orient2d({v0_x, v0_y}, {v1_x, v1_y}, p_fixed, sub_pixel_precision);
 
-    fixed_signed w1_row_u = (long)(u0_fixed*(long)bmp_w_max)*(((long)area_v1_v2_p<<BITS_DIV_PREC)/area);
-    fixed_signed w2_row_u = (long)(u1_fixed*(long)bmp_w_max)*(((long)area_v2_v0_p<<BITS_DIV_PREC)/area);
-    fixed_signed w0_row_u = (long)(u2_fixed*(long)bmp_w_max)*(((long)area_v0_v1_p<<BITS_DIV_PREC)/area);
+    fixed_signed w1_row_u = fixed_mul_int(u0_fixed, (long)bmp_w_max*(area_v1_v2_p<<BITS_DIV_PREC))/area;
+    fixed_signed w2_row_u = fixed_mul_int(u1_fixed, (long)bmp_w_max*(area_v2_v0_p<<BITS_DIV_PREC))/area;
+    fixed_signed w0_row_u = fixed_mul_int(u2_fixed, (long)bmp_w_max*(area_v0_v1_p<<BITS_DIV_PREC))/area;
 
-    fixed_signed w1_row_v = (long)(v0_fixed*(long)bmp_h_max)*(((long)area_v1_v2_p<<BITS_DIV_PREC)/area);
-    fixed_signed w2_row_v = (long)(v1_fixed*(long)bmp_h_max)*(((long)area_v2_v0_p<<BITS_DIV_PREC)/area);
-    fixed_signed w0_row_v = (long)(v2_fixed*(long)bmp_h_max)*(((long)area_v0_v1_p<<BITS_DIV_PREC)/area);
+    fixed_signed w1_row_v = fixed_mul_int(v0_fixed, (long)bmp_h_max*(area_v1_v2_p<<BITS_DIV_PREC))/area;
+    fixed_signed w2_row_v = fixed_mul_int(v1_fixed, (long)bmp_h_max*(area_v2_v0_p<<BITS_DIV_PREC))/area;
+    fixed_signed w0_row_v = fixed_mul_int(v2_fixed, (long)bmp_h_max*(area_v0_v1_p<<BITS_DIV_PREC))/area;
 
-//    fixed_signed w1_row_u = fixed_mul_int(u0_fixed, (long)bmp_w_max*(area_v1_v2_p<<BITS_DIV_PREC))/area;
-//    fixed_signed w2_row_u = fixed_mul_int(u1_fixed, (long)bmp_w_max*(area_v2_v0_p<<BITS_DIV_PREC))/area;
-//    fixed_signed w0_row_u = fixed_mul_int(u2_fixed, (long)bmp_w_max*(area_v0_v1_p<<BITS_DIV_PREC))/area;
-//
-//    fixed_signed w1_row_v = fixed_mul_int(v0_fixed, (long)bmp_h_max*(area_v1_v2_p<<BITS_DIV_PREC))/area;
-//    fixed_signed w2_row_v = fixed_mul_int(v1_fixed, (long)bmp_h_max*(area_v2_v0_p<<BITS_DIV_PREC))/area;
-//    fixed_signed w0_row_v = fixed_mul_int(v2_fixed, (long)bmp_h_max*(area_v0_v1_p<<BITS_DIV_PREC))/area;
-//
     fixed_signed w1_row_q, w2_row_q, w0_row_q;
 
     if(perspective_correct) {
-        w1_row_q = fixed_mul_int(q0_fixed, area_v1_v2_p) / area;
-        w2_row_q = fixed_mul_int(q1_fixed, area_v2_v0_p) / area;
-        w0_row_q = fixed_mul_int(q2_fixed, area_v0_v1_p) / area;
+        w1_row_q = fixed_mul_int(q0_fixed, ((long)area_v1_v2_p)<<BITS_Q_DIV_PREC) / area;
+        w2_row_q = fixed_mul_int(q1_fixed, ((long)area_v2_v0_p)<<BITS_Q_DIV_PREC) / area;
+        w0_row_q = fixed_mul_int(q2_fixed, ((long)area_v0_v1_p)<<BITS_Q_DIV_PREC) / area;
     }
 
     // lengths of edges, produces a P+1 bits number
@@ -784,9 +761,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     int w0_row = int_to_fixed_2(area_v0_v1_p, PR)/length_w0;
     int w1_row = int_to_fixed_2(area_v1_v2_p, PR)/length_w1;
     int w2_row = int_to_fixed_2(area_v2_v0_p, PR)/length_w2;
-//    PR=12;
-//floor(((3200<<16)/7368))/2^16
-    fixed_signed half = (1<<(14))>>1;
+    fixed_signed half = (1<<(PR))>>1;
     long one_extended = (((long)1)<<((PR)<<1));
 
     /*
@@ -830,43 +805,16 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
         int w2 = w2_row;
 
         for (p.x = minX; p.x <= maxX; p.x++) {
-            float ww0_f = ((float)orient2d({v0_x, v0_y}, {v1_x, v1_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))/area;
-            float ww1_f = ((float)orient2d({v1_x, v1_y}, {v2_x, v2_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))/area;
-            float ww2_f = ((float)orient2d({v2_x, v2_y}, {v0_x, v0_y},  {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))/area;
-
-int PP = 16;
-            int ww0 = ((long)(orient2d({v0_x, v0_y}, {v1_x, v1_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))<<PP)/area;
-            int ww1 = ((long)(orient2d({v1_x, v1_y}, {v2_x, v2_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))<<PP)/area;
-            int ww2 = ((long)(orient2d({v2_x, v2_y}, {v0_x, v0_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))<<PP)/area;
-
-//            if (ww0>=0 && ww1>=0 &&ww2>=0) {
 
             if ((w0 | w1 | w2) >= 0) {
 
-                //                /*
-
-                int u__1_f =  ((ww0_f*int(u2) + ww1_f*int(u0) + ww2_f*int(u1))*bmp_w_max);
-                int v__1_f =  ((ww0_f*int(v2) + ww1_f*int(v0) + ww2_f*int(v1))*bmp_h_max);
-
-                int u__1 =  ((ww0*int(u2) + ww1*int(u0) + ww2*int(u1))*bmp_w_max)>>PP;
-                int v__1 =  ((ww0*int(v2) + ww1*int(v0) + ww2*int(v1))*bmp_h_max)>>PP;
-
-                // we round the numbers, which greatly improves things
-//                int u_i = clamp(u__1_f, 0, bmp_w_max);
-//                int v_i = clamp(v__1_f, 0, bmp_h_max);
-//                int u_i = clamp(u__1, 0, bmp_w_max);
-//                int v_i = clamp(v__1, 0, bmp_h_max);
-//                int index_bmp = (bmp_width*v_i + u_i);
-
-//*/
-
-                fixed_signed u_fixed = w0_u + w1_u + w2_u;// + half;
-                fixed_signed v_fixed = w0_v + w1_v + w2_v;// + half;
+                fixed_signed u_fixed = w0_u + w1_u + w2_u + half;
+                fixed_signed v_fixed = w0_v + w1_v + w2_v + half;
 
                 if(perspective_correct) {
                     // this optimizes fixed_one_over_fixed_2(w0_q + w1_q + w2_q, PR),
                     // I basically save two shifts
-                    fixed_signed q_fixed = (w0_q + w1_q + w2_q)>>(Q_bits - PR);
+                    fixed_signed q_fixed = (w0_q + w1_q + w2_q)>>(-PR+PR_Q);
                     fixed_signed qqs = one_extended/q_fixed;
 //                    fixed_signed qqs = (w0_q + w1_q + w2_q-1)==0?0:fixed_one_over_fixed_2(w0_q + w1_q + w2_q, PR);//one_extended/(w0_q + w1_q + w2_q);
 //                    fixed_signed qqs = dic[(w0_q + w1_q + w2_q)];
@@ -879,8 +827,8 @@ int PP = 16;
 
 
                 // we round the numbers, which greatly improves things
-                int u_i = clamp(fixed_to_int_2(w0_u + w1_u + w2_u, PR), 0, bmp_w_max);
-                int v_i = clamp(fixed_to_int_2(w0_v + w1_v + w2_v, PR), 0, bmp_h_max);
+                int u_i = clamp(fixed_to_int_2(u_fixed, PR), 0, bmp_w_max);
+                int v_i = clamp(fixed_to_int_2(v_fixed, PR), 0, bmp_h_max);
                 int index_bmp = (bmp_width*v_i + u_i);
 
                 color_t col_bmp;
@@ -908,7 +856,10 @@ int PP = 16;
                     if(perspective_correct) {
                         // this optimizes fixed_one_over_fixed_2(w0_q + w1_q + w2_q, PR),
                         // I basically save two shifts
-                        fixed_signed qqs = one_extended/(w0_q + w1_q + w2_q);
+                        fixed_signed q_fixed = (w0_q + w1_q + w2_q + 0)>>(-PR+PR_Q);
+                        fixed_signed qqs = one_extended/q_fixed;
+
+//                        fixed_signed qqs = one_extended/(w0_q + w1_q + w2_q);
 
                         u_fixed = fixed_mul_fixed_2(u_fixed, qqs, PR);
                         v_fixed = fixed_mul_fixed_2(v_fixed, qqs, PR);
@@ -975,6 +926,33 @@ int PP = 16;
 
 }
 
+                /*
+float ww0_f = ((float)orient2d({v0_x, v0_y}, {v1_x, v1_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))/area;
+float ww1_f = ((float)orient2d({v1_x, v1_y}, {v2_x, v2_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))/area;
+float ww2_f = ((float)orient2d({v2_x, v2_y}, {v0_x, v0_y},  {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))/area;
+
+int PP = 16;
+int ww0 = ((long)(orient2d({v0_x, v0_y}, {v1_x, v1_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))<<PP)/area;
+int ww1 = ((long)(orient2d({v1_x, v1_y}, {v2_x, v2_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))<<PP)/area;
+int ww2 = ((long)(orient2d({v2_x, v2_y}, {v0_x, v0_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))<<PP)/area;
+
+
+int u__1_f =  ((ww0_f*int(u2) + ww1_f*int(u0) + ww2_f*int(u1))*bmp_w_max);
+int v__1_f =  ((ww0_f*int(v2) + ww1_f*int(v0) + ww2_f*int(v1))*bmp_h_max);
+
+int u__1 =  ((ww0*int(u2) + ww1*int(u0) + ww2*int(u1))*bmp_w_max)>>PP;
+int v__1 =  ((ww0*int(v2) + ww1*int(v0) + ww2*int(v1))*bmp_h_max)>>PP;
+
+// we round the numbers, which greatly improves things
+//                int u_i = clamp(u__1_f, 0, bmp_w_max);
+//                int v_i = clamp(v__1_f, 0, bmp_h_max);
+//                int u_i = clamp(u__1, 0, bmp_w_max);
+//                int v_i = clamp(v__1, 0, bmp_h_max);
+//                int index_bmp = (bmp_width*v_i + u_i);
+
+//*/
+
+
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
         bool antialias,
@@ -994,7 +972,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     fixed_signed v2_x_ = float_to_fixed_2(v2_x, precision);
     fixed_signed v2_y_ = float_to_fixed_2(v2_y, precision);
 
-    drawTriangle<BlendMode, PorterDuff, antialias, false>(bmp,
+    drawTriangle<BlendMode, PorterDuff, antialias, true>(bmp,
             v0_x_, v0_y_, u0, v0, 1.0f,
             v1_x_, v1_y_, u1, v1, 1.0f,
             v2_x_, v2_y_, u2, v2, 1.0f,
@@ -1030,39 +1008,44 @@ template<typename BlendMode, typename PorterDuff,
         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
-                               int v0_x, int v0_y, float u0, float v0,
-                               int v1_x, int v1_y, float u1, float v1,
-                               int v2_x, int v2_y, float u2, float v2,
-                               int v3_x, int v3_y, float u3, float v3,
-                               const uint8_t opacity) {
+                                    float v0_x, float v0_y, float u0, float v0,
+                                    float v1_x, float v1_y, float u1, float v1,
+                                    float v2_x, float v2_y, float u2, float v2,
+                                    float v3_x, float v3_y, float u3, float v3,
+                                    const uint8_t opacity) {
 
-    vec2_32i p0 {v0_x, v0_y}, p1{v1_x, v1_y}, p2{v2_x, v2_y}, p3{v3_x, v3_y};
+    uint8_t p = 2;
+
+    vec2_32i p0{(int)float_to_fixed_2(v0_x, p), (int)float_to_fixed_2(v0_y, p)};
+    vec2_32i p1{(int)float_to_fixed_2(v1_x, p), (int)float_to_fixed_2(v1_y, p)};
+    vec2_32i p2{(int)float_to_fixed_2(v2_x, p), (int)float_to_fixed_2(v2_y, p)};
+    vec2_32i p3{(int)float_to_fixed_2(v3_x, p), (int)float_to_fixed_2(v3_y, p)};
 
     bool isParallelogram_ = isParallelogram(p0, p1, p2, p3);
 
     if(isParallelogram_) {
 
-        if(isAxisAlignedRectangle(p0, p1, p2, p3)) {
-            drawQuad<BlendMode, PorterDuff>(bmp, p0.x, p0.y, p2.x, p2.y, opacity);
-
-            return;
-        }
+//        if(isAxisAlignedRectangle(p0, p1, p2, p3)) {
+//            drawQuad<BlendMode, PorterDuff>(bmp, p0.x, p0.y, p2.x, p2.y, opacity);
+//
+//            return;
+//        }
 
         // Note:: this was faster than rasterizing the two triangles
         // in the same loop for some reason.
         // todo:: turn off AA for common edge, since it causes an artifact at the boundary
         // todo:: of common edges
-        drawTriangle<BlendMode, PorterDuff, antialias>(bmp,
-                                                       v0_x, v0_y, u0, v0,
-                                                       v1_x, v1_y, u1, v1,
-                                                       v2_x, v2_y, u2, v2,
-                                                       opacity);
+        drawTriangle<BlendMode, PorterDuff, antialias, false>(bmp,
+                                                       p0.x, p0.y, u0, v0, 1.0f,
+                                                       p1.x, p1.y, u1, v1, 1.0f,
+                                                       p2.x, p2.y, u2, v2, 1.0f,
+                                                       opacity, p);
 
-        drawTriangle<BlendMode, PorterDuff, antialias>(bmp,
-                                                       v2_x, v2_y, u2, v2,
-                                                       v3_x, v3_y, u3, v3,
-                                                       v0_x, v0_y, u0, v0,
-                                                       opacity);
+        drawTriangle<BlendMode, PorterDuff, antialias, false>(bmp,
+                                                            p2.x, p2.y, u2, v2, 1.0f,
+                                                            p3.x, p3.y, u3, v3, 1.0f,
+                                                            p0.x, p0.y, u0, v0, 1.0f,
+                                                            opacity, p);
 
     } else {
         float q0 = 1, q1 = 1, q2 = 1, q3 = 1;
@@ -1100,17 +1083,17 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
         }
 
         // perspective correct version
-        drawTriangle<BlendMode, PorterDuff, antialias>(bmp,
-                                                       v0_x, v0_y, u0*q0, v0*q0, q0,
-                                                       v1_x, v1_y, u1*q1, v1*q1, q1,
-                                                       v2_x, v2_y, u2*q2, v2*q2, q2,
-                                                       opacity);
+        drawTriangle<BlendMode, PorterDuff, antialias, true>(bmp,
+                                                             p0.x, p0.y, u0*q0, v0*q0, q0,
+                                                             p1.x, p1.y, u1*q1, v1*q1, q1,
+                                                             p2.x, p2.y, u2*q2, v2*q2, q2,
+                                                             opacity, p);
 
-        drawTriangle<BlendMode, PorterDuff, antialias>(bmp,
-                                                       v2_x, v2_y, u2*q2, v2*q2, q2,
-                                                       v3_x, v3_y, u3*q3, v3*q3, q3,
-                                                       v0_x, v0_y, u0*q0, v0*q0, q0,
-                                                       opacity);
+        drawTriangle<BlendMode, PorterDuff, antialias, true>(bmp,
+                                                             p2.x, p2.y, u2*q2, v2*q2, q2,
+                                                             p3.x, p3.y, u3*q3, v3*q3, q3,
+                                                             p0.x, p0.y, u0*q0, v0*q0, q0,
+                                                             opacity, p);
 
     }
 
