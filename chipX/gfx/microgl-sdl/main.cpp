@@ -63,7 +63,7 @@ inline void render() {
 
     vec2_32i b[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2}, {W/2 + W/3, H/4}, {W-5, H - 5}};
 
-    for (int ix = 0; ix < 100; ++ix) {
+    for (int ix = 0; ix < 1; ++ix) {
         /*
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
@@ -104,21 +104,62 @@ inline void render() {
 //                255);
 //
         static long a = 0;
-        static float b = 2.0f*(float)W/3.0f;
+        static float b = 0;//1.0f*(float)W/3.0f;
 
         a+=20;
 //
-        b = b ;//+ (float)1/20.0f;
+        b = b + 10;//0.25f;///10.0f;//(float)1/20.0f;
 
-//        cout << b <<endl;
+        cout << b +400<<endl;
 
-        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
+//                *bmp_uv,
+//                (float)2*W/3, (float)W/3, 1.0, 1.0,
+//                (float)W/3, (float)b, 1.0, 0.0,
+//                (float)0, (float)W/3, 0.0, 0.0 ,
+//                255);
+//
+// 400 is good
+
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
+//                *bmp_uv,
+//                (float)0.0f, (float)200.0f, 1.0, 1.0,
+//                (float)400+b, (float)0, 1.0, 0.0,
+//                (float)400+b, (float)400, 0.0, 0.0 ,
+//                255);
+//
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
+//                *bmp_uv,
+//                (float)0.0f, (float)0.0f, 1.0, 1.0,
+//                (float)400+b, (float)200, 1.0, 0.0,
+//                (float)0, (float)400, 0.0, 0.0 ,
+//                255);
+//
+        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
                 *bmp_uv,
-                (float)2*W/3, (float)W/3, 1.0, 1.0,
-                (float)W/3, (float)b, 1.0, 0.0,
-                (float)0, (float)W/3, 0.0, 0.0 ,
+                (float)0.0f, (float)0.0f, 1.0, 1.0,
+                (float)400+b, (float)200, 1.0, 0.0,
+                (float)0, (float)400, 0.0, 0.0 ,
                 255);
 
+        //
+//        int G2 = 400;
+//
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
+//                *bmp_uv,
+//                (float)400.0f, (float)400.0f, 1.0, 0.0,
+//                (float)0, (float)400, 0.0, 0.0,
+//                (float)0, (float)0, 0.0, 1.0 ,
+//                255);
+//
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
+//                *bmp_uv,
+//                (float)0.0f, (float)0.0f, 0.0, 1.0,
+//                (float)400, (float)0, 1.0, 1.0,
+//                (float)400, (float)400, 1.0, 0.0 ,
+//                255);
+
+//        b=0;
 //
 //        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
 //                RED,
@@ -323,7 +364,7 @@ void loop() {
                 break;
         }
 //
-//        render();
+        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(), canvas->width() * canvas->sizeofPixel());
         SDL_RenderClear(renderer);

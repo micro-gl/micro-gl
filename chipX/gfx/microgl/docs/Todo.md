@@ -16,6 +16,7 @@
 - DONE: round fixed points when sampling
 - write a complete triangle rasterizer version with float points
 - options for reciprocal LUT
+- crashes when triangle is degenerate
 
 #### triangle raster
 - try skipping lines
