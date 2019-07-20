@@ -108,7 +108,7 @@ inline void render() {
 
         a+=20;
 //
-        b = b + 4.1;//0.25f;///10.0f;//(float)1/20.0f;
+        b = b + 0.1;//0.25f;///10.0f;//(float)1/20.0f;
 
 //        cout << b +400<<endl;
 
@@ -179,22 +179,22 @@ inline void render() {
 //                255);
 //
         // texture mapped
-        int G = 600;
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
-//                *bmp_uv,
-//                20,   20,   0.0, 1.0,
-//                20+G, 20,   1.0, 1.0,
-//                20+G, 20+G, 1.0, 0.0,
-//                20,   20+G, 0.0, 0.0,
-//                255);
-//
-        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+        int G = 400;//b;
+        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
                 *bmp_uv,
-                4*W/10,   80,   0.0, 1.0,
-                6*W/10 + b, 80,   1.0, 1.0,
-                W-80,     H-80, 1.0, 0.0,
-                4*W/10,    H-80, 0.0, 0.0,
+                20,   20,   0.0, 1.0,
+                20+G+b, 20+0,   1.0, 1.0,
+                20+G+b, 20+G, 1.0, 0.0,
+                20,   20+G, 0.0, 0.0,
                 255);
+
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+//                *bmp_uv,
+//                4*W/10,   80,   0.0, 1.0,
+//                6*W/10 + b, 80,   1.0, 1.0,
+//                W-80,     H-80, 1.0, 0.0,
+//                4*W/10,    H-80, 0.0, 0.0,
+//                255);
 
 // test fill rules withs this
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(

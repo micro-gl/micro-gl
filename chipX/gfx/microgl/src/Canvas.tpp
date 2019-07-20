@@ -1031,11 +1031,12 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
 
     if(isParallelogram_) {
 
-//        if(isAxisAlignedRectangle(p0, p1, p2, p3)) {
-//            drawQuad<BlendMode, PorterDuff>(bmp, p0.x, p0.y, p2.x, p2.y, opacity);
-//
-//            return;
-//        }
+        if(isAxisAlignedRectangle({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, {v3_x, v3_y})) {
+            drawQuad<BlendMode, PorterDuff>(bmp, v0_x, v0_y, v2_x, v2_y,
+                    sub_pixel_precision, uv_precision, opacity);
+
+            return;
+        }
 
         // Note:: this was faster than rasterizing the two triangles
         // in the same loop for some reason.
@@ -1057,11 +1058,9 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
 
     } else {
 
-//        /*
-//        uint8_t DIV_prec = 8 - sub_pixel_precision;
-        uint8_t DIV_prec = (24 - sub_pixel_precision)>>1;
+        uint8_t DIV_prec = (16 - sub_pixel_precision)>>1;
         fixed_signed max = (1<<sub_pixel_precision);
-        fixed_signed q0 = max, q1 = max, q2 = max, q3 = max;
+        fixed_signed q0 = (1<<uv_precision), q1 = (1<<uv_precision), q2 = (1<<uv_precision), q3 = (1<<uv_precision);
         fixed_signed p0x = v0_x; fixed_signed p0y = v0_y;
         fixed_signed p1x = v1_x; fixed_signed p1y = v1_y;
         fixed_signed p2x = v2_x; fixed_signed p2y = v2_y;
@@ -1103,9 +1102,6 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
             }
         }
 
-//         */
-
-///*
         fixed_signed u0_q0 = fixed_mul_fixed_2(u0, q0, sub_pixel_precision)>>(DIV_prec);
         fixed_signed v0_q0 = fixed_mul_fixed_2(v0, q0, sub_pixel_precision)>>(DIV_prec);
         fixed_signed u1_q1 = fixed_mul_fixed_2(u1, q1, sub_pixel_precision)>>(DIV_prec);
@@ -1211,7 +1207,7 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
                                     float v3_x, float v3_y, float u3, float v3,
                                     const uint8_t opacity) {
 
-    uint8_t p_s = 2;
+    uint8_t p_s = 4;
     uint8_t p_uv = 5;
 
     drawQuadrilateral<BlendMode, PorterDuff, antialias>(bmp,
@@ -1445,40 +1441,51 @@ template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff,
           typename P2, typename CODER2>
 void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
-                                int left, int top,
-                                int right, int bottom,
+                                const fixed_signed left, const fixed_signed top,
+                                const fixed_signed right, const fixed_signed bottom,
+                                const uint8_t sub_pixel_precision, const uint8_t uv_precision,
                                 const uint8_t opacity) {
     color_t col_bmp{};
     P converted{};
+
+    uint8_t DIV_prec = 16 + sub_pixel_precision;
+    unsigned int f_half = 0;//1<<(DIV_prec>>1);
+    unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
 
     unsigned int bmp_width = bmp.width();
     unsigned int bmp_height = bmp.height();
     unsigned int bmp_w_max = bmp_width - 1;
     unsigned int bmp_h_max = bmp_height - 1;
 
-    fixed du = (right-left)==0 ? 0 : fixed_div_int(int_to_fixed(bmp_width-1), right-left);
-    fixed dv = (bottom-top)==0 ? 0 : fixed_div_int(int_to_fixed(bmp_height-1), bottom-top);
+    int left_ = (left + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    int top_ = (top + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    int right_ = (right + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    int bottom_ = (bottom + max_sub_pixel_precision_value) >> sub_pixel_precision;
+
+    fixed du = (right-left)==0 ? 0 : fixed_div_int(int_to_fixed_2(bmp_width-1, DIV_prec), right-left);
+    fixed dv = (bottom-top)==0 ? 0 : fixed_div_int(int_to_fixed_2(bmp_height-1, DIV_prec), bottom-top);
     fixed u = -du, v = -dv;
 
     int u_i=0, v_i=0;
     int index_bmp, index;
 
-    index = top * _width;
+    index = top_ * _width;
 
-    for (int y = top; y <= bottom; y++) {
+    for (int y = top_; y <= bottom_; y++) {
         v += dv;
         // v_i with multiplication
-        v_i = (bmp_h_max - fixed_to_int(v + fixed_half))*(bmp_width);
+        v_i = (bmp_h_max - fixed_to_int_2(v + f_half, 16))*(bmp_width);
 
-        for (int x = left; x <= right; x++) {
+        for (int x = left_; x <= right_; x++) {
             u += du;
-            u_i = fixed_to_int(u + fixed_half);
+            u_i = fixed_to_int_2(u + f_half, 16);
             index_bmp = (v_i) + u_i;
 
             // decode the bitmap
             bmp.decode(index_bmp, col_bmp);
             // re-encode for a different canvas
             blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
+//             drawPixel(0xFF, index + x);
 
             //
             // TODO:: optimization note,

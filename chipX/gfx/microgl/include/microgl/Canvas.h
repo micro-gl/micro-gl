@@ -183,11 +183,20 @@ public:
                   const uint8_t opacity = 255);
 
     template <typename BlendMode=blendmode::Normal,
-              typename PorterDuff=porterduff::SourceOverOnOpaque,
-              typename P2, typename CODER2>
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename P2, typename CODER2>
     void drawQuad(const Bitmap<P2, CODER2> &bmp,
-                  int left, int top,
-                  int right, int bottom,
+                  const fixed_signed left, const fixed_signed top,
+                  const fixed_signed right, const fixed_signed bottom,
+                  const uint8_t sub_pixel_precision, const uint8_t uv_precision,
+                  const uint8_t opacity = 255);
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename P2, typename CODER2>
+    void drawQuad(const Bitmap<P2, CODER2> &bmp,
+                  const float left, const float top,
+                  const float right, const float bottom,
                   const uint8_t opacity = 255);
 
 
