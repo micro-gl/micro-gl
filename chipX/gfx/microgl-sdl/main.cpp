@@ -179,13 +179,21 @@ inline void render() {
 //                255);
 //
         // texture mapped
-        int G = 400;//b;
-        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
+        float G = 256;//b;
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
+//                *bmp_uv,
+//                20,   20,   0.0, 1.0,
+//                20+G+b, 20+0,   1.0, 1.0,
+//                20+G+b, 20+G, 1.0, 0.0,
+//                20,   20+G, 0.0, 0.0,
+//                255);
+b=0;
+        canvas->drawQuad<blendmode::Normal, porterduff::None>(
                 *bmp_uv,
-                20,   20,   0.0, 1.0,
-                20+G+b, 20+0,   1.0, 1.0,
-                20+G+b, 20+G, 1.0, 0.0,
-                20,   20+G, 0.0, 0.0,
+                (float)20,    (float)20,
+                (float)(20+G+b),(float)(20+G+b),
+                0.0f, 1.0f,
+                1.0f, 0.0f,
                 255);
 
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(

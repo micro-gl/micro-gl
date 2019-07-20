@@ -1032,7 +1032,16 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
     if(isParallelogram_) {
 
         if(isAxisAlignedRectangle({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, {v3_x, v3_y})) {
-            drawQuad<BlendMode, PorterDuff>(bmp, v0_x, v0_y, v2_x, v2_y,
+            fixed_signed left = std::min({v0_x, v1_x, v2_x, v3_x});
+            fixed_signed top = std::min({v0_y, v1_y, v2_y, v3_y});
+            fixed_signed right = std::max({v0_x, v1_x, v2_x, v3_x});
+            fixed_signed bottom = std::max({v0_y, v1_y, v2_y, v3_y});
+            fixed_signed u0_ = std::min({u0, u1, u2, u3});
+            fixed_signed v0_ = std::min({v0, v1, v2, v3});
+            fixed_signed u1_ = std::max({u0, u1, u2, u3});
+            fixed_signed v1_ = std::max({v0, v1, v2, v3});
+
+            drawQuad<BlendMode, PorterDuff>(bmp, left, top, right, bottom, u0_, v0_, u1_, v1_,
                     sub_pixel_precision, uv_precision, opacity);
 
             return;
@@ -1439,16 +1448,18 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
 
 template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff,
-          typename P2, typename CODER2>
+        typename P2, typename CODER2>
 void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                                 const fixed_signed left, const fixed_signed top,
                                 const fixed_signed right, const fixed_signed bottom,
+                                const fixed_signed u0, const fixed_signed v0,
+                                const fixed_signed u1, const fixed_signed v1,
                                 const uint8_t sub_pixel_precision, const uint8_t uv_precision,
                                 const uint8_t opacity) {
     color_t col_bmp{};
     P converted{};
 
-    uint8_t DIV_prec = 16 + sub_pixel_precision;
+    uint8_t DIV_prec = 16 - sub_pixel_precision;
     unsigned int f_half = 0;//1<<(DIV_prec>>1);
     unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
 
@@ -1462,23 +1473,28 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
     int right_ = (right + max_sub_pixel_precision_value) >> sub_pixel_precision;
     int bottom_ = (bottom + max_sub_pixel_precision_value) >> sub_pixel_precision;
 
-    fixed du = (right-left)==0 ? 0 : fixed_div_int(int_to_fixed_2(bmp_width-1, DIV_prec), right-left);
-    fixed dv = (bottom-top)==0 ? 0 : fixed_div_int(int_to_fixed_2(bmp_height-1, DIV_prec), bottom-top);
-    fixed u = -du, v = -dv;
+    fixed ddu = int_to_fixed_2(((u1-u0)*bmp_width)>>uv_precision, 16);
+    fixed ddv = int_to_fixed_2((-(v1-v0)*bmp_height)>>uv_precision, 16);
+
+    fixed u_start = int_to_fixed_2((u0*bmp_w_max)>>uv_precision, DIV_prec);
+    fixed v_start = int_to_fixed_2((v0*bmp_h_max)>>uv_precision, DIV_prec);
+    fixed du = (right-left)==0 ? 0 : fixed_div_int(ddu, right-left);
+    fixed dv = (bottom-top)==0 ? 0 : fixed_div_int(ddv, bottom-top);
+    fixed_signed u = u_start, v = v_start;
 
     int u_i=0, v_i=0;
     int index_bmp, index;
 
     index = top_ * _width;
 
-    for (int y = top_; y <= bottom_; y++) {
-        v += dv;
-        // v_i with multiplication
-        v_i = (bmp_h_max - fixed_to_int_2(v + f_half, 16))*(bmp_width);
+    for (int y = top_; y < bottom_; y++) {
 
-        for (int x = left_; x <= right_; x++) {
-            u += du;
-            u_i = fixed_to_int_2(u + f_half, 16);
+        // v_i with multiplication
+//        v_i = (bmp_h_max - fixed_to_int_2(v + f_half, DIV_prec))*(bmp_width);
+        v_i = fixed_to_int_2(v + f_half, DIV_prec)*bmp_width;
+
+        for (int x = left_; x < right_; x++) {
+            u_i = fixed_to_int_2(u + f_half, DIV_prec);
             index_bmp = (v_i) + u_i;
 
             // decode the bitmap
@@ -1487,19 +1503,38 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
             blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
 //             drawPixel(0xFF, index + x);
 
-            //
-            // TODO:: optimization note,
-            // if we copy from same bitmap formats without blending/compositing, than it is
-            // 10% of the running with composting etc... so use it for optimization.
-//             converted = bmp.pixelAt(index_bmp);
-//             drawPixel(converted, index + x);
-
-
+            u += du;
         }
-        u = -du;
+
+        u = u_start;
+        v -= dv;
+
+        if(v<0) v=0;
+
         index += _width;
     }
 
+}
+
+template<typename P, typename CODER>
+template <typename BlendMode, typename PorterDuff,
+        typename P2, typename CODER2>
+void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
+                                const float left, const float top,
+                                const float right, const float bottom,
+                                const float u0, const float v0,
+                                const float u1, const float v1,
+                                const uint8_t opacity) {
+    uint8_t p_sub = 0;
+    uint8_t p_uv = 5;
+
+    drawQuad<BlendMode, PorterDuff>(bmp,
+                                    float_to_fixed_2(left, p_sub), float_to_fixed_2(top, p_sub),
+                                    float_to_fixed_2(right, p_sub), float_to_fixed_2(bottom, p_sub),
+                                    float_to_fixed_2(u0, p_uv), float_to_fixed_2(v0, p_uv),
+                                    float_to_fixed_2(u1, p_uv), float_to_fixed_2(v1, p_uv),
+                                    p_sub, p_uv, opacity
+                                    );
 }
 
 template<typename P, typename CODER>

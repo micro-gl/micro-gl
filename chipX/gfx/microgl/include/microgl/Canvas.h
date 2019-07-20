@@ -188,6 +188,8 @@ public:
     void drawQuad(const Bitmap<P2, CODER2> &bmp,
                   const fixed_signed left, const fixed_signed top,
                   const fixed_signed right, const fixed_signed bottom,
+                  const fixed_signed u0, const fixed_signed v0,
+                  const fixed_signed u1, const fixed_signed v1,
                   const uint8_t sub_pixel_precision, const uint8_t uv_precision,
                   const uint8_t opacity = 255);
 
@@ -197,6 +199,8 @@ public:
     void drawQuad(const Bitmap<P2, CODER2> &bmp,
                   const float left, const float top,
                   const float right, const float bottom,
+                  const float u0=0.0f, const float v0=0.0f,
+                  const float u1=1.0f, const float v1=1.0f,
                   const uint8_t opacity = 255);
 
 
