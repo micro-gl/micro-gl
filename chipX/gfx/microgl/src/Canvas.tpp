@@ -641,10 +641,10 @@ template<typename BlendMode, typename PorterDuff,
         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
-                               const fixed_signed v0_x, const fixed_signed v0_y, float u0, float v0, float q0,
-                               const fixed_signed v1_x, const fixed_signed v1_y, float u1, float v1, float q1,
-                               const fixed_signed v2_x, const fixed_signed v2_y, float u2, float v2, float q2,
-                               const uint8_t opacity, const uint8_t sub_pixel_precision) {
+                               const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
+                               const fixed_signed v1_x, const fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
+                               const fixed_signed v2_x, const fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
+                               const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision) {
 
     fixed_signed area = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
     int bmp_width = bmp.width();
@@ -655,7 +655,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     uint8_t BITS_COORDS_FRAC = sub_pixel_precision;
     uint8_t BITS_BITMAP_W = 8;
     uint8_t BITS_BITMAP_H = 8;
-    uint8_t BITS_UV_COORDS = 5;
+    uint8_t BITS_UV_COORDS = uv_precision;
 
     unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
 
@@ -698,13 +698,13 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     int bmp_w_max = bmp.width() - 1, bmp_h_max = bmp.height() - 1;
 
     // convert the floats to fixed point integers
-    fixed_signed u0_fixed = float_to_fixed_2(u0, BITS_UV_COORDS), v0_fixed = float_to_fixed_2(v0, BITS_UV_COORDS);
-    fixed_signed u1_fixed = float_to_fixed_2(u1, BITS_UV_COORDS), v1_fixed = float_to_fixed_2(v1, BITS_UV_COORDS);
-    fixed_signed u2_fixed = float_to_fixed_2(u2, BITS_UV_COORDS), v2_fixed = float_to_fixed_2(v2, BITS_UV_COORDS);
+    fixed_signed u0_fixed = (u0), v0_fixed = (v0);
+    fixed_signed u1_fixed = (u1), v1_fixed = (v1);
+    fixed_signed u2_fixed = (u2), v2_fixed = (v2);
     fixed_signed q0_fixed, q1_fixed, q2_fixed;
     uint8_t Q_bits= PR;
     if(perspective_correct) {
-        q0_fixed = float_to_fixed_2(q0, BITS_UV_COORDS), q1_fixed = float_to_fixed_2(q1, BITS_UV_COORDS), q2_fixed = float_to_fixed_2(q2, BITS_UV_COORDS);
+        q0_fixed = (q0), q1_fixed = (q1), q2_fixed = (q2);
     }
 
     fixed_signed A01_u2 = fixed_mul_int(u2_fixed, (long)bmp_w_max*((v0_y - v1_y)<<BITS_DIV_PREC))/area, B01_u2 = fixed_mul_int(u2_fixed, (long)bmp_w_max*((v1_x - v0_x)<<BITS_DIV_PREC))/area; // w0
@@ -964,19 +964,28 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                                const float v2_x, const float v2_y, float u2, float v2,
                                const uint8_t opacity) {
 
-    uint8_t precision = 4;
-    fixed_signed v0_x_ = float_to_fixed_2(v0_x, precision);
-    fixed_signed v0_y_ = float_to_fixed_2(v0_y, precision);
-    fixed_signed v1_x_ = float_to_fixed_2(v1_x, precision);
-    fixed_signed v1_y_ = float_to_fixed_2(v1_y, precision);
-    fixed_signed v2_x_ = float_to_fixed_2(v2_x, precision);
-    fixed_signed v2_y_ = float_to_fixed_2(v2_y, precision);
+    uint8_t prec_pixel = 4;
+    uint8_t prec_uv = 5;
+    fixed_signed v0_x_ = float_to_fixed_2(v0_x, prec_pixel);
+    fixed_signed v0_y_ = float_to_fixed_2(v0_y, prec_pixel);
+    fixed_signed v1_x_ = float_to_fixed_2(v1_x, prec_pixel);
+    fixed_signed v1_y_ = float_to_fixed_2(v1_y, prec_pixel);
+    fixed_signed v2_x_ = float_to_fixed_2(v2_x, prec_pixel);
+    fixed_signed v2_y_ = float_to_fixed_2(v2_y, prec_pixel);
 
-    drawTriangle<BlendMode, PorterDuff, antialias, true>(bmp,
-            v0_x_, v0_y_, u0, v0, 1.0f,
-            v1_x_, v1_y_, u1, v1, 1.0f,
-            v2_x_, v2_y_, u2, v2, 1.0f,
-            opacity, precision);
+    fixed_signed u0_ = float_to_fixed_2(u0, prec_uv);
+    fixed_signed v0_ = float_to_fixed_2(v0, prec_uv);
+    fixed_signed u1_ = float_to_fixed_2(u1, prec_uv);
+    fixed_signed v1_ = float_to_fixed_2(v1, prec_uv);
+    fixed_signed u2_ = float_to_fixed_2(u2, prec_uv);
+    fixed_signed v2_ = float_to_fixed_2(v2, prec_uv);
+    fixed_signed q_ = float_to_fixed_2(1.0f, prec_uv);
+
+    drawTriangle<BlendMode, PorterDuff, antialias, false>(bmp,
+            v0_x_, v0_y_, u0_, v0_, q_,
+            v1_x_, v1_y_, u1_, v1_, q_,
+            v2_x_, v2_y_, u2_, v2_, q_,
+            opacity, prec_pixel, prec_uv);
 
 }
 
@@ -1008,12 +1017,202 @@ template<typename BlendMode, typename PorterDuff,
         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
+                                    fixed_signed v0_x, fixed_signed v0_y, fixed_signed u0, fixed_signed v0,
+                                    fixed_signed v1_x, fixed_signed v1_y, fixed_signed u1, fixed_signed v1,
+                                    fixed_signed v2_x, fixed_signed v2_y, fixed_signed u2, fixed_signed v2,
+                                    fixed_signed v3_x, fixed_signed v3_y, fixed_signed u3, fixed_signed v3,
+                                    const uint8_t opacity, const uint8_t sub_pixel_precision,
+                                    const uint8_t uv_precision) {
+
+    int q_one = 1<<uv_precision;
+
+//    bool isParallelogram_ = isParallelogram(p0, p1, p2, p3);
+    bool isParallelogram_ = isParallelogram({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, {v3_x, v3_y});
+
+    if(isParallelogram_) {
+
+//        if(isAxisAlignedRectangle(p0, p1, p2, p3)) {
+//            drawQuad<BlendMode, PorterDuff>(bmp, p0.x, p0.y, p2.x, p2.y, opacity);
+//
+//            return;
+//        }
+
+        // Note:: this was faster than rasterizing the two triangles
+        // in the same loop for some reason.
+        // todo:: turn off AA for common edge, since it causes an artifact at the boundary
+        // todo:: of common edges
+        drawTriangle<BlendMode, PorterDuff, antialias, false>(bmp,
+                                                              v0_x, v0_y, u0, v0, q_one,
+                                                              v1_x, v1_y, u1, v1, q_one,
+                                                              v2_x, v2_y, u2, v2, q_one,
+                                                              opacity, sub_pixel_precision,
+                                                              uv_precision);
+
+        drawTriangle<BlendMode, PorterDuff, antialias, false>(bmp,
+                                                              v2_x, v2_y, u2, v2, q_one,
+                                                              v3_x, v3_y, u3, v3, q_one,
+                                                              v0_x, v0_y, u0, v0, q_one,
+                                                              opacity, sub_pixel_precision,
+                                                              uv_precision);
+
+    } else {
+
+        /*
+        fixed_signed max = 1<<uv_precision;
+        fixed_signed q0 = max, q1 = max, q2 = max, q3 = max;
+        fixed_signed p0x = v0_x; fixed_signed p0y = v0_y;
+        fixed_signed p1x = v1_x; fixed_signed p1y = v1_y;
+        fixed_signed p2x = v2_x; fixed_signed p2y = v2_y;
+        fixed_signed p3x = v3_x; fixed_signed p3y = v3_y;
+
+        fixed_signed ax = p2x - p0x;
+        fixed_signed ay = p2y - p0y;
+        fixed_signed bx = p3x - p1x;
+        fixed_signed by = p3y - p1y;
+
+        fixed_signed t, s;
+
+        fixed_signed cross = fixed_mul_fixed_2(ax, by, uv_precision) - fixed_mul_fixed_2(ay, bx, uv_precision);
+
+        if (cross != 0) {
+            fixed_signed cy = p0y - p1y;
+            fixed_signed cx = p0x - p1x;
+
+            fixed_signed area_1 = fixed_mul_fixed_2(ax, cy, uv_precision) - fixed_mul_fixed_2(ay, cx, uv_precision);
+
+            s = fixed_div_fixed_2(area_1<<16, cross, uv_precision);
+
+            if (s > 0 && s < (max<<16)) {
+                fixed_signed area_2 = fixed_mul_fixed_2(bx, cy, uv_precision) - fixed_mul_fixed_2(by, cx, uv_precision);
+
+                t = fixed_div_fixed_2(area_2<<16, cross, uv_precision);
+
+                if (t > 0 && t < (max<<16)) {
+
+                    t >>=16;
+                    s >>=16;
+                    q0 = fixed_div_fixed_2(max<<16, max - t, uv_precision)>>16;
+                    q1 = fixed_div_fixed_2(max<<16, max - s, uv_precision)>>16;
+                    q2 = fixed_div_fixed_2(max<<16, t, uv_precision)>>16;
+                    q3 = fixed_div_fixed_2(max<<16, s, uv_precision)>>16;
+
+                }
+            }
+        }
+         */
+
+//        /*
+        float q0 = 1, q1 = 1, q2 = 1, q3 = 1;
+
+        int p0x = v0_x; float p0y = v0_y;
+        int p1x = v1_x; float p1y = v1_y;
+        int p2x = v2_x; float p2y = v2_y;
+        int p3x = v3_x; float p3y = v3_y;
+
+        int ax = p2x - p0x;
+        int ay = p2y - p0y;
+        int bx = p3x - p1x;
+        int by = p3y - p1y;
+        float t, s;
+//    float cross = ax * by - ay * bx;
+        int cross = ax * by - ay * bx;
+
+        if (cross != 0) {
+            int cy = p0y - p1y;
+            int cx = p0x - p1x;
+
+            s = float(ax * cy - ay * cx) / cross;
+            if (s > 0 && s < 1) {
+                t = float(bx * cy - by * cx) / cross;
+
+                if (t > 0 && t < 1) {
+
+                    q0 = 1 / (1 - t);
+                    q1 = 1 / (1 - s);
+                    q2 = 1 / t;
+                    q3 = 1 / s;
+
+                }
+            }
+        }
+        fixed_signed u0_q0 = (u0*q0);
+        fixed_signed v0_q0 = (v0* q0);
+        fixed_signed u1_q1 = (u1* q1);
+        fixed_signed v1_q1 = (v1* q1);
+        fixed_signed u2_q2 = (u2* q2);
+        fixed_signed v2_q2 = (v2* q2);
+        fixed_signed u3_q3 = (u3* q3);
+        fixed_signed v3_q3 = (v3* q3);
+
+        // perspective correct version
+        drawTriangle<BlendMode, PorterDuff, antialias, true>(bmp,
+                                                             v0_x, v0_y, u0_q0, v0_q0, float_to_fixed_2(q0, uv_precision),
+                                                             v1_x, v1_y, u1_q1, v1_q1, float_to_fixed_2(q1, uv_precision),
+                                                             v2_x, v2_y, u2_q2, v2_q2, float_to_fixed_2(q2, uv_precision),
+                                                             opacity, sub_pixel_precision, uv_precision);
+
+        drawTriangle<BlendMode, PorterDuff, antialias, true>(bmp,
+                                                             v2_x, v2_y, u2_q2, v2_q2, float_to_fixed_2(q2, uv_precision),
+                                                             v3_x, v3_y, u3_q3, v3_q3, float_to_fixed_2(q3, uv_precision),
+                                                             v0_x, v0_y, u0_q0, v0_q0, float_to_fixed_2(q0, uv_precision),
+                                                             opacity, sub_pixel_precision, uv_precision);
+
+//         */
+
+/*
+        fixed_signed u0_q0 = fixed_mul_fixed_2(u0, q0, uv_precision);
+        fixed_signed v0_q0 = fixed_mul_fixed_2(v0, q0, uv_precision);
+        fixed_signed u1_q1 = fixed_mul_fixed_2(u1, q1, uv_precision);
+        fixed_signed v1_q1 = fixed_mul_fixed_2(v1, q1, uv_precision);
+        fixed_signed u2_q2 = fixed_mul_fixed_2(u2, q2, uv_precision);
+        fixed_signed v2_q2 = fixed_mul_fixed_2(v2, q2, uv_precision);
+        fixed_signed u3_q3 = fixed_mul_fixed_2(u3, q3, uv_precision);
+        fixed_signed v3_q3 = fixed_mul_fixed_2(v3, q3, uv_precision);
+
+        // perspective correct version
+        drawTriangle<BlendMode, PorterDuff, antialias, true>(bmp,
+                                                             v0_x, v0_y, u0_q0, v0_q0, q0,
+                                                             v1_x, v1_y, u1_q1, v1_q1, q1,
+                                                             v2_x, v2_y, u2_q2, v2_q2, q2,
+                                                             opacity, sub_pixel_precision, uv_precision);
+
+        drawTriangle<BlendMode, PorterDuff, antialias, true>(bmp,
+                                                             v2_x, v2_y, u2_q2, v2_q2, q2,
+                                                             v3_x, v3_y, u3_q3, v3_q3, q3,
+                                                             v0_x, v0_y, u0_q0, v0_q0, q0,
+                                                             opacity, sub_pixel_precision, uv_precision);
+
+ */
+    }
+
+}
+
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff,
+        bool antialias,
+        typename P2, typename CODER2>
+void
+Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
                                     float v0_x, float v0_y, float u0, float v0,
                                     float v1_x, float v1_y, float u1, float v1,
                                     float v2_x, float v2_y, float u2, float v2,
                                     float v3_x, float v3_y, float u3, float v3,
                                     const uint8_t opacity) {
 
+    uint8_t p_s = 0;
+    uint8_t p_uv = 5;
+
+    drawQuadrilateral<BlendMode, PorterDuff, antialias>(bmp,
+                      float_to_fixed_2(v0_x, p_s), float_to_fixed_2(v0_y, p_s), float_to_fixed_2(u0, p_uv), float_to_fixed_2(v0, p_uv),
+                      float_to_fixed_2(v1_x, p_s), float_to_fixed_2(v1_y, p_s), float_to_fixed_2(u1, p_uv), float_to_fixed_2(v1, p_uv),
+                      float_to_fixed_2(v2_x, p_s), float_to_fixed_2(v2_y, p_s), float_to_fixed_2(u2, p_uv), float_to_fixed_2(v2, p_uv),
+                      float_to_fixed_2(v3_x, p_s), float_to_fixed_2(v3_y, p_s), float_to_fixed_2(u3, p_uv), float_to_fixed_2(v3, p_uv),
+                      opacity, p_s, p_uv);
+
+    return;
+
+    /*
     uint8_t p = 2;
 
     vec2_32i p0{(int)float_to_fixed_2(v0_x, p), (int)float_to_fixed_2(v0_y, p)};
@@ -1096,7 +1295,7 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
                                                              opacity, p);
 
     }
-
+*/
 }
 
 
@@ -1438,7 +1637,7 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *poin
     unsigned int N_SEG = (1 << resolution); // 64 resolution
     unsigned int i;
 
-    vec3_32i previous;
+    vec3_32ui previous;
 
     for (int jx = 0; jx < size-2; jx+=2) {
         auto * point_anchor = &points[jx];
@@ -1474,7 +1673,7 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
     unsigned int N_SEG = (1 << resolution); // 64 resolution
     unsigned int i;
 
-    vec3_32i previous;
+    vec3_32ui previous;
 
     for (int jx = 0; jx < size-3; jx+=3) {
 

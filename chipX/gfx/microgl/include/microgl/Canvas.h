@@ -115,10 +115,10 @@ public:
             bool antialias=false, bool perspective_correct=true,
             typename P2, typename CODER2>
     void drawTriangle(const Bitmap<P2, CODER2> &bmp,
-                      const fixed_signed v0_x, const fixed_signed v0_y, float u0, float v0, float q0,
-                      const fixed_signed v1_x, const fixed_signed v1_y, float u1, float v1, float q1,
-                      const fixed_signed v2_x, const fixed_signed v2_y, float u2, float v2, float q2,
-                      const uint8_t opacity, const uint8_t sub_pixel_precision);
+                      const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
+                      const fixed_signed v1_x, const fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
+                      const fixed_signed v2_x, const fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
+                      const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -145,13 +145,13 @@ public:
     // Quadrilaterals
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false>
-    void drawQuadrilateral(const color_f_t & color,
-                           const int x0, const int y0,
-                           const int x1, const int y1,
-                           const int x2, const int y2,
-                           const int x3, const int y3,
-                           const uint8_t opacity = 255);
+            bool antialias=false, typename P2, typename CODER2>
+    void drawQuadrilateral(const Bitmap<P2, CODER2> &bmp,
+                           const fixed_signed x0, const fixed_signed y0, fixed_signed u0, fixed_signed v0,
+                           const fixed_signed x1, const fixed_signed y1, fixed_signed u1, fixed_signed v1,
+                           const fixed_signed x2, const fixed_signed y2, fixed_signed u2, fixed_signed v2,
+                           const fixed_signed x3, const fixed_signed y3, fixed_signed u3, fixed_signed v3,
+                           const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -162,6 +162,17 @@ public:
                            const float x2, const float y2, float u2, float v2,
                            const float x3, const float y3, float u3, float v3,
                            const uint8_t opacity = 255);
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
+    void drawQuadrilateral(const color_f_t & color,
+                           const int x0, const int y0,
+                           const int x1, const int y1,
+                           const int x2, const int y2,
+                           const int x3, const int y3,
+                           const uint8_t opacity = 255);
+
 
     // axis aligned quads
     template<typename BlendMode=blendmode::Normal,

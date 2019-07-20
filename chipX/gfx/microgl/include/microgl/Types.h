@@ -72,4 +72,5 @@ typedef vec2<int32_t > vec2_32i;
 typedef vec3<float> vec3_f;
 typedef vec3<uint8_t > vec3_8i;
 typedef vec3<uint16_t > vec3_16i;
-typedef vec3<uint32_t > vec3_32i;
+typedef vec3<int32_t> vec3_32i;
+typedef vec3<uint32_t > vec3_32ui;
