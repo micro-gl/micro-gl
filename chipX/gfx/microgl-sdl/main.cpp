@@ -108,7 +108,7 @@ inline void render() {
 
         a+=20;
 //
-        b = b - 0.1;//0.25f;///10.0f;//(float)1/20.0f;
+        b = b + 4.1;//0.25f;///10.0f;//(float)1/20.0f;
 
 //        cout << b +400<<endl;
 
