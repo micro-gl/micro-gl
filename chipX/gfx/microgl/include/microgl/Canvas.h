@@ -138,6 +138,16 @@ public:
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false, bool perspective_correct=true,
+            typename P2, typename CODER2>
+    void drawTriangle2(const Bitmap<P2, CODER2> &bmp,
+                      const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
+                      const fixed_signed v1_x, const fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
+                      const fixed_signed v2_x, const fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
+                      const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision);
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false,
             typename P2, typename CODER2>
     void drawTriangle(const Bitmap<P2, CODER2> &bmp,

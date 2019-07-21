@@ -108,7 +108,6 @@ inline void render() {
 
         a+=20;
 //
-        b = b + 0.1;//0.25f;///10.0f;//(float)1/20.0f;
 
 //        cout << b +20<<endl;
 
@@ -202,12 +201,23 @@ inline void render() {
 //                1.0f, 0.0f,
 //                255);
 //
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+        if(b>-199)
+            b = b +50;//0.25f;///10.0f;//(float)1/20.0f;
+
+        cout<<b<<endl;
+        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
+                *bmp_uv,
+                80,   80,   0.0, 1.0,
+                80.0+200 + b, 80,   1.0, 1.0,
+                80+400,     H-80, 1.0, 0.0,
+                0,    H-80, 0.0, 0.0,
+                255);
+
+//                canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
 //                *bmp_uv,
-//                4*W/10,   80,   0.0, 1.0,
-//                6*W/10 + b, 80,   1.0, 1.0,
-//                W-80,     H-80, 1.0, 0.0,
-//                4*W/10,    H-80, 0.0, 0.0,
+//                (float)0.0f, (float)0.0f, 0.0f, 1.0f,
+//                (float)400, (float)0, 1.0f, 1.0f,
+//                (float)400, (float)400, 1.0f, 0.0f ,
 //                255);
 
 // test fill rules withs this
@@ -267,7 +277,7 @@ inline void render() {
 //        canvas->drawLinePath(RED, b, 7);
 //        canvas->drawCircle(RED, 320, 240, 200);
 //        canvas->drawCircleFPU<blendmode::Normal, porterduff::SourceOver>(RED, 320, 240, 200,1.0f);
-        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, (float)320, (float)240, 200 + b);
+//        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, (float)320, (float)240, 200 + b);
 
 // started 150, then 80 with coding (and 32 without coding)
 //        canvas->drawTriangle<blendmode::Normal, porterduff::None>(RED, 0, 0,
