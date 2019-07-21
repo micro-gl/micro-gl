@@ -894,3 +894,118 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
 }
 ```
+
+
+Older circle without sub-pixel correction 
+```
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias>
+void Canvas<P, CODER>::drawCircle(const color_f_t & color,
+                                  int centerX, int centerY,
+                                  int radius,
+                                  uint8_t opacity) {
+    color_t color_int;
+
+    coder()->convert(color, color_int);
+
+    unsigned int bits_for_antialias_distance, max_blend_distance=0;
+    unsigned int a, b, c=0;
+
+    if(antialias) {
+        bits_for_antialias_distance = 1;
+        max_blend_distance = 1 << bits_for_antialias_distance;
+        a = radius*radius;
+        b = (radius+max_blend_distance)*(radius+max_blend_distance);
+        c = b - a;
+    }
+
+    bool apply_opacity = opacity!=255;
+    int delta;
+
+    int x_min = centerX - radius - max_blend_distance, y_min = centerY - radius - max_blend_distance;
+    int x_max = centerX + radius + max_blend_distance, y_max = centerY + radius + max_blend_distance;
+    x_min = std::max(0, x_min); y_min = std::max(0, y_min);
+    x_max = std::min(width(), x_max); y_max = std::min(height(), y_max);
+
+    int index;
+
+    for (int y = y_min; y < y_max; ++y) {
+        index = y * _width;
+        for (int x = x_min; x < x_max; ++x) {
+
+            // 16 bit precision fixed point
+            int distance = signed_distance_circle_raised_quad(x, y, centerX, centerY, radius);
+
+            if(distance<=0)
+                blendColor<BlendMode, PorterDuff>(color_int, index + x, opacity);
+            else if(antialias && (delta=c-distance)>=0){
+
+//                 scale inner to 8 bit and then convert to integer
+                uint8_t blend = ((delta)<<(8))/c;
+
+                if(apply_opacity)
+                    blend = (blend*opacity)>>8;
+
+                blendColor<BlendMode, PorterDuff>(color_int, index + x, blend);
+            }
+
+        }
+
+    }
+
+}
+
+```
+
+Old antialias for circle I found
+```
+template<typename P, typename CODER>
+void Canvas<P, CODER>::drawCircle(const color_f_t & color,
+                           int centerX, int centerY,
+                           int radius) {
+    uint8_t nSubpixelsX ,nSubpixelsY;
+    color_f_t color_res = color;
+
+    nSubpixelsX = nSubpixelsY = 3;//hasAntialiasing() ? 4 : 1;
+
+    int x1 = centerX - radius, y1 = centerY - radius;
+    int x2 = centerX + radius, y2 = centerY + radius;
+    int index;
+
+    for (int y = y1; y < y2; ++y) {
+        // this is an optimization instead of multiplying per pixel
+        index = y * _width;
+        for (int x = x1; x < x2; ++x) {
+
+            // Compute the coverage by sampling the circle at "subpixel"
+            // locations and counting the number of subpixels turned on.
+            float coverage = 0.0f;
+
+            for (int subpixelY = 0; subpixelY < nSubpixelsY; subpixelY++) {
+                for (int subpixelX = 0; subpixelX < nSubpixelsX; subpixelX++) {
+                    // Sample the center of the subpixel.
+                    float sampX = x + ((subpixelX + 0.5f) / nSubpixelsX);
+                    float sampY = y + ((subpixelY + 0.5f) / nSubpixelsY);
+                    if (insideCircle(sampX, sampY, centerX, centerY, radius))
+                        coverage += 1;
+                }
+            }
+
+            // Take the average of all subpixels.
+            coverage /= nSubpixelsX * nSubpixelsY;
+
+            // Quick optimization: if we're fully outside the circle,
+            // we don't need to compute the fill.
+            if (coverage == 0)
+                continue;
+
+            color_res.a = color.a * coverage;
+            blendColor(color_res, index + x);
+
+        }
+
+    }
+
+}
+
+```

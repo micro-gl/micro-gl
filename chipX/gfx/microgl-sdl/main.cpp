@@ -63,7 +63,7 @@ inline void render() {
 
     vec2_32i b[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2}, {W/2 + W/3, H/4}, {W-5, H - 5}};
 
-    for (int ix = 0; ix < 100; ++ix) {
+    for (int ix = 0; ix < 1; ++ix) {
         /*
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
         canvas->drawQuad(WHITE, 0, 0, 640, 480);
@@ -108,7 +108,7 @@ inline void render() {
 
         a+=20;
 //
-        b = b + 0.01;//0.25f;///10.0f;//(float)1/20.0f;
+        b = b + 0.1;//0.25f;///10.0f;//(float)1/20.0f;
 
 //        cout << b +20<<endl;
 
@@ -267,7 +267,7 @@ inline void render() {
 //        canvas->drawLinePath(RED, b, 7);
 //        canvas->drawCircle(RED, 320, 240, 200);
 //        canvas->drawCircleFPU<blendmode::Normal, porterduff::SourceOver>(RED, 320, 240, 200,1.0f);
-        canvas->drawCircle2<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, 320, 240, 200+ 4.0f*0);
+        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, (float)320, (float)240, 200 + b);
 
 // started 150, then 80 with coding (and 32 without coding)
 //        canvas->drawTriangle<blendmode::Normal, porterduff::None>(RED, 0, 0,
