@@ -108,9 +108,9 @@ inline void render() {
 
         a+=20;
 //
-        b = b + 0.1;//0.25f;///10.0f;//(float)1/20.0f;
+        b = b + 0.0625;//0.25f;///10.0f;//(float)1/20.0f;
 
-//        cout << b +400<<endl;
+//        cout << b +20<<endl;
 
 //
 // 400 is good
@@ -187,7 +187,7 @@ inline void render() {
 //                20+G+b, 20+G, 1.0, 0.0,
 //                20,   20+G, 0.0, 0.0,
 //                255);
-b=0;
+//b=0;
         canvas->drawQuad<blendmode::Normal, porterduff::None>(
                 *bmp_uv,
                 (float)20,    (float)20,

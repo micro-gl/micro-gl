@@ -1037,9 +1037,9 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
             fixed_signed right = std::max({v0_x, v1_x, v2_x, v3_x});
             fixed_signed bottom = std::max({v0_y, v1_y, v2_y, v3_y});
             fixed_signed u0_ = std::min({u0, u1, u2, u3});
-            fixed_signed v0_ = std::min({v0, v1, v2, v3});
+            fixed_signed v0_ = std::max({v0, v1, v2, v3});
             fixed_signed u1_ = std::max({u0, u1, u2, u3});
-            fixed_signed v1_ = std::max({v0, v1, v2, v3});
+            fixed_signed v1_ = std::min({v0, v1, v2, v3});
 
             drawQuad<BlendMode, PorterDuff>(bmp, left, top, right, bottom, u0_, v0_, u1_, v1_,
                     sub_pixel_precision, uv_precision, opacity);
@@ -1459,7 +1459,10 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
     color_t col_bmp{};
     P converted{};
 
-    uint8_t DIV_prec = 16 - sub_pixel_precision;
+    uint8_t DIV_prec = 16;
+    uint8_t DIV_prec_minus_sub_pixel = DIV_prec - sub_pixel_precision;
+    // if you are using half, don't forget to clamp down the road,
+    // but it will take cycles so I don't do it !!!
     unsigned int f_half = 0;//1<<(DIV_prec>>1);
     unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
 
@@ -1468,16 +1471,18 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
     unsigned int bmp_w_max = bmp_width - 1;
     unsigned int bmp_h_max = bmp_height - 1;
 
-    int left_ = (left + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int top_ = (top + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int right_ = (right + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int bottom_ = (bottom + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    int left_ = std::max((left + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)0);
+    int top_ = std::max((top + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)0);
+    int right_ = std::min((right + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)width());
+    int bottom_ = std::min((bottom + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)height());
 
-    fixed ddu = int_to_fixed_2(((u1-u0)*bmp_width)>>uv_precision, 16);
-    fixed ddv = int_to_fixed_2((-(v1-v0)*bmp_height)>>uv_precision, 16);
+    fixed ddu = int_to_fixed_2(((u1-u0)*bmp_width)>>uv_precision, DIV_prec);
+    fixed ddv = int_to_fixed_2((-(v1-v0)*bmp_height)>>uv_precision, DIV_prec);
 
-    fixed u_start = int_to_fixed_2((u0*bmp_w_max)>>uv_precision, DIV_prec);
-    fixed v_start = int_to_fixed_2((v0*bmp_h_max)>>uv_precision, DIV_prec);
+    fixed max_uv = (1<<uv_precision);
+    fixed u_start = int_to_fixed_2((u0*bmp_w_max)>>uv_precision, DIV_prec_minus_sub_pixel);
+    // this is more stable to step forward than backward
+    fixed v_start = int_to_fixed_2(((max_uv-v0)*bmp_h_max)>>uv_precision, DIV_prec_minus_sub_pixel);
     fixed du = (right-left)==0 ? 0 : fixed_div_int(ddu, right-left);
     fixed dv = (bottom-top)==0 ? 0 : fixed_div_int(ddv, bottom-top);
     fixed_signed u = u_start, v = v_start;
@@ -1490,26 +1495,27 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
     for (int y = top_; y < bottom_; y++) {
 
         // v_i with multiplication
-//        v_i = (bmp_h_max - fixed_to_int_2(v + f_half, DIV_prec))*(bmp_width);
-        v_i = fixed_to_int_2(v + f_half, DIV_prec)*bmp_width;
+        v_i = (bmp_h_max - fixed_to_int_2(v + f_half, DIV_prec_minus_sub_pixel))*(bmp_width);
+        // v_i = fixed_to_int_2(v + f_half, DIV_prec)*bmp_width;
 
         for (int x = left_; x < right_; x++) {
-            u_i = fixed_to_int_2(u + f_half, DIV_prec);
+            u_i = fixed_to_int_2(u + f_half, DIV_prec_minus_sub_pixel);
             index_bmp = (v_i) + u_i;
 
             // decode the bitmap
             bmp.decode(index_bmp, col_bmp);
             // re-encode for a different canvas
             blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
-//             drawPixel(0xFF, index + x);
+            //drawPixel(0xFF, index + x);
 
             u += du;
         }
 
         u = u_start;
-        v -= dv;
+        v += dv;
 
-        if(v<0) v=0;
+        // not needed because we are stepping forward
+        //if(v<0) v=0;
 
         index += _width;
     }
@@ -1525,7 +1531,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                                 const float u0, const float v0,
                                 const float u1, const float v1,
                                 const uint8_t opacity) {
-    uint8_t p_sub = 0;
+    uint8_t p_sub = 4;
     uint8_t p_uv = 5;
 
     drawQuad<BlendMode, PorterDuff>(bmp,
