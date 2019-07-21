@@ -342,6 +342,100 @@ inline void Canvas<P, CODER>::drawPixel(const P & val, int index) {
 
 
 
+inline int signed_distance_circle_raised_quad1( fixed_signed px, fixed_signed py,
+                                                fixed_signed cx, fixed_signed cy,
+                                                fixed_signed r, uint8_t p)
+{
+    fixed_signed dx = (px-cx), dy = py-cy;
+
+    return (fixed_mul_fixed_2(dx, dx, p) + fixed_mul_fixed_2(dy, dy, p) - fixed_mul_fixed_2(r, r, p));
+}
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias>
+void Canvas<P, CODER>::drawCircle(const color_f_t & color,
+                                  fixed_signed centerX, fixed_signed centerY,
+                                  fixed_signed radius, uint8_t p,
+                                  uint8_t opacity) {
+    color_t color_int;
+
+    coder()->convert(color, color_int);
+
+    unsigned int bits_for_antialias_distance, max_blend_distance=0;
+    unsigned int a, b, c=0;
+
+    if(antialias) {
+        bits_for_antialias_distance = 1;
+        max_blend_distance = (1 << bits_for_antialias_distance)<<(p);
+        a = fixed_mul_fixed_2(radius, radius, p);
+        b = fixed_mul_fixed_2(radius+max_blend_distance, radius+max_blend_distance, p);
+        c = b - a;
+    }
+
+    bool apply_opacity = opacity!=255;
+    int delta;
+
+    int x_min = centerX - radius - max_blend_distance, y_min = centerY - radius - max_blend_distance;
+    int x_max = centerX + radius + max_blend_distance, y_max = centerY + radius + max_blend_distance;
+    x_min = std::max(0, x_min); y_min = std::max(0, y_min);
+    x_max = std::min((int)int_to_fixed_2(width()-0, p), x_max); y_max = std::min((int)int_to_fixed_2(height()-0, p), y_max);
+    int step = std::max((1<<p)-0, 1);
+
+    // Round start position up to next integer multiple
+    // (we sample at integer pixel positions, so if our
+    // min is not an integer coordinate, that pixel won't
+    // be hit)
+    fixed_signed sub_mask = (step-1);
+    x_min = (x_min + sub_mask) & (~sub_mask);
+    y_min = (y_min + sub_mask) & (~sub_mask);
+    x_max = (x_max + sub_mask) & (~sub_mask);
+    y_max = (y_max + sub_mask) & (~sub_mask);
+
+    for (int y = y_min; y < y_max; y+=step) {
+
+        for (int x = x_min; x < x_max; x+=step) {
+
+            // 16 bit precision fixed point
+            int distance = signed_distance_circle_raised_quad1(x, y, centerX, centerY, radius, p);
+
+            if(distance<=0)
+                blendColor<BlendMode, PorterDuff>(color_int, x>>p, y>>p, opacity);
+            else if(true && antialias && (delta=c-distance)>=0){
+
+                // scale inner to 8 bit and then convert to integer
+                uint8_t blend = ((delta)<<(8))/c;
+
+                if(apply_opacity)
+                    blend = (blend*opacity)>>8;
+
+                blendColor<BlendMode, PorterDuff>(color_int, (x>>p), y>>p, blend);
+            }
+
+        }
+
+    }
+
+}
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias>
+void Canvas<P, CODER>::drawCircle2(const color_f_t & color,
+                                  const float centerX, const float centerY,
+                                  const float radius,
+                                  uint8_t opacity) {
+
+    uint8_t p = 4;
+
+    drawCircle<BlendMode, PorterDuff, antialias>(color,
+               float_to_fixed_2(centerX, p),float_to_fixed_2(centerY, p),
+               float_to_fixed_2(radius, p), p, opacity
+
+    );
+
+
+}
+
+
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
@@ -1429,20 +1523,44 @@ void Canvas<P, CODER>::drawQuadrilateral(const color_f_t &color,
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
 void Canvas<P, CODER>::drawQuad(const color_f_t & color,
-                                const int left, const int top,
-                                const int right, const int bottom,
+                                const fixed_signed left, const fixed_signed top,
+                                const fixed_signed right, const fixed_signed bottom,
+                                const uint8_t sub_pixel_precision,
                                 const uint8_t opacity) {
     color_t color_int;
     this->coder()->convert(color, color_int);
 
-    int index = top * _width;
-    for (int y = top; y < bottom; ++y) {
-        for (int x = left; x < right; ++x) {
+    unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
+
+    int left_ = std::max((left + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)0);
+    int top_ = std::max((top + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)0);
+    int right_ = std::min((right + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)width());
+    int bottom_ = std::min((bottom + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)height());
+
+    int index = top_ * _width;
+    for (int y = top_; y < bottom_; y++) {
+        for (int x = left_; x < right_; x++) {
             blendColor<BlendMode, PorterDuff>(color_int, index + x, opacity);
         }
 
         index += _width;
     }
+
+}
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff>
+void Canvas<P, CODER>::drawQuad(const color_f_t & color,
+                                const float left, const float top,
+                                const float right, const float bottom,
+                                const uint8_t opacity) {
+    uint8_t p = 4;
+
+    drawQuad(color,
+             float_to_fixed_2(left, p), float_to_fixed_2(top, p),
+             float_to_fixed_2(right, p), float_to_fixed_2(bottom, p),
+             p, opacity
+    );
 
 }
 

@@ -71,8 +71,23 @@ public:
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
     void drawCircle(const color_f_t & color,
+                    fixed_signed centerX, fixed_signed centerY,
+                    fixed_signed radius, uint8_t sub_pixel_precision,
+                    uint8_t opacity=255);
+
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
+    void drawCircle(const color_f_t & color,
                     int centerX, int centerY,
                     int radius, uint8_t opacity=255);
+
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
+    void drawCircle2(const color_f_t & color,
+                    const float centerX, const float centerY,
+                    const float radius, uint8_t opacity=255);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque>
@@ -80,7 +95,8 @@ public:
                     int centerX, int centerY,
                     int radius, float opacity=1.0f);
 
-    // triangles
+    // Triangles
+    
     // main color
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -174,12 +190,21 @@ public:
                            const uint8_t opacity = 255);
 
 
-    // axis aligned quads
+    // QUADS
+
     template<typename BlendMode=blendmode::Normal,
-             typename PorterDuff=porterduff::SourceOverOnOpaque>
+            typename PorterDuff=porterduff::SourceOverOnOpaque>
     void drawQuad(const color_f_t &color,
-                  const int left, const int top,
-                  const int right, const int bottom,
+                  const fixed_signed left, const fixed_signed top,
+                  const fixed_signed right, const fixed_signed bottom,
+                  const uint8_t sub_pixel_precision,
+                  const uint8_t opacity = 255);
+
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque>
+    void drawQuad(const color_f_t &color,
+                  const float left, const float top,
+                  const float right, const float bottom,
                   const uint8_t opacity = 255);
 
     template <typename BlendMode=blendmode::Normal,
