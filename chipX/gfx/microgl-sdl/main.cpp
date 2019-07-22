@@ -72,10 +72,10 @@ inline void render() {
 
         a+=20;
 
-//        b+=100;//
+        b-=0.01;//
 //cout<<b<<endl;
 
-        float G = 256*3;
+        float G = 256*2;
 
 //        canvas->drawTriangle<blendmode::Normal, porterduff::None, false, false>(
 //                *bmp_uv,
@@ -88,13 +88,13 @@ inline void render() {
 //
 
 //        b=0.778;
-        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-                *bmp_uv,
-                1.0f,                1.0f,                0.0f, 1.0f,
-                1.0f + (float)G + b, 1.0f,                1.0f, 1.0f,
-                1.0f + (float)G,     1.0f + (float)G,     1.0f, 0.0f,
-                255
-        );
+//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+//                *bmp_uv,
+//                1.0f,                1.0f,                0.0f, 1.0f,
+//                1.0f + (float)G + b, 1.0f,                1.0f, 1.0f,
+//                1.0f + (float)G,     1.0f + (float)G,     1.0f, 0.0f,
+//                255
+//        );
 
 //        canvas->drawTriangle2<blendmode::Normal, porterduff::SourceOverOnOpaque, true, true>(
 //                *bmp_uv,
@@ -106,6 +106,14 @@ inline void render() {
 //        );
 
 // test fill rules withs this
+        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
+                *bmp_uv,
+                0,0,          0.0, 1.0,
+                float(W)/3 + b, 0,       1.0, 1.0,
+                2.0f*float(W)/3, 2.0f*float(W)/3, 1.0, 0.0,
+                0, 2.0f*float(W)/3,     0.0, 0.0,
+                255);
+
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
 //                *bmp_uv,
 //                0, W/3, 0.0, 0.0,

@@ -946,20 +946,10 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
     // sub_pixel_precision;
     // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
-    uint8_t BITS_COORDS_INTEGRAL = 10 + 1;
-    uint8_t BITS_COORDS_FRAC = sub_pixel_precision;
-    uint8_t BITS_BITMAP_W = 8;
-    uint8_t BITS_BITMAP_H = 8;
     uint8_t BITS_UV_COORDS = uv_precision;
+    uint8_t PREC_DIST = 16;
 
     unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
-
-    uint8_t BITS_DIV_PREC = 8;
-    uint8_t BITS_Q_DIV_PREC = 20 - BITS_UV_COORDS;
-    uint8_t PR = BITS_DIV_PREC + BITS_UV_COORDS;
-    uint8_t PR_Q = BITS_Q_DIV_PREC + BITS_UV_COORDS;
-
-    uint8_t PREC_DIST = 16;
 
     // bounding box
     int minX = (std::min({v0_x, v1_x, v2_x}) + max_sub_pixel_precision_value) >> sub_pixel_precision;
@@ -1007,13 +997,11 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     uint8_t LL_UV = LL + BITS_UV_COORDS;
     uint64_t ONE = ((uint64_t)1)<<LL;
     uint64_t one_area = (ONE) / area;
-    uint64_t h = (1<<((LL-BITS_UV_COORDS)))>>1;
 
     // lengths of edges, produces a P+1 bits number
     unsigned int length_w0 = length({v0_x, v0_y}, {v1_x, v1_y}, sub_pixel_precision);
     unsigned int length_w1 = length({v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
     unsigned int length_w2 = length({v0_x, v0_y}, {v2_x, v2_y}, sub_pixel_precision);
-
 
     // PR seems very good for the following calculations
     // Triangle setup
@@ -1022,41 +1010,25 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     int A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
     int A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
 
-
-    int A01_h = ((int64_t)(v0_y - v1_y)<<PREC_DIST)/length_w0, B01_h = ((int64_t)(v1_x - v0_x)<<PREC_DIST)/length_w0;
-    int A12_h = ((int64_t)(v1_y - v2_y)<<PREC_DIST)/length_w1, B12_h = ((int64_t)(v2_x - v1_x)<<PREC_DIST)/length_w1;
-    int A20_h = ((int64_t)(v2_y - v0_y)<<PREC_DIST)/length_w2, B20_h = ((int64_t)(v0_x - v2_x)<<PREC_DIST)/length_w2;
-
-    // 2A/L = h, therefore the division produces a P bit number
-    // we should use around 31-MAX_BITS_PRES
-
     int w0_row = (area_v0_v1_p);
     int w1_row = (area_v1_v2_p);
     int w2_row = (area_v2_v0_p);
 
+    // AA, 2A/L = h, therefore the division produces a P bit number
+    int w0_row_h, w1_row_h, w2_row_h;
+    int A01_h, B01_h, A12_h, B12_h, A20_h, B20_h;
 
+    if(antialias) {
+        A01_h = ((int64_t)(v0_y - v1_y)<<PREC_DIST)/length_w0, B01_h = ((int64_t)(v1_x - v0_x)<<PREC_DIST)/length_w0;
+        A12_h = ((int64_t)(v1_y - v2_y)<<PREC_DIST)/length_w1, B12_h = ((int64_t)(v2_x - v1_x)<<PREC_DIST)/length_w1;
+        A20_h = ((int64_t)(v2_y - v0_y)<<PREC_DIST)/length_w2, B20_h = ((int64_t)(v0_x - v2_x)<<PREC_DIST)/length_w2;
 
-    int w0_row_h = ((int64_t)(area_v0_v1_p)<<PREC_DIST)/length_w0;
-    int w1_row_h = ((int64_t)(area_v1_v2_p)<<PREC_DIST)/length_w1;
-    int w2_row_h = ((int64_t)(area_v2_v0_p)<<PREC_DIST)/length_w2;
-
-//    fixed_signed half = (1<<(PR))>>1;
-//    long one_extended = (((long)1)<<((PR)<<1));
-
-    /*
-    // LUT experiment
-    static fixed_signed dic[(2<<17)+1];
-    static bool filled=false;
-    if(!filled) {
-        for (int ix = 1; ix < (1<<17)+1; ++ix) {
-            dic[ix] = (fixed_signed) fixed_one_over_fixed_2(ix, PR);
-        }
-        filled=true;
-        return;
+        w0_row_h = ((int64_t)(area_v0_v1_p)<<PREC_DIST)/length_w0;
+        w1_row_h = ((int64_t)(area_v1_v2_p)<<PREC_DIST)/length_w1;
+        w2_row_h = ((int64_t)(area_v2_v0_p)<<PREC_DIST)/length_w2;
     }
-     */
 
-    //
+    uint64_t mask_ = ((1<<BITS_UV_COORDS)-1);// -1;
 
     int index = p.y * _width;
 
@@ -1066,15 +1038,18 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
         int w1 = w1_row;
         int w2 = w2_row;
 
-        int w0_h = w0_row_h;
-        int w1_h = w1_row_h;
-        int w2_h = w2_row_h;
+        int w0_h,w1_h,w2_h;
+
+        if(antialias) {
+            w0_h = w0_row_h;
+            w1_h = w1_row_h;
+            w2_h = w2_row_h;
+        }
 
         for (p.x = minX; p.x <= maxX; p.x++) {
 
             if ((w0 | w1 | w2) >= 0) {
 
-                uint64_t h_ = (area<<5)/2;//((1<<5)-1);
                 int u_i, v_i;
                 uint64_t u_fixed = (((uint64_t)((uint64_t)w0*u2 + (uint64_t)w1*u0 + (uint64_t)w2*u1)));
                 uint64_t v_fixed = (((uint64_t)((uint64_t)w0*v2 + (uint64_t)w1*v0 + (uint64_t)w2*v1)));
@@ -1090,26 +1065,11 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
                 } else {
 
-                    h_ = 0;//(area<<(BITS_UV_COORDS))/1 - 1;
-                    uint64_t h2_ = (1<<BITS_UV_COORDS)/2;// -1;
-                    uint64_t h3_ = (1<<BITS_UV_COORDS)/2;// -1;
-
                     // nearest neighboor sampling
-                    uint64_t mask_ = ((1<<BITS_UV_COORDS)-1);// -1;
-//                    u_i = (((bmp_w_max*u_fixed)/area + mask_)& ~mask_)>>(BITS_UV_COORDS);
-//                    v_i = (((bmp_h_max*v_fixed)/area + mask_)& ~mask_)>>(BITS_UV_COORDS);
-
-                    uint64_t mask_2 = ((((uint64_t)1)<<(LL+BITS_UV_COORDS))/2);// -1;
-
-                    u_fixed = (bmp_w_max*u_fixed*one_area)>>LL;
-                    v_fixed = (bmp_h_max*v_fixed*one_area)>>LL;
-
+                    u_fixed = (bmp_w_max*u_fixed*one_area)>>(LL);
+                    v_fixed = (bmp_h_max*v_fixed*one_area)>>(LL);
                     u_i = (u_fixed + mask_)>>BITS_UV_COORDS;
                     v_i = (v_fixed + mask_)>>BITS_UV_COORDS;
-
-//                    u_i = clamp(fixed_to_int_2((u_fixed*bmp_w_max), LL + BITS_UV_COORDS), 0, bmp_w_max);
-//                    v_i = clamp(fixed_to_int_2((v_fixed*bmp_h_max), LL + BITS_UV_COORDS), 0, bmp_h_max);
-
                 }
 
                 // we round the numbers, which greatly improves things
@@ -1135,8 +1095,8 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                     // I don't round since I don't care about it here
 
                     int u_i, v_i;
-                    uint64_t u_fixed = (((uint64_t)((uint64_t)w0*u2 + (uint64_t)w1*u0 + (uint64_t)w2*u1 + h)));
-                    uint64_t v_fixed = (((uint64_t)((uint64_t)w0*v2 + (uint64_t)w1*v0 + (uint64_t)w2*v1 + h)));
+                    uint64_t u_fixed = (((uint64_t)((uint64_t)w0*u2 + (uint64_t)w1*u0 + (uint64_t)w2*u1)));
+                    uint64_t v_fixed = (((uint64_t)((uint64_t)w0*v2 + (uint64_t)w1*v0 + (uint64_t)w2*v1)));
 
                     if(perspective_correct) {
 
@@ -1151,8 +1111,8 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                         u_fixed *= one_area;
                         v_fixed *= one_area;
 
-                        u_i = clamp(fixed_to_int_2((u_fixed*bmp_w_max), LL + BITS_UV_COORDS), 0, bmp_w_max);
-                        v_i = clamp(fixed_to_int_2((v_fixed*bmp_h_max), LL + BITS_UV_COORDS), 0, bmp_h_max);
+                        u_i = clamp(fixed_to_int_2((u_fixed*bmp_w_max), LL_UV), 0, bmp_w_max);
+                        v_i = clamp(fixed_to_int_2((v_fixed*bmp_h_max), LL_UV), 0, bmp_h_max);
                     }
 
                     int index_bmp = bmp_width *v_i + u_i;
@@ -1175,49 +1135,28 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
             w1 += A12;
             w2 += A20;
 
-            w0_h += A01_h;
-            w1_h += A12_h;
-            w2_h += A20_h;
+            if(antialias) {
+                w0_h += A01_h;
+                w1_h += A12_h;
+                w2_h += A20_h;
+            }
+
         }
 
         w0_row += B01;
         w1_row += B12;
         w2_row += B20;
 
-        w0_row_h += B01_h;
-        w1_row_h += B12_h;
-        w2_row_h += B20_h;
+        if(antialias) {
+            w0_row_h += B01_h;
+            w1_row_h += B12_h;
+            w2_row_h += B20_h;
+        }
 
         index += _width;
     }
 
 }
-
-                /*
-float ww0_f = ((float)orient2d({v0_x, v0_y}, {v1_x, v1_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))/area;
-float ww1_f = ((float)orient2d({v1_x, v1_y}, {v2_x, v2_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))/area;
-float ww2_f = ((float)orient2d({v2_x, v2_y}, {v0_x, v0_y},  {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))/area;
-
-int PP = 16;
-int ww0 = ((long)(orient2d({v0_x, v0_y}, {v1_x, v1_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))<<PP)/area;
-int ww1 = ((long)(orient2d({v1_x, v1_y}, {v2_x, v2_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))<<PP)/area;
-int ww2 = ((long)(orient2d({v2_x, v2_y}, {v0_x, v0_y}, {p.x<<sub_pixel_precision, p.y<<sub_pixel_precision},sub_pixel_precision))<<PP)/area;
-
-
-int u__1_f =  ((ww0_f*int(u2) + ww1_f*int(u0) + ww2_f*int(u1))*bmp_w_max);
-int v__1_f =  ((ww0_f*int(v2) + ww1_f*int(v0) + ww2_f*int(v1))*bmp_h_max);
-
-int u__1 =  ((ww0*int(u2) + ww1*int(u0) + ww2*int(u1))*bmp_w_max)>>PP;
-int v__1 =  ((ww0*int(v2) + ww1*int(v0) + ww2*int(v1))*bmp_h_max)>>PP;
-
-// we round the numbers, which greatly improves things
-//                int u_i = clamp(u__1_f, 0, bmp_w_max);
-//                int v_i = clamp(v__1_f, 0, bmp_h_max);
-//                int u_i = clamp(u__1, 0, bmp_w_max);
-//                int v_i = clamp(v__1, 0, bmp_h_max);
-//                int index_bmp = (bmp_width*v_i + u_i);
-
-//*/
 
 
 template<typename P, typename CODER>
@@ -1231,7 +1170,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                                const float v2_x, const float v2_y, float u2, float v2,
                                const uint8_t opacity) {
 
-    uint8_t prec_pixel = 0;
+    uint8_t prec_pixel = 4;
     uint8_t prec_uv = 5;
     fixed_signed v0_x_ = float_to_fixed_2(v0_x, prec_pixel);
     fixed_signed v0_y_ = float_to_fixed_2(v0_y, prec_pixel);
