@@ -128,7 +128,7 @@ public:
     // main uv
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, bool perspective_correct=true,
+            bool antialias=false, bool perspective_correct=false,
             typename P2, typename CODER2>
     void drawTriangle(const Bitmap<P2, CODER2> &bmp,
                       const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
@@ -138,7 +138,7 @@ public:
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, bool perspective_correct=true,
+            bool antialias=false, bool perspective_correct=false,
             typename P2, typename CODER2>
     void drawTriangle2(const Bitmap<P2, CODER2> &bmp,
                       const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,

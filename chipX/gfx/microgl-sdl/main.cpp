@@ -64,161 +64,46 @@ inline void render() {
     vec2_32i b[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2}, {W/2 + W/3, H/4}, {W-5, H - 5}};
 
     for (int ix = 0; ix < 1; ++ix) {
-        /*
-        canvas->drawQuad(WHITE, 0, 0, 640, 480);
-        canvas->drawQuad(WHITE, 0, 0, 640, 480);
-        canvas->drawQuad(WHITE, 0, 0, 640, 480);
-        canvas->drawQuad(WHITE, 0, 0, 640, 480);
-        canvas->drawQuad(WHITE, 0, 0, 640, 480);
-        canvas->drawQuad(WHITE, 0, 0, 640, 480);
-        canvas->drawQuad(YELLOW, 0, 0, 640, 480);
-        canvas->drawQuad(WHITE, 0, 0, 640, 480);
-        canvas->drawQuad(WHITE, 0, 0, 640, 480);
-        canvas->drawQuad(GREEN, 0, 0, 640, 480);
-         */
-
 
         canvas->clear(WHITE);
-//        canvas->drawQuad<blendmode::Normal, porterduff::None>(GREEN, 0, 0, 640, 480);
-//        canvas->drawQuad(YELLOW, 0, 0, W/2, H/2,255);
-//        canvas->drawQuad<blendmode::Normal>(GREEN, W/2, 0, W, H/2);
-//        canvas->drawQuad<blendmode::Normal>(RED, W/4, 0,W/4+ W/2, H/2,128);
-
-//        canvas->drawQuad(YELLOW, 0, 0, W, H);
-//        canvas->drawGradient(YELLOW, RED, 0, 240, 640, 140);
-//        canvas->drawCircle(GREEN, 320, 240, 240/2);
-//        canvas->drawTriangle(RED, 0, 0, 300, 0, 300, 300);
-
-// STARTED 420,
-//        canvas->drawTriangle(*bmp_2, 0, 0, 0.0, 1.0,
-//                             W, H, 1.0, 0.0,
-//                             0, H, 0.0, 0.0 );
-// clock-wise
-
-        // rotated cube
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
-//                *bmp_2,
-//                0, W/3, 0.0, 0.0,
-//                W/3, 0, 0.0, 1.0,
-//                2*W/3, W/3, 1.0, 1.0,
-//                255);
 //
         static long a = 0;
         static float b = 0;//1.0f*(float)W/3.0f;
 
         a+=20;
-//
 
-//        cout << b +20<<endl;
+//        b+=100;//
+//cout<<b<<endl;
 
-//
-// 400 is good
+        float G = 256*3;
 
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false, false>(
 //                *bmp_uv,
-//                (float)0.0f, (float)200.0f, 1.0, 1.0,
-//                (float)400+b, (float)0, 1.0, 0.0,
-//                (float)400+b, (float)400, 0.0, 0.0 ,
-//                255);
-
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
-//                *bmp_uv,
-//                (float)0.0f, (float)0.0f, 1.0, 1.0,
-//                (float)400+b, (float)200, 1.0, 0.0,
-//                (float)0, (float)400, 0.0, 0.0 ,
-//                255);
+//                0,0,       0, 32, 32,
+//                G + b, 0,     32,32,32,
+//                G,G,   32,0,32,
+//                255,
+//                0,5
+//        );
 //
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-//                *bmp_uv,
-//                (float)0.0f, (float)0.0f, 1.0, 1.0,
-//                (float)400+b, (float)200, 1.0, 0.0,
-//                (float)0, (float)400, 0.0, 0.0 ,
-//                255);
 
-        //
-//        int G2 = 400;
-//
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
-//                *bmp_uv,
-//                (float)400.0f, (float)400.0f, 1.0, 0.0,
-//                (float)0, (float)400, 0.0, 0.0,
-//                (float)0, (float)0, 0.0, 1.0 ,
-//                255);
-//
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
-//                *bmp_uv,
-//                (float)0.0f, (float)0.0f, 0.0, 1.0,
-//                (float)400, (float)0, 1.0, 1.0,
-//                (float)400, (float)400, 1.0, 0.0 ,
-//                255);
-
-//        b=0;
-//
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
-//                RED,
-//                (int)0, (int)W/3,
-//                (int)W/3, (int)0,
-//                (int)2*W/3, (int)W/3,
-//                255);
-
-
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-//                RED,
-//                2*(float)W/3, (float)W/3,
-//                (float)W/3, (float)5*W/3,
-//                (float)0, (float)2*W/3);
-
-        // filled Quadrilateral
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
-//                RED,
-//                0, W/3,
-//                W/3, 0,
-//                2*W/3, W/3,
-//                W/3, 2*W/3,
-//                255);
-//
-        // texture mapped
-        float G = 256;//b;
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
-//                *bmp_uv,
-//                20,   20,   0.0, 1.0,
-//                20+G+b, 20+0,   1.0, 1.0,
-//                20+G+b, 20+G, 1.0, 0.0,
-//                20,   20+G, 0.0, 0.0,
-//                255);
-//b=0;
-//        canvas->drawQuad<blendmode::Normal, porterduff::None>(
-//                RED,
-//                (float)20,    (float)20,
-//                (float)(20+G+b),(float)(20+G+b),
-//                255);
-
-//        canvas->drawQuad<blendmode::Normal, porterduff::None>(
-//                *bmp_uv,
-//                (float)20,    (float)20,
-//                (float)(20+G+b),(float)(20+G+b),
-//                0.0f, 1.0f,
-//                1.0f, 0.0f,
-//                255);
-//
-        if(b>-199)
-            b = b +50;//0.25f;///10.0f;//(float)1/20.0f;
-
-        cout<<b<<endl;
-        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
+//        b=0.778;
+        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
                 *bmp_uv,
-                80,   80,   0.0, 1.0,
-                80.0+200 + b, 80,   1.0, 1.0,
-                80+400,     H-80, 1.0, 0.0,
-                0,    H-80, 0.0, 0.0,
-                255);
+                1.0f,                1.0f,                0.0f, 1.0f,
+                1.0f + (float)G + b, 1.0f,                1.0f, 1.0f,
+                1.0f + (float)G,     1.0f + (float)G,     1.0f, 0.0f,
+                255
+        );
 
-//                canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(
+//        canvas->drawTriangle2<blendmode::Normal, porterduff::SourceOverOnOpaque, true, true>(
 //                *bmp_uv,
-//                (float)0.0f, (float)0.0f, 0.0f, 1.0f,
-//                (float)400, (float)0, 1.0f, 1.0f,
-//                (float)400, (float)400, 1.0f, 0.0f ,
-//                255);
+//                0,0,       0, 32, 32,
+//                G + b, 0,     32,32,32,
+//                G,G,   32,0,32,
+//                255,
+//                0,5
+//        );
 
 // test fill rules withs this
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
@@ -230,47 +115,6 @@ inline void render() {
 //                128);
 
 
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
-//                *bmp_2,
-//                4*W/10,   80,   0.0, 1.0,
-//                6*W/10, 80,   1.0, 1.0,
-//                W-80,     H-80, 1.0, 0.0,
-//                80,    H-80, 0.0, 0.0,
-//                128);
-//
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-//                *bmp_uv,
-//                80,   80,   0.0, 1.0,
-//                W/2,  H/4,   1.0, 1.0,
-//                W/2,   2*H/4, 1.0, 0.0,
-//                80,   H-80, 0.0, 0.0,
-//                255);
-
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
-//                *bmp_uv,
-//                80,      80,   0.0, 1.0,
-//                400,      80,   1.0, 1.0,
-//                400,   400, 1.0, 0.0,
-//                80,       400, 0.0, 0.0,
-//                255);
-//
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
-//                *bmp_uv,
-//                400,      80,   0.0, 1.0,
-//                600,      80,   1.0, 1.0,
-//                280,   400, 1.0, 0.0,
-//                80,       400, 0.0, 0.0,
-//                255);
-//
-
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
-//                *bmp_2,
-//                0, 0, 0.0, 1.0,
-//                W, 0, 1.0, 1.0,
-//                W, H, 1.0, 0.0,
-//                0, H, 0.0, 0.0,
-//                255);
-
 
 //        canvas->drawQuadraticBezierPath(BLACK, c, 3);
 //        canvas->drawCubicBezierPath(BLACK, b, 7);
@@ -278,31 +122,6 @@ inline void render() {
 //        canvas->drawCircle(RED, 320, 240, 200);
 //        canvas->drawCircleFPU<blendmode::Normal, porterduff::SourceOver>(RED, 320, 240, 200,1.0f);
 //        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, (float)320, (float)240, 200 + b);
-
-// started 150, then 80 with coding (and 32 without coding)
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None>(RED, 0, 0,
-//                                                                                W, H,
-//                                                                                0, H, 255);
-//
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(BLACK, 80, 80,
-//                                                                                W-80, H-80,
-//                                                                                80, 280, 255);
-
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, 80, 80,
-//                                                                                W-80, H-80,
-//                                                                                80, 280, 255);
-
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque>(RED, 80, H-280,
-//                                                                                W-80, 80,
-//                                                                                80, H-80,255);
-
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque>(GREEN, 80, 80,
-//        W/4, H/4,
-//        80, H, 255);
-
-//        canvas->drawQuad(*bmp_1, 0, 0, 640, 480);
-// started 400, then 230 with re-coding, then 21 without recoding and blending
-//        canvas->drawQuad<blendmode::Normal, porterduff::None>(*bmp_2, 0, 0, 640, 480, 128);
 
 //        canvas->drawLine(BLACK, 80 , 200 , 550, 150);
 //        canvas->drawLine(BLACK, 80 , 80 , 180, 400);
