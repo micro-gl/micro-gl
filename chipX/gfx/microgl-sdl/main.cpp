@@ -75,7 +75,7 @@ inline void render() {
 //        b += 10.01;//
 //cout<<b<<endl;
 
-        int G = 1333+110;
+        int G = 256;
 
 //        canvas->drawTriangle<blendmode::Normal, porterduff::None, false, false>(
 //                *bmp_uv,
@@ -107,7 +107,7 @@ inline void render() {
 
 //b+=0.15;
 //cout<<b<<endl;
-        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear>(
+        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false, sampler::NearestNeighbor>(
                 *bmp_uv,
                 0,0,          0.0, 1.0,
                 G+ b, 0,       1.0, 1.0,

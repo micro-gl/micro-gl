@@ -1646,24 +1646,27 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
 //    index = top_ * _width;
     index = top_ * _width;
 
+    v = bmp_h_max<<DIV_prec_minus_sub_pixel;
+
     for (int y = top_; y < bottom_; y++) {
 
         // v_i with multiplication
         v_i = (bmp_h_max - fixed_to_int_2(v + f_half, DIV_prec_minus_sub_pixel))*(bmp_width);
-        // v_i = fixed_to_int_2(v + f_half, DIV_prec)*bmp_width;
 
         for (int x = left_; x < right_; x++) {
+            Sampler::sample(bmp, u, v,
+                            DIV_prec_minus_sub_pixel, col_bmp);
 
-            //
-            if(Sampler::type() != sampler::type::NearestNeighbor)
-                Sampler::sample(bmp, u, (bmp_h_max<<DIV_prec_minus_sub_pixel) - v,
-                        DIV_prec_minus_sub_pixel, col_bmp);
-            else {
-                u_i = fixed_to_int_2(u + f_half, DIV_prec_minus_sub_pixel);
-                index_bmp = (v_i) + u_i;
-                // decode the bitmap
-                bmp.decode(index_bmp, col_bmp);
-            }
+            // compile time branching
+//            if(Sampler::type() != sampler::type::NearestNeighbor)
+//                Sampler::sample(bmp, u, v,
+//                        DIV_prec_minus_sub_pixel, col_bmp);
+//            else {
+//                u_i = fixed_to_int_2(u + f_half, DIV_prec_minus_sub_pixel);
+//                index_bmp = (v_i) + u_i;
+//                // decode the bitmap
+//                bmp.decode(index_bmp, col_bmp);
+//            }
             //
 
             // re-encode for a different canvas
@@ -1674,11 +1677,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
         }
 
         u = u_start;
-        v += dv;
-
-        // not needed because we are stepping forward
-        //if(v<0) v=0;
-
+        v -= dv;
         index += _width;
     }
 
