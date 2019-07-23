@@ -11,6 +11,7 @@
 #include "BlendMode.h"
 #include "PorterDuff.h"
 #include "Fixed.h"
+#include "Sampler.h"
 
 template<typename P, typename CODER>
 class Canvas {
@@ -129,6 +130,7 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, bool perspective_correct=false,
+            typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
     void drawTriangle(const Bitmap<P2, CODER2> &bmp,
                       const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
@@ -139,6 +141,7 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, bool perspective_correct=false,
+            typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
     void drawTriangle2(const Bitmap<P2, CODER2> &bmp,
                       const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
@@ -149,6 +152,7 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false,
+            typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
     void drawTriangle(const Bitmap<P2, CODER2> &bmp,
                       const float v0_x, const float v0_y, float u0, float v0,
@@ -159,6 +163,7 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false,
+            typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
     void drawTriangle(const Bitmap<P2, CODER2> &bmp,
                       const int v0_x, const int v0_y, float u0, float v0,
@@ -171,7 +176,8 @@ public:
     // Quadrilaterals
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename P2, typename CODER2>
+            bool antialias=false, typename Sampler=sampler::NearestNeighbor,
+            typename P2, typename CODER2>
     void drawQuadrilateral(const Bitmap<P2, CODER2> &bmp,
                            const fixed_signed x0, const fixed_signed y0, fixed_signed u0, fixed_signed v0,
                            const fixed_signed x1, const fixed_signed y1, fixed_signed u1, fixed_signed v1,
@@ -181,7 +187,8 @@ public:
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename P2, typename CODER2>
+            bool antialias=false, typename Sampler=sampler::NearestNeighbor,
+            typename P2, typename CODER2>
     void drawQuadrilateral(const Bitmap<P2, CODER2> &bmp,
                            const float x0, const float y0, float u0, float v0,
                            const float x1, const float y1, float u1, float v1,
@@ -219,6 +226,7 @@ public:
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
     void drawQuad(const Bitmap<P2, CODER2> &bmp,
                   const fixed_signed left, const fixed_signed top,
@@ -230,6 +238,7 @@ public:
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
     void drawQuad(const Bitmap<P2, CODER2> &bmp,
                   const float left, const float top,

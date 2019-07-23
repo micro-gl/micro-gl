@@ -3,7 +3,6 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 
-#include <microgl/BlendMode.h>
 #include "../include/microgl/Canvas.h"
 
 template<typename P, typename CODER>
@@ -639,6 +638,7 @@ inline int clamp(int val, int e0, int e1) {
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
         bool antialias, bool perspective_correct,
+        typename Sampler,
         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawTriangle2(const Bitmap<P2, CODER2> & bmp,
@@ -933,6 +933,7 @@ Canvas<P, CODER>::drawTriangle2(const Bitmap<P2, CODER2> & bmp,
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
         bool antialias, bool perspective_correct,
+        typename Sampler,
         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
@@ -993,7 +994,8 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
             area_v0_v1_p = orient2d({v0_x, v0_y}, {v1_x, v1_y}, p_fixed, sub_pixel_precision);
 
 
-    uint8_t LL = 42;
+    uint8_t MAX_PREC = 64;
+    uint8_t LL = MAX_PREC - (sub_pixel_precision + BITS_UV_COORDS);
     uint8_t LL_UV = LL + BITS_UV_COORDS;
     uint64_t ONE = ((uint64_t)1)<<LL;
     uint64_t one_area = (ONE) / area;
@@ -1060,23 +1062,28 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                     uint64_t one_over_q = ONE / q_fixed;
 
                     // we round the numbers, which greatly improves things
-                    u_i = clamp(fixed_to_int_2((u_fixed*bmp_w_max)*one_over_q, LL), 0, bmp_w_max);
-                    v_i = clamp(fixed_to_int_2((v_fixed*bmp_h_max)*one_over_q, LL), 0, bmp_h_max);
+                    //u_i = clamp(fixed_to_int_2((u_fixed*bmp_w_max)*one_over_q, LL), 0, bmp_w_max);
+                    //v_i = clamp(fixed_to_int_2((v_fixed*bmp_h_max)*one_over_q, LL), 0, bmp_h_max);
+
+                    u_i = (u_fixed*bmp_w_max*one_over_q)>>(LL-BITS_UV_COORDS);
+                    v_i = (v_fixed*bmp_h_max*one_over_q)>>(LL-BITS_UV_COORDS);
 
                 } else {
 
-                    // nearest neighboor sampling
-                    u_fixed = (bmp_w_max*u_fixed*one_area)>>(LL);
-                    v_fixed = (bmp_h_max*v_fixed*one_area)>>(LL);
-                    u_i = (u_fixed + mask_)>>BITS_UV_COORDS;
-                    v_i = (v_fixed + mask_)>>BITS_UV_COORDS;
+                    u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS));
+                    v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
+                    // coords in :BITS_UV_COORDS space
+                    u_i = (bmp_w_max*u_fixed)>>(BITS_UV_COORDS);
+                    v_i = (bmp_h_max*v_fixed)>>(BITS_UV_COORDS);
                 }
 
-                // we round the numbers, which greatly improves things
-                int index_bmp = (bmp_width*v_i + u_i);
-
                 color_t col_bmp;
-                bmp.decode(index_bmp, col_bmp);
+
+
+//                bmp.decode(index_bmp, col_bmp);
+                Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
+//                sampler::Bilinear::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
+
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
 
 //                drawPixel(0xFF, index+p.x);
@@ -1162,6 +1169,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
         bool antialias,
+        typename Sampler,
         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
@@ -1187,7 +1195,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     fixed_signed v2_ = float_to_fixed_2(v2, prec_uv);
     fixed_signed q_ = float_to_fixed_2(1.0f, prec_uv);
 
-    drawTriangle<BlendMode, PorterDuff, antialias, false>(bmp,
+    drawTriangle<BlendMode, PorterDuff, antialias, false, Sampler>(bmp,
             v0_x_, v0_y_, u0_, v0_, q_,
             v1_x_, v1_y_, u1_, v1_, q_,
             v2_x_, v2_y_, u2_, v2_, q_,
@@ -1197,7 +1205,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
-        bool antialias,
+        bool antialias, typename Sampler,
         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
@@ -1207,7 +1215,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                                const uint8_t opacity) {
 
     // draw without perspective
-    drawTriangle<BlendMode, PorterDuff, antialias, false>(bmp,
+    drawTriangle<BlendMode, PorterDuff, antialias, false, Sampler>(bmp,
                                                     v0_x, v0_y, u0, v0, 0.0f,
                                                     v1_x, v1_y, u1, v1, 0.0f,
                                                     v2_x, v2_y, u2, v2, 0.0f,
@@ -1219,7 +1227,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
-        bool antialias,
+        bool antialias, typename Sampler,
         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
@@ -1247,7 +1255,7 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
             fixed_signed u1_ = std::max({u0, u1, u2, u3});
             fixed_signed v1_ = std::min({v0, v1, v2, v3});
 
-            drawQuad<BlendMode, PorterDuff>(bmp, left, top, right, bottom, u0_, v0_, u1_, v1_,
+            drawQuad<BlendMode, PorterDuff, Sampler>(bmp, left, top, right, bottom, u0_, v0_, u1_, v1_,
                     sub_pixel_precision, uv_precision, opacity);
 
             return;
@@ -1257,14 +1265,14 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
         // in the same loop for some reason.
         // todo:: turn off AA for common edge, since it causes an artifact at the boundary
         // todo:: of common edges
-        drawTriangle<BlendMode, PorterDuff, antialias, false>(bmp,
+        drawTriangle<BlendMode, PorterDuff, antialias, false, Sampler>(bmp,
                                                               v0_x, v0_y, u0, v0, q_one,
                                                               v1_x, v1_y, u1, v1, q_one,
                                                               v2_x, v2_y, u2, v2, q_one,
                                                               opacity, sub_pixel_precision,
                                                               uv_precision);
 
-        drawTriangle<BlendMode, PorterDuff, antialias, false>(bmp,
+        drawTriangle<BlendMode, PorterDuff, antialias, false, Sampler>(bmp,
                                                               v2_x, v2_y, u2, v2, q_one,
                                                               v3_x, v3_y, u3, v3, q_one,
                                                               v0_x, v0_y, u0, v0, q_one,
@@ -1332,13 +1340,13 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
         q3 = fixed_convert_fixed(q3, sub_pixel_precision + DIV_prec, uv_precision);
 
         // perspective correct version
-        drawTriangle<BlendMode, PorterDuff, antialias, true>(bmp,
+        drawTriangle<BlendMode, PorterDuff, antialias, true, Sampler>(bmp,
                                                              v0_x, v0_y, u0_q0, v0_q0, q0,
                                                              v1_x, v1_y, u1_q1, v1_q1, q1,
                                                              v2_x, v2_y, u2_q2, v2_q2, q2,
                                                              opacity, sub_pixel_precision, uv_precision);
 
-        drawTriangle<BlendMode, PorterDuff, antialias, true>(bmp,
+        drawTriangle<BlendMode, PorterDuff, antialias, true, Sampler>(bmp,
                                                              v2_x, v2_y, u2_q2, v2_q2, q2,
                                                              v3_x, v3_y, u3_q3, v3_q3, q3,
                                                              v0_x, v0_y, u0_q0, v0_q0, q0,
@@ -1412,7 +1420,7 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
-        bool antialias,
+        bool antialias, typename Sampler,
         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
@@ -1423,9 +1431,9 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
                                     const uint8_t opacity) {
 
     uint8_t p_s = 4;
-    uint8_t p_uv = 5;
+    uint8_t p_uv = 8;
 
-    drawQuadrilateral<BlendMode, PorterDuff, antialias>(bmp,
+    drawQuadrilateral<BlendMode, PorterDuff, antialias, Sampler>(bmp,
                       float_to_fixed_2(v0_x, p_s), float_to_fixed_2(v0_y, p_s), float_to_fixed_2(u0, p_uv), float_to_fixed_2(v0, p_uv),
                       float_to_fixed_2(v1_x, p_s), float_to_fixed_2(v1_y, p_s), float_to_fixed_2(u1, p_uv), float_to_fixed_2(v1, p_uv),
                       float_to_fixed_2(v2_x, p_s), float_to_fixed_2(v2_y, p_s), float_to_fixed_2(u2, p_uv), float_to_fixed_2(v2, p_uv),
@@ -1592,6 +1600,7 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
 
 template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff,
+        typename Sampler,
         typename P2, typename CODER2>
 void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                                 const fixed_signed left, const fixed_signed top,
@@ -1634,6 +1643,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
     int u_i=0, v_i=0;
     int index_bmp, index;
 
+//    index = top_ * _width;
     index = top_ * _width;
 
     for (int y = top_; y < bottom_; y++) {
@@ -1643,11 +1653,19 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
         // v_i = fixed_to_int_2(v + f_half, DIV_prec)*bmp_width;
 
         for (int x = left_; x < right_; x++) {
-            u_i = fixed_to_int_2(u + f_half, DIV_prec_minus_sub_pixel);
-            index_bmp = (v_i) + u_i;
 
-            // decode the bitmap
-            bmp.decode(index_bmp, col_bmp);
+            //
+            if(Sampler::type() != sampler::type::NearestNeighbor)
+                Sampler::sample(bmp, u, (bmp_h_max<<DIV_prec_minus_sub_pixel) - v,
+                        DIV_prec_minus_sub_pixel, col_bmp);
+            else {
+                u_i = fixed_to_int_2(u + f_half, DIV_prec_minus_sub_pixel);
+                index_bmp = (v_i) + u_i;
+                // decode the bitmap
+                bmp.decode(index_bmp, col_bmp);
+            }
+            //
+
             // re-encode for a different canvas
             blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
             //drawPixel(0xFF, index + x);
@@ -1667,7 +1685,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
 }
 
 template<typename P, typename CODER>
-template <typename BlendMode, typename PorterDuff,
+template <typename BlendMode, typename PorterDuff, typename Sampler,
         typename P2, typename CODER2>
 void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                                 const float left, const float top,
@@ -1678,7 +1696,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
     uint8_t p_sub = 4;
     uint8_t p_uv = 5;
 
-    drawQuad<BlendMode, PorterDuff>(bmp,
+    drawQuad<BlendMode, PorterDuff, Sampler>(bmp,
                                     float_to_fixed_2(left, p_sub), float_to_fixed_2(top, p_sub),
                                     float_to_fixed_2(right, p_sub), float_to_fixed_2(bottom, p_sub),
                                     float_to_fixed_2(u0, p_uv), float_to_fixed_2(v0, p_uv),

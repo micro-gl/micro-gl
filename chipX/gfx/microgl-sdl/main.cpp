@@ -17,7 +17,7 @@
 
 #define TEST_ITERATIONS 1
 #define W 640*1
-#define H 480*1
+#define H 520*1
 
 SDL_Window * window;
 SDL_Renderer * renderer;
@@ -63,7 +63,7 @@ inline void render() {
 
     vec2_32i b[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2}, {W/2 + W/3, H/4}, {W-5, H - 5}};
 
-    for (int ix = 0; ix < 1; ++ix) {
+    for (int ix = 0; ix < 100; ++ix) {
 
         canvas->clear(WHITE);
 //
@@ -72,10 +72,10 @@ inline void render() {
 
         a+=20;
 
-        b-=0.01;//
+//        b += 10.01;//
 //cout<<b<<endl;
 
-        float G = 256*2;
+        int G = 1333+110;
 
 //        canvas->drawTriangle<blendmode::Normal, porterduff::None, false, false>(
 //                *bmp_uv,
@@ -90,38 +90,47 @@ inline void render() {
 //        b=0.778;
 //        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
 //                *bmp_uv,
-//                1.0f,                1.0f,                0.0f, 1.0f,
-//                1.0f + (float)G + b, 1.0f,                1.0f, 1.0f,
-//                1.0f + (float)G,     1.0f + (float)G,     1.0f, 0.0f,
+//                10.0f,                0.0f,                0.0f, 1.0f,
+//                10.0f + (float)G + b, 0.0f,                1.0f, 1.0f,
+//                10.0f + (float)G,     0.0f + (float)G,     1.0f, 0.0f,
+//                255
+//        );
+//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+//                *bmp_uv,
+//                10.0f + (float)G,     0.0f + (float)G,     1.0f, 0.0f,
+//                10.0f           ,     0.0f + (float)G,     0.0f, 0.0f,
+//                10.0f,                0.0f,                0.0f, 1.0f,
 //                255
 //        );
 
-//        canvas->drawTriangle2<blendmode::Normal, porterduff::SourceOverOnOpaque, true, true>(
-//                *bmp_uv,
-//                0,0,       0, 32, 32,
-//                G + b, 0,     32,32,32,
-//                G,G,   32,0,32,
-//                255,
-//                0,5
-//        );
-
 // test fill rules withs this
-        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
+
+//b+=0.15;
+//cout<<b<<endl;
+        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear>(
                 *bmp_uv,
                 0,0,          0.0, 1.0,
-                float(W)/3 + b, 0,       1.0, 1.0,
-                2.0f*float(W)/3, 2.0f*float(W)/3, 1.0, 0.0,
-                0, 2.0f*float(W)/3,     0.0, 0.0,
+                G+ b, 0,       1.0, 1.0,
+                G +0, G,      1.0, 0.0,
+                0, G,         0.0, 0.0,
                 255);
+
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
+//                RED,
+//                0,0,
+//                G+ 0,0,
+//                G +0,G,
+//                0, G,
+//                255);
 
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
 //                *bmp_uv,
-//                0, W/3, 0.0, 0.0,
-//                W/3, 0, 0.0, 1.0,
-//                2*W/3, W/3, 1.0, 1.0,
-//                W/3, 2*W/3, 1.0, 0.0,
-//                128);
-
+//                10.0f + (float)G,     0.0f + (float)G,     1.0f, 0.0f,
+//                10.0f           ,     0.0f + (float)G,     0.0f, 0.0f,
+//                10.0f,                0.0f,                0.0f, 1.0f,
+//                10.0f ,               0.0f + (float)G,     0.0f, 0.0f,
+//                255);
+//
 
 
 //        canvas->drawQuadraticBezierPath(BLACK, c, 3);
@@ -169,6 +178,7 @@ void init_sdl(int width, int height) {
 
     bmp_uv_U8 = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_2.data, img_2.width, img_2.height, new RGB888_ARRAY());
     bmp_uv = bmp_uv_U8->convertToBitmap<uint32_t , RGB888_PACKED_32>();
+//    bmp_uv = new Bitmap<uint32_t , RGB888_PACKED_32>(img_2.width, img_2.height, new RGB888_PACKED_32());
 
     resources.init();
 }

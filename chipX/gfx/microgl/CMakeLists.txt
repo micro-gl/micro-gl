@@ -27,7 +27,9 @@ set(sources
         src/PixelFormat.cpp
         src/BlendMode.cpp
         src/PorterDuff.cpp
-        include/microgl/Q.h)
+        include/microgl/Q.h
+        include/microgl/Sampler.h
+        )
 
 add_library(${PROJECT_NAME} ${sources})
 
