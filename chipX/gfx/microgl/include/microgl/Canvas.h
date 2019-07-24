@@ -60,9 +60,6 @@ public:
     void drawPixel(const P &val, int x, int y);
     void drawPixel(const P &val, int index);
 
-    void drawLine(const color_f_t & color,
-                  int x0, int y0, int x1, int y1);
-
     void drawGradient(const color_f_t &startColor,
                       const color_f_t &endColor,
                       int left, int top, int w, int h);
@@ -249,6 +246,14 @@ public:
 
 
     // paths
+    void drawLine(const color_f_t & color,
+                  float x0, float y0, float x1, float y1);
+
+    void drawLine(const color_f_t & color,
+                  int x0, int y0,
+                  int x1, int y1,
+                  uint8_t bits = 4);
+
     void drawQuadraticBezierPath(color_f_t & color, vec2_32i *points,
                                  unsigned int size = 3, unsigned int resolution_bits = 5);
     void drawCubicBezierPath(color_f_t & color, vec2_32i *points,

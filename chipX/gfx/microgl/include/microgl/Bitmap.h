@@ -52,10 +52,4 @@ protected:
 
 };
 
-//
-//typedef Bitmap<vec3<uint8_t>, CODER> Bitmap24bitU8<CODER>;
-//typedef Bitmap<uint32_t, CODER> Bitmap32bitPacked;
-//typedef Bitmap<uint16_t, CODER> Bitmap16BitPacked;
-//typedef Bitmap<uint8_t, CODER> Bitmap8Bit;
-
 #include "../src/Bitmap.tpp"

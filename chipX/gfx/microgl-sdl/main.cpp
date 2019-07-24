@@ -63,12 +63,12 @@ inline void render() {
 
     vec2_32i b[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2}, {W/2 + W/3, H/4}, {W-5, H - 5}};
 
-    for (int ix = 0; ix < 100; ++ix) {
+    for (int ix = 0; ix < 1; ++ix) {
 
         canvas->clear(WHITE);
 //
         static long a = 0;
-        static float b = 0;//1.0f*(float)W/3.0f;
+        static float d = 0;//1.0f*(float)W/3.0f;
 
         a+=20;
 
@@ -107,13 +107,13 @@ inline void render() {
 
 //b+=0.15;
 //cout<<b<<endl;
-        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false, sampler::NearestNeighbor>(
-                *bmp_uv,
-                0,0,          0.0, 1.0,
-                G+ b, 0,       1.0, 1.0,
-                G +0, G,      1.0, 0.0,
-                0, G,         0.0, 0.0,
-                255);
+//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false, sampler::NearestNeighbor>(
+//                *bmp_uv,
+//                0,0,          0.0, 1.0,
+//                G+ d, 0,       1.0, 1.0,
+//                G +0, G,      1.0, 0.0,
+//                0, G,         0.0, 0.0,
+//                255);
 
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
 //                RED,
@@ -131,7 +131,13 @@ inline void render() {
 //                10.0f ,               0.0f + (float)G,     0.0f, 0.0f,
 //                255);
 //
+static long timer = 0;
+static float s;
 
+timer++;
+s = 50*sin(2.0f*3.14f*(float(timer%10000)/10000));
+
+//b[1].y = H/4 + s;
 
 //        canvas->drawQuadraticBezierPath(BLACK, c, 3);
 //        canvas->drawCubicBezierPath(BLACK, b, 7);
@@ -140,7 +146,8 @@ inline void render() {
 //        canvas->drawCircleFPU<blendmode::Normal, porterduff::SourceOver>(RED, 320, 240, 200,1.0f);
 //        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, (float)320, (float)240, 200 + b);
 
-//        canvas->drawLine(BLACK, 80 , 200 , 550, 150);
+//d += 0.01;
+        canvas->drawLine(BLACK, 80.0f , 200.0f+d , 640.0f, 0.0f);
 //        canvas->drawLine(BLACK, 80 , 80 , 180, 400);
 //        canvas->drawLine(BLACK, 80 , 80 , 600, 80);
 //        canvas->drawLine(BLACK, 80 , 80 , 80, 450);
