@@ -22,6 +22,7 @@
 - optimize the bilinear sampler (LUT ?)
 - examine LUT for alpha compositing
 - sub-pixel precision for lines
+- clipping for lines
 - DONE: fix bitmap width errors ==> width -1
 - DONE: Filled Quadrilateral with AA
 - DONE: textured Quadrilateral AA and Z correction
@@ -34,3 +35,8 @@
 - try skipping lines
 - try 8x8 block rasterizer - https://web.archive.org/web/20120625103536/http://devmaster.net/forums/topic/1145-advanced-rasterization/
 - investigate the rasterizer further in terms of bits usages, I am almost there
+
+#### gfx primitives
+- draw circles with strokes (disks)
+- draw capsules
+- rounded rectangles

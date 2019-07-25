@@ -43,6 +43,18 @@ struct vec2 {
         return (this->x*a.x + this->y*a.y);
     }
 
+    vec2<T> operator*(const int & a) {
+        return vec2<T>{this->x*a, this->y*a};
+    }
+
+    template<typename F>
+    vec2<T> & operator=(const vec2<F> & a) {
+        this->x = static_cast<T>(a.x);
+        this->y = static_cast<T>(a.y);
+
+        return *this;
+    }
+
 };
 
 template<typename T>
