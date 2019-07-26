@@ -1696,7 +1696,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawLine(const color_f_t &color, float x0, float y0, float x1, float y1) {
-    uint8_t bits = 4;
+    uint8_t bits = 0;
     drawLine(color,
              float_to_fixed_2(x0, bits), float_to_fixed_2(y0, bits),
              float_to_fixed_2(x1, bits), float_to_fixed_2(y1, bits),
@@ -1705,51 +1705,38 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, float x0, float y0, floa
 }
 
 template<typename P, typename CODER>
-void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, int y1, uint8_t bits) {
+void Canvas<P, CODER>::drawLine(const color_f_t &color,
+                                int x0, int y0,
+                                int x1, int y1,
+                                uint8_t bits) {
+
     int X0 = x0, Y0 = y0, X1 = x1, Y1=y1;
     color_t color_input{};
 
     coder()->convert(color, color_input);
 
-    unsigned int ONE = 1<<bits;
     unsigned int IntensityBits = 8;
     unsigned int NumLevels = 1 << IntensityBits;
     unsigned int maxIntensity = NumLevels - 1;
-    unsigned int IntensityShift;//, ErrorAdj, ErrorAcc;
-    uint32_t ErrorAdj, ErrorAcc, ErrorAccTemp;
-    unsigned int Weighting, WeightingComplementMask;
-    int DeltaX, DeltaY, Temp, XDir;
-
-
-    bool steep = abs(Y1-Y0)>abs(X1-X0);
-
+    uint32_t IntensityShift, ErrorAdj, ErrorAcc;
+    unsigned int ErrorAccTemp, Weighting, WeightingComplementMask;
+    int DeltaX, DeltaY, Temp, XDir;//, YDir;
+    unsigned int one = 1<<bits;
+    unsigned int round = 0;//one>>1;// -1;
     // Make sure the line runs top to bottom
-//    if (Y0 > Y1) {
-//        Temp = Y0; Y0 = Y1; Y1 = Temp;
-//        Temp = X0; X0 = X1; X1 = Temp;
-//    }
-
-    if (!steep)
-    {
-        std::swap(X0 , Y0);
-        std::swap(X1 , Y1);
+    if (Y0 > Y1) {
+        Temp = Y0; Y0 = Y1; Y1 = Temp;
+        Temp = X0; X0 = X1; X1 = Temp;
     }
-
-    unsigned int round = (1<<bits) - 1;
-
-//    X0+=round;
-//    X1+=round;
-//    Y0+=round;
-//    Y1+=round;
 
     // Draw the initial pixel, which is always exactly intersected by
     // the line and so needs no weighting
-    blendColor(color_input, (X0 + round)>>bits, (Y0 + round)>>bits, maxIntensity);
+    blendColor(color_input, (X0+round)>>bits, (Y0+round)>>bits, maxIntensity);
 
     if ((DeltaX = X1 - X0) >= 0) {
-        XDir = ONE;
+        XDir = 1<<bits;
     } else {
-        XDir = -ONE;
+        XDir = -(1<<bits);
         DeltaX = -DeltaX; // make DeltaX positive
     }
     DeltaY = Y1 - Y0;
@@ -1759,7 +1746,7 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
     // every pixel
     if ((Y1 - Y0) == 0) {
         // Horizontal line
-        while ((DeltaX-=ONE) > 0) {
+        while ((DeltaX-=one) > 0) {
             X0 += XDir;
             blendColor(color_input, X0>>bits, Y0>>bits, maxIntensity);
 
@@ -1769,67 +1756,55 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
     if (DeltaX == 0) {
         // Vertical line
         do {
-            Y0+=ONE;
+            Y0+=one;
             blendColor(color_input, X0>>bits, Y0>>bits, maxIntensity);
-        } while ((DeltaY-=ONE) > 0);
+        } while ((DeltaY-=one) > 0);
         return;
     }
     if (DeltaX == DeltaY) {
         // Diagonal line
         do {
             X0 += XDir;
-            Y0 += ONE;
+            Y0+=one;
             blendColor(color_input, X0>>bits, Y0>>bits, maxIntensity);
-        } while ((DeltaY-=ONE) > 0);
+        } while ((DeltaY-=one) > 0);
         return;
     }
 
     // line is not horizontal, diagonal, or vertical
     ErrorAcc = 0; // initialize the line error accumulator to 0
     // # of bits by which to shift ErrorAcc to get intensity level
-    IntensityShift = 32 - IntensityBits+0;
+    IntensityShift = 32 - IntensityBits;
     // Mask used to flip all bits in an intensity weighting, producing the
     // result (1 - intensity weighting)
     WeightingComplementMask = maxIntensity;
-
-    uint32_t grad = (((unsigned long long) DeltaY<<0) << (24-0)) / (unsigned long long) DeltaX;
-    uint32_t acc=0;// = (((unsigned long long) DeltaY<<4) << (32-4)) / (unsigned long long) DeltaX;
-    uint32_t mask = (1<<4) - 1;
 
     // Is this an X-major or Y-major line?
     if (DeltaY > DeltaX) {
         // Y-major line; calculate 16-bit fixed-point fractional part of a
         // pixel that X advances each time Y advances 1 pixel, truncating the
         // result so that we won't overrun the endpoint along the X axis
-        grad = (((unsigned long long) DeltaX<<0) << (24-0)) / (unsigned long long) DeltaY;
+        ErrorAdj = ((unsigned long long) DeltaX << 32) / (unsigned long long) DeltaY;
         // Draw all pixels other than the first and last
-        while ((DeltaY-=ONE)>0) {
-//            ErrorAccTemp = ErrorAcc; // remember current accumulated error
-//            ErrorAcc += ErrorAdj; // calculate error for next pixel
-//            if (ErrorAcc <= ErrorAccTemp) {
-//                // The error accumulator turned over, so advance the X coord
-//            }
-
-            X0 += XDir;
-            acc += grad;
-            uint32_t inter = Y0 + (acc>>20);
-            uint32_t frac = (inter & mask)<<bits;
-
-            blendColor(color_input, (inter+0)>>bits, (X0+0)>>bits,  255-frac);
-            blendColor(color_input, (inter+(1<<bits))>>bits, (X0+0)>>bits,  frac);
-
-//            Y0 += ONE; // Y-major, so always advance Y
+        while ((DeltaY-=one) > 0) {
+            ErrorAccTemp = ErrorAcc; // remember currrent accumulated error
+            ErrorAcc += ErrorAdj; // calculate error for next pixel
+            if (ErrorAcc <= ErrorAccTemp) {
+                // The error accumulator turned over, so advance the X coord
+                X0 += XDir;
+            }
+            Y0+=one; // Y-major, so always advance Y
             // The IntensityBits most significant bits of ErrorAcc give us the
             // intensity weighting for this pixel, and the complement of the
             // weighting for the paired pixel
-            Weighting = ErrorAcc >> (IntensityShift+0);
+            Weighting = ErrorAcc >> IntensityShift;
 
             unsigned int mix = (Weighting ^ WeightingComplementMask);
             // this equals Weighting, but I write it like that for clarity for now
             unsigned int mix_complement = maxIntensity - mix;
 
-//            blendColor(color_input, X0>>bits, Y0>>bits, mix);
-//            blendColor(color_input, (X0 + XDir)>>bits, Y0>>bits, mix_complement);
+            blendColor(color_input, X0>>bits, Y0>>bits, mix);
+            blendColor(color_input, (X0 + XDir)>>bits, Y0>>bits, mix_complement);
         }
 
         // Draw the final pixel, which is always exactly intersected by the line
@@ -1838,94 +1813,25 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
         return;
     }
 
-
-//    if (DeltaY > DeltaX) {
-//        // Y-major line; calculate 16-bit fixed-point fractional part of a
-//        // pixel that X advances each time Y advances 1 pixel, truncating the
-//        // result so that we won't overrun the endpoint along the X axis
-//        ErrorAdj = (((unsigned long long) DeltaX) << 32) / (unsigned long long) DeltaY;
-//        // Draw all pixels other than the first and last
-//        while ((DeltaY-=ONE)>0) {
-//            ErrorAccTemp = ErrorAcc; // remember current accumulated error
-//            ErrorAcc += ErrorAdj; // calculate error for next pixel
-//            if (ErrorAcc <= ErrorAccTemp) {
-//                // The error accumulator turned over, so advance the X coord
-//                X0 += XDir;
-//            }
-//            Y0 += ONE; // Y-major, so always advance Y
-//            // The IntensityBits most significant bits of ErrorAcc give us the
-//            // intensity weighting for this pixel, and the complement of the
-//            // weighting for the paired pixel
-//            Weighting = ErrorAcc >> (IntensityShift+0);
-//
-//            unsigned int mix = (Weighting ^ WeightingComplementMask);
-//            // this equals Weighting, but I write it like that for clarity for now
-//            unsigned int mix_complement = maxIntensity - mix;
-//
-//            blendColor(color_input, X0>>bits, Y0>>bits, mix);
-//            blendColor(color_input, (X0 + XDir)>>bits, Y0>>bits, mix_complement);
-//        }
-//
-//        // Draw the final pixel, which is always exactly intersected by the line
-//        // and so needs no weighting
-//        blendColor(color_input, (X1+0)>>bits, (Y1+0)>>bits, maxIntensity);
-//        return;
-//    }
-
     // It's an X-major line; calculate 16-bit fixed-point fractional part of a
     // pixel that Y advances each time X advances 1 pixel, truncating the
     // result to avoid overrunning the endpoint along the X axis
+    ErrorAdj = ((unsigned long long) DeltaY << 32) / (unsigned long long) DeltaX;
 
-/*
-    unsigned int mask = (1<<bits) - 1;
-    int32_t error = (2 * (Y0 & mask) - (2 << bits)) * DeltaX - (2 * (X0 & mask) - (1 << bits)) * DeltaY;
-
-    while (X0 < (X1)) {
-        if(error>0) {
-            Y0 += ONE;
-            error -= (2*DeltaX << bits);
+    // Draw all pixels other than the first and last
+    while ((DeltaX-=one) > 0) {
+        ErrorAccTemp = ErrorAcc; // remember currrent accumulated error
+        ErrorAcc += ErrorAdj; // calculate error for next pixel
+        if (ErrorAcc <= ErrorAccTemp) {
+            // The error accumulator turned over, so advance the Y coord
+            Y0+=one;
         }
-
-        uint32_t mix = error & (mask);
-
-        blendColor(color_input, (X0+round)>>bits, (Y0+round)>>bits, mix);
-        X0 += XDir;
-        error += (2*DeltaY << bits);
-    }
-
-    return;
-
- */
-
-//    DeltaX>>=bits;
-//    X0>>=bits;
-//    Y0>>=bits;
-
-    ErrorAdj = (((unsigned long long) DeltaY<<0) << (32)) / (unsigned long long) DeltaX;
-
-    while ((DeltaX-=ONE)>0) {
-//        ErrorAccTemp = ErrorAcc; // remember currrent accumulated error
-//        ErrorAcc += ErrorAdj; // calculate error for next pixel
-//        if (ErrorAcc <= ErrorAccTemp) {
-//            // The error accumulator turned over, so advance the Y coord
-//            Y0 += ONE;
-//        }
-
-
-        acc += grad;
-        X0 += XDir;//(XDir>>bits); // X-major, so always advance X
-        uint32_t inter = Y0 + (acc>>20);
-        uint32_t frac = (inter & mask)<<bits;
-
-        blendColor(color_input, (X0+0)>>bits, (inter+0)>>bits, 255-frac);
-        blendColor(color_input, (X0+0)>>bits, (inter+(ONE))>>bits, frac);
-
-
+        X0 += XDir; // X-major, so always advance X
 
         // The IntensityBits most significant bits of ErrorAcc give us the
         // intensity weighting for this pixel, and the complement of the
         // weighting for the paired pixel
-        Weighting = ErrorAcc >> (IntensityShift + 0);
+        Weighting = (ErrorAcc >> IntensityShift);
 
         // Tomer notes:
         // 1. i inverted the order because i do not use palettes like Michael.
@@ -1934,14 +1840,15 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, 
         unsigned int mix = (Weighting ^ WeightingComplementMask);
         unsigned int mix_complement = maxIntensity - mix; // this equals Weighting
 
-//        blendColor(color_input, (X0+round)>>bits, (Y0+round)>>bits, mix);
-//        blendColor(color_input, (X0+round)>>bits, (Y0 + ONE+0)>>bits, mix_complement);
+        blendColor(color_input, X0>>bits, Y0>>bits, mix);
+        blendColor(color_input, X0>>bits, (Y0 + one)>>bits, mix_complement);
     }
 
     // Draw the final pixel, which is always exactly intersected by the line
     // and so needs no weighting
     blendColor(color_input, (X1+round)>>bits, (Y1+round)>>bits, maxIntensity);
 }
+
 
 template<typename P, typename CODER>
 void
@@ -1952,18 +1859,16 @@ Canvas<P, CODER>::drawLinePath(color_f_t &color, vec2_32i *points,
 
         if(jx)
             drawLine(color, points[jx-1].x, points[jx-1].y, points[jx].x, points[jx].y);
-
     }
 
 }
-
 
 template<typename P, typename CODER>
 void
 Canvas<P, CODER>::drawLinePath(color_f_t &color, vec2_f *points,
                                unsigned int size) {
 
-    uint8_t p = 4;
+    uint8_t p = 0;
 
     for (int jx = 0; jx < size; jx++) {
 
@@ -1982,7 +1887,8 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_f *points
                                                unsigned int size,
                                                uint8_t resolution_bits) {
 
-    uint8_t sub_p = 1;
+    // sub pixel looks bad with our current line algorithm
+    uint8_t sub_p = 0;
     unsigned int MAX = 1<<sub_p;
     vec2_32i pts_fixed[size];// = new vec2_32i[size];
 
@@ -2066,7 +1972,7 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
             unsigned int y = (a * point_anchor[0].y + b * point_anchor[1].y + c * point_anchor[2].y + d * point_anchor[3].y)>>resolution_triple;
 
             if(i)
-                drawLine(color, previous.x, previous.y, x, y);
+                drawLine(color, previous.x, previous.y, x, y, 0);
 
             blendColor(color, x, y, 1.0f);
 

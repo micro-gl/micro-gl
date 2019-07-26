@@ -62,6 +62,8 @@ vec2_f b_f[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2},
 vec2_f c_f[5] = {{5, H - 5}, {5, 225}, {W/2, H - 5}, {W-5,255}, {W-5, H-5}};
 vec2_f c2_f[3] = {{20, 400}, {20+200, 300}, {20+400, 400}};
 
+static float d = 0;//1.0f*(float)W/3.0f;
+
 inline void render() {
 
     canvas->setAntialiasing(false);
@@ -72,7 +74,6 @@ inline void render() {
         canvas->clear(WHITE);
 //
         static long a = 0;
-        static float d = 0;//1.0f*(float)W/3.0f;
 
         a+=20;
 
@@ -142,30 +143,42 @@ timer++;
 s = 50*sin(2.0f*3.14f*(float(timer%10000)/10000));
 
 //b[1].y = H/4 + s;
-        d += 0.005;
+//        d += 0.001;
+        d += 0.001;
 
-        b_f[1].y += 0.1;
-        c2_f[1].y -= 0.5;
+        b_f[2].y += 0.01;
+        c2_f[1].y -= 0.05;
+        c_f[1].x += 0.15;
+        c_f[1].y -= 0.05;
 //        canvas->drawQuadraticBezierPath(BLACK, c, 3);
 //        canvas->drawQuadraticBezierPath(BLACK, c_f, 3);
-//        canvas->drawCubicBezierPath(BLACK, b, 7);
+        canvas->drawCubicBezierPath(BLACK, b, 7);
 //        canvas->drawLinePath(RED, b, 7);
 
-//        canvas->drawLinePath(RED, b_f, 7);
-//        canvas->drawLinePath(RED, c2_f, 2);
-//        canvas->drawLine(BLACK, 0.0f , 200.0f , 200.0f, 200.0f+d);
+//        canvas->drawLinePath(RED, b_f, 4);
 
+//        canvas->drawLinePath(RED, c2_f, 3);
 
-//        canvas->drawLine(BLACK, 200.0f, 150.0 , 400.0f, 100.0+d);
+//        canvas->drawLine(BLACK, 20.0-0, 400.0, 220.0f+0 , 300.0f+d);
+//        canvas->drawLine(BLACK, 220.0f , 300.0f-d  , 420.0f, 400.0);
+
 //        canvas->drawLine(BLACK, 200.0f, 150.0 , 500.0f, 100.0+0 + d);
-        canvas->drawLine(BLACK, 55.0f, 55.0 , 150.0f, 400.0+0 + d);
+//        canvas->drawLine(BLACK, 55.0f, 55.0 , 150.0f, 400.0+0 + d);
 //        canvas->drawLine(BLACK, 400.0f, 50.0+0, 200.0f, 150.0-d);
 
-//        canvas->drawLine(BLACK, 0.0f, 100.0 , 200.0f, 200.0-d);
+//        canvas->drawLine(BLACK, 0.0f, 200.0 , 200.0f, 200.0+d);
 //        canvas->drawLine(BLACK, 200.0f, 200.0 -d, 400.0f, 100.0);
 
-//        canvas->drawLine(BLACK, 0.0f, 100.1 + d , 200.0f, 200.1);
-//        canvas->drawLine(BLACK, 200.0f, 200.1, 400.0f, 100.1 + d);
+//        canvas->drawLine(BLACK, 10.0f,   240.0 , 320.0f, 10.0);
+//        canvas->drawLine(BLACK, 10.0f,   240.0 , 320.0f, 240.0);
+//        canvas->drawLine(BLACK, 10.0f,   10.0 + 0 , 320.0f, 240.1);
+//        canvas->drawLine(BLACK, 10.0f,   10.0 + 0 , 240.0f, 520.1);
+
+
+
+
+//        canvas->drawLine(BLACK, 0.0f,   100.0 + d , 200.0f, 200.1);
+//        canvas->drawLine(BLACK, 200.0f, 200.0,      400.0f, 100.0 + d);
 
 
 //        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, (float)320, (float)240, 200 + b);
