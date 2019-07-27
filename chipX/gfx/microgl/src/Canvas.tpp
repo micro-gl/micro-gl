@@ -1905,38 +1905,24 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *poin
                                                uint8_t sub_pixel_bits,
                                                uint8_t resolution_bits) {
 
-    unsigned int resolution = resolution_bits;
-    unsigned int resolution_double = resolution<<1;
-    unsigned int N_SEG = (1 << resolution); // 64 resolution
+    unsigned int N_SEG = (1 << resolution_bits); // 64 resolution
     unsigned int i;
 
-    vec3_32i previous;
-
-//    drawCircleFPU(color_f_t{1.0,0.0,0.0}, 100, 100, 100, 1.0f);
-
+    vec2_32i previous, current;
 
     for (int jx = 0; jx < size-2; jx+=2) {
         auto * point_anchor = &points[jx];
 
         for (i = 0; i <= N_SEG; ++i) {
-            unsigned int t = i;//(double)i / (double)N_SEG;
-            unsigned int comp = N_SEG - t;
-            unsigned int a = comp * comp;
-            unsigned int b = (t * comp) << 1;
-            unsigned int c = t * t;
-            int x = (a * point_anchor[0].x + b * point_anchor[1].x + c * point_anchor[2].x) >> resolution_double;
-            int y = (a * point_anchor[0].y + b * point_anchor[1].y + c * point_anchor[2].y) >> resolution_double;
+            curves::evaluate_quadratic_bezier_at(i, resolution_bits, point_anchor, sub_pixel_bits, current);
 
             if (i)
-                drawLine(color, previous.x, previous.y, x, y, sub_pixel_bits);
+                drawLine(color, previous.x, previous.y, current.x, current.y, sub_pixel_bits);
 
-//            blendColor(color, x>>sub_pixel_bits, y>>sub_pixel_bits, 1.0f);
+            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{1.0,0.0,0.0},
+                    current.x, current.y, 2<<sub_pixel_bits, sub_pixel_bits, 255);
 
-//            drawCircle(color_f_t{1.0,0.0,0.0}, x, y, 25, sub_pixel_bits, 255);
-            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{1.0,0.0,0.0}, x, y,
-                    2<<sub_pixel_bits, sub_pixel_bits, 255);
-
-            previous = {x, y};
+            previous = {current.x, current.y};
         }
 
     }
@@ -1948,12 +1934,10 @@ template<typename P, typename CODER>
 void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
                                            unsigned int size, unsigned int resolution_bits) {
 
-    unsigned int resolution = resolution_bits;
-    unsigned int resolution_triple = resolution*3;
-    unsigned int N_SEG = (1 << resolution); // 64 resolution
+    unsigned int N_SEG = (1 << resolution_bits); // 64 resolution
     unsigned int i;
 
-    vec3_32ui previous;
+    vec2_32i previous, current;
 
     for (int jx = 0; jx < size-3; jx+=3) {
 
@@ -1961,29 +1945,15 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
 
         for (i=0; i <= N_SEG; ++i)
         {
-
-            // (n-t)^2 => n*n, t*t, n*t
-            // (n-t)^3 => n*n*n, t*t*n, n*n*t, t*t*t
-            //10
-            // todo: we can use a LUT if using more point batches
-            unsigned int t = i;//(double)i / (double)N_SEG;
-            unsigned int comp = N_SEG - t;
-            unsigned int comp_times_comp = comp * comp;
-            unsigned int t_times_t = t * t;
-            unsigned int a = comp * comp_times_comp;
-            unsigned int b = 3 * (t * comp_times_comp);
-            unsigned int c = 3*t_times_t*comp;
-            unsigned int d = t*t_times_t;
-
-            unsigned int x = ((long)a * point_anchor[0].x + (long)b * point_anchor[1].x + (long)c * point_anchor[2].x + (long)d * point_anchor[3].x)>>resolution_triple;
-            unsigned int y = ((long)a * point_anchor[0].y + (long)b * point_anchor[1].y + (long)c * point_anchor[2].y + (long)d * point_anchor[3].y)>>resolution_triple;
+            curves::evaluate_cubic_bezier_at(i, resolution_bits, point_anchor, 0, current);
 
             if(i)
-                drawLine(color, previous.x, previous.y, x, y, 0);
+                drawLine(color, previous.x, previous.y, current.x, current.y, 0);
 
-            blendColor(color, x, y, 1.0f);
+            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{1.0,0.0,0.0},
+                    current.x, current.y, 2<<0, 0, 255);
 
-            previous = {x, y};
+            previous = {current.x, current.y};
         }
 
 

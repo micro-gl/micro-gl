@@ -29,6 +29,7 @@ set(sources
         src/PorterDuff.cpp
         include/microgl/Q.h
         include/microgl/Sampler.h
+        src/Curves.cpp
         )
 
 add_library(${PROJECT_NAME} ${sources})

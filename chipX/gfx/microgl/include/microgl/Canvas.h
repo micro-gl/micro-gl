@@ -14,6 +14,7 @@
 #include "PorterDuff.h"
 #include "Fixed.h"
 #include "Sampler.h"
+#include "Curves.h"
 
 template<typename P, typename CODER>
 class Canvas {
