@@ -148,11 +148,12 @@ s = 50*sin(2.0f*3.14f*(float(timer%10000)/10000));
 
         b_f[2].y += 0.01;
         c2_f[1].y -= 0.05;
-        c_f[1].x += 0.15;
-        c_f[1].y -= 0.05;
-//        canvas->drawQuadraticBezierPath(BLACK, c, 3);
-//        canvas->drawQuadraticBezierPath(BLACK, c_f, 3);
-        canvas->drawCubicBezierPath(BLACK, b, 7);
+        c_f[1].x += .5;
+
+        b[1].y -= 1;//0.05f;
+//        c[1].y -= 0.05;
+        canvas->drawQuadraticBezierPath(BLACK, c_f, 3, 4);
+//        canvas->drawCubicBezierPath(BLACK, b, 7, 4);
 //        canvas->drawLinePath(RED, b, 7);
 
 //        canvas->drawLinePath(RED, b_f, 4);
@@ -181,7 +182,6 @@ s = 50*sin(2.0f*3.14f*(float(timer%10000)/10000));
 //        canvas->drawLine(BLACK, 200.0f, 200.0,      400.0f, 100.0 + d);
 
 
-//        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, (float)320, (float)240, 200 + b);
 
 
 

@@ -1,3 +1,5 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #pragma once
 
 #include "Types.h"
@@ -290,3 +292,5 @@ private:
 #include "../src/Canvas.tpp"
 
 
+
+#pragma clang diagnostic pop

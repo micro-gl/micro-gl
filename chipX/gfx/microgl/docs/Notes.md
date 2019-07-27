@@ -47,3 +47,6 @@ always try to avoid multiplies in inner loops
 this is a great optimization for texture mapping
 - read this https://cellperformance.beyond3d.com/articles/2006/06/understanding-strict-aliasing.html
 - make a ReadableBitmap interface
+
+- curves sub division
+https://github.com/pelson/antigrain/blob/master/agg-2.4/src/agg_curves.cpp

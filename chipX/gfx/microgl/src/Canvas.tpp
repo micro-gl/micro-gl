@@ -1912,6 +1912,9 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *poin
 
     vec3_32i previous;
 
+//    drawCircleFPU(color_f_t{1.0,0.0,0.0}, 100, 100, 100, 1.0f);
+
+
     for (int jx = 0; jx < size-2; jx+=2) {
         auto * point_anchor = &points[jx];
 
@@ -1928,6 +1931,10 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *poin
                 drawLine(color, previous.x, previous.y, x, y, sub_pixel_bits);
 
 //            blendColor(color, x>>sub_pixel_bits, y>>sub_pixel_bits, 1.0f);
+
+//            drawCircle(color_f_t{1.0,0.0,0.0}, x, y, 25, sub_pixel_bits, 255);
+            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{1.0,0.0,0.0}, x, y,
+                    2<<sub_pixel_bits, sub_pixel_bits, 255);
 
             previous = {x, y};
         }
@@ -1968,8 +1975,8 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
             unsigned int c = 3*t_times_t*comp;
             unsigned int d = t*t_times_t;
 
-            unsigned int x = (a * point_anchor[0].x + b * point_anchor[1].x + c * point_anchor[2].x + d * point_anchor[3].x)>>resolution_triple;
-            unsigned int y = (a * point_anchor[0].y + b * point_anchor[1].y + c * point_anchor[2].y + d * point_anchor[3].y)>>resolution_triple;
+            unsigned int x = ((long)a * point_anchor[0].x + (long)b * point_anchor[1].x + (long)c * point_anchor[2].x + (long)d * point_anchor[3].x)>>resolution_triple;
+            unsigned int y = ((long)a * point_anchor[0].y + (long)b * point_anchor[1].y + (long)c * point_anchor[2].y + (long)d * point_anchor[3].y)>>resolution_triple;
 
             if(i)
                 drawLine(color, previous.x, previous.y, x, y, 0);
