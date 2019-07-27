@@ -151,9 +151,10 @@ s = 50*sin(2.0f*3.14f*(float(timer%10000)/10000));
         c_f[1].x += .5;
 
         b[1].y -= 1;//0.05f;
+        b_f[1].y -= 1;//0.05f;
 //        c[1].y -= 0.05;
 //        canvas->drawQuadraticBezierPath(BLACK, c_f, 3, 4);
-        canvas->drawCubicBezierPath(BLACK, b, 7, 5);
+        canvas->drawCubicBezierPath(BLACK, b_f, 7);
 //        canvas->drawLinePath(RED, b, 7);
 
 //        canvas->drawLinePath(RED, b_f, 4);

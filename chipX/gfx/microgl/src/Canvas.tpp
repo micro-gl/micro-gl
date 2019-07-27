@@ -1932,7 +1932,9 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *poin
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
-                                           unsigned int size, unsigned int resolution_bits) {
+                                           unsigned int size,
+                                           uint8_t sub_pixel_bits,
+                                           unsigned int resolution_bits) {
 
     unsigned int N_SEG = (1 << resolution_bits); // 64 resolution
     unsigned int i;
@@ -1945,13 +1947,13 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
 
         for (i=0; i <= N_SEG; ++i)
         {
-            curves::evaluate_cubic_bezier_at(i, resolution_bits, point_anchor, 0, current);
+            curves::evaluate_cubic_bezier_at(i, resolution_bits, point_anchor, sub_pixel_bits, current);
 
             if(i)
                 drawLine(color, previous.x, previous.y, current.x, current.y, 0);
 
             drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{1.0,0.0,0.0},
-                    current.x, current.y, 2<<0, 0, 255);
+                    current.x, current.y, 2<<sub_pixel_bits, sub_pixel_bits, 255);
 
             previous = {current.x, current.y};
         }
@@ -1962,6 +1964,22 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
 
 }
 
+template<typename P, typename CODER>
+void Canvas<P, CODER>::drawCubicBezierPath(color_f_t &color, vec2_f *points,
+                                           unsigned int size,
+                                           unsigned int resolution_bits) {
+    // sub pixel looks bad with our current line algorithm
+    uint8_t sub_p = 0;
+    unsigned int MAX = 1<<sub_p;
+    vec2_32i pts_fixed[size];// = new vec2_32i[size];
+
+    for (int jx = 0; jx < size; ++jx) {
+        pts_fixed[jx] = (points[jx]*MAX);
+    }
+
+    drawCubicBezierPath(color, pts_fixed, size, sub_p, resolution_bits);
+
+}
 
 
 #pragma clang diagnostic pop
