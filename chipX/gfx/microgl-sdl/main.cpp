@@ -159,10 +159,10 @@ s = 50*sin(2.0f*3.14f*(float(timer%10000)/10000));
 
 
 
-        canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
+//        canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
 
 //        test_curve_split();
-//        test_curve_adaptive_subdivide();
+        test_curve_adaptive_subdivide();
     }
 
 }
@@ -184,8 +184,10 @@ void test_curve_adaptive_subdivide() {
                                   split[3], split[4], split[5], split[6]);
 
 //    canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
-    canvas->drawCubicBezierPath(BLACK, split, 7, 0, 4);
+//    canvas->drawCubicBezierPath(BLACK, split, 7, 0, 4);
+    canvas->drawCubicBezierPath(BLACK, b, 4, 0, 4);
 }
+
 
 /**
  * test cubic curve split

@@ -1924,25 +1924,41 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *poin
                                                uint8_t sub_pixel_bits,
                                                uint8_t resolution_bits) {
 
-    unsigned int N_SEG = (1 << resolution_bits); // 64 resolution
-    unsigned int i;
-
+    std::vector<vec2_32i> samples;
     vec2_32i previous, current;
 
     for (int jx = 0; jx < size-2; jx+=2) {
         auto * point_anchor = &points[jx];
 
-        for (i = 0; i <= N_SEG; ++i) {
-            curves::evaluate_quadratic_bezier_at(i, resolution_bits, point_anchor, sub_pixel_bits, current);
+        samples.clear();
 
-            if (i)
-                drawLine(color, previous.x, previous.y, current.x, current.y, sub_pixel_bits);
+        curves::uniform_sub_divide_quadratic_bezier(point_anchor, sub_pixel_bits, resolution_bits, samples);
+
+        for (unsigned int ix = 0; ix < samples.size(); ++ix) {
+            current = samples[ix];
+
+            if(ix)
+                drawLine(color, previous.x, previous.y, current.x, current.y, 0);
 
             drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{1.0,0.0,0.0},
-                    current.x, current.y, 2<<sub_pixel_bits, sub_pixel_bits, 255);
+                                                                                current.x, current.y,
+                                                                                1<<sub_pixel_bits, sub_pixel_bits, 255);
 
-            previous = {current.x, current.y};
+            previous = current;
         }
+
+        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
+                                                                            point_anchor[0].x, point_anchor[0].y,
+                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
+
+        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
+                                                                            point_anchor[1].x, point_anchor[1].y,
+                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
+
+        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
+                                                                            point_anchor[2].x, point_anchor[2].y,
+                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
+
 
     }
 
@@ -1956,15 +1972,20 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
                                            unsigned int resolution_bits) {
     std::vector<vec2_32i> samples;
     vec2_32i previous, current;
+    int count = 0;
 
     for (int jx = 0; jx < size-3; jx+=3) {
         auto * point_anchor = &points[jx];
 
         samples.clear();
 
-        curves::uniform_sub_divide_cubic_bezier(point_anchor, sub_pixel_bits, resolution_bits, samples);
+//        curves::uniform_sub_divide_cubic_bezier(point_anchor, sub_pixel_bits, resolution_bits, samples);
 
-        for (int ix = 0; ix < samples.size(); ++ix) {
+        curves::adaptive_sub_divide_cubic_bezier(point_anchor, sub_pixel_bits, 10000, samples);
+
+        count += samples.size();
+
+        for (unsigned int ix = 0; ix < samples.size(); ++ix) {
             current = samples[ix];
 
             if(ix)
@@ -1993,52 +2014,10 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
                                                                             point_anchor[3].x, point_anchor[3].y,
                                                                             5<<sub_pixel_bits, sub_pixel_bits, 255);
 
-
     }
 
-        /*
-        unsigned int N_SEG = (1 << resolution_bits); // 64 resolution
-        unsigned int i;
+    std::cout << count << endl;
 
-        vec2_32i previous, current;
-
-        for (int jx = 0; jx < size-3; jx+=3) {
-
-            auto * point_anchor = &points[jx];
-
-            for (i=0; i <= N_SEG; ++i)
-            {
-                curves::evaluate_cubic_bezier_at(i, resolution_bits, point_anchor, sub_pixel_bits, current);
-
-                if(i)
-                    drawLine(color, previous.x, previous.y, current.x, current.y, 0);
-
-                drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{1.0,0.0,0.0},
-                        current.x, current.y, 1<<sub_pixel_bits, sub_pixel_bits, 255);
-
-                previous = {current.x, current.y};
-            }
-
-            // control points
-            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
-                                                                                point_anchor[0].x, point_anchor[0].y,
-                                                                                5<<sub_pixel_bits, sub_pixel_bits, 255);
-
-            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
-                                                                                point_anchor[1].x, point_anchor[1].y,
-                                                                                5<<sub_pixel_bits, sub_pixel_bits, 255);
-
-            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
-                                                                                point_anchor[2].x, point_anchor[2].y,
-                                                                                5<<sub_pixel_bits, sub_pixel_bits, 255);
-
-            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
-                                                                                point_anchor[3].x, point_anchor[3].y,
-                                                                                5<<sub_pixel_bits, sub_pixel_bits, 255);
-
-        }
-
-    */
 }
 
 

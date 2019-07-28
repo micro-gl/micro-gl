@@ -199,6 +199,21 @@ namespace curves {
 
     }
 
+    void uniform_sub_divide_quadratic_bezier(const vec2_32i *points,
+                                         uint8_t precision,
+                                         uint8_t subdivision_bits,
+                                         std::vector<vec2_32i> &output) {
+
+        unsigned int segments = 1<<subdivision_bits;
+        vec2_32i current;
+
+        for (unsigned int i=0; i <= segments; ++i) {
+            curves::evaluate_quadratic_bezier_at(i, subdivision_bits, points, precision, current);
+            output.push_back(current);
+        }
+
+    }
+
     void adaptive_sub_divide_cubic_bezier(const vec2_32i *points,
                                       uint8_t precision,
                                       unsigned int threshold,

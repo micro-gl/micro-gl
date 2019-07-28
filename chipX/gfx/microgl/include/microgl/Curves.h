@@ -26,13 +26,13 @@ namespace curves {
                                    vec2_32i & left_1, vec2_32i & left_2, vec2_32i & left_3,
                                    vec2_32i & right_1, vec2_32i & right_2, vec2_32i & right_3);
 
-    void evaluate_quadratic_bezier_at(unsigned int t, uint8_t range_bits,
-                                     const vec2_32i *points, uint8_t sub_pixel_bits,
-                                     vec2_32i & output);
+    void evaluate_quadratic_bezier_at(const unsigned int t, const uint8_t range_bits,
+                                      const vec2_32i *points, const uint8_t sub_pixel_bits,
+                                      vec2_32i & output);
 
-    void evaluate_cubic_bezier_at(unsigned int t, uint8_t range_bits,
-                                 const vec2_32i *points, uint8_t sub_pixel_bits,
-                                 vec2_32i & output);
+    void evaluate_cubic_bezier_at(const unsigned int t, const uint8_t range_bits,
+                                  const vec2_32i *points, const uint8_t sub_pixel_bits,
+                                  vec2_32i & output);
 
     void quadratic_to_cubic_bezier(const vec2_32i *points,
                                    vec2_32i &p0, vec2_32i &p1,
@@ -58,4 +58,8 @@ namespace curves {
                                          uint8_t subdivision_bits,
                                          std::vector<vec2_32i> &output);
 
+    void uniform_sub_divide_quadratic_bezier(const vec2_32i *points,
+                                             uint8_t precision,
+                                             uint8_t subdivision_bits,
+                                             std::vector<vec2_32i> &output);
 }
