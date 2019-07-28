@@ -149,7 +149,7 @@ namespace curves {
         const vec2_32i &p1 = points[0];
         const vec2_32i &cp1 = points[1];
         const vec2_32i &cp2 = points[2];
-        const vec2_32i &p2 = points[2];
+        const vec2_32i &p2 = points[3];
 
         int ux = 3 * cp1.x - 2 * p1.x - p2.x;
         int uy = 3 * cp1.y - 2 * p1.y - p2.y;
@@ -214,13 +214,13 @@ namespace curves {
 
     }
 
-    void adaptive_sub_divide_cubic_bezier(const vec2_32i *points,
-                                      uint8_t precision,
-                                      unsigned int threshold,
-                                      std::vector<vec2_32i> &output) {
+    void adaptive_sub_divide_cubic_bezier_internal(const vec2_32i *points,
+                                          uint8_t precision,
+                                          unsigned int threshold,
+                                          std::vector<vec2_32i> &output) {
 
         if(is_cubic_bezier_flat(points, precision, threshold)) {
-            output.push_back(points[0]);
+//            output.push_back(points[0]);
             output.push_back(points[3]);
         } else {
             vec2_32i split_left[4];
@@ -231,10 +231,20 @@ namespace curves {
                                   split_right[0], split_right[1], split_right[2], split_right[3]
             );
 
-            adaptive_sub_divide_cubic_bezier(split_left, precision, threshold, output);
-            adaptive_sub_divide_cubic_bezier(split_right, precision, threshold, output);
+            adaptive_sub_divide_cubic_bezier_internal(split_left, precision, threshold, output);
+            adaptive_sub_divide_cubic_bezier_internal(split_right, precision, threshold, output);
         }
 
+    }
+
+    void adaptive_sub_divide_cubic_bezier(const vec2_32i *points,
+                                          uint8_t precision,
+                                          unsigned int threshold,
+                                          std::vector<vec2_32i> &output) {
+
+        output.push_back(points[0]);
+
+        adaptive_sub_divide_cubic_bezier_internal(points, precision, threshold, output);
     }
 
     void adaptive_sub_divide_quadratic_bezier(const vec2_32i *points,
