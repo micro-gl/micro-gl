@@ -53,4 +53,9 @@ namespace curves {
                                               unsigned int threshold,
                                               std::vector<vec2_32i> &output);
 
+    void uniform_sub_divide_cubic_bezier(const vec2_32i *points,
+                                         uint8_t precision,
+                                         uint8_t subdivision_bits,
+                                         std::vector<vec2_32i> &output);
+
 }

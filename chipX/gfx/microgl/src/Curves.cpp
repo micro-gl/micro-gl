@@ -184,10 +184,25 @@ namespace curves {
         return (compute_quadratic_bezier_flatness(points, precision) < threshold);
     }
 
+    void uniform_sub_divide_cubic_bezier(const vec2_32i *points,
+                                         uint8_t precision,
+                                         uint8_t subdivision_bits,
+                                         std::vector<vec2_32i> &output) {
+
+        unsigned int segments = 1<<subdivision_bits;
+        vec2_32i current;
+
+        for (unsigned int i=0; i <= segments; ++i) {
+            curves::evaluate_cubic_bezier_at(i, subdivision_bits, points, precision, current);
+            output.push_back(current);
+        }
+
+    }
+
     void adaptive_sub_divide_cubic_bezier(const vec2_32i *points,
-                                          uint8_t precision,
-                                          unsigned int threshold,
-                                          std::vector<vec2_32i> &output) {
+                                      uint8_t precision,
+                                      unsigned int threshold,
+                                      std::vector<vec2_32i> &output) {
 
         if(is_cubic_bezier_flat(points, precision, threshold)) {
             output.push_back(points[0]);

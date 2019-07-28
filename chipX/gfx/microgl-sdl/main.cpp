@@ -15,6 +15,9 @@
 #include <microgl/PixelCoder.h>
 #include <microgl/Bitmap.h>
 
+void test_curve_split();
+void test_curve_adaptive_subdivide();
+
 #define TEST_ITERATIONS 1
 #define W 640*1
 #define H 480*1
@@ -29,7 +32,6 @@ typedef Bitmap<uint32_t, RGB888_PACKED_32> Bitmap24bit_Packed32;
 typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
 typedef Canvas<vec3<uint8_t >, RGB888_ARRAY> Canvas24BitU8;
 
-void test_curve_split();
 //Canvas16Bit * canvas;
 //Canvas24BitU8 * canvas;
 Canvas24Bit_Packed32 * canvas;
@@ -150,15 +152,17 @@ s = 50*sin(2.0f*3.14f*(float(timer%10000)/10000));
         c_f[1].x += .5;
 
         b[1].y -= 1;//0.05f;
-//        b_f[1].y -= 1;//0.05f;
+        b_f[1].y -= 0.2;//0.05f;
+        b_f[2].y += 0.2;//0.05f;
 //        c[1].y -= 0.05;
 //        canvas->drawQuadraticBezierPath(BLACK, c_f, 3, 4);
 
 
 
-//        canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
+        canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
 
-        test_curve_split();
+//        test_curve_split();
+//        test_curve_adaptive_subdivide();
     }
 
 }
