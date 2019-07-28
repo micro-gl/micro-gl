@@ -167,6 +167,25 @@ s = 50*sin(2.0f*3.14f*(float(timer%10000)/10000));
 /**
  * test cubic curve split
  */
+void test_curve_adaptive_subdivide() {
+    vec2_32i b_f[4] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}};
+
+    vec2_32i left_1, left_2, left_3, left_4;
+    vec2_32i right_1, right_2, right_3, right_4;
+
+    vec2_32i split[7] = {left_1, left_2, left_3, left_4, right_2, right_3, right_4};
+
+    curves::split_cubic_bezier_at(128, 8, b_f, 0,
+                                  split[0], split[1], split[2], split[3],
+                                  split[3], split[4], split[5], split[6]);
+
+//    canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
+    canvas->drawCubicBezierPath(BLACK, split, 7, 0, 4);
+}
+
+/**
+ * test cubic curve split
+ */
 void test_curve_split() {
     vec2_32i b_f[4] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}};
 
@@ -180,7 +199,7 @@ void test_curve_split() {
                                   split[3], split[4], split[5], split[6]);
 
 //    canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
-    canvas->drawCubicBezierPath(BLACK, split, 7, 0, 5);
+    canvas->drawCubicBezierPath(BLACK, split, 7, 0, 4);
 
 }
 

@@ -1892,11 +1892,30 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_f *points
     unsigned int MAX = 1<<sub_p;
     vec2_32i pts_fixed[size];// = new vec2_32i[size];
 
+    // convert to fixed
     for (int jx = 0; jx < size; ++jx) {
         pts_fixed[jx] = (points[jx]*MAX);
     }
 
     drawQuadraticBezierPath(color, pts_fixed, size, sub_p, resolution_bits);
+}
+
+template<typename P, typename CODER>
+void Canvas<P, CODER>::drawCubicBezierPath(color_f_t &color, vec2_f *points,
+                                           unsigned int size,
+                                           unsigned int resolution_bits) {
+    // sub pixel looks bad with our current line algorithm
+    uint8_t sub_p = 0;
+    unsigned int MAX = 1<<sub_p;
+    vec2_32i pts_fixed[size];// = new vec2_32i[size];
+
+    // convert to fixed
+    for (int jx = 0; jx < size; ++jx) {
+        pts_fixed[jx] = (points[jx]*MAX);
+    }
+
+    drawCubicBezierPath(color, pts_fixed, size, sub_p, resolution_bits);
+
 }
 
 template<typename P, typename CODER>
@@ -1943,7 +1962,7 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
 
     for (int jx = 0; jx < size-3; jx+=3) {
 
-        auto *point_anchor = &points[jx];
+        auto * point_anchor = &points[jx];
 
         for (i=0; i <= N_SEG; ++i)
         {
@@ -1980,22 +1999,6 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
 
 }
 
-template<typename P, typename CODER>
-void Canvas<P, CODER>::drawCubicBezierPath(color_f_t &color, vec2_f *points,
-                                           unsigned int size,
-                                           unsigned int resolution_bits) {
-    // sub pixel looks bad with our current line algorithm
-    uint8_t sub_p = 0;
-    unsigned int MAX = 1<<sub_p;
-    vec2_32i pts_fixed[size];// = new vec2_32i[size];
-
-    for (int jx = 0; jx < size; ++jx) {
-        pts_fixed[jx] = (points[jx]*MAX);
-    }
-
-    drawCubicBezierPath(color, pts_fixed, size, sub_p, resolution_bits);
-
-}
 
 
 #pragma clang diagnostic pop
