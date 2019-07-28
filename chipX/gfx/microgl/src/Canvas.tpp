@@ -1952,12 +1952,28 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
             if(i)
                 drawLine(color, previous.x, previous.y, current.x, current.y, 0);
 
-            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{1.0,0.0,0.0},
-                    current.x, current.y, 2<<sub_pixel_bits, sub_pixel_bits, 255);
+//            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{1.0,0.0,0.0},
+//                    current.x, current.y, 2<<sub_pixel_bits, sub_pixel_bits, 255);
 
             previous = {current.x, current.y};
         }
 
+        // control points
+        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
+                                                                            point_anchor[0].x, point_anchor[0].y,
+                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
+
+        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
+                                                                            point_anchor[1].x, point_anchor[1].y,
+                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
+
+        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
+                                                                            point_anchor[2].x, point_anchor[2].y,
+                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
+
+        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
+                                                                            point_anchor[3].x, point_anchor[3].y,
+                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
 
     }
 

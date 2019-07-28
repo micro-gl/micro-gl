@@ -29,7 +29,7 @@ typedef Bitmap<uint32_t, RGB888_PACKED_32> Bitmap24bit_Packed32;
 typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
 typedef Canvas<vec3<uint8_t >, RGB888_ARRAY> Canvas24BitU8;
 
-
+void test_curve_split();
 //Canvas16Bit * canvas;
 //Canvas24BitU8 * canvas;
 Canvas24Bit_Packed32 * canvas;
@@ -146,47 +146,41 @@ s = 50*sin(2.0f*3.14f*(float(timer%10000)/10000));
 //        d += 0.001;
         d += 0.001;
 
-        b_f[2].y += 0.01;
         c2_f[1].y -= 0.05;
         c_f[1].x += .5;
 
         b[1].y -= 1;//0.05f;
-        b_f[1].y -= 1;//0.05f;
+//        b_f[1].y -= 1;//0.05f;
 //        c[1].y -= 0.05;
 //        canvas->drawQuadraticBezierPath(BLACK, c_f, 3, 4);
-        canvas->drawCubicBezierPath(BLACK, b_f, 7);
-//        canvas->drawLinePath(RED, b, 7);
-
-//        canvas->drawLinePath(RED, b_f, 4);
-
-//        canvas->drawLinePath(RED, c2_f, 3);
-
-//        canvas->drawLine(BLACK, 20.0-0, 400.0, 220.0f+0 , 300.0f+d);
-//        canvas->drawLine(BLACK, 220.0f , 300.0f-d  , 420.0f, 400.0);
-
-//        canvas->drawLine(BLACK, 200.0f, 150.0 , 500.0f, 100.0+0 + d);
-//        canvas->drawLine(BLACK, 55.0f, 55.0 , 150.0f, 400.0+0 + d);
-//        canvas->drawLine(BLACK, 400.0f, 50.0+0, 200.0f, 150.0-d);
-
-//        canvas->drawLine(BLACK, 0.0f, 200.0 , 200.0f, 200.0+d);
-//        canvas->drawLine(BLACK, 200.0f, 200.0 -d, 400.0f, 100.0);
-
-//        canvas->drawLine(BLACK, 10.0f,   240.0 , 320.0f, 10.0);
-//        canvas->drawLine(BLACK, 10.0f,   240.0 , 320.0f, 240.0);
-//        canvas->drawLine(BLACK, 10.0f,   10.0 + 0 , 320.0f, 240.1);
-//        canvas->drawLine(BLACK, 10.0f,   10.0 + 0 , 240.0f, 520.1);
 
 
 
+//        canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
 
-//        canvas->drawLine(BLACK, 0.0f,   100.0 + d , 200.0f, 200.1);
-//        canvas->drawLine(BLACK, 200.0f, 200.0,      400.0f, 100.0 + d);
-
-
-
-
-
+        test_curve_split();
     }
+
+}
+
+
+/**
+ * test cubic curve split
+ */
+void test_curve_split() {
+    vec2_32i b_f[4] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}};
+
+    vec2_32i left_1, left_2, left_3, left_4;
+    vec2_32i right_1, right_2, right_3, right_4;
+
+    vec2_32i split[7] = {left_1, left_2, left_3, left_4, right_2, right_3, right_4};
+
+    curves::split_cubic_bezier_at(128, 8, b_f, 0,
+                                  split[0], split[1], split[2], split[3],
+                                  split[3], split[4], split[5], split[6]);
+
+//    canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
+    canvas->drawCubicBezierPath(BLACK, split, 7, 0, 5);
 
 }
 
