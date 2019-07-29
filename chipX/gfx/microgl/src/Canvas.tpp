@@ -1886,7 +1886,7 @@ template<typename P, typename CODER>
 void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color,
                                                vec2_f *points,
                                                unsigned int size,
-                                               uint8_t max_subdivision_bits) {
+                                               curves::CurveDivisionAlgorithm algorithm) {
 
     // sub pixel looks bad with our current line algorithm
     uint8_t sub_p = 4;
@@ -1898,7 +1898,7 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color,
         pts_fixed[jx] = (points[jx]*MAX);
     }
 
-    drawQuadraticBezierPath(color, pts_fixed, size, sub_p, max_subdivision_bits);
+    drawQuadraticBezierPath(color, pts_fixed, size, sub_p, algorithm);
 }
 
 
@@ -1906,7 +1906,7 @@ template<typename P, typename CODER>
 void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *points,
                                                unsigned int size,
                                                uint8_t sub_pixel_bits,
-                                               uint8_t max_subdivision_bits) {
+                                               curves::CurveDivisionAlgorithm algorithm) {
 
     std::vector<vec2_32i> samples;
     vec2_32i previous, current;
@@ -1916,7 +1916,11 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *poin
 
         samples.clear();
 
-        curves::uniform_sub_divide_quadratic_bezier(point_anchor, sub_pixel_bits, max_subdivision_bits, samples);
+//        curves::uniform_sub_divide_quadratic_bezier(point_anchor, sub_pixel_bits, max_subdivision_bits, samples);
+//        curves::adaptive_sub_divide_quadratic_bezier(point_anchor, sub_pixel_bits, 1, samples);
+        curves::sub_divide_quadratic_bezier(point_anchor, sub_pixel_bits, samples, algorithm);
+
+        cout << samples.size()<<endl;
 
         for (unsigned int ix = 0; ix < samples.size(); ++ix) {
             current = samples[ix];
@@ -1951,7 +1955,7 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *poin
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawCubicBezierPath(color_f_t &color, vec2_f *points,
                                            unsigned int size,
-                                           unsigned int max_subdivision_bits) {
+                                           curves::CurveDivisionAlgorithm algorithm) {
     // sub pixel looks bad with our current line algorithm
     uint8_t sub_p = 4;
     unsigned int MAX = 1<<sub_p;
@@ -1964,14 +1968,14 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t &color, vec2_f *points,
         pts_fixed[jx].y = (points[jx].y)*MAX;
     }
 
-    drawCubicBezierPath(color, pts_fixed, size, sub_p, max_subdivision_bits);
+    drawCubicBezierPath(color, pts_fixed, size, sub_p, algorithm);
 }
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
                                            unsigned int size,
                                            uint8_t sub_pixel_bits,
-                                           unsigned int max_subdivision_bits) {
+                                           curves::CurveDivisionAlgorithm algorithm) {
     std::vector<vec2_32i> samples;
     vec2_32i previous, current;
     int count = 0;
@@ -1985,7 +1989,8 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
 //        unsigned int threshold = ((1<<sub_pixel_bits)/16)*((tolerance*tolerance)>>sub_pixel_bits);
         unsigned int threshold = 16*((tolerance*tolerance)>>(0));
 
-        curves::adaptive_sub_divide_cubic_bezier(point_anchor, sub_pixel_bits, 2, samples);
+        curves::sub_divide_cubic_bezier(point_anchor, sub_pixel_bits, samples, algorithm);
+//        curves::adaptive_sub_divide_cubic_bezier(point_anchor, sub_pixel_bits, 2, samples);
 //        curves::uniform_sub_divide_cubic_bezier(point_anchor, sub_pixel_bits, max_subdivision_bits, samples);
 
         count += samples.size();

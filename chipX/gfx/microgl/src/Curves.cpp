@@ -119,21 +119,6 @@ namespace curves {
     }
 
 
-//    function flatness(curve) {
-//        const p1 = curve[0]
-//        const cp1 = curve[1]
-//        const cp2 = curve[2]
-//        const p2 = curve[3]
-//        let ux = Math.pow( 3 * cp1.x - 2 * p1.x - p2.x, 2 );
-//        let uy = Math.pow( 3 * cp1.y - 2 * p1.y - p2.y, 2 );
-//        let vx = Math.pow( 3 * cp2.x - 2 * p2.x - p1.x, 2 );
-//        let vy = Math.pow( 3 * cp2.y - 2 * p2.y - p1.y, 2 );
-//        if( ux < vx )  ux = vx;
-//        if( uy < vy )  uy = vy;
-//        return ux + uy;
-//    }
-
-
     void quadratic_to_cubic_bezier(const vec2_32i *points,
                                    vec2_32i &p0, vec2_32i &p1,
                                    vec2_32i &p2, vec2_32i &p3) {
@@ -190,6 +175,64 @@ namespace curves {
     bool is_quadratic_bezier_flat(const vec2_32i *points, uint8_t precision, unsigned int threshold) {
         return (compute_quadratic_bezier_flatness(points, precision) < threshold);
     }
+
+    void sub_divide_cubic_bezier(const vec2_32i *points,
+                                 uint8_t precision,
+                                 std::vector<vec2_32i> &output,
+                                 CurveDivisionAlgorithm algorithm) {
+
+        switch(algorithm) {
+            case CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small:
+                adaptive_sub_divide_cubic_bezier(points, precision, 1, output);
+                break;
+            case CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium:
+                adaptive_sub_divide_cubic_bezier(points, precision, 5, output);
+                break;
+            case CurveDivisionAlgorithm::Adaptive_tolerance_distance_Large:
+                adaptive_sub_divide_cubic_bezier(points, precision, 10, output);
+                break;
+            case CurveDivisionAlgorithm::Uniform_16:
+                uniform_sub_divide_cubic_bezier(points, precision, 4, output);
+                break;
+            case CurveDivisionAlgorithm::Uniform_32:
+                uniform_sub_divide_cubic_bezier(points, precision, 5, output);
+                break;
+            case CurveDivisionAlgorithm::Uniform_64:
+                uniform_sub_divide_cubic_bezier(points, precision, 6, output);
+                break;
+        }
+
+    }
+
+
+    void sub_divide_quadratic_bezier(const vec2_32i *points,
+                                     uint8_t precision,
+                                     std::vector<vec2_32i> &output,
+                                     CurveDivisionAlgorithm algorithm) {
+
+        switch(algorithm) {
+            case CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small:
+                adaptive_sub_divide_quadratic_bezier(points, precision, 1, output);
+                break;
+            case CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium:
+                adaptive_sub_divide_quadratic_bezier(points, precision, 5, output);
+                break;
+            case CurveDivisionAlgorithm::Adaptive_tolerance_distance_Large:
+                adaptive_sub_divide_quadratic_bezier(points, precision, 10, output);
+                break;
+            case CurveDivisionAlgorithm::Uniform_16:
+                uniform_sub_divide_quadratic_bezier(points, precision, 4, output);
+                break;
+            case CurveDivisionAlgorithm::Uniform_32:
+                uniform_sub_divide_quadratic_bezier(points, precision, 5, output);
+                break;
+            case CurveDivisionAlgorithm::Uniform_64:
+                uniform_sub_divide_quadratic_bezier(points, precision, 6, output);
+                break;
+        }
+
+    }
+
 
     void uniform_sub_divide_cubic_bezier(const vec2_32i *points,
                                          uint8_t precision,
@@ -257,12 +300,12 @@ namespace curves {
 
     void adaptive_sub_divide_quadratic_bezier(const vec2_32i *points,
                                               uint8_t precision,
-                                              unsigned int threshold,
+                                              unsigned int tolerance_distance_pixels,
                                               std::vector<vec2_32i> &output) {
 
         vec2_32i cubic[4];
         quadratic_to_cubic_bezier(points, cubic[0], cubic[1], cubic[2], cubic[3]);
-        adaptive_sub_divide_cubic_bezier(cubic, precision, threshold, output);
+        adaptive_sub_divide_cubic_bezier(cubic, precision, tolerance_distance_pixels, output);
     }
 
 }

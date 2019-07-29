@@ -61,7 +61,7 @@ vec2_32i b[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2},
 vec2_32i c[5] = {{5, H - 5}, {5, 225}, {W/2, H - 5}, {W-5,255}, {W-5, H-5}};
 
 vec2_f b_f[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2}, {W/2 + W/3, H/4}, {W-5, H - 5}};
-vec2_f b_f_small[7] = {{5, 200}, {50, 200}, {100, 200}, {150, 200}};
+vec2_f b_f_small[7] = {{5, 400}, {250, 400}, {500, 400}, {150, 200}};
 vec2_f c_f[5] = {{5, H - 5}, {5, 225}, {W/2, H - 5}, {W-5,255}, {W-5, H-5}};
 vec2_f c2_f[3] = {{20, 400}, {20+200, 300}, {20+400, 400}};
 
@@ -157,11 +157,13 @@ s = 50*sin(2.0f*3.14f*(float(timer%10000)/10000));
         b_f[1].y -= 0.2;//0.05f;
         b_f[2].y += 0.2;//0.05f;
 
-        b_f_small[1].y -= 1.0;//0.05f;
+        b_f_small[1].y -= 1.12;//0.05f;
+        b_f_small[2].x -= 1.012;//0.05f;
+        b_f_small[2].y -= 1.012;//0.05f;
 //        b_f_small[2].y += 0.2;//0.05f;
 
 //        c[1].y -= 0.05;
-        canvas->drawQuadraticBezierPath(BLACK, b_f_small, 3, 4);
+        canvas->drawQuadraticBezierPath(BLACK, b_f_small, 3, curves::CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small);
 
 
 //        canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
@@ -185,7 +187,7 @@ void test_curve_adaptive_subdivide() {
     vec2_32i split[7] = {left_1, left_2, left_3, left_4, right_2, right_3, right_4};
 
 //    canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
-    canvas->drawCubicBezierPath(BLACK, b_f_small, 4, 5);
+    canvas->drawCubicBezierPath(BLACK, b_f_small, 4);
 //    canvas->drawCubicBezierPath(BLACK, split, 7, 0, 4);
 }
 
@@ -206,7 +208,7 @@ void test_curve_split() {
                                   split[3], split[4], split[5], split[6]);
 
 //    canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
-    canvas->drawCubicBezierPath(BLACK, split, 7, 0, 4);
+    canvas->drawCubicBezierPath(BLACK, split, 7, 0);
 
 }
 

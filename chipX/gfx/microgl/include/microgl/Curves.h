@@ -10,7 +10,28 @@
 
 namespace curves {
 
+    enum class CurveDivisionAlgorithm {
+        Adaptive_tolerance_distance_Small,
+        Adaptive_tolerance_distance_Medium,
+        Adaptive_tolerance_distance_Large,
+        Uniform_16,
+        Uniform_32,
+        Uniform_64,
+    };
+
     vec2_32i lerp_fixed(int t, const vec2_32i &a, const vec2_32i &b, uint8_t precision, uint8_t range_bits);
+
+    void sub_divide_cubic_bezier(const vec2_32i *points,
+                                 uint8_t precision,
+                                 std::vector<vec2_32i> &output,
+                                 CurveDivisionAlgorithm algorithm);
+
+    void sub_divide_quadratic_bezier(const vec2_32i *points,
+                                     uint8_t precision,
+                                     std::vector<vec2_32i> &output,
+                                     CurveDivisionAlgorithm algorithm);
+
+    // these can be hidden
 
     void split_cubic_bezier_at(unsigned int t, uint8_t range_bits,
                                const vec2_32i *points,
