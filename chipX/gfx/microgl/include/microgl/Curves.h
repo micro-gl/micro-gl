@@ -11,12 +11,18 @@
 namespace curves {
 
     enum class CurveDivisionAlgorithm {
+        // highest quality for adaptive based on distance to real curve
         Adaptive_tolerance_distance_Small,
+        // medium quality for adaptive based on distance to real curve
         Adaptive_tolerance_distance_Medium,
+        // low quality for adaptive based on distance to real curve
         Adaptive_tolerance_distance_Large,
-        Uniform_16,
-        Uniform_32,
+        // highest quality for uniform subdivision
         Uniform_64,
+        // medium quality for uniform subdivision
+        Uniform_32,
+        // low quality for uniform subdivision
+        Uniform_16,
     };
 
     vec2_32i lerp_fixed(int t, const vec2_32i &a, const vec2_32i &b, uint8_t precision, uint8_t range_bits);

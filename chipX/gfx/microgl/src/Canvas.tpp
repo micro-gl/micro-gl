@@ -1920,7 +1920,7 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *poin
 //        curves::adaptive_sub_divide_quadratic_bezier(point_anchor, sub_pixel_bits, 1, samples);
         curves::sub_divide_quadratic_bezier(point_anchor, sub_pixel_bits, samples, algorithm);
 
-        cout << samples.size()<<endl;
+//        cout << samples.size()<<endl;
 
         for (unsigned int ix = 0; ix < samples.size(); ++ix) {
             current = samples[ix];

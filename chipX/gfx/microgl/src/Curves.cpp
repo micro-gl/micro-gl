@@ -272,7 +272,6 @@ namespace curves {
         if(is_cubic_bezier_flat(points, precision, tolerance_distance_pixels)) {
 //            output.push_back(points[0]);
             output.push_back(points[3]);
-//            output.push_back({points[3].x>>16, points[3].y>>16});
         } else {
             vec2_32i split_left[4];
             vec2_32i split_right[4];
