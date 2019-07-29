@@ -1883,12 +1883,13 @@ Canvas<P, CODER>::drawLinePath(color_f_t &color, vec2_f *points,
 }
 
 template<typename P, typename CODER>
-void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_f *points,
+void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color,
+                                               vec2_f *points,
                                                unsigned int size,
-                                               uint8_t resolution_bits) {
+                                               uint8_t max_subdivision_bits) {
 
     // sub pixel looks bad with our current line algorithm
-    uint8_t sub_p = 0;
+    uint8_t sub_p = 4;
     unsigned int MAX = 1<<sub_p;
     vec2_32i pts_fixed[size];// = new vec2_32i[size];
 
@@ -1897,7 +1898,7 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_f *points
         pts_fixed[jx] = (points[jx]*MAX);
     }
 
-    drawQuadraticBezierPath(color, pts_fixed, size, sub_p, resolution_bits);
+    drawQuadraticBezierPath(color, pts_fixed, size, sub_p, max_subdivision_bits);
 }
 
 
@@ -1905,7 +1906,7 @@ template<typename P, typename CODER>
 void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *points,
                                                unsigned int size,
                                                uint8_t sub_pixel_bits,
-                                               uint8_t resolution_bits) {
+                                               uint8_t max_subdivision_bits) {
 
     std::vector<vec2_32i> samples;
     vec2_32i previous, current;
@@ -1915,13 +1916,13 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *poin
 
         samples.clear();
 
-        curves::uniform_sub_divide_quadratic_bezier(point_anchor, sub_pixel_bits, resolution_bits, samples);
+        curves::uniform_sub_divide_quadratic_bezier(point_anchor, sub_pixel_bits, max_subdivision_bits, samples);
 
         for (unsigned int ix = 0; ix < samples.size(); ++ix) {
             current = samples[ix];
 
             if(ix)
-                drawLine(color, previous.x, previous.y, current.x, current.y, 0);
+                drawLine(color, previous.x, previous.y, current.x, current.y, sub_pixel_bits);
 
             drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{1.0,0.0,0.0},
                                                                                 current.x, current.y,
@@ -1950,7 +1951,7 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *poin
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawCubicBezierPath(color_f_t &color, vec2_f *points,
                                            unsigned int size,
-                                           unsigned int resolution_bits) {
+                                           unsigned int max_subdivision_bits) {
     // sub pixel looks bad with our current line algorithm
     uint8_t sub_p = 4;
     unsigned int MAX = 1<<sub_p;
@@ -1959,19 +1960,18 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t &color, vec2_f *points,
     // convert to fixed
     for (int jx = 0; jx < size; ++jx) {
 //        pts_fixed[jx] = (points[jx])*MAX);
-        pts_fixed[jx].x = ((int)points[jx].x)*MAX;
-        pts_fixed[jx].y = ((int)points[jx].y)*MAX;
+        pts_fixed[jx].x = (points[jx].x)*MAX;
+        pts_fixed[jx].y = (points[jx].y)*MAX;
     }
 
-    drawCubicBezierPath(color, pts_fixed, size, sub_p, resolution_bits);
-
+    drawCubicBezierPath(color, pts_fixed, size, sub_p, max_subdivision_bits);
 }
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
                                            unsigned int size,
                                            uint8_t sub_pixel_bits,
-                                           unsigned int resolution_bits) {
+                                           unsigned int max_subdivision_bits) {
     std::vector<vec2_32i> samples;
     vec2_32i previous, current;
     int count = 0;
@@ -1981,9 +1981,12 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
 
         samples.clear();
 
-//        curves::uniform_sub_divide_cubic_bezier(point_anchor, sub_pixel_bits, resolution_bits, samples);
+        unsigned int tolerance = 1<<sub_pixel_bits;
+//        unsigned int threshold = ((1<<sub_pixel_bits)/16)*((tolerance*tolerance)>>sub_pixel_bits);
+        unsigned int threshold = 16*((tolerance*tolerance)>>(0));
 
-        curves::adaptive_sub_divide_cubic_bezier(point_anchor, sub_pixel_bits, 5, samples);
+        curves::adaptive_sub_divide_cubic_bezier(point_anchor, sub_pixel_bits, 2, samples);
+//        curves::uniform_sub_divide_cubic_bezier(point_anchor, sub_pixel_bits, max_subdivision_bits, samples);
 
         count += samples.size();
 

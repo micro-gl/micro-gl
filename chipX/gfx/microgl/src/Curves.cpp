@@ -6,11 +6,17 @@
 
 namespace curves {
 
-    vec2_32i lerp_fixed(const vec2_32i &a, const vec2_32i &b, int t, uint8_t range_bits) {
+    vec2_32i lerp_fixed(int t, const vec2_32i &a, const vec2_32i &b, uint8_t precision, uint8_t range_bits) {
         vec2_32i r {};
 
-        r.x = a.x + (((b.x - a.x)*t)>>range_bits);
-        r.y = a.y + (((b.y - a.y)*t)>>range_bits);
+        uint8_t bits = precision - precision;
+
+        r.x = (a.x<<bits) + ((((b.x - a.x)<<bits)*t)>>range_bits);
+        r.y = (a.y<<bits) + ((((b.y - a.y)<<bits)*t)>>range_bits);
+//        r.y = (a.y<<bits) + (((b.y - a.y)*t)>>range_bits);
+
+        r.x >>= bits;
+        r.y >>= bits;
 
         return r;
     }
@@ -28,14 +34,14 @@ namespace curves {
         const vec2_32i &p3 = points[2];
         const vec2_32i &p4 = points[3];
 
-        vec2_32i p12 = lerp_fixed(p1, p2, t, range_bits);
-        vec2_32i p23 = lerp_fixed(p2, p3, t, range_bits);
-        vec2_32i p34 = lerp_fixed(p3, p4, t, range_bits);
+        vec2_32i p12 = lerp_fixed(t, p1, p2, sub_pixel_bits, range_bits);
+        vec2_32i p23 = lerp_fixed(t, p2, p3, sub_pixel_bits, range_bits);
+        vec2_32i p34 = lerp_fixed(t, p3, p4, sub_pixel_bits, range_bits);
 
-        vec2_32i p123 = lerp_fixed(p12, p23, t, range_bits);
-        vec2_32i p234 = lerp_fixed(p23, p34, t, range_bits);
+        vec2_32i p123 = lerp_fixed(t, p12, p23, sub_pixel_bits, range_bits);
+        vec2_32i p234 = lerp_fixed(t, p23, p34, sub_pixel_bits, range_bits);
 
-        vec2_32i p1234 = lerp_fixed(p123, p234, t, range_bits);
+        vec2_32i p1234 = lerp_fixed(t, p123, p234, sub_pixel_bits, range_bits);
 
         left_1 = p1;
         left_2 = p12;
@@ -58,10 +64,10 @@ namespace curves {
         const vec2_32i &p2 = points[1];
         const vec2_32i &p3 = points[2];
 
-        vec2_32i p12 = lerp_fixed(p1, p2, t, range_bits);
-        vec2_32i p23 = lerp_fixed(p2, p3, t, range_bits);
+        vec2_32i p12 = lerp_fixed(t, p1, p2, sub_pixel_bits, range_bits);
+        vec2_32i p23 = lerp_fixed(t, p2, p3, sub_pixel_bits, range_bits);
 
-        vec2_32i p123 = lerp_fixed(p12, p23, t, range_bits);
+        vec2_32i p123 = lerp_fixed(t, p12, p23, sub_pixel_bits, range_bits);
 
         left_1 = p1;
         left_2 = p12;
@@ -84,8 +90,8 @@ namespace curves {
         unsigned int a = comp * comp;
         unsigned int b = (t * comp) << 1;
         unsigned int c = t * t;
-        output.x = (a * points[0].x + b * points[1].x + c * points[2].x) >> resolution_double;
-        output.y = (a * points[0].y + b * points[1].y + c * points[2].y) >> resolution_double;
+        output.x = ((long)a * points[0].x + (long)b * points[1].x + (long)c * points[2].x) >> resolution_double;
+        output.y = ((long)a * points[0].y + (long)b * points[1].y + (long)c * points[2].y) >> resolution_double;
     }
 
     void evaluate_cubic_bezier_at(const unsigned int t, const uint8_t range_bits,
@@ -164,7 +170,7 @@ namespace curves {
         if( ux < vx )  ux = vx;
         if( uy < vy )  uy = vy;
 
-        return ((ux + uy)>>(precision<<1));
+        return ((ux + uy));//>>(precision<<1));
     }
 
     unsigned int compute_quadratic_bezier_flatness(const vec2_32i *points, uint8_t precision) {
@@ -176,8 +182,9 @@ namespace curves {
         return compute_cubic_bezier_flatness(cubic);
     }
 
-    bool is_cubic_bezier_flat(const vec2_32i *points, uint8_t precision, unsigned int threshold) {
-        return (compute_cubic_bezier_flatness(points, precision) < threshold);
+    bool is_cubic_bezier_flat(const vec2_32i *points, uint8_t precision, unsigned int tolerance_distance_pixels) {
+        return (compute_cubic_bezier_flatness(points, precision) < 16*((tolerance_distance_pixels*tolerance_distance_pixels)<<(precision<<1)));
+//        return (compute_cubic_bezier_flatness(points, precision) < threshold);
     }
 
     bool is_quadratic_bezier_flat(const vec2_32i *points, uint8_t precision, unsigned int threshold) {
@@ -216,12 +223,13 @@ namespace curves {
 
     void adaptive_sub_divide_cubic_bezier_internal(const vec2_32i *points,
                                           uint8_t precision,
-                                          unsigned int threshold,
+                                          unsigned int tolerance_distance_pixels,
                                           std::vector<vec2_32i> &output) {
 
-        if(is_cubic_bezier_flat(points, precision, threshold)) {
+        if(is_cubic_bezier_flat(points, precision, tolerance_distance_pixels)) {
 //            output.push_back(points[0]);
             output.push_back(points[3]);
+//            output.push_back({points[3].x>>16, points[3].y>>16});
         } else {
             vec2_32i split_left[4];
             vec2_32i split_right[4];
@@ -231,20 +239,20 @@ namespace curves {
                                   split_right[0], split_right[1], split_right[2], split_right[3]
             );
 
-            adaptive_sub_divide_cubic_bezier_internal(split_left, precision, threshold, output);
-            adaptive_sub_divide_cubic_bezier_internal(split_right, precision, threshold, output);
+            adaptive_sub_divide_cubic_bezier_internal(split_left, precision, tolerance_distance_pixels, output);
+            adaptive_sub_divide_cubic_bezier_internal(split_right, precision, tolerance_distance_pixels, output);
         }
 
     }
 
     void adaptive_sub_divide_cubic_bezier(const vec2_32i *points,
                                           uint8_t precision,
-                                          unsigned int threshold,
+                                          unsigned int tolerance_distance_pixels,
                                           std::vector<vec2_32i> &output) {
 
         output.push_back(points[0]);
 
-        adaptive_sub_divide_cubic_bezier_internal(points, precision, threshold, output);
+        adaptive_sub_divide_cubic_bezier_internal(points, precision, tolerance_distance_pixels, output);
     }
 
     void adaptive_sub_divide_quadratic_bezier(const vec2_32i *points,

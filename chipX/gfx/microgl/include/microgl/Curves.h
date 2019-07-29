@@ -10,7 +10,7 @@
 
 namespace curves {
 
-    vec2_32i lerp_fixed(const vec2_32i &a, const vec2_32i &b, int t, uint8_t range_bits);
+    vec2_32i lerp_fixed(int t, const vec2_32i &a, const vec2_32i &b, uint8_t precision, uint8_t range_bits);
 
     void split_cubic_bezier_at(unsigned int t, uint8_t range_bits,
                                const vec2_32i *points,
@@ -40,17 +40,17 @@ namespace curves {
 
     unsigned int compute_cubic_bezier_flatness(const vec2_32i *points, uint8_t precision=0);
     unsigned int compute_quadratic_bezier_flatness(const vec2_32i *points, uint8_t precision=0);
-    bool is_cubic_bezier_flat(const vec2_32i *points, uint8_t precision, unsigned int threshold);
-    bool is_quadratic_bezier_flat(const vec2_32i *points, uint8_t precision, unsigned int threshold);
+    bool is_cubic_bezier_flat(const vec2_32i *points, uint8_t precision, unsigned int tolerance_distance_pixels);
+    bool is_quadratic_bezier_flat(const vec2_32i *points, uint8_t precision, unsigned int tolerance_distance_pixels);
 
     void adaptive_sub_divide_cubic_bezier(const vec2_32i *points,
                                           uint8_t precision,
-                                          unsigned int threshold,
+                                          unsigned int tolerance_distance_pixels,
                                           std::vector<vec2_32i> &output);
 
     void adaptive_sub_divide_quadratic_bezier(const vec2_32i *points,
                                               uint8_t precision,
-                                              unsigned int threshold,
+                                              unsigned int tolerance_distance_pixels,
                                               std::vector<vec2_32i> &output);
 
     void uniform_sub_divide_cubic_bezier(const vec2_32i *points,

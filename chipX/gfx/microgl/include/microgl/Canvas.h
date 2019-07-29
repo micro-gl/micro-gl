@@ -260,19 +260,20 @@ public:
     void drawQuadraticBezierPath(color_f_t & color, vec2_32i *points,
                                  unsigned int size = 3,
                                  uint8_t sub_pixel_bits = 4,
-                                 uint8_t resolution_bits = 5);
+                                 uint8_t max_subdivision_bits = 5);
 
     void drawQuadraticBezierPath(color_f_t & color, vec2_f *points,
                                  unsigned int size = 3,
-                                 uint8_t resolution_bits = 5);
+                                 uint8_t max_subdivision_bits = 5);
 
     void drawCubicBezierPath(color_f_t & color, vec2_32i *points,
                              unsigned int size = 4,
                              uint8_t sub_pixel_bits = 4,
-                             unsigned int resolution_bits = 5);
+                             unsigned int max_subdivision_bits = 5);
 
     void drawCubicBezierPath(color_f_t & color, vec2_f *points,
-                             unsigned int size = 4, unsigned int resolution_bits = 5);
+                             unsigned int size = 4,
+                             unsigned int max_subdivision_bits = 5);
 
     void drawLinePath(color_f_t & color,
                       vec2_32i *points,
