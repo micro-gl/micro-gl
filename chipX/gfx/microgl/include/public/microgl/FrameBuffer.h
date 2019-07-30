@@ -5,14 +5,13 @@
 #pragma once
 
 #include "PixelFormat.h"
-//#include <algorithm>
 
 template<typename T>
-class Buffer {
+class FrameBuffer {
 public:
-    Buffer(int size);
-    Buffer(T* $pixels, int size);
-    ~Buffer();
+    FrameBuffer(int size);
+    FrameBuffer(T* $pixels, int size);
+    ~FrameBuffer();
     int size();
     T & readAt(int index);
     void writeAt(const T &value, int index);
@@ -20,10 +19,11 @@ public:
     T * data();
     void fill(const T &value);
 
+    T *_data = nullptr;
+
 protected:
     int _size = 0;
-    T *_data = nullptr;
+    uint8_t _bpe = sizeof(T);
 };
 
-
-#include "../src/Buffer.tpp"
+#include "../../src/FrameBuffer.tpp"

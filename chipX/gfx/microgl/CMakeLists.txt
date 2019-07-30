@@ -16,21 +16,21 @@ set(CMAKE_CXX_FLAGS_RELEASE "-fstrict-aliasing -O3 -Wstrict-aliasing")
 
 set(sources
         src/FrameBuffer.tpp
-        include/microgl/FrameBuffer.h
+        include/public/microgl/FrameBuffer.h
         src/Bitmap.tpp
-        include/microgl/Bitmap.h
+        include/public/microgl/Bitmap.h
         src/Buffer.tpp
-        include/microgl/Buffer.h
+        include/public/microgl/Buffer.h
         src/Canvas.tpp
-        include/microgl/Canvas.h
+        include/public/microgl/Canvas.h
         src/Functions.cpp
         src/PixelFormat.cpp
         src/BlendMode.cpp
         src/PorterDuff.cpp
-        include/microgl/Q.h
-        include/microgl/Sampler.h
+        include/public/microgl/Q.h
+        include/public/microgl/Sampler.h
         src/Curves.cpp
-        )
+        include/private/ds/RedBlackTree.h)
 
 add_library(${PROJECT_NAME} ${sources})
 
@@ -39,12 +39,16 @@ set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 # expose public include directory
 target_include_directories(${PROJECT_NAME}
         PUBLIC
-        ${PROJECT_SOURCE_DIR}/include)
+        ${PROJECT_SOURCE_DIR}/include/public)
 
 # private include directory
 target_include_directories(${PROJECT_NAME}
         PRIVATE
-        ${PROJECT_SOURCE_DIR}/src . ${PROJECT_SOURCE_DIR}/include/microgl)
+        ${PROJECT_SOURCE_DIR}/src
+        .
+        ${PROJECT_SOURCE_DIR}/include/public/microgl
+        ${PROJECT_SOURCE_DIR}/include/private/ds
+        )
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 

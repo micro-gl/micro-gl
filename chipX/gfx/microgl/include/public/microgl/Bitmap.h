@@ -52,4 +52,4 @@ protected:
 
 };
 
-#include "../src/Bitmap.tpp"
+#include "../../src/Bitmap.tpp"

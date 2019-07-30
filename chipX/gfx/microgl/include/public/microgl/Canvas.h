@@ -296,7 +296,7 @@ private:
 
 };
 
-#include "../src/Canvas.tpp"
+#include "../../src/Canvas.tpp"
 
 
 
