@@ -50,3 +50,6 @@ this is a great optimization for texture mapping
 
 - curves sub division
 https://github.com/pelson/antigrain/blob/master/agg-2.4/src/agg_curves.cpp
+
+### size
+- SDL : 87kb release, 124kb Debug

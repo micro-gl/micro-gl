@@ -2,7 +2,7 @@
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-
+ 
 #include "../include/public/microgl/Canvas.h"
 
 template<typename P, typename CODER>

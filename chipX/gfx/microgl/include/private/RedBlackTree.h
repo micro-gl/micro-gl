@@ -5,28 +5,47 @@ namespace ds {
         BLACK, RED, NIL
     };
 
-    template<typename Type>
+    template<typename Type, typename COMPARE>
     class RedBlackTree {
 
     public:
+        COMPARE compare;
+
         struct Node {
             Node* parent;
             Node* left;
             Node* right;
             enum node_color_t color;
-            int key;
             Type data;
         };
 
-        Node * newNode(int key, Type &data) {
+        Node * newNode(Type &data) {
             Node * node = new Node();
+            node->data = data;
+        }
 
-            node->key = key;
+        Node * newNode(Type data) {
+            Node * node = new Node();
             node->data = data;
         }
 
         Node * getRoot() {
             return root;
+        }
+
+        bool isEmpty() {
+            return getRoot()== nullptr;
+        }
+
+        bool contains(Type &data) {
+            return search(data)!= nullptr;
+        }
+
+        Node* insertIfNotContains(Node* n) {
+            if(contains(n->data))
+                return nullptr;
+
+            insert(n);
         }
 
         Node* insert(Node* n) {
@@ -44,17 +63,17 @@ namespace ds {
             return root;
         }
 
-        Node * search(int key) {
-            return search_iterative(root, key);
+        Node * search(Type &data) {
+            return search_iterative(root, data);
         }
 
-        Node * search_iterative(Node * $root, int key) {
+        Node * search_iterative(Node * $root, Type &data) {
             Node *p = $root;
 
             while (p!= nullptr) {
-                if(key==p->key)
+                if(isEqual(data, p->data))
                     return p;
-                else if(key<p->key)
+                else if(isPreceding(data, p->data))
                     p=p->left;
                 else
                     p=p->right;
@@ -63,23 +82,27 @@ namespace ds {
             return nullptr;
         }
 
-        Node * search_recurse(Node * $root, int key) {
+        Node * search_recurse(Node * $root, Type & data) {
             Node *p = $root;
 
-            if(p->key==key)
+            if(isEqual(p->data, data))
                 return p;
-            else if (key < p->key) {
-                Node *left = search_recurse(p->left, key);
+            else if (isPreceding(data, p->data)) {
+                Node *left = search_recurse(p->left, data);
                 return left;
             } else {
-                Node * right = search_recurse(p->right, key);
+                Node * right = search_recurse(p->right, data);
                 return right;
             }
 
         }
 
-        Node* insert(int key, Type & data) {
-            return insert(newNode(key, data));
+        Node* insert(Type & data) {
+            return insert(newNode(data));
+        }
+
+        Node* insert(Type data) {
+            return insert(newNode(data));
         }
 
         void deleteChild(Node* n) {
@@ -98,7 +121,82 @@ namespace ds {
             free(n);
         }
 
+        Type removeMinElement() {
+            Node * min = findMinElementInSubTree(getRoot());
+            Type data = min->data;
+            deleteChild(min);
 
+            return data;
+        }
+
+        Node * findMinElementInSubTree(Node * $root) {
+            Node *t = $root;
+
+            if ($root->left != nullptr) {
+                t = t->left;
+                while (t->right != nullptr) {
+                    t = t->right;
+                }
+
+            }
+
+            return t;
+        }
+
+        Node * findMaxElementInSubTree(Node * $root) {
+            Node *t = $root;
+
+            if (t->right != nullptr) {
+                // go to the left most element in the right subtree, it will
+                // the successor.
+                t = t->right;
+                while (t->left != nullptr) {
+                    t = t->left;
+                }
+
+            }
+
+            return t;
+        }
+
+        void successorPredecessor(Node *$root, Type &data,
+                                  Node *predecessor, Node *successor) {
+
+            if ($root != nullptr) {
+                if (isEqual($root->data, data)) {
+
+                    predecessor = findMinElementInSubTree($root);
+                    successor = findMaxElementInSubTree($root);
+
+                } else if (isPreceding($root->data, data)) {
+                    // we make the root as predecessor because we might have a
+                    // situation when value matches with the root, it wont have
+                    // right subtree to find the predecessor, in that case we need
+                    // parent to be the predecessor.
+                    predecessor = $root;
+                    successorPredecessor($root->right, data, predecessor, successor);
+                }
+
+                else {
+                    // we make the root as successor because we might have a
+                    // situation when value matches with the root, it wont have
+                    // right subtree to find the successor, in that case we need
+                    // parent to be the successor
+                    successor = $root;
+                    successorPredecessor($root->left, data, predecessor, successor);
+                }
+
+            }
+
+        }
+
+        bool isPreceding(const Type &lhs, const Type &rhs) {
+            return compare.isPreceding(lhs, rhs);
+        }
+
+        bool isEqual(const Type &lhs, const Type &rhs) {
+            return compare.isEqual(lhs, rhs);
+        }
 
     private:
         Node* root = nullptr;
@@ -160,7 +258,7 @@ namespace ds {
 
         void insertRecurse(Node* n) {
             // Recursively descend the tree until a leaf is found.
-            if (root != nullptr && n->key < root->key) {
+            if (root != nullptr && isPreceding(n->data, root->data)) {
                 if (root->left != nullptr) {
                     insertRecurse(root->left, n);
                     return;
