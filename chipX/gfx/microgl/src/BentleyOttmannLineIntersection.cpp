@@ -1,4 +1,4 @@
-#include <BentleyOttmannLineIntersection.h>
+#include <microgl/BentleyOttmannLineIntersection.h>
 
 namespace tessellation {
 

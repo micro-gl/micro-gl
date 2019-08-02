@@ -1,8 +1,19 @@
 #pragma once
 
+#include <stdexcept>
+
 namespace ds {
     enum class node_color_t {
         BLACK, RED, NIL
+    };
+
+    template<typename Type>
+    struct Node {
+        Node* parent;
+        Node* left;
+        Node* right;
+        enum node_color_t color;
+        Type data;
     };
 
     template<typename Type, typename COMPARE>
@@ -11,22 +22,23 @@ namespace ds {
     public:
         COMPARE compare;
 
-        struct Node {
-            Node* parent;
-            Node* left;
-            Node* right;
-            enum node_color_t color;
-            Type data;
-        };
-
-        Node * newNode(Type &data) {
-            Node * node = new Node();
-            node->data = data;
-        }
+        typedef Node<Type> Node;
 
         Node * newNode(Type data) {
             Node * node = new Node();
-            node->data = data;
+            node->data = Type{data};
+
+            return node;
+        }
+
+//        Node * newNode(Type data) {
+//            Node * node = new Node();
+//            node->data = data;
+//        }
+
+        void assert(bool ex) {
+            if(!ex)
+                throw std::invalid_argument( "received negative value" );
         }
 
         Node * getRoot() {
@@ -97,18 +109,22 @@ namespace ds {
 
         }
 
-        Node* insert(Type & data) {
-            return insert(newNode(data));
+        bool isLeaf(Node * node) {
+            return node->left==nullptr && node->right==nullptr;
         }
 
         Node* insert(Type data) {
             return insert(newNode(data));
         }
 
+//        Node* insert(Type data) {
+//            return insert(newNode(data));
+//        }
+
         void deleteChild(Node* n) {
             // Precondition: n has at most one non-leaf child.
             Node* child = (n->right == nullptr) ? n->left : n->right;
-            assert(child);
+//            assert(child!= nullptr);
 
             replaceNode(n, child);
             if (n->color == node_color_t::BLACK) {
@@ -118,12 +134,14 @@ namespace ds {
                     deleteCase1(child);
                 }
             }
-            free(n);
+
+            delete n;
+//            free(n);
         }
 
-        Type removeMinElement() {
+        Type &removeMinElement() {
             Node * min = findMinElementInSubTree(getRoot());
-            Type data = min->data;
+            Type &data = min->data;
             deleteChild(min);
 
             return data;
@@ -132,11 +150,8 @@ namespace ds {
         Node * findMinElementInSubTree(Node * $root) {
             Node *t = $root;
 
-            if ($root->left != nullptr) {
+            while (t->left != nullptr) {
                 t = t->left;
-                while (t->right != nullptr) {
-                    t = t->right;
-                }
 
             }
 
@@ -146,17 +161,133 @@ namespace ds {
         Node * findMaxElementInSubTree(Node * $root) {
             Node *t = $root;
 
-            if (t->right != nullptr) {
-                // go to the left most element in the right subtree, it will
-                // the successor.
+            while (t->right != nullptr) {
                 t = t->right;
-                while (t->left != nullptr) {
-                    t = t->left;
+            }
+
+            return t;
+        }
+
+        /*
+def getNextNode (node):
+    if node.right != NULL:
+        node = node.right
+        while node.left != NULL:
+            node = node.left
+        return node
+
+    while node.parent != NULL:
+        if node.parent.left == node:
+            return node.parent
+        node = node.parent
+
+    return NULL
+         */
+
+        Node * findUpperBoundOf(Type & data) {
+
+            Node * root = getRoot();
+
+            while(root!= nullptr) {
+
+                bool has_left = root->left!= nullptr;
+                bool has_right = root->right!= nullptr;
+
+                if(isEqual(root->data, data))
+                    return root;
+                    // we are bigger than current node, therefore slide into right subtree
+                else if(isSucceeding(root->data, data)) {
+                    if(has_right)
+                        root = root->right;
+                    else
+                        return root;
+                }
+                    // we are less than current node, therefore slide into left subtree
+                else {
+                    if(has_left)
+                        root = root->left;
+                    else
+                        return root;
+
                 }
 
             }
 
-            return t;
+        }
+
+        Node * findLowerBoundOf(Type & data) {
+
+            Node * root = getRoot();
+
+            while(root!= nullptr) {
+
+                bool has_left = root->left!= nullptr;
+                bool has_right = root->right!= nullptr;
+
+                if(isEqual(root->data, data))
+                    return root;
+                    // we are bigger than current node, therefore slide into right subtree
+                else if(isPreceding(root->data, data)) {
+                    if(has_left)
+                        root = root->left;
+                    else
+                        return root;
+                }
+                    // we are less than current node, therefore slide into left subtree
+                else {
+                    if(has_right)
+                        root = root->right;
+                    else
+                        return root;
+
+                }
+
+            }
+
+        }
+
+        Node * successor(Node * node) {
+
+            if(node== nullptr)
+                return nullptr;
+
+            Node * successor = findMinElementInSubTree(node->right);
+
+            if(successor == nullptr) {
+                while (node->parent!= nullptr) {
+                    if(node->parent->left == node) {
+                        successor = node->parent;
+                        break;
+                    }
+
+                    node = node->parent;
+                }
+
+            }
+
+            return successor;
+        }
+
+        Node * predecessor(Node * node) {
+
+            if(node== nullptr)
+                return nullptr;
+
+            Node * predecessor = findMaxElementInSubTree(node->left);
+
+            if(predecessor == nullptr) {
+                while (node->parent!= nullptr) {
+                    if(node->parent->right == node) {
+                        predecessor = node->parent;
+                        break;
+                    }
+
+                    node = node->parent;
+                }
+
+            }
+
+            return predecessor;
         }
 
         void successorPredecessor(Node *$root, Type &data,
@@ -165,8 +296,8 @@ namespace ds {
             if ($root != nullptr) {
                 if (isEqual($root->data, data)) {
 
-                    predecessor = findMinElementInSubTree($root);
-                    successor = findMaxElementInSubTree($root);
+                    predecessor = findMaxElementInSubTree($root);
+                    successor = findMinElementInSubTree($root);
 
                 } else if (isPreceding($root->data, data)) {
                     // we make the root as predecessor because we might have a
@@ -175,9 +306,7 @@ namespace ds {
                     // parent to be the predecessor.
                     predecessor = $root;
                     successorPredecessor($root->right, data, predecessor, successor);
-                }
-
-                else {
+                } else {
                     // we make the root as successor because we might have a
                     // situation when value matches with the root, it wont have
                     // right subtree to find the successor, in that case we need
@@ -192,6 +321,10 @@ namespace ds {
 
         bool isPreceding(const Type &lhs, const Type &rhs) {
             return compare.isPreceding(lhs, rhs);
+        }
+
+        bool isSucceeding(const Type &lhs, const Type &rhs) {
+            return !compare.isPreceding(lhs, rhs);
         }
 
         bool isEqual(const Type &lhs, const Type &rhs) {
@@ -256,26 +389,26 @@ namespace ds {
             }
         }
 
-        void insertRecurse(Node* n) {
+        void insertRecurse(Node * $root, Node* n) {
             // Recursively descend the tree until a leaf is found.
-            if (root != nullptr && isPreceding(n->data, root->data)) {
-                if (root->left != nullptr) {
-                    insertRecurse(root->left, n);
+            if ($root != nullptr && isPreceding(n->data, $root->data)) {
+                if ($root->left != nullptr) {
+                    insertRecurse($root->left, n);
                     return;
                 } else {
-                    root->left = n;
+                    $root->left = n;
                 }
-            } else if (root != nullptr) {
-                if (root->right != nullptr) {
-                    insertRecurse(root->right, n);
+            } else if ($root != nullptr) {
+                if ($root->right != nullptr) {
+                    insertRecurse($root->right, n);
                     return;
                 } else {
-                    root->right = n;
+                    $root->right = n;
                 }
             }
 
             // Insert new Node n.
-            n->parent = root;
+            n->parent = $root;
             n->left = nullptr;
             n->right = nullptr;
             n->color = node_color_t::RED;
@@ -299,6 +432,10 @@ namespace ds {
             }
         }
 
+        void insertCase2(Node* n) {
+            // Do nothing since tree is still valid.
+            return;
+        }
         void insertCase3(Node* n) {
             getParent(n)->color = node_color_t::BLACK;
             getUncle(n)->color = node_color_t::BLACK;

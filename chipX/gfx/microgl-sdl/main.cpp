@@ -14,6 +14,7 @@
 #include <microgl/PixelFormat.h>
 #include <microgl/PixelCoder.h>
 #include <microgl/Bitmap.h>
+#include <microgl/BentleyOttmannLineIntersection.h>
 
 void test_curve_split();
 void test_curve_adaptive_subdivide();
@@ -32,8 +33,6 @@ typedef Bitmap<uint32_t, RGB888_PACKED_32> Bitmap24bit_Packed32;
 typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
 typedef Canvas<vec3<uint8_t >, RGB888_ARRAY> Canvas24BitU8;
 
-//Canvas16Bit * canvas;
-//Canvas24BitU8 * canvas;
 Canvas24Bit_Packed32 * canvas;
 
 Bitmap24bitU8 * bmp_1;
@@ -43,8 +42,6 @@ Bitmap24bit_Packed32 * bmp_uv;
 
 Resources resources{};
 Resources::image_info_t img_1;
-
-//Bitmap<vec3<uint8_t>> *bmp_1;
 
 color_f_t RED{1.0,0.0,0.0, 1.0};
 color_f_t YELLOW{1.0,1.0,0.0, 1.0};
@@ -56,163 +53,61 @@ color_f_t BLACK{0.0,0.0,0.0, 1.0};
 void loop();
 void init_sdl(int width, int height);
 
-vec2_32i a[3] = {{5, H - 5}, {0, 225}, {W/2, H - 5}};
-vec2_32i b[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2}, {W/2 + W/3, H/4}, {W-5, H - 5}};
-vec2_32i c[5] = {{5, H - 5}, {5, 225}, {W/2, H - 5}, {W-5,255}, {W-5, H-5}};
+using namespace tessellation;
 
-vec2_f b_f[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2}, {W/2 + W/3, H/4}, {W-5, H - 5}};
-vec2_f b_f_small[7] = {{5, 400}, {250, 400}, {500, 400}, {150, 200}};
-vec2_f c_f[5] = {{5, H - 5}, {5, 225}, {W/2, H - 5}, {W-5,255}, {W-5, H-5}};
-vec2_f c2_f[3] = {{20, 400}, {20+200, 300}, {20+400, 400}};
+//segment_t s1 {{10,10}, {400, 400}};
+//segment_t s2 {{600,40}, {150, 350}};
+//segment_t s3 {{300,40}, {40, 350}};
 
-static float d = 0;//1.0f*(float)W/3.0f;
+segment_t s1 {{20,200}, {400, 200}};
+segment_t s2 {{50,20}, {50, 400}};
+segment_t s3 {{150,20}, {150, 400}};
 
+vec2_32i s1_[2] = {{10, 10}, {200, 200}};
+vec2_32i s2_[2] = {{40, 10}, {150, 200}};
+
+//std::vector<segment_t> segments {s1, s2};
+std::vector<segment_t> segments {s1, s2, s3};
+
+BentleyOttmann bentleyOttmann(segments.data(), segments.size());
+
+int t = 0;
 inline void render() {
 
     canvas->setAntialiasing(false);
-//    canvas->clear(WHITE);
 
     for (int ix = 0; ix < 1; ++ix) {
-
+        t += 1;
         canvas->clear(WHITE);
-//
-        static long a = 0;
 
-        a+=20;
+        s2.p0.x = 200;
 
-//        b += 10.01;//
-//cout<<b<<endl;
+        bentleyOttmann.line_intersection();
 
-        int G = 256;
+        auto & I = bentleyOttmann.getIntersections();
+        for (auto & inter : I) {
+            canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, inter.x, inter.y, 5);
 
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false, false>(
-//                *bmp_uv,
-//                0,0,       0, 32, 32,
-//                G + b, 0,     32,32,32,
-//                G,G,   32,0,32,
-//                255,
-//                0,5
-//        );
-//
+        }
 
-//        b=0.778;
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-//                *bmp_uv,
-//                10.0f,                0.0f,                0.0f, 1.0f,
-//                10.0f + (float)G + b, 0.0f,                1.0f, 1.0f,
-//                10.0f + (float)G,     0.0f + (float)G,     1.0f, 0.0f,
-//                255
-//        );
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-//                *bmp_uv,
-//                10.0f + (float)G,     0.0f + (float)G,     1.0f, 0.0f,
-//                10.0f           ,     0.0f + (float)G,     0.0f, 0.0f,
-//                10.0f,                0.0f,                0.0f, 1.0f,
-//                255
-//        );
-
-// test fill rules withs this
-
-//b+=0.15;
-//cout<<b<<endl;
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false, sampler::NearestNeighbor>(
-//                *bmp_uv,
-//                0,0,          0.0, 1.0,
-//                G+ d, 0,       1.0, 1.0,
-//                G +0, G,      1.0, 0.0,
-//                0, G,         0.0, 0.0,
-//                255);
-
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false>(
-//                RED,
-//                0,0,
-//                G+ 0,0,
-//                G +0,G,
-//                0, G,
-//                255);
-
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-//                *bmp_uv,
-//                10.0f + (float)G,     0.0f + (float)G,     1.0f, 0.0f,
-//                10.0f           ,     0.0f + (float)G,     0.0f, 0.0f,
-//                10.0f,                0.0f,                0.0f, 1.0f,
-//                10.0f ,               0.0f + (float)G,     0.0f, 0.0f,
-//                255);
-//
-static long timer = 0;
-static float s;
-
-timer++;
-s = 50*sin(2.0f*3.14f*(float(timer%10000)/10000));
-
-//b[1].y = H/4 + s;
-//        d += 0.001;
-        d += 0.001;
-
-        c2_f[1].y -= 0.05;
-        c_f[1].x += .5;
-
-        b[1].y -= 1;//0.05f;
-
-        b_f[1].y -= 0.2;//0.05f;
-        b_f[2].y += 0.2;//0.05f;
-
-        b_f_small[1].y -= 1.12;//0.05f;
-        b_f_small[2].x -= 1.012;//0.05f;
-        b_f_small[2].y -= 1.012;//0.05f;
-//        b_f_small[2].y += 0.2;//0.05f;
-
-//        c[1].y -= 0.05;
-        canvas->drawQuadraticBezierPath(BLACK, b_f_small, 3, curves::CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small);
+        for (auto & segment : segments) {
+            canvas->drawLine(BLACK,
+                    segment.p0.x, segment.p0.y,
+                    segment.p1.x, segment.p1.y,
+                    0
+                    );
+        }
 
 
-//        canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
 
-//        test_curve_split();
-//        test_curve_adaptive_subdivide();
     }
 
 }
 
 
-/**
- * test cubic curve split
- */
-void test_curve_adaptive_subdivide() {
-//    vec2_f b_f[4] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}};
-
-    vec2_32i left_1, left_2, left_3, left_4;
-    vec2_32i right_1, right_2, right_3, right_4;
-
-    vec2_32i split[7] = {left_1, left_2, left_3, left_4, right_2, right_3, right_4};
-
-//    canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
-    canvas->drawCubicBezierPath(BLACK, b_f_small, 4);
-//    canvas->drawCubicBezierPath(BLACK, split, 7, 0, 4);
-}
-
-
-/**
- * test cubic curve split
- */
-void test_curve_split() {
-    vec2_32i b_f[4] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}};
-
-    vec2_32i left_1, left_2, left_3, left_4;
-    vec2_32i right_1, right_2, right_3, right_4;
-
-    vec2_32i split[7] = {left_1, left_2, left_3, left_4, right_2, right_3, right_4};
-
-    curves::split_cubic_bezier_at(128, 8, b_f, 0,
-                                  split[0], split[1], split[2], split[3],
-                                  split[3], split[4], split[5], split[6]);
-
-//    canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
-    canvas->drawCubicBezierPath(BLACK, split, 7, 0);
-
-}
-
 int main() {
+
+
     init_sdl(W, H);
     loop();
 }
@@ -223,25 +118,17 @@ void init_sdl(int width, int height) {
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, 0);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
-//    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STATIC, width, height);
-//    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
 
-//    canvas = new Canvas16Bit(width, height, PixelFormat::RGB565, new RGB565_PACKED_16());
     canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
-//    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
-
 
     img_1 = resources.loadImageFromCompressedPath("charsprites.png");
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
 
-
-//    auto * bmp_1 = new Bitmap<uint32_t , RGB888_PACKED_32>(img_1.data, img_1.width, img_1.height, new RGB888_PACKED_32());
     bmp_1 = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_1.data, img_1.width, img_1.height, new RGB888_ARRAY());
     bmp_2 = bmp_1->convertToBitmap<uint32_t , RGB888_PACKED_32>();
 
     bmp_uv_U8 = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_2.data, img_2.width, img_2.height, new RGB888_ARRAY());
     bmp_uv = bmp_uv_U8->convertToBitmap<uint32_t , RGB888_PACKED_32>();
-//    bmp_uv = new Bitmap<uint32_t , RGB888_PACKED_32>(img_2.width, img_2.height, new RGB888_PACKED_32());
 
     resources.init();
 }

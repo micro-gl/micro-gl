@@ -30,9 +30,11 @@ set(sources
         include/public/microgl/Q.h
         include/public/microgl/Sampler.h
         src/Curves.cpp
-        include/private/RedBlackTree.h
-        include/private/BentleyOttmannLineIntersection.h
-        src/BentleyOttmannLineIntersection.cpp)
+        include/private/microgl/RedBlackTree.h
+        include/private/microgl/BentleyOttmannLineIntersection.h
+        include/private/microgl/AVLTree.h
+        src/BentleyOttmannLineIntersection.cpp
+        )
 
 add_library(${PROJECT_NAME} ${sources})
 
@@ -42,6 +44,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(${PROJECT_NAME}
         PUBLIC
         ${PROJECT_SOURCE_DIR}/include/public
+        ${PROJECT_SOURCE_DIR}/include/private
         )
 
 # private include directory
@@ -50,6 +53,7 @@ target_include_directories(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/src
         .
         ${PROJECT_SOURCE_DIR}/include/public/microgl
+        ${PROJECT_SOURCE_DIR}/include/private/microgl
         ${PROJECT_SOURCE_DIR}/include/private
         )
 
