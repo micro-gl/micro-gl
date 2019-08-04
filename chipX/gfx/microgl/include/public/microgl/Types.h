@@ -27,6 +27,19 @@ template<typename T>
 struct vec2 {
     T x, y;
 
+    vec2(const T & x_, const T & y_) {
+        x = x_;
+        y = y_;
+    }
+
+    vec2() = default;
+
+    template<typename F>
+    vec2(const vec2<F> & a) {
+        this->x = static_cast<T>(a.x);
+        this->y = static_cast<T>(a.y);
+    }
+
     vec2 operator-(const vec2 & a) const {
         return vec2{this->x-a.x, this->y - a.y};
     }
@@ -43,12 +56,20 @@ struct vec2 {
         return (this->x*a.x + this->y*a.y);
     }
 
-    vec2<T> operator*(const int & a) {
+    vec2<T> operator*(const int & a) const {
         return vec2<T>{this->x*a, this->y*a};
     }
 
+    vec2<T> operator<<(const int & a) const {
+        return vec2<T>{this->x*(1<<a), this->y*(1<<a)};
+    }
+
+    vec2<T> operator>>(const int & a) const {
+        return vec2<T>{this->x/(1<<a), this->y/(1<<a)};
+    }
+
     template<typename F>
-    vec2<T> & operator=(const vec2<F> & a) {
+    vec2<T> & operator=(const vec2<F> & a) const {
         this->x = static_cast<T>(a.x);
         this->y = static_cast<T>(a.y);
 

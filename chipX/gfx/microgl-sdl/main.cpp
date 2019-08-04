@@ -74,7 +74,7 @@ vec2_32i s2_[2] = {{40, 10}, {150, 200}};
 //std::vector<segment_t> segments {s3, s2};
 std::vector<segment_t> segments {s1, s2, s3, s4, s5, s6};
 
-BentleyOttmann bentleyOttmann(segments.data(), segments.size());
+BentleyOttmann bentleyOttmann;
 
 int t = 0;
 inline void render() {
@@ -85,11 +85,11 @@ inline void render() {
         t += 1;
         canvas->clear(WHITE);
 
-        bentleyOttmann.line_intersection();
+        auto & I = bentleyOttmann.compute(segments.data(), segments.size());
 
-        auto & I = bentleyOttmann.getIntersections();
         for (auto & inter : I) {
-            canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED, inter.x, inter.y, 5);
+            canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+                    RED, inter.x, inter.y, 5);
 
         }
 
@@ -100,8 +100,6 @@ inline void render() {
                     0
                     );
         }
-
-
 
     }
 

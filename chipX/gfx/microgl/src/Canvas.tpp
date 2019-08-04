@@ -1892,10 +1892,9 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color,
     uint8_t sub_p = 4;
     unsigned int MAX = 1<<sub_p;
     vec2_32i pts_fixed[size];// = new vec2_32i[size];
-
     // convert to fixed
     for (int jx = 0; jx < size; ++jx) {
-        pts_fixed[jx] = (points[jx]*MAX);
+        pts_fixed[jx] = vec2_32i(points[jx]*MAX);
     }
 
     drawQuadraticBezierPath(color, pts_fixed, size, sub_p, algorithm);

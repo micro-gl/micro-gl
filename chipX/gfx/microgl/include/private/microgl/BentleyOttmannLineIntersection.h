@@ -21,53 +21,144 @@ namespace tessellation {
         START, END, Intersection
     };
 
-    struct computation_t {
+    struct rational_t {
         int numerator, denominator;
+
+        float toFloat() {
+            return float(numerator)/float(denominator);
+        };
+
+        int toFixed(uint8_t precision = 0) {
+            return (numerator<<precision)/(denominator);
+        };
+
+        rational_t & absolute() {
+            if(isNegative()) {
+                numerator = numerator<0 ? -numerator : numerator;
+                denominator = denominator<0 ? -denominator : denominator;
+            }
+
+            return *this;
+        }
+
+        void makeDenominatorPositive() {
+            if(denominator < 0) {
+                numerator = -numerator;
+                denominator = -denominator;
+            }
+
+        }
+
+        bool operator!=(const int & val) {
+            return !(*this==val);
+        }
+
+        bool operator==(const int & val) {
+            if(val!=0)
+                return numerator==val*denominator;
+
+            return numerator==0;
+        }
+
+        rational_t operator*(const int & val) {
+            int n = numerator*val;
+            return rational_t{n, denominator};
+        }
+
+        rational_t operator*(const rational_t & val) {
+            int n = numerator*val.numerator;
+            int d = denominator*val.denominator;
+            return rational_t{n, d};
+        }
+
+        rational_t operator/(const int & val) {
+            return rational_t{numerator, denominator*val};
+        }
+
+        rational_t operator/(const rational_t & val) {
+            int n = numerator*val.denominator;
+            int d = denominator*val.numerator;
+            return rational_t{n, d};
+        }
+
+        rational_t operator+(const int & val) {
+            int n = numerator + denominator*val;
+            return rational_t{n, denominator};
+        }
+
+        rational_t operator+(const rational_t & val) {
+            int n = numerator*val.denominator + val.numerator*denominator;
+            int d = denominator * val.denominator;
+            return rational_t{n, d};
+        }
+
+        rational_t operator-(const int & val) {
+            int n = numerator - denominator*val;
+            return rational_t{n, denominator};
+        }
+
+        rational_t operator-(const rational_t & val) {
+            int n = numerator*val.denominator - val.numerator*denominator;
+            int d = denominator * val.denominator;
+            return rational_t{n, d};
+        }
+
+        bool operator >= (const int & val) {
+            if(val!=0)
+                return numerator >= denominator*val;
+            else {
+                return isPositive();
+            }
+        }
+
+        bool operator <= (const int & val) {
+            if(val!=0)
+                return numerator <= denominator*val;
+            else {
+                return isNegative();
+            }
+        }
+
+        bool isPositive() {
+            return (numerator>=0 && denominator>=0)||
+                   (numerator<=0 && denominator<=0);
+        }
+
+        bool isNegative() {
+            return !isPositive();
+        }
+
     };
 
     struct segment_t {
         vec2_32i p0, p1;
 
-        computation_t compute_slope_parts() const {
+        rational_t compute_slope_parts() const {
             return {p1.x - p0.x, p1.y - p0.y};
         }
 
-        computation_t compute_x_intersection_with(const vec2_32i & p) const {
-            computation_t c {0, 0};
-
-            if (p0.y==p1.y) {
-                c.numerator = clamp(p.x, p0.x, p1.x);
-                c.denominator = 1;
-            } else {
-                auto dx = p1.x - p0.x;
-                auto dy = p1.y - p0.y;
-
-                c.numerator = p0.x*dy + (p.y - p0.y)*dx;
-                c.denominator = dy;
-            }
-
-            return c;
-        }
-
-        bool contains(const vec2_32i & p, float epsilon = 1.0) {
+        bool contains(const vec2_32i & p) {
 
             // this is an optimization to avoid divisions
             auto dx = p1.x - p0.x;
             auto dy = p1.y - p0.y;
+            rational_t slope{dx, dy};
 
-            bool lies_on_ray = false;
+            bool lies_on_ray;
 
             if(dy!=0) {
+                /*
                 auto M = p0.x*dy + (p.y - p0.y)*dx;
                 auto xDistance = abs(p.x*dy - M);
-//                lies_on_ray = xDistance < epsilon*dy;
-                lies_on_ray = xDistance < 3*(abs(dx) + abs(dy));
+                lies_on_ray = xDistance < dy;
+                 */
+
+                rational_t x = slope*(p.y - p0.y) + p0.x;
+                rational_t dist = x - p.x;
+                lies_on_ray = (dist.absolute() <= 1);
+
             } else {
                 lies_on_ray = p.y==p0.y;
-            }
-
-            if(dy == 0) {
-//                contains =
             }
 
             // check edge cases beyond the segment
@@ -85,7 +176,6 @@ namespace tessellation {
             }
 
             return lies_on_ray;
-
         }
 
         bool isStart(const vec2_32i & p) {
@@ -126,10 +216,6 @@ namespace tessellation {
                    ((lhs.getPoint().y == rhs.getPoint().y) && (lhs.getPoint().x < rhs.getPoint().x));
         }
 
-        bool isPrecedingOrEqual(const event_point_t& lhs, const event_point_t& rhs)
-        {
-            return isPreceding(lhs, rhs) || isEqual(lhs, rhs);
-        }
 
         bool isEqual(const event_point_t& lhs, const event_point_t& rhs)
         {
@@ -144,100 +230,49 @@ namespace tessellation {
 
     struct segment_order
     {
-        int backup(const segment_t& lhs, const segment_t& rhs) {
-            //
-            // extended intersection without division
-            auto dx_1 = lhs.p1.x - lhs.p0.x;
-            auto dy_1 = lhs.p1.y - lhs.p0.y;
+        rational_t compute_x_intersection_with(const segment_t& segment, const vec2_32i & p) const {
+            // we presume we already have intersection with p.y
+            auto dx = segment.p1.x - segment.p0.x;
+            auto dy = segment.p1.y - segment.p0.y;
+            rational_t slope{dx, dy};
 
-            auto dx_2 = rhs.p1.x - rhs.p0.x;
-            auto dy_2 = rhs.p1.y - rhs.p0.y;
+            rational_t x {0, 0};
 
-            auto M1 = 0;
-            auto M2 = 0;
-            auto m1 = 0;
-            auto m2 = 0;
+            if (dy==0) {
+                x.numerator = clamp(p.x, segment.p0.x, segment.p1.x);
+                x.denominator = 1;
+            } else {
 
-            if(dy_1!=0) {
-                m1 = dy_1;
-                M1 = lhs.p0.x*dy_1 + (p.y - lhs.p0.y)*dx_1;
+                x = slope*(p.y - segment.p0.y) + segment.p0.x;
+
+//                c.numerator = segment.p0.x*dy + (p.y - segment.p0.y)*dx;
+//                c.denominator = dy;
             }
 
-            if(dy_2!=0) {
-                m2 = dy_2;
-                M2 = rhs.p0.x*dy_2 + (p.y - rhs.p0.y)*dx_2;
-            }
-
-            // special cases
-            // lhs is a line
-            // both are lines or points
-            if(dy_1==0 && dy_2==0 && lhs.p0.y==p.y && rhs.p0.y==p.y) {
-                // if they intersect
-                auto left = max(lhs.p0.x, rhs.p0.x);
-                auto right = min(lhs.p1.x, rhs.p1.x);
-
-                // if they intersect, they are the same
-                if((right-left) >= 0) {
-                    M1=m1=M2=m2 = 1;
-                }
-
-            }
-                // if one of them is a horizontal line
-            else {
-                if(dy_1==0 && lhs.p0.y==p.y) {
-                    // lies on p.y
-                    M1 = clamp(M2, m2*lhs.p0.x, m2*lhs.p1.x);
-                    m1 = m2;
-
-                    // a point
-                    if(dx_1==0) {
-                        m1 = 1;
-                        M1 = lhs.p0.x;
-                    }
-                }
-                else if(dy_2==0 && rhs.p0.y==p.y) {
-                    // lies on p.y
-                    M2 = clamp(M1, m1*rhs.p0.x, m1*rhs.p1.x);
-                    m2 = m1;
-
-                    // a point
-                    if(dx_2==0) {
-                        m2 = 1;
-                        M2 = rhs.p0.x;
-                    }
-                }
-            }
-
-
-
-            // we want to represent
-            // x_left = M1/m1, x_right = M2/m2
-            // compare_result = x_left - x_right
-
-            int pre = M1 * m2 - M2 * m1;
-
-            if(abs(pre) <= 3 * abs(m1*m2))
-                return 0;
-//            int pre = M1/m1 - M2/m2;
-
-            return pre;
+            return x;
         }
-
 
         int cmp(const segment_t& lhs, const segment_t& rhs) {
 
-            computation_t lhs_x = lhs.compute_x_intersection_with(p);
-            computation_t rhs_x = rhs.compute_x_intersection_with(p);
+            rational_t lhs_x = compute_x_intersection_with(lhs, p);
+            rational_t rhs_x = compute_x_intersection_with(rhs, p);
+
+            lhs_x.makeDenominatorPositive();
+            rhs_x.makeDenominatorPositive();
 
             // this is to avoid divisions, which are expensive
-            int compare = lhs_x.numerator*rhs_x.denominator - rhs_x.numerator*lhs_x.denominator;
+//            int compare = lhs_x.numerator*rhs_x.denominator - rhs_x.numerator*lhs_x.denominator;
+            rational_t compare = (lhs_x - rhs_x);
 
             if(compare!=0)
-                return compare;
+                return compare.numerator;
 
             // if they are equal at p, we need to break tie with slope
-            computation_t lhs_slope = lhs.compute_slope_parts();
-            computation_t rhs_slope = rhs.compute_slope_parts();
+            rational_t lhs_slope = lhs.compute_slope_parts();
+            rational_t rhs_slope = rhs.compute_slope_parts();
+
+            lhs_slope.makeDenominatorPositive();
+            rhs_slope.makeDenominatorPositive();
 
             bool lhs_has_infinite_slope = lhs_slope.denominator==0;
             bool rhs_has_infinite_slope = rhs_slope.denominator==0;
@@ -248,10 +283,9 @@ namespace tessellation {
             if(rhs_has_infinite_slope)
                 return -1;
 
-            int slope_compare = lhs_slope.numerator * rhs_slope.denominator -
-                                rhs_slope.numerator * lhs_slope.denominator;
+            rational_t slope_compare = lhs_slope - rhs_slope;
 
-            return slope_compare;
+            return slope_compare.numerator;
         }
 
         bool isPreceding(const segment_t& lhs, const segment_t& rhs)
@@ -259,15 +293,15 @@ namespace tessellation {
             return cmp(lhs, rhs) < 0;
         }
 
-        bool isPrecedingOrEqual(const segment_t& lhs, const segment_t& rhs)
-        {
-            return cmp(lhs, rhs) <= 0;
-        }
-
-        bool isEqual(const segment_t& lhs, const segment_t& rhs)
-        {
-            return cmp(lhs, rhs) == 0;
-        }
+//        bool isPrecedingOrEqual(const segment_t& lhs, const segment_t& rhs)
+//        {
+//            return cmp(lhs, rhs) <= 0;
+//        }
+//
+//        bool isEqual(const segment_t& lhs, const segment_t& rhs)
+//        {
+//            return cmp(lhs, rhs) == 0;
+//        }
 
         bool isExact(const segment_t& lhs, const segment_t& rhs)
         {
@@ -311,27 +345,52 @@ namespace tessellation {
         return false; // No collision
     }
 
+    bool get_line_intersection_rational(int p0_x, int p0_y, int p1_x, int p1_y,
+                                        int p2_x, int p2_y, int p3_x, int p3_y,
+                                        rational_t *x=nullptr, rational_t *y=nullptr)
+    {
+        int s1_x = p1_x - p0_x;
+        int s1_y = p1_y - p0_y;
+        int s2_x = p3_x - p2_x;
+        int s2_y = p3_y - p2_y;
+
+        rational_t s{}, t{};
+        s.numerator = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y));
+        s.denominator = (-s2_x * s1_y + s1_x * s2_y);
+
+        t.numerator = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x));
+        t.denominator = (-s2_x * s1_y + s1_x * s2_y);
+
+        if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+        {
+            *x = (t * s1_x) + p0_x;
+            *y = (t * s1_y) + p0_y;
+
+            return true;
+        }
+
+        return false;
+    }
+
     class BentleyOttmann {
     public:
-        BentleyOttmann(vec2_32i * pts, int size) {
-            for (int ix = 0; ix < size; ++ix) {
-                event_point_t e1 = create_event(pts[ix], pts[ix+1], event_type_t::START);
-                event_point_t e2 = create_event(pts[ix], pts[ix+1], event_type_t::END);
-                Queue.insert(e1);
-                Queue.insert(e2);
-            }
+
+        BentleyOttmann() = default;
+
+        event_point_t create_event(const vec2_f & p0,
+                                    const vec2_f & p1,
+                                    event_type_t type, uint8_t
+                                    precision = 0) {
+            // convert to fixed precision
+            vec2_32i p0_i = p0<<precision;
+            vec2_32i p1_i = p1<<precision;
+
+            return create_event(p0_i, p1_i, type);
         }
 
-        BentleyOttmann(segment_t * seg, int size) {
-            for (int ix = 0; ix < size; ++ix) {
-                event_point_t e1 = create_event(seg[ix], event_type_t::START);
-                event_point_t e2 = create_event(seg[ix], event_type_t::END);
-                Queue.insert(e1);
-                Queue.insert(e2);
-            }
-        }
-
-        event_point_t create_event(const vec2_32i & p0, const vec2_32i & p1, event_type_t type) {
+        event_point_t create_event(const vec2_32i & p0,
+                                    const vec2_32i & p1,
+                                    event_type_t type) {
             event_point_t pt;
             pt.segment.p0 = p0;
             pt.segment.p1 = p1;
@@ -346,7 +405,43 @@ namespace tessellation {
             return create_event(segment.p0, segment.p1, type);
         }
 
-        void line_intersection() {
+        std::vector<vec2_32i> & compute(vec2_f * pts, int size, uint8_t precision) {
+
+            for (int ix = 0; ix < size; ++ix) {
+                event_point_t e1 = create_event(pts[ix], pts[ix+1], event_type_t::START);
+                event_point_t e2 = create_event(pts[ix], pts[ix+1], event_type_t::END);
+                Queue.insert(e1);
+                Queue.insert(e2);
+            }
+
+            return compute_internal();
+        }
+
+        std::vector<vec2_32i> & compute(vec2_32i * pts, int size) {
+
+            for (int ix = 0; ix < size; ++ix) {
+                event_point_t e1 = create_event(pts[ix], pts[ix+1], event_type_t::START);
+                event_point_t e2 = create_event(pts[ix], pts[ix+1], event_type_t::END);
+                Queue.insert(e1);
+                Queue.insert(e2);
+            }
+
+            return compute_internal();
+        }
+
+        std::vector<vec2_32i> & compute(segment_t * seg, int size) {
+
+            for (int ix = 0; ix < size; ++ix) {
+                event_point_t e1 = create_event(seg[ix], event_type_t::START);
+                event_point_t e2 = create_event(seg[ix], event_type_t::END);
+                Queue.insert(e1);
+                Queue.insert(e2);
+            }
+
+            return compute_internal();
+        }
+
+        std::vector<vec2_32i> & compute_internal() {
             while (!Queue.isEmpty()) {
                 event_point_t event = Queue.removeMinKey();
 
@@ -358,15 +453,15 @@ namespace tessellation {
                 }
                 */
                 std::string info = std::to_string(event.getPoint().x) +
-                                    "x" + std::to_string(event.getPoint().y);
+                                   "x" + std::to_string(event.getPoint().y);
                 std::cout<<"event p " << info << std::endl;
                 handleEventPoint(event);
             }
 
+            return I;
         }
 
         void handleEventPoint(event_point_t & event) {
-            unsigned int score = 0;
             std::vector<segment_t> U_p {};
 
             // for now suppose U(p) is always a singleton,
@@ -385,7 +480,6 @@ namespace tessellation {
             std::vector<segment_t> L_p, C_p;
             // create a zero length segment at p
             segment_t p_segment{p, p};
-//            Status::Node * node = S.findUpperBoundOf(p_segment);
             Status::Node * node = S.findLowerBoundOf(p_segment);
 
             while(node!=nullptr) {
@@ -520,20 +614,27 @@ namespace tessellation {
         void find_new_event(const segment_t & l,
                             const segment_t & r,
                             const vec2_32i & p) {
-            float x, y;
-            bool intersects = get_line_intersection(
+//            float x, y;
+//            bool intersects = get_line_intersection(
+//                    l.p0.x, l.p0.y, l.p1.x, l.p1.y,
+//                    r.p0.x, r.p0.y, r.p1.x, r.p1.y,
+//                    &x, &y
+//            );
+
+            rational_t x_r{}, y_r{};
+            bool intersects = get_line_intersection_rational(
                     l.p0.x, l.p0.y, l.p1.x, l.p1.y,
                     r.p0.x, r.p0.y, r.p1.x, r.p1.y,
-                    &x, &y
-                    );
+                    &x_r, &y_r
+            );
 
             if(!intersects)
                 return;
 
             // this is important for now, otherwise
             // we won't discard if it happened above us
-            x = int(x);
-            y = int(y);
+            int x = x_r.toFixed();
+            int y = y_r.toFixed();
 
             bool below_p_line = y > p.y;
             bool on_p_and_right = (abs(y-p.y)<E) && (x >= p.x);
