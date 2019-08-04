@@ -54,6 +54,27 @@ namespace ds {
             return nullptr;
         }
 
+        Node* searchExact(Key &k) {
+            return searchExact(getRoot(), k);
+        }
+
+        Node * searchExact(Node * root, Key &k) {
+            Node *t = root;
+
+            while (t != nullptr) {
+                if (isEqual(k, t->key)) {
+                    return t;
+                } else if (isPreceding(k, t->key)) {
+                    t = t->left;
+                } else {
+                    t = t->right;
+                }
+
+            }
+
+            return nullptr;
+        }
+
         bool contains(Key &k) {
             return contains(getRoot(), k);
         }
@@ -62,18 +83,18 @@ namespace ds {
             return search(root, k)!= nullptr;
         }
 
-        Node * findUpperBoundOf(const Key & key) {
+        Node * findSmallestUpperBoundOf(const Key & key) {
 
             Node * root = getRoot();
 
-            Node * leastUpperBound = root;
+            Node * leastUpperBound = nullptr;
 
             while(root!= nullptr) {
 
                 bool has_left = root->left!= nullptr;
                 bool has_right = root->right!= nullptr;
 
-                if(isEqual(root->key, key)) {
+                if(isEqual(key, root->key)) {
                     leastUpperBound = root;
 
                     // try to get the right most one in case there are more duplicates
@@ -84,9 +105,11 @@ namespace ds {
                 }
                     // we are smaller than current node, therefore slide into right subtree
                 else if(isPreceding(key, root->key)) {
-                    if(isPreceding(root->key, leastUpperBound->key)) {
+                    if(leastUpperBound &&
+                        isPrecedingOrEqual(root->key, leastUpperBound->key)) {
                         leastUpperBound = root;
-                    }
+                    } else
+                        leastUpperBound = root;
 
                     if(has_left)
                         root = root->left;
@@ -105,9 +128,31 @@ namespace ds {
 
             // final verification
             if(leastUpperBound &&
-                (isPreceding(key, leastUpperBound->key) ||
-                isEqual(key, leastUpperBound->key)))
+                isPrecedingOrEqual(key, leastUpperBound->key))
                 return leastUpperBound;
+
+            return nullptr;
+        }
+
+        Node * findUpperBoundOf(const Key & key) {
+
+            Node * root = getRoot();
+
+            while(root!= nullptr) {
+
+                bool has_left = root->left!= nullptr;
+                bool has_right = root->right!= nullptr;
+
+                // candidate
+                if(isPreceding(key, root->key)) {
+                    return root;
+                }
+                else {
+                    if(has_right)
+                        root = root->right;
+                }
+
+            }
 
             return nullptr;
         }
@@ -116,45 +161,72 @@ namespace ds {
 
             Node * root = getRoot();
 
-            Node * maximalLowerBound = root;
+            Node * candidate = nullptr;
 
             while(root!= nullptr) {
 
                 bool has_left = root->left!= nullptr;
                 bool has_right = root->right!= nullptr;
 
-                if(isEqual(root->data, key)) {
+                // if root key is before me, then he might be a candidate,
+                // let's store it, and try to get better
+                if(!isPreceding(key, root->key)) {
+                    candidate = root;
 
-                    maximalLowerBound = root;
+                    // let's try to get a bigger lower bound
+                    if(has_right)
+                        root = root->right;
+                    else break;
+                }
+                else {
+                    if(has_left)
+                        root = root->left;
+                    else
+                        break;
 
-                    // try to get the left most one in case there are more duplicates
+                }
+
+            }
+
+            return candidate;
+        }
+
+        Node * findMaximalLowerBoundOf(const Key & key) {
+
+            Node * root = getRoot();
+
+            Node * current_best = nullptr;
+
+            while(root!= nullptr) {
+
+                bool has_left = root->left!= nullptr;
+                bool has_right = root->right!= nullptr;
+
+                // candidate
+                if(!isPreceding(key, root->key)) {
+
+                    // test the new candidate
+                    if(current_best== nullptr)
+                        current_best = root;
+                    else if(!isPreceding(root->key, current_best->key))
+                        current_best = root;
+
+                    // go right to fin something better
+                    if(has_right)
+                        root = root->right;
+                    else
+                        break;
+                }
+                else {
                     if(has_left)
                         root = root->left;
                     else
                         break;
                 }
-                    // we are bigger than current node, therefore slide into right subtree
-                else if(isPreceding(root->data, key)) {
-                    maximalLowerBound = root;
-
-                    if(has_right)
-                        root = root->right;
-                }
-                    // we are less than current node, therefore slide into left subtree
-                else {
-                    if(has_left)
-                        root = root->left;
-                }
 
             }
 
-            // final verification
-            if(maximalLowerBound &&
-                (isPreceding(maximalLowerBound->key, key) ||
-                    isEqual(maximalLowerBound->key, key)))
-                return maximalLowerBound;
-
-            return nullptr;
+            return current_best;
         }
 
         Node * successor(Node * node) {
@@ -162,18 +234,19 @@ namespace ds {
             if(node== nullptr)
                 return nullptr;
 
+            // case 1, we have a right sub-tree
             Node * successor = findMin(node->right);
 
+            // case 2
             if(successor == nullptr) {
-//                while (node->parent!= nullptr) {
-                    if(node->parent && node->parent->left == node) {
-                        successor = node->parent;
-//                        break;
-                    }
+                Node * p = node->parent;
 
-//                    node = node->parent;
-//                }
+                while (p!= nullptr && node==p->right) {
+                    node = p;
+                    p = p->parent;
+                }
 
+                successor = p;
             }
 
             return successor;
@@ -187,15 +260,14 @@ namespace ds {
             Node * predecessor = findMax(node->left);
 
             if(predecessor == nullptr) {
-//                while (node->parent!= nullptr) {
-                    if(node->parent && node->parent->right == node) {
-                        predecessor = node->parent;
-//                        break;
-//                    }
+                Node * p = node->parent;
 
-//                    node = node->parent;
+                while (p!= nullptr && node==p->left) {
+                    node = p;
+                    p = p->parent;
                 }
 
+                predecessor = p;
             }
 
             return predecessor;
@@ -303,7 +375,17 @@ namespace ds {
             if( !p )
                 return nullptr;
 
-            if (isEqual(k, p->key)) {
+            if(isPreceding(k, p->key)) {
+                p->left = remove(p->left, k);
+                if(p->left)
+                    p->left->parent = p;
+            }
+            else if(isPreceding(p->key, k)) {
+                p->right = remove(p->right, k);
+                if(p->right)
+                    p->right->parent = p;
+            }
+            else {
                 Node* q = p->left;
                 Node* r = p->right;
 
@@ -316,8 +398,15 @@ namespace ds {
                     p=root= nullptr;
                 }
 
-                if( !r )
+                if( !r ) {
+                    if(p_is_root) {
+                        root = q;
+                        if(root!= nullptr)
+                            root->parent = nullptr;
+                    }
+
                     return q;
+                }
 
                 Node* min = findMin(r);
 
@@ -330,20 +419,13 @@ namespace ds {
                 if(min->right)
                     min->right->parent = min;
 
-                if(p_is_root)
+                if(p_is_root) {
                     root = min;
+                    // todo:: this cleaned the bug
+                    root->parent = nullptr;
+                }
 
                 return balance(min);
-            }
-            else if(isPreceding(k, p->key)) {
-                p->left = remove(p->left, k);
-                if(p->left)
-                    p->left->parent = p;
-            }
-            else {
-                p->right = remove(p->right, k);
-                if(p->right)
-                    p->right->parent = p;
             }
 
 
@@ -356,11 +438,20 @@ namespace ds {
             return compare.isPreceding(lhs, rhs);
         }
 
+        bool isPrecedingOrEqual(const Key &lhs, const Key &rhs) {
+            return compare.isPreceding(lhs, rhs) || Equal(lhs, rhs);
+        }
+
         bool isSucceeding(const Key &lhs, const Key &rhs) {
             return !compare.isPreceding(lhs, rhs) && !isEqual(lhs, rhs);
         }
 
         bool isEqual(const Key &lhs, const Key &rhs) {
+            return !compare.isPreceding(lhs, rhs) && !compare.isPreceding(rhs, lhs);
+//            return compare.isEqual(lhs, rhs);
+        }
+
+        bool isExact(const Key &lhs, const Key &rhs) {
             return compare.isEqual(lhs, rhs);
         }
 

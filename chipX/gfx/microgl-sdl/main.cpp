@@ -55,19 +55,24 @@ void init_sdl(int width, int height);
 
 using namespace tessellation;
 
-//segment_t s1 {{10,10}, {400, 400}};
-//segment_t s2 {{600,40}, {150, 350}};
-//segment_t s3 {{300,40}, {40, 350}};
+segment_t s1 {{100,20}, {100, 400}};
+segment_t s2 {{200,20}, {200, 400}};
+//segment_t s2 {{110,20}, {200, 400}};
+segment_t s3 {{20,200}, {400, 200}};
+segment_t s4 {{20,300}, {400, 300}};
+segment_t s5 {{20,350}, {400, 350}};
+segment_t s6 {{300,20}, {300, 400}};
 
-segment_t s1 {{20,200}, {400, 200}};
-segment_t s2 {{50,20}, {50, 400}};
-segment_t s3 {{150,20}, {150, 400}};
+//segment_t s1 {{400, 100}, {20,200} };
+//segment_t s3 {{150,20}, {50, 400}};
+//segment_t s2 {{150,20}, {150, 400}};
+//segment_t s4 {{180,20}, {180, 400}};
 
 vec2_32i s1_[2] = {{10, 10}, {200, 200}};
 vec2_32i s2_[2] = {{40, 10}, {150, 200}};
 
-//std::vector<segment_t> segments {s1, s2};
-std::vector<segment_t> segments {s1, s2, s3};
+//std::vector<segment_t> segments {s3, s2};
+std::vector<segment_t> segments {s1, s2, s3, s4, s5, s6};
 
 BentleyOttmann bentleyOttmann(segments.data(), segments.size());
 
@@ -79,8 +84,6 @@ inline void render() {
     for (int ix = 0; ix < 1; ++ix) {
         t += 1;
         canvas->clear(WHITE);
-
-        s2.p0.x = 200;
 
         bentleyOttmann.line_intersection();
 
@@ -169,7 +172,7 @@ void loop() {
                 break;
         }
 //
-        render();
+//        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(), canvas->width() * canvas->sizeofPixel());
         SDL_RenderClear(renderer);

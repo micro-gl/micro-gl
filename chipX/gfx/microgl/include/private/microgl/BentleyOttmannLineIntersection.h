@@ -5,6 +5,7 @@
 #include "AVLTree2.h"
 #include <vector>
 #include <iostream>
+#include <stdexcept>
 
 namespace tessellation {
 
@@ -12,6 +13,7 @@ namespace tessellation {
 
 #define max(a,b) (a)>(b) ? (a) : (b)
 #define min(a,b) (a)<(b) ? (a) : (b)
+#define clamp(a,l,r) (min(max((a), (l)), (r)))
 #define abs(a) ((a)<0 ? -(a) : (a))
 #define E 1.0f
 
@@ -19,14 +21,35 @@ namespace tessellation {
         START, END, Intersection
     };
 
+    struct computation_t {
+        int numerator, denominator;
+    };
+
     struct segment_t {
         vec2_32i p0, p1;
 
-        float slope() const {
-            return float(p1.y - p0.y)/ float(p1.x - p0.x);
+        computation_t compute_slope_parts() const {
+            return {p1.x - p0.x, p1.y - p0.y};
         }
 
-        bool contains(const vec2_32i & p, float epsilon = 2.0) {
+        computation_t compute_x_intersection_with(const vec2_32i & p) const {
+            computation_t c {0, 0};
+
+            if (p0.y==p1.y) {
+                c.numerator = clamp(p.x, p0.x, p1.x);
+                c.denominator = 1;
+            } else {
+                auto dx = p1.x - p0.x;
+                auto dy = p1.y - p0.y;
+
+                c.numerator = p0.x*dy + (p.y - p0.y)*dx;
+                c.denominator = dy;
+            }
+
+            return c;
+        }
+
+        bool contains(const vec2_32i & p, float epsilon = 1.0) {
 
             // this is an optimization to avoid divisions
             auto dx = p1.x - p0.x;
@@ -37,7 +60,8 @@ namespace tessellation {
             if(dy!=0) {
                 auto M = p0.x*dy + (p.y - p0.y)*dx;
                 auto xDistance = abs(p.x*dy - M);
-                lies_on_ray = xDistance < epsilon*dy;
+//                lies_on_ray = xDistance < epsilon*dy;
+                lies_on_ray = xDistance < 3*(abs(dx) + abs(dy));
             } else {
                 lies_on_ray = p.y==p0.y;
             }
@@ -99,43 +123,135 @@ namespace tessellation {
         bool isPreceding(const event_point_t& lhs, const event_point_t& rhs)
         {
             return (lhs.getPoint().y < rhs.getPoint().y) ||
-                    ((lhs.getPoint().y == rhs.getPoint().y) && (lhs.getPoint().x < rhs.getPoint().x));
+                   ((lhs.getPoint().y == rhs.getPoint().y) && (lhs.getPoint().x < rhs.getPoint().x));
+        }
+
+        bool isPrecedingOrEqual(const event_point_t& lhs, const event_point_t& rhs)
+        {
+            return isPreceding(lhs, rhs) || isEqual(lhs, rhs);
         }
 
         bool isEqual(const event_point_t& lhs, const event_point_t& rhs)
         {
             return (lhs.getPoint().x==rhs.getPoint().x) && (lhs.getPoint().y==rhs.getPoint().y);
         }
+
+        bool isExact(const event_point_t& lhs, const event_point_t& rhs)
+        {
+            return (lhs.getPoint().x==rhs.getPoint().x) && (lhs.getPoint().y==rhs.getPoint().y);
+        }
     };
-
-
-    float solve_x_between_given_y(vec2_32i &p0, vec2_32i &p1, int y) {
-        float t = float(y - p0.y)/float(p1.y - p0.y);
-        float x = p0.x + t*float(p1.x - p0.x);
-
-        return x;
-    }
 
     struct segment_order
     {
-
-        int cmp(const segment_t& lhs, const segment_t& rhs) {
+        int backup(const segment_t& lhs, const segment_t& rhs) {
+            //
             // extended intersection without division
             auto dx_1 = lhs.p1.x - lhs.p0.x;
             auto dy_1 = lhs.p1.y - lhs.p0.y;
-            if(dy_1==0)
-                dy_1=1;
-            auto M1 = lhs.p0.x*dy_1 + (p.y - lhs.p0.y)*dx_1;
 
             auto dx_2 = rhs.p1.x - rhs.p0.x;
             auto dy_2 = rhs.p1.y - rhs.p0.y;
-            if(dy_2==0)
-                dy_2=1;
-            auto M2 = rhs.p0.x*dy_2 + (p.y - rhs.p0.y)*dx_2;
 
-            int pre = M1 * dy_2 - M2 * dy_1;
+            auto M1 = 0;
+            auto M2 = 0;
+            auto m1 = 0;
+            auto m2 = 0;
+
+            if(dy_1!=0) {
+                m1 = dy_1;
+                M1 = lhs.p0.x*dy_1 + (p.y - lhs.p0.y)*dx_1;
+            }
+
+            if(dy_2!=0) {
+                m2 = dy_2;
+                M2 = rhs.p0.x*dy_2 + (p.y - rhs.p0.y)*dx_2;
+            }
+
+            // special cases
+            // lhs is a line
+            // both are lines or points
+            if(dy_1==0 && dy_2==0 && lhs.p0.y==p.y && rhs.p0.y==p.y) {
+                // if they intersect
+                auto left = max(lhs.p0.x, rhs.p0.x);
+                auto right = min(lhs.p1.x, rhs.p1.x);
+
+                // if they intersect, they are the same
+                if((right-left) >= 0) {
+                    M1=m1=M2=m2 = 1;
+                }
+
+            }
+                // if one of them is a horizontal line
+            else {
+                if(dy_1==0 && lhs.p0.y==p.y) {
+                    // lies on p.y
+                    M1 = clamp(M2, m2*lhs.p0.x, m2*lhs.p1.x);
+                    m1 = m2;
+
+                    // a point
+                    if(dx_1==0) {
+                        m1 = 1;
+                        M1 = lhs.p0.x;
+                    }
+                }
+                else if(dy_2==0 && rhs.p0.y==p.y) {
+                    // lies on p.y
+                    M2 = clamp(M1, m1*rhs.p0.x, m1*rhs.p1.x);
+                    m2 = m1;
+
+                    // a point
+                    if(dx_2==0) {
+                        m2 = 1;
+                        M2 = rhs.p0.x;
+                    }
+                }
+            }
+
+
+
+            // we want to represent
+            // x_left = M1/m1, x_right = M2/m2
+            // compare_result = x_left - x_right
+
+            int pre = M1 * m2 - M2 * m1;
+
+            if(abs(pre) <= 3 * abs(m1*m2))
+                return 0;
+//            int pre = M1/m1 - M2/m2;
 
             return pre;
+        }
+
+
+        int cmp(const segment_t& lhs, const segment_t& rhs) {
+
+            computation_t lhs_x = lhs.compute_x_intersection_with(p);
+            computation_t rhs_x = rhs.compute_x_intersection_with(p);
+
+            // this is to avoid divisions, which are expensive
+            int compare = lhs_x.numerator*rhs_x.denominator - rhs_x.numerator*lhs_x.denominator;
+
+            if(compare!=0)
+                return compare;
+
+            // if they are equal at p, we need to break tie with slope
+            computation_t lhs_slope = lhs.compute_slope_parts();
+            computation_t rhs_slope = rhs.compute_slope_parts();
+
+            bool lhs_has_infinite_slope = lhs_slope.denominator==0;
+            bool rhs_has_infinite_slope = rhs_slope.denominator==0;
+
+            if(lhs_has_infinite_slope)
+                return 1;
+
+            if(rhs_has_infinite_slope)
+                return -1;
+
+            int slope_compare = lhs_slope.numerator * rhs_slope.denominator -
+                                rhs_slope.numerator * lhs_slope.denominator;
+
+            return slope_compare;
         }
 
         bool isPreceding(const segment_t& lhs, const segment_t& rhs)
@@ -143,9 +259,21 @@ namespace tessellation {
             return cmp(lhs, rhs) < 0;
         }
 
+        bool isPrecedingOrEqual(const segment_t& lhs, const segment_t& rhs)
+        {
+            return cmp(lhs, rhs) <= 0;
+        }
+
         bool isEqual(const segment_t& lhs, const segment_t& rhs)
         {
             return cmp(lhs, rhs) == 0;
+        }
+
+        bool isExact(const segment_t& lhs, const segment_t& rhs)
+        {
+            return
+                lhs.p0.x==rhs.p0.x && lhs.p1.x==rhs.p1.x &&
+                lhs.p0.y==rhs.p0.y && lhs.p1.y==rhs.p1.y;
         }
 
         void updateComparePoint(const vec2_32i & val) {
@@ -207,6 +335,8 @@ namespace tessellation {
             event_point_t pt;
             pt.segment.p0 = p0;
             pt.segment.p1 = p1;
+//            pt.segment.p0 = p0.y<=p1.y ? p0 : p1;
+//            pt.segment.p1 = p0.y<=p1.y ? p1 : p0;
             pt.type = type;
 
             return pt;
@@ -227,7 +357,9 @@ namespace tessellation {
                     // insert this segment into event
                 }
                 */
-                std::cout<<"hello "<< std::endl;
+                std::string info = std::to_string(event.getPoint().x) +
+                                    "x" + std::to_string(event.getPoint().y);
+                std::cout<<"event p " << info << std::endl;
                 handleEventPoint(event);
             }
 
@@ -253,9 +385,12 @@ namespace tessellation {
             std::vector<segment_t> L_p, C_p;
             // create a zero length segment at p
             segment_t p_segment{p, p};
-            Status::Node * node = S.findUpperBoundOf(p_segment);
+//            Status::Node * node = S.findUpperBoundOf(p_segment);
+            Status::Node * node = S.findLowerBoundOf(p_segment);
 
             while(node!=nullptr) {
+                std::cout << "check 1" <<std::endl;
+
                 segment_t & tested_segment = node->key;//.contains(p)
                 bool tested_segment_contains_p =
                         tested_segment.contains(p);
@@ -274,6 +409,7 @@ namespace tessellation {
                 } else {
                     // if segment does not contain p, then no
                     // further segment will contain, so break the search
+                    // THIS MIGHT BE A PROBLEM
                     break;
                 }
 
@@ -303,11 +439,11 @@ namespace tessellation {
             }
 
             // 6. insert U_p and C_p
-            for (auto & ix : C_p) {
+            for (auto & ix : U_p) {
                 S.insert(ix);
             }
 
-            for (auto & ix : U_p) {
+            for (auto & ix : C_p) {
                 S.insert(ix);
             }
 
@@ -316,8 +452,10 @@ namespace tessellation {
 
             if(is_Up_or_C_p_empty) {
                 // create a zero length segment at p
+//                throw std::invalid_argument( "implement" );
+                // this requires more thinking
                 segment_t p_segment{p, p};
-                Status::Node * right = S.findUpperBoundOf(p_segment);
+                Status::Node * right = S.findLowerBoundOf(p_segment);
 
                 if(right!= nullptr) {
                     Status::Node * left = S.predecessor(right);
@@ -331,6 +469,7 @@ namespace tessellation {
 
                 // find left-most and right-most segments in U_p + C_p
                 segment_order order{};
+                order.updateComparePoint(p);
 
                 segment_t min{}, max{};
 
@@ -339,11 +478,13 @@ namespace tessellation {
                 else
                     min = max = C_p[0];
 
+                // this is replicating the order in which they
+                // are inserted in the status tree
                 for (auto & ix : U_p) {
                     if(order.isPreceding(ix, min))
                         min = ix;
 
-                    if(order.isPreceding(max, ix))
+                    if(!order.isPreceding(ix, max))
                         max = ix;
                 }
 
@@ -351,13 +492,13 @@ namespace tessellation {
                     if(order.isPreceding(ix, min))
                         min = ix;
 
-                    if(order.isPreceding(max, ix))
+                    if(!order.isPreceding(ix, max))
                         max = ix;
 
                 }
 
                 // now find it's left neighbor in Status
-                Status::Node * min_node = S.search(min);
+                Status::Node * min_node = S.searchExact(min);
                 Status::Node * left_neighbor = S.predecessor(min_node);
 
                 if(left_neighbor!= nullptr)
@@ -366,7 +507,7 @@ namespace tessellation {
                 // second
 
                 // now find it's left neighbor in Status
-                Status::Node * max_node = S.search(max);
+                Status::Node * max_node = S.searchExact(max);
                 Status::Node * right_neighbor = S.successor(max_node);
 
                 if(right_neighbor!= nullptr)
@@ -395,7 +536,7 @@ namespace tessellation {
             y = int(y);
 
             bool below_p_line = y > p.y;
-            bool on_p_and_right = (abs(y-p.y)<E) && (x > p.x);
+            bool on_p_and_right = (abs(y-p.y)<E) && (x >= p.x);
 
             if(below_p_line || on_p_and_right) {
                 event_point_t event;
@@ -408,8 +549,6 @@ namespace tessellation {
 
                 Queue.insert(event);
             }
-
-
 
         }
 
