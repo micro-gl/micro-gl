@@ -28,17 +28,26 @@ namespace tessellation {
             return float(numerator)/float(denominator);
         };
 
+        bool isUndefined() {
+            return denominator==0;
+        }
+
         int toFixed(uint8_t precision = 0) {
             return (numerator<<precision)/(denominator);
         };
 
-        rational_t & absolute() {
+        rational_t absolute() {
+            int n = numerator;
+            int d = denominator;
+
             if(isNegative()) {
-                numerator = numerator<0 ? -numerator : numerator;
-                denominator = denominator<0 ? -denominator : denominator;
+                n = numerator<0 ? -numerator : numerator;
+                d = denominator<0 ? -denominator : denominator;
+            } else {
+
             }
 
-            return *this;
+            return rational_t{n, d};
         }
 
         void makeDenominatorPositive() {
@@ -111,9 +120,25 @@ namespace tessellation {
             }
         }
 
+        bool operator > (const int & val) {
+            if(val!=0)
+                return numerator > denominator*val;
+            else {
+                return isPositive();
+            }
+        }
+
         bool operator <= (const int & val) {
             if(val!=0)
                 return numerator <= denominator*val;
+            else {
+                return isNegative();
+            }
+        }
+
+        bool operator < (const int & val) {
+            if(val!=0)
+                return numerator < denominator*val;
             else {
                 return isNegative();
             }
@@ -130,12 +155,18 @@ namespace tessellation {
 
     };
 
+    typedef vec2<rational_t> vec2_rat;
+
     struct segment_t {
         vec2_32i p0, p1;
 
         rational_t compute_slope_parts() const {
             return {p1.x - p0.x, p1.y - p0.y};
         }
+
+//        bool contains(const vec2_rat & p) {
+//
+//        }
 
         bool contains(const vec2_32i & p) {
 
@@ -264,7 +295,7 @@ namespace tessellation {
 //            int compare = lhs_x.numerator*rhs_x.denominator - rhs_x.numerator*lhs_x.denominator;
             rational_t compare = (lhs_x - rhs_x);
 
-            if(compare!=0)
+            if(compare.absolute() > 1)
                 return compare.numerator;
 
             // if they are equal at p, we need to break tie with slope
@@ -312,6 +343,10 @@ namespace tessellation {
 
         void updateComparePoint(const vec2_32i & val) {
             p = val;
+        }
+
+        const vec2_32i & getComparePoint() {
+            return p;
         }
     private:
 
@@ -442,6 +477,7 @@ namespace tessellation {
         }
 
         std::vector<vec2_32i> & compute_internal() {
+
             while (!Queue.isEmpty()) {
                 event_point_t event = Queue.removeMinKey();
 
@@ -470,6 +506,11 @@ namespace tessellation {
                 U_p.push_back(event.segment);
 
             auto & p = event.getPoint();
+            auto p_last = S.getComparator().getComparePoint();
+            bool has_last_compare_point = p_last.y!=0;
+            if(!has_last_compare_point) {
+                p_last = p;
+            }
 
             // update the scanning y
             S.getComparator().updateComparePoint(p);
@@ -480,7 +521,9 @@ namespace tessellation {
             std::vector<segment_t> L_p, C_p;
             // create a zero length segment at p
             segment_t p_segment{p, p};
+//            segment_t p_segment{p_last, p_last};
             Status::Node * node = S.findLowerBoundOf(p_segment);
+//            Status::Node * node = S.findUpperBoundOf(p_segment);
 
             while(node!=nullptr) {
                 std::cout << "check 1" <<std::endl;
@@ -524,6 +567,9 @@ namespace tessellation {
             }
 
             // 5. delete segments in L_p, C_p from Status
+//            if(has_last_compare_point)
+            S.getComparator().updateComparePoint(p_last);
+
             for (auto & ix : L_p) {
                 S.remove(ix);
             }
@@ -532,6 +578,7 @@ namespace tessellation {
                 S.remove(ix);
             }
 
+            S.getComparator().updateComparePoint(p);
             // 6. insert U_p and C_p
             for (auto & ix : U_p) {
                 S.insert(ix);
@@ -628,7 +675,7 @@ namespace tessellation {
                     &x_r, &y_r
             );
 
-            if(!intersects)
+            if(!intersects || x_r.isUndefined() || y_r.isUndefined())
                 return;
 
             // this is important for now, otherwise

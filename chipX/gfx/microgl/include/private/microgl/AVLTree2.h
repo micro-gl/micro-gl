@@ -117,6 +117,40 @@ namespace ds {
             return candidate;
         }
 
+        Node * findUpperBoundOf(const Key & key) {
+
+            Node * root = getRoot();
+
+            Node * candidate = nullptr;
+
+            while(root!= nullptr) {
+
+                bool has_left = root->left!= nullptr;
+                bool has_right = root->right!= nullptr;
+
+                // if root key is before me, then he might be a candidate,
+                // let's store it, and try to get better
+                if(isPreceding(key, root->key)) {
+                    candidate = root;
+
+                    // let's try to get a bigger lower bound
+                    if(has_left)
+                        root = root->left;
+                    else break;
+                }
+                else {
+                    if(has_right)
+                        root = root->right;
+                    else
+                        break;
+
+                }
+
+            }
+
+            return candidate;
+        }
+
         Node * successor(Node * node) {
 
             if(node== nullptr)
