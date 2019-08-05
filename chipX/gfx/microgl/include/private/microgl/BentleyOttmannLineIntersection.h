@@ -36,6 +36,14 @@ namespace tessellation {
             return (numerator<<precision)/(denominator);
         };
 
+        static const rational_t & maximum(const rational_t &lhs, const rational_t &rhs) {
+            return (lhs<=rhs) ? rhs : lhs;
+        }
+
+        static const rational_t & minimum(const rational_t &lhs, const rational_t &rhs) {
+            return (lhs<=rhs) ? lhs : rhs;
+        }
+
         rational_t absolute() {
             int n = numerator;
             int d = denominator;
@@ -106,7 +114,7 @@ namespace tessellation {
             return rational_t{n, denominator};
         }
 
-        rational_t operator-(const rational_t & val) {
+        rational_t operator-(const rational_t & val) const {
             int n = numerator*val.denominator - val.numerator*denominator;
             int d = denominator * val.denominator;
             return rational_t{n, d};
@@ -144,6 +152,22 @@ namespace tessellation {
             }
         }
 
+        bool operator <= (const rational_t & rhs) const {
+            return numerator*rhs.denominator - denominator*rhs.numerator <= 0;
+        }
+
+        bool operator >= (const rational_t & rhs) const{
+            return numerator*rhs.denominator - denominator*rhs.numerator >= 0;
+        }
+
+        bool operator < (const rational_t & rhs) const{
+            return numerator*rhs.denominator - denominator*rhs.numerator < 0;
+        }
+
+        bool operator > (const rational_t & rhs) const{
+            return numerator*rhs.denominator - denominator*rhs.numerator > 0;
+        }
+
         bool isPositive() {
             return (numerator>=0 && denominator>=0)||
                    (numerator<=0 && denominator<=0);
@@ -161,6 +185,8 @@ namespace tessellation {
         vec2_32i p0, p1;
 
         rational_t compute_slope_parts() const {
+            auto a = p1.x - p0.x;
+
             return {p1.x - p0.x, p1.y - p0.y};
         }
 
@@ -184,9 +210,29 @@ namespace tessellation {
                 lies_on_ray = xDistance < dy;
                  */
 
-                rational_t x = slope*(p.y - p0.y) + p0.x;
-                rational_t dist = x - p.x;
+                rational_t x_1 = slope*(p.y - p0.y) + p0.x;
+                rational_t x_2 = slope*((p.y + 1) - p0.y) + p0.x;
+
+                bool not_inside_1 = ((x_1-p.x).absolute() >=  1) && ((x_2-p.x).absolute() >=  1);
+//                bool not_inside_1 = (x_1 >= p.x + 1) && (x_2 >=  p.x + 1);
+                bool not_inside_2 = (x_1 < p.x) && (x_2 <  p.x);
+//                bool inside_1 = (x_1 - p.x).absolute() <= 1;
+//                bool inside_2 = (x_2 - p.x).absolute() <= 1;
+
+                bool inside = !not_inside_1 && !not_inside_2;
+
+
+                rational_t dist = x_1 - p.x;
                 lies_on_ray = (dist.absolute() <= 1);
+
+                const rational_t & min_1 = rational_t::minimum(x_1, x_2);
+                const rational_t & max_1 = rational_t::maximum(x_1, x_2);
+                const rational_t & min_2 = rational_t::minimum({p.x, 1}, {p.x, 1});
+                const rational_t & max_2 = rational_t::maximum({p.x, 1}, {p.x, 1});
+
+                bool a = (min_2 - max_1)>1 || (min_1-max_2)>1;
+
+                lies_on_ray = !a;
 
             } else {
                 lies_on_ray = p.y==p0.y;
@@ -219,46 +265,6 @@ namespace tessellation {
 
     };
 
-    struct event_point_t {
-        // experimenting
-
-        segment_t segment{};
-        event_type_t type = event_type_t::START;
-
-        const vec2_32i & getPoint() const {
-            switch (type) {
-                case event_type_t::START:
-                    return segment.p0;
-                case event_type_t::END:
-                    return segment.p1;
-                default:
-                    return segment.p0;
-            }
-
-        }
-
-    };
-
-    struct event_order
-    {
-        bool isPreceding(const event_point_t& lhs, const event_point_t& rhs)
-        {
-            return (lhs.getPoint().y < rhs.getPoint().y) ||
-                   ((lhs.getPoint().y == rhs.getPoint().y) && (lhs.getPoint().x < rhs.getPoint().x));
-        }
-
-
-        bool isEqual(const event_point_t& lhs, const event_point_t& rhs)
-        {
-            return (lhs.getPoint().x==rhs.getPoint().x) && (lhs.getPoint().y==rhs.getPoint().y);
-        }
-
-        bool isExact(const event_point_t& lhs, const event_point_t& rhs)
-        {
-            return (lhs.getPoint().x==rhs.getPoint().x) && (lhs.getPoint().y==rhs.getPoint().y);
-        }
-    };
-
     struct segment_order
     {
         rational_t compute_x_intersection_with(const segment_t& segment, const vec2_32i & p) const {
@@ -287,16 +293,44 @@ namespace tessellation {
 
             rational_t lhs_x = compute_x_intersection_with(lhs, p);
             rational_t rhs_x = compute_x_intersection_with(rhs, p);
+            rational_t lhs_x_at_1 = compute_x_intersection_with(lhs, {p.x, p.y + 1});
+            rational_t rhs_x_at_1 = compute_x_intersection_with(rhs, {p.x, p.y + 1});
 
             lhs_x.makeDenominatorPositive();
             rhs_x.makeDenominatorPositive();
+            lhs_x_at_1.makeDenominatorPositive();
+            rhs_x_at_1.makeDenominatorPositive();
+
+            // let's test if rhs passes through the unit cube which has
+            // top-left at (lhs_x, p.y) ?
+
+            const rational_t & min_1 = rational_t::minimum(lhs_x, lhs_x_at_1);
+            const rational_t & max_1 = rational_t::maximum(lhs_x, lhs_x_at_1);
+            const rational_t & min_2 = rational_t::minimum(rhs_x, rhs_x_at_1);
+            const rational_t & max_2 = rational_t::maximum(rhs_x, rhs_x_at_1);
+
+            bool a = (min_2 - max_1)>1 || (min_1-max_2)>1;
+
+//            bool inside_1 = (rhs_x - lhs_x).absolute() <= 1;
+//            bool inside_2 = (rhs_x_at_1 - lhs_x).absolute() <= 1;
+
+            bool inside1 = !a;//!not_inside_1 && !not_inside_2;
+
+            rational_t compare = (lhs_x - rhs_x);
+            bool inside = inside1;
+            bool inside2 = compare.absolute() <= 1;
+
+            if(!inside) {
+
+                return compare.numerator;
+            }
+
 
             // this is to avoid divisions, which are expensive
-//            int compare = lhs_x.numerator*rhs_x.denominator - rhs_x.numerator*lhs_x.denominator;
-            rational_t compare = (lhs_x - rhs_x);
-
-            if(compare.absolute() > 1)
-                return compare.numerator;
+//            rational_t compare = (lhs_x - rhs_x);
+//
+//            if(compare.absolute() > 1)
+//                return compare.numerator;
 
             // if they are equal at p, we need to break tie with slope
             rational_t lhs_slope = lhs.compute_slope_parts();
@@ -351,6 +385,46 @@ namespace tessellation {
     private:
 
         vec2_32i p;
+    };
+
+    struct event_point_t {
+        // experimenting
+
+        segment_t segment{};
+        event_type_t type = event_type_t::START;
+
+        const vec2_32i & getPoint() const {
+            switch (type) {
+                case event_type_t::START:
+                    return segment.p0;
+                case event_type_t::END:
+                    return segment.p1;
+                default:
+                    return segment.p0;
+            }
+
+        }
+
+    };
+
+    struct event_order
+    {
+        bool isPreceding(const event_point_t& lhs, const event_point_t& rhs)
+        {
+            return (lhs.getPoint().y < rhs.getPoint().y) ||
+                   ((lhs.getPoint().y == rhs.getPoint().y) && (lhs.getPoint().x < rhs.getPoint().x));
+        }
+
+
+        bool isEqual(const event_point_t& lhs, const event_point_t& rhs)
+        {
+            return (lhs.getPoint().x==rhs.getPoint().x) && (lhs.getPoint().y==rhs.getPoint().y);
+        }
+
+        bool isExact(const event_point_t& lhs, const event_point_t& rhs)
+        {
+            return (lhs.getPoint().x==rhs.getPoint().x) && (lhs.getPoint().y==rhs.getPoint().y);
+        }
     };
 
     // Returns 1 if the lines intersect, otherwise 0. In addition, if the lines

@@ -69,27 +69,30 @@ std::vector<segment_t> segments_2 {s1, s2, s3, s4, s5, s6, s7, s8};
 std::vector<segment_t> segments_straight {s1, s2, s3, s4, s5, s6};
 
 BentleyOttmann bentleyOttmann;
+std::vector<vec2_32i> I_local;
 
-float t = 0;
+float t = 80;
 inline void render() {
 
     canvas->setAntialiasing(false);
 
     for (int ix = 0; ix < 1; ++ix) {
-        t += 0.01;
         canvas->clear(WHITE);
-
-        s8.p0.x += t;
+        t+=0.1;
+        s8.p0.x = 100;//t;
 //        std::vector<segment_t> segments_2 {s1, s2, s3, s4, s5, s6, s7, s8};
-        std::vector<segment_t> segments_2 {s6, s8};
+        std::vector<segment_t> segments_2 {s7, s8};
+//        std::vector<segment_t> segments_2 {s6, s8};
         auto & segments = segments_2;
 
         BentleyOttmann bentleyOttmann;
         auto & I = bentleyOttmann.compute(segments.data(), segments.size());
+        I_local.clear();
+        I_local.insert( I_local.end(), I.begin(), I.end() );
 
-        for (auto & inter : I) {
+        for (auto & inter : I_local) {
             canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-                    RED, inter.x, inter.y, 5);
+                    RED, inter.x, inter.y, 10);
 
         }
 
