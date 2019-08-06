@@ -64,7 +64,7 @@ segment_t s4 {{20,300}, {400, 300}};
 segment_t s5 {{20,350}, {400, 350}};
 
 segment_t s7 {{110,20}, {180, 400}};
-segment_t s8 {{90,50}, {130, 400}};
+segment_t s8 {{500,20}, {130, 400}};
 
 std::vector<segment_t> segments_2 {s1, s2, s3, s4, s5, s6, s7, s8};
 std::vector<segment_t> segments_straight {s1, s2, s3, s4, s5, s6};
@@ -72,15 +72,15 @@ std::vector<segment_t> segments_straight {s1, s2, s3, s4, s5, s6};
 BentleyOttmann bentleyOttmann;
 std::vector<vec2_32i> I_local;
 
-float t = 50;
+float t = 100;
 inline void render() {
 
     canvas->setAntialiasing(false);
 
     for (int ix = 0; ix < 1; ++ix) {
         canvas->clear(WHITE);
-        t+=0.2;
-        s8.p0.x = 400;//t;
+        t+=0.1;
+//        s8.p0.x = t;//400;//t;
         s8.p0.y = t;
 //        std::vector<segment_t> segments_2 { s2, s3, s4, s8};
 //        std::vector<segment_t> segments_2 { s2, s3, s4, s8};

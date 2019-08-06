@@ -128,7 +128,6 @@ namespace tessellation {
         void throwIfDenomIsZero() const {
             if(denominator==0)
                 throw std::invalid_argument( "denom==0" );
-
         }
 
         bool operator >= (const int & val) {
@@ -316,6 +315,10 @@ namespace tessellation {
             }
 
             return x;
+        }
+
+        bool isPoint(const segment_t& s) {
+            return s.p0.x==s.p1.x && s.p0.y==s.p1.y;
         }
 
         int cmp(const segment_t& lhs, const segment_t& rhs) {
@@ -597,13 +600,14 @@ namespace tessellation {
 
             // for now suppose U(p) is always a singleton,
             // I will solve it later
-            if(event.type==event_type_t::START)
+            if(event.type==event_type_t::START) {
                 U_p.push_back(event.segment);
 
-//            while (Queue.contains(event)) {
-//                event_point_t event2 = Queue.removeMinKey();
-//                U_p.push_back(event.segment);
-//            }
+                while (Queue.contains(event)) {
+                    event_point_t event2 = Queue.removeMinKey();
+                    U_p.push_back(event2.segment);
+                }
+            }
 
             auto & p = event.getPoint();
             auto p_last = S.getComparator().getComparePoint();
@@ -701,7 +705,7 @@ namespace tessellation {
                 segment_t p_segment{p, p};
                 Status::Node * right = S.findLowerBoundOf(p_segment);
 
-                while(right && false) {
+                while(right&&false) {
 
                     segment_t &tested_segment = right->key;//.contains(p)
                     bool tested_segment_contains_p =
