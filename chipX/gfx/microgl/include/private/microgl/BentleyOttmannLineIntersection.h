@@ -22,7 +22,7 @@ namespace tessellation {
     };
 
     struct rational_t {
-        int numerator, denominator;
+        mutable int numerator, denominator;
 
         float toFloat() {
             return float(numerator)/float(denominator);
@@ -30,6 +30,10 @@ namespace tessellation {
 
         bool isUndefined() {
             return denominator==0;
+        }
+
+        bool isDefined() {
+            return !isUndefined();
         }
 
         int toFixed(uint8_t precision = 0) {
@@ -58,7 +62,7 @@ namespace tessellation {
             return rational_t{n, d};
         }
 
-        void makeDenominatorPositive() {
+        void makeDenominatorPositive() const {
             if(denominator < 0) {
                 numerator = -numerator;
                 denominator = -denominator;
@@ -71,6 +75,7 @@ namespace tessellation {
         }
 
         bool operator==(const int & val) {
+            throwIfDenomIsZero();
             if(val!=0)
                 return numerator==val*denominator;
 
@@ -120,7 +125,15 @@ namespace tessellation {
             return rational_t{n, d};
         }
 
+        void throwIfDenomIsZero() const {
+            if(denominator==0)
+                throw std::invalid_argument( "denom==0" );
+
+        }
+
         bool operator >= (const int & val) {
+            throwIfDenomIsZero();
+            makeDenominatorPositive();
             if(val!=0)
                 return numerator >= denominator*val;
             else {
@@ -129,6 +142,8 @@ namespace tessellation {
         }
 
         bool operator > (const int & val) {
+            throwIfDenomIsZero();
+            makeDenominatorPositive();
             if(val!=0)
                 return numerator > denominator*val;
             else {
@@ -137,6 +152,9 @@ namespace tessellation {
         }
 
         bool operator <= (const int & val) {
+            throwIfDenomIsZero();
+            makeDenominatorPositive();
+
             if(val!=0)
                 return numerator <= denominator*val;
             else {
@@ -145,6 +163,8 @@ namespace tessellation {
         }
 
         bool operator < (const int & val) {
+            throwIfDenomIsZero();
+            makeDenominatorPositive();
             if(val!=0)
                 return numerator < denominator*val;
             else {
@@ -153,22 +173,31 @@ namespace tessellation {
         }
 
         bool operator <= (const rational_t & rhs) const {
+            throwIfDenomIsZero();
+            makeDenominatorPositive();
             return numerator*rhs.denominator - denominator*rhs.numerator <= 0;
         }
 
-        bool operator >= (const rational_t & rhs) const{
+        bool operator >= (const rational_t & rhs) {
+            throwIfDenomIsZero();
+            makeDenominatorPositive();
             return numerator*rhs.denominator - denominator*rhs.numerator >= 0;
         }
 
-        bool operator < (const rational_t & rhs) const{
+        bool operator < (const rational_t & rhs) {
+            throwIfDenomIsZero();
+            makeDenominatorPositive();
             return numerator*rhs.denominator - denominator*rhs.numerator < 0;
         }
 
-        bool operator > (const rational_t & rhs) const{
+        bool operator > (const rational_t & rhs) {
+            throwIfDenomIsZero();
+            makeDenominatorPositive();
             return numerator*rhs.denominator - denominator*rhs.numerator > 0;
         }
 
         bool isPositive() {
+            throwIfDenomIsZero();
             return (numerator>=0 && denominator>=0)||
                    (numerator<=0 && denominator<=0);
         }
@@ -230,7 +259,7 @@ namespace tessellation {
                 const rational_t & min_2 = rational_t::minimum({p.x, 1}, {p.x, 1});
                 const rational_t & max_2 = rational_t::maximum({p.x, 1}, {p.x, 1});
 
-                bool a = (min_2 - max_1)>1 || (min_1-max_2)>1;
+                bool a = (min_2 - max_1)>=1 || (min_1-max_2)>=1;
 
                 lies_on_ray = !a;
 
@@ -309,7 +338,7 @@ namespace tessellation {
             const rational_t & min_2 = rational_t::minimum(rhs_x, rhs_x_at_1);
             const rational_t & max_2 = rational_t::maximum(rhs_x, rhs_x_at_1);
 
-            bool a = (min_2 - max_1)>1 || (min_1-max_2)>1;
+            bool a = (min_2 - max_1)>=1 || (min_1-max_2)>=1;
 
 //            bool inside_1 = (rhs_x - lhs_x).absolute() <= 1;
 //            bool inside_2 = (rhs_x_at_1 - lhs_x).absolute() <= 1;
@@ -415,16 +444,6 @@ namespace tessellation {
                    ((lhs.getPoint().y == rhs.getPoint().y) && (lhs.getPoint().x < rhs.getPoint().x));
         }
 
-
-        bool isEqual(const event_point_t& lhs, const event_point_t& rhs)
-        {
-            return (lhs.getPoint().x==rhs.getPoint().x) && (lhs.getPoint().y==rhs.getPoint().y);
-        }
-
-        bool isExact(const event_point_t& lhs, const event_point_t& rhs)
-        {
-            return (lhs.getPoint().x==rhs.getPoint().x) && (lhs.getPoint().y==rhs.getPoint().y);
-        }
     };
 
     // Returns 1 if the lines intersect, otherwise 0. In addition, if the lines
@@ -470,7 +489,7 @@ namespace tessellation {
         t.numerator = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x));
         t.denominator = (-s2_x * s1_y + s1_x * s2_y);
 
-        if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+        if (s.isDefined() && t.isDefined() && s >= 0 && s <= 1 && t >= 0 && t <= 1)
         {
             *x = (t * s1_x) + p0_x;
             *y = (t * s1_y) + p0_y;
@@ -552,13 +571,15 @@ namespace tessellation {
 
         std::vector<vec2_32i> & compute_internal() {
 
+            S.getComparator().updateComparePoint({0, 0});
+
             while (!Queue.isEmpty()) {
                 event_point_t event = Queue.removeMinKey();
 
                 /*
                 // do this later to handle multiple
-                while (Q.contains(event)) {
-                    event_point_t event2 = Q.removeMinElement();
+                while (Queue.contains(event)) {
+                    event_point_t event2 = Queue.removeMinKey();
                     // insert this segment into event
                 }
                 */
@@ -578,6 +599,11 @@ namespace tessellation {
             // I will solve it later
             if(event.type==event_type_t::START)
                 U_p.push_back(event.segment);
+
+//            while (Queue.contains(event)) {
+//                event_point_t event2 = Queue.removeMinKey();
+//                U_p.push_back(event.segment);
+//            }
 
             auto & p = event.getPoint();
             auto p_last = S.getComparator().getComparePoint();
@@ -599,6 +625,7 @@ namespace tessellation {
             Status::Node * node = S.findLowerBoundOf(p_segment);
 //            Status::Node * node = S.findUpperBoundOf(p_segment);
 
+            bool seq_started=false;
             while(node!=nullptr) {
                 std::cout << "check 1" <<std::endl;
 
@@ -607,6 +634,7 @@ namespace tessellation {
                         tested_segment.contains(p);
 
                 if(tested_segment_contains_p) {
+                    seq_started=true;
                     // segment contains p, now let's classify
                     // first check if p is at the end
                     if(tested_segment.isEnd(p))
@@ -621,7 +649,8 @@ namespace tessellation {
                     // if segment does not contain p, then no
                     // further segment will contain, so break the search
                     // THIS MIGHT BE A PROBLEM
-                    break;
+                    if(seq_started)
+                        break;
                 }
 
                 node = S.predecessor(node);
@@ -672,10 +701,22 @@ namespace tessellation {
                 segment_t p_segment{p, p};
                 Status::Node * right = S.findLowerBoundOf(p_segment);
 
-                if(right!= nullptr) {
-                    Status::Node * left = S.predecessor(right);
+                while(right && false) {
 
-                    if(left!= nullptr)
+                    segment_t &tested_segment = right->key;//.contains(p)
+                    bool tested_segment_contains_p =
+                            tested_segment.contains(p);
+
+                    if(tested_segment_contains_p)
+                        break;
+
+                    right = S.predecessor(right);
+                }
+
+                if(right) {
+                    Status::Node *left = S.predecessor(right);
+
+                    if (left != nullptr)
                         find_new_event(left->key, right->key, p);
                 }
 
@@ -735,13 +776,13 @@ namespace tessellation {
         void find_new_event(const segment_t & l,
                             const segment_t & r,
                             const vec2_32i & p) {
-//            float x, y;
-//            bool intersects = get_line_intersection(
-//                    l.p0.x, l.p0.y, l.p1.x, l.p1.y,
-//                    r.p0.x, r.p0.y, r.p1.x, r.p1.y,
-//                    &x, &y
-//            );
-
+            float x_f, y_f;
+            bool intersects_f = get_line_intersection(
+                    l.p0.x, l.p0.y, l.p1.x, l.p1.y,
+                    r.p0.x, r.p0.y, r.p1.x, r.p1.y,
+                    &x_f, &y_f
+            );
+//
             rational_t x_r{}, y_r{};
             bool intersects = get_line_intersection_rational(
                     l.p0.x, l.p0.y, l.p1.x, l.p1.y,
@@ -766,7 +807,7 @@ namespace tessellation {
                 event.segment.p1 = {(int)x, (int)y};
                 event.type = event_type_t::Intersection;
 
-                if(Queue.search(event)!= nullptr)
+                if(Queue.search(event))
                     return;
 
                 Queue.insert(event);

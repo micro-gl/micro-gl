@@ -62,6 +62,19 @@ namespace ds {
             Node *t = root;
 
             while (t != nullptr) {
+                if (isPreceding(k, t->key)) {
+                    t = t->left;
+                } else if (isPreceding(t->key, k)) {
+                    t = t->right;
+                }
+                else {
+                    return t;
+                }
+
+            }
+
+            /*
+            while (t != nullptr) {
                 if (isEqual(k, t->key)) {
                     return t;
                 } else if (isPreceding(k, t->key)) {
@@ -71,7 +84,7 @@ namespace ds {
                 }
 
             }
-
+             */
             return nullptr;
         }
 
@@ -297,7 +310,7 @@ namespace ds {
             if( !p )
                 return nullptr;
 
-            if(isPreceding(k, p->key)) {
+            else if(isPreceding(k, p->key)) {
                 p->left = remove(p->left, k);
                 if(p->left)
                     p->left->parent = p;
@@ -350,8 +363,6 @@ namespace ds {
                 return balance(min);
             }
 
-
-
             // this is when quitting the recursion
             return balance(p);
         }
@@ -370,7 +381,6 @@ namespace ds {
 
         bool isEqual(const Key &lhs, const Key &rhs) {
             return !compare.isPreceding(lhs, rhs) && !compare.isPreceding(rhs, lhs);
-//            return compare.isEqual(lhs, rhs);
         }
 
         bool isExact(const Key &lhs, const Key &rhs) {
