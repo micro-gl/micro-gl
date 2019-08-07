@@ -55,6 +55,9 @@ void init_sdl(int width, int height);
 
 using namespace tessellation;
 
+rational_t a = {1,1};
+rational_t b{1,1};
+
 segment_t s1 {{100,20}, {100, 400}};
 segment_t s2 {{200,20}, {200, 400}};
 segment_t s6 {{300,20}, {300, 400}};
@@ -72,8 +75,23 @@ std::vector<segment_t> segments_straight {s1, s2, s3, s4, s5, s6};
 BentleyOttmann bentleyOttmann;
 std::vector<vec2_32i> I_local;
 
+struct tomer {
+    int x, y;
+
+    tomer(int xx, int yy) {
+        x=xx;y=yy;
+    }
+};
+
+tomer helloo() {
+    tomer a = tomer{5,5};
+    return a;
+}
+
 float t = 100;
 inline void render() {
+
+    tomer b = helloo();
 
     canvas->setAntialiasing(false);
 
@@ -86,7 +104,7 @@ inline void render() {
 //        std::vector<segment_t> segments_2 { s2, s3, s4, s8};
         std::vector<segment_t> segments_2 {s1, s2, s3, s4, s5, s6, s7, s8};
 //        std::vector<segment_t> segments_2 {s1, s8};
-//        std::vector<segment_t> segments_2 {s6, s8};
+//        std::vector<segment_t> segments_2 {s2, s6, s8};
         auto & segments = segments_2;
 
         BentleyOttmann bentleyOttmann;
@@ -102,8 +120,8 @@ inline void render() {
 
         for (auto & segment : segments) {
             canvas->drawLine(BLACK,
-                    segment.p0.x, segment.p0.y,
-                    segment.p1.x, segment.p1.y,
+                    segment.p0.x.toFixed(), segment.p0.y.toFixed(),
+                    segment.p1.x.toFixed(), segment.p1.y.toFixed(),
                     0
                     );
         }
