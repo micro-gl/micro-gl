@@ -61,6 +61,7 @@ namespace ds {
         Node * searchExact(Node * root, Key &k) {
             Node *t = root;
 
+            /*
             while (t != nullptr) {
                 if (isPreceding(k, t->key)) {
                     t = t->left;
@@ -72,8 +73,9 @@ namespace ds {
                 }
 
             }
+             */
 
-            /*
+//            /*
             while (t != nullptr) {
                 if (isEqual(k, t->key)) {
                     return t;
@@ -84,7 +86,7 @@ namespace ds {
                 }
 
             }
-             */
+//             */
             return nullptr;
         }
 

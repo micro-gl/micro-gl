@@ -21,7 +21,7 @@ void test_curve_adaptive_subdivide();
 
 #define TEST_ITERATIONS 1
 #define W 640*1
-#define H 480*1
+#define H 480*4
 
 SDL_Window * window;
 SDL_Renderer * renderer;
@@ -58,16 +58,18 @@ using namespace tessellation;
 rational_t a = {1,1};
 rational_t b{1,1};
 
-segment_t s1 {{100,20}, {100, 400}};
-segment_t s2 {{200,20}, {200, 400}};
-segment_t s6 {{300,20}, {300, 400}};
+int m = 1500;
 
-segment_t s3 {{20,200}, {400, 200}};
-segment_t s4 {{20,300}, {400, 300}};
-segment_t s5 {{20,350}, {400, 350}};
+segment_t s1 {{100,20+m}, {100, 400+m}};
+segment_t s2 {{200,20+m}, {200, 400+m}};
+segment_t s6 {{300,20+m}, {300, 400+m}};
 
-segment_t s7 {{110,20}, {180, 400}};
-segment_t s8 {{500,20}, {130, 400}};
+segment_t s3 {{20,200+m}, {400, 200+m}};
+segment_t s4 {{20,300+m}, {400, 300+m}};
+segment_t s5 {{20,350+m }, {400, 350+m}};
+
+segment_t s7 {{110,50+m}, {180, 400+m}};
+segment_t s8 {{500,20+m}, {130, 400+m}};
 
 std::vector<segment_t> segments_2 {s1, s2, s3, s4, s5, s6, s7, s8};
 std::vector<segment_t> segments_straight {s1, s2, s3, s4, s5, s6};
@@ -75,36 +77,35 @@ std::vector<segment_t> segments_straight {s1, s2, s3, s4, s5, s6};
 BentleyOttmann bentleyOttmann;
 std::vector<vec2_32i> I_local;
 
-struct tomer {
-    int x, y;
-
-    tomer(int xx, int yy) {
-        x=xx;y=yy;
-    }
-};
-
-tomer helloo() {
-    tomer a = tomer{5,5};
-    return a;
-}
-
-float t = 100;
+float t = 80;
 inline void render() {
-
-    tomer b = helloo();
 
     canvas->setAntialiasing(false);
 
     for (int ix = 0; ix < 1; ++ix) {
         canvas->clear(WHITE);
-        t+=0.1;
-//        s8.p0.x = t;//400;//t;
-        s8.p0.y = t;
+        t = 1100;//1.1;
+        s7.p0.x = 15;
+        s8.p0.x = 600;
+
+        s8.p0.y = m - t;
+        s7.p0.y = m - t;
+
+//        s7.p0.x = 110 + 0.1f*t;
+//        s8.p0.x = 500 - t;
+
+//        s7.p0.y = m - t;
+//        s8.p0.y = m - t;
+
+//        t+=0.00001;
+//        s7.p0.x = 920 + t;
+
 //        std::vector<segment_t> segments_2 { s2, s3, s4, s8};
 //        std::vector<segment_t> segments_2 { s2, s3, s4, s8};
-        std::vector<segment_t> segments_2 {s1, s2, s3, s4, s5, s6, s7, s8};
-//        std::vector<segment_t> segments_2 {s1, s8};
-//        std::vector<segment_t> segments_2 {s2, s6, s8};
+//        std::vector<segment_t> segments_2 {s1, s2, s3, s4, s5, s6, s7, s8};
+//        std::vector<segment_t> segments_2 {s5, s6, s7};
+//        std::vector<segment_t> segments_2 {s7, s8};
+        std::vector<segment_t> segments_2 {s2, s4, s7, s8};
         auto & segments = segments_2;
 
         BentleyOttmann bentleyOttmann;
@@ -114,16 +115,22 @@ inline void render() {
 
         for (auto & inter : I_local) {
             canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-                    RED, inter.x, inter.y, 15);
+                    RED, inter.x, inter.y, 8);
 
         }
 
         for (auto & segment : segments) {
+//            canvas->drawLine(BLACK,
+//                             segment.p0.x, segment.p0.y,
+//                             segment.p1.x, segment.p1.y,
+//                             0
+//            );
             canvas->drawLine(BLACK,
-                    segment.p0.x.toFixed(), segment.p0.y.toFixed(),
-                    segment.p1.x.toFixed(), segment.p1.y.toFixed(),
-                    0
-                    );
+                             segment.p0.x.toFixed(), segment.p0.y.toFixed(),
+                             segment.p1.x.toFixed(), segment.p1.y.toFixed(),
+                             0
+            );
+
         }
 
     }
@@ -195,7 +202,7 @@ void loop() {
                 break;
         }
 //
-        render();
+//        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(), canvas->width() * canvas->sizeofPixel());
         SDL_RenderClear(renderer);

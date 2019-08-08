@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
+#include <stack>
 
 namespace tessellation {
 
@@ -92,18 +93,18 @@ namespace tessellation {
         };
 
         static const rational_t maximum(const rational_t &lhs,
-                                            const rational_t &rhs) {
+                                        const rational_t &rhs) {
             return (lhs<=rhs) ? rhs : lhs;
         }
 
         static const rational_t minimum(const rational_t &lhs,
-                                          const rational_t &rhs) {
+                                        const rational_t &rhs) {
             return (lhs<=rhs) ? lhs : rhs;
         }
 
         static const rational_t clamp(const rational_t &a,
-                                        const rational_t &left,
-                                        const rational_t &right) {
+                                      const rational_t &left,
+                                      const rational_t &right) {
             rational_t c = minimum(maximum(a, left), right);
             return c;
         }
@@ -163,8 +164,14 @@ namespace tessellation {
         rational_t operator+(const rational_t & val) const {
             throwIfDenomIsZero();
 
-            long n = numerator*val.denominator + val.numerator*denominator;
-            long d = denominator * val.denominator;
+            long n,d;
+            if(denominator!=val.denominator) {
+                n = numerator*val.denominator + val.numerator*denominator;
+                d = denominator * val.denominator;
+            } else {
+                n = numerator + val.numerator;
+                d = denominator;
+            }
             return rational_t{n, d};
         }
 
@@ -179,8 +186,15 @@ namespace tessellation {
 
         rational_t operator-(const rational_t & val) const {
             throwIfDenomIsZero();
-            long n = numerator*val.denominator - val.numerator*denominator;
-            long d = denominator * val.denominator;
+            long n,d;
+            if(denominator!=val.denominator) {
+                n = numerator*val.denominator - val.numerator*denominator;
+                d = denominator * val.denominator;
+            } else {
+                n = numerator - val.numerator;
+                d = denominator;
+            }
+
             return rational_t{n, d};
         }
 
@@ -266,7 +280,7 @@ namespace tessellation {
             makeDenominatorPositive();
             if(rhs != 0)
                 return numerator*rhs.denominator -
-                            denominator*rhs.numerator < 0;
+                       denominator*rhs.numerator < 0;
             else
                 return isNegative();
         }
@@ -291,6 +305,8 @@ namespace tessellation {
 
     struct segment_t {
         vec2_rat p0, p1;
+        vec2_rat latest_compare_point;
+        std::stack<vec2_rat> latest;
 
         segment_t() = default;
 
@@ -299,6 +315,10 @@ namespace tessellation {
         segment_t(const vec2_rat & p0_, const vec2_rat & p1_) {
             p0 = p0_;
             p1 = p1_;
+        }
+
+        bool operator==(const segment_t & rhs) const {
+            return p0==rhs.p0 && p1==rhs.p1;
         }
 
 //        segment_t(const vec2_rat & p0_, const vec2_rat & p1_) {
@@ -388,7 +408,7 @@ namespace tessellation {
 
     struct segment_order
     {
-        const rational_t & compute_x_intersection_with(const segment_t& segment, const vec2_rat & p) {
+        const rational_t compute_x_intersection_with(const segment_t& segment, const vec2_rat & p) {
             // we presume we already have intersection with p.y
 //            auto dx = segment.p1.x - segment.p0.x;
 //            auto dy = segment.p1.y - segment.p0.y;
@@ -410,7 +430,7 @@ namespace tessellation {
             }
 
 //            return {zz};
-            return x2;
+            return {x2};
         }
 
         bool isPoint(const segment_t& s) {
@@ -595,7 +615,7 @@ namespace tessellation {
     }
 
     bool get_line_intersection_rational_2(const vec2_rat& p0, const vec2_rat &p1,
-                                        const vec2_rat &p2, const vec2_rat & p3,
+                                          const vec2_rat &p2, const vec2_rat & p3,
                                           vec2_rat & intersection)
     {
 
@@ -769,7 +789,7 @@ namespace tessellation {
 
             bool seq_started=true;
             while(node!=nullptr) {
-                std::cout << "check 1" <<std::endl;
+//                std::cout << "check 1" <<std::endl;
 
                 segment_t & tested_segment = node->key;//.contains(p)
                 bool tested_segment_contains_p =
@@ -805,7 +825,7 @@ namespace tessellation {
 
             if((U_p.size() + L_p.size() + C_p.size()) > 1) {
                 // report intersection
-                std::cout << "intersection with p : " + std::to_string(p.x.toFloat()) +
+                std::cout << "report intersection with p : " + std::to_string(p.x.toFloat()) +
                              ", " + std::to_string(p.y.toFloat()) << std::endl;
 
                 I.push_back({p.x.toFixed(), p.y.toFixed()});
@@ -815,51 +835,56 @@ namespace tessellation {
 //            if(has_last_compare_point)
             S.getComparator().updateComparePoint(p_last);
 
-            for (auto & ix : L_p) {
+
+            for (auto & ix : C_p) {
+                auto latest = ix.latest.top();
+                ix.latest.pop();
+                S.getComparator().updateComparePoint(ix.latest_compare_point);
                 S.remove(ix);
             }
 
-            for (auto & ix : C_p) {
+            vec2_rat lat;
+            for (auto & ix : L_p) {
+                auto latest = lat = ix.latest.top();
+                ix.latest.pop();
+                S.getComparator().updateComparePoint(latest);
                 S.remove(ix);
             }
+
 
             S.getComparator().updateComparePoint(p);
             // 6. insert U_p and C_p
             for (auto & ix : U_p) {
+                ix.latest_compare_point = p;
+                ix.latest.push(p);
                 S.insert(ix);
             }
 
             for (auto & ix : C_p) {
+                ix.latest_compare_point = p;
+                ix.latest.push(p);
                 S.insert(ix);
             }
 
             // 8
-            bool is_Up_or_C_p_empty = U_p.empty() && C_p.empty();
+            bool is_Up_and_C_p_empty = U_p.empty() && C_p.empty();
 
-            if(is_Up_or_C_p_empty) {
+            if(is_Up_and_C_p_empty) {
                 // create a zero length segment at p
 //                throw std::invalid_argument( "implement" );
                 // this requires more thinking
                 segment_t p_segment{p, p};
-                Status::Node * right = S.findLowerBoundOf(p_segment);
+                S.getComparator().updateComparePoint(p);
+                Status::Node * left = S.findLowerBoundOf(p_segment);
 
-                while(right&&false) {
+                if(left) {
+                    Status::Node *right = S.successor(left);
 
-                    segment_t &tested_segment = right->key;//.contains(p)
-                    bool tested_segment_contains_p =
-                            tested_segment.contains(p);
-
-                    if(tested_segment_contains_p)
-                        break;
-
-                    right = S.predecessor(right);
-                }
-
-                if(right) {
-                    Status::Node *left = S.predecessor(right);
-
-                    if (left != nullptr)
+                    if (right) {
                         find_new_event(left->key, right->key, p);
+
+                    }
+
                 }
 
             }
@@ -869,6 +894,51 @@ namespace tessellation {
                 segment_order order{};
                 order.updateComparePoint(p);
 
+                // union
+
+                std::vector<segment_t> merge{};
+
+                for (auto & a : U_p) {
+
+                    bool inside = false;
+                    for (auto & b : merge) {
+                        bool areSame = !order.isPreceding(a, b) && !order.isPreceding(b, a);
+//                        bool areSame = a.p0==b.p0 && a.p1==b.p1;
+
+                        if(areSame) {
+                            inside = true;
+                            break;
+                        }
+
+                    }
+
+                    if(!inside) {
+                        merge.push_back(a);
+                    }
+
+                }
+
+                for (auto & a : C_p) {
+
+                    bool inside = false;
+                    for (auto & b : merge) {
+                        bool areSame = !order.isPreceding(a, b) && !order.isPreceding(b, a);
+//                        bool areSame = a.p0==b.p0 && a.p1==b.p1;
+
+                        if(areSame) {
+                            inside = true;
+                            break;
+                        }
+
+                    }
+
+                    if(!inside) {
+                        merge.push_back(a);
+                    }
+                }
+
+                //
+
                 segment_t min{}, max{};
 
                 if(!U_p.empty())
@@ -876,9 +946,11 @@ namespace tessellation {
                 else
                     min = max = C_p[0];
 
+                max = min = merge[0];
+
                 // this is replicating the order in which they
                 // are inserted in the status tree
-                for (auto & ix : U_p) {
+                for (auto & ix : merge) {
                     if(order.isPreceding(ix, min))
                         min = ix;
 
@@ -886,14 +958,23 @@ namespace tessellation {
                         max = ix;
                 }
 
-                for (auto & ix : C_p) {
-                    if(order.isPreceding(ix, min))
-                        min = ix;
 
-                    if(!order.isPreceding(ix, max))
-                        max = ix;
-
-                }
+//                for (auto & ix : U_p) {
+//                    if(order.isPreceding(ix, min))
+//                        min = ix;
+//
+//                    if(!order.isPreceding(ix, max))
+//                        max = ix;
+//                }
+//
+//                for (auto & ix : C_p) {
+//                    if(order.isPreceding(ix, min))
+//                        min = ix;
+//
+//                    if(!order.isPreceding(ix, max))
+//                        max = ix;
+//
+//                }
 
                 // now find it's left neighbor in Status
                 Status::Node * min_node = S.searchExact(min);
@@ -908,8 +989,17 @@ namespace tessellation {
                 Status::Node * max_node = S.searchExact(max);
                 Status::Node * right_neighbor = S.successor(max_node);
 
-                if(right_neighbor!= nullptr)
+                if(right_neighbor!= nullptr) {
+                    bool s1 = min_node->key.p0==min.p0 && min_node->key.p1==min.p1;
+                    bool s2 = max_node->key.p0==max.p0 && max_node->key.p1==max.p1;
+
+                    if(!s1 || !s2) {
+                        int a =5;
+                    }
+
                     find_new_event(max, right_neighbor->key, p);
+                }
+
             }
 
 
@@ -918,6 +1008,9 @@ namespace tessellation {
         void find_new_event(const segment_t & l,
                             const segment_t & r,
                             const vec2_rat & p) {
+            if(l==r)
+                return;
+
             float x_f, y_f;
             bool intersects_f = get_line_intersection(
                     l.p0.x.toFloat(), l.p0.y.toFloat(), l.p1.x.toFloat(), l.p1.y.toFloat(),
@@ -951,7 +1044,7 @@ namespace tessellation {
 //            int y = y_r.toFixed();
 
             bool below_p_line = intersection.y > p.y;
-            bool on_p_and_right = intersection.y==p.y && intersection.x >= p.x;
+            bool on_p_and_right = intersection.y==p.y && intersection.x > p.x;
 
             if(below_p_line || on_p_and_right) {
                 event_point_t event;
@@ -963,6 +1056,10 @@ namespace tessellation {
                     return;
 
                 Queue.insert(event);
+
+                std::cout << "found intersection : " + std::to_string(intersection.x.toFloat()) +
+                             ", " + std::to_string(intersection.y.toFloat()) << std::endl;
+
             }
 
         }

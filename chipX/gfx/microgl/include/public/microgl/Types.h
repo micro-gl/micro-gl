@@ -41,7 +41,6 @@ struct vec2 {
     vec2(const vec2<F> & a) {
         this->x = static_cast<T>(a.x);
         this->y = static_cast<T>(a.y);
-        return *this;
     }
 
 

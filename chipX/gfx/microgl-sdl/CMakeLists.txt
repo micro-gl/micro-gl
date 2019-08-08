@@ -24,7 +24,7 @@ include_directories("${PROJECT_SOURCE_DIR}/src")
 include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
 include_directories("${PROJECT_BINARY_DIR}")
 
-set(SOURCES main.cpp
+set(SOURCES main_bentley_ottmann.cpp
         libs/stb_image/stb_image.cpp
         src/Resources.cpp
         )
