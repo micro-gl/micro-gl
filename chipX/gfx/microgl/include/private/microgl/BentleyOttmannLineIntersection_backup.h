@@ -321,10 +321,6 @@ namespace tessellation {
             return x;
         }
 
-        bool isPoint(const segment_t& s) {
-            return s.p0.x==s.p1.x && s.p0.y==s.p1.y;
-        }
-
         long cmp(const segment_t& lhs, const segment_t& rhs) {
 
             rational_t lhs_x = compute_x_intersection_with(lhs, p);
