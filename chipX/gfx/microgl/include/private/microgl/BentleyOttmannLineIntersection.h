@@ -327,18 +327,10 @@ namespace tessellation {
 
             // dy==0
             // infinite slope
-            if (dy==0) {
+            if (dy==0)
                 x2 = rational_t::clamp(p.x, p0.x, p1.x);
-            } else {
-
+            else
                 x2 = rational_t{p0.x} + rational_t(p.y - p0.y)*slope;
-//
-//                float slope_f = float(slope.numerator) / float(slope.denominator);
-//                float x2_f = float(p0.x) + float(p.y - p0.y)*slope_f;
-//
-//                x2 = x2_f;
-
-            }
 
             return {x2};
         }
@@ -624,10 +616,14 @@ namespace tessellation {
 
             pt.segment.p0 = p0<<precision;
             pt.segment.p1 = p1<<precision;
-            // todo:: this is important, reversing direction
-//            pt.segment.p0 = p0.y<=p1.y ? p0 : p1;
-//            pt.segment.p1 = p0.y<=p1.y ? p1 : p0;
             pt.type = type;
+
+            bool reverse = pt.segment.p1.y<pt.segment.p0.y;
+
+            if(reverse) {
+                std::swap(pt.segment.p0,pt.segment.p1);
+                pt.type = type==event_type_t::START ? event_type_t::END : event_type_t::START;
+            }
 
             return pt;
         }
@@ -647,10 +643,14 @@ namespace tessellation {
 
             pt.segment.p0 = {p0.x.toFixed(precision), p0.y.toFixed(precision)};
             pt.segment.p1 = {p1.x.toFixed(precision), p1.y.toFixed(precision)};
-            // todo:: this is important, reversing direction
-//            pt.segment.p0 = p0.y<=p1.y ? p0 : p1;
-//            pt.segment.p1 = p0.y<=p1.y ? p1 : p0;
             pt.type = type;
+
+            bool reverse = pt.segment.p1.y<pt.segment.p0.y;
+
+            if(reverse) {
+                std::swap(pt.segment.p0,pt.segment.p1);
+                pt.type = type==event_type_t::START ? event_type_t::END : event_type_t::START;
+            }
 
             return pt;
         }
@@ -671,7 +671,9 @@ namespace tessellation {
             return compute_internal();
         }
 
-        std::vector<vec2_32i> & compute(vec2_32i * pts, int size, uint8_t precision) {
+        std::vector<vec2_32i> & compute(vec2_32i * pts,
+                                        int size,
+                                        uint8_t precision) {
 
             for (int ix = 0; ix < size; ++ix) {
                 event_point_t e1 = create_event(pts[ix], pts[ix+1],
@@ -685,7 +687,9 @@ namespace tessellation {
             return compute_internal();
         }
 
-        std::vector<vec2_32i> & compute(segment_t * seg, int size, uint8_t precision) {
+        std::vector<vec2_32i> & compute(segment_t * seg,
+                                        int size,
+                                        uint8_t precision) {
 
             for (int ix = 0; ix < size; ++ix) {
                 event_point_t e1 = create_event(seg[ix],
@@ -731,10 +735,10 @@ namespace tessellation {
             if(event.type==event_type_t::START) {
                 U_p.push_back(event.segment);
 
-//                while (Queue.contains(event)) {
-//                    event_point_t event2 = Queue.removeMinKey();
-//                    U_p.push_back(event2.segment);
-//                }
+                while (Queue.contains(event)) {
+                    event_point_t event2 = Queue.removeMinKey();
+                    U_p.push_back(event2.segment);
+                }
             }
 
             auto & p = event.getPoint();
@@ -757,7 +761,6 @@ namespace tessellation {
 
             bool seq_started=false;
             while(node!=nullptr) {
-//                std::cout << "check 1" <<std::endl;
 
                 segment_t & tested_segment = node->key;//.contains(p)
                 bool tested_segment_contains_p =
@@ -915,6 +918,8 @@ namespace tessellation {
                     r.p0.x, r.p0.y, r.p1.x, r.p1.y,
                     &x_f, &y_f
             );
+//            bool isValid = intersects_f;
+
 //
 //            rational_t x_r{}, y_r{};
 //            bool intersects = get_line_intersection_rational(
@@ -923,17 +928,16 @@ namespace tessellation {
 //                    &x_r, &y_r
 //            );
 
-//            vec2_rat intersection;
-//            bool intersects = get_line_intersection_rational_2(
-//                    l.p0, l.p1, r.p0, r.p1,
-//                    intersection
-//            );
+            vec2_rat intersection_internal;
+            bool intersects = get_line_intersection_rational_2(
+                    l.p0, l.p1, r.p0, r.p1,
+                    intersection_internal
+            );
 //
-//            bool isValid = intersects &&
-//                           intersection.x.isRegular() &&
-//                           intersection.y.isRegular();
-//
-            bool isValid = intersects_f;
+            bool isValid = intersects &&
+                    intersection_internal.x.isRegular() &&
+                    intersection_internal.y.isRegular();
+
             if(!isValid)
                 return;
 
@@ -941,8 +945,8 @@ namespace tessellation {
             // we won't discard if it happened above us
             vec2_32i intersection;
 
-            intersection.x = x_f;
-            intersection.y = y_f;
+            intersection.x = intersection_internal.x.toFixed();
+            intersection.y = intersection_internal.y.toFixed();
 
             bool below_p_line = intersection.y > p.y;
             bool on_p_and_right = intersection.y==p.y && intersection.x > p.x;

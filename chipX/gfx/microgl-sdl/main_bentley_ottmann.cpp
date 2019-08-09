@@ -66,9 +66,9 @@ segment_t s1 {{100,20+m}, {100, 400+m}};
 segment_t s2 {{200,20+m}, {200, 400+m}};
 segment_t s6 {{300,20+m}, {300, 400+m}};
 
-segment_t s3 {{20,200+m}, {400, 200+m+20}};
-segment_t s4 {{20,300+m}, {400, 300+m+20}};
-segment_t s5 {{20,350+m }, {400, 350+m+20}};
+segment_t s3 {{20,200+m}, {400, 200+m}};
+segment_t s4 {{20,300+m}, {400, 300+m}};
+segment_t s5 {{20,350+m }, {400, 350+m}};
 
 segment_t s7 {{110,50+m}, {180, 400+m}};
 segment_t s8 {{500,5+m}, {130, 400+m}};
@@ -86,9 +86,13 @@ inline void render() {
 
     for (int ix = 0; ix < 1; ++ix) {
         canvas->clear(WHITE);
-        t +=0.1;
-//        s7.p0.x = 15 + t;
+        t -=0.1;
+        s7.p0.x = 15 + t;
         s8.p0.x = 400 - t;
+
+        s3.p1.y = 200 + m + 100*sin(6.0-(t/10));
+        s4.p1.y = 300 + m + 100*sin(6.0-(t/20));
+        s5.p1.y = 350 + m + 100*sin(6.0-(t/25));
 
 //        std::vector<segment_t> segments_2 { s2, s3, s4, s8};
 //        std::vector<segment_t> segments_2 { s2, s3, s4, s8};
@@ -99,7 +103,7 @@ inline void render() {
         auto & segments = segments_2;
 
         BentleyOttmann bentleyOttmann;
-        uint8_t precision = 0;
+        uint8_t precision = 8;
         auto & I = bentleyOttmann.compute(segments.data(), segments.size(), precision);
         I_local.clear();
         I_local.insert( I_local.end(), I.begin(), I.end() );
