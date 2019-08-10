@@ -453,16 +453,16 @@ namespace tessellation {
 
             bool lhs_has_infinite_slope = lhs_slope.denominator==0;
             bool rhs_has_infinite_slope = rhs_slope.denominator==0;
+            long tie = 0;
 
             if(lhs_has_infinite_slope)
                 return 1;
-
-            if(rhs_has_infinite_slope)
+            else if(rhs_has_infinite_slope)
                 return -1;
+            else
+                tie = (lhs_slope - rhs_slope).numerator;
 
-            auto slope_compare = lhs_slope - rhs_slope;
-
-            return slope_compare.numerator;
+            return isSlopeReversed() ? -tie : tie;
         }
 
         bool isPreceding(const segment_t& lhs, const segment_t& rhs)
@@ -474,11 +474,19 @@ namespace tessellation {
             p = val;
         }
 
+        bool isSlopeReversed() {
+            return _reverse_slope;
+        }
+
+        bool reverseSlope(bool val) {
+            _reverse_slope = val;
+        }
+
         const vec2_32i & getComparePoint() {
             return p;
         }
     private:
-
+        bool _reverse_slope = false;
         vec2_32i p;
     };
 
@@ -706,7 +714,7 @@ namespace tessellation {
         std::vector<vec2_32i> & compute_internal() {
             rational_t zero{0, 0};
 
-            S.getComparator().updateComparePoint({0,0});
+            S.getComparator().updateComparePoint({0,-10});
 
             while (!Queue.isEmpty()) {
                 event_point_t event = Queue.removeMinKey();
@@ -735,18 +743,23 @@ namespace tessellation {
             if(event.type==event_type_t::START) {
                 U_p.push_back(event.segment);
 
-                while (Queue.contains(event)) {
-                    event_point_t event2 = Queue.removeMinKey();
-                    U_p.push_back(event2.segment);
-                }
             }
 
-            auto & p = event.getPoint();
-            auto p_last = S.getComparator().getComparePoint();
-            bool has_last_compare_point = p_last.y!=0;
-            if(!has_last_compare_point) {
-                p_last = p;
+            std::vector<event_point_t> coincides {};
+            // remove all same points
+            while (!Queue.isEmpty() && Queue.findMin()->key.getPoint()==event.getPoint()) {
+                event_point_t event2 = Queue.removeMinKey();
+                coincides.push_back(event2);
             }
+
+            // take upper points
+            for(auto & c : coincides) {
+                if(c.type==event_type_t::START)
+                    U_p.push_back(c.segment);
+            }
+
+            auto p = event.getPoint();
+            auto p_last = p;//S.getComparator().getComparePoint().y==-10 ? p : S.getComparator().getComparePoint();
 
             // update the scanning y
             S.getComparator().updateComparePoint(p);
@@ -803,19 +816,24 @@ namespace tessellation {
             }
 
             // 5. delete segments in L_p, C_p from Status
-//            S.getComparator().updateComparePoint(p_last);
+            S.getComparator().updateComparePoint(p_last);
+            S.getComparator().reverseSlope(true);
 
             for (auto & ix : C_p) {
-                S.getComparator().updateComparePoint(ix.latest_compare_point);
+//                S.getComparator().updateComparePoint(p_last);
+//                S.getComparator().updateComparePoint(ix.latest_compare_point);
                 S.remove(ix);
             }
 
             for (auto & ix : L_p) {
-                S.getComparator().updateComparePoint(ix.latest_compare_point);
+//                S.getComparator().updateComparePoint(p_last);
+//                S.getComparator().updateComparePoint(ix.latest_compare_point);
                 S.remove(ix);
             }
 
             S.getComparator().updateComparePoint(p);
+            S.getComparator().reverseSlope(false);
+
             // 6. insert U_p and C_p
             for (auto & ix : U_p) {
                 ix.latest_compare_point = p;

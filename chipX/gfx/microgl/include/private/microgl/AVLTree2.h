@@ -268,30 +268,58 @@ namespace ds {
         }
 
         Key & removeMinKey() {
+
             Node * min = findMin();
+            Node min2;
 
             Key &key = min->key;
 
-            remove(getRoot(), key);
+            remove(getRoot(), key, &min2);
+//            remove(min);
+//            remove(min->parent?min->parent:root, key);
 
-            return key;
+            return min2.key;
         }
 
         Node* remove(const Key &k) {
             return remove(getRoot(), k);
         }
 
-        Node* remove(Node * node) {
-            if( !node )
-                return nullptr;
+        void remove(Node * p) {
+            Node* q = p->left;
+            Node* r = p->right;
+            bool p_has_parent = p->parent;
+            bool p_is_left_child = p_has_parent ? p->parent->left == p : false;
+            bool p_is_right_child = p_has_parent ? p->parent->right == p : false;
 
-            Node* q = node->left;
-            Node* r = node->right;
+            bool p_is_root = p==root;
 
-            delete node;
+            delete p;
+//                free(p);
 
-            if( !r )
-                return q;
+            if(p_is_root) {
+                root= nullptr;
+            }
+
+            if( !r ) {
+                if(p_is_root) {
+                    root = q;
+                    if(root!= nullptr)
+                        root->parent = nullptr;
+                }
+
+                if(p_is_left_child)
+                    p->parent->left = q;
+                else if(p_is_right_child)
+                    p->parent->right = q;
+
+                if(p && p->parent) {
+
+                    balance(p->parent);
+                }
+
+                return;
+            }
 
             Node* min = findMin(r);
 
@@ -300,25 +328,42 @@ namespace ds {
 
             if(min->left)
                 min->left->parent = min;
+
             if(min->right)
                 min->right->parent = min;
 
-            return balance(min);
+            if(p_is_root) {
+                root = min;
+                // todo:: this cleaned the bug
+                root->parent = nullptr;
+            }
+
+            Node * balanced_root = balance(min);
+
+            if(p_is_left_child)
+                p->parent->left = balanced_root;
+            else if(p_is_right_child)
+                p->parent->right = balanced_root;
+
+            if(p && p->parent) {
+                balance(p->parent);
+
+            }
         }
 
         // make this iterative with a stack
-        Node* remove(Node* p, const Key &k) // deleting k key from p tree
+        Node* remove(Node* p, const Key &k, Node * removedNode= nullptr) // deleting k key from p tree
         {
             if( !p )
                 return nullptr;
 
             else if(isPreceding(k, p->key)) {
-                p->left = remove(p->left, k);
+                p->left = remove(p->left, k, removedNode);
                 if(p->left)
                     p->left->parent = p;
             }
             else if(isPreceding(p->key, k)) {
-                p->right = remove(p->right, k);
+                p->right = remove(p->right, k, removedNode);
                 if(p->right)
                     p->right->parent = p;
             }
@@ -326,13 +371,16 @@ namespace ds {
                 Node* q = p->left;
                 Node* r = p->right;
 
+                if(removedNode)
+                    *removedNode = *p;
+
                 bool p_is_root = p==root;
 
                 delete p;
 //                free(p);
 
                 if(p_is_root) {
-                    p=root= nullptr;
+                    root= nullptr;
                 }
 
                 if( !r ) {
