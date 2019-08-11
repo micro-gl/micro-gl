@@ -267,7 +267,7 @@ namespace ds {
             return t;
         }
 
-        Key & removeMinKey() {
+        Key removeMinKey() {
 
             Node * min = findMin();
             Node min2;
@@ -279,6 +279,14 @@ namespace ds {
 //            remove(min->parent?min->parent:root, key);
 
             return min2.key;
+        }
+
+        Node* removeHeavy(const Key &k) {
+            Node * n = findMax();
+
+            if(isEqual(k, n->key)) {
+
+            }
         }
 
         Node* remove(const Key &k) {

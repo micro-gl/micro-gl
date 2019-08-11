@@ -79,33 +79,38 @@ std::vector<segment_t> segments_straight {s1, s2, s3, s4, s5, s6};
 BentleyOttmann bentleyOttmann;
 std::vector<vec2_32i> I_local;
 
-float t = 205;
+float t = 20;
 inline void render() {
 
     canvas->setAntialiasing(false);
 
     for (int ix = 0; ix < 1; ++ix) {
         canvas->clear(WHITE);
-//        t = 200;
-        t -=0.05;
-        s7.p0.x = 15 + t;
-        s8.p0.x = 400 - t;
+//        t = -340;
+        t -=0.25;
+//        s7.p0.x = 15 + t;
+//        s8.p0.x = 400 - t;
+//
+        s7.p0.x = 600+t;
+        s8.p0.x = 10-t;
+        s7.p0.y = 10;
+        s8.p0.y = 10;
 
-        s3.p1.y = 200 + m + 101*sin(6.0-(t/10));
-        s4.p1.y = 300 + m + 100*sin(6.0-(t/20));
-        s5.p1.y = 350 + m + 100*sin(6.0-(t/25));
-
-        s1.p1.x = 100 + m + 101*sin(6.0-(t/10));
-        s2.p1.x = 200 + m + 100*sin(6.0-(t/20));
-        s6.p1.x = 300 + m + 100*sin(6.0-(t/25));
+        float s = -950;
+//        s3.p1.y = 200 + m + 101*sin(6.0-(s/10));
+//        s4.p1.y = 300 + m + 100*sin(6.0-(s/20));
+//        s5.p1.y = 350 + m + 100*sin(6.0-(s/25));
+//
+//        s1.p1.x = 100 + m + 101*sin(6.0-(t/10));
+//        s2.p1.x = 200 + m + 100*sin(6.0-(t/20));
+//        s6.p1.x = 300 + m + 100*sin(6.0-(t/25));
 
 //        std::vector<segment_t> segments_2 { s2, s3, s4, s8};
 //        std::vector<segment_t> segments_2 { s2, s3, s4, s8};
         std::vector<segment_t> segments_2 {s1, s2, s3, s4, s5, s6, s7, s8};
+//        std::vector<segment_t> segments_2 {s1, s2, s3, s6, s7, s8};
 
-//        std::vector<segment_t> segments_2 {s2, s7, s8};
-
-//        std::vector<segment_t> segments_2 {s1, s2,s3, s7};
+//        std::vector<segment_t> segments_2 {s2,s4, s7};
 
 //        std::vector<segment_t> segments_2 {s1, s2, s3, s4};
 //        std::vector<segment_t> segments_2 {s5, s6, s7};
@@ -115,14 +120,14 @@ inline void render() {
 
         cout << t <<endl;
         BentleyOttmann bentleyOttmann;
-        uint8_t precision = 12;
+        uint8_t precision =12;
         auto & I = bentleyOttmann.compute(segments.data(), segments.size(), precision);
         I_local.clear();
         I_local.insert( I_local.end(), I.begin(), I.end() );
 
         for (auto & inter : I_local) {
             canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-                    RED, inter.x, inter.y, 8<<precision, precision, 200);
+                    RED, inter.x, inter.y, 8<<precision, precision, 80);
 
         }
 
