@@ -1,20 +1,19 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
+#pragma clang diagnostic ignored "-Wunused-variable"
 #pragma once
 
 #include <microgl/Types.h>
-#include "AVLTree2.h"
+#include "AVLTree.h"
 #include <vector>
 #include <iostream>
-#include <stdexcept>
 
 namespace tessellation {
 
-//    http://www.normalesup.org/~cagne/internship_l3/mncubes_red/doc/html/bentley__ottmann_8cpp_source.html
-
 #define max(a,b) (a)>(b) ? (a) : (b)
 #define min(a,b) (a)<(b) ? (a) : (b)
-//#define clamp(a,l,r) (min(max((a), (l)), (r)))
+#define clamp2(a,l,r) (min(max((a), (l)), (r)))
 #define abs(a) ((a)<0 ? -(a) : (a))
-#define E 1.0f
 
     enum class event_type_t {
         START, END, Intersection
@@ -22,9 +21,7 @@ namespace tessellation {
 
     struct rational_t {
 
-//        mutable
         mutable long numerator = 0, denominator=1;
-        int L = 0;
 
         rational_t() {};
 
@@ -269,12 +266,11 @@ namespace tessellation {
 
     typedef vec2<rational_t> vec2_rat;
 
-    int EE = 1;//(1<<8) - 1;
-    int PR = 1;//(1<<8) - 1;
+    int EE = 0;
+    int PR = 1;
 
     struct segment_t {
         vec2_32i p0, p1;
-        vec2_32i latest_compare_point;
 
         segment_t() = default;
 
@@ -290,23 +286,15 @@ namespace tessellation {
         }
 
         rational_t compute_slope() const {
-
             long dy = isHorizontalLine() ? 0 : p1.y - p0.y;
-
             return rational_t(p1.x - p0.x)/dy;
-//            return isStraightLine() ? rational_t(p1.x - p0.x)/rational_t(p1.y - p0.y);
         }
 
         bool isHorizontalLine() const {
-//            rational_t slope = compute_slope();//{dx, dy};
-//            auto dy = slope.denominator;
-
             long dx = p1.x - p0.x;
             long dy = p1.y - p0.y;
-
             rational_t slope = {dx, dy};
-
-            bool slope_is_flatty = dx!=0 && dy!=0 && slope.absolute() >= (1<<PR);
+            bool slope_is_flatty =  dy!=0 && dx!=0 && slope.absolute() >= (1<<PR);
             bool isStraight = dy==0;// || slope_is_flatty;
 
             return isStraight;
@@ -333,16 +321,9 @@ namespace tessellation {
         }
 
         bool contains(const vec2_32i & p) {
-
-            // this is an optimization to avoid divisions
-            rational_t slope = compute_slope();//{dx, dy};
-            auto dy = slope.denominator;
-
             bool lies_on_ray;
 
-//            if(dy!=0) {
             if(isHorizontalLine()) {
-//                lies_on_ray = abs(p0.y-p.y) <= 1;//EE;
                 auto minY = min(p0.y, p1.y);
                 auto maxY = max(p0.y, p1.y);
                 lies_on_ray = p.y>=minY && p.y<=maxY;//EE;
@@ -360,7 +341,7 @@ namespace tessellation {
                 const auto & min_2 = rational_t{p.x, 1}.toFixed();
                 const auto & max_2 = rational_t{p.x, 1}.toFixed();
 
-                bool lines_intersect_on_p = (min_2 - max_1)<=EE && (min_1-max_2)<=EE;
+                bool lines_intersect_on_p = (min_2 - max_1)<=1 && (min_1-max_2)<=1;
                 lies_on_ray = lines_intersect_on_p;
 
             }
@@ -417,7 +398,11 @@ namespace tessellation {
 
             bool lines_intersect_on_p = (min_2 - max_1)<=EE && (min_1 - max_2)<=EE;
 
-            bool inside = lines_intersect_on_p;
+            // may use it in the future
+            bool x_ref_in_1 = (p.x - max_1)<=EE && (min_1 - p.x)<=EE;//(p.x>=min_1 && p.x<=max_1) || (p.x+1>=min_1 && p.x+1<=max_1);
+            bool x_ref_in_2 = (min_2 - p.x)<=EE && (p.x - max_2)<=EE;//(p.x>=min_2 && p.x<=max_2) || (p.x+1>=min_2 && p.x+1<=max_2);
+
+            bool inside = lines_intersect_on_p;// && x_ref_in_1 && x_ref_in_2;
 
             if(!inside) {
                 rational_t compare = (lhs_x - rhs_x);
@@ -434,39 +419,27 @@ namespace tessellation {
             lhs_slope.makeDenominatorPositive();
             rhs_slope.makeDenominatorPositive();
 
-            bool lhs_has_infinite_slope = lhs_slope.denominator==0;
-            bool rhs_has_infinite_slope = rhs_slope.denominator==0;
             long tie = 0;
 
-//            if(lhs_slope.isNegativeInfinity()) {
-//                return
-//            }
-
-//            if((lhs_slope.isPositiveInfinity() && rhs_slope.isPositiveInfinity()) ||
-//               (lhs_slope.isNegativeInfinity() && rhs_slope.isNegativeInfinity())
-//              )
-//                    return 0;
+            // I want to clarify that we never deal with negative infinity slopes
+            if((lhs_slope.isPositiveInfinity() && rhs_slope.isPositiveInfinity()) ||
+               (lhs_slope.isNegativeInfinity() && rhs_slope.isNegativeInfinity())
+              )
+                    return 0;
 
             if(lhs_slope.isPositiveInfinity())
-                 return tie = 1;
+                 return 1;
             else if(rhs_slope.isNegativeInfinity())
-                return tie = 1;
+                return 1;
             else if(rhs_slope.isPositiveInfinity())
-                return tie = -1;
+                return -1;
             else if(lhs_slope.isNegativeInfinity())
-                return tie = -1;
+                return -1;
             else {
-//                tie = (lhs_slope.toFloat() - rhs_slope.toFloat()) == 0 ? 0 :(lhs_slope.toFloat() - rhs_slope.toFloat()) > 0 ? 1 : -1;
                 tie = (lhs_slope - rhs_slope).numerator;
             }
 
-            auto dx_1 = lhs_slope.numerator;
-            auto dy_1 = lhs_slope.denominator;
-            auto dx_2 = rhs_slope.numerator;
-            auto dy_2 = rhs_slope.denominator;
-            bool extra = true;//dy_1!=0 || dy_2!=0;
-
-            return isCompareOnTheLine() && extra ? -tie : tie;
+            return isCompareOnTheLine() ? -tie : tie;
         }
 
         bool isPreceding(const segment_t& lhs, const segment_t& rhs)
@@ -549,38 +522,10 @@ namespace tessellation {
         return false; // No collision
     }
 
-    bool get_line_intersection_rational(int p0_x, int p0_y, int p1_x, int p1_y,
-                                        int p2_x, int p2_y, int p3_x, int p3_y,
-                                        rational_t *x=nullptr, rational_t *y=nullptr)
-    {
-        int s1_x = p1_x - p0_x;
-        int s1_y = p1_y - p0_y;
-        int s2_x = p3_x - p2_x;
-        int s2_y = p3_y - p2_y;
-
-        rational_t s{1,1}, t{1,1};
-        s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y));
-        s.denominator = (-s2_x * s1_y + s1_x * s2_y);
-
-        t.numerator = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x));
-        t.denominator = (-s2_x * s1_y + s1_x * s2_y);
-
-        if (s.isRegular() && t.isRegular() && s >= 0 && s <= 1 && t >= 0 && t <= 1)
-        {
-            *x = (t * s1_x) + p0_x;
-            *y = (t * s1_y) + p0_y;
-
-            return true;
-        }
-
-        return false;
-    }
-
     bool get_line_intersection_rational_2(const vec2_rat& p0, const vec2_rat &p1,
                                           const vec2_rat &p2, const vec2_rat & p3,
                                           vec2_rat & intersection)
     {
-
         vec2_rat s1 = p1 - p0;
         vec2_rat s2 = p3 - p2;
 
@@ -589,11 +534,9 @@ namespace tessellation {
         rational_t t = ( s2.x * (p0.y - p2.y) - s2.y * (p0.x - p2.x)) / d;
 
         if (s.isRegular() && t.isRegular() && s >= 0 && s <= 1 && t >= 0 && t <= 1) {
-            intersection.x = (t * s1.x) + p0.x;
-            intersection.y = (t * s1.y) + p0.y;
 
             // try this later
-            //intersection = p0 + s1 * t;
+            intersection = p0 + s1 * t;
 
             return true;
         }
@@ -604,7 +547,7 @@ namespace tessellation {
     class BentleyOttmann {
     public:
 
-        BentleyOttmann() = default;
+        explicit BentleyOttmann(bool DEBUG = false) : _DEBUG{DEBUG} {};
 
         event_point_t create_event(const vec2_f & p0,
                                    const vec2_f & p1,
@@ -636,16 +579,6 @@ namespace tessellation {
                 std::swap(pt.segment.p0,pt.segment.p1);
                 pt.type = pt.type==event_type_t::START ? event_type_t::END : event_type_t::START;
             }
-
-            bool reverseX = pt.segment.isHorizontalLine() && pt.segment.p0.x > pt.segment.p1.x;
-
-            if(reverseX) {
-//                std::swap(pt.segment.p0,pt.segment.p1);
-//                pt.type = pt.type==event_type_t::START ? event_type_t::END : event_type_t::START;
-            }
-
-
-
 
             return pt;
         }
@@ -733,25 +666,19 @@ namespace tessellation {
             while (!Queue.isEmpty()) {
                 event_point_t event = Queue.removeMinKey();
 
-                /*
-                // do this later to handle multiple
-                while (Queue.contains(event)) {
-                    event_point_t event2 = Queue.removeMinKey();
-                    // insert this segment into event
+                if(_DEBUG) {
+                    std::string info = std::to_string(event.getPoint().x) +
+                                       "x" + std::to_string(event.getPoint().y);
+                    std::cout<<"event p " << info << std::endl;
                 }
-                */
-                std::string info = std::to_string(event.getPoint().x) +
-                                   "x" + std::to_string(event.getPoint().y);
-                std::cout<<"event p " << info << std::endl;
+
                 handleEventPoint(event);
             }
 
-            if(!S.isEmpty()) {
-//                while(true) {
-//                    int a  = 5;
-//                };
-//                throw std::invalid_argument( "wow" );
-            }
+            if(!S.isEmpty())
+                _has_failed_for_sure = true;
+
+            destroy();
 
             return I;
         }
@@ -830,8 +757,9 @@ namespace tessellation {
 
             if(intersection_found) {
                 // report intersection
-                std::cout << "report intersection with p : " + std::to_string(p.x) +
-                             ", " + std::to_string(p.y) << std::endl;
+                if(_DEBUG)
+                    std::cout << "report intersection with p : " + std::to_string(p.x) +
+                                 ", " + std::to_string(p.y) << std::endl;
 
                 I.push_back({p.x, p.y});
             }
@@ -842,26 +770,33 @@ namespace tessellation {
             for (auto & ix : C_p) {
                 S.remove(ix);
             }
+            S.getComparator().compareOnTheLine(false);
 
-            for (int i = 0; i < C_p.size(); ++i) {
-//                S.remove(C_p[i]);
+            for (auto & ix : C_p) {
+                S.remove(ix);
             }
 
+
+            S.getComparator().compareOnTheLine(true);
             for (auto & ix : L_p) {
                 S.remove(ix);
             }
+            S.getComparator().compareOnTheLine(false);
+            for (auto & ix : L_p) {
+                S.remove(ix);
+            }
+
+            // insert
 
             S.getComparator().updateComparePoint(p);
             S.getComparator().compareOnTheLine(false);
 
             // 6. insert U_p and C_p
             for (auto & ix : U_p) {
-                ix.latest_compare_point = p;
                 S.insert(ix);
             }
 
             for (auto & ix : C_p) {
-                ix.latest_compare_point = p;
                 S.insert(ix);
             }
 
@@ -899,7 +834,7 @@ namespace tessellation {
                     min = max = U_p[0];
                 else
                     min = max = C_p[0];
-//                order.compareOnTheLine(true);
+
                 for (auto & ix : U_p) {
                     if(order.isPreceding(ix, min))
                         min = ix;
@@ -917,33 +852,18 @@ namespace tessellation {
 
                 }
 
-                // now find it's left neighbor in Status
-//                S.getComparator().compareOnTheLine(true);
                 Status::Node * min_node = S.searchExact(min);
-//                S.getComparator().compareOnTheLine(false);
+                Status::Node * max_node = S.searchExact(max);
                 Status::Node * left_neighbor = S.predecessor(min_node);
+                Status::Node * right_neighbor = S.successor(max_node);
 
                 if(left_neighbor!= nullptr)
                     find_new_event(left_neighbor->key, min, p);
 
-                // second
-
-                // now find it's left neighbor in Status
-//                S.getComparator().compareOnTheLine(true);
-                Status::Node * max_node = S.searchExact(max);
-//                S.getComparator().compareOnTheLine(false);
-                Status::Node * right_neighbor = S.successor(max_node);
-
-                if(right_neighbor!= nullptr) {
-//                    bool s1 = min_node->key.p0==min.p0 && min_node->key.p1==min.p1;
-//                    bool s2 = max_node->key.p0==max.p0 && max_node->key.p1==max.p1;
-//
-//                    if(!s1 || !s2) {
-//                        int a =5;
-//                    }
-
+                if(right_neighbor!= nullptr)
                     find_new_event(max, right_neighbor->key, p);
-                }
+
+                return;
 
             }
 
@@ -956,21 +876,15 @@ namespace tessellation {
             if(l==r)
                 return;
 
+            /*
             float x_f, y_f;
             bool intersects_f = get_line_intersection(
                     l.p0.x, l.p0.y, l.p1.x, l.p1.y,
                     r.p0.x, r.p0.y, r.p1.x, r.p1.y,
                     &x_f, &y_f
             );
-//            bool isValid = intersects_f;
-
-//
-//            rational_t x_r{}, y_r{};
-//            bool intersects = get_line_intersection_rational(
-//                    l.p0.x, l.p0.y, l.p1.x, l.p1.y,
-//                    r.p0.x, r.p0.y, r.p1.x, r.p1.y,
-//                    &x_r, &y_r
-//            );
+            bool isValid = intersects_f;
+             */
 
             vec2_rat intersection_internal;
             bool intersects = get_line_intersection_rational_2(
@@ -991,10 +905,9 @@ namespace tessellation {
 
             intersection.x = intersection_internal.x.toFixed();
             intersection.y = intersection_internal.y.toFixed();
-//            intersection = {x_f, y_f};
 
             bool below_p_line = intersection.y > p.y;
-            bool on_p_and_right = intersection.y==p.y;// && intersection.x > p.x;
+            bool on_p_and_right = intersection.y==p.y && intersection.x > p.x;
 
             if(below_p_line || on_p_and_right) {
                 event_point_t event;
@@ -1007,11 +920,24 @@ namespace tessellation {
 
                 Queue.insert(event);
 
-                std::cout << "found intersection : " + std::to_string(intersection.x) +
-                             ", " + std::to_string(intersection.y) << std::endl;
+                if(_DEBUG)
+                    std::cout << "found intersection : " + std::to_string(intersection.x) +
+                                 ", " + std::to_string(intersection.y) << std::endl;
 
             }
 
+        }
+
+        void destroy() {
+            while (!Queue.isEmpty())
+                Queue.removeMinKey();
+
+            while (!S.isEmpty())
+                S.removeMinKey();
+        }
+
+        bool hasTheAlgorithmFailed() {
+            return _has_failed_for_sure;
         }
 
         std::vector<vec2_32i> & getIntersections() {
@@ -1019,9 +945,10 @@ namespace tessellation {
         }
 
     private:
-        typedef ds::AVLTree2<event_point_t, event_order> PriorityQueue;
-        typedef ds::AVLTree2<segment_t, segment_order> Status;
-
+        typedef ds::AVLTree<event_point_t, event_order> PriorityQueue;
+        typedef ds::AVLTree<segment_t, segment_order> Status;
+        bool _DEBUG = false;
+        bool _has_failed_for_sure = false;
         PriorityQueue Queue;
         Status S;
         std::vector<vec2_32i> I;
@@ -1029,3 +956,4 @@ namespace tessellation {
     };
 
 }
+#pragma clang diagnostic pop

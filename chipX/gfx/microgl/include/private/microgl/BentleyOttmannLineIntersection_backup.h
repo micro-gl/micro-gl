@@ -2,7 +2,7 @@
 
 #include <microgl/Types.h>
 //#include "RedBlackTree.h"
-#include "AVLTree2.h"
+#include "AVLTree.h"
 #include <vector>
 #include <iostream>
 #include <stdexcept>
