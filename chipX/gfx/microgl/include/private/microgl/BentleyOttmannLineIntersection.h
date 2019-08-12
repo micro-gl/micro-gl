@@ -312,10 +312,7 @@ namespace tessellation {
                 x2 = rational_t::clamp(p.x, min(p0.x, p1.x), max(p0.x, p1.x));
             else {
                 x2 = rational_t{p0.x} + rational_t(p.y - p0.y)*slope;
-
-//                x2 = long(p0.x + (float(p.y - p0.y)*float(slope.numerator))/float(slope.denominator));
             }
-
 
             return {x2};
         }
@@ -678,6 +675,10 @@ namespace tessellation {
             if(!S.isEmpty())
                 _has_failed_for_sure = true;
 
+            if(_has_failed_for_sure) {
+                std::cout << "Algorithm probaly has Failed" << std::endl;
+            }
+
             destroy();
 
             return I;
@@ -929,11 +930,13 @@ namespace tessellation {
         }
 
         void destroy() {
-            while (!Queue.isEmpty())
-                Queue.removeMinKey();
-
-            while (!S.isEmpty())
-                S.removeMinKey();
+            Queue.clear();
+            S.clear();
+//            while (!Queue.isEmpty())
+//                Queue.removeMinKey();
+//
+//            while (!S.isEmpty())
+//                S.removeMinKey();
         }
 
         bool hasTheAlgorithmFailed() {

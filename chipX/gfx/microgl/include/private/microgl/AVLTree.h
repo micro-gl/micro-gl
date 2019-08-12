@@ -244,6 +244,11 @@ namespace ds {
             return t;
         }
 
+        void clear() {
+            while(!isEmpty())
+                remove(getRoot());
+        }
+
         Key removeMinKey() {
 
             Node * min = findMin();
@@ -278,7 +283,6 @@ namespace ds {
             bool p_is_root = p==root;
 
             delete p;
-//                free(p);
 
             if(p_is_root) {
                 root= nullptr;
