@@ -5,380 +5,33 @@
 
 #include <microgl/Types.h>
 #include "AVLTree.h"
+#include <microgl/Rational.h>
+#include <microgl/Segment.h>
 #include <vector>
 #include <iostream>
 
 namespace tessellation {
 
-#define max(a,b) (a)>(b) ? (a) : (b)
-#define min(a,b) (a)<(b) ? (a) : (b)
-#define clamp2(a,l,r) (min(max((a), (l)), (r)))
 #define abs(a) ((a)<0 ? -(a) : (a))
 
     enum class event_type_t {
         START, END, Intersection
     };
 
-    struct rational_t {
-
-        mutable long numerator = 0, denominator=1;
-
-        rational_t() {};
-
-        rational_t(long n) : rational_t(n, 1) {
-        }
-
-        rational_t(long n , long d) : numerator{n}, denominator{d} {
-        }
-
-        rational_t(const rational_t & val) {
-            numerator = val.numerator;
-            denominator = val.denominator;
-        }
-
-        rational_t & operator=(const rational_t & val) {
-            if(this==&val)
-                return *this;
-            this->numerator = val.numerator;
-            this->denominator = val.denominator;
-            return *this;
-        }
-
-        rational_t & operator=(const long & val) {
-            numerator = val;
-            denominator = 1;
-            return *this;
-        }
-
-        float toFloat() const {
-            return float(numerator)/float(denominator);
-        };
-
-        bool isRegular() const {
-            return denominator!=0;
-        }
-
-        bool isIrregular() const {
-            return denominator!=0;
-        }
-
-        bool isUndefined() const {
-            return numerator==0 && denominator==0;
-        }
-
-        bool isDefined() const {
-            return !isUndefined();
-        }
-
-        bool isPositiveInfinity() const {
-            // todo: might be wrong
-            return numerator>=0 && denominator==0;
-        }
-
-        bool isNegativeInfinity() const {
-            return numerator<0 && denominator==0;
-        }
-
-        long toFixed(uint8_t precision = 0) const {
-            return (numerator<<precision)/(denominator);
-        };
-
-        static const rational_t maximum(const rational_t &lhs,
-                                        const rational_t &rhs) {
-            return (lhs<=rhs) ? rhs : lhs;
-        }
-
-        static const rational_t minimum(const rational_t &lhs,
-                                        const rational_t &rhs) {
-            return (lhs<=rhs) ? lhs : rhs;
-        }
-
-        static const rational_t clamp(const rational_t &a,
-                                      const rational_t &left,
-                                      const rational_t &right) {
-            rational_t c = minimum(maximum(a, left), right);
-            return c;
-        }
-
-        rational_t absolute() const {
-            long n = numerator;
-            long d = denominator;
-
-            if(isNegative()) {
-                n = numerator<0 ? -numerator : numerator;
-                d = denominator<0 ? -denominator : denominator;
-            } else {
-
-            }
-
-            return rational_t{n, d};
-        }
-
-        void makeDenominatorPositive() const {
-            if(denominator < 0) {
-                numerator = -numerator;
-                denominator = -denominator;
-            }
-
-        }
-
-        rational_t operator*(const long & val) const {
-            long n = numerator*val;
-            return rational_t{n, denominator};
-        }
-
-        rational_t operator*(const rational_t & val) const {
-            throwIfDenomIsZero();
-
-            long n = numerator*val.numerator;
-            long d = denominator*val.denominator;
-            return rational_t{n, d};
-        }
-
-        rational_t operator/(const long & val) const {
-            return rational_t{numerator, denominator*val};
-        }
-
-        rational_t operator/(const rational_t & val) const {
-            throwIfDenomIsZero();
-
-            long n = numerator*val.denominator;
-            long d = denominator*val.numerator;
-            return rational_t{n, d};
-        }
-
-        rational_t operator+(const long & val) const {
-            long n = numerator + denominator*val;
-            return rational_t{n, denominator};
-        }
-
-        rational_t operator+(const rational_t & val) const {
-            throwIfDenomIsZero();
-
-            long n,d;
-            if(denominator!=val.denominator) {
-                n = numerator*val.denominator + val.numerator*denominator;
-                d = denominator * val.denominator;
-            } else {
-                n = numerator + val.numerator;
-                d = denominator;
-            }
-            return rational_t{n, d};
-        }
-
-        rational_t operator-(const long & val) const {
-            long n = numerator - denominator*val;
-            return rational_t{n, denominator};
-        }
-
-        rational_t operator-() const {
-            return rational_t{0, 1} - *this;
-        }
-
-        rational_t operator-(const rational_t & val) const {
-            throwIfDenomIsZero();
-            long n,d;
-            if(denominator!=val.denominator) {
-                n = numerator*val.denominator - val.numerator*denominator;
-                d = denominator * val.denominator;
-            } else {
-                n = numerator - val.numerator;
-                d = denominator;
-            }
-
-            return rational_t{n, d};
-        }
-
-        void throwIfDenomIsZero() const {
-            if(denominator==0)
-                throw std::invalid_argument( "denom==0" );
-        }
-
-        // boolean operations here
-
-        bool operator!=(const long & rhs) const {
-            return !(*this==rhs);
-        }
-
-        bool operator==(const long & rhs) const {
-            if(!isRegular())
-                return false;
-
-            if(rhs!=0)
-                return numerator==rhs*denominator;
-
-            return numerator==0;
-        }
-
-        bool operator==(const rational_t & rhs) const {
-            if(!isRegular()) {
-                if(isPositiveInfinity()==rhs.isPositiveInfinity())
-                    return true;
-                else if(isNegativeInfinity()==rhs.isNegativeInfinity())
-                    return true;
-            }
-
-            return numerator*rhs.denominator==rhs.numerator*denominator;
-        }
-
-        bool operator!=(const rational_t & val) const {
-            return !(*this==val);
-        }
-
-        bool operator <= (const rational_t & rhs) const {
-            return (*this<rhs) || (*this==rhs);
-        }
-
-        bool operator >= (const rational_t & rhs) {
-            return  !(*this<rhs);
-        }
-
-        bool operator < (const rational_t & rhs) const {
-            if(!isRegular()) {
-                if(isPositiveInfinity())
-                    return false;
-                else return rhs.isPositiveInfinity();
-            }
-
-            makeDenominatorPositive();
-            if(rhs != 0)
-                return numerator*rhs.denominator -
-                       denominator*rhs.numerator < 0;
-            else
-                return isNegative();
-        }
-
-        bool operator > (const rational_t & rhs) const {
-            return  !(*this<=rhs);
-        }
-
-        bool isPositive() const {
-            throwIfDenomIsZero();
-            return (numerator>=0 && denominator>=0)||
-                   (numerator<=0 && denominator<=0);
-        }
-
-        bool isNegative() const {
-            return !isPositive();
-        }
-
-    };
-
-    typedef vec2<rational_t> vec2_rat;
+    typedef vec2<Rational> vec2_rat;
 
     int EE = 0;
     int PR = 1;
 
-    struct segment_t {
-        vec2_32i p0, p1;
-
-        segment_t() = default;
-
-        segment_t(const segment_t & val) = default;
-
-        segment_t(const vec2_32i & p0_, const vec2_32i & p1_) {
-            p0 = p0_;
-            p1 = p1_;
-        }
-
-        bool operator==(const segment_t & rhs) const {
-            return p0==rhs.p0 && p1==rhs.p1;
-        }
-
-        rational_t compute_slope() const {
-            long dy = isHorizontalLine() ? 0 : p1.y - p0.y;
-            return rational_t(p1.x - p0.x)/dy;
-        }
-
-        bool isHorizontalLine() const {
-            long dx = p1.x - p0.x;
-            long dy = p1.y - p0.y;
-            rational_t slope = {dx, dy};
-            bool slope_is_flatty =  dy!=0 && dx!=0 && slope.absolute() >= (1<<PR);
-            bool isStraight = dy==0;// || slope_is_flatty;
-
-            return isStraight;
-        }
-
-        // special intersection with the ray encapsulating the segment
-        rational_t compute_x_intersection_with(const vec2_32i & p) const {
-            // we presume we already have intersection with p.y
-            rational_t slope = compute_slope();//{dx, dy};
-            auto dy = slope.denominator;
-            rational_t x2{10,10};
-
-            // infinite slope
-            if (isHorizontalLine())
-                x2 = rational_t::clamp(p.x, min(p0.x, p1.x), max(p0.x, p1.x));
-            else {
-                x2 = rational_t{p0.x} + rational_t(p.y - p0.y)*slope;
-            }
-
-            return {x2};
-        }
-
-        bool contains(const vec2_32i & p) {
-            bool lies_on_ray;
-
-            if(isHorizontalLine()) {
-                auto minY = min(p0.y, p1.y);
-                auto maxY = max(p0.y, p1.y);
-                lies_on_ray = p.y>=minY && p.y<=maxY;//EE;
-            }
-            else {
-
-                rational_t x_1 = compute_x_intersection_with({p.x, p.y});
-                rational_t x_2 = compute_x_intersection_with({p.x, p.y + 1});
-
-                x_1.makeDenominatorPositive();
-                x_2.makeDenominatorPositive();
-
-                const auto & min_1 = rational_t::minimum(x_1, x_2).toFixed();
-                const auto & max_1 = rational_t::maximum(x_1, x_2).toFixed();
-                const auto & min_2 = rational_t{p.x, 1}.toFixed();
-                const auto & max_2 = rational_t{p.x, 1}.toFixed();
-
-                bool lines_intersect_on_p = (min_2 - max_1)<=1 && (min_1-max_2)<=1;
-                lies_on_ray = lines_intersect_on_p;
-
-            }
-
-            // check edge cases beyond the segment
-            if(lies_on_ray) {
-                auto minX = min(p0.x, p1.x);
-                auto minY = min(p0.y, p1.y);
-                auto maxX = max(p0.x, p1.x);
-                auto maxY = max(p0.y, p1.y);
-
-                bool outside_x = minX > p.x || maxX < p.x;
-                bool outside_y = minY > p.y || maxY < p.y;
-
-                if(outside_x || outside_y)
-                    return false;
-            }
-
-            return lies_on_ray;
-        }
-
-        bool isStart(const vec2_32i & p) {
-            return p0==p;
-        }
-
-        bool isEnd(const vec2_32i & p) {
-            return p1==p;
-        }
-
-    };
-
     struct segment_order
     {
 
-        long cmp(const segment_t& lhs, const segment_t& rhs) {
+        long cmp(const Segment& lhs, const Segment& rhs) {
 
-            rational_t lhs_x = lhs.compute_x_intersection_with(p);
-            rational_t rhs_x = rhs.compute_x_intersection_with(p);
-            rational_t lhs_x_at_1 = lhs.compute_x_intersection_with({p.x, p.y + 1});
-            rational_t rhs_x_at_1 = rhs.compute_x_intersection_with({p.x, p.y + 1});
+            Rational lhs_x = lhs.compute_x_intersection_with(p);
+            Rational rhs_x = rhs.compute_x_intersection_with(p);
+            Rational lhs_x_at_1 = lhs.compute_x_intersection_with({p.x, p.y + 1});
+            Rational rhs_x_at_1 = rhs.compute_x_intersection_with({p.x, p.y + 1});
 
             lhs_x.makeDenominatorPositive();
             rhs_x.makeDenominatorPositive();
@@ -388,10 +41,10 @@ namespace tessellation {
             // let's test if rhs passes through the unit cube which has
             // top-left at (lhs_x, p.y) ?
 
-            const auto & min_1 = rational_t::minimum(lhs_x, lhs_x_at_1).toFixed();
-            const auto & max_1 = rational_t::maximum(lhs_x, lhs_x_at_1).toFixed();
-            const auto & min_2 = rational_t::minimum(rhs_x, rhs_x_at_1).toFixed();
-            const auto & max_2 = rational_t::maximum(rhs_x, rhs_x_at_1).toFixed();
+            const auto & min_1 = Rational::minimum(lhs_x, lhs_x_at_1).toFixed();
+            const auto & max_1 = Rational::maximum(lhs_x, lhs_x_at_1).toFixed();
+            const auto & min_2 = Rational::minimum(rhs_x, rhs_x_at_1).toFixed();
+            const auto & max_2 = Rational::maximum(rhs_x, rhs_x_at_1).toFixed();
 
             bool lines_intersect_on_p = (min_2 - max_1)<=EE && (min_1 - max_2)<=EE;
 
@@ -402,14 +55,14 @@ namespace tessellation {
             bool inside = lines_intersect_on_p;// && x_ref_in_1 && x_ref_in_2;
 
             if(!inside) {
-                rational_t compare = (lhs_x - rhs_x);
+                Rational compare = (lhs_x - rhs_x);
                 compare.makeDenominatorPositive();
                 return compare.numerator;
             }
 
             // if they are equal at p, we need to break tie with slope
-            rational_t lhs_slope = lhs.compute_slope();
-            rational_t rhs_slope = rhs.compute_slope();
+            Rational lhs_slope = lhs.compute_slope();
+            Rational rhs_slope = rhs.compute_slope();
 
             // return
 
@@ -439,7 +92,7 @@ namespace tessellation {
             return isCompareOnTheLine() ? -tie : tie;
         }
 
-        bool isPreceding(const segment_t& lhs, const segment_t& rhs)
+        bool isPreceding(const Segment& lhs, const Segment& rhs)
         {
             return cmp(lhs, rhs) < 0;
         }
@@ -465,7 +118,7 @@ namespace tessellation {
     };
 
     struct event_point_t {
-        segment_t segment{};
+        Segment segment{};
         event_type_t type = event_type_t::START;
 
         const vec2_32i & getPoint() const {
@@ -491,55 +144,6 @@ namespace tessellation {
         }
 
     };
-
-    // Returns 1 if the lines intersect, otherwise 0. In addition, if the lines
-    // intersect the intersection point may be stored in the floats i_x and i_y.
-    bool get_line_intersection(float p0_x, float p0_y, float p1_x, float p1_y,
-                               float p2_x, float p2_y, float p3_x, float p3_y,
-                               float *i_x=nullptr, float *i_y=nullptr)
-    {
-        float s1_x, s1_y, s2_x, s2_y;
-        s1_x = p1_x - p0_x;     s1_y = p1_y - p0_y;
-        s2_x = p3_x - p2_x;     s2_y = p3_y - p2_y;
-
-        float s, t;
-        s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
-        t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
-
-        if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
-        {
-            // Collision detected
-            if (i_x != nullptr)
-                *i_x = p0_x + (t * s1_x);
-            if (i_y != nullptr)
-                *i_y = p0_y + (t * s1_y);
-            return true;
-        }
-
-        return false; // No collision
-    }
-
-    bool get_line_intersection_rational_2(const vec2_rat& p0, const vec2_rat &p1,
-                                          const vec2_rat &p2, const vec2_rat & p3,
-                                          vec2_rat & intersection)
-    {
-        vec2_rat s1 = p1 - p0;
-        vec2_rat s2 = p3 - p2;
-
-        rational_t d = -s2.x * s1.y + s1.x * s2.y;
-        rational_t s = (-s1.y * (p0.x - p2.x) + s1.x * (p0.y - p2.y)) / d;
-        rational_t t = ( s2.x * (p0.y - p2.y) - s2.y * (p0.x - p2.x)) / d;
-
-        if (s.isRegular() && t.isRegular() && s >= 0 && s <= 1 && t >= 0 && t <= 1) {
-
-            // try this later
-            intersection = p0 + s1 * t;
-
-            return true;
-        }
-
-        return false;
-    }
 
     class BentleyOttmann {
     public:
@@ -580,7 +184,7 @@ namespace tessellation {
             return pt;
         }
 
-        event_point_t create_event(const segment_t & segment,
+        event_point_t create_event(const Segment & segment,
                                    event_type_t type,
                                    uint8_t precision = 4) {
             return create_event(segment.p0, segment.p1,
@@ -639,7 +243,7 @@ namespace tessellation {
             return compute_internal();
         }
 
-        std::vector<vec2_32i> & compute(segment_t * seg,
+        std::vector<vec2_32i> & compute(Segment * seg,
                                         int size,
                                         uint8_t precision) {
             PR = precision;
@@ -656,7 +260,7 @@ namespace tessellation {
         }
 
         std::vector<vec2_32i> & compute_internal() {
-            rational_t zero{0, 0};
+            Rational zero{0, 0};
 
             S.getComparator().updateComparePoint({0,-10});
 
@@ -675,7 +279,7 @@ namespace tessellation {
             if(!S.isEmpty())
                 _has_failed_for_sure = true;
 
-            if(_has_failed_for_sure) {
+            if(_has_failed_for_sure && _DEBUG) {
                 std::cout << "Algorithm probaly has Failed" << std::endl;
             }
 
@@ -685,7 +289,7 @@ namespace tessellation {
         }
 
         void handleEventPoint(event_point_t & event) {
-            std::vector<segment_t> U_p {};
+            std::vector<Segment> U_p {};
 
             // for now suppose U(p) is always a singleton,
             // I will solve it later
@@ -716,15 +320,15 @@ namespace tessellation {
             //
             // 2. find all segments that contain p, and classify them
             //
-            std::vector<segment_t> L_p, C_p;
+            std::vector<Segment> L_p, C_p;
             // create a zero length segment at p
-            segment_t p_segment{p, p};
+            Segment p_segment{p, p};
             Status::Node * node = S.findLowerBoundOf(p_segment);
 
             bool seq_started=false;
             while(node!=nullptr) {
 
-                segment_t & tested_segment = node->key;//.contains(p)
+                Segment & tested_segment = node->key;//.contains(p)
                 bool tested_segment_contains_p =
                         tested_segment.contains(p);
 
@@ -809,7 +413,7 @@ namespace tessellation {
             if(is_Up_and_C_p_empty) {
                 // create a zero length segment at p
                 // this requires more thinking
-                segment_t p_segment2{p, p};
+                Segment p_segment2{p, p};
                 S.getComparator().updateComparePoint(p);
                 Status::Node * left = S.findLowerBoundOf(p_segment2);
 
@@ -829,7 +433,7 @@ namespace tessellation {
                 segment_order order{};
                 order.updateComparePoint(p);
 
-                segment_t min{}, max{};
+                Segment min{}, max{};
 
                 if(!U_p.empty())
                     min = max = U_p[0];
@@ -871,25 +475,19 @@ namespace tessellation {
 
         }
 
-        void find_new_event(const segment_t & l,
-                            const segment_t & r,
+        void find_new_event(const Segment & l,
+                            const Segment & r,
                             const vec2_32i & p) {
             if(l==r)
                 return;
 
-            /*
-            float x_f, y_f;
-            bool intersects_f = get_line_intersection(
-                    l.p0.x, l.p0.y, l.p1.x, l.p1.y,
-                    r.p0.x, r.p0.y, r.p1.x, r.p1.y,
-                    &x_f, &y_f
+            vec2_f intersection_internal_f;
+            bool intersects_f = l.intersect(r,
+                    intersection_internal_f
             );
-            bool isValid = intersects_f;
-             */
 
             vec2_rat intersection_internal;
-            bool intersects = get_line_intersection_rational_2(
-                    l.p0, l.p1, r.p0, r.p1,
+            bool intersects = l.intersect(r,
                     intersection_internal
             );
 //
@@ -932,11 +530,6 @@ namespace tessellation {
         void destroy() {
             Queue.clear();
             S.clear();
-//            while (!Queue.isEmpty())
-//                Queue.removeMinKey();
-//
-//            while (!S.isEmpty())
-//                S.removeMinKey();
         }
 
         bool hasTheAlgorithmFailed() {
@@ -949,7 +542,7 @@ namespace tessellation {
 
     private:
         typedef ds::AVLTree<event_point_t, event_order> PriorityQueue;
-        typedef ds::AVLTree<segment_t, segment_order> Status;
+        typedef ds::AVLTree<Segment, segment_order> Status;
         bool _DEBUG = false;
         bool _has_failed_for_sure = false;
         PriorityQueue Queue;

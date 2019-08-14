@@ -30,11 +30,10 @@ set(sources
         include/public/microgl/Q.h
         include/public/microgl/Sampler.h
         src/Curves.cpp
-        include/private/microgl/RedBlackTree.h
         include/private/microgl/BentleyOttmannLineIntersection.h
         include/private/microgl/AVLTree.h
         src/BentleyOttmannLineIntersection.cpp
-        )
+        include/private/microgl/Rational.h src/Rational.cpp include/private/microgl/Segment.h src/Segment.cpp)
 
 add_library(${PROJECT_NAME} ${sources})
 
@@ -52,6 +51,7 @@ target_include_directories(${PROJECT_NAME}
         PRIVATE
         ${PROJECT_SOURCE_DIR}/src
         .
+        ${PROJECT_SOURCE_DIR}/include/public
         ${PROJECT_SOURCE_DIR}/include/public/microgl
         ${PROJECT_SOURCE_DIR}/include/private/microgl
         ${PROJECT_SOURCE_DIR}/include/private

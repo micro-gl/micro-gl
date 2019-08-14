@@ -53,3 +53,7 @@ https://github.com/pelson/antigrain/blob/master/agg-2.4/src/agg_curves.cpp
 
 ### size
 - SDL : 87kb release, 124kb Debug
+
+### tesselation
+- http://www.normalesup.org/~cagne/internship_l3/mncubes_red/doc/html/bentley__ottmann_8cpp_source.html
+- specialize tesselation algorithms for FPU as well

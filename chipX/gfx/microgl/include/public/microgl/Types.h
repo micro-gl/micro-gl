@@ -55,7 +55,7 @@ struct vec2 {
     }
 
     vec2 operator+(const vec2 & a) const {
-        return vec2{this->x+a.x, this->y + a.y};
+        return vec2{this->x + a.x, this->y + a.y};
     }
 
     vec2 operator-(const vec2 & a) {

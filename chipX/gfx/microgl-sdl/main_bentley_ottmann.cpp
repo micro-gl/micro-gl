@@ -7,6 +7,7 @@
 #include <microgl/FrameBuffer.h>
 #include <microgl/Canvas.h>
 #include <microgl/Types.h>
+#include <microgl/Segment.h>
 #include <microgl/PixelFormat.h>
 #include <microgl/PixelCoder.h>
 #include <microgl/BentleyOttmannLineIntersection.h>
@@ -48,15 +49,15 @@ void render() {
 
 void render_star() {
 
-    segment_t s1 {{100,100}, {300, 100}};
-    segment_t s2 {{300,100}, {120, 300}};
-    segment_t s3 {{120,300}, {200, 20}};
-    segment_t s4 {{200, 20}, {280,300}};
-    segment_t s5 {{280,300}, {100, 100}};
+    Segment s1 {{100,100}, {300, 100}};
+    Segment s2 {{300,100}, {120, 300}};
+    Segment s3 {{120,300}, {200, 20}};
+    Segment s4 {{200, 20}, {280,300}};
+    Segment s5 {{280,300}, {100, 100}};
 
     canvas->clear(WHITE);
 
-    std::vector<segment_t> segments_2 {s1, s2, s3, s4, s5};
+    std::vector<Segment> segments_2 {s1, s2, s3, s4, s5};
 
     auto & segments = segments_2;
     //cout << t <<endl;
@@ -85,16 +86,16 @@ void render_star() {
 void render_chaos() {
     int m = 0;
 
-    segment_t s1 {{100,20+m}, {100, 400+m}};
-    segment_t s2 {{200,20+m}, {200, 400+m}};
-    segment_t s6 {{300,20+m}, {300, 400+m}};
+    Segment s1 {{100,20+m}, {100, 400+m}};
+    Segment s2 {{200,20+m}, {200, 400+m}};
+    Segment s6 {{300,20+m}, {300, 400+m}};
 
-    segment_t s3 {{20,200+m}, {400, 200+m}};
-    segment_t s4 {{20,300+m}, {400, 300+m}};
-    segment_t s5 {{20,350+m }, {400, 350+m}};
+    Segment s3 {{20,200+m}, {400, 200+m}};
+    Segment s4 {{20,300+m}, {400, 300+m}};
+    Segment s5 {{20,350+m }, {400, 350+m}};
 
-    segment_t s7 {{110,50+m}, {180, 400+m}};
-    segment_t s8 {{500,5+m}, {130, 400+m}};
+    Segment s7 {{110,50+m}, {180, 400+m}};
+    Segment s8 {{500,5+m}, {130, 400+m}};
 
     canvas->clear(WHITE);
     t -=0.25;
@@ -115,8 +116,8 @@ void render_chaos() {
     s2.p1.x = 200 + m + 100*sin(6.0-(t/20));
     s6.p1.x = 300 + m + 100*sin(6.0-(t/25));
 
-    std::vector<segment_t> segments_2 {s1, s2, s3, s4, s5, s6, s7, s8};
-    //std::vector<segment_t> segments_2 {s2,s4, s7};
+    std::vector<Segment> segments_2 {s1, s2, s3, s4, s5, s6, s7, s8};
+    //std::vector<Segment> segments_2 {s2,s4, s7};
 
     auto & segments = segments_2;
     //cout << t <<endl;
