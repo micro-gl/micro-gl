@@ -43,8 +43,8 @@ void render_chaos();
 float t = 20;
 
 void render() {
-    render_star();
-//    render_chaos();
+//    render_star();
+    render_chaos();
 }
 
 void render_star() {
@@ -122,7 +122,7 @@ void render_chaos() {
     auto & segments = segments_2;
     //cout << t <<endl;
     BentleyOttmann bentleyOttmann(true);
-    uint8_t precision = 0;
+    uint8_t precision = 10;
     auto & I = bentleyOttmann.compute(segments.data(), segments.size(), precision);
 
     for (auto & inter : I) {
@@ -197,7 +197,7 @@ void loop() {
                 break;
         }
 //
-//        render();
+        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());

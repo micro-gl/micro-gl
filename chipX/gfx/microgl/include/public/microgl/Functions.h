@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <math.h>
-#include <stdint.h>
+#include <cmath>
+#include <cstdint>
 #include "Types.h"
 #include <cstdlib>
 #include "Fixed.h"

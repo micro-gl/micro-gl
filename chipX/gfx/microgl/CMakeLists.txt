@@ -33,7 +33,8 @@ set(sources
         include/private/microgl/BentleyOttmannLineIntersection.h
         include/private/microgl/AVLTree.h
         src/BentleyOttmannLineIntersection.cpp
-        include/private/microgl/Rational.h src/Rational.cpp include/private/microgl/Segment.h src/Segment.cpp)
+        src/Rational.cpp
+        src/Segment.cpp)
 
 add_library(${PROJECT_NAME} ${sources})
 
