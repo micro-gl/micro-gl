@@ -1705,6 +1705,14 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color, float x0, float y0, floa
 }
 
 template<typename P, typename CODER>
+void Canvas<P, CODER>::drawLine(const color_f_t & color,
+                                const vec2_32i &p0,
+                                const vec2_32i &p1,
+                                uint8_t bits) {
+    drawLine(color, p0.x, p0.y, p1.x, p1.y, bits);
+}
+
+template<typename P, typename CODER>
 void Canvas<P, CODER>::drawLine(const color_f_t &color,
                                 int x0, int y0,
                                 int x1, int y1,
@@ -1852,25 +1860,33 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
 
 template<typename P, typename CODER>
 void
-Canvas<P, CODER>::drawLinePath(color_f_t &color, vec2_32i *points,
-                               unsigned int size) {
-
-    for (int jx = 0; jx < size; jx++) {
+Canvas<P, CODER>::drawLinePath(color_f_t &color,
+                               vec2_32i *points,
+                               unsigned int size,
+                               bool closed_path) {
+    int jx = 0;
+    for (jx = 0; jx < size; jx++) {
 
         if(jx)
             drawLine(color, points[jx-1].x, points[jx-1].y, points[jx].x, points[jx].y);
     }
 
+    if(closed_path)
+        drawLine(color, points[0].x, points[0].y, points[jx - 1].x, points[jx- 1].y);
+
 }
 
 template<typename P, typename CODER>
 void
-Canvas<P, CODER>::drawLinePath(color_f_t &color, vec2_f *points,
-                               unsigned int size) {
+Canvas<P, CODER>::drawLinePath(color_f_t &color,
+                               vec2_f *points,
+                               unsigned int size,
+                               bool closed_path) {
 
     uint8_t p = 0;
+    int jx = 0;
 
-    for (int jx = 0; jx < size; jx++) {
+    for (jx = 0; jx < size; jx++) {
 
         if(jx)
             drawLine(color,
@@ -1879,6 +1895,9 @@ Canvas<P, CODER>::drawLinePath(color_f_t &color, vec2_f *points,
                      p);
 
     }
+
+    if(closed_path)
+        drawLine(color, points[0].x, points[0].y, points[jx - 1].x, points[jx- 1].y);
 
 }
 
@@ -2028,7 +2047,6 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
     std::cout << count << endl;
 
 }
-
 
 
 #pragma clang diagnostic pop

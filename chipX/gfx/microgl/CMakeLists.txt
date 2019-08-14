@@ -34,7 +34,7 @@ set(sources
         include/private/microgl/AVLTree.h
         src/BentleyOttmannLineIntersection.cpp
         src/Rational.cpp
-        src/Segment.cpp)
+        src/Segment.cpp src/MonotoneDecomposition.cpp)
 
 add_library(${PROJECT_NAME} ${sources})
 

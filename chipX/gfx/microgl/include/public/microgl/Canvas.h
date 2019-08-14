@@ -253,9 +253,14 @@ public:
                   float x0, float y0, float x1, float y1);
 
     void drawLine(const color_f_t & color,
-                   int x0, int y0,
-                   int x1, int y1,
-                   uint8_t bits = 0);
+                  int x0, int y0,
+                  int x1, int y1,
+                  uint8_t bits = 0);
+
+    void drawLine(const color_f_t & color,
+                  const vec2_32i &p0,
+                  const vec2_32i &p1,
+                  uint8_t bits = 0);
 
     void drawQuadraticBezierPath(color_f_t & color, vec2_32i *points,
                                  unsigned int size = 3,
@@ -277,12 +282,13 @@ public:
 
     void drawLinePath(color_f_t & color,
                       vec2_32i *points,
-                      unsigned int size = 4);
+                      unsigned int size = 4,
+                      bool closed_path = false);
 
     void drawLinePath(color_f_t & color,
                       vec2_f *points,
-                      unsigned int size = 4);
-
+                      unsigned int size = 4,
+                      bool closed_path = false);
 
 private:
     int _width = 0, _height = 0;

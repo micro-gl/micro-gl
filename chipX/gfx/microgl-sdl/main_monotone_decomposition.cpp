@@ -10,7 +10,7 @@
 #include <microgl/Segment.h>
 #include <microgl/PixelFormat.h>
 #include <microgl/PixelCoder.h>
-#include <microgl/BentleyOttmannLineIntersection.h>
+#include <microgl/MonotoneDecomposition.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -39,107 +39,37 @@ void init_sdl(int width, int height);
 using namespace tessellation;
 
 void render_star();
-void render_chaos();
 float t = 20;
 
 void render() {
-//    render_star();
-    render_chaos();
+    render_star();
 }
 
 void render_star() {
 
-    Segment s1 {{100,100}, {300, 100}};
-    Segment s2 {{300,100}, {120, 300}};
-    Segment s3 {{120,300}, {200, 20}};
-    Segment s4 {{200, 20}, {280,300}};
-    Segment s5 {{280,300}, {100, 100}};
+    vec2_32i p0 = {100,100};
+    vec2_32i p1 = {300, 100};
+    vec2_32i p2 = {120, 300};
+    vec2_32i p3 = {200, 20};
+    vec2_32i p4 = {280,300};
+//    vec2_32i p5 = {100, 100};
+
+    std::vector<vec2_32i> polygon = {p0, p1, p2, p3, p4, p0};//, p5};
 
     canvas->clear(WHITE);
 
-    std::vector<Segment> segments_2 {s1, s2, s3, s4, s5};
 
-    auto & segments = segments_2;
-    //cout << t <<endl;
-    BentleyOttmann bentleyOttmann(true);
+    monotone::MonotoneDecomposition<int32_t> monotoneDecomposition(true);
+
     uint8_t precision = 0;
-    auto & I = bentleyOttmann.compute(segments.data(), segments.size(), precision);
+    auto & I = monotoneDecomposition.compute(polygon.data(), polygon.size(), precision);
 
     for (auto & inter : I) {
         canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
                 RED, inter.x, inter.y, 8<<precision, precision, 80);
     }
 
-    for (auto & segment : segments) {
-        canvas->drawLine(BLACK,
-                         segment.p0.x, segment.p0.y,
-                         segment.p1.x, segment.p1.y,
-                         0
-        );
-
-    }
-
-
-}
-
-
-void render_chaos() {
-    int m = 0;
-
-    Segment s1 {{100,20+m}, {100, 400+m}};
-    Segment s2 {{200,20+m}, {200, 400+m}};
-    Segment s6 {{300,20+m}, {300, 400+m}};
-
-    Segment s3 {{20,200+m}, {400, 200+m}};
-    Segment s4 {{20,300+m}, {400, 300+m}};
-    Segment s5 {{20,350+m }, {400, 350+m}};
-
-    Segment s7 {{110,50+m}, {180, 400+m}};
-    Segment s8 {{500,5+m}, {130, 400+m}};
-
-    canvas->clear(WHITE);
-//    t -=0.25;
-    t -=0.2;
-    //s7.p0.x = 15 + t;
-    //s8.p0.x = 400 - t;
-
-    s7.p0.x = 600+t;
-    s8.p0.x = 10-t;
-    s7.p0.y = 10;
-    s8.p0.y = 10;
-
-    float s = -t;
-    s3.p1.y = 200 + m + 101*sin(6.0-(s/10));
-    s4.p1.y = 300 + m + 100*sin(6.0-(s/20));
-    s5.p1.y = 350 + m + 100*sin(6.0-(s/25));
-
-    s1.p1.x = 100 + m + 101*sin(6.0-(t/10));
-    s2.p1.x = 200 + m + 100*sin(6.0-(t/20));
-    s6.p1.x = 300 + m + 100*sin(6.0-(t/25));
-
-    std::vector<Segment> segments_2 {s1, s2, s3, s4, s5, s6, s7, s8};
-    //std::vector<Segment> segments_2 {s2,s4, s7};
-
-    auto & segments = segments_2;
-    //cout << t <<endl;
-    BentleyOttmann bentleyOttmann(true);
-    uint8_t precision = 10;
-    auto & I = bentleyOttmann.compute(segments.data(), segments.size(), precision);
-
-    for (auto & inter : I) {
-        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-                RED, inter.x, inter.y, 8<<precision, precision, 80);
-    }
-
-    for (auto & segment : segments) {
-        canvas->drawLine(BLACK,
-                         segment.p0.x, segment.p0.y,
-                         segment.p1.x, segment.p1.y,
-                         0
-        );
-
-    }
-
+    canvas->drawLinePath(BLACK, polygon.data(), polygon.size());
 
 }
 
@@ -152,7 +82,7 @@ int main() {
 void init_sdl(int width, int height) {
     SDL_Init(SDL_INIT_VIDEO);
 
-    window = SDL_CreateWindow("Bentley Ottmann", SDL_WINDOWPOS_UNDEFINED,
+    window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED,
             SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, 0);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
@@ -198,7 +128,7 @@ void loop() {
                 break;
         }
 //
-        render();
+//        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());
