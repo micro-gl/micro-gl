@@ -16,14 +16,15 @@
 #include "Sampler.h"
 #include "Curves.h"
 
+enum class TrianglesIndices {
+    TRIANGLES, TRIANGLES_STRIP, TRIANGLES_FAN
+};
+
+
 template<typename P, typename CODER>
 class Canvas {
 public:
     using index = unsigned int;
-
-    enum class TrianglesIndices {
-        TRIANGLES, TRIANGLES_STRIP, TRIANGLES_FAN
-    };
 
     Canvas(Bitmap<P, CODER> * $bmp);
     Canvas(int width, int height, PixelCoder<P, CODER> * $coder);
@@ -115,6 +116,25 @@ public:
                        const uint8_t opacity,
                        const uint8_t sub_pixel_precision);
 
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
+    void drawTrianglesWireframe(const color_f_t & color,
+                       const vec2_32i *vertices,
+                       const index *indices,
+                       const index size,
+                       const TrianglesIndices type,
+                       const uint8_t opacity,
+                       const uint8_t sub_pixel_precision);
+
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
+    void drawTriangleWireframe(const color_f_t &color,
+                             const vec2_32i &p0,
+                             const vec2_32i &p1,
+                             const vec2_32i &p2,
+                             const uint8_t sub_pixel_precision);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,

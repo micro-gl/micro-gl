@@ -460,9 +460,11 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                      const vec2_32i *vertices,
                                      const index *indices,
                                      const index size,
-                                     const Canvas::TrianglesIndices type,
+                                     const TrianglesIndices type,
                                      const uint8_t opacity,
                                      const uint8_t sub_pixel_precision) {
+
+#define IND(a) indices[(a)]
 
     switch (type) {
         case TrianglesIndices::TRIANGLES:
@@ -470,11 +472,11 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             for (index ix = 0; ix < size; ix+=3) {
 
                 drawTriangle<BlendMode, PorterDuff, antialias>(color,
-                        vertices[ix + 0].x, vertices[ix + 0].y,
-                        vertices[ix + 1].x, vertices[ix + 1].y,
-                        vertices[ix + 2].x, vertices[ix + 2].y,
-                        opacity, sub_pixel_precision
-                        );
+                                                               vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
+                                                               vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
+                                                               vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
+                                                               opacity, sub_pixel_precision
+                );
             }
 
             break;
@@ -483,10 +485,10 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             for (index ix = 1; ix < size; ++ix) {
 
                 drawTriangle<BlendMode, PorterDuff, antialias>(color,
-                        vertices[0].x, vertices[0].y,
-                        vertices[ix].x, vertices[ix].y,
-                        vertices[ix + 1].x, vertices[ix + 1].y,
-                        opacity, sub_pixel_precision
+                                                               vertices[IND(0)].x, vertices[IND(0)].y,
+                                                               vertices[IND(ix)].x, vertices[IND(ix)].y,
+                                                               vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
+                                                               opacity, sub_pixel_precision
                 );
             }
 
@@ -501,17 +503,17 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                 // support only CW or CCW orientation at a time.
                 if(even)
                     drawTriangle<BlendMode, PorterDuff, antialias>(color,
-                           vertices[ix + 0].x, vertices[ix + 0].y,
-                           vertices[ix + 1].x, vertices[ix + 1].y,
-                           vertices[ix + 2].x, vertices[ix + 2].y,
-                           opacity, sub_pixel_precision
+                                                                   vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
+                                                                   vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
+                                                                   vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
+                                                                   opacity, sub_pixel_precision
                     );
                 else
                     drawTriangle<BlendMode, PorterDuff, antialias>(color,
-                           vertices[ix + 2].x, vertices[ix + 2].y,
-                           vertices[ix + 1].x, vertices[ix + 1].y,
-                           vertices[ix + 0].x, vertices[ix + 0].y,
-                           opacity, sub_pixel_precision
+                                                                   vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
+                                                                   vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
+                                                                   vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
+                                                                   opacity, sub_pixel_precision
                     );
 
             }
@@ -519,8 +521,87 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             break;
     }
 
+#undef IND
 }
 
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias>
+void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
+                                     const vec2_32i *vertices,
+                                     const index *indices,
+                                     const index size,
+                                     const TrianglesIndices type,
+                                     const uint8_t opacity,
+                                     const uint8_t sub_pixel_precision) {
+
+#define IND(a) indices[(a)]
+
+    switch (type) {
+        case TrianglesIndices::TRIANGLES:
+
+            for (index ix = 0; ix < size; ix+=3) {
+
+                drawTriangleWireframe(color,
+                        vertices[IND(ix + 0)],
+                        vertices[IND(ix + 1)],
+                        vertices[IND(ix + 2)],
+                        sub_pixel_precision);
+            }
+
+            break;
+        case TrianglesIndices::TRIANGLES_FAN:
+
+            for (index ix = 1; ix < size; ++ix) {
+
+                drawTriangleWireframe(color,
+                                      vertices[IND(0)],
+                                      vertices[IND(ix)],
+                                      vertices[IND(ix + 1)],
+                                      sub_pixel_precision);
+            }
+
+            break;
+        case TrianglesIndices::TRIANGLES_STRIP:
+            bool even = true;
+
+            for (index ix = 0; ix < size; ++ix) {
+                even = !even;
+                // we alternate order inorder to preserve CCW or CW,
+                // in the future I will add face culling, which will
+                // support only CW or CCW orientation at a time.
+                if(even)
+                    drawTriangleWireframe(color,
+                                          vertices[IND(ix + 0)],
+                                          vertices[IND(ix + 1)],
+                                          vertices[IND(ix + 2)],
+                                          sub_pixel_precision);
+
+                else
+                    drawTriangleWireframe(color,
+                                          vertices[IND(ix + 2)],
+                                          vertices[IND(ix + 1)],
+                                          vertices[IND(ix + 0)],
+                                          sub_pixel_precision);
+            }
+
+            break;
+    }
+
+#undef IND
+}
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias>
+void Canvas<P, CODER>::drawTriangleWireframe(const color_f_t &color,
+                                              const vec2_32i &p0,
+                                              const vec2_32i &p1,
+                                              const vec2_32i &p2,
+                                             const uint8_t sub_pixel_precision)
+{
+    drawLine(color, p0, p1, sub_pixel_precision);
+    drawLine(color, p1, p2, sub_pixel_precision);
+    drawLine(color, p2, p0, sub_pixel_precision);
+}
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>

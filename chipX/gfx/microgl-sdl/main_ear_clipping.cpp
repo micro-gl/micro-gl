@@ -35,43 +35,60 @@ void loop();
 void init_sdl(int width, int height);
 
 using namespace tessellation;
-using namespace ds;
 
-void render_star();
+void render_polygon(std::vector<vec2_32i> polygon);
 
 float t = 20;
 
+std::vector<vec2_32i> poly_rect() {
+    vec2_32i p0 = {100,100};
+    vec2_32i p1 = {300, 100};
+    vec2_32i p2 = {300, 300};
+    vec2_32i p3 = {100, 300};
+
+    return {p0, p1, p2, p3};//, p5};
+}
+
+std::vector<vec2_32i> poly_2() {
+    vec2_32i p0 = {100,100};
+    vec2_32i p1 = {300, 100};
+    vec2_32i p2 = {300, 300};
+    vec2_32i p3 = {200, 200};
+    vec2_32i p4 = {100, 300};
+
+//    return {p0, p1, p2, p3, p4};
+    return {p0, p1, p2, p3, p4};
+}
+
 void render() {
-    render_star();
+//    render_polygon(poly_rect());
+    render_polygon(poly_2());
 }
 
 
-
-void render_star() {
-
-    vec2_32i p0 = {100,100};
-    vec2_32i p1 = {300, 100};
-    vec2_32i p2 = {120, 300};
-    vec2_32i p3 = {200, 20};
-    vec2_32i p4 = {280,300};
-//    vec2_32i p5 = {100, 100};
-
-    std::vector<vec2_32i> polygon = {p0, p1, p2, p3, p4, p0};//, p5};
+void render_polygon(std::vector<vec2_32i> polygon) {
 
     canvas->clear(WHITE);
 
-
+    EarClippingTriangulation ear{true};
 
     uint8_t precision = 0;
-//    auto & I = monotoneDecomposition.compute(polygon.data(), polygon.size(), precision);
+    unsigned int size_indices = (polygon.size() - 2)*3;
+    unsigned int indices[size_indices];
 
-//    for (auto & inter : I) {
-//        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-//                RED, inter.x, inter.y, 8<<precision, precision, 80);
-//    }
+    ear.compute(polygon.data(), polygon.size(), precision, indices, size_indices);
 
-    canvas->drawLinePath(BLACK, polygon.data(), polygon.size());
+    // draw triangles batch
+    canvas->drawTriangles(RED, polygon.data(), indices, size_indices,
+            TrianglesIndices::TRIANGLES,
+            255, precision);
 
+    // draw triangulation
+    canvas->drawTrianglesWireframe(BLACK, polygon.data(), indices, size_indices,
+                                   TrianglesIndices::TRIANGLES,
+                                   255, precision);
+    // draw contour
+//    canvas->drawLinePath(BLACK, polygon.data(), polygon.size(), true);
 }
 
 
