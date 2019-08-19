@@ -79,14 +79,15 @@ inline bool isRectangle(const vec2_32i& p0, const vec2_32i& p1,
 
 typedef vec2<fixed_signed> vec2_fixed_signed;
 
-// this equals twice the triangle area - the parallelogram
+// this equals twice the signed triangle area - the parallelogram
 inline int orient2d(const vec2_fixed_signed& a, const vec2_fixed_signed& b,
                     const vec2_fixed_signed& c, uint8_t precision)
 {
-    return fixed_mul_fixed_2(b.x-a.x, c.y-a.y, precision) - fixed_mul_fixed_2(b.y-a.y, c.x-a.x, precision);
+    return fixed_mul_fixed_2(b.x-a.x, c.y-a.y, precision) -
+            fixed_mul_fixed_2(b.y-a.y, c.x-a.x, precision);
 }
 
-// this equals twice the triangle area - the parallelogram
+// this equals twice the signed triangle area - the parallelogram
 inline int orient2d(const vec2_32i& a, const vec2_32i& b, const vec2_32i& c)
 {
     return (b.x-a.x)*(c.y-a.y) - (b.y-a.y)*(c.x-a.x);

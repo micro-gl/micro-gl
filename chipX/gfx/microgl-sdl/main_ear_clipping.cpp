@@ -8,8 +8,7 @@
 #include <microgl/Canvas.h>
 #include <microgl/Types.h>
 #include <microgl/PixelCoder.h>
-#include <microgl/MonotoneDecomposition.h>
-#include <microgl/AVLTree.h>
+#include <microgl/EarClippingTriangulation.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -62,7 +61,6 @@ void render_star() {
     canvas->clear(WHITE);
 
 
-    monotone::MonotoneDecomposition<int32_t> monotoneDecomposition(true);
 
     uint8_t precision = 0;
 //    auto & I = monotoneDecomposition.compute(polygon.data(), polygon.size(), precision);

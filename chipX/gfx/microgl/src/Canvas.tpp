@@ -456,6 +456,74 @@ void Canvas<P, CODER>::drawGradient(const color_f_t & startColor,
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
+void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
+                                     const vec2_32i *vertices,
+                                     const index *indices,
+                                     const index size,
+                                     const Canvas::TrianglesIndices type,
+                                     const uint8_t opacity,
+                                     const uint8_t sub_pixel_precision) {
+
+    switch (type) {
+        case TrianglesIndices::TRIANGLES:
+
+            for (index ix = 0; ix < size; ix+=3) {
+
+                drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                        vertices[ix + 0].x, vertices[ix + 0].y,
+                        vertices[ix + 1].x, vertices[ix + 1].y,
+                        vertices[ix + 2].x, vertices[ix + 2].y,
+                        opacity, sub_pixel_precision
+                        );
+            }
+
+            break;
+        case TrianglesIndices::TRIANGLES_FAN:
+
+            for (index ix = 1; ix < size; ++ix) {
+
+                drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                        vertices[0].x, vertices[0].y,
+                        vertices[ix].x, vertices[ix].y,
+                        vertices[ix + 1].x, vertices[ix + 1].y,
+                        opacity, sub_pixel_precision
+                );
+            }
+
+            break;
+        case TrianglesIndices::TRIANGLES_STRIP:
+            bool even = true;
+
+            for (index ix = 0; ix < size; ++ix) {
+                even = !even;
+                // we alternate order inorder to preserve CCW or CW,
+                // in the future I will add face culling, which will
+                // support only CW or CCW orientation at a time.
+                if(even)
+                    drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                           vertices[ix + 0].x, vertices[ix + 0].y,
+                           vertices[ix + 1].x, vertices[ix + 1].y,
+                           vertices[ix + 2].x, vertices[ix + 2].y,
+                           opacity, sub_pixel_precision
+                    );
+                else
+                    drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                           vertices[ix + 2].x, vertices[ix + 2].y,
+                           vertices[ix + 1].x, vertices[ix + 1].y,
+                           vertices[ix + 0].x, vertices[ix + 0].y,
+                           opacity, sub_pixel_precision
+                    );
+
+            }
+
+            break;
+    }
+
+}
+
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                        const fixed_signed v0_x, const fixed_signed v0_y,
                                        const fixed_signed v1_x, const fixed_signed v1_y,
@@ -2047,6 +2115,7 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
     std::cout << count << endl;
 
 }
+
 
 
 #pragma clang diagnostic pop

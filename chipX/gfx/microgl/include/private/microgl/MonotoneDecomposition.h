@@ -21,6 +21,10 @@ namespace tessellation {
             START, END, Intersection
         };
 
+        enum class vertex_type_t {
+            START, END, REGULAR, MERGE
+        };
+
         enum class direction_t {
             CW, CCW
         };

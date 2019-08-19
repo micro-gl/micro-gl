@@ -19,6 +19,11 @@
 template<typename P, typename CODER>
 class Canvas {
 public:
+    using index = unsigned int;
+
+    enum class TrianglesIndices {
+        TRIANGLES, TRIANGLES_STRIP, TRIANGLES_FAN
+    };
 
     Canvas(Bitmap<P, CODER> * $bmp);
     Canvas(int width, int height, PixelCoder<P, CODER> * $coder);
@@ -102,11 +107,24 @@ public:
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
+    void drawTriangles(const color_f_t & color,
+                       const vec2_32i *vertices,
+                       const index *indices,
+                       const index size,
+                       const TrianglesIndices type,
+                       const uint8_t opacity,
+                       const uint8_t sub_pixel_precision);
+
+
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
     void drawTriangle(const color_f_t & color,
                       const fixed_signed x0, const fixed_signed y0,
                       const fixed_signed x1, const fixed_signed y1,
                       const fixed_signed x2, const fixed_signed y2,
                       const uint8_t opacity, const uint8_t sub_pixel_precision);
+
     // integer version
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,

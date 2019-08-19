@@ -25,8 +25,10 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
 include_directories("${PROJECT_BINARY_DIR}")
 
 set(SOURCES
+        main_ear_clipping.cpp
 #        main_monotone_decomposition.cpp
-        main_bentley_ottmann.cpp
+#        main_bentley_ottmann.cpp
+#        main_avl_tree.cpp
         libs/stb_image/stb_image.cpp
         src/Resources.cpp
         )

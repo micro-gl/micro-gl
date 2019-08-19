@@ -30,11 +30,13 @@ set(sources
         include/public/microgl/Q.h
         include/public/microgl/Sampler.h
         src/Curves.cpp
+        include/private/microgl/EarClippingTriangulation.h
         include/private/microgl/BentleyOttmannLineIntersection.h
         include/private/microgl/AVLTree.h
         src/BentleyOttmannLineIntersection.cpp
         src/Rational.cpp
-        src/Segment.cpp src/MonotoneDecomposition.cpp)
+        src/Segment.cpp
+        src/MonotoneDecomposition.cpp)
 
 add_library(${PROJECT_NAME} ${sources})
 
