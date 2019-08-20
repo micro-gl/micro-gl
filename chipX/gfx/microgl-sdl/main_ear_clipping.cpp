@@ -56,17 +56,33 @@ std::vector<vec2_32i> poly_2() {
     vec2_32i p3 = {200, 200};
     vec2_32i p4 = {100, 300};
 
-//    return {p0, p1, p2, p3, p4};
     return {p0, p1, p2, p3, p4};
+}
+
+std::vector<vec2_32i> poly_hole() {
+    vec2_32i p0 = {100,100};
+    vec2_32i p1 = {300, 100};
+    vec2_32i p2 = {300, 300};
+    vec2_32i p3 = {100, 300};
+
+    vec2_32i p4 = {150,150};
+    vec2_32i p5 = {250, 150};
+    vec2_32i p6 = {250, 250};
+    vec2_32i p7 = {150, 250};
+
+//    return {p4, p5, p6, p7};
+    return {p0, p1, p2, p3, p7, p6, p5, p4};
 }
 
 void render() {
 //    render_polygon(poly_rect());
     render_polygon(poly_2());
+//    render_polygon(poly_hole());
 }
 
 
 void render_polygon(std::vector<vec2_32i> polygon) {
+    using index = unsigned int;
 
     canvas->clear(WHITE);
 
@@ -74,19 +90,26 @@ void render_polygon(std::vector<vec2_32i> polygon) {
 
     uint8_t precision = 0;
     unsigned int size_indices = (polygon.size() - 2)*3;
-    unsigned int indices[size_indices];
+    index indices[size_indices];
+    char boundary[size_indices];
 
-    ear.compute(polygon.data(), polygon.size(), precision, indices, size_indices);
+    ear.compute(polygon.data(),
+            polygon.size(),
+            precision,
+            indices,
+            size_indices);
 
     // draw triangles batch
-    canvas->drawTriangles(RED, polygon.data(), indices, size_indices,
+    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+            RED, polygon.data(),
+            indices, size_indices,
             TrianglesIndices::TRIANGLES,
-            255, precision);
+            100, precision);
 
     // draw triangulation
-    canvas->drawTrianglesWireframe(BLACK, polygon.data(), indices, size_indices,
-                                   TrianglesIndices::TRIANGLES,
-                                   255, precision);
+//    canvas->drawTrianglesWireframe(BLACK, polygon.data(), indices, size_indices,
+//                                   TrianglesIndices::TRIANGLES,
+//                                   255, precision);
     // draw contour
 //    canvas->drawLinePath(BLACK, polygon.data(), polygon.size(), true);
 }

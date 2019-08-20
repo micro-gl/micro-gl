@@ -131,9 +131,6 @@ namespace tessellation {
                 _size-=1;
             }
 
-//            node->next = nullptr;
-//            node->prev = nullptr;
-
             handle_cyclic();
         }
 
@@ -284,7 +281,7 @@ namespace tessellation {
 //            size = $size;
             auto *indices = indices_buffer_triangulation;
 
-            // create a linked list with static memory :)
+            // create a linked list with static memory on the stack :)
             LinkedList pts{true};
             Node nodes[size];
 
