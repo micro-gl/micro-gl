@@ -15,11 +15,9 @@
 #include "Fixed.h"
 #include "Sampler.h"
 #include "Curves.h"
+#include "TriangleIndices.h"
 
-enum class TrianglesIndices {
-    TRIANGLES, TRIANGLES_STRIP, TRIANGLES_FAN
-};
-
+using namespace triangles;
 
 template<typename P, typename CODER>
 class Canvas {
@@ -143,7 +141,9 @@ public:
                       const fixed_signed x0, const fixed_signed y0,
                       const fixed_signed x1, const fixed_signed y1,
                       const fixed_signed x2, const fixed_signed y2,
-                      const uint8_t opacity, const uint8_t sub_pixel_precision);
+                      const uint8_t opacity,
+                      const uint8_t sub_pixel_precision,
+                      unsigned char aa_info = 0b11100000);
 
     // integer version
     template<typename BlendMode=blendmode::Normal,

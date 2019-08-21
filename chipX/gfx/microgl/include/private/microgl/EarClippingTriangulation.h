@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <microgl/Types.h>
+#include <microgl/TriangleIndices.h>
 #include <vector>
 #include <iostream>
 #include <stdexcept>
@@ -269,16 +270,33 @@ namespace tessellation {
             return true;
         }
 
+#define abs(a) ((a)<0 ? -(a) : (a))
+
         index * compute(vec2_32i * $pts,
                         index size,
                         uint8_t precision,
                         index *indices_buffer_triangulation,
-                        index indices_buffer_size) {
+                        index indices_buffer_size,
+                        TrianglesIndices requested
+                        ) {
 
-            if(3*(size - 2) != indices_buffer_size)
-                throw std::runtime_error("size of the indices buffer is not accurate !!!");
+            if(requested==TrianglesIndices::TRIANGLES) {
+                if(3*(size - 2) != indices_buffer_size)
+                    throw std::runtime_error("size of the indices buffer is "
+                                             "not accurate for TRIANGLES !!!");
+            }
+            else if(requested==TrianglesIndices::TRIANGLES_WITH_BOUNDARY) {
+                if(3*(size - 2) + (size - 2) != indices_buffer_size)
+                    throw std::runtime_error("size of the indices buffer is not accurate "
+                                             "for TRIANGLES_WITH_BOUNDARY !!!");
+            }
+            else
+                throw std::runtime_error("only TRIANGLES and TRIANGLES_WITH_BOUNDARY "
+                                         "are supported !!!");
 
-//            size = $size;
+
+            bool requested_triangles_with_boundary =
+                    requested==TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
             auto *indices = indices_buffer_triangulation;
 
             // create a linked list with static memory on the stack :)
@@ -296,7 +314,7 @@ namespace tessellation {
             index ind = 0;
             Node * point;
 
-            for (index ix = 0; ix < size - 3; ++ix) {
+            for (index ix = 0; ix < size - 2; ++ix) {
 
                 point = pts.getFirst();
 
@@ -304,9 +322,27 @@ namespace tessellation {
 
                     if (isConvex(point, &pts) && isEmpty(point, &pts)) {
 
-                        indices[ind++] = point->predecessor()->data.original_index;
-                        indices[ind++] = point->data.original_index;
-                        indices[ind++] = point->successor()->data.original_index;
+                        indices[ind + 0] = point->predecessor()->data.original_index;
+                        indices[ind + 1] = point->data.original_index;
+                        indices[ind + 2] = point->successor()->data.original_index;
+
+                        // record boundary
+                        if(requested_triangles_with_boundary) {
+                            // classify if edges are on boundary
+                            int first_edge_index_distance = abs((int)indices[ind + 0] - (int)indices[ind + 1]);
+                            int second_edge_index_distance = abs((int)indices[ind + 1] - (int)indices[ind + 2]);
+                            int third_edge_index_distance = abs((int)indices[ind + 2] - (int)indices[ind + 0]);
+
+                            bool first = first_edge_index_distance==1 || first_edge_index_distance==size-1;
+                            bool second = second_edge_index_distance==1 || second_edge_index_distance==size-1;
+                            bool third = third_edge_index_distance==1 || third_edge_index_distance==size-1;
+
+                            index info = triangles::create_boundary_info(first, second, third);
+
+                            indices[ind + 3] = info;
+                        }
+
+                        ind += requested_triangles_with_boundary ? 4 : 3;
 
                         // prune the point from the polygon
                         pts.unlink(point);
@@ -319,18 +355,9 @@ namespace tessellation {
 
             }
 
-            point = pts.getFirst();
-
-            // last point
-            indices[ind++] = point->predecessor()->data.original_index;
-            indices[ind++] = point->data.original_index;
-            indices[ind++] = point->successor()->data.original_index;
-//
-//             prune the point from the polygon
-            pts.unlink(point);
-
-
             pts.clear();
+
+            return indices_buffer_triangulation;
         }
 
 

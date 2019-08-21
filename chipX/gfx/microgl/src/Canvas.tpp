@@ -1,4 +1,6 @@
 #pragma clang diagnostic push
+#pragma ide diagnostic ignored "bugprone-narrowing-conversions"
+#pragma ide diagnostic ignored "cppcoreguidelines-narrowing-conversions"
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
@@ -472,10 +474,26 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             for (index ix = 0; ix < size; ix+=3) {
 
                 drawTriangle<BlendMode, PorterDuff, antialias>(color,
-                                                               vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
-                                                               vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
-                                                               vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
-                                                               opacity, sub_pixel_precision
+                   vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
+                   vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
+                   vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
+                   opacity, sub_pixel_precision
+                );
+            }
+
+            break;
+        case TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
+
+            for (index ix = 0; ix < size; ix+=4) {
+                boundary_info aa_info = IND(ix + 3);
+
+                drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                   vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
+                   vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
+                   vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
+                   opacity,
+                   sub_pixel_precision,
+                   aa_info
                 );
             }
 
@@ -485,10 +503,10 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             for (index ix = 1; ix < size; ++ix) {
 
                 drawTriangle<BlendMode, PorterDuff, antialias>(color,
-                                                               vertices[IND(0)].x, vertices[IND(0)].y,
-                                                               vertices[IND(ix)].x, vertices[IND(ix)].y,
-                                                               vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
-                                                               opacity, sub_pixel_precision
+                   vertices[IND(0)].x, vertices[IND(0)].y,
+                   vertices[IND(ix)].x, vertices[IND(ix)].y,
+                   vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
+                   opacity, sub_pixel_precision
                 );
             }
 
@@ -503,17 +521,17 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                 // support only CW or CCW orientation at a time.
                 if(even)
                     drawTriangle<BlendMode, PorterDuff, antialias>(color,
-                                                                   vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
-                                                                   vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
-                                                                   vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
-                                                                   opacity, sub_pixel_precision
+                       vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
+                       vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
+                       vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
+                       opacity, sub_pixel_precision
                     );
                 else
                     drawTriangle<BlendMode, PorterDuff, antialias>(color,
-                                                                   vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
-                                                                   vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
-                                                                   vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
-                                                                   opacity, sub_pixel_precision
+                       vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
+                       vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
+                       vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
+                       opacity, sub_pixel_precision
                     );
 
             }
@@ -542,10 +560,22 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
             for (index ix = 0; ix < size; ix+=3) {
 
                 drawTriangleWireframe(color,
-                        vertices[IND(ix + 0)],
-                        vertices[IND(ix + 1)],
-                        vertices[IND(ix + 2)],
-                        sub_pixel_precision);
+                                      vertices[IND(ix + 0)],
+                                      vertices[IND(ix + 1)],
+                                      vertices[IND(ix + 2)],
+                                      sub_pixel_precision);
+            }
+
+            break;
+        case TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
+
+            for (index ix = 0; ix < size; ix+=4) {
+
+                drawTriangleWireframe(color,
+                                      vertices[IND(ix + 0)],
+                                      vertices[IND(ix + 1)],
+                                      vertices[IND(ix + 2)],
+                                      sub_pixel_precision);
             }
 
             break;
@@ -610,7 +640,8 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                        const fixed_signed v1_x, const fixed_signed v1_y,
                                        const fixed_signed v2_x, const fixed_signed v2_y,
                                        const uint8_t opacity,
-                                       const uint8_t sub_pixel_precision) {
+                                       const uint8_t sub_pixel_precision,
+                                       unsigned char aa_info) {
     color_t color_int;
     coder()->convert(color, color_int);
 
@@ -627,13 +658,19 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     int maxY = (std::max({v0_y, v1_y, v2_y}) + max_sub_pixel_precision_value) >> sub_pixel_precision;
 
     // anti-alias pad for distance calculation
-    uint8_t bits_distance;
+    uint8_t bits_distance = 0;
     // max distance to consider in canvas space
     unsigned int max_distance_canvas_space_anti_alias=0;
     // max distance to consider in scaled space
     unsigned int max_distance_scaled_space_anti_alias=0;
 
+    bool aa_w0=false, aa_w1=false, aa_w2=false, aa_all_edges=false;
     if(antialias) {
+        aa_w0 = triangles::classify_boundary_info(aa_info, 0);
+        aa_w1 = triangles::classify_boundary_info(aa_info, 1);
+        aa_w2 = triangles::classify_boundary_info(aa_info, 2);
+        aa_all_edges = aa_w0 && aa_w1 && aa_w2;
+
         bits_distance = 0;
         max_distance_canvas_space_anti_alias = 1 << bits_distance;
         max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias<<PR;
@@ -661,9 +698,12 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     vec2_32i p = { minX, minY };
 
     // reshape
-    int w0_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v0_x, v0_y}, vec2_fixed_signed{v1_x, v1_y}, p_fixed, sub_pixel_precision), PR))/length_w0;
-    int w1_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v1_x, v1_y}, vec2_fixed_signed{v2_x, v2_y}, p_fixed, sub_pixel_precision), PR))/length_w1;
-    int w2_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v2_x, v2_y}, vec2_fixed_signed{v0_x, v0_y}, p_fixed, sub_pixel_precision), PR))/length_w2;
+    int w0_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v0_x, v0_y},
+            vec2_fixed_signed{v1_x, v1_y}, p_fixed, sub_pixel_precision), PR))/length_w0;
+    int w1_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v1_x, v1_y},
+            vec2_fixed_signed{v2_x, v2_y}, p_fixed, sub_pixel_precision), PR))/length_w1;
+    int w2_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v2_x, v2_y},
+            vec2_fixed_signed{v0_x, v0_y}, p_fixed, sub_pixel_precision), PR))/length_w2;
 
 
     //
@@ -707,8 +747,20 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
                 int distance = std::min({w0, w1, w2});
                 int delta = (distance) + max_distance_scaled_space_anti_alias;
+                bool perform_aa = aa_all_edges;
 
-                if (delta >= 0) {
+                // test edges
+                if(!perform_aa) {
+                    if(w0==distance && aa_w0)
+                        perform_aa = true;
+                    else if(w1==distance && aa_w1)
+                        perform_aa = true;
+                    else if(w2==distance && aa_w2)
+                        perform_aa = true;
+                }
+
+                if (perform_aa && delta>=0) {
+
                     // take the complement and rescale
                     uint8_t blend = ((long)((delta) << (8-bits_distance)))>>PR;
 

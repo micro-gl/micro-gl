@@ -46,12 +46,12 @@ std::vector<vec2_32i> poly_rect() {
     vec2_32i p2 = {300, 300};
     vec2_32i p3 = {100, 300};
 
-    return {p0, p1, p2, p3};//, p5};
+    return {p0, p1, p2, p3};
 }
 
 std::vector<vec2_32i> poly_2() {
     vec2_32i p0 = {100,100};
-    vec2_32i p1 = {300, 100};
+    vec2_32i p1 = {590, 100};
     vec2_32i p2 = {300, 300};
     vec2_32i p3 = {200, 200};
     vec2_32i p4 = {100, 300};
@@ -89,21 +89,23 @@ void render_polygon(std::vector<vec2_32i> polygon) {
     EarClippingTriangulation ear{true};
 
     uint8_t precision = 0;
-    unsigned int size_indices = (polygon.size() - 2)*3;
-    index indices[size_indices];
-    char boundary[size_indices];
+    index size_indices = (polygon.size() - 2)*3;
+    index size_indices_with_boundary = (polygon.size() - 2)*3 + (polygon.size() - 2);
+    index indices[size_indices_with_boundary];
 
     ear.compute(polygon.data(),
             polygon.size(),
             precision,
             indices,
-            size_indices);
+            size_indices_with_boundary,
+            triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY
+            );
 
     // draw triangles batch
     canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
             RED, polygon.data(),
             indices, size_indices,
-            TrianglesIndices::TRIANGLES,
+            TrianglesIndices::TRIANGLES_WITH_BOUNDARY,
             100, precision);
 
     // draw triangulation

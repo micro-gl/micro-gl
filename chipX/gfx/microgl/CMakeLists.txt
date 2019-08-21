@@ -36,7 +36,7 @@ set(sources
         src/BentleyOttmannLineIntersection.cpp
         src/Rational.cpp
         src/Segment.cpp
-        src/MonotoneDecomposition.cpp)
+        include/public/microgl/TriangleIndices.h)
 
 add_library(${PROJECT_NAME} ${sources})
 
