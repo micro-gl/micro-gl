@@ -117,6 +117,17 @@ public:
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
+    void drawTriangles(const color_f_t & color,
+                       const vec2_f *vertices,
+                       const index *indices,
+                       const index size,
+                       const TrianglesIndices type,
+                       const uint8_t opacity,
+                       const uint8_t sub_pixel_precision);
+
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
     void drawTrianglesWireframe(const color_f_t & color,
                        const vec2_32i *vertices,
                        const index *indices,
@@ -142,7 +153,7 @@ public:
                       const fixed_signed x1, const fixed_signed y1,
                       const fixed_signed x2, const fixed_signed y2,
                       const uint8_t opacity,
-                      const uint8_t sub_pixel_precision,
+                       uint8_t sub_pixel_precision,
                       unsigned char aa_info = 0b11100000);
 
     // integer version

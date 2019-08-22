@@ -36,9 +36,10 @@ void init_sdl(int width, int height);
 
 using namespace tessellation;
 
-void render_polygon(std::vector<vec2_32i> polygon);
+template <typename T>
+void render_polygon(std::vector<vec2<T>> polygon);
 
-float t = 20;
+float t = 0;
 
 std::vector<vec2_32i> poly_rect() {
     vec2_32i p0 = {100,100};
@@ -49,12 +50,12 @@ std::vector<vec2_32i> poly_rect() {
     return {p0, p1, p2, p3};
 }
 
-std::vector<vec2_32i> poly_2() {
-    vec2_32i p0 = {100,100};
-    vec2_32i p1 = {590, 100};
-    vec2_32i p2 = {300, 300};
-    vec2_32i p3 = {200, 200};
-    vec2_32i p4 = {100, 300};
+std::vector<vec2_f> poly_2() {
+    vec2_f p0 = {100,100};
+    vec2_f p1 = {300, 100};
+    vec2_f p2 = {300, 300};
+    vec2_f p3 = {200, 200};
+    vec2_f p4 = {100, 300};
 
     return {p0, p1, p2, p3, p4};
 }
@@ -75,38 +76,43 @@ std::vector<vec2_32i> poly_hole() {
 }
 
 void render() {
+    t+=0.01;
+
 //    render_polygon(poly_rect());
     render_polygon(poly_2());
 //    render_polygon(poly_hole());
 }
 
 
-void render_polygon(std::vector<vec2_32i> polygon) {
+template <typename T>
+void render_polygon(std::vector<vec2<T>> polygon) {
     using index = unsigned int;
 
+    polygon[1].x = 140 + 20 +  t;
+//    polygon[1].y = 140 + 20 -  t;
     canvas->clear(WHITE);
 
     EarClippingTriangulation ear{true};
 
-    uint8_t precision = 0;
+    uint8_t precision = 4;
     index size_indices = (polygon.size() - 2)*3;
     index size_indices_with_boundary = (polygon.size() - 2)*3 + (polygon.size() - 2);
     index indices[size_indices_with_boundary];
 
     ear.compute(polygon.data(),
             polygon.size(),
-            precision,
             indices,
             size_indices_with_boundary,
             triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY
             );
 
     // draw triangles batch
-    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
             RED, polygon.data(),
             indices, size_indices,
             TrianglesIndices::TRIANGLES_WITH_BOUNDARY,
-            100, precision);
+            100,
+            precision);
 
     // draw triangulation
 //    canvas->drawTrianglesWireframe(BLACK, polygon.data(), indices, size_indices,
@@ -171,7 +177,7 @@ void loop() {
                 break;
         }
 //
-//        render();
+        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());

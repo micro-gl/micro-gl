@@ -272,12 +272,30 @@ namespace tessellation {
 
 #define abs(a) ((a)<0 ? -(a) : (a))
 
-        index * compute(vec2_32i * $pts,
+        index * compute(vec2_f * $pts,
                         index size,
-                        uint8_t precision,
                         index *indices_buffer_triangulation,
                         index indices_buffer_size,
-                        TrianglesIndices requested
+                        const TrianglesIndices &requested
+        ) {
+            // I could have made a template for point types and
+            // conserve stack memory, but the hell with it for now
+            vec2_32i vertices_int[size];
+
+            for (index ix = 0; ix < size; ++ix) {
+                vertices_int[ix] = $pts[ix]<<5;
+            }
+
+            return compute(vertices_int, size,
+                    indices_buffer_triangulation,
+                    indices_buffer_size, requested);
+        }
+
+        index * compute(vec2_32i * $pts,
+                        index size,
+                        index *indices_buffer_triangulation,
+                        index indices_buffer_size,
+                        const TrianglesIndices &requested
                         ) {
 
             if(requested==TrianglesIndices::TRIANGLES) {
