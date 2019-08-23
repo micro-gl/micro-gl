@@ -154,7 +154,9 @@ public:
                       const fixed_signed x2, const fixed_signed y2,
                       const uint8_t opacity,
                        uint8_t sub_pixel_precision,
-                      unsigned char aa_info = 0b11100000);
+                      bool aa_first_edge = true,
+                      bool aa_second_edge = true,
+                      bool aa_third_edge = true);
 
     // integer version
     template<typename BlendMode=blendmode::Normal,
@@ -164,7 +166,11 @@ public:
                       const int x0, const int y0,
                       const int x1, const int y1,
                       const int x2, const int y2,
-                      const uint8_t opacity=255);
+                      const uint8_t opacity=255,
+                      bool aa_first_edge = true,
+                      bool aa_second_edge = true,
+                      bool aa_third_edge = true);
+
     // float version
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -173,7 +179,10 @@ public:
                      const float x0, const float y0,
                      const float x1, const float y1,
                      const float x2, const float y2,
-                     const uint8_t opacity = 255);
+                     const uint8_t opacity = 255,
+                     bool aa_first_edge = true,
+                     bool aa_second_edge = true,
+                     bool aa_third_edge = true);
 
     // main uv
     template <typename BlendMode=blendmode::Normal,
@@ -185,7 +194,8 @@ public:
                       const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
                       const fixed_signed v1_x, const fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
                       const fixed_signed v2_x, const fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
-                      const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision);
+                      const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision,
+                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -196,7 +206,8 @@ public:
                       const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
                       const fixed_signed v1_x, const fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
                       const fixed_signed v2_x, const fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
-                      const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision);
+                      const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision,
+                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -207,7 +218,8 @@ public:
                       const float v0_x, const float v0_y, float u0, float v0,
                       const float v1_x, const float v1_y, float u1, float v1,
                       const float v2_x, const float v2_y, float u2, float v2,
-                      const uint8_t opacity = 255);
+                      const uint8_t opacity = 255,
+                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -218,8 +230,8 @@ public:
                       const int v0_x, const int v0_y, float u0, float v0,
                       const int v1_x, const int v1_y, float u1, float v1,
                       const int v2_x, const int v2_y, float u2, float v2,
-                      const uint8_t opacity = 255);
-
+                      const uint8_t opacity = 255,
+                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
 
     // Quadrilaterals

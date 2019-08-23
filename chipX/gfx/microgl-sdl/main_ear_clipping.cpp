@@ -84,11 +84,11 @@ std::vector<vec2_32i> poly_hole() {
 }
 
 void render() {
-    t+=0.12;
+    t+=.032f;
 //    std::cout << t << std::endl;
 //    render_polygon(poly_rect());
-//    render_polygon(poly_2());
-    render_polygon(poly_tri());
+    render_polygon(poly_2());
+//    render_polygon(poly_tri());
 //    render_polygon(poly_hole());
 }
 
@@ -97,13 +97,16 @@ template <typename T>
 void render_polygon(std::vector<vec2<T>> polygon) {
     using index = unsigned int;
 
-//    polygon[1].x = 140 + 20 +  t;
+    polygon[1].x = 140 + 20 +  t;
 //    polygon[1].y = 140 + 20 -  t;
     canvas->clear(WHITE);
 
     EarClippingTriangulation ear{true};
+    static int a = 0;
 
-    uint8_t precision = 1;
+    a = abs(a -1);
+
+    uint8_t precision = 5;
     index size_indices = (polygon.size() - 2)*3;
     index size_indices_with_boundary = (polygon.size() - 2)*3 + (polygon.size() - 2);
     index indices[size_indices_with_boundary];

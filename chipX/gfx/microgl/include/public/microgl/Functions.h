@@ -43,7 +43,7 @@ inline unsigned int length(const vec2_32i& a, const vec2_32i& b, uint8_t precisi
 {
     int dx = (a.x-b.x), dy = (a.y-b.y);
     // shift right since sqrt is compressing
-    return sqrt_int(fixed_mul_fixed_2(dx, dx, precision) + fixed_mul_fixed_2(dy,dy, precision))<<(precision>>1);
+    return sqrt_int(fixed_mul_fixed_2(dx, dx, precision) + fixed_mul_fixed_2(dy,dy, precision));//<<(precision>>1);
 }
 
 inline bool isParallelogram(const vec2_32i& p0, const vec2_32i& p1,
