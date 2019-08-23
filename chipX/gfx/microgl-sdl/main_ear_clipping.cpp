@@ -60,6 +60,14 @@ std::vector<vec2_f> poly_2() {
     return {p0, p1, p2, p3, p4};
 }
 
+std::vector<vec2_f> poly_tri() {
+    vec2_f p0 = {100,100};
+    vec2_f p3 = {200, 200};
+    vec2_f p4 = {100, 300};
+
+    return {p0, p3, p4};
+}
+
 std::vector<vec2_32i> poly_hole() {
     vec2_32i p0 = {100,100};
     vec2_32i p1 = {300, 100};
@@ -76,10 +84,11 @@ std::vector<vec2_32i> poly_hole() {
 }
 
 void render() {
-    t+=0.01;
-
+    t+=0.12;
+//    std::cout << t << std::endl;
 //    render_polygon(poly_rect());
-    render_polygon(poly_2());
+//    render_polygon(poly_2());
+    render_polygon(poly_tri());
 //    render_polygon(poly_hole());
 }
 
@@ -88,13 +97,13 @@ template <typename T>
 void render_polygon(std::vector<vec2<T>> polygon) {
     using index = unsigned int;
 
-    polygon[1].x = 140 + 20 +  t;
+//    polygon[1].x = 140 + 20 +  t;
 //    polygon[1].y = 140 + 20 -  t;
     canvas->clear(WHITE);
 
     EarClippingTriangulation ear{true};
 
-    uint8_t precision = 4;
+    uint8_t precision = 1;
     index size_indices = (polygon.size() - 2)*3;
     index size_indices_with_boundary = (polygon.size() - 2)*3 + (polygon.size() - 2);
     index indices[size_indices_with_boundary];
@@ -107,7 +116,7 @@ void render_polygon(std::vector<vec2<T>> polygon) {
             );
 
     // draw triangles batch
-    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
+    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
             RED, polygon.data(),
             indices, size_indices,
             TrianglesIndices::TRIANGLES_WITH_BOUNDARY,

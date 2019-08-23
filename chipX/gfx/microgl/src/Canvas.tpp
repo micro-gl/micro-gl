@@ -660,6 +660,10 @@ void Canvas<P, CODER>::drawTriangleWireframe(const color_f_t &color,
     drawLine(color, p2, p0, sub_pixel_precision);
 }
 
+inline int clamp(int val, int e0, int e1) {
+    return std::min(std::max(val,e0),e1);
+}
+
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
@@ -674,12 +678,9 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
     // sub_pixel_precision;
     // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
-    uint8_t MAX_BITS_FOR_PROCESSING_PRECISION = 16;
+    uint8_t MAX_BITS_FOR_PROCESSING_PRECISION = 8;
     uint8_t PR = MAX_BITS_FOR_PROCESSING_PRECISION - sub_pixel_precision;
     unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
-//    unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision)>>1;
-//    unsigned int max_sub_pixel_precision_value = 0;
-    unsigned int half = 0;//(1<<sub_pixel_precision)>>1;
 
     // bbox
     int minX = (std::min({v0_x, v1_x, v2_x}) + max_sub_pixel_precision_value) >> sub_pixel_precision;
@@ -689,20 +690,21 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
     // anti-alias pad for distance calculation
     uint8_t bits_distance = 0;
-    // max distance to consider in canvas space
-    unsigned int max_distance_canvas_space_anti_alias=0;
+    uint8_t bits_distance_complement = 8;
     // max distance to consider in scaled space
-    unsigned int max_distance_scaled_space_anti_alias=0;
+    int max_distance_scaled_space_anti_alias=0;
     // we now decide which edges we want to anti-alias
     bool aa_w0=false, aa_w1=false, aa_w2=false, aa_all_edges=false;
     if(antialias) {
-        aa_w0 = triangles::classify_boundary_info(aa_info, 0);
+        aa_w0 = false;//triangles::classify_boundary_info(aa_info, 0);
         aa_w1 = triangles::classify_boundary_info(aa_info, 1);
-        aa_w2 = triangles::classify_boundary_info(aa_info, 2);
+        aa_w2 = false;//triangles::classify_boundary_info(aa_info, 2);
         aa_all_edges = aa_w0 && aa_w1 && aa_w2;
 
-        bits_distance = 0;
-        max_distance_canvas_space_anti_alias = 1 << bits_distance;
+        bits_distance = 5;
+        bits_distance_complement = 8 - bits_distance;
+        // max distance to consider in canvas space
+        int max_distance_canvas_space_anti_alias = 1 << bits_distance;
         max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias<<PR;
         // we can solve padding analytically with distance=(max_distance_anti_alias/Cos(angle))
         // but I don't give a fuck about it since I am just using max value of 2
@@ -724,9 +726,9 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     maxX = std::min((width()-1), maxX); maxY = std::min((height()-1), maxY);
 
     // lengths of edges
-    unsigned int length_w0 = length({v0_x, v0_y}, {v1_x, v1_y}, sub_pixel_precision);
-    unsigned int length_w1 = length({v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
-    unsigned int length_w2 = length({v0_x, v0_y}, {v2_x, v2_y}, sub_pixel_precision);
+    int length_w0 = length({v0_x, v0_y}, {v1_x, v1_y}, sub_pixel_precision);
+    int length_w1 = length({v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
+    int length_w2 = length({v0_x, v0_y}, {v2_x, v2_y}, sub_pixel_precision);
 
     // Triangle setup
     int A01 = v0_y - v1_y, B01 = v1_x - v0_x;
@@ -737,22 +739,25 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     vec2_fixed_signed p_fixed = {  minX<<sub_pixel_precision, minY<<sub_pixel_precision };
     vec2_32i p = { minX , minY };
 
-    int w0_row = (orient2d(vec2_fixed_signed{v0_x, v0_y},vec2_fixed_signed{v1_x, v1_y}, p_fixed, sub_pixel_precision) + bias_w0);
-    int w1_row = (orient2d(vec2_fixed_signed{v1_x, v1_y},vec2_fixed_signed{v2_x, v2_y}, p_fixed, sub_pixel_precision) + bias_w1);
-    int w2_row = (orient2d(vec2_fixed_signed{v2_x, v2_y},vec2_fixed_signed{v0_x, v0_y}, p_fixed, sub_pixel_precision) + bias_w2);
+    int w0_row = (orient2d(vec2_fixed_signed{v0_x, v0_y},vec2_fixed_signed{v1_x, v1_y},
+            p_fixed, sub_pixel_precision) + bias_w0);
+    int w1_row = (orient2d(vec2_fixed_signed{v1_x, v1_y},vec2_fixed_signed{v2_x, v2_y},
+            p_fixed, sub_pixel_precision) + bias_w1);
+    int w2_row = (orient2d(vec2_fixed_signed{v2_x, v2_y},vec2_fixed_signed{v0_x, v0_y},
+            p_fixed, sub_pixel_precision) + bias_w2);
 
     // AA, 2A/L = h, therefore the division produces a P bit number
     int w0_row_h, w1_row_h, w2_row_h;
     int A01_h, B01_h, A12_h, B12_h, A20_h, B20_h;
 
     if(antialias) {
-        A01_h = (((int64_t)(v0_y - v1_y))<<PR)/length_w0, B01_h = (((int64_t)(v1_x - v0_x))<<PR)/length_w0;
-        A12_h = (((int64_t)(v1_y - v2_y))<<PR)/length_w1, B12_h = (((int64_t)(v2_x - v1_x))<<PR)/length_w1;
-        A20_h = (((int64_t)(v2_y - v0_y))<<PR)/length_w2, B20_h = (((int64_t)(v0_x - v2_x))<<PR)/length_w2;
+        A01_h = (((v0_y - v1_y))<<PR)/length_w0, B01_h = (((v1_x - v0_x))<<PR)/length_w0;
+        A12_h = (((v1_y - v2_y))<<PR)/length_w1, B12_h = (((v2_x - v1_x))<<PR)/length_w1;
+        A20_h = (((v2_y - v0_y))<<PR)/length_w2, B20_h = (((v0_x - v2_x))<<PR)/length_w2;
 
-        w0_row_h = ((int64_t)(w0_row)<<PR)/length_w0;
-        w1_row_h = ((int64_t)(w1_row)<<PR)/length_w1;
-        w2_row_h = ((int64_t)(w2_row)<<PR)/length_w2;
+        w0_row_h = (((w0_row))<<PR)/length_w0;
+        w1_row_h = (((w1_row))<<PR)/length_w1;
+        w2_row_h = (((w2_row))<<PR)/length_w2;
     }
 
     /*
@@ -786,7 +791,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
         int w1 = w1_row;
         int w2 = w2_row;
 
-        int64_t w0_h,w1_h,w2_h;
+        int w0_h,w1_h,w2_h;
         if(antialias) {
             w0_h = w0_row_h;
             w1_h = w1_row_h;
@@ -804,8 +809,8 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                 // test if we can anti-alias
                 // take minimum of all meta distances
 
-                int64_t distance = std::min({w0_h, w1_h, w2_h});
-                int64_t delta = (distance) + max_distance_scaled_space_anti_alias;
+                int distance = std::min({w0_h, w1_h, w2_h});
+                int delta = (distance) + max_distance_scaled_space_anti_alias;
                 bool perform_aa = aa_all_edges;
 
                 // test edges
@@ -821,7 +826,8 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                 if (perform_aa && delta>=0) {
 
                     // take the complement and rescale
-                    uint8_t blend = ((long long)((delta) << (8-bits_distance)))>>PR;
+                    uint8_t blend = clamp((delta << bits_distance_complement)>>PR, 0, 255);
+//                    uint8_t blend = ((long long)((delta) << (8-bits_distance)))>>PR;
 
                     if (opacity < _max_alpha_value) {
                         blend = (blend * opacity) >> 8;
@@ -862,187 +868,6 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
 }
 
-/*
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawTriangle3(const color_f_t &color,
-                                    const fixed_signed v0_x, const fixed_signed v0_y,
-                                    const fixed_signed v1_x, const fixed_signed v1_y,
-                                    const fixed_signed v2_x, const fixed_signed v2_y,
-                                    const uint8_t opacity,
-                                    const uint8_t sub_pixel_precision,
-                                    unsigned char aa_info) {
-    color_t color_int;
-    coder()->convert(color, color_int);
-
-    // sub_pixel_precision;
-    // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
-    uint8_t MAX_BITS_FOR_PROCESSING_PRECISION = 12;
-    uint8_t PR = MAX_BITS_FOR_PROCESSING_PRECISION - sub_pixel_precision;
-    unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
-
-    // bounding box
-    int minX = (std::min({v0_x, v1_x, v2_x}) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int minY = (std::min({v0_y, v1_y, v2_y}) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int maxX = (std::max({v0_x, v1_x, v2_x}) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int maxY = (std::max({v0_y, v1_y, v2_y}) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-
-    // anti-alias pad for distance calculation
-    uint8_t bits_distance = 0;
-    // max distance to consider in canvas space
-    unsigned int max_distance_canvas_space_anti_alias=0;
-    // max distance to consider in scaled space
-    unsigned int max_distance_scaled_space_anti_alias=0;
-    // we now decide which edges we want to anti-alias
-    bool aa_w0=false, aa_w1=false, aa_w2=false, aa_all_edges=false;
-    if(antialias) {
-        aa_w0 = triangles::classify_boundary_info(aa_info, 0);
-        aa_w1 = triangles::classify_boundary_info(aa_info, 1);
-        aa_w2 = triangles::classify_boundary_info(aa_info, 2);
-        aa_all_edges = aa_w0 && aa_w1 && aa_w2;
-
-        bits_distance = 0;
-        max_distance_canvas_space_anti_alias = 1 << bits_distance;
-        max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias<<PR;
-        // we can solve padding analytically with distance=(max_distance_anti_alias/Cos(angle))
-        // but I don't give a fuck about it since I am just using max value of 2
-//        minX-=max_distance_anti_alias*2;minY-=max_distance_anti_alias*2;
-//        maxX+=max_distance_anti_alias*2;maxY+=max_distance_anti_alias*2;
-    }
-
-    // fill rules
-    triangles::top_left_t top_left =
-            triangles::classifyTopLeftEdges(false, v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
-
-    int bias_w0 = top_left.first  ? 0 : -(1<<sub_pixel_precision);
-    int bias_w1 = top_left.second ? 0 : -(1<<sub_pixel_precision);
-    int bias_w2 = top_left.third  ? 0 : -(1<<sub_pixel_precision);
-    //
-
-    minX = std::max(0, minX); minY = std::max(0, minY);
-    maxX = std::min(width()-1, maxX); maxY = std::min(height()-1, maxY);
-
-    // lengths of edges
-    unsigned int length_w0 = length({v0_x, v0_y}, {v1_x, v1_y}, sub_pixel_precision);
-    unsigned int length_w1 = length({v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
-    unsigned int length_w2 = length({v0_x, v0_y}, {v2_x, v2_y}, sub_pixel_precision);
-//    unsigned int length_w0 = 1;
-//    unsigned int length_w1 = 1;
-//    unsigned int length_w2 = 1;
-
-    // Triangle setup
-    int A01 = int_to_fixed_2(v0_y - v1_y, PR)/length_w0, B01 = int_to_fixed_2(v1_x - v0_x, PR)/length_w0;
-    int A12 = int_to_fixed_2(v1_y - v2_y, PR)/length_w1, B12 = int_to_fixed_2(v2_x - v1_x, PR)/length_w1;
-    int A20 = int_to_fixed_2(v2_y - v0_y, PR)/length_w2, B20 = int_to_fixed_2(v0_x - v2_x, PR)/length_w2;
-
-    // Barycentric coordinates at minX/minY corner
-    vec2_fixed_signed p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
-    vec2_32i p = { minX, minY };
-
-    // reshape
-    int w0_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v0_x, v0_y},
-                                                vec2_fixed_signed{v1_x, v1_y}, p_fixed, sub_pixel_precision) + 0, PR))/length_w0;
-    int w1_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v1_x, v1_y},
-                                                vec2_fixed_signed{v2_x, v2_y}, p_fixed, sub_pixel_precision) + 0, PR))/length_w1;
-    int w2_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v2_x, v2_y},
-                                                vec2_fixed_signed{v0_x, v0_y}, p_fixed, sub_pixel_precision) + 0, PR))/length_w2;
-
-//    int w0_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v0_x, v0_y},
-//                                                vec2_fixed_signed{v1_x, v1_y}, p_fixed, sub_pixel_precision) + bias_w0, PR))/length_w0;
-//    int w1_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v1_x, v1_y},
-//                                                vec2_fixed_signed{v2_x, v2_y}, p_fixed, sub_pixel_precision) + bias_w1, PR))/length_w1;
-//    int w2_row = ((long)int_to_fixed_2(orient2d(vec2_fixed_signed{v2_x, v2_y},
-//                                                vec2_fixed_signed{v0_x, v0_y}, p_fixed, sub_pixel_precision) + bias_w2, PR))/length_w2;
-
-    // AA, 2A/L = h, therefore the division produces a P bit number
-
-
-//
-    //
-    // distance to edge is always h= (2*A)/L, where:
-    // h=distance from point to edge
-    // A = triangle area spanned by point and edge area
-    // L = length of the edge
-    // this simple geometric identity can be derived from
-    // area of triangle equation. We are going to interpolate
-    // the quantity h and we would like to evaluate h.
-    // NOTE:: this is a cheap way to calculate anti-alias with
-    // perpendicular distance, this is of course not correct for
-    // points that are "beyond" the edges. The real calculation
-    // has to use distance to points hence a square root function
-    // which is expensive for integer version. This version seems to
-    // work best with minimal artifacts when used with bits_distance=0 or 1.
-    //
-    // we interpolate in scaled precision so watch out. All of the working
-    // calculations are in 15 or 16 bits precision.
-
-    // watch out for negative values
-    int index = p.y * _width;
-
-    for (p.y = minY; p.y <= maxY; p.y++) {
-
-        // Barycentric coordinates at start of row
-        int w0 = w0_row;
-        int w1 = w1_row;
-        int w2 = w2_row;
-
-        for (p.x = minX; p.x <= maxX; p.x++) {
-
-            if (w0>=0 && w1>=0 && w2>=0) {
-//            if ((w0 | w1 | w2) >= 0) {
-
-                blendColor<BlendMode, PorterDuff>(color_int, index + p.x, opacity);
-
-            } else if(antialias) {;// if(false){
-                // any of the distances are negative, we are outside.
-                // test if we can anti-alias
-                // take minimum of all meta distances
-
-                int distance = std::min({w0, w1, w2});
-                int delta = (distance) + max_distance_scaled_space_anti_alias;
-                bool perform_aa = aa_all_edges;
-
-                // test edges
-                if(!perform_aa) {
-                    if(w0==distance && aa_w0)
-                        perform_aa = true;
-                    else if(w1==distance && aa_w1)
-                        perform_aa = true;
-                    else if(w2==distance && aa_w2)
-                        perform_aa = true;
-                }
-
-                if (perform_aa && delta>=0) {
-
-                    // take the complement and rescale
-                    uint8_t blend = ((long)((delta) << (8-bits_distance)))>>PR;
-
-                    if (opacity < _max_alpha_value) {
-                        blend = (blend * opacity) >> 8;
-                    }
-
-                    blendColor<BlendMode, PorterDuff>(color_int, index + p.x, blend);
-                }
-
-            }
-
-            // One step to the right
-            w0 += A01;
-            w1 += A12;
-            w2 += A20;
-
-        }
-
-        // One row step
-        w0_row += B01;
-        w1_row += B12;
-        w2_row += B20;
-        index += _width;
-    }
-
-}
-*/
-
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
@@ -1082,9 +907,6 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 }
 
 
-inline int clamp(int val, int e0, int e1) {
-    return std::min(std::max(val,e0),e1);
-}
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
