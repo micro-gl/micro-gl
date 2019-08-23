@@ -576,12 +576,90 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
-                                     const vec2_32i *vertices,
-                                     const index *indices,
-                                     const index size,
-                                     const TrianglesIndices type,
-                                     const uint8_t opacity,
-                                     const uint8_t sub_pixel_precision) {
+                                              const vec2_32i *vertices,
+                                              const index *indices,
+                                              const index size,
+                                              const TrianglesIndices type,
+                                              const uint8_t opacity,
+                                              const uint8_t sub_pixel_precision) {
+
+#define IND(a) indices[(a)]
+
+    switch (type) {
+        case TrianglesIndices::TRIANGLES:
+
+            for (index ix = 0; ix < size; ix+=3) {
+
+                drawTriangleWireframe(color,
+                                      vertices[IND(ix + 0)],
+                                      vertices[IND(ix + 1)],
+                                      vertices[IND(ix + 2)],
+                                      sub_pixel_precision);
+            }
+
+            break;
+        case TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
+
+            for (index ix = 0; ix < size; ix+=4) {
+
+                drawTriangleWireframe(color,
+                                      vertices[IND(ix + 0)],
+                                      vertices[IND(ix + 1)],
+                                      vertices[IND(ix + 2)],
+                                      sub_pixel_precision);
+            }
+
+            break;
+        case TrianglesIndices::TRIANGLES_FAN:
+
+            for (index ix = 1; ix < size; ++ix) {
+
+                drawTriangleWireframe(color,
+                                      vertices[IND(0)],
+                                      vertices[IND(ix)],
+                                      vertices[IND(ix + 1)],
+                                      sub_pixel_precision);
+            }
+
+            break;
+        case TrianglesIndices::TRIANGLES_STRIP:
+            bool even = true;
+
+            for (index ix = 0; ix < size; ++ix) {
+                even = !even;
+                // we alternate order inorder to preserve CCW or CW,
+                // in the future I will add face culling, which will
+                // support only CW or CCW orientation at a time.
+                if(even)
+                    drawTriangleWireframe(color,
+                                          vertices[IND(ix + 0)],
+                                          vertices[IND(ix + 1)],
+                                          vertices[IND(ix + 2)],
+                                          sub_pixel_precision);
+
+                else
+                    drawTriangleWireframe(color,
+                                          vertices[IND(ix + 2)],
+                                          vertices[IND(ix + 1)],
+                                          vertices[IND(ix + 0)],
+                                          sub_pixel_precision);
+            }
+
+            break;
+    }
+
+#undef IND
+}
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias>
+void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
+                                              const vec2_f *vertices,
+                                              const index *indices,
+                                              const index size,
+                                              const TrianglesIndices type,
+                                              const uint8_t opacity,
+                                              const uint8_t sub_pixel_precision) {
 
 #define IND(a) indices[(a)]
 
@@ -654,14 +732,31 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawTriangleWireframe(const color_f_t &color,
-                                              const vec2_32i &p0,
-                                              const vec2_32i &p1,
-                                              const vec2_32i &p2,
+                                             const vec2_32i &p0,
+                                             const vec2_32i &p1,
+                                             const vec2_32i &p2,
                                              const uint8_t sub_pixel_precision)
 {
     drawLine(color, p0, p1, sub_pixel_precision);
     drawLine(color, p1, p2, sub_pixel_precision);
     drawLine(color, p2, p0, sub_pixel_precision);
+}
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias>
+void Canvas<P, CODER>::drawTriangleWireframe(const color_f_t &color,
+                                             const vec2_f &p0,
+                                             const vec2_f &p1,
+                                             const vec2_f &p2,
+                                             const uint8_t sub_pixel_precision)
+{
+    vec2_32i p0_ = p0<<sub_pixel_precision;
+    vec2_32i p1_ = p1<<sub_pixel_precision;
+    vec2_32i p2_ = p2<<sub_pixel_precision;
+
+    drawLine(color, p0_, p1_, sub_pixel_precision);
+    drawLine(color, p1_, p2_, sub_pixel_precision);
+    drawLine(color, p2_, p0_, sub_pixel_precision);
 }
 
 inline int clamp(int val, int e0, int e1) {

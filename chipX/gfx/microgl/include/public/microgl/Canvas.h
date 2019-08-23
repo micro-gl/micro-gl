@@ -129,21 +129,41 @@ public:
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
     void drawTrianglesWireframe(const color_f_t & color,
-                       const vec2_32i *vertices,
-                       const index *indices,
-                       const index size,
-                       const TrianglesIndices type,
-                       const uint8_t opacity,
-                       const uint8_t sub_pixel_precision);
+                                const vec2_32i *vertices,
+                                const index *indices,
+                                const index size,
+                                const TrianglesIndices type,
+                                const uint8_t opacity,
+                                const uint8_t sub_pixel_precision);
+
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
+    void drawTrianglesWireframe(const color_f_t & color,
+                                const vec2_f *vertices,
+                                const index *indices,
+                                const index size,
+                                const TrianglesIndices type,
+                                const uint8_t opacity,
+                                const uint8_t sub_pixel_precision);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
     void drawTriangleWireframe(const color_f_t &color,
-                             const vec2_32i &p0,
-                             const vec2_32i &p1,
-                             const vec2_32i &p2,
-                             const uint8_t sub_pixel_precision);
+                               const vec2_32i &p0,
+                               const vec2_32i &p1,
+                               const vec2_32i &p2,
+                               const uint8_t sub_pixel_precision);
+
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
+    void drawTriangleWireframe(const color_f_t &color,
+                               const vec2_f &p0,
+                               const vec2_f &p1,
+                               const vec2_f &p2,
+                               const uint8_t sub_pixel_precision);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
