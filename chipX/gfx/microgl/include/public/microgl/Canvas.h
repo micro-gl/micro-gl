@@ -94,12 +94,6 @@ public:
                     const float centerX, const float centerY,
                     const float radius, uint8_t opacity=255);
 
-    template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque>
-    void drawCircleFPU(const color_f_t & color,
-                    int centerX, int centerY,
-                    int radius, float opacity=1.0f);
-
     // Triangles
     
     // main color
