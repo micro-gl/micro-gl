@@ -167,7 +167,20 @@ public:
                       const fixed_signed x1, const fixed_signed y1,
                       const fixed_signed x2, const fixed_signed y2,
                       const uint8_t opacity,
-                       uint8_t sub_pixel_precision,
+                      uint8_t sub_pixel_precision,
+                      bool aa_first_edge = true,
+                      bool aa_second_edge = true,
+                      bool aa_third_edge = true);
+
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
+    void drawTriangleFast(const color_f_t & color,
+                      const fixed_signed x0, const fixed_signed y0,
+                      const fixed_signed x1, const fixed_signed y1,
+                      const fixed_signed x2, const fixed_signed y2,
+                      const uint8_t opacity,
+                      uint8_t sub_pixel_precision,
                       bool aa_first_edge = true,
                       bool aa_second_edge = true,
                       bool aa_third_edge = true);
@@ -210,19 +223,7 @@ public:
                       const fixed_signed v2_x, const fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
                       const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
-
-    template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, bool perspective_correct=false,
-            typename Sampler=sampler::NearestNeighbor,
-            typename P2, typename CODER2>
-    void drawTriangle2(const Bitmap<P2, CODER2> &bmp,
-                      const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
-                      const fixed_signed v1_x, const fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
-                      const fixed_signed v2_x, const fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
-                      const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision,
-                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
-
+    
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false,

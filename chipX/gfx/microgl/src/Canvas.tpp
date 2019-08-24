@@ -775,7 +775,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     // fill rules adjustments
     triangles::top_left_t top_left =
             triangles::classifyTopLeftEdges(false,
-                    v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
+                                            v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
 
     int bias_w0 = top_left.first  ? 0 : -1;
     int bias_w1 = top_left.second ? 0 : -1;
@@ -795,11 +795,11 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     vec2_32i p = { minX , minY };
 
     int w0_row = (functions::orient2d(vec2_32i{v0_x, v0_y},vec2_32i{v1_x, v1_y},
-            p_fixed, sub_pixel_precision) + bias_w0);
+                                      p_fixed, sub_pixel_precision) + bias_w0);
     int w1_row = (functions::orient2d(vec2_32i{v1_x, v1_y}, vec2_32i{v2_x, v2_y},
-            p_fixed, sub_pixel_precision) + bias_w1);
+                                      p_fixed, sub_pixel_precision) + bias_w1);
     int w2_row = (functions::orient2d(vec2_32i{v2_x, v2_y}, vec2_32i{v0_x, v0_y},
-            p_fixed, sub_pixel_precision) + bias_w2);
+                                      p_fixed, sub_pixel_precision) + bias_w2);
 
     // AA, 2A/L = h, therefore the division produces a P bit number
     int w0_row_h=0, w1_row_h=0, w2_row_h=0;
@@ -889,7 +889,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
                     // take the complement and rescale
                     uint8_t blend = functions::clamp<int>(((int64_t)delta << bits_distance_complement)>>(PR),
-                            0, 255);
+                                                          0, 255);
 
                     if (opacity < _max_alpha_value) {
                         blend = (blend * opacity) >> 8;
@@ -925,6 +925,348 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
         }
 
         index += (_width);
+    }
+
+}
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias>
+void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
+                                    const fixed_signed v0_x, const fixed_signed v0_y,
+                                    const fixed_signed v1_x, const fixed_signed v1_y,
+                                    const fixed_signed v2_x, const fixed_signed v2_y,
+                                    const uint8_t opacity,
+                                    const uint8_t sub_pixel_precision,
+                                    bool aa_first_edge,
+                                    bool aa_second_edge,
+                                    bool aa_third_edge) {
+    color_t color_int;
+    coder()->convert(color, color_int);
+
+    // sub_pixel_precision;
+    // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
+    uint8_t MAX_BITS_FOR_PROCESSING_PRECISION = 15;
+    uint8_t PR = MAX_BITS_FOR_PROCESSING_PRECISION;// - sub_pixel_precision;
+    unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
+
+    // anti-alias pad for distance calculation
+    uint8_t bits_distance = 0;
+    uint8_t bits_distance_complement = 8;
+    // max distance to consider in scaled space
+    int max_distance_scaled_space_anti_alias=0;
+    // we now decide which edges we want to anti-alias
+    bool aa_all_edges=false;
+    if(antialias) {
+        aa_all_edges = aa_first_edge && aa_second_edge && aa_third_edge;
+
+        bits_distance = 5;
+        bits_distance_complement = 8 - bits_distance;
+        // max distance to consider in canvas space
+        int max_distance_canvas_space_anti_alias = 1 << bits_distance;
+        max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias << (PR);
+        // we can solve padding analytically with distance=(max_distance_anti_alias/Cos(angle))
+        // but I don't give a fuck about it since I am just using max value of 2
+        // minX-=max_distance_anti_alias*2;minY-=max_distance_anti_alias*2;
+        // maxX+=max_distance_anti_alias*2;maxY+=max_distance_anti_alias*2;
+    }
+
+    // bbox
+    int minX = (functions::min(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    int minY = (functions::min(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    int maxX = (functions::max(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    int maxY = (functions::max(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+
+    // fill rules adjustments
+    triangles::top_left_t top_left =
+            triangles::classifyTopLeftEdges(false,
+                                            v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
+
+    int bias_w0 = top_left.first  ? 0 : -1;
+    int bias_w1 = top_left.second ? 0 : -1;
+    int bias_w2 = top_left.third  ? 0 : -1;
+    //
+
+    minX = functions::max(0, minX); minY = functions::max(0, minY);
+    maxX = functions::min((width()-1), maxX); maxY = functions::min((height()-1), maxY);
+
+    const int block = 8;
+
+    minX &= ~(block - 1);
+    minY &= ~(block - 1);
+
+    // Triangle setup
+    int A01 = v0_y - v1_y, B01 = v1_x - v0_x;
+    int A12 = v1_y - v2_y, B12 = v2_x - v1_x;
+    int A20 = v2_y - v0_y, B20 = v0_x - v2_x;
+
+    int A01_block = A01*block, B01_block = B01*block;
+    int A12_block = A12*block, B12_block = B12*block;
+    int A20_block = A20*block, B20_block = B20*block;
+
+    int A01_block_m_1 = A01_block - A01, B01_block_m_1 = B01_block - B01;
+    int A12_block_m_1 = A12_block - A12, B12_block_m_1 = B12_block - B12;
+    int A20_block_m_1 = A20_block - A20, B20_block_m_1 = B20_block - B20;
+
+    // Barycentric coordinates at minX/minY corner
+    vec2_32i p_fixed = {  minX<<sub_pixel_precision, minY<<sub_pixel_precision };
+    vec2_32i p = { minX , minY };
+
+    int w0_row = (functions::orient2d(vec2_32i{v0_x, v0_y},vec2_32i{v1_x, v1_y},
+                                      p_fixed, sub_pixel_precision) + bias_w0);
+    int w1_row = (functions::orient2d(vec2_32i{v1_x, v1_y}, vec2_32i{v2_x, v2_y},
+                                      p_fixed, sub_pixel_precision) + bias_w1);
+    int w2_row = (functions::orient2d(vec2_32i{v2_x, v2_y}, vec2_32i{v0_x, v0_y},
+                                      p_fixed, sub_pixel_precision) + bias_w2);
+
+    // AA, 2A/L = h, therefore the division produces a P bit number
+    int w0_row_h=0, w1_row_h=0, w2_row_h=0;
+    int A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
+    int A01_block_h=0, B01_block_h=0, A12_block_h=0, B12_block_h=0, A20_block_h=0, B20_block_h=0;
+    int A01_block_m_1_h=0, B01_block_m_1_h=0, A12_block_m_1_h=0, B12_block_m_1_h=0, A20_block_m_1_h=0, B20_block_m_1_h=0;
+    if(antialias) {
+        int PP = PR;
+
+        // lengths of edges
+        unsigned int length_w0 = functions::length({v0_x, v0_y}, {v1_x, v1_y}, 0);
+        unsigned int length_w1 = functions::length({v1_x, v1_y}, {v2_x, v2_y}, 0);
+        unsigned int length_w2 = functions::length({v0_x, v0_y}, {v2_x, v2_y}, 0);
+
+        A01_h = (((int64_t)(v0_y - v1_y))<<(PP))/length_w0, B01_h = (((int64_t)(v1_x - v0_x))<<(PP))/length_w0;
+        A12_h = (((int64_t)(v1_y - v2_y))<<(PP))/length_w1, B12_h = (((int64_t)(v2_x - v1_x))<<(PP))/length_w1;
+        A20_h = (((int64_t)(v2_y - v0_y))<<(PP))/length_w2, B20_h = (((int64_t)(v0_x - v2_x))<<(PP))/length_w2;
+
+        A01_block_h = A01_h*block, B01_block_h = B01_h*block;
+        A12_block_h = A12_h*block, B12_block_h = B12_h*block;
+        A20_block_h = A20_h*block, B20_block_h = B20_h*block;
+
+        A01_block_m_1_h = A01_block_h - A01_h, B01_block_m_1_h = B01_block_h - B01_h;
+        A12_block_m_1_h = A12_block_h - A12_h, B12_block_m_1_h = B12_block_h - B12_h;
+        A20_block_m_1_h = A20_block_h - A20_h, B20_block_m_1_h = B20_block_h - B20_h;
+
+        w0_row_h = (((int64_t)(w0_row))<<(PP))/length_w0;
+        w1_row_h = (((int64_t)(w1_row))<<(PP))/length_w1;
+        w2_row_h = (((int64_t)(w2_row))<<(PP))/length_w2;
+    }
+
+    // watch out for negative values
+    int index = p.y * (_width);
+    int w_t_b = _width*block;
+
+    for (p.y = minY; p.y <= maxY; p.y+=block) {
+
+        // Barycentric coordinates at start of row
+        int w0 = w0_row;
+        int w1 = w1_row;
+        int w2 = w2_row;
+
+        int w0_h=0,w1_h=0,w2_h=0;
+        if(antialias) {
+            w0_h = w0_row_h;
+            w1_h = w1_row_h;
+            w2_h = w2_row_h;
+        }
+
+        for (p.x = minX; p.x <= maxX; p.x+=block) {
+
+            // Corners of block
+            // test block bbox against each edge
+            int top_left_w0 = w0;
+            int top_left_w1 = w1;
+            int top_left_w2 = w2;
+            // next set of rows for bottom tests
+            int bottom_left_w0 = top_left_w0 + B01_block_m_1;
+            int bottom_left_w1 = top_left_w1 + B12_block_m_1;
+            int bottom_left_w2 = top_left_w2 + B20_block_m_1;
+
+            int top_right_w0 = top_left_w0 + A01_block_m_1;
+            int top_right_w1 = top_left_w1 + A12_block_m_1;
+            int top_right_w2 = top_left_w2 + A20_block_m_1;
+
+            int bottom_right_w0 = bottom_left_w0 + A01_block_m_1;
+            int bottom_right_w1 = bottom_left_w1 + A12_block_m_1;
+            int bottom_right_w2 = bottom_left_w2 + A20_block_m_1;
+
+            bool w0_in = (top_left_w0 | top_right_w0 | bottom_right_w0 | bottom_left_w0)>=0;
+            bool w1_in = (top_left_w1 | top_right_w1 | bottom_right_w1 | bottom_left_w1)>=0;
+            bool w2_in = (top_left_w2 | top_right_w2 | bottom_right_w2 | bottom_left_w2)>=0;
+
+            bool in = w0_in && w1_in && w2_in;
+//            bool in = top_left_w0>=0 && top_left_w1>=0 && top_left_w2>=0;
+//            bool in = (top_left_w0 | top_left_w1 | top_left_w2)>=0;
+//            bool in = w0>=0 && w1>=0 && w2>=0;
+
+            if (in) {
+//            if ((w0 | w1 | w2) >= 0) {
+//
+                int stride = index;
+                for(int iy = 0; iy < block; iy++) {
+                    for(int ix = p.x; ix < p.x + block; ix++)
+                        blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), opacity);
+
+                    stride += _width;
+                }
+
+            }
+            else {
+                bool w0_out = (top_left_w0 & top_right_w0 & bottom_right_w0 & bottom_left_w0)<0;
+                bool w1_out = (top_left_w1 & top_right_w1 & bottom_right_w1 & bottom_left_w1)<0;
+                bool w2_out = (top_left_w2 & top_right_w2 & bottom_right_w2 & bottom_left_w2)<0;
+
+                bool out = w0_out || w1_out || w2_out;
+                bool boundary = !in && !out;
+
+                // now test if block is also interesting for AA
+                if(antialias && !boundary) {
+                    int top_left_w0_h = w0_h;
+                    int top_left_w1_h = w1_h;
+                    int top_left_w2_h = w2_h;
+                    // next set of rows for bottom tests
+                    int bottom_left_w0_h = top_left_w0_h + B01_block_m_1_h;
+                    int bottom_left_w1_h = top_left_w1_h + B12_block_m_1_h;
+                    int bottom_left_w2_h = top_left_w2_h + B20_block_m_1_h;
+
+                    int top_right_w0_h = top_left_w0_h + A01_block_m_1_h;
+                    int top_right_w1_h = top_left_w1_h + A12_block_m_1_h;
+                    int top_right_w2_h = top_left_w2_h + A20_block_m_1_h;
+
+                    int bottom_right_w0_h = bottom_left_w0_h + A01_block_m_1_h;
+                    int bottom_right_w1_h = bottom_left_w1_h + A12_block_m_1_h;
+                    int bottom_right_w2_h = bottom_left_w2_h + A20_block_m_1_h;
+
+                    // distance of block to the edge w0
+                    int distance_w0 = functions::max(top_left_w0_h, bottom_left_w0_h, top_right_w0_h, bottom_right_w0_h);
+                    // distance of block to the edge w0
+                    int distance_w1 = functions::max(top_left_w1_h, bottom_left_w1_h, top_right_w1_h, bottom_right_w1_h);
+                    // distance of block to the edge w0
+                    int distance_w2 = functions::max(top_left_w2_h, bottom_left_w2_h, top_right_w2_h, bottom_right_w2_h);
+                    int d_aa = functions::min(distance_w0, distance_w1, distance_w2);
+                    int delta = (d_aa) + max_distance_scaled_space_anti_alias;
+                    boundary = boundary || delta>=0;
+
+                }
+
+                if(boundary) {
+                    int stride = index;
+
+                    int w0_row_ = w0;
+                    int w1_row_ = w1;
+                    int w2_row_ = w2;
+
+                    int w0_row_h_,w1_row_h_,w2_row_h_;
+                    if(antialias) {
+                        w0_row_h_ = w0_h;
+                        w1_row_h_ = w1_h;
+                        w2_row_h_ = w2_h;
+                    }
+
+                    for (int iy = p.y; iy < p.y + block; iy++) {
+
+                        int w0_ = w0_row_;
+                        int w1_ = w1_row_;
+                        int w2_ = w2_row_;
+
+                        int w0_h_,w1_h_,w2_h_;
+                        if(antialias) {
+                            w0_h_ = w0_row_h_;
+                            w1_h_ = w1_row_h_;
+                            w2_h_ = w2_row_h_;
+                        }
+
+                        for (int ix = p.x; ix < p.x + block; ix++) {
+                            if ((w0_ | w1_ | w2_) >= 0)
+                                blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), opacity);
+//                                blendColor<BlendMode, PorterDuff>({0, 0, 0}, (stride + ix), opacity);
+                            else if(antialias) {;// if(false){
+                                // any of the distances are negative, we are outside.
+                                // test if we can anti-alias
+                                // take minimum of all meta distances
+
+                                // find minimal distance along edges only, this does not take
+                                // into account the junctions
+                                int distance = functions::min(w0_h_, w1_h_, w2_h_);
+                                int delta = (distance) + max_distance_scaled_space_anti_alias;
+                                bool perform_aa = aa_all_edges;
+
+                                // test edges
+                                if(!perform_aa) {
+                                    if(distance==w0_h_ && aa_first_edge)
+                                        perform_aa = true;
+                                    else if(distance==w1_h_ && aa_second_edge)
+                                        perform_aa = true;
+                                    else perform_aa = distance == w2_h_ && aa_third_edge;
+                                }
+
+                                if (perform_aa && delta>=0) {
+
+                                    // take the complement and rescale
+                                    uint8_t blend = functions::clamp<int>(((int64_t)delta << bits_distance_complement)>>(PR),
+                                                                          0, 255);
+
+                                    if (opacity < _max_alpha_value) {
+                                        blend = (blend * opacity) >> 8;
+                                    }
+
+//                                    blendColor<BlendMode, PorterDuff>({0,0,0}, (stride + ix), 255);
+                                    blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), blend);
+                                }
+
+                            }
+
+                            w0_ += A01;
+                            w1_ += A12;
+                            w2_ += A20;
+
+                            if(antialias) {
+                                w0_h_ += A01_h;
+                                w1_h_ += A12_h;
+                                w2_h_ += A20_h;
+                            }
+
+                        }
+
+                        w0_row_ += B01;
+                        w1_row_ += B12;
+                        w2_row_ += B20;
+
+                        if(antialias) {
+                            w0_row_h_ += B01_h;
+                            w1_row_h_ += B12_h;
+                            w2_row_h_ += B20_h;
+                        }
+
+                        stride += _width;
+
+                    }
+
+                }
+
+            }
+
+            // One step to the right
+            w0 += A01_block;
+            w1 += A12_block;
+            w2 += A20_block;
+
+            if(antialias) {
+                w0_h += A01_block_h;
+                w1_h += A12_block_h;
+                w2_h += A20_block_h;
+            }
+
+        }
+
+        // One row step
+        w0_row += B01_block;
+        w1_row += B12_block;
+        w2_row += B20_block;
+
+        if(antialias) {
+            w0_row_h += B01_block_h;
+            w1_row_h += B12_block_h;
+            w2_row_h += B20_block_h;
+        }
+
+        index += w_t_b;
     }
 
 }
