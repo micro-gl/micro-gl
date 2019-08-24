@@ -785,11 +785,6 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     minX = functions::max(0, minX); minY = functions::max(0, minY);
     maxX = functions::min((width()-1), maxX); maxY = functions::min((height()-1), maxY);
 
-    // lengths of edges
-    int length_w0 = functions::length({v0_x, v0_y}, {v1_x, v1_y}, 0);
-    int length_w1 = functions::length({v1_x, v1_y}, {v2_x, v2_y}, 0);
-    int length_w2 = functions::length({v0_x, v0_y}, {v2_x, v2_y}, 0);
-
     // Triangle setup
     int A01 = v0_y - v1_y, B01 = v1_x - v0_x;
     int A12 = v1_y - v2_y, B12 = v2_x - v1_x;
@@ -809,9 +804,13 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     // AA, 2A/L = h, therefore the division produces a P bit number
     int w0_row_h=0, w1_row_h=0, w2_row_h=0;
     int A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
-
     if(antialias) {
         int PP = PR;
+
+        // lengths of edges
+        unsigned int length_w0 = functions::length({v0_x, v0_y}, {v1_x, v1_y}, 0);
+        unsigned int length_w1 = functions::length({v1_x, v1_y}, {v2_x, v2_y}, 0);
+        unsigned int length_w2 = functions::length({v0_x, v0_y}, {v2_x, v2_y}, 0);
 
         A01_h = (((int64_t)(v0_y - v1_y))<<(PP))/length_w0, B01_h = (((int64_t)(v1_x - v0_x))<<(PP))/length_w0;
         A12_h = (((int64_t)(v1_y - v2_y))<<(PP))/length_w1, B12_h = (((int64_t)(v2_x - v1_x))<<(PP))/length_w1;
@@ -873,13 +872,8 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
                 // find minimal distance along edges only, this does not take
                 // into account the junctions
-                int distance = functions::min(w0_h, w1_h, w2_h);//w0_h;
-//                if(w1_h < distance)
-//                    distance = w1_h;
-//                if(w2_h < distance)
-//                    distance = w2_h;
-
-                int64_t delta = (distance) + max_distance_scaled_space_anti_alias;
+                int distance = functions::min(w0_h, w1_h, w2_h);
+                int delta = (distance) + max_distance_scaled_space_anti_alias;
                 bool perform_aa = aa_all_edges;
 
                 // test edges
@@ -1059,11 +1053,6 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     uint64_t ONE = ((uint64_t)1)<<LL;
     uint64_t one_area = (ONE) / area;
 
-    // lengths of edges, produces a P+1 bits number
-    unsigned int length_w0 = functions::length({v0_x, v0_y}, {v1_x, v1_y}, 0);
-    unsigned int length_w1 = functions::length({v1_x, v1_y}, {v2_x, v2_y}, 0);
-    unsigned int length_w2 = functions::length({v0_x, v0_y}, {v2_x, v2_y}, 0);
-
     // PR seems very good for the following calculations
     // Triangle setup
     // this needs at least (P+1) bits, since the delta is always <= length
@@ -1080,6 +1069,11 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     int A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
 
     if(antialias) {
+        // lengths of edges, produces a P+1 bits number
+        unsigned int length_w0 = functions::length({v0_x, v0_y}, {v1_x, v1_y}, 0);
+        unsigned int length_w1 = functions::length({v1_x, v1_y}, {v2_x, v2_y}, 0);
+        unsigned int length_w2 = functions::length({v0_x, v0_y}, {v2_x, v2_y}, 0);
+
         A01_h = ((int64_t)(v0_y - v1_y)<<PREC_DIST)/length_w0, B01_h = ((int64_t)(v1_x - v0_x)<<PREC_DIST)/length_w0;
         A12_h = ((int64_t)(v1_y - v2_y)<<PREC_DIST)/length_w1, B12_h = ((int64_t)(v2_x - v1_x)<<PREC_DIST)/length_w1;
         A20_h = ((int64_t)(v2_y - v0_y)<<PREC_DIST)/length_w2, B20_h = ((int64_t)(v0_x - v2_x)<<PREC_DIST)/length_w2;

@@ -127,9 +127,9 @@ void render_polygon(std::vector<vec2<T>> polygon) {
             precision);
 
     // draw triangulation
-    canvas->drawTrianglesWireframe(BLACK, polygon.data(), indices, size_indices,
-                                   TrianglesIndices::TRIANGLES_WITH_BOUNDARY,
-                                   255, precision);
+//    canvas->drawTrianglesWireframe(BLACK, polygon.data(), indices, size_indices,
+//                                   TrianglesIndices::TRIANGLES_WITH_BOUNDARY,
+//                                   255, precision);
 
 }
 
