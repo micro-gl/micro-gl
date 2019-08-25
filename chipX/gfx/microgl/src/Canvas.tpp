@@ -944,10 +944,10 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                                     bool aa_second_edge,
                                     bool aa_third_edge) {
 
-    fixed_signed area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
-
-    if(area<=0)
-        return;
+//    fixed_signed area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
+//
+//    if(area<=0)
+//        return;
 
     color_t color_int;
     coder()->convert(color, color_int);
@@ -1106,13 +1106,13 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
 
             if (in) {
                 int stride = index;
-                int block_start_x = functions::max(p.x, minX);
-                int block_start_y = functions::max(p.y, minY);
-                int block_end_x = functions::min(p.x + block, maxX);
-                int block_end_y = functions::min(p.y + block, maxY);
+//                int block_start_x = functions::max(p.x, minX);
+//                int block_start_y = functions::max(p.y, minY);
+//                int block_end_x = functions::min(p.x + block, maxX);
+//                int block_end_y = functions::min(p.y + block, maxY);
 
-                for(int iy = block_start_y; iy < block_end_y; iy++) {
-                    for(int ix = block_start_x; ix < block_end_x; ix++)
+                for(int iy = p.y; iy < p.y + block; iy++) {
+                    for(int ix = p.x; ix < p.x + block; ix++)
                         blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), opacity);
 
                     stride += _width;
@@ -1196,8 +1196,7 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                         for (int ix = block_start_x; ix < block_end_x; ix++) {
                             if ((w0_ | w1_ | w2_) >= 0)
                                 blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), opacity);
-                            else
-                                if(antialias) {;// if(false){
+                            else if(antialias) {
                                 // if any of the distances are negative, we are outside.
                                 // test if we can anti-alias
                                 // take minimum of all meta distances
