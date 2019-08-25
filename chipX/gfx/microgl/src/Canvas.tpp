@@ -481,7 +481,8 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                 bool aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
                 bool aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
 
-                drawTriangle<BlendMode, PorterDuff, antialias>(color,
+//                drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
                    vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
                    vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
                    vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
@@ -929,6 +930,8 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
 }
 
+
+
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
@@ -940,6 +943,12 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                                     bool aa_first_edge,
                                     bool aa_second_edge,
                                     bool aa_third_edge) {
+
+    fixed_signed area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
+
+    if(area<=0)
+        return;
+
     color_t color_int;
     coder()->convert(color, color_int);
 
@@ -959,7 +968,7 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
     if(antialias) {
         aa_all_edges = aa_first_edge && aa_second_edge && aa_third_edge;
 
-        bits_distance = 5;
+        bits_distance = 0;
         bits_distance_complement = 8 - bits_distance;
         // max distance to consider in canvas space
         int max_distance_canvas_space_anti_alias = 1 << bits_distance;
@@ -985,14 +994,17 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
     int bias_w1 = top_left.second ? 0 : -1;
     int bias_w2 = top_left.third  ? 0 : -1;
     //
+    const int block = 8;
+    maxX += block;
+    maxY += block;
+
+//    minX &= ~(block - 1);
+//    minY &= ~(block - 1);
+//    maxX &= ~(block - 1);
+//    maxY &= ~(block - 1);
 
     minX = functions::max(0, minX); minY = functions::max(0, minY);
-    maxX = functions::min((width()-1), maxX); maxY = functions::min((height()-1), maxY);
-
-    const int block = 8;
-
-    minX &= ~(block - 1);
-    minY &= ~(block - 1);
+    maxX = functions::min((width()), maxX); maxY = functions::min((height()), maxY);
 
     // Triangle setup
     int A01 = v0_y - v1_y, B01 = v1_x - v0_x;
@@ -1091,32 +1103,33 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
             bool w2_in = (top_left_w2 | top_right_w2 | bottom_right_w2 | bottom_left_w2)>=0;
 
             bool in = w0_in && w1_in && w2_in;
-//            bool in = top_left_w0>=0 && top_left_w1>=0 && top_left_w2>=0;
-//            bool in = (top_left_w0 | top_left_w1 | top_left_w2)>=0;
-//            bool in = w0>=0 && w1>=0 && w2>=0;
 
             if (in) {
-//            if ((w0 | w1 | w2) >= 0) {
-//
                 int stride = index;
-                for(int iy = 0; iy < block; iy++) {
-                    for(int ix = p.x; ix < p.x + block; ix++)
+                int block_start_x = functions::max(p.x, minX);
+                int block_start_y = functions::max(p.y, minY);
+                int block_end_x = functions::min(p.x + block, maxX);
+                int block_end_y = functions::min(p.y + block, maxY);
+
+                for(int iy = block_start_y; iy < block_end_y; iy++) {
+                    for(int ix = block_start_x; ix < block_end_x; ix++)
                         blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), opacity);
 
                     stride += _width;
                 }
 
             }
+            // we are on the outside or on the boundary
             else {
                 bool w0_out = (top_left_w0 & top_right_w0 & bottom_right_w0 & bottom_left_w0)<0;
                 bool w1_out = (top_left_w1 & top_right_w1 & bottom_right_w1 & bottom_left_w1)<0;
                 bool w2_out = (top_left_w2 & top_right_w2 & bottom_right_w2 & bottom_left_w2)<0;
 
                 bool out = w0_out || w1_out || w2_out;
-                bool boundary = !in && !out;
+                bool boundary = !out;
 
                 // now test if block is also interesting for AA
-                if(antialias && !boundary) {
+                if(antialias && out) {
                     int top_left_w0_h = w0_h;
                     int top_left_w1_h = w1_h;
                     int top_left_w2_h = w2_h;
@@ -1134,15 +1147,18 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                     int bottom_right_w2_h = bottom_left_w2_h + A20_block_m_1_h;
 
                     // distance of block to the edge w0
-                    int distance_w0 = functions::max(top_left_w0_h, bottom_left_w0_h, top_right_w0_h, bottom_right_w0_h);
-                    // distance of block to the edge w0
-                    int distance_w1 = functions::max(top_left_w1_h, bottom_left_w1_h, top_right_w1_h, bottom_right_w1_h);
-                    // distance of block to the edge w0
-                    int distance_w2 = functions::max(top_left_w2_h, bottom_left_w2_h, top_right_w2_h, bottom_right_w2_h);
-                    int d_aa = functions::min(distance_w0, distance_w1, distance_w2);
-                    int delta = (d_aa) + max_distance_scaled_space_anti_alias;
+                    // since we are outside, all of the distances are negative, therefore
+                    // taking max function on negatives reveals the closest distance
+                    int distance_w0 = functions::min(abs(top_left_w0_h), abs(bottom_left_w0_h),
+                                                     abs(top_right_w0_h), abs(bottom_right_w0_h));
+                    int distance_w1 = functions::min(abs(top_left_w1_h), abs(bottom_left_w1_h),
+                                                     abs(top_right_w1_h), abs(bottom_right_w1_h));
+                    int distance_w2 = functions::min(abs(top_left_w2_h), abs(bottom_left_w2_h),
+                                                     abs(top_right_w2_h), abs(bottom_right_w2_h));
+                    // now take the minimum among absolute values of distances
+                    int d_aa = functions::min(abs(distance_w0), abs(distance_w1), abs(distance_w2));
+                    int delta = -d_aa + max_distance_scaled_space_anti_alias;
                     boundary = boundary || delta>=0;
-
                 }
 
                 if(boundary) {
@@ -1159,7 +1175,12 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                         w2_row_h_ = w2_h;
                     }
 
-                    for (int iy = p.y; iy < p.y + block; iy++) {
+                    int block_start_x = functions::max(p.x, minX);
+                    int block_start_y = functions::max(p.y, minY);
+                    int block_end_x = functions::min(p.x + block, maxX);
+                    int block_end_y = functions::min(p.y + block, maxY);
+
+                    for (int iy = block_start_y; iy < block_end_y; iy++) {
 
                         int w0_ = w0_row_;
                         int w1_ = w1_row_;
@@ -1172,28 +1193,33 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                             w2_h_ = w2_row_h_;
                         }
 
-                        for (int ix = p.x; ix < p.x + block; ix++) {
+                        for (int ix = block_start_x; ix < block_end_x; ix++) {
                             if ((w0_ | w1_ | w2_) >= 0)
                                 blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), opacity);
-//                                blendColor<BlendMode, PorterDuff>({0, 0, 0}, (stride + ix), opacity);
-                            else if(antialias) {;// if(false){
-                                // any of the distances are negative, we are outside.
+                            else
+                                if(antialias) {;// if(false){
+                                // if any of the distances are negative, we are outside.
                                 // test if we can anti-alias
                                 // take minimum of all meta distances
 
                                 // find minimal distance along edges only, this does not take
                                 // into account the junctions
-                                int distance = functions::min(w0_h_, w1_h_, w2_h_);
-                                int delta = (distance) + max_distance_scaled_space_anti_alias;
+
+                                int distance = functions::min((w0_h_), (w1_h_), (w2_h_));
+
+//                                int a0=w0_h_,a1=w0_h_,a2=w0_h_;
+//                                if(a0>0)
+
+                                int delta = ((distance) + max_distance_scaled_space_anti_alias);
                                 bool perform_aa = aa_all_edges;
 
                                 // test edges
                                 if(!perform_aa) {
-                                    if(distance==w0_h_ && aa_first_edge)
+                                    if(distance==(w0_h_) && aa_first_edge)
                                         perform_aa = true;
-                                    else if(distance==w1_h_ && aa_second_edge)
+                                    else if(distance==(w1_h_) && aa_second_edge)
                                         perform_aa = true;
-                                    else perform_aa = distance == w2_h_ && aa_third_edge;
+                                    else perform_aa = distance == (w2_h_) && aa_third_edge;
                                 }
 
                                 if (perform_aa && delta>=0) {

@@ -59,8 +59,8 @@ inline void render() {
         canvas->clear(WHITE);
 
         canvas->drawTriangleFast<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED,
-                                                                             50,50,
-                                                                             W/2, 60,
+                                                                             0,0,
+                                                                             W, 0,
                                                                              W, H,
                                                                              255, 0,
                                                                              true, true, true);

@@ -50,19 +50,20 @@ std::vector<vec2_32i> poly_rect() {
     return {p0, p1, p2, p3};
 }
 
+float b = 1;
 std::vector<vec2_f> poly_2() {
-    vec2_f p0 = {100,100};
-    vec2_f p1 = {300, 100};
-    vec2_f p2 = {300, 300};
-    vec2_f p3 = {200, 200};
-    vec2_f p4 = {100, 300};
+    vec2_f p0 = {100/b,222/b};
+    vec2_f p1 = {300/b, 100/b};
+    vec2_f p2 = {300/b, 300/b};
+    vec2_f p3 = {200/b, 200/b};
+    vec2_f p4 = {100/b, 300/b};
 
     return {p0, p1, p2, p3, p4};
 }
 
 std::vector<vec2_f> poly_tri() {
     vec2_f p0 = {100,100};
-    vec2_f p3 = {200, 200};
+    vec2_f p3 = {300, 100};
     vec2_f p4 = {100, 300};
 
     return {p0, p3, p4};
@@ -84,11 +85,11 @@ std::vector<vec2_32i> poly_hole() {
 }
 
 void render() {
-    t+=.032f;
+    t+=.05f;
 //    std::cout << t << std::endl;
 //    render_polygon(poly_rect());
-    render_polygon(poly_2());
-//    render_polygon(poly_tri());
+//    render_polygon(poly_2());
+    render_polygon(poly_tri());
 //    render_polygon(poly_hole());
 }
 
@@ -123,7 +124,7 @@ void render_polygon(std::vector<vec2<T>> polygon) {
             RED, polygon.data(),
             indices, size_indices,
             TrianglesIndices::TRIANGLES_WITH_BOUNDARY,
-            100,
+            255,
             precision);
 
     // draw triangulation
