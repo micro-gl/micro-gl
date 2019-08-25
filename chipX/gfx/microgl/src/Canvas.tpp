@@ -1205,10 +1205,6 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                                 // into account the junctions
 
                                 int distance = functions::min((w0_h_), (w1_h_), (w2_h_));
-
-//                                int a0=w0_h_,a1=w0_h_,a2=w0_h_;
-//                                if(a0>0)
-
                                 int delta = ((distance) + max_distance_scaled_space_anti_alias);
                                 bool perform_aa = aa_all_edges;
 
