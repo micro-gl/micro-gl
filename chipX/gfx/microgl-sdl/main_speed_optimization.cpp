@@ -54,16 +54,24 @@ inline void render() {
     canvas->setAntialiasing(false);
 
     // 100 iterations - > 32 ms
-    for (int ix = 0; ix < 100; ++ix) {
+    for (int ix = 0; ix < 1; ++ix) {
 
         canvas->clear(WHITE);
 
-        canvas->drawTriangleFast<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED,
-                                                                             0,0,
-                                                                             W, 0,
-                                                                             W, H,
-                                                                             255, 0,
+        canvas->drawTriangleFast<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear>(*bmp_uv,
+                                                                             0.0f,     0.0f,       0.0f, 1.0f,
+                                                                             float(W),  0.0f,       1.0f, 1.0f,
+                                                                             float(W), float(H),   1.0f, 0.0f,
+                                                                             255,
                                                                              true, true, true);
+
+
+//        canvas->drawTriangleFast<blendmode::Normal, porterduff::None, false>(RED,
+//                                                                             0,0,
+//                                                                             W, 0,
+//                                                                             W, H,
+//                                                                             255, 0,
+//                                                                             true, true, true);
 
 //        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED,
 //                                                                             0,0,
