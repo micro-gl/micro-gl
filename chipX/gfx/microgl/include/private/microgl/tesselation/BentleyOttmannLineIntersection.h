@@ -3,10 +3,10 @@
 #pragma clang diagnostic ignored "-Wunused-variable"
 #pragma once
 
-#include <microgl/Types.h>
-#include <microgl/AVLTree.h>
-#include <microgl/Rational.h>
-#include <microgl/Segment.h>
+#include <microgl/vec2.h>
+#include <microgl/tesselation/AVLTree.h>
+#include <microgl/tesselation/Rational.h>
+#include <microgl/tesselation/Segment.h>
 #include <vector>
 #include <iostream>
 

@@ -1,4 +1,4 @@
-#include <Segment.h>
+#include <microgl/tesselation/Segment.h>
 
 Segment::Segment(const vec2_32i &p0_, const vec2_32i &p1_) {
     p0 = p0_;

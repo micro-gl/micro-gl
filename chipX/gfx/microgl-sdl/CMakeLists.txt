@@ -25,7 +25,9 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
 include_directories("${PROJECT_BINARY_DIR}")
 
 set(SOURCES
-        main_speed_optimization.cpp
+#        main_clear.cpp
+        main_curves.cpp
+#        main_speed_optimization.cpp
 #        main_quadrilaterals.cpp
 #        main_ear_clipping.cpp
 #        main_bentley_ottmann.cpp

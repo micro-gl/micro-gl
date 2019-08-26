@@ -1,7 +1,8 @@
 #pragma once
 
-#include <microgl/Types.h>
-#include <microgl/Rational.h>
+#include <microgl/vec2.h>
+#include <microgl/tesselation/Rational.h>
+using namespace microgl;
 
 #define max(a,b) (a)>(b) ? (a) : (b)
 #define min(a,b) (a)<(b) ? (a) : (b)

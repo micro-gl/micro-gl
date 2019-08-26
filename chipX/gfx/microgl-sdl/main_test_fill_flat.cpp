@@ -10,8 +10,9 @@
 #include <SDL2/SDL.h>
 #include <microgl/FrameBuffer.h>
 #include <microgl/Canvas.h>
-#include <microgl/Types.h>
-#include <microgl/PixelFormat.h>
+#include <microgl/vec2.h>
+#include <microgl/color.h>
+//#include <microgl/PixelFormat.h>
 #include <microgl/PixelCoder.h>
 #include <microgl/Bitmap.h>
 

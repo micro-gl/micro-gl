@@ -7,11 +7,10 @@
 #include <chrono>
 #include "src/Resources.h"
 #include <SDL2/SDL.h>
-#include <microgl/FrameBuffer.h>
 #include <microgl/Canvas.h>
-#include <microgl/Types.h>
+#include <microgl/vec2.h>
+#include <microgl/color.h>
 #include <microgl/PixelCoder.h>
-#include <microgl/Bitmap.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -59,14 +58,14 @@ inline void render() {
 //
         int G = 256;
 
-        d+=3.1;
+        d+=1.01;
         canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear>(
                 *bmp_uv,
                 0,          0,0.0, 1.0,
                 G + 100 + d,0,1.0,1.0,
                 G + 0,           G,1.0,0.0,
                 0,               G,0.0,0.0,
-                222);
+                122);
     }
 
 }

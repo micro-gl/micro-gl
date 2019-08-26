@@ -2,8 +2,6 @@
 #pragma ide diagnostic ignored "OCUnusedMacroInspection"
 #pragma once
 
-#include <stdlib.h>
-#include <math.h>
 /* DEFINE THE MACROS */
 /* The basic operations perfomed on two numbers a and b of fixed
 point q format returning the answer in q format */

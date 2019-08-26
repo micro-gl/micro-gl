@@ -7,12 +7,10 @@
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 #pragma once
 
-#include "Types.h"
+#include <microgl/vec2.h>
 #include "CRPT.h"
-#include "Bitmap.h"
-#include "Fixed.h"
-#include <math.h>
-#include<algorithm>
+#include <microgl/Bitmap.h>
+#include <microgl/Fixed.h>
 
 namespace sampler {
 #define MAX_VAL_BITS(a) ((1<<(bits)) - 1)

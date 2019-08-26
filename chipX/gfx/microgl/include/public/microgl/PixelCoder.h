@@ -7,9 +7,25 @@
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 #pragma once
 
-#include "Types.h"
-#include "PixelFormat.h"
+#include <microgl/vec2.h>
+#include <microgl/vec3.h>
 #include "CRPT.h"
+
+using namespace microgl;
+
+enum PixelFormat {
+    RGBA8888,
+    ARGB8888,
+    RGBA4444,
+    ARGB4444,
+    RGBA5551,
+    ARGB1555,
+    RGB888,
+    RGB565,
+    RGB332,
+    RGB555,
+    RGB8,
+};
 
 template<typename P, typename IMPL>
 class PixelCoder : public CRPT<IMPL> {

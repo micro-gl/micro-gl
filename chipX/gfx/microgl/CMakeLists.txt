@@ -19,24 +19,18 @@ set(sources
         include/public/microgl/FrameBuffer.h
         src/Bitmap.tpp
         include/public/microgl/Bitmap.h
-        src/Buffer.tpp
-        include/public/microgl/Buffer.h
         src/Canvas.tpp
         include/public/microgl/Canvas.h
         src/Functions.cpp
-        src/PixelFormat.cpp
         src/BlendMode.cpp
         src/PorterDuff.cpp
-        include/public/microgl/Q.h
-        include/public/microgl/Sampler.h
         src/Curves.cpp
-        include/private/microgl/EarClippingTriangulation.h
-        include/private/microgl/BentleyOttmannLineIntersection.h
-        include/private/microgl/AVLTree.h
-        src/BentleyOttmannLineIntersection.cpp
-        src/Rational.cpp
-        src/Segment.cpp
-        include/public/microgl/TriangleIndices.h)
+#        src/BentleyOttmannLineIntersection.cpp
+#        src/Rational.cpp
+#        src/Segment.cpp
+        include/private/microgl/StaticArray.cpp
+        src/BezierCurveDivider.cpp
+        )
 
 add_library(${PROJECT_NAME} ${sources})
 

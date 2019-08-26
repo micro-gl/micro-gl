@@ -1,10 +1,4 @@
-//
-// Created by Tomer Shalev on 2019-06-15.
-//
-
 #pragma once
-
-#include "PixelFormat.h"
 
 template<typename T>
 class FrameBuffer {

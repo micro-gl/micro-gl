@@ -7,10 +7,12 @@
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 #pragma once
 
-#include "Types.h"
+#include <microgl/vec2.h>
+#include <microgl/color.h>
 #include "CRPT.h"
-#include <math.h>
+#include <cmath>
 #include<algorithm>
+using namespace microgl;
 
 namespace blendmode {
 #define MAX_VAL_BITS(a) ((1<<(bits)) - 1)

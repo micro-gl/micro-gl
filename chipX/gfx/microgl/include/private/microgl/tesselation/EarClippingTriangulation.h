@@ -4,9 +4,8 @@
 #pragma once
 
 #include <algorithm>
-#include <microgl/Types.h>
+#include <microgl/vec2.h>
 #include <microgl/TriangleIndices.h>
-#include <vector>
 #include <iostream>
 #include <stdexcept>
 
@@ -276,7 +275,7 @@ namespace tessellation {
                         index size,
                         index *indices_buffer_triangulation,
                         index indices_buffer_size,
-                        const TrianglesIndices &requested
+                        const triangles::TrianglesIndices &requested
         ) {
             // I could have made a template for point types and
             // conserve stack memory, but the hell with it for now
@@ -295,15 +294,15 @@ namespace tessellation {
                         index size,
                         index *indices_buffer_triangulation,
                         index indices_buffer_size,
-                        const TrianglesIndices &requested
+                        const triangles::TrianglesIndices &requested
                         ) {
 
-            if(requested==TrianglesIndices::TRIANGLES) {
+            if(requested==triangles::TrianglesIndices::TRIANGLES) {
                 if(3*(size - 2) != indices_buffer_size)
                     throw std::runtime_error("size of the indices buffer is "
                                              "not accurate for TRIANGLES !!!");
             }
-            else if(requested==TrianglesIndices::TRIANGLES_WITH_BOUNDARY) {
+            else if(requested==triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY) {
                 if(3*(size - 2) + (size - 2) != indices_buffer_size)
                     throw std::runtime_error("size of the indices buffer is not accurate "
                                              "for TRIANGLES_WITH_BOUNDARY !!!");
@@ -314,10 +313,11 @@ namespace tessellation {
 
 
             bool requested_triangles_with_boundary =
-                    requested==TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
+                    requested==triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
             auto *indices = indices_buffer_triangulation;
 
             // create a linked list with static memory on the stack :)
+            // lets also make heap version
             LinkedList pts{true};
             Node nodes[size];
 

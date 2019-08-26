@@ -25,7 +25,6 @@ struct Rational {
     bool isPositive() const;
     bool isNegative() const;
 
-
     static const Rational maximum(const Rational &lhs,
                                   const Rational &rhs);
     static const Rational minimum(const Rational &lhs,

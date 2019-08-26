@@ -6,9 +6,9 @@
 #include <SDL2/SDL.h>
 #include <microgl/FrameBuffer.h>
 #include <microgl/Canvas.h>
-#include <microgl/Types.h>
+#include <microgl/vec2.h>
 #include <microgl/PixelCoder.h>
-#include <microgl/EarClippingTriangulation.h>
+#include <microgl/tesselation/EarClippingTriangulation.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1

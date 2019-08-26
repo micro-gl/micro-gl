@@ -9,7 +9,8 @@
 #include <SDL2/SDL.h>
 #include <microgl/FrameBuffer.h>
 #include <microgl/Canvas.h>
-#include <microgl/Types.h>
+#include <microgl/vec2.h>
+#include <microgl/color.h>
 #include <microgl/PixelCoder.h>
 #include <microgl/Bitmap.h>
 
@@ -54,7 +55,7 @@ inline void render() {
     canvas->setAntialiasing(false);
 
     // 100 iterations - > 32 ms
-    for (int ix = 0; ix < 100; ++ix) {
+    for (int ix = 0; ix < 1; ++ix) {
 
         canvas->clear(WHITE);
 
@@ -62,7 +63,7 @@ inline void render() {
         // 100, aa, nearest -> 240
         // 100, no aa, no opacity, nearest -> 125
 
-        canvas->drawTriangle<blendmode::Normal, porterduff::None, false, sampler::NearestNeighbor>(*bmp_uv,
+        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear>(*bmp_uv,
                                                                              0.0f,     0.0f,       0.0f, 1.0f,
                                                                              float(W),  0.0f,       1.0f, 1.0f,
                                                                              float(W), float(H),   1.0f, 0.0f,
@@ -70,7 +71,7 @@ inline void render() {
                                                                              true, true, true);
 
 
-//        canvas->drawTriangleFast<blendmode::Normal, porterduff::None, false>(RED,
+//        canvas->drawTriangleFast<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED,
 //                                                                             0,0,
 //                                                                             W, 0,
 //                                                                             W, H,

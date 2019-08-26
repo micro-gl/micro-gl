@@ -2,22 +2,22 @@
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #pragma once
 
-#include "Types.h"
-#include "FrameBuffer.h"
-#include "PixelFormat.h"
+#include <microgl/vec2.h>
+#include <microgl/color.h>
 #include "Functions.h"
 #include "PorterDuff.h"
 #include "BlendMode.h"
 #include "PixelCoder.h"
 #include "Bitmap.h"
-#include "BlendMode.h"
-#include "PorterDuff.h"
 #include "Fixed.h"
 #include "Sampler.h"
 #include "Curves.h"
 #include "TriangleIndices.h"
+#include <microgl/tesselation/BezierCurveDivider.h>
+#include <microgl/StaticArray.h>
 
 using namespace triangles;
+using namespace microgl;
 
 template<typename P, typename CODER>
 class Canvas {
@@ -227,30 +227,6 @@ public:
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, bool perspective_correct=false,
-            typename Sampler=sampler::NearestNeighbor,
-            typename P2, typename CODER2>
-    void drawTriangleFast(const Bitmap<P2, CODER2> &bmp,
-                      const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
-                      const fixed_signed v1_x, const fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
-                      const fixed_signed v2_x, const fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
-                      const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision,
-                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
-
-    template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false,
-            typename Sampler=sampler::NearestNeighbor,
-            typename P2, typename CODER2>
-    void drawTriangleFast(const Bitmap<P2, CODER2> &bmp,
-                          const float v0_x, const float v0_y, float u0, float v0,
-                          const float v1_x, const float v1_y, float u1, float v1,
-                          const float v2_x, const float v2_y, float u2, float v2,
-                          const uint8_t opacity = 255,
-                          bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
-
-    template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false,
             typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
@@ -366,20 +342,21 @@ public:
     void drawQuadraticBezierPath(color_f_t & color, vec2_32i *points,
                                  unsigned int size = 3,
                                  uint8_t sub_pixel_bits = 4,
-                                 curves::CurveDivisionAlgorithm algorithm = curves::CurveDivisionAlgorithm::Uniform_16);
+                                 tessellation::BezierCurveDivider::CurveDivisionAlgorithm algorithm
+                                 = tessellation::BezierCurveDivider::CurveDivisionAlgorithm::Uniform_16);
 
     void drawQuadraticBezierPath(color_f_t & color, vec2_f *points,
                                  unsigned int size = 3,
-                                 curves::CurveDivisionAlgorithm algorithm = curves::CurveDivisionAlgorithm::Uniform_16);
+                                 tessellation::BezierCurveDivider::CurveDivisionAlgorithm algorithm = tessellation::BezierCurveDivider::CurveDivisionAlgorithm::Uniform_16);
 
     void drawCubicBezierPath(color_f_t & color, vec2_32i *points,
                              unsigned int size = 4,
                              uint8_t sub_pixel_bits = 4,
-                             curves::CurveDivisionAlgorithm algorithm = curves::CurveDivisionAlgorithm::Uniform_16);
+                             tessellation::BezierCurveDivider::CurveDivisionAlgorithm algorithm = tessellation::BezierCurveDivider::CurveDivisionAlgorithm::Uniform_16);
 
     void drawCubicBezierPath(color_f_t & color, vec2_f *points,
                              unsigned int size = 4,
-                             curves::CurveDivisionAlgorithm algorithm = curves::CurveDivisionAlgorithm::Uniform_16);
+                             tessellation::BezierCurveDivider::CurveDivisionAlgorithm algorithm = tessellation::BezierCurveDivider::CurveDivisionAlgorithm::Uniform_16);
 
     void drawLinePath(color_f_t & color,
                       vec2_32i *points,

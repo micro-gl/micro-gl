@@ -2,7 +2,10 @@
 
 #include <cstdint>
 #include <math.h>
-#include "Types.h"
+#include <microgl/vec2.h>
+#include <microgl/color.h>
+
+using namespace microgl;
 
 enum PixelFormat {
     RGBA8888,

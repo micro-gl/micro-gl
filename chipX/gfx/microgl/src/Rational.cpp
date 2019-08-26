@@ -1,7 +1,7 @@
 //
 // Created by Tomer Shalev on 2019-08-14.
 //
-#include <Rational.h>
+#include <microgl/tesselation/Rational.h>
 
 Rational::Rational() {}
 
