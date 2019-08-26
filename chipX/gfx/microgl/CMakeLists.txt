@@ -28,7 +28,6 @@ set(sources
 #        src/BentleyOttmannLineIntersection.cpp
 #        src/Rational.cpp
 #        src/Segment.cpp
-        include/private/microgl/StaticArray.cpp
         src/BezierCurveDivider.cpp
         )
 

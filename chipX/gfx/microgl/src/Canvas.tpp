@@ -2406,9 +2406,6 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
         samples.clear();
 
         c::compute(point_anchor, sub_pixel_bits, samples, algorithm, c::Type::Cubic);
-//        curves::sub_divide_cubic_bezier(point_anchor, sub_pixel_bits, samples, algorithm);
-//        curves::adaptive_sub_divide_cubic_bezier(point_anchor, sub_pixel_bits, 2, samples);
-//        curves::uniform_sub_divide_cubic_bezier(point_anchor, sub_pixel_bits, max_subdivision_bits, samples);
 
         count += samples.size();
 

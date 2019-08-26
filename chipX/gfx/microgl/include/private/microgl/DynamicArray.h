@@ -1,8 +1,9 @@
-
 #pragma once
 
+#include <microgl/ArrayContainer.h>
+
 template<typename T>
-class DynamicArray {
+class DynamicArray : public ArrayContainer<T> {
 public:
     using index = unsigned int;
 

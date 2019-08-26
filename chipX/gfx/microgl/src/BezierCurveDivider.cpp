@@ -177,4 +177,146 @@ namespace tessellation {
         return r;
     }
 
+    void BezierCurveDivider::compute(const vec2_32i *points, BezierCurveDivider::precision precision,
+                                     ArrayContainer<vec2_32i> &output,
+                                     BezierCurveDivider::CurveDivisionAlgorithm algorithm,
+                                     BezierCurveDivider::Type $type) {
+        switch ($type) {
+            case Type::Quadratic:
+                sub_divide_quadratic_bezier(points, precision, output, algorithm);
+                break;
+            case Type::Cubic:
+                sub_divide_cubic_bezier(points, precision, output, algorithm);
+                break;
+        }
+    }
+
+    void BezierCurveDivider::sub_divide_cubic_bezier(const vec2_32i *points, BezierCurveDivider::precision precision,
+                                                     ArrayContainer<vec2_32i> &output,
+                                                     BezierCurveDivider::CurveDivisionAlgorithm algorithm) {
+
+        switch(algorithm) {
+            case CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small:
+                adaptive_sub_divide_cubic_bezier(points, precision, 1, output);
+                break;
+            case CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium:
+                adaptive_sub_divide_cubic_bezier(points, precision, 5, output);
+                break;
+            case CurveDivisionAlgorithm::Adaptive_tolerance_distance_Large:
+                adaptive_sub_divide_cubic_bezier(points, precision, 10, output);
+                break;
+            case CurveDivisionAlgorithm::Uniform_16:
+                uniform_sub_divide_cubic_bezier(points, precision, 4, output);
+                break;
+            case CurveDivisionAlgorithm::Uniform_32:
+                uniform_sub_divide_cubic_bezier(points, precision, 5, output);
+                break;
+            case CurveDivisionAlgorithm::Uniform_64:
+                uniform_sub_divide_cubic_bezier(points, precision, 6, output);
+                break;
+        }
+
+    }
+
+    void
+    BezierCurveDivider::sub_divide_quadratic_bezier(const vec2_32i *points, BezierCurveDivider::precision precision,
+                                                    ArrayContainer<vec2_32i> &output,
+                                                    BezierCurveDivider::CurveDivisionAlgorithm algorithm) {
+
+        switch(algorithm) {
+            case CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small:
+                adaptive_sub_divide_quadratic_bezier(points, precision, 1, output);
+                break;
+            case CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium:
+                adaptive_sub_divide_quadratic_bezier(points, precision, 5, output);
+                break;
+            case CurveDivisionAlgorithm::Adaptive_tolerance_distance_Large:
+                adaptive_sub_divide_quadratic_bezier(points, precision, 10, output);
+                break;
+            case CurveDivisionAlgorithm::Uniform_16:
+                uniform_sub_divide_quadratic_bezier(points, precision, 4, output);
+                break;
+            case CurveDivisionAlgorithm::Uniform_32:
+                uniform_sub_divide_quadratic_bezier(points, precision, 5, output);
+                break;
+            case CurveDivisionAlgorithm::Uniform_64:
+                uniform_sub_divide_quadratic_bezier(points, precision, 6, output);
+                break;
+        }
+
+    }
+
+    void BezierCurveDivider::uniform_sub_divide_cubic_bezier(const vec2_32i *points,
+                                                             BezierCurveDivider::precision precision_point,
+                                                             BezierCurveDivider::precision subdivision_bits,
+                                                             ArrayContainer<vec2_32i> &output) {
+
+        unsigned int segments = 1<<subdivision_bits;
+        vec2_32i current;
+
+        for (unsigned int i=0; i <= segments; ++i) {
+            evaluate_cubic_bezier_at(i, subdivision_bits, points, precision_point, current);
+            output.push_back(current);
+        }
+
+    }
+
+    void BezierCurveDivider::uniform_sub_divide_quadratic_bezier(const vec2_32i *points,
+                                                                 BezierCurveDivider::precision precision_point,
+                                                                 BezierCurveDivider::precision subdivision_bits,
+                                                                 ArrayContainer<vec2_32i> &output) {
+
+        unsigned int segments = 1<<subdivision_bits;
+        vec2_32i current;
+
+        for (unsigned int i=0; i <= segments; ++i) {
+            evaluate_quadratic_bezier_at(i, subdivision_bits, points, precision_point, current);
+            output.push_back(current);
+        }
+
+    }
+
+    void BezierCurveDivider::adaptive_sub_divide_cubic_bezier_internal(const vec2_32i *points,
+                                                                       BezierCurveDivider::precision precision,
+                                                                       unsigned int tolerance_distance_pixels,
+                                                                       ArrayContainer<vec2_32i> &output) {
+
+        if(is_cubic_bezier_flat(points, precision, tolerance_distance_pixels)) {
+            //            output.push_back(points[0]);
+            output.push_back(points[3]);
+        } else {
+            vec2_32i split_left[4];
+            vec2_32i split_right[4];
+
+            split_cubic_bezier_at(1, 1, points, precision,
+                                  split_left[0], split_left[1], split_left[2], split_left[3],
+                                  split_right[0], split_right[1], split_right[2], split_right[3]
+            );
+
+            adaptive_sub_divide_cubic_bezier_internal(split_left, precision, tolerance_distance_pixels, output);
+            adaptive_sub_divide_cubic_bezier_internal(split_right, precision, tolerance_distance_pixels, output);
+        }
+
+    }
+
+    void BezierCurveDivider::adaptive_sub_divide_cubic_bezier(const vec2_32i *points,
+                                                              BezierCurveDivider::precision precision,
+                                                              unsigned int tolerance_distance_pixels,
+                                                              ArrayContainer<vec2_32i> &output) {
+
+        output.push_back(points[0]);
+
+        adaptive_sub_divide_cubic_bezier_internal(points, precision, tolerance_distance_pixels, output);
+    }
+
+    void BezierCurveDivider::adaptive_sub_divide_quadratic_bezier(const vec2_32i *points,
+                                                                  BezierCurveDivider::precision precision,
+                                                                  unsigned int tolerance_distance_pixels,
+                                                                  ArrayContainer<vec2_32i> &output) {
+
+        vec2_32i cubic[4];
+        quadratic_to_cubic_bezier(points, cubic[0], cubic[1], cubic[2], cubic[3]);
+        adaptive_sub_divide_cubic_bezier(cubic, precision, tolerance_distance_pixels, output);
+    }
+
 }
