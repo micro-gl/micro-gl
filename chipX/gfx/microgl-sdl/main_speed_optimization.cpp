@@ -54,11 +54,15 @@ inline void render() {
     canvas->setAntialiasing(false);
 
     // 100 iterations - > 32 ms
-    for (int ix = 0; ix < 1; ++ix) {
+    for (int ix = 0; ix < 100; ++ix) {
 
         canvas->clear(WHITE);
 
-        canvas->drawTriangleFast<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear>(*bmp_uv,
+        // 100, aa, bilinear -> 420
+        // 100, aa, nearest -> 240
+        // 100, no aa, no opacity, nearest -> 125
+
+        canvas->drawTriangle<blendmode::Normal, porterduff::None, false, sampler::NearestNeighbor>(*bmp_uv,
                                                                              0.0f,     0.0f,       0.0f, 1.0f,
                                                                              float(W),  0.0f,       1.0f, 1.0f,
                                                                              float(W), float(H),   1.0f, 0.0f,
