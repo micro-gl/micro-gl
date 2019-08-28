@@ -347,16 +347,19 @@ public:
 
     void drawQuadraticBezierPath(color_f_t & color, vec2_f *points,
                                  unsigned int size = 3,
-                                 tessellation::BezierCurveDivider::CurveDivisionAlgorithm algorithm = tessellation::BezierCurveDivider::CurveDivisionAlgorithm::Uniform_16);
+                                 tessellation::BezierCurveDivider::CurveDivisionAlgorithm algorithm =
+                                         tessellation::BezierCurveDivider::CurveDivisionAlgorithm::Uniform_16);
 
     void drawCubicBezierPath(color_f_t & color, vec2_32i *points,
                              unsigned int size = 4,
                              uint8_t sub_pixel_bits = 4,
-                             tessellation::BezierCurveDivider::CurveDivisionAlgorithm algorithm = tessellation::BezierCurveDivider::CurveDivisionAlgorithm::Uniform_16);
+                             tessellation::BezierCurveDivider::CurveDivisionAlgorithm algorithm =
+                                     tessellation::BezierCurveDivider::CurveDivisionAlgorithm::Uniform_16);
 
     void drawCubicBezierPath(color_f_t & color, vec2_f *points,
                              unsigned int size = 4,
-                             tessellation::BezierCurveDivider::CurveDivisionAlgorithm algorithm = tessellation::BezierCurveDivider::CurveDivisionAlgorithm::Uniform_16);
+                             tessellation::BezierCurveDivider::CurveDivisionAlgorithm algorithm =
+                                     tessellation::BezierCurveDivider::CurveDivisionAlgorithm::Uniform_16);
 
     void drawLinePath(color_f_t & color,
                       vec2_32i *points,

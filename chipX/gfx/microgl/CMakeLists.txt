@@ -29,7 +29,9 @@ set(sources
 #        src/Rational.cpp
 #        src/Segment.cpp
         src/BezierCurveDivider.cpp
-        include/private/microgl/Te.h)
+        src/EarClippingTriangulation.cpp
+        src/TriangleIndices.cpp
+        )
 
 add_library(${PROJECT_NAME} ${sources})
 

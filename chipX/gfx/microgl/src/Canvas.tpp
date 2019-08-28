@@ -463,7 +463,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
 
             for (index ix = 0; ix < size; ix+=3) {
 
-                drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
                    vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
                    vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
                    vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
@@ -498,7 +498,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
 
             for (index ix = 1; ix < size; ++ix) {
 
-                drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
                    vertices[IND(0)].x, vertices[IND(0)].y,
                    vertices[IND(ix)].x, vertices[IND(ix)].y,
                    vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
@@ -517,7 +517,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                 // in the future I will add face culling, which will
                 // support only CW or CCW orientation at a time.
                 if(even)
-                    drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                    drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
                        vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
                        vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
                        vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
@@ -525,7 +525,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                        sub_pixel_precision
                     );
                 else
-                    drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                    drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
                        vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
                        vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
                        vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
@@ -1107,8 +1107,13 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
 
             if (in) {
                 int stride = index;
-                for(int iy = p.y; iy < p.y + block; iy++) {
-                    for(int ix = p.x; ix < p.x + block; ix++)
+                int block_start_x = functions::max(p.x, minX);
+                int block_start_y = functions::max(p.y, minY);
+                int block_end_x = functions::min(p.x + block, maxX);
+                int block_end_y = functions::min(p.y + block, maxY);
+
+                for(int iy = block_start_y; iy <block_end_y; iy++) {
+                    for(int ix = block_start_x; ix < block_end_x; ix++)
                         blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), opacity);
 
                     stride += _width;

@@ -1,10 +1,10 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cert-err58-cpp"
+
 #include <iostream>
 #include <chrono>
 #include "src/Resources.h"
 #include <SDL2/SDL.h>
-#include <microgl/FrameBuffer.h>
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/PixelCoder.h>
@@ -23,13 +23,6 @@ typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
 Canvas24Bit_Packed32 * canvas;
 
 Resources resources{};
-
-color_f_t RED{1.0,0.0,0.0, 1.0};
-color_f_t YELLOW{1.0,1.0,0.0, 1.0};
-color_f_t WHITE{1.0,1.0,1.0, 1.0};
-color_f_t GREEN{0.0,1.0,0.0, 1.0};
-color_f_t BLUE{0.0,0.0,1.0, 1.0};
-color_f_t BLACK{0.0,0.0,0.0, 1.0};
 
 void loop();
 void init_sdl(int width, int height);

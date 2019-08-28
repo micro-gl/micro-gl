@@ -26,10 +26,10 @@ include_directories("${PROJECT_BINARY_DIR}")
 
 set(SOURCES
 #        main_clear.cpp
-        main_curves.cpp
+#        main_curves.cpp
 #        main_speed_optimization.cpp
 #        main_quadrilaterals.cpp
-#        main_ear_clipping.cpp
+        main_ear_clipping.cpp
 #        main_bentley_ottmann.cpp
 #        main_avl_tree.cpp
         libs/stb_image/stb_image.cpp
