@@ -24,7 +24,7 @@ class Canvas {
 public:
     using index = unsigned int;
 
-    Canvas(Bitmap<P, CODER> * $bmp);
+    explicit Canvas(Bitmap<P, CODER> * $bmp);
     Canvas(int width, int height, PixelCoder<P, CODER> * $coder);
     int width();
     int height();
@@ -91,8 +91,8 @@ public:
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
     void drawCircle(const color_f_t & color,
-                    const float centerX, const float centerY,
-                    const float radius, uint8_t opacity=255);
+                    float centerX, float centerY,
+                    float radius, uint8_t opacity=255);
 
     // Triangles
     
@@ -103,10 +103,10 @@ public:
     void drawTriangles(const color_f_t & color,
                        const vec2_32i *vertices,
                        const index *indices,
-                       const index size,
-                       const TrianglesIndices type,
-                       const uint8_t opacity,
-                       const uint8_t sub_pixel_precision);
+                       index size,
+                       TrianglesIndices type,
+                       uint8_t opacity,
+                       uint8_t sub_pixel_precision);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -114,10 +114,10 @@ public:
     void drawTriangles(const color_f_t & color,
                        const vec2_f *vertices,
                        const index *indices,
-                       const index size,
-                       const TrianglesIndices type,
-                       const uint8_t opacity,
-                       const uint8_t sub_pixel_precision);
+                       index size,
+                       TrianglesIndices type,
+                       uint8_t opacity,
+                       uint8_t sub_pixel_precision);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -125,10 +125,10 @@ public:
     void drawTrianglesWireframe(const color_f_t & color,
                                 const vec2_32i *vertices,
                                 const index *indices,
-                                const index size,
-                                const TrianglesIndices type,
-                                const uint8_t opacity,
-                                const uint8_t sub_pixel_precision);
+                                index size,
+                                TrianglesIndices type,
+                                uint8_t opacity,
+                                uint8_t sub_pixel_precision);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -136,10 +136,10 @@ public:
     void drawTrianglesWireframe(const color_f_t & color,
                                 const vec2_f *vertices,
                                 const index *indices,
-                                const index size,
-                                const TrianglesIndices type,
-                                const uint8_t opacity,
-                                const uint8_t sub_pixel_precision);
+                                index size,
+                                TrianglesIndices type,
+                                uint8_t opacity,
+                                uint8_t sub_pixel_precision);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -148,7 +148,7 @@ public:
                                const vec2_32i &p0,
                                const vec2_32i &p1,
                                const vec2_32i &p2,
-                               const uint8_t sub_pixel_precision);
+                               uint8_t sub_pixel_precision);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -157,16 +157,16 @@ public:
                                const vec2_f &p0,
                                const vec2_f &p1,
                                const vec2_f &p2,
-                               const uint8_t sub_pixel_precision);
+                               uint8_t sub_pixel_precision);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
     void drawTriangle(const color_f_t & color,
-                      const fixed_signed x0, const fixed_signed y0,
-                      const fixed_signed x1, const fixed_signed y1,
-                      const fixed_signed x2, const fixed_signed y2,
-                      const uint8_t opacity,
+                      fixed_signed v0_x, fixed_signed v0_y,
+                      fixed_signed v1_x, fixed_signed v1_y,
+                      fixed_signed v2_x, fixed_signed v2_y,
+                      uint8_t opacity,
                       uint8_t sub_pixel_precision,
                       bool aa_first_edge = true,
                       bool aa_second_edge = true,
@@ -176,24 +176,24 @@ public:
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
     void drawTriangleFast(const color_f_t & color,
-                      const fixed_signed x0, const fixed_signed y0,
-                      const fixed_signed x1, const fixed_signed y1,
-                      const fixed_signed x2, const fixed_signed y2,
-                      const uint8_t opacity,
-                      uint8_t sub_pixel_precision,
-                      bool aa_first_edge = true,
-                      bool aa_second_edge = true,
-                      bool aa_third_edge = true);
+                          fixed_signed v0_x, fixed_signed v0_y,
+                          fixed_signed v1_x, fixed_signed v1_y,
+                          fixed_signed v2_x, fixed_signed v2_y,
+                          uint8_t opacity,
+                          uint8_t sub_pixel_precision,
+                          bool aa_first_edge = true,
+                          bool aa_second_edge = true,
+                          bool aa_third_edge = true);
 
     // integer version
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
     void drawTriangle(const color_f_t & color,
-                      const int x0, const int y0,
-                      const int x1, const int y1,
-                      const int x2, const int y2,
-                      const uint8_t opacity=255,
+                      int v0_x, int v0_y,
+                      int v1_x, int v1_y,
+                      int v2_x, int v2_y,
+                      uint8_t opacity=255,
                       bool aa_first_edge = true,
                       bool aa_second_edge = true,
                       bool aa_third_edge = true);
@@ -203,13 +203,13 @@ public:
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
     void drawTriangle(const color_f_t & color,
-                     const float x0, const float y0,
-                     const float x1, const float y1,
-                     const float x2, const float y2,
-                     const uint8_t opacity = 255,
-                     bool aa_first_edge = true,
-                     bool aa_second_edge = true,
-                     bool aa_third_edge = true);
+                      float v0_x, float v0_y,
+                      float v1_x, float v1_y,
+                      float v2_x, float v2_y,
+                      uint8_t opacity = 255,
+                      bool aa_first_edge = true,
+                      bool aa_second_edge = true,
+                      bool aa_third_edge = true);
 
     // main uv
 
@@ -219,10 +219,10 @@ public:
             typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
     void drawTriangle(const Bitmap<P2, CODER2> &bmp,
-                      const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
-                      const fixed_signed v1_x, const fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
-                      const fixed_signed v2_x, const fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
-                      const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision,
+                      fixed_signed v0_x, fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
+                      fixed_signed v1_x, fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
+                      fixed_signed v2_x, fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
+                      uint8_t opacity, uint8_t sub_pixel_precision, uint8_t uv_precision,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,
@@ -231,10 +231,10 @@ public:
             typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
     void drawTriangle(const Bitmap<P2, CODER2> &bmp,
-                      const float v0_x, const float v0_y, float u0, float v0,
-                      const float v1_x, const float v1_y, float u1, float v1,
-                      const float v2_x, const float v2_y, float u2, float v2,
-                      const uint8_t opacity = 255,
+                      float v0_x, float v0_y, float u0, float v0,
+                      float v1_x, float v1_y, float u1, float v1,
+                      float v2_x, float v2_y, float u2, float v2,
+                      uint8_t opacity = 255,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,
@@ -243,10 +243,10 @@ public:
             typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
     void drawTriangle(const Bitmap<P2, CODER2> &bmp,
-                      const int v0_x, const int v0_y, float u0, float v0,
-                      const int v1_x, const int v1_y, float u1, float v1,
-                      const int v2_x, const int v2_y, float u2, float v2,
-                      const uint8_t opacity = 255,
+                      int v0_x, int v0_y, float u0, float v0,
+                      int v1_x, int v1_y, float u1, float v1,
+                      int v2_x, int v2_y, float u2, float v2,
+                      uint8_t opacity = 255,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
 
@@ -256,32 +256,32 @@ public:
             bool antialias=false, typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
     void drawQuadrilateral(const Bitmap<P2, CODER2> &bmp,
-                           const fixed_signed x0, const fixed_signed y0, fixed_signed u0, fixed_signed v0,
-                           const fixed_signed x1, const fixed_signed y1, fixed_signed u1, fixed_signed v1,
-                           const fixed_signed x2, const fixed_signed y2, fixed_signed u2, fixed_signed v2,
-                           const fixed_signed x3, const fixed_signed y3, fixed_signed u3, fixed_signed v3,
-                           const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision);
+                           fixed_signed v0_x, fixed_signed v0_y, fixed_signed u0, fixed_signed v0,
+                           fixed_signed v1_x, fixed_signed v1_y, fixed_signed u1, fixed_signed v1,
+                           fixed_signed v2_x, fixed_signed v2_y, fixed_signed u2, fixed_signed v2,
+                           fixed_signed v3_x, fixed_signed v3_y, fixed_signed u3, fixed_signed v3,
+                           uint8_t opacity, uint8_t sub_pixel_precision, uint8_t uv_precision);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
     void drawQuadrilateral(const Bitmap<P2, CODER2> &bmp,
-                           const float x0, const float y0, float u0, float v0,
-                           const float x1, const float y1, float u1, float v1,
-                           const float x2, const float y2, float u2, float v2,
-                           const float x3, const float y3, float u3, float v3,
-                           const uint8_t opacity = 255);
+                           float v0_x, float v0_y, float u0, float v0,
+                           float v1_x, float v1_y, float u1, float v1,
+                           float v2_x, float v2_y, float u2, float v2,
+                           float v3_x, float v3_y, float u3, float v3,
+                           uint8_t opacity = 255);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
     void drawQuadrilateral(const color_f_t & color,
-                           const int x0, const int y0,
-                           const int x1, const int y1,
-                           const int x2, const int y2,
-                           const int x3, const int y3,
-                           const uint8_t opacity = 255);
+                           int v0_x, int v0_y,
+                           int v1_x, int v1_y,
+                           int v2_x, int v2_y,
+                           int v3_x, int v3_y,
+                           uint8_t opacity = 255);
 
 
     // QUADS
@@ -289,40 +289,40 @@ public:
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque>
     void drawQuad(const color_f_t &color,
-                  const fixed_signed left, const fixed_signed top,
-                  const fixed_signed right, const fixed_signed bottom,
-                  const uint8_t sub_pixel_precision,
-                  const uint8_t opacity = 255);
+                  fixed_signed left, fixed_signed top,
+                  fixed_signed right, fixed_signed bottom,
+                  uint8_t sub_pixel_precision,
+                  uint8_t opacity = 255);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque>
     void drawQuad(const color_f_t &color,
-                  const float left, const float top,
-                  const float right, const float bottom,
-                  const uint8_t opacity = 255);
+                  float left, float top,
+                  float right, float bottom,
+                  uint8_t opacity = 255);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
     void drawQuad(const Bitmap<P2, CODER2> &bmp,
-                  const fixed_signed left, const fixed_signed top,
-                  const fixed_signed right, const fixed_signed bottom,
-                  const fixed_signed u0, const fixed_signed v0,
-                  const fixed_signed u1, const fixed_signed v1,
-                  const uint8_t sub_pixel_precision, const uint8_t uv_precision,
-                  const uint8_t opacity = 255);
+                  fixed_signed left, fixed_signed top,
+                  fixed_signed right, fixed_signed bottom,
+                  fixed_signed u0, fixed_signed v0,
+                  fixed_signed u1, fixed_signed v1,
+                  uint8_t sub_pixel_precision, uint8_t uv_precision,
+                  uint8_t opacity = 255);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
     void drawQuad(const Bitmap<P2, CODER2> &bmp,
-                  const float left, const float top,
-                  const float right, const float bottom,
-                  const float u0=0.0f, const float v0=0.0f,
-                  const float u1=1.0f, const float v1=1.0f,
-                  const uint8_t opacity = 255);
+                  float left, float top,
+                  float right, float bottom,
+                  float u0=0.0f, float v0=0.0f,
+                  float u1=1.0f, float v1=1.0f,
+                  uint8_t opacity = 255);
 
 
     // paths
@@ -384,4 +384,4 @@ private:
 
 
 
-#pragma clang diagnostic pop
+//#pragma clang diagnostic pop

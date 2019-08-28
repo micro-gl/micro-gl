@@ -5,7 +5,7 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
  
-#include "../include/public/microgl/Canvas.h"
+//#include "../include/public/microgl/Canvas.h"
 
 template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
@@ -293,11 +293,12 @@ inline void Canvas<P, CODER>::drawPixel(const P & val, int index) {
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawCircle(const color_f_t & color,
-                                  fixed_signed centerX, fixed_signed centerY,
-                                  fixed_signed radius, uint8_t p,
-                                  uint8_t opacity) {
+                                  const fixed_signed centerX, const fixed_signed centerY,
+                                  const fixed_signed radius,
+                                  const uint8_t sub_pixel_precision,
+                                  const uint8_t opacity) {
     color_t color_int;
-
+    uint8_t p = sub_pixel_precision;
     coder()->convert(color, color_int);
 
     unsigned int bits_for_antialias_distance, max_blend_distance=0;
@@ -1817,10 +1818,10 @@ template<typename BlendMode, typename PorterDuff,
         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
-                                    float v0_x, float v0_y, float u0, float v0,
-                                    float v1_x, float v1_y, float u1, float v1,
-                                    float v2_x, float v2_y, float u2, float v2,
-                                    float v3_x, float v3_y, float u3, float v3,
+                                    const float v0_x, const float v0_y, const float u0, const float v0,
+                                    const float v1_x, const float v1_y, const float u1, const float v1,
+                                    const float v2_x, const float v2_y, const float u2, const float v2,
+                                    const float v3_x, const float v3_y, const float u3, const float v3,
                                     const uint8_t opacity) {
 
     uint8_t p_s = 4;

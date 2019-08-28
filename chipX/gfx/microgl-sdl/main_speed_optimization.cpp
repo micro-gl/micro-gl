@@ -38,13 +38,6 @@ Bitmap24bit_Packed32 * bmp_uv;
 Resources resources{};
 Resources::image_info_t img_1;
 
-color_f_t RED{1.0,0.0,0.0, 1.0};
-color_f_t YELLOW{1.0,1.0,0.0, 1.0};
-color_f_t WHITE{1.0,1.0,1.0, 1.0};
-color_f_t GREEN{0.0,1.0,0.0, 1.0};
-color_f_t BLUE{0.0,0.0,1.0, 1.0};
-color_f_t BLACK{0.0,0.0,0.0, 1.0};
-
 void loop();
 void init_sdl(int width, int height);
 
@@ -55,7 +48,7 @@ inline void render() {
     canvas->setAntialiasing(false);
 
     // 100 iterations - > 32 ms
-    for (int ix = 0; ix < 1; ++ix) {
+    for (int ix = 0; ix < 100; ++ix) {
 
         canvas->clear(WHITE);
 
@@ -63,19 +56,20 @@ inline void render() {
         // 100, aa, nearest -> 240
         // 100, no aa, no opacity, nearest -> 125
 
-        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear>(*bmp_uv,
-                                                                             0.0f,     0.0f,       0.0f, 1.0f,
-                                                                             float(W),  0.0f,       1.0f, 1.0f,
-                                                                             float(W), float(H),   1.0f, 0.0f,
-                                                                             255,
-                                                                             true, true, true);
+//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear>(*bmp_uv,
+//                                                                             0.0f,     0.0f,       0.0f, 1.0f,
+//                                                                             float(W),  0.0f,       1.0f, 1.0f,
+//                                                                             float(W), float(H),   1.0f, 0.0f,
+//                                                                             255,
+//                                                                             true, true, true);
 
 
-//        canvas->drawTriangleFast<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED,
-//                                                                             0,0,
-//                                                                             W, 0,
-//                                                                             W, H,
-//                                                                             255, 0,
+        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(RED,
+                                                                             0,0,
+                                                                             W, 0,
+                                                                             W, H,
+                                                                             255, 0,
+                                                                             false, false, false);
 //                                                                             true, true, true);
 
 //        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED,

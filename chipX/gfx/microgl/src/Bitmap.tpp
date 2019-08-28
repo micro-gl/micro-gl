@@ -1,4 +1,4 @@
-#include "../include/public/microgl/Bitmap.h"
+//#include "../include/public/microgl/Bitmap.h"
 
 template<typename P, typename CODER>
 template<typename P2, typename CODER2>

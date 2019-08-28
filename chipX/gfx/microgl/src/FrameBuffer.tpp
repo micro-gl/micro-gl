@@ -1,5 +1,5 @@
 
-#include "../include/public/microgl/FrameBuffer.h"
+//#include "../include/public/microgl/FrameBuffer.h"
 
 template<typename T>
 FrameBuffer<T>::FrameBuffer(int size) :

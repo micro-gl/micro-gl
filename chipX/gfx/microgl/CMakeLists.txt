@@ -15,11 +15,11 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-fstrict-aliasing -O3 -Wstrict-aliasing")
 
 set(sources
-        src/FrameBuffer.tpp
+#        src/FrameBuffer.tpp
         include/public/microgl/FrameBuffer.h
-        src/Bitmap.tpp
+#        src/Bitmap.tpp
         include/public/microgl/Bitmap.h
-        src/Canvas.tpp
+#        src/Canvas.tpp
         include/public/microgl/Canvas.h
         src/Functions.cpp
         src/BlendMode.cpp
@@ -29,7 +29,7 @@ set(sources
 #        src/Rational.cpp
 #        src/Segment.cpp
         src/BezierCurveDivider.cpp
-        )
+        include/private/microgl/Te.h)
 
 add_library(${PROJECT_NAME} ${sources})
 
