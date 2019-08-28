@@ -4,7 +4,7 @@ namespace tessellation {
 
     EarClippingTriangulation::EarClippingTriangulation(bool DEBUG) :
             _DEBUG{DEBUG} {};
- 
+
     index *EarClippingTriangulation::compute(microgl::vec2_f *$pts, index size,
                                              index *indices_buffer_triangulation,
                                              index indices_buffer_size,
@@ -28,13 +28,13 @@ namespace tessellation {
                                              const triangles::TrianglesIndices &requested) {
 
         if(requested==triangles::TrianglesIndices::TRIANGLES) {
-            if(3*(size - 2) != indices_buffer_size)
+            if(3*(size - 2) > indices_buffer_size)
                 throw std::runtime_error("size of the indices buffer is "
-                                         "not accurate for TRIANGLES !!!");
+                                         "not enough for TRIANGLES !!!");
         }
         else if(requested==triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY) {
-            if(3*(size - 2) + (size - 2) != indices_buffer_size)
-                throw std::runtime_error("size of the indices buffer is not accurate "
+            if(3*(size - 2) + (size - 2) > indices_buffer_size)
+                throw std::runtime_error("size of the indices buffer is not enough "
                                          "for TRIANGLES_WITH_BOUNDARY !!!");
         }
         else

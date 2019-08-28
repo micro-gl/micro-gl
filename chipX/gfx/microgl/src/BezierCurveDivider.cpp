@@ -178,7 +178,7 @@ namespace tessellation {
     }
 
     void BezierCurveDivider::compute(const vec2_32i *points, BezierCurveDivider::precision precision,
-                                     ArrayContainer<vec2_32i> &output,
+                                     array_container<vec2_32i> &output,
                                      BezierCurveDivider::CurveDivisionAlgorithm algorithm,
                                      BezierCurveDivider::Type $type) {
         switch ($type) {
@@ -192,7 +192,7 @@ namespace tessellation {
     }
 
     void BezierCurveDivider::sub_divide_cubic_bezier(const vec2_32i *points, BezierCurveDivider::precision precision,
-                                                     ArrayContainer<vec2_32i> &output,
+                                                     array_container<vec2_32i> &output,
                                                      BezierCurveDivider::CurveDivisionAlgorithm algorithm) {
 
         switch(algorithm) {
@@ -220,7 +220,7 @@ namespace tessellation {
 
     void
     BezierCurveDivider::sub_divide_quadratic_bezier(const vec2_32i *points, BezierCurveDivider::precision precision,
-                                                    ArrayContainer<vec2_32i> &output,
+                                                    array_container<vec2_32i> &output,
                                                     BezierCurveDivider::CurveDivisionAlgorithm algorithm) {
 
         switch(algorithm) {
@@ -249,7 +249,7 @@ namespace tessellation {
     void BezierCurveDivider::uniform_sub_divide_cubic_bezier(const vec2_32i *points,
                                                              BezierCurveDivider::precision precision_point,
                                                              BezierCurveDivider::precision subdivision_bits,
-                                                             ArrayContainer<vec2_32i> &output) {
+                                                             array_container<vec2_32i> &output) {
 
         unsigned int segments = 1<<subdivision_bits;
         vec2_32i current;
@@ -264,7 +264,7 @@ namespace tessellation {
     void BezierCurveDivider::uniform_sub_divide_quadratic_bezier(const vec2_32i *points,
                                                                  BezierCurveDivider::precision precision_point,
                                                                  BezierCurveDivider::precision subdivision_bits,
-                                                                 ArrayContainer<vec2_32i> &output) {
+                                                                 array_container<vec2_32i> &output) {
 
         unsigned int segments = 1<<subdivision_bits;
         vec2_32i current;
@@ -279,7 +279,7 @@ namespace tessellation {
     void BezierCurveDivider::adaptive_sub_divide_cubic_bezier_internal(const vec2_32i *points,
                                                                        BezierCurveDivider::precision precision,
                                                                        unsigned int tolerance_distance_pixels,
-                                                                       ArrayContainer<vec2_32i> &output) {
+                                                                       array_container<vec2_32i> &output) {
 
         if(is_cubic_bezier_flat(points, precision, tolerance_distance_pixels)) {
             //            output.push_back(points[0]);
@@ -302,7 +302,7 @@ namespace tessellation {
     void BezierCurveDivider::adaptive_sub_divide_cubic_bezier(const vec2_32i *points,
                                                               BezierCurveDivider::precision precision,
                                                               unsigned int tolerance_distance_pixels,
-                                                              ArrayContainer<vec2_32i> &output) {
+                                                              array_container<vec2_32i> &output) {
 
         output.push_back(points[0]);
 
@@ -312,7 +312,7 @@ namespace tessellation {
     void BezierCurveDivider::adaptive_sub_divide_quadratic_bezier(const vec2_32i *points,
                                                                   BezierCurveDivider::precision precision,
                                                                   unsigned int tolerance_distance_pixels,
-                                                                  ArrayContainer<vec2_32i> &output) {
+                                                                  array_container<vec2_32i> &output) {
 
         vec2_32i cubic[4];
         quadratic_to_cubic_bezier(points, cubic[0], cubic[1], cubic[2], cubic[3]);

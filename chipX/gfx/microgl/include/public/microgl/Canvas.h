@@ -13,16 +13,20 @@
 #include "Sampler.h"
 #include "Curves.h"
 #include "TriangleIndices.h"
+#include <microgl/polygons.h>
 #include <microgl/tesselation/BezierCurveDivider.h>
-#include <microgl/StaticArray.h>
+#include <microgl/static_array.h>
+#include <microgl/tesselation/EarClippingTriangulation.h>
 
-using namespace triangles;
-using namespace microgl;
+using namespace microgl::triangles;
+//using namespace microgl;
+using namespace microgl::polygons;
 
 template<typename P, typename CODER>
 class Canvas {
 public:
     using index = unsigned int;
+    using precision = unsigned char;
 
     explicit Canvas(Bitmap<P, CODER> * $bmp);
     Canvas(int width, int height, PixelCoder<P, CODER> * $coder);
@@ -324,6 +328,14 @@ public:
                   float u1=1.0f, float v1=1.0f,
                   uint8_t opacity = 255);
 
+    // polygons
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
+    void drawPolygon(vec2_32i * points,
+                     index size,
+                     polygons::type hint = polygons::type::SIMPLE);
 
     // paths
     void drawLine(const color_f_t & color,

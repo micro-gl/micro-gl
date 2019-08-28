@@ -2,11 +2,11 @@
 #pragma once
 
 template<typename T>
-class ArrayContainer {
+class array_container {
 public:
     using index = unsigned int;
 
-    explicit ArrayContainer() = default;
+    explicit array_container() = default;
 
     virtual const T& operator[](index i) = 0;
     virtual T* getData() = 0;

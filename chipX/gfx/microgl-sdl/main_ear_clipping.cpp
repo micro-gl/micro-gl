@@ -45,7 +45,7 @@ std::vector<vec2_32i> poly_rect() {
 
 float b = 1;
 std::vector<vec2_f> poly_2() {
-    vec2_f p0 = {100/b,222/b};
+    vec2_f p0 = {100/b,100/b};
     vec2_f p1 = {300/b, 100/b};
     vec2_f p2 = {300/b, 300/b};
     vec2_f p3 = {200/b, 200/b};
@@ -78,11 +78,11 @@ std::vector<vec2_32i> poly_hole() {
 }
 
 void render() {
-    t+=.05f;
+//    t+=.05f;
 //    std::cout << t << std::endl;
 //    render_polygon(poly_rect());
-//    render_polygon(poly_2());
-    render_polygon(poly_tri());
+    render_polygon(poly_2());
+//    render_polygon(poly_tri());
 //    render_polygon(poly_hole());
 }
 

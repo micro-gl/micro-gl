@@ -5,7 +5,7 @@
 
 #include <microgl/vec2.h>
 #include <microgl/TriangleIndices.h>
-#include <microgl/linkedlist.h>
+#include <microgl/linked_list.h>
 #include <iostream>
 #include <stdexcept>
 
@@ -41,7 +41,7 @@ namespace tessellation {
             index original_index;
         };
 
-        using LinkedList = linkedlist_t<NodeData>;
+        using LinkedList = linked_list<NodeData>;
         using Node = LinkedList::node_t;
 
         // t

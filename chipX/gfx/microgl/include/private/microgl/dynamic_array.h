@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/ArrayContainer.h>
+#include <microgl/array_container.h>
 
 template<typename T>
 class DynamicArray : public ArrayContainer<T> {

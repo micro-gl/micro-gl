@@ -7,6 +7,8 @@
  
 //#include "../include/public/microgl/Canvas.h"
 
+#include <microgl/Canvas.h>
+
 template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
                         : _bitmap_canvas($bmp), _width{$bmp->width()}, _height{$bmp->height()} {
@@ -2335,7 +2337,7 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *poin
                                                uint8_t sub_pixel_bits,
                                                tessellation::BezierCurveDivider::CurveDivisionAlgorithm algorithm) {
 
-    StaticArray<vec2_32i, 128> samples;
+    static_array<vec2_32i, 128> samples;
     vec2_32i previous, current;
 
     using c = tessellation::BezierCurveDivider;
@@ -2401,7 +2403,7 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
                                            unsigned int size,
                                            uint8_t sub_pixel_bits,
                                            tessellation::BezierCurveDivider::CurveDivisionAlgorithm algorithm) {
-    StaticArray<vec2_32i, 128> samples;
+    static_array<vec2_32i, 128> samples;
     vec2_32i previous, current;
     int count = 0;
     using c = tessellation::BezierCurveDivider;
@@ -2448,6 +2450,36 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
 
 }
 
+template<typename P, typename CODER>
+template <typename BlendMode,
+        typename PorterDuff,
+        bool antialias>
+void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
+                                   Canvas::index size,
+                                   polygons::type hint) {
+    tessellation::EarClippingTriangulation ear{false};
+
+    precision precision = 5;
+    index size_indices = (polygon.size() - 2)*3;
+    index size_indices_with_boundary = (polygon.size() - 2)*3 + (polygon.size() - 2);
+    index indices[size_indices_with_boundary];
+
+    ear.compute(polygon.data(),
+                polygon.size(),
+                indices,
+                size_indices_with_boundary,
+                triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY
+    );
+
+    // draw triangles batch
+    drawTriangles<BlendMode, PorterDuff, antialias>(
+            RED, polygon.data(),
+            indices, size_indices,
+            TrianglesIndices::TRIANGLES_WITH_BOUNDARY,
+            255,
+            precision);
+
+}
 
 
 #pragma clang diagnostic pop

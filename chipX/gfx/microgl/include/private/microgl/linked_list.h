@@ -1,7 +1,7 @@
 #pragma once
 
 template<typename T>
-struct linkedlist_t {
+struct linked_list {
 
 public:
     struct node_t {
@@ -18,7 +18,7 @@ public:
         }
     };
 
-    explicit linkedlist_t(bool CYCLIC = false) :
+    explicit linked_list(bool CYCLIC = false) :
             _cyclic{CYCLIC} {};
 
     unsigned int size() const {

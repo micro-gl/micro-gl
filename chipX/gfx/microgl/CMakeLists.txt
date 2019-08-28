@@ -31,7 +31,7 @@ set(sources
         src/BezierCurveDivider.cpp
         src/EarClippingTriangulation.cpp
         src/TriangleIndices.cpp
-        )
+        include/public/microgl/polygons.h)
 
 add_library(${PROJECT_NAME} ${sources})
 

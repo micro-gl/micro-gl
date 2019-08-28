@@ -1,13 +1,13 @@
 #pragma once
 
-#include <microgl/ArrayContainer.h>
+#include <microgl/array_container.h>
 
 template<typename T, unsigned N>
-class StaticArray : public ArrayContainer<T> {
+class static_array : public array_container<T> {
 public:
     using index = unsigned int;
 
-    explicit StaticArray() = default;
+    explicit static_array() = default;
 
     const T& operator[](index i) override {
         return _data[i];
