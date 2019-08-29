@@ -1225,7 +1225,7 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                     int distance_w2 = functions::min(abs(top_left_w2_h), abs(bottom_left_w2_h),
                                                      abs(top_right_w2_h), abs(bottom_right_w2_h));
                     // now take the minimum among absolute values of distances
-                    int d_aa = functions::min(abs(distance_w0), abs(distance_w1), abs(distance_w2));
+                    int d_aa = functions::min((distance_w0), (distance_w1), (distance_w2));
                     int delta = -d_aa + max_distance_scaled_space_anti_alias;
                     boundary = boundary || delta>=0;
                 }

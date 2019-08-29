@@ -76,18 +76,18 @@ void render_polygon(std::vector<vec2<T>> polygon) {
             );
 
     // draw triangles batch
-    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
             RED, polygon.data(),
             indices, size_indices,
             tri::TRIANGLES_FAN_WITH_BOUNDARY,
-            255,
+            120,
             precision);
 
     // draw triangulation
-    canvas->drawTrianglesWireframe(BLACK, polygon.data(),
-            indices, size_indices,
-                                   TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY,
-                                   255, precision);
+//    canvas->drawTrianglesWireframe(BLACK, polygon.data(),
+//            indices, size_indices,
+//                                   TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY,
+//                                   255, precision);
 
 }
 

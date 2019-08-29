@@ -77,11 +77,21 @@ std::vector<vec2_32i> poly_hole() {
     return {p0, p1, p2, p3, p7, p6, p5, p4};
 }
 
+std::vector<vec2_f> poly_diamond() {
+    vec2_f p1 = {300, 100};
+    vec2_f p2 = {400, 300};
+    vec2_f p3 = {300, 400};
+    vec2_f p0 = {100,300};
+
+    return {p1, p2, p3, p0};
+}
+
 void render() {
-//    t+=.05f;
+    t+=.05f;
 //    std::cout << t << std::endl;
 //    render_polygon(poly_rect());
-    render_polygon(poly_2());
+//    render_polygon(poly_2());
+    render_polygon(poly_diamond());
 //    render_polygon(poly_tri());
 //    render_polygon(poly_hole());
 }
@@ -100,7 +110,7 @@ void render_polygon(std::vector<vec2<T>> polygon) {
 
     a = abs(a -1);
 
-    uint8_t precision = 5;
+    uint8_t precision = 4;
     index size_indices = (polygon.size() - 2)*3;
     index size_indices_with_boundary = (polygon.size() - 2)*3 + (polygon.size() - 2);
     index indices[size_indices_with_boundary];
@@ -117,11 +127,11 @@ void render_polygon(std::vector<vec2<T>> polygon) {
             RED, polygon.data(),
             indices, size_indices_with_boundary,
             TrianglesIndices::TRIANGLES_WITH_BOUNDARY,
-            255,
+            122,
             precision);
 
     // draw triangulation
-//    canvas->drawTrianglesWireframe(BLACK, polygon.data(), indices, size_indices,
+//    canvas->drawTrianglesWireframe(BLACK, polygon.data(), indices, size_indices_with_boundary,
 //                                   TrianglesIndices::TRIANGLES_WITH_BOUNDARY,
 //                                   255, precision);
 
