@@ -6,9 +6,13 @@ namespace microgl {
 
         enum class TrianglesIndices {
             TRIANGLES,
+            // every fourth element is a boundary info element
             TRIANGLES_WITH_BOUNDARY,
+            TRIANGLES_FAN,
+            // every second element is a boundary info element
+            // starting from the fourth element
+            TRIANGLES_FAN_WITH_BOUNDARY,
             TRIANGLES_STRIP,
-            TRIANGLES_FAN
         };
 
         enum class TriangleEdgeType {

@@ -335,7 +335,7 @@ public:
             bool antialias=false>
     void drawPolygon(vec2_32i * points,
                      index size,
-                     polygons::type hint = polygons::type::SIMPLE);
+                     polygons::hints hint = polygons::hints::SIMPLE);
 
     // paths
     void drawLine(const color_f_t & color,

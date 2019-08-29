@@ -498,18 +498,48 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             break;
         case TrianglesIndices::TRIANGLES_FAN:
 
-            for (index ix = 1; ix < size; ++ix) {
+            for (index ix = 1; ix < size-1; ++ix) {
 
                 drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
-                   vertices[IND(0)].x, vertices[IND(0)].y,
-                   vertices[IND(ix)].x, vertices[IND(ix)].y,
-                   vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
-                   opacity,
-                   sub_pixel_precision
+                                       vertices[IND(0)].x, vertices[IND(0)].y,
+                                       vertices[IND(ix)].x, vertices[IND(ix)].y,
+                                       vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
+                                       opacity,
+                                       sub_pixel_precision
                 );
+
             }
 
             break;
+        case TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY:
+        {
+            const index num_triangles = (size-2)>>1;
+
+            for (index ix = 0; ix < num_triangles; ++ix) {
+                index first_index = 0;
+                index second_index = ix==0 ? 1 : (ix << 1);
+                index third_index = ix==0 ? 2 : (second_index + 2);
+                index boundary_index = third_index + 1;
+
+                boundary_info aa_info = IND(boundary_index);
+
+                bool aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
+                bool aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
+                bool aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
+
+                drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
+                               vertices[IND(first_index)].x,  vertices[IND(first_index)].y,
+                               vertices[IND(second_index)].x, vertices[IND(second_index)].y,
+                               vertices[IND(third_index)].x,  vertices[IND(third_index)].y,
+                               opacity,
+                               sub_pixel_precision,
+                               aa_first_edge, aa_second_edge, aa_third_edge
+                );
+
+            }
+
+            break;
+        }
         case TrianglesIndices::TRIANGLES_STRIP:
             bool even = true;
 
@@ -592,6 +622,24 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
             }
 
             break;
+        case TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY:
+        {
+            const index num_triangles = (size-2)>>1;
+
+            for (index ix = 0; ix < num_triangles; ++ix) {
+                index first_index = 0;
+                index second_index = ix==0 ? 1 : (ix << 1);
+                index third_index = ix==0 ? 2 : (second_index + 2);
+
+                drawTriangleWireframe(color,
+                                      vertices[IND(first_index)],
+                                      vertices[IND(second_index)],
+                                      vertices[IND(third_index)],
+                                      sub_pixel_precision);
+            }
+
+            break;
+        }
         case TrianglesIndices::TRIANGLES_STRIP:
             bool even = true;
 
@@ -670,6 +718,24 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
             }
 
             break;
+        case TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY:
+        {
+            const index num_triangles = (size-2)>>1;
+
+            for (index ix = 0; ix < num_triangles; ++ix) {
+                index first_index = 0;
+                index second_index = ix==0 ? 1 : (ix << 1);
+                index third_index = ix==0 ? 2 : (second_index + 2);
+
+                drawTriangleWireframe(color,
+                                      vertices[IND(first_index)],
+                                      vertices[IND(second_index)],
+                                      vertices[IND(third_index)],
+                                      sub_pixel_precision);
+            }
+
+            break;
+        }
         case TrianglesIndices::TRIANGLES_STRIP:
             bool even = true;
 
@@ -2456,7 +2522,9 @@ template <typename BlendMode,
         bool antialias>
 void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
                                    Canvas::index size,
-                                   polygons::type hint) {
+                                   polygons::hints hint) {
+
+    /*
     tessellation::EarClippingTriangulation ear{false};
 
     precision precision = 5;
@@ -2478,7 +2546,7 @@ void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
             TrianglesIndices::TRIANGLES_WITH_BOUNDARY,
             255,
             precision);
-
+*/
 }
 
 

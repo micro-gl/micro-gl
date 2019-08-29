@@ -3,7 +3,7 @@
 namespace microgl {
     namespace polygons {
 
-        enum class type {
+        enum class hints {
             // non self intersecting polygon, can be convex or concave
                     SIMPLE,
             // convex polygon

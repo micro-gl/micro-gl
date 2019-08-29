@@ -30,6 +30,7 @@ set(sources
 #        src/Segment.cpp
         src/BezierCurveDivider.cpp
         src/EarClippingTriangulation.cpp
+        src/FanTriangulation.cpp
         src/TriangleIndices.cpp
         include/public/microgl/polygons.h)
 

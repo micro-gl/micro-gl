@@ -22,18 +22,19 @@ namespace tessellation {
                        indices_buffer_size, requested);
     }
 
-    index *EarClippingTriangulation::compute(microgl::vec2_32i *$pts, index size,
+    index *EarClippingTriangulation::compute(microgl::vec2_32i *$pts,
+                                             index size,
                                              index *indices_buffer_triangulation,
                                              index indices_buffer_size,
                                              const triangles::TrianglesIndices &requested) {
 
         if(requested==triangles::TrianglesIndices::TRIANGLES) {
-            if(3*(size - 2) > indices_buffer_size)
+            if(required_indices_size(size, requested) > indices_buffer_size)
                 throw std::runtime_error("size of the indices buffer is "
                                          "not enough for TRIANGLES !!!");
         }
         else if(requested==triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY) {
-            if(3*(size - 2) + (size - 2) > indices_buffer_size)
+            if(required_indices_size(size, requested) > indices_buffer_size)
                 throw std::runtime_error("size of the indices buffer is not enough "
                                          "for TRIANGLES_WITH_BOUNDARY !!!");
         }
@@ -196,6 +197,19 @@ namespace tessellation {
         } while(ix++<list->size() && (n=n->successor()));
 
         return true;
+    }
+
+    index EarClippingTriangulation::required_indices_size(const index polygon_size,
+                                                          const triangles::TrianglesIndices &requested) {
+        switch (requested) {
+            case triangles::TrianglesIndices::TRIANGLES:
+                return (polygon_size - 2)*3;
+            case triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
+                return (polygon_size - 2)*4;
+            default:
+                return 0;
+        }
+
     }
 
 }
