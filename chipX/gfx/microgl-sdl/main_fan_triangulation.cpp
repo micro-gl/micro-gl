@@ -62,32 +62,35 @@ void render_polygon(std::vector<vec2<T>> polygon) {
     FanTriangulation fan{true};
 
     uint8_t precision = 0;
-    index size_indices = FanTriangulation::required_indices_size(polygon.size(), tri::TRIANGLES_FAN);
-    index size_indices_with_boundary = FanTriangulation::required_indices_size(polygon.size(), tri::TRIANGLES_FAN_WITH_BOUNDARY);
-
-    size_indices = size_indices_with_boundary;
+    auto type = TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY;
+    index size_indices = FanTriangulation::required_indices_size(polygon.size(),
+                                                                         type);
     index indices[size_indices];
 
     fan.compute(polygon.data(),
             polygon.size(),
             indices,
-                size_indices,
-                tri::TRIANGLES_FAN_WITH_BOUNDARY
+            size_indices,
+            type
             );
 
     // draw triangles batch
-    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
+    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
             RED, polygon.data(),
-            indices, size_indices,
-            tri::TRIANGLES_FAN_WITH_BOUNDARY,
+            indices,
+            size_indices,
+            type,
             120,
             precision);
 
     // draw triangulation
-    canvas->drawTrianglesWireframe(BLACK, polygon.data(),
-                                    indices, size_indices,
-                                   TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY,
-                                   255, precision);
+//    canvas->drawTrianglesWireframe(BLACK,
+//            polygon.data(),
+//            indices,
+//            size_indices,
+//            type,
+//            255,
+//            precision);
 
 }
 

@@ -708,7 +708,7 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
             break;
         case TrianglesIndices::TRIANGLES_FAN:
 
-            for (index ix = 1; ix < size; ++ix) {
+            for (index ix = 1; ix < size - 1; ++ix) {
 
                 drawTriangleWireframe(color,
                                       vertices[IND(0)],
@@ -1215,6 +1215,8 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                     int bottom_right_w1_h = bottom_left_w1_h + A12_block_m_1_h;
                     int bottom_right_w2_h = bottom_left_w2_h + A20_block_m_1_h;
 
+                    // todo:: one bug I notices, what happens when pixel falls on
+                    // todo:: a straight line ? this causes artifact !!!
                     // distance of block to the edge w0
                     // since we are outside, all of the distances are negative, therefore
                     // taking max function on negatives reveals the closest distance
