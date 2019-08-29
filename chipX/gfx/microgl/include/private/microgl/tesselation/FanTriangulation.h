@@ -5,7 +5,6 @@
 
 #include <microgl/vec2.h>
 #include <microgl/TriangleIndices.h>
-#include <iostream>
 #include <stdexcept>
 
 namespace tessellation {
@@ -35,9 +34,16 @@ namespace tessellation {
                                 triangles::TrianglesIndices::TRIANGLES_FAN
                         );
 
+        /**
+         * computes the required indices buffer size for requested triangulation
+         *
+         * @param polygon_size
+         * @param requested
+         * @return
+         */
         static index required_indices_size(index polygon_size,
                                            const triangles::TrianglesIndices &requested =
-                                           triangles::TrianglesIndices::TRIANGLES);
+                                           triangles::TrianglesIndices::TRIANGLES_FAN);
 
     private:
 

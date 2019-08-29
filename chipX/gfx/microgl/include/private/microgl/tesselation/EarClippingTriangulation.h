@@ -6,7 +6,6 @@
 #include <microgl/vec2.h>
 #include <microgl/TriangleIndices.h>
 #include <microgl/linked_list.h>
-#include <iostream>
 #include <stdexcept>
 
 namespace tessellation {
