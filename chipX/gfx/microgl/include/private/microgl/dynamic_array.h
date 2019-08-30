@@ -19,11 +19,11 @@ public:
         _current = 0;
     }
 
-    T* getData() {
+    T* data() {
         return _data;
     }
 
-    const T& operator[](index i) {
+    T& operator[](index i) {
       return _data[i];
     }
 
@@ -59,6 +59,11 @@ public:
             return;
 
         _data[_current--].~T();
+    }
+
+    void move(index idx) override {
+        if(idx < capacity())
+            _current = idx;
     }
 
     void clear() {

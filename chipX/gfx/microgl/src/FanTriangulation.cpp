@@ -6,29 +6,30 @@ namespace tessellation {
 
     }
 
-    index *FanTriangulation::compute(vec2_32i *$pts,
+    void FanTriangulation::compute(vec2_32i *$pts,
                                      index size,
-                                     index *indices_buffer_triangulation,
-                                     index indices_buffer_size,
+                                     array_container<index> & indices_buffer_triangulation,
+//                                     index *indices_buffer_triangulation,
+//                                     index indices_buffer_size,
                                      const triangles::TrianglesIndices &requested) {
 
-        if(requested==triangles::TrianglesIndices::TRIANGLES_FAN) {
-            if(required_indices_size(size, requested) > indices_buffer_size)
-                throw std::runtime_error("size of the indices buffer is "
-                                         "not enough for TRIANGLES_FAN !!!");
-        }
-        else if(requested==triangles::TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY) {
-            if(required_indices_size(size, requested) > indices_buffer_size)
-                throw std::runtime_error("size of the indices buffer is not enough "
-                                         "for TRIANGLES_FAN_WITH_BOUNDARY !!!");
-        }
-        else
-            throw std::runtime_error("only TRIANGLES_FAN and TRIANGLES_FAN_WITH_BOUNDARY "
-                                     "are supported !!!");
+//        if(requested==triangles::TrianglesIndices::TRIANGLES_FAN) {
+//            if(required_indices_size(size, requested) > indices_buffer_size)
+//                throw std::runtime_error("size of the indices buffer is "
+//                                         "not enough for TRIANGLES_FAN !!!");
+//        }
+//        else if(requested==triangles::TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY) {
+//            if(required_indices_size(size, requested) > indices_buffer_size)
+//                throw std::runtime_error("size of the indices buffer is not enough "
+//                                         "for TRIANGLES_FAN_WITH_BOUNDARY !!!");
+//        }
+//        else
+//            throw std::runtime_error("only TRIANGLES_FAN and TRIANGLES_FAN_WITH_BOUNDARY "
+//                                     "are supported !!!");
 
         bool requested_triangles_with_boundary =
                 requested==triangles::TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY;
-        auto *indices = indices_buffer_triangulation;
+        auto &indices = indices_buffer_triangulation;
         index count = requested_triangles_with_boundary ? 2*size - 2 : size;
 
         if(requested_triangles_with_boundary) {
@@ -36,8 +37,10 @@ namespace tessellation {
 
             for (index ix = 0; ix < num_triangles; ++ix) {
                 if(ix==0) {
-                    indices[0] = 0;
-                    indices[1] = 1;
+//                    indices[0] = 0;
+//                    indices[1] = 1;
+                    indices.push_back(0);
+                    indices.push_back(1);
                 }
 
                 bool aa_first_edge = ix==0;
@@ -49,25 +52,30 @@ namespace tessellation {
                                                         aa_second_edge,
                                                         aa_third_edge);
 
-                index ind = (ix+1)*2;
-                indices[ind]     = ix + 2;
-                indices[ind + 1] = aa_info;
+//                index ind = (ix+1)*2;
+//                indices[ind]     = ix + 2;
+//                indices[ind + 1] = aa_info;
+                indices.push_back(ix + 2);
+                indices.push_back(aa_info);
+
             }
         }
         else {
             for (index ix = 0; ix < count; ++ix) {
-                indices[ix] = ix;
+//                indices[ix] = ix;
+                indices.push_back(ix);
             }
         }
 
-        return indices;
+//        return indices;
     }
 
-    index *
+    void
     FanTriangulation::compute(vec2_f *$pts,
                               index size,
-                              index *indices_buffer_triangulation,
-                              index indices_buffer_size,
+                              array_container<index> & indices_buffer_triangulation,
+//                              index *indices_buffer_triangulation,
+//                              index indices_buffer_size,
                               const triangles::TrianglesIndices &requested) {
         // I could have made a template for point types and
         // conserve stack memory, but the hell with it for now
@@ -77,9 +85,10 @@ namespace tessellation {
             vertices_int[ix] = $pts[ix]<<5;
         }
 
-        return compute(vertices_int, size,
+        compute(vertices_int, size,
                        indices_buffer_triangulation,
-                       indices_buffer_size, requested);
+//                       indices_buffer_size,
+                       requested);
     }
 
     index FanTriangulation::required_indices_size(const index polygon_size,

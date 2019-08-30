@@ -17,6 +17,7 @@
 #include <microgl/tesselation/BezierCurveDivider.h>
 #include <microgl/static_array.h>
 #include <microgl/tesselation/EarClippingTriangulation.h>
+#include <stdexcept>
 
 using namespace microgl::triangles;
 //using namespace microgl;
@@ -27,6 +28,7 @@ class Canvas {
 public:
     using index = unsigned int;
     using precision = unsigned char;
+    using opacity = unsigned char;
 
     explicit Canvas(Bitmap<P, CODER> * $bmp);
     Canvas(int width, int height, PixelCoder<P, CODER> * $coder);
@@ -335,6 +337,16 @@ public:
             bool antialias=false>
     void drawPolygon(vec2_32i * points,
                      index size,
+                     precision precision,
+                     opacity opacity,
+                     polygons::hints hint = polygons::hints::SIMPLE);
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false>
+    void drawPolygon(vec2_f * points,
+                     index size,
+                     opacity opacity,
                      polygons::hints hint = polygons::hints::SIMPLE);
 
     // paths

@@ -5,9 +5,11 @@ namespace tessellation {
     EarClippingTriangulation::EarClippingTriangulation(bool DEBUG) :
             _DEBUG{DEBUG} {};
 
-    index *EarClippingTriangulation::compute(microgl::vec2_f *$pts, index size,
-                                             index *indices_buffer_triangulation,
-                                             index indices_buffer_size,
+    void EarClippingTriangulation::compute(microgl::vec2_f *$pts,
+                                             index size,
+                                             array_container<index> & indices_buffer_triangulation,
+//                                             index *indices_buffer_triangulation,
+//                                             index indices_buffer_size,
                                              const triangles::TrianglesIndices &requested) {
         // I could have made a template for point types and
         // conserve stack memory, but the hell with it for now
@@ -17,35 +19,36 @@ namespace tessellation {
             vertices_int[ix] = $pts[ix]<<5;
         }
 
-        return compute(vertices_int, size,
+        compute(vertices_int, size,
                        indices_buffer_triangulation,
-                       indices_buffer_size, requested);
+//                       indices_buffer_size,
+                       requested);
     }
 
-    index *EarClippingTriangulation::compute(microgl::vec2_32i *$pts,
+    void EarClippingTriangulation::compute(microgl::vec2_32i *$pts,
                                              index size,
-                                             index *indices_buffer_triangulation,
-                                             index indices_buffer_size,
+                                             array_container<index> & indices_buffer_triangulation,
+//                                             index *indices_buffer_triangulation,
+//                                             index indices_buffer_size,
                                              const triangles::TrianglesIndices &requested) {
 
-        if(requested==triangles::TrianglesIndices::TRIANGLES) {
-            if(required_indices_size(size, requested) > indices_buffer_size)
-                throw std::runtime_error("size of the indices buffer is "
-                                         "not enough for TRIANGLES !!!");
-        }
-        else if(requested==triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY) {
-            if(required_indices_size(size, requested) > indices_buffer_size)
-                throw std::runtime_error("size of the indices buffer is not enough "
-                                         "for TRIANGLES_WITH_BOUNDARY !!!");
-        }
-        else
-            throw std::runtime_error("only TRIANGLES and TRIANGLES_WITH_BOUNDARY "
-                                     "are supported !!!");
-
+//        if(requested==triangles::TrianglesIndices::TRIANGLES) {
+//            if(required_indices_size(size, requested) > indices_buffer_size)
+//                throw std::runtime_error("size of the indices buffer is "
+//                                         "not enough for TRIANGLES !!!");
+//        }
+//        else if(requested==triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY) {
+//            if(required_indices_size(size, requested) > indices_buffer_size)
+//                throw std::runtime_error("size of the indices buffer is not enough "
+//                                         "for TRIANGLES_WITH_BOUNDARY !!!");
+//        }
+//        else
+//            throw std::runtime_error("only TRIANGLES and TRIANGLES_WITH_BOUNDARY "
+//                                     "are supported !!!");
 
         bool requested_triangles_with_boundary =
                 requested==triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
-        auto *indices = indices_buffer_triangulation;
+        auto &indices = indices_buffer_triangulation;
 
         // create a linked list with static memory on the stack :)
         // lets also make heap version
@@ -71,9 +74,13 @@ namespace tessellation {
 
                 if (isConvex(point, &pts) && isEmpty(point, &pts)) {
 
-                    indices[ind + 0] = point->predecessor()->data.original_index;
-                    indices[ind + 1] = point->data.original_index;
-                    indices[ind + 2] = point->successor()->data.original_index;
+                    indices.push_back(point->predecessor()->data.original_index);
+                    indices.push_back(point->data.original_index);
+                    indices.push_back(point->successor()->data.original_index);
+
+//                    indices[ind + 0] = point->predecessor()->data.original_index;
+//                    indices[ind + 1] = point->data.original_index;
+//                    indices[ind + 2] = point->successor()->data.original_index;
 
                     // record boundary
                     if(requested_triangles_with_boundary) {
@@ -88,7 +95,8 @@ namespace tessellation {
 
                         index info = triangles::create_boundary_info(first, second, third);
 
-                        indices[ind + 3] = info;
+                        indices.push_back(info);
+//                        indices[ind + 3] = info;
                     }
 
                     ind += requested_triangles_with_boundary ? 4 : 3;
@@ -106,7 +114,7 @@ namespace tessellation {
 
         pts.clear();
 
-        return indices_buffer_triangulation;
+//        return indices_buffer_triangulation;
     }
 
 

@@ -90,8 +90,8 @@ void render() {
     t+=.05f;
 //    std::cout << t << std::endl;
 //    render_polygon(poly_rect());
-//    render_polygon(poly_2());
-    render_polygon(poly_diamond());
+    render_polygon(poly_2());
+//    render_polygon(poly_diamond());
 //    render_polygon(poly_tri());
 //    render_polygon(poly_hole());
 }
@@ -111,21 +111,21 @@ void render_polygon(std::vector<vec2<T>> polygon) {
     auto type = TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
     index size_indices = EarClippingTriangulation::required_indices_size(polygon.size(),
             type);
+    static_array<index, 128> indices;
 
-    index indices[size_indices];
+//    index indices[size_indices];
 
     ear.compute(polygon.data(),
             polygon.size(),
             indices,
-            size_indices,
             type
             );
 
     // draw triangles batch
     canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
             RED, polygon.data(),
-            indices,
-            size_indices,
+            indices.data(),
+            indices.size(),
             type,
             122,
             precision);
@@ -133,8 +133,8 @@ void render_polygon(std::vector<vec2<T>> polygon) {
     // draw triangulation
     canvas->drawTrianglesWireframe(BLACK,
             polygon.data(),
-            indices,
-            size_indices,
+            indices.data(),
+            indices.size(),
             type,
             255,
             precision);

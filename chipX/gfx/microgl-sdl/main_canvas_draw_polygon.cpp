@@ -8,7 +8,7 @@
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/PixelCoder.h>
-#include <microgl/tesselation/FanTriangulation.h>
+#include <microgl/tesselation/EarClippingTriangulation.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -34,45 +34,94 @@ void render_polygon(std::vector<vec2<T>> polygon);
 
 float t = 0;
 
-std::vector<vec2_f> poly_diamond() {
-    vec2_f p0 = {100,300};
-    vec2_f p1 = {300, 100};
-    vec2_f p2 = {400, 300};
-    vec2_f p3 = {300, 400};
+std::vector<vec2_32i> poly_rect() {
+    vec2_32i p0 = {100,100};
+    vec2_32i p1 = {300, 100};
+    vec2_32i p2 = {300, 300};
+    vec2_32i p3 = {100, 300};
 
     return {p0, p1, p2, p3};
 }
 
+float b = 1;
+std::vector<vec2_f> poly_2() {
+    vec2_f p0 = {100/b,100/b};
+    vec2_f p1 = {300/b, 100/b};
+    vec2_f p2 = {300/b, 300/b};
+    vec2_f p3 = {200/b, 200/b};
+    vec2_f p4 = {100/b, 300/b};
+
+    return {p0, p1, p2, p3, p4};
+}
+
+std::vector<vec2_f> poly_tri() {
+    vec2_f p0 = {100,100};
+    vec2_f p3 = {300, 100};
+    vec2_f p4 = {100, 300};
+
+    return {p0, p3, p4};
+}
+
+std::vector<vec2_32i> poly_hole() {
+    vec2_32i p0 = {100,100};
+    vec2_32i p1 = {300, 100};
+    vec2_32i p2 = {300, 300};
+    vec2_32i p3 = {100, 300};
+
+    vec2_32i p4 = {150,150};
+    vec2_32i p5 = {250, 150};
+    vec2_32i p6 = {250, 250};
+    vec2_32i p7 = {150, 250};
+
+//    return {p4, p5, p6, p7};
+    return {p0, p1, p2, p3, p7, p6, p5, p4};
+}
+
+std::vector<vec2_f> poly_diamond() {
+    vec2_f p1 = {300, 100};
+    vec2_f p2 = {400, 300};
+    vec2_f p3 = {300, 400};
+    vec2_f p0 = {100,300};
+
+    return {p1, p2, p3, p0};
+}
+
 void render() {
-//    t+=.05f;
+    t+=.05f;
 //    std::cout << t << std::endl;
-    render_polygon(poly_diamond());
+//    render_polygon(poly_rect());
+    render_polygon(poly_2());
+//    render_polygon(poly_diamond());
+//    render_polygon(poly_tri());
+//    render_polygon(poly_hole());
 }
 
 
 template <typename T>
 void render_polygon(std::vector<vec2<T>> polygon) {
     using index = unsigned int;
-    using tri = triangles::TrianglesIndices;
 
-    std::vector<int> tomer(10);
-    tomer.push_back(2);
-    int n = tomer.size();
-
-//    polygon[1].x = 140 + 20 +  t;
+    polygon[1].x = 140 + 20 +  t;
 //    polygon[1].y = 140 + 20 -  t;
     canvas->clear(WHITE);
 
-    FanTriangulation fan{true};
+    canvas->drawPolygon(polygon.data(),
+                        polygon.size(),
+                        0,
+                        255,
+                        polygons::hints::SIMPLE);
 
-    uint8_t precision = 0;
-    auto type = TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY;
-    index size_indices = FanTriangulation::required_indices_size(polygon.size(),
-                                                                         type);
+    /*
+    EarClippingTriangulation ear{true};
+
+    uint8_t precision = 4;
+    auto type = TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
+    index size_indices = EarClippingTriangulation::required_indices_size(polygon.size(),
+            type);
 //    index indices[size_indices];
     static_array<index, 128> indices;
 
-    fan.compute(polygon.data(),
+    ear.compute(polygon.data(),
             polygon.size(),
             indices,
             type
@@ -84,19 +133,20 @@ void render_polygon(std::vector<vec2<T>> polygon) {
             indices.data(),
             indices.size(),
             type,
-            120,
+            122,
             precision);
 
     // draw triangulation
-//    canvas->drawTrianglesWireframe(BLACK,
-//            polygon.data(),
-//            indices,
-//    indices.size(),
-//            type,
-//            255,
-//            precision);
-
+    canvas->drawTrianglesWireframe(BLACK,
+            polygon.data(),
+           indices.data(),
+           indices.size(),
+           type,
+           255,
+           precision);
+*/
 }
+
 
 int main() {
     init_sdl(W, H);

@@ -9,11 +9,11 @@ public:
 
     explicit static_array() = default;
 
-    const T& operator[](index i) override {
+    T& operator[](index i) override {
         return _data[i];
     }
 
-    T* getData() override {
+    T* data() override {
         return _data;
     }
 
@@ -32,6 +32,11 @@ public:
             return;
 
         _data[_current--].~T();
+    }
+
+    void move(index idx) override {
+        if(idx < capacity())
+            _current = idx;
     }
 
     void clear() override {

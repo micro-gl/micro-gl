@@ -123,7 +123,7 @@ namespace blendmode {
                                  const uint8_t r_bits,
                                  const uint8_t g_bits,
                                  const uint8_t b_bits) {
-
+        
             output.r = (b.r * s.r)>>r_bits;
             output.g = (b.g * s.g)>>g_bits;
             output.b = (b.b * s.b)>>b_bits;
