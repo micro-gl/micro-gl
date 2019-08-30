@@ -105,46 +105,12 @@ void render_polygon(std::vector<vec2<T>> polygon) {
 //    polygon[1].y = 140 + 20 -  t;
     canvas->clear(WHITE);
 
-    canvas->drawPolygon(polygon.data(),
-                        polygon.size(),
-                        0,
-                        255,
-                        polygons::hints::SIMPLE);
-
-    /*
-    EarClippingTriangulation ear{true};
-
-    uint8_t precision = 4;
-    auto type = TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
-    index size_indices = EarClippingTriangulation::required_indices_size(polygon.size(),
-            type);
-//    index indices[size_indices];
-    static_array<index, 128> indices;
-
-    ear.compute(polygon.data(),
-            polygon.size(),
-            indices,
-            type
-            );
-
-    // draw triangles batch
-    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-            RED, polygon.data(),
-            indices.data(),
-            indices.size(),
-            type,
-            122,
-            precision);
-
-    // draw triangulation
-    canvas->drawTrianglesWireframe(BLACK,
+    canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
             polygon.data(),
-           indices.data(),
-           indices.size(),
-           type,
-           255,
-           precision);
-*/
+            polygon.size(),
+            122,
+            polygons::hints::SIMPLE);
+
 }
 
 

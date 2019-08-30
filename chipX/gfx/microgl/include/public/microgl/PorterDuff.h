@@ -168,6 +168,7 @@ namespace porterduff {
 
     };
 
+
     class Clear : public PorterDuffBase<Clear> {
     public:
         inline static enum type type() {

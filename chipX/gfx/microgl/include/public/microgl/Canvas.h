@@ -122,8 +122,7 @@ public:
                        const index *indices,
                        index size,
                        TrianglesIndices type,
-                       uint8_t opacity,
-                       uint8_t sub_pixel_precision);
+                       uint8_t opacity);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,

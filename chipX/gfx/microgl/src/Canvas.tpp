@@ -435,10 +435,10 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                      const index *indices,
                                      const index size,
                                      const TrianglesIndices type,
-                                     const uint8_t opacity,
-                                     const uint8_t sub_pixel_precision) {
+                                     const uint8_t opacity) {
 
     vec2_32i vertices_int[size];
+    precision sub_pixel_precision = 4;
 
     for (int ix = 0; ix < size; ++ix) {
         vertices_int[ix] = vertices[ix]<<sub_pixel_precision;
@@ -2582,13 +2582,13 @@ void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
             precision);
 
     // draw triangulation
-    drawTrianglesWireframe(BLACK,
-                           points,
-                           indices.data(),
-                           indices.size(),
-                           type,
-                           255,
-                           precision);
+//    drawTrianglesWireframe(BLACK,
+//                           points,
+//                           indices.data(),
+//                           indices.size(),
+//                           type,
+//                           255,
+//                           precision);
 
 }
 
@@ -2601,66 +2601,17 @@ void Canvas<P, CODER>::drawPolygon(vec2_f *points,
                                    opacity opacity,
                                    polygons::hints hint
                                    ) {
+    static_array<vec2_32i, 128> points_int;
+    precision sub_pixel_precision = 4;
 
-    TrianglesIndices type;
-    // currently static on the stack
-    static_array<index, 128> indices;
+    for (index ix = 0; ix < size; ++ix)
+        points_int.push_back(points[ix]<<sub_pixel_precision);
 
-    switch (hint) {
-
-        case hints::CONCAVE:
-        case hints::SIMPLE:
-        {
-            type = antialias ? triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY :
-                   triangles::TrianglesIndices::TRIANGLES;
-            tessellation::EarClippingTriangulation ear{false};
-            ear.compute(points,
-                        size,
-                        indices,
-                        type
-            );
-
-            break;
-        }
-        case hints::CONVEX:
-        {
-            type = antialias ? triangles::TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY :
-                   triangles::TrianglesIndices::TRIANGLES_FAN;
-            tessellation::FanTriangulation fan{false};
-            fan.compute(points,
-                        size,
-                        indices,
-                        type
-            );
-
-            break;
-        }
-        case hints::NON_SIMPLE:
-        case hints::SELF_INTERSECTING:
-        default:
-            throw std::runtime_error("Non-Simple polygons are not supported yet !!!");
-            break;
-    }
-
-    // draw triangles batch
-    drawTriangles<BlendMode, PorterDuff, antialias>(
-            RED,
-            points,
-            indices.data(),
-            indices.size(),
-            type,
+    drawPolygon<BlendMode, PorterDuff, antialias>(points_int.data(),
+            size,
+            sub_pixel_precision,
             opacity,
-            precision);
-
-    // draw triangulation
-    drawTrianglesWireframe(BLACK,
-                           points,
-                           indices.data(),
-                           indices.size(),
-                           type,
-                           255,
-                           precision);
-
+            hint);
 }
 
 
