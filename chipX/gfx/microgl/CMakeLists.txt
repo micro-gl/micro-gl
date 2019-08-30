@@ -32,7 +32,7 @@ set(sources
         src/EarClippingTriangulation.cpp
         src/FanTriangulation.cpp
         src/TriangleIndices.cpp
-        include/public/microgl/polygons.h)
+        include/public/microgl/polygons.h src/PathTessellation.cpp)
 
 add_library(${PROJECT_NAME} ${sources})
 

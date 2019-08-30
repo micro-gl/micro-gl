@@ -8,11 +8,16 @@ namespace microgl {
             TRIANGLES,
             // every fourth element is a boundary info element
             TRIANGLES_WITH_BOUNDARY,
+            // triangle fan, first vertex is the main vertex to which all triangles
+            // are expended into
             TRIANGLES_FAN,
             // every second element is a boundary info element
             // starting from the fourth element
             TRIANGLES_FAN_WITH_BOUNDARY,
+            // triangle strip
             TRIANGLES_STRIP,
+            // triangle strip with boundary info
+            TRIANGLES_STRIP_WITH_BOUNDARY,
         };
 
         enum class TriangleEdgeType {

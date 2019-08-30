@@ -29,7 +29,8 @@ set(SOURCES
 #        main_curves.cpp
 #        main_speed_optimization.cpp
 #        main_quadrilaterals.cpp
-        main_canvas_draw_polygon.cpp
+        main_path_tessellation.cpp
+#        main_canvas_draw_polygon.cpp
 #        main_fan_triangulation.cpp
 #        main_ear_clipping.cpp
 #        main_aa_bug.cpp
