@@ -122,9 +122,6 @@ namespace functions {
 
     int32_t sqrtI2I( int32_t v );
 
-    uint32_t sqrt_int(uint32_t a_nInput);
-
-
 
     int signed_distance_circle_raised_quad( int px, int py, int cx, int cy, unsigned int r );
 

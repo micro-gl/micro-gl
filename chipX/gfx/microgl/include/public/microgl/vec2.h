@@ -55,8 +55,17 @@ namespace microgl {
             return vec2<T>{this->x*a, this->y*a};
         }
 
+        template<typename F>
+        vec2<T> operator/(const F & a) const {
+            return vec2<T>{this->x/a, this->y/a};
+        }
+
         vec2<T> operator<<(const int & a) const {
             return vec2<T>{this->x*(1<<a), this->y*(1<<a)};
+        }
+
+        vec2<T> operator-() const {
+            return vec2<T>{-this->x, -this->y};
         }
 
         vec2<T> operator>>(const int & a) const {

@@ -545,7 +545,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
         case TrianglesIndices::TRIANGLES_STRIP:
             bool even = true;
 
-            for (index ix = 0; ix < size; ++ix) {
+            for (index ix = 0; ix < size-2; ++ix) {
                 even = !even;
                 // we alternate order inorder to preserve CCW or CW,
                 // in the future I will add face culling, which will
@@ -645,7 +645,7 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
         case TrianglesIndices::TRIANGLES_STRIP:
             bool even = true;
 
-            for (index ix = 0; ix < size; ++ix) {
+            for (index ix = 0; ix < size-2; ++ix) {
                 even = !even;
                 // we alternate order inorder to preserve CCW or CW,
                 // in the future I will add face culling, which will
@@ -1217,8 +1217,6 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                     int bottom_right_w1_h = bottom_left_w1_h + A12_block_m_1_h;
                     int bottom_right_w2_h = bottom_left_w2_h + A20_block_m_1_h;
 
-                    // todo:: one bug I notices, what happens when pixel falls on
-                    // todo:: a straight line ? this causes artifact !!!
                     // distance of block to the edge w0
                     // since we are outside, all of the distances are negative, therefore
                     // taking max function on negatives reveals the closest distance
@@ -1228,10 +1226,21 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                                                      abs(top_right_w1_h), abs(bottom_right_w1_h));
                     int distance_w2 = functions::min(abs(top_left_w2_h), abs(bottom_left_w2_h),
                                                      abs(top_right_w2_h), abs(bottom_right_w2_h));
+//                    if(distance_w0>=0)
+//                        distance_w0 = 11111;
+//                    if(distance_w1>=0)
+//                        distance_w1 = 11111;
+//                    if(distance_w2>=0)
+//                        distance_w2 = 11111;
+
                     // now take the minimum among absolute values of distances
                     int d_aa = functions::min((distance_w0), (distance_w1), (distance_w2));
-                    int delta = -d_aa + max_distance_scaled_space_anti_alias;
-                    boundary = boundary || delta>=0;
+                    // todo:: one bug I notices, what happens when pixel falls on
+                    // todo:: a straight line ? this causes artifact !!!
+                    if(true) {
+                        int delta = -d_aa + max_distance_scaled_space_anti_alias;
+                        boundary = boundary || delta>=0;
+                    }
                 }
 
                 if(boundary) {

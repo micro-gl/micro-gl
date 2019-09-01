@@ -34,6 +34,7 @@ set(SOURCES
 #        main_fan_triangulation.cpp
 #        main_ear_clipping.cpp
 #        main_aa_bug.cpp
+#        main_aa_bug_2.cpp
 #        main_bentley_ottmann.cpp
 #        main_avl_tree.cpp
         libs/stb_image/stb_image.cpp

@@ -35,11 +35,11 @@ void render_path(std::vector<vec2<T>> path);
 float t = 0;
 
 std::vector<vec2_32i> path_1() {
-    vec2_32i p0 = {100,100};
-    vec2_32i p1 = {300, 100};
-    vec2_32i p2 = {300, 300};
+    vec2_32i p0 = {100,300};
+    vec2_32i p1 = {500, 300};
+    vec2_32i p2 = {300, 500};
 
-    return {p0, p1, p2};
+    return {p0, p1};//, p2};
 }
 
 void render() {
@@ -77,7 +77,7 @@ void render_path(std::vector<vec2<T>> path) {
 
 //    indices.pop_back();
     // draw triangles batch
-    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
+    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
             RED,
             vertices.data(),
             indices.data(),
@@ -87,13 +87,13 @@ void render_path(std::vector<vec2<T>> path) {
             precision);
 
     // draw triangulation
-    canvas->drawTrianglesWireframe(BLACK,
-            vertices.data(),
-            indices.data(),
-            indices.size(),
-            type,
-            255,
-            precision);
+//    canvas->drawTrianglesWireframe(BLACK,
+//            vertices.data(),
+//            indices.data(),
+//            indices.size(),
+//            type,
+//            255,
+//            precision);
 
 }
 

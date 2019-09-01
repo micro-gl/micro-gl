@@ -18,21 +18,24 @@ namespace tessellation {
 
         explicit PathTessellation(bool DEBUG = false);;
 
-        void compute(vec2_f * $pts,
-                        index size,
-                        array_container<index> & indices_buffer_tesselation,
-                        array_container<vec2_32i> & output_vertices_buffer_tessellation,
-                        const triangles::TrianglesIndices &requested =
-                                triangles::TrianglesIndices::TRIANGLES_STRIP
-        );
-
-        void compute(vec2_32i * $pts,
+        void compute(index stroke_size,
+                     const vec2_f * $pts,
                      index size,
-                     array_container<index> & indices_buffer_tesselation,
+                     array_container<index> & indices_buffer_tessellation,
                      array_container<vec2_32i> & output_vertices_buffer_tessellation,
                      const triangles::TrianglesIndices &requested =
                             triangles::TrianglesIndices::TRIANGLES_STRIP
-                        );
+                            );
+
+        void compute(index stroke_size,
+                     const vec2_32i * points,
+                     index size,
+                     array_container<index> & indices_buffer_tessellation,
+                     array_container<vec2_32i> & output_vertices_buffer_tessellation,
+                     const triangles::TrianglesIndices &requested =
+                            triangles::TrianglesIndices::TRIANGLES_STRIP,
+                     bool closePath = false
+                             );
 
         /**
          * computes the required indices buffer size for requested triangulation
