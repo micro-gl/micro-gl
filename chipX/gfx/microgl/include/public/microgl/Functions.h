@@ -52,6 +52,7 @@ namespace functions {
     }
 
     uint32_t sqrt_int(uint32_t a_nInput);
+    uint32_t sqrt_64(unsigned long long a_nInput);
 
     template <typename T>
     inline T edgeFunction(T x0, T y0, T x1, T y1, T x2, T y2)

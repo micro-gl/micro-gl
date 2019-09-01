@@ -16,7 +16,7 @@ namespace tessellation {
         vec2_32i vertices_int[size];
 
         for (index ix = 0; ix < size; ++ix) {
-            vertices_int[ix] = $pts[ix]<<5;
+            vertices_int[ix] = $pts[ix]<<12;
         }
 
         compute(vertices_int, size,
@@ -122,9 +122,9 @@ namespace tessellation {
     EarClippingTriangulation::orientation_value(const EarClippingTriangulation::Node *i,
                                                 const EarClippingTriangulation::Node *j,
                                                 const EarClippingTriangulation::Node *k) {
-        return i->data.pt->x * (j->data.pt->y - k->data.pt->y) +
-               j->data.pt->x * (k->data.pt->y - i->data.pt->y) +
-               k->data.pt->x * (i->data.pt->y - j->data.pt->y);
+        return i->data.pt->x * int64_t(j->data.pt->y - k->data.pt->y) +
+               j->data.pt->x * int64_t(k->data.pt->y - i->data.pt->y) +
+               k->data.pt->x * int64_t(i->data.pt->y - j->data.pt->y);
     }
 
     int EarClippingTriangulation::neighborhood_orientation_sign(

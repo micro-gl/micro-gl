@@ -435,10 +435,11 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                      const index *indices,
                                      const index size,
                                      const TrianglesIndices type,
-                                     const uint8_t opacity) {
+                                     const uint8_t opacity,
+                                     uint8_t requested_sub_pixel_precision) {
 
     vec2_32i vertices_int[size];
-    precision sub_pixel_precision = 4;
+    precision sub_pixel_precision = requested_sub_pixel_precision;
 
     for (int ix = 0; ix < size; ++ix) {
         vertices_int[ix] = vertices[ix]<<sub_pixel_precision;

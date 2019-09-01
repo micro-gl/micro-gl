@@ -11,6 +11,7 @@ namespace tessellation {
 
 #define abs(a) ((a)<0 ? -(a) : (a))
     using index = unsigned int;
+    using precision = unsigned char;
     using namespace microgl;
 
     class PathTessellation {
@@ -30,6 +31,7 @@ namespace tessellation {
         void compute(index stroke_size,
                      const vec2_32i * points,
                      index size,
+                     precision precision,
                      array_container<index> & indices_buffer_tessellation,
                      array_container<vec2_32i> & output_vertices_buffer_tessellation,
                      const triangles::TrianglesIndices &requested =

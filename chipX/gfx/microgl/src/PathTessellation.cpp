@@ -39,6 +39,33 @@ namespace tessellation {
 
     }
 
+    bool non_parallel_rays_intersect(const vec2_32i &a,
+                   const vec2_32i &b,
+                   const vec2_32i &c,
+                   const vec2_32i &d,
+                   vec2_32i &intersection,
+                   const precision precision
+                   ) {
+        vec2_32i s1 = b - a;
+        vec2_32i s2 = d - c;
+        vec2_32i dc = a - c;
+
+        int det = -s2.x * s1.y + s1.x * s2.y;
+        int s = (-s1.y * dc.x + s1.x * dc.y);
+        int t = ( s2.x * dc.y - s2.y * dc.x);
+
+//        if (s.isRegular() && t.isRegular() && s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+
+        if(det) {
+            // try this later
+            intersection = a + ((s1 * t))/det;
+
+            return true;
+        }
+
+        return false;
+    }
+
     int length_(const vec2_32i &vec) {
         return sqrt_int(vec.x*vec.x + vec.y*vec.y);
     }
@@ -54,22 +81,119 @@ namespace tessellation {
         direction_out = -(normal);///length;
     }
 
-    void merge_intersection(
-                     const vec2_32i &intersection,
-                     const vec2_32i &vec_1_out,
-                     const vec2_32i &vec_2_out,
-                     vec2_32i &merge_out,
-                     vec2_32i &merge_in,
-                     index stroke_size=10
+    void comp_parallel_ray(const vec2_32i &pt0,
+                           const vec2_32i &pt1,
+                           vec2_32i &pt_out_0,
+                           vec2_32i &pt_out_1,
+                           index stroke,
+                           const precision precision
     ) {
+        vec2_32i vec = pt1 - pt0;
+        vec2_32i normal = {-vec.y, vec.x};
+        int length = length_(normal);
 
-        vec2_32i out_vec = (vec_1_out + vec_2_out)/2;
-        out_vec = (out_vec*stroke_size)/length_(out_vec);
-
-        merge_out = intersection + out_vec;
-        merge_in = intersection - out_vec;
+//        vec_out = vec - ((normal*stroke)/length);
+        pt_out_0 = pt0 - ((normal*stroke))/length;
+        pt_out_1 = pt1 - ((normal*stroke))/length;
     }
 
+    void merge_intersection(
+            const vec2_32i &a,
+            const vec2_32i &b,
+            const vec2_32i &c,
+            const vec2_32i &d,
+            vec2_32i &merge_out,
+            index stroke_size,
+            const precision precision
+    ) {
+        bool co_linear = !non_parallel_rays_intersect(
+                a, b, c, d,
+                merge_out,
+                precision);
+
+        if(co_linear)
+            merge_out = b;
+    }
+
+    void PathTessellation::compute(index stroke_size,
+                                   const microgl::vec2_32i *points,
+                                   const index size,
+                                   const precision precision,
+                                   array_container<index> &indices_buffer_tessellation,
+                                   array_container<vec2_32i> &output_vertices_buffer_tessellation,
+                                   const microgl::triangles::TrianglesIndices &requested,
+                                   bool closePath) {
+
+        index idx = 0;
+        vec2_32i vec_0_out_current, vec_1_out_current;
+
+        vec2_32i merge_out, merge_in;
+
+        comp_parallel_ray(points[0],
+                          points[1],
+                          vec_0_out_current,
+                          vec_1_out_current,
+                          stroke_size,
+                          precision);
+
+        merge_out = vec_0_out_current;
+        merge_in = points[0] - (vec_0_out_current - points[0]);
+
+        output_vertices_buffer_tessellation.push_back(merge_out);
+        output_vertices_buffer_tessellation.push_back(merge_in);
+        indices_buffer_tessellation.push_back(idx++);
+        indices_buffer_tessellation.push_back(idx++);
+
+        for (index ix = 1; ix < size - 1; ++ix) {
+            vec2_32i vec_1_out_next, vec_0_out_next;
+
+            comp_parallel_ray(points[ix],
+                              points[ix+1],
+                              vec_0_out_next,
+                              vec_1_out_next,
+                              stroke_size,
+                              precision);
+
+            merge_intersection(
+                    vec_0_out_current,
+                    vec_1_out_current,
+                    vec_0_out_next,
+                    vec_1_out_next,
+                    merge_out,
+                    stroke_size,
+                    precision
+            );
+
+            merge_in = points[ix] - (merge_out - points[ix]);
+
+            output_vertices_buffer_tessellation.push_back(merge_out);
+            output_vertices_buffer_tessellation.push_back(merge_in);
+            indices_buffer_tessellation.push_back(idx++);
+            indices_buffer_tessellation.push_back(idx++);
+
+            vec_0_out_current = vec_0_out_next;
+            vec_1_out_current = vec_1_out_next;
+        }
+
+        comp_parallel_ray(points[size-2],
+                          points[size-1],
+                          vec_0_out_current,
+                          vec_1_out_current,
+                          stroke_size,
+                          precision
+                          );
+
+        merge_out = vec_1_out_current;
+        merge_in = points[size-1] - (vec_1_out_current - points[size-1]);
+
+        output_vertices_buffer_tessellation.push_back(merge_out);
+        output_vertices_buffer_tessellation.push_back(merge_in);
+        indices_buffer_tessellation.push_back(idx++);
+        indices_buffer_tessellation.push_back(idx++);
+
+    }
+
+    /*
     void PathTessellation::compute(index stroke_size,
                                    const microgl::vec2_32i *points,
                                    const index size,
@@ -79,10 +203,8 @@ namespace tessellation {
                                    bool closePath) {
 
         index idx = 0;
-        vec2_32i vec_1_out_current, vec_1_in_current,
-                    vec_2_out_current, vec_2_in_current;
-        vec2_32i vec_1_out_next, vec_1_in_next,
-                    vec_2_out_next, vec_2_in_next;
+        vec2_32i vec_1_out_current;
+        vec2_32i vec_1_out_next;
         vec2_32i merge_out, merge_in;
 
         comp_normal(points[0],
@@ -126,11 +248,6 @@ namespace tessellation {
             indices_buffer_tessellation.push_back(idx++);
 
             vec_1_out_current = vec_1_out_next;
-
-//            vec_1_in_current = vec_1_in_next;
-//            vec_2_out_current = vec_2_out_next;
-//            vec_2_in_current = vec_2_in_next;
-
         }
 
         comp_normal(points[size-2],
@@ -154,4 +271,5 @@ namespace tessellation {
 
     }
 
+     */
 }

@@ -29,7 +29,9 @@ namespace functions {
     unsigned int length(const vec2_32i &a, const vec2_32i &b, uint8_t precision) {
         int dx = (a.x-b.x), dy = (a.y-b.y);
         // shift right since sqrt is compressing
-        return sqrt_int(fixed_mul_fixed_2(dx, dx, precision) + fixed_mul_fixed_2(dy,dy, precision));//<<(precision>>1);
+//        return sqrt_int(fixed_mul_fixed_2(dx, dx, precision) + fixed_mul_fixed_2(dy,dy, precision));//<<(precision>>1);
+//        return sqrt_64(fixed_mul_fixed_2(dx, dx, precision) + fixed_mul_fixed_2(dy,dy, precision));//<<(precision>>1);
+        return sqrt_64((uint64_t)dx*dx + (uint64_t)dy*dy);
     }
 
     bool
@@ -138,6 +140,31 @@ namespace functions {
         uint32_t op  = a_nInput;
         uint32_t res = 0;
         uint32_t one = 1 << 30; // The second-to-top bit is set: use 1u << 14 for uint16_t type; use 1uL<<30 for uint32_t type
+
+
+        // "one" starts at the highest power of four <= than the argument.
+        while (one > op)
+        {
+            one >>= 2;
+        }
+
+        while (one != 0)
+        {
+            if (op >= res + one)
+            {
+                op = op - (res + one);
+                res = res + ( one<<1);
+            }
+            res >>= 1;
+            one >>= 2;
+        }
+        return res;
+    }
+
+    uint32_t sqrt_64(uint64_t a_nInput) {
+        uint64_t op  = a_nInput;
+        uint64_t res = 0;
+        uint64_t one = uint64_t(1) << 62; // The second-to-top bit is set: use 1u << 14 for uint16_t type; use 1uL<<30 for uint32_t type
 
 
         // "one" starts at the highest power of four <= than the argument.

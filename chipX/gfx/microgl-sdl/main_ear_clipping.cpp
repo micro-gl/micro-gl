@@ -107,7 +107,7 @@ void render_polygon(std::vector<vec2<T>> polygon) {
 
     EarClippingTriangulation ear{true};
 
-    uint8_t precision = 4;
+    uint8_t precision = 15;
     auto type = TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
     index size_indices = EarClippingTriangulation::required_indices_size(polygon.size(),
             type);
@@ -123,7 +123,8 @@ void render_polygon(std::vector<vec2<T>> polygon) {
 
     // draw triangles batch
     canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-            RED, polygon.data(),
+            RED,
+            polygon.data(),
             indices.data(),
             indices.size(),
             type,
