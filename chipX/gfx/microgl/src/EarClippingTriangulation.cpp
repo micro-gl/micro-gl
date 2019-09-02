@@ -8,8 +8,6 @@ namespace tessellation {
     void EarClippingTriangulation::compute(microgl::vec2_f *$pts,
                                              index size,
                                              array_container<index> & indices_buffer_triangulation,
-//                                             index *indices_buffer_triangulation,
-//                                             index indices_buffer_size,
                                              const triangles::TrianglesIndices &requested) {
         // I could have made a template for point types and
         // conserve stack memory, but the hell with it for now
@@ -28,8 +26,6 @@ namespace tessellation {
     void EarClippingTriangulation::compute(microgl::vec2_32i *$pts,
                                              index size,
                                              array_container<index> & indices_buffer_triangulation,
-//                                             index *indices_buffer_triangulation,
-//                                             index indices_buffer_size,
                                              const triangles::TrianglesIndices &requested) {
 
 //        if(requested==triangles::TrianglesIndices::TRIANGLES) {
@@ -113,10 +109,7 @@ namespace tessellation {
         }
 
         pts.clear();
-
-//        return indices_buffer_triangulation;
     }
-
 
     long long
     EarClippingTriangulation::orientation_value(const EarClippingTriangulation::Node *i,

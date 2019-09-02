@@ -33,7 +33,7 @@ template <typename T>
 void render_path(std::vector<vec2<T>> path);
 
 float t = 0;
-int M = 5;
+int M = 4;
 
 std::vector<vec2_32i> path_diagonal() {
     vec2_32i p0 = {100,100};
@@ -86,7 +86,7 @@ void render_path(std::vector<vec2<T>> path) {
     PathTessellation path_tess{true};
 
     uint8_t precision = M;
-    index stroke = 4<<precision;
+    index stroke = 20<<precision;
     auto type = TrianglesIndices::TRIANGLES_STRIP;
 //    index indices[size_indices];
     static_array<index, 128> indices;
@@ -113,7 +113,7 @@ void render_path(std::vector<vec2<T>> path) {
             120,
             precision);
 
-    return;
+//    return;
     // draw triangulation
     canvas->drawTrianglesWireframe(BLACK,
             vertices.data(),

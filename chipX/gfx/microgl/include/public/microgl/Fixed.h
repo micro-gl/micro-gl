@@ -19,7 +19,7 @@ point q format returning the answer in q format */
 
 #define fixed_add_fixed(a,b) ((a)+(b))
 #define fixed_sub_fixed(a,b) (fixed_add_fixed(a,-b))
-#define fixed_mul_fixed_2(a,b,q) ((((long)(a)*(b)))>>(q))
+#define fixed_mul_fixed_2(a,b,q) (((((long)(a))*(b)))>>(q))
 #define fixed_div_fixed_2(a,b,q) ((((long)(a))<<(q))/(b))
 #define fixed_mul_fixed(a,b) (fixed_mul_fixed_2(a,b,Q))
 #define fixed_div_fixed(a,b) (fixed_div_fixed_2(a,b,Q))

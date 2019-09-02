@@ -22,8 +22,6 @@ namespace tessellation {
         void compute(vec2_f * $pts,
                         index size,
                         array_container<index> & indices_buffer_triangulation,
-//                        index *indices_buffer_triangulation,
-//                        index indices_buffer_size,
                         const triangles::TrianglesIndices &requested =
                                 triangles::TrianglesIndices::TRIANGLES_FAN
         );
@@ -31,8 +29,6 @@ namespace tessellation {
         void compute(vec2_32i * $pts,
                         index size,
                         array_container<index> & indices_buffer_triangulation,
-//                        index *indices_buffer_triangulation,
-//                        index indices_buffer_size,
                         const triangles::TrianglesIndices &requested =
                                 triangles::TrianglesIndices::TRIANGLES_FAN
                         );

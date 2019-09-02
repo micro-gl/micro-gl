@@ -9,8 +9,6 @@ namespace tessellation {
     void FanTriangulation::compute(vec2_32i *$pts,
                                      index size,
                                      array_container<index> & indices_buffer_triangulation,
-//                                     index *indices_buffer_triangulation,
-//                                     index indices_buffer_size,
                                      const triangles::TrianglesIndices &requested) {
 
 //        if(requested==triangles::TrianglesIndices::TRIANGLES_FAN) {
@@ -37,8 +35,6 @@ namespace tessellation {
 
             for (index ix = 0; ix < num_triangles; ++ix) {
                 if(ix==0) {
-//                    indices[0] = 0;
-//                    indices[1] = 1;
                     indices.push_back(0);
                     indices.push_back(1);
                 }
@@ -62,20 +58,16 @@ namespace tessellation {
         }
         else {
             for (index ix = 0; ix < count; ++ix) {
-//                indices[ix] = ix;
                 indices.push_back(ix);
             }
         }
 
-//        return indices;
     }
 
     void
     FanTriangulation::compute(vec2_f *$pts,
                               index size,
                               array_container<index> & indices_buffer_triangulation,
-//                              index *indices_buffer_triangulation,
-//                              index indices_buffer_size,
                               const triangles::TrianglesIndices &requested) {
         // I could have made a template for point types and
         // conserve stack memory, but the hell with it for now
@@ -87,7 +79,6 @@ namespace tessellation {
 
         compute(vertices_int, size,
                        indices_buffer_triangulation,
-//                       indices_buffer_size,
                        requested);
     }
 

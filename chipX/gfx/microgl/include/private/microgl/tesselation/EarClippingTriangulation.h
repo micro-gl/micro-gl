@@ -23,8 +23,6 @@ namespace tessellation {
         void compute(vec2_f * $pts,
                         index size,
                         array_container<index> & indices_buffer_triangulation,
-//                        index *indices_buffer_triangulation,
-//                        index indices_buffer_size,
                         const triangles::TrianglesIndices &requested =
                                         triangles::TrianglesIndices::TRIANGLES
         );
@@ -32,8 +30,6 @@ namespace tessellation {
         void compute(vec2_32i * $pts,
                         index size,
                         array_container<index> & indices_buffer_triangulation,
-//                        index *indices_buffer_triangulation,
-//                        index indices_buffer_size,
                         const triangles::TrianglesIndices &requested =
                                     triangles::TrianglesIndices::TRIANGLES
                         );
@@ -66,7 +62,7 @@ namespace tessellation {
 
         static Node * maximal_y_element(const LinkedList * list);
 
-        bool isConvex(const Node * v, const LinkedList * list);
+        static bool isConvex(const Node * v, const LinkedList * list);
 
         static bool isEmpty(const Node * v, const LinkedList * list);
 
