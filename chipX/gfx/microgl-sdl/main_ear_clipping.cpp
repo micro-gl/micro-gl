@@ -107,7 +107,7 @@ void render_polygon(std::vector<vec2<T>> polygon) {
 
     EarClippingTriangulation ear{true};
 
-    uint8_t precision = 15;
+    uint8_t precision = 10;
     auto type = TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
     index size_indices = EarClippingTriangulation::required_indices_size(polygon.size(),
             type);

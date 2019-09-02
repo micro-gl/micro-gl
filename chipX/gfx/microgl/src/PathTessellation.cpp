@@ -1,10 +1,11 @@
 #include <microgl/tesselation/PathTessellation.h>
 
 namespace tessellation {
-    uint32_t sqrt_int(uint32_t a_nInput) {
-        uint32_t op  = a_nInput;
-        uint32_t res = 0;
-        uint32_t one = 1 << 30; // The second-to-top bit is set: use 1u << 14 for uint16_t type; use 1uL<<30 for uint32_t type
+
+    uint32_t sqrt_64(uint64_t a_nInput) {
+        uint64_t op  = a_nInput;
+        uint64_t res = 0;
+        uint64_t one = uint64_t(1) << 62; // The second-to-top bit is set: use 1u << 14 for uint16_t type; use 1uL<<30 for uint32_t type
 
 
         // "one" starts at the highest power of four <= than the argument.
@@ -39,6 +40,11 @@ namespace tessellation {
 
     }
 
+    unsigned int length_(const vec2_32i &vec) {
+        return sqrt_64(int64_t(vec.x)*vec.x + int64_t(vec.y)*vec.y);
+    }
+
+
     bool non_parallel_rays_intersect(const vec2_32i &a,
                    const vec2_32i &b,
                    const vec2_32i &c,
@@ -49,36 +55,30 @@ namespace tessellation {
         vec2_32i s1 = b - a;
         vec2_32i s2 = d - c;
         vec2_32i dc = a - c;
+//
+//        int64_t det = -int64_t(s2.x) * int64_t(s1.y) + int64_t(s1.x) * int64_t(s2.y);
+//        int64_t s = -int64_t(s1.y) * int64_t(dc.x) + int64_t(s1.x) * int64_t(dc.y);
+//        int64_t t = int64_t(s2.x) * int64_t(dc.y) - int64_t(s2.y) * int64_t(dc.x);
 
-        int det = -s2.x * s1.y + s1.x * s2.y;
-        int s = (-s1.y * dc.x + s1.x * dc.y);
-        int t = ( s2.x * dc.y - s2.y * dc.x);
+
+        int64_t det = -((int64_t(s2.x) * int64_t(s1.y))>>precision) + ((int64_t(s1.x) * int64_t(s2.y))>>precision);
+        int64_t s = -((int64_t(s1.y) * int64_t(dc.x))>>precision) + ((int64_t(s1.x) * int64_t(dc.y))>>precision);
+        int64_t t = ((int64_t(s2.x) * int64_t(dc.y))>>precision) - ((int64_t(s2.y) * int64_t(dc.x))>>precision);
 
 //        if (s.isRegular() && t.isRegular() && s >= 0 && s <= 1 && t >= 0 && t <= 1) {
 
         if(det) {
             // try this later
-            intersection = a + ((s1 * t))/det;
+            // we mix 64 bit precision to avoid overflow
+            int64_t dir_x = (int64_t (s1.x)*t)/det;
+            int64_t dir_y = (int64_t (s1.y)*t)/det;
+            vec2_32i dir{dir_x, dir_y};
+            intersection = a + dir;
 
             return true;
         }
 
         return false;
-    }
-
-    int length_(const vec2_32i &vec) {
-        return sqrt_int(vec.x*vec.x + vec.y*vec.y);
-    }
-
-    void comp_normal(const vec2_32i &pt0,
-                     const vec2_32i &pt1,
-                     vec2_32i &direction_out
-    ) {
-        vec2_32i vec = pt1 - pt0;
-        vec2_32i normal = {-vec.y, vec.x};
-        int length = length_(normal);
-
-        direction_out = -(normal);///length;
     }
 
     void comp_parallel_ray(const vec2_32i &pt0,
@@ -90,11 +90,15 @@ namespace tessellation {
     ) {
         vec2_32i vec = pt1 - pt0;
         vec2_32i normal = {-vec.y, vec.x};
-        int length = length_(normal);
+        uint32_t length = length_(normal);
+
+        int dir_x = (int64_t(normal.x)*stroke)/length;
+        int dir_y = (int64_t(normal.y)*stroke)/length;
+        vec2_32i dir{dir_x, dir_y};
 
 //        vec_out = vec - ((normal*stroke)/length);
-        pt_out_0 = pt0 - ((normal*stroke))/length;
-        pt_out_1 = pt1 - ((normal*stroke))/length;
+        pt_out_0 = pt0 - dir;
+        pt_out_1 = pt1 - dir;
     }
 
     void merge_intersection(

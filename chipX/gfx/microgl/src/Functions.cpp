@@ -31,7 +31,7 @@ namespace functions {
         // shift right since sqrt is compressing
 //        return sqrt_int(fixed_mul_fixed_2(dx, dx, precision) + fixed_mul_fixed_2(dy,dy, precision));//<<(precision>>1);
 //        return sqrt_64(fixed_mul_fixed_2(dx, dx, precision) + fixed_mul_fixed_2(dy,dy, precision));//<<(precision>>1);
-        return sqrt_64((uint64_t)dx*dx + (uint64_t)dy*dy);
+        return sqrt_64((int64_t)dx*dx + (int64_t)dy*dy);
     }
 
     bool

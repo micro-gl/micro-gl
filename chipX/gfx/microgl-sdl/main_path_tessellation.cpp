@@ -33,6 +33,7 @@ template <typename T>
 void render_path(std::vector<vec2<T>> path);
 
 float t = 0;
+int M = 5;
 
 std::vector<vec2_32i> path_diagonal() {
     vec2_32i p0 = {100,100};
@@ -52,17 +53,17 @@ std::vector<vec2_32i> path_horizontal() {
 std::vector<vec2_32i> path_resh() {
     vec2_32i p0 = {100,100};
     vec2_32i p1 = {300, 100};
-    vec2_32i p2 = {400, 300};
-    return {p0, p1, p2};
+    vec2_32i p2 = {300, 300};
+//    return {p0<<M, p1<<M};
+    return {p0<<M, p1<<M, p2<<M};
 }
-int M = 10;
 std::vector<vec2_32i> path_2() {
     vec2_32i p0 = {100,100};
     vec2_32i p1 = {300, 100};
     vec2_32i p2 = {400, 200};
     vec2_32i p3 = {400, 300};
 
-    return {p0<<M, p1<<M};
+//    return {p2<<M, p3<<M};
     return {p0<<M, p1<<M, p2<<M, p3<<M};
 }
 
@@ -85,7 +86,7 @@ void render_path(std::vector<vec2<T>> path) {
     PathTessellation path_tess{true};
 
     uint8_t precision = M;
-    index stroke = 10<<precision;
+    index stroke = 4<<precision;
     auto type = TrianglesIndices::TRIANGLES_STRIP;
 //    index indices[size_indices];
     static_array<index, 128> indices;
