@@ -103,7 +103,7 @@ void render_path(std::vector<vec2<T>> path) {
     uint8_t precision = M;
     index stroke = 15<<precision;
     auto type = TrianglesIndices::TRIANGLES_STRIP;
-//    index indices[size_indices];
+
     static_array<index, 128> indices;
     static_array<vec2_32i, 128> vertices;
 
@@ -121,8 +121,6 @@ void render_path(std::vector<vec2<T>> path) {
             type
     );
 
-
-//    indices.pop_back();
     // draw triangles batch
     canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
             RED,

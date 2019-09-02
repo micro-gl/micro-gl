@@ -125,7 +125,8 @@ namespace tessellation {
                                    const microgl::triangles::TrianglesIndices &requested
                                    ) {
 
-        bool with_boundary = requested==triangles::TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY;
+        bool with_boundary =
+                requested==triangles::TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY;
 
         switch (gravity) {
             case gravity::center:
@@ -170,6 +171,7 @@ namespace tessellation {
         indices_buffer_tessellation.push_back(idx++);
         indices_buffer_tessellation.push_back(idx++);
 
+        bool even=true;
         for (index ix = 1; ix < size - 1; ++ix) {
 
             comp_parallel_ray(points[ix],
@@ -204,10 +206,17 @@ namespace tessellation {
             output_vertices_buffer_tessellation.push_back(merge_out);
             output_vertices_buffer_tessellation.push_back(merge_in);
             indices_buffer_tessellation.push_back(idx++);
+            if(with_boundary)
+                indices_buffer_tessellation.push_back(
+                        triangles::create_boundary_info(false, false, true));
             indices_buffer_tessellation.push_back(idx++);
+            if(with_boundary)
+                indices_buffer_tessellation.push_back(
+                        triangles::create_boundary_info(false, false, true));
 
             p0_out_current = p0_out_next;
             p1_out_current = p1_out_next;
+            even = !even;
         }
 
         // edge cases
@@ -238,7 +247,19 @@ namespace tessellation {
             output_vertices_buffer_tessellation.push_back(merge_out);
             output_vertices_buffer_tessellation.push_back(merge_in);
             indices_buffer_tessellation.push_back(idx++);
+            if(with_boundary)
+                indices_buffer_tessellation.push_back(
+                        triangles::create_boundary_info(false, false, true));
             indices_buffer_tessellation.push_back(idx++);
+            if(with_boundary)
+                indices_buffer_tessellation.push_back(
+                        triangles::create_boundary_info(true, false, true));
+
+            // fix the first triangle boundary
+            if(with_boundary)
+                indices_buffer_tessellation[3] =
+                        triangles::create_boundary_info(true, false, true);
+
         }
         else {
             // last segment to first segment,
@@ -322,12 +343,25 @@ namespace tessellation {
             output_vertices_buffer_tessellation.push_back(merge_out);
             output_vertices_buffer_tessellation.push_back(merge_in);
             indices_buffer_tessellation.push_back(idx++);
+            if(with_boundary)
+                indices_buffer_tessellation.push_back(
+                        triangles::create_boundary_info(false, false, true));
             indices_buffer_tessellation.push_back(idx++);
+            if(with_boundary)
+                indices_buffer_tessellation.push_back(
+                        triangles::create_boundary_info(false, false, true));
 
             output_vertices_buffer_tessellation.push_back(output_vertices_buffer_tessellation[0]);
             output_vertices_buffer_tessellation.push_back(output_vertices_buffer_tessellation[1]);
             indices_buffer_tessellation.push_back(idx++);
+            if(with_boundary)
+                indices_buffer_tessellation.push_back(
+                        triangles::create_boundary_info(false, false, true));
+
             indices_buffer_tessellation.push_back(idx++);
+            if(with_boundary)
+                indices_buffer_tessellation.push_back(
+                        triangles::create_boundary_info(false, false, true));
 
         }
 
