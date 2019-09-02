@@ -59,7 +59,7 @@ std::vector<vec2_32i> path_resh() {
 }
 std::vector<vec2_32i> path_2() {
     vec2_32i p0 = {100,100};
-    vec2_32i p1 = {300, 100};
+    vec2_32i p1 = {300, 400};
     vec2_32i p2 = {400, 200};
     vec2_32i p3 = {400, 300};
 
@@ -86,7 +86,7 @@ void render_path(std::vector<vec2<T>> path) {
     PathTessellation path_tess{true};
 
     uint8_t precision = M;
-    index stroke = 20<<precision;
+    index stroke = 10<<precision;
     auto type = TrianglesIndices::TRIANGLES_STRIP;
 //    index indices[size_indices];
     static_array<index, 128> indices;
@@ -99,7 +99,7 @@ void render_path(std::vector<vec2<T>> path) {
             indices,
             vertices,
             type,
-            false
+            true
             );
 
 //    indices.pop_back();
@@ -113,7 +113,7 @@ void render_path(std::vector<vec2<T>> path) {
             120,
             precision);
 
-//    return;
+    return;
     // draw triangulation
     canvas->drawTrianglesWireframe(BLACK,
             vertices.data(),

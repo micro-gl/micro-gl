@@ -123,6 +123,7 @@ namespace tessellation {
 
         index idx = 0;
         vec2_32i vec_0_out_current, vec_1_out_current;
+        vec2_32i vec_1_out_next, vec_0_out_next;
         vec2_32i merge_out, merge_in;
 
         comp_parallel_ray(points[0],
@@ -140,7 +141,6 @@ namespace tessellation {
         indices_buffer_tessellation.push_back(idx++);
 
         for (index ix = 1; ix < size - 1; ++ix) {
-            vec2_32i vec_1_out_next, vec_0_out_next;
 
             comp_parallel_ray(points[ix],
                               points[ix+1],
@@ -168,20 +168,85 @@ namespace tessellation {
             vec_1_out_current = vec_1_out_next;
         }
 
-        comp_parallel_ray(points[size-2],
-                          points[size-1],
-                          vec_0_out_current,
-                          vec_1_out_current,
-                          stroke_size
-                          );
+        if(!closePath) {
+            comp_parallel_ray(points[size-2],
+                              points[size-1],
+                              vec_0_out_current,
+                              vec_1_out_current,
+                              stroke_size
+            );
 
-        merge_out = vec_1_out_current;
-        merge_in = points[size-1] - (vec_1_out_current - points[size-1]);
+            merge_out = vec_1_out_current;
+            merge_in = points[size-1] - (vec_1_out_current - points[size-1]);
 
-        output_vertices_buffer_tessellation.push_back(merge_out);
-        output_vertices_buffer_tessellation.push_back(merge_in);
-        indices_buffer_tessellation.push_back(idx++);
-        indices_buffer_tessellation.push_back(idx++);
+            output_vertices_buffer_tessellation.push_back(merge_out);
+            output_vertices_buffer_tessellation.push_back(merge_in);
+            indices_buffer_tessellation.push_back(idx++);
+            indices_buffer_tessellation.push_back(idx++);
+        }
+        else {
+            // last segment to first segment
+            comp_parallel_ray(points[size-1],
+                              points[0],
+                              vec_0_out_current,
+                              vec_1_out_current,
+                              stroke_size);
+
+            comp_parallel_ray(points[0],
+                              points[1],
+                              vec_0_out_next,
+                              vec_1_out_next,
+                              stroke_size);
+
+            merge_intersection(
+                    vec_0_out_current,
+                    vec_1_out_current,
+                    vec_0_out_next,
+                    vec_1_out_next,
+                    merge_out,
+                    precision
+            );
+
+            merge_in = points[0] - (merge_out - points[0]);
+
+            output_vertices_buffer_tessellation[0] = merge_out;
+            output_vertices_buffer_tessellation[1] = merge_in;
+
+            // before last and last segment
+            comp_parallel_ray(points[size-2],
+                              points[size-1],
+                              vec_0_out_current,
+                              vec_1_out_current,
+                              stroke_size);
+
+            comp_parallel_ray(points[size-1],
+                              points[0],
+                              vec_0_out_next,
+                              vec_1_out_next,
+                              stroke_size);
+
+            merge_intersection(
+                    vec_0_out_current,
+                    vec_1_out_current,
+                    vec_0_out_next,
+                    vec_1_out_next,
+                    merge_out,
+                    precision
+            );
+
+            merge_in = points[size-1] - (merge_out - points[size-1]);
+
+            output_vertices_buffer_tessellation.push_back(merge_out);
+            output_vertices_buffer_tessellation.push_back(merge_in);
+            indices_buffer_tessellation.push_back(idx++);
+            indices_buffer_tessellation.push_back(idx++);
+
+            output_vertices_buffer_tessellation.push_back(output_vertices_buffer_tessellation[0]);
+            output_vertices_buffer_tessellation.push_back(output_vertices_buffer_tessellation[1]);
+            indices_buffer_tessellation.push_back(idx++);
+            indices_buffer_tessellation.push_back(idx++);
+
+        }
 
     }
 
