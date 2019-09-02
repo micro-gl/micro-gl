@@ -17,6 +17,10 @@ namespace tessellation {
     class PathTessellation {
     public:
 
+        enum class gravity {
+            center, inward, outward
+        };
+
         explicit PathTessellation(bool DEBUG = false);;
 
         void compute(index stroke_size,
@@ -28,15 +32,16 @@ namespace tessellation {
                             triangles::TrianglesIndices::TRIANGLES_STRIP
                             );
 
-        void compute(index stroke_size,
+        void compute(int stroke_size,
+                     bool closePath,
+                     const gravity gravity,
                      const vec2_32i * points,
                      index size,
                      precision precision,
                      array_container<index> & indices_buffer_tessellation,
                      array_container<vec2_32i> & output_vertices_buffer_tessellation,
                      const triangles::TrianglesIndices &requested =
-                            triangles::TrianglesIndices::TRIANGLES_STRIP,
-                     bool closePath = false
+                            triangles::TrianglesIndices::TRIANGLES_STRIP
                              );
 
         /**

@@ -1,6 +1,8 @@
 #include <microgl/tesselation/PathTessellation.h>
 
 namespace tessellation {
+#define min_(a, b) ((a)<(b) ? (a) : (b))
+#define max_(a, b) ((a)>(b) ? (a) : (b))
 
     uint32_t sqrt_64(uint64_t a_nInput) {
         uint64_t op  = a_nInput;
@@ -81,7 +83,7 @@ namespace tessellation {
                            const vec2_32i &pt1,
                            vec2_32i &pt_out_0,
                            vec2_32i &pt_out_1,
-                           index stroke
+                           int stroke
     ) {
         vec2_32i vec = pt1 - pt0;
         vec2_32i normal = {-vec.y, vec.x};
@@ -112,28 +114,56 @@ namespace tessellation {
             merge_out = b;
     }
 
-    void PathTessellation::compute(index stroke_size,
+    void PathTessellation::compute(int stroke_size,
+                                   bool closePath,
+                                   const gravity gravity,
                                    const microgl::vec2_32i *points,
                                    const index size,
                                    const precision precision,
                                    array_container<index> &indices_buffer_tessellation,
                                    array_container<vec2_32i> &output_vertices_buffer_tessellation,
-                                   const microgl::triangles::TrianglesIndices &requested,
-                                   bool closePath) {
+                                   const microgl::triangles::TrianglesIndices &requested
+                                   ) {
+
+        bool with_boundary = requested==triangles::TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY;
+
+        switch (gravity) {
+            case gravity::center:
+                stroke_size = max_(1, stroke_size>>1);
+                break;
+            case gravity::inward:
+                stroke_size = -stroke_size;
+                break;
+            case gravity::outward:
+                stroke_size = stroke_size;
+                break;
+        }
 
         index idx = 0;
-        vec2_32i vec_0_out_current, vec_1_out_current;
-        vec2_32i vec_1_out_next, vec_0_out_next;
+        vec2_32i p0_out_current, p1_out_current;
+        vec2_32i p0_out_next, p1_out_next;
         vec2_32i merge_out, merge_in;
 
         comp_parallel_ray(points[0],
                           points[1],
-                          vec_0_out_current,
-                          vec_1_out_current,
+                          p0_out_current,
+                          p1_out_current,
                           stroke_size);
 
-        merge_out = vec_0_out_current;
-        merge_in = points[0] - (vec_0_out_current - points[0]);
+        switch (gravity) {
+            case gravity::center:
+                merge_in = p0_out_current;
+                merge_out = points[0] - (p0_out_current - points[0]);
+                break;
+            case gravity::inward:
+                merge_in = points[0];
+                merge_out = p0_out_current;
+                break;
+            case gravity::outward:
+                merge_out = points[0];
+                merge_in = p0_out_current;
+                break;
+        }
 
         output_vertices_buffer_tessellation.push_back(merge_out);
         output_vertices_buffer_tessellation.push_back(merge_in);
@@ -144,40 +174,66 @@ namespace tessellation {
 
             comp_parallel_ray(points[ix],
                               points[ix+1],
-                              vec_0_out_next,
-                              vec_1_out_next,
+                              p0_out_next,
+                              p1_out_next,
                               stroke_size);
 
             merge_intersection(
-                    vec_0_out_current,
-                    vec_1_out_current,
-                    vec_0_out_next,
-                    vec_1_out_next,
+                    p0_out_current,
+                    p1_out_current,
+                    p0_out_next,
+                    p1_out_next,
                     merge_out,
                     precision
             );
 
-            merge_in = points[ix] - (merge_out - points[ix]);
+            switch (gravity) {
+                case gravity::center:
+                    merge_in = merge_out;
+                    merge_out = points[ix] - (merge_out - points[ix]);
+                    break;
+                case gravity::inward:
+                    merge_in = points[ix];
+                    break;
+                case gravity::outward:
+                    merge_in = merge_out;
+                    merge_out = points[ix];
+                    break;
+            }
 
             output_vertices_buffer_tessellation.push_back(merge_out);
             output_vertices_buffer_tessellation.push_back(merge_in);
             indices_buffer_tessellation.push_back(idx++);
             indices_buffer_tessellation.push_back(idx++);
 
-            vec_0_out_current = vec_0_out_next;
-            vec_1_out_current = vec_1_out_next;
+            p0_out_current = p0_out_next;
+            p1_out_current = p1_out_next;
         }
 
+        // edge cases
         if(!closePath) {
             comp_parallel_ray(points[size-2],
                               points[size-1],
-                              vec_0_out_current,
-                              vec_1_out_current,
+                              p0_out_current,
+                              p1_out_current,
                               stroke_size
             );
 
-            merge_out = vec_1_out_current;
-            merge_in = points[size-1] - (vec_1_out_current - points[size-1]);
+
+            switch (gravity) {
+                case gravity::center:
+                    merge_in = p1_out_current;
+                    merge_out = points[size-1] - (p1_out_current - points[size-1]);
+                    break;
+                case gravity::inward:
+                    merge_in = points[size-1];
+                    merge_out = p1_out_current;
+                    break;
+                case gravity::outward:
+                    merge_in = p1_out_current;
+                    merge_out = points[size-1];
+                    break;
+            }
 
             output_vertices_buffer_tessellation.push_back(merge_out);
             output_vertices_buffer_tessellation.push_back(merge_in);
@@ -185,56 +241,83 @@ namespace tessellation {
             indices_buffer_tessellation.push_back(idx++);
         }
         else {
-            // last segment to first segment
+            // last segment to first segment,
+            // patch first two points.
             comp_parallel_ray(points[size-1],
                               points[0],
-                              vec_0_out_current,
-                              vec_1_out_current,
+                              p0_out_current,
+                              p1_out_current,
                               stroke_size);
 
             comp_parallel_ray(points[0],
                               points[1],
-                              vec_0_out_next,
-                              vec_1_out_next,
+                              p0_out_next,
+                              p1_out_next,
                               stroke_size);
 
             merge_intersection(
-                    vec_0_out_current,
-                    vec_1_out_current,
-                    vec_0_out_next,
-                    vec_1_out_next,
+                    p0_out_current,
+                    p1_out_current,
+                    p0_out_next,
+                    p1_out_next,
                     merge_out,
                     precision
             );
 
-            merge_in = points[0] - (merge_out - points[0]);
+            switch (gravity) {
+                case gravity::center:
+                    merge_in = merge_out;
+                    merge_out = points[0] - (merge_out - points[0]);
+                    break;
+                case gravity::inward:
+                    merge_in = points[0];
+                    break;
+                case gravity::outward:
+                    merge_in = merge_out;
+                    merge_out = points[0];
+                    break;
+            }
 
             output_vertices_buffer_tessellation[0] = merge_out;
             output_vertices_buffer_tessellation[1] = merge_in;
 
-            // before last and last segment
+            // before last and last segment,
+            // create last two triangles that connect
+            // the last point to the first.
             comp_parallel_ray(points[size-2],
                               points[size-1],
-                              vec_0_out_current,
-                              vec_1_out_current,
+                              p0_out_current,
+                              p1_out_current,
                               stroke_size);
 
             comp_parallel_ray(points[size-1],
                               points[0],
-                              vec_0_out_next,
-                              vec_1_out_next,
+                              p0_out_next,
+                              p1_out_next,
                               stroke_size);
 
             merge_intersection(
-                    vec_0_out_current,
-                    vec_1_out_current,
-                    vec_0_out_next,
-                    vec_1_out_next,
+                    p0_out_current,
+                    p1_out_current,
+                    p0_out_next,
+                    p1_out_next,
                     merge_out,
                     precision
             );
 
-            merge_in = points[size-1] - (merge_out - points[size-1]);
+            switch (gravity) {
+                case gravity::center:
+                    merge_in = merge_out;
+                    merge_out = points[size-1] - (merge_out - points[size-1]);
+                    break;
+                case gravity::inward:
+                    merge_in = points[size-1];
+                    break;
+                case gravity::outward:
+                    merge_in = merge_out;
+                    merge_out = points[size-1];
+                    break;
+            }
 
             output_vertices_buffer_tessellation.push_back(merge_out);
             output_vertices_buffer_tessellation.push_back(merge_in);

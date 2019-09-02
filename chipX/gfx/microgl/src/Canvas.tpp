@@ -547,7 +547,6 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             bool even = true;
 
             for (index ix = 0; ix < size-2; ++ix) {
-                even = !even;
                 // we alternate order inorder to preserve CCW or CW,
                 // in the future I will add face culling, which will
                 // support only CW or CCW orientation at a time.
@@ -568,6 +567,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                        sub_pixel_precision
                     );
 
+                even = !even;
             }
 
             break;

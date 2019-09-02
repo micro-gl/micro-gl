@@ -33,7 +33,7 @@ template <typename T>
 void render_path(std::vector<vec2<T>> path);
 
 float t = 0;
-int M = 4;
+int M = 5;
 
 std::vector<vec2_32i> path_diagonal() {
     vec2_32i p0 = {100,100};
@@ -47,7 +47,8 @@ std::vector<vec2_32i> path_horizontal() {
     vec2_32i p0 = {100,100};
     vec2_32i p1 = {300, 100};
     vec2_32i p2 = {500, 100};
-    return {p0, p1, p2};
+    return {p0<<M, p1<<M};
+//    return {p0<<M, p1<<M, p2<<M};
 }
 
 std::vector<vec2_32i> path_resh() {
@@ -60,17 +61,31 @@ std::vector<vec2_32i> path_resh() {
 std::vector<vec2_32i> path_2() {
     vec2_32i p0 = {100,100};
     vec2_32i p1 = {300, 400};
-    vec2_32i p2 = {400, 200};
+    vec2_32i p2 = {400, 100};
     vec2_32i p3 = {400, 300};
 
-//    return {p2<<M, p3<<M};
+//    return {p0<<M, p1<<M};
+//    return {p0<<M, p1<<M};//, p2<<M};
     return {p0<<M, p1<<M, p2<<M, p3<<M};
+}
+
+std::vector<vec2_32i> path_tri() {
+    vec2_32i p0 = {100,100};
+    vec2_32i p1 = {300, 100};
+    vec2_32i p2 = {200, 300};
+
+//    return {p0<<M, p1<<M};
+//    return {p0<<M, p1<<M};//, p2<<M};
+    return {p0<<M, p1<<M, p2<<M};
 }
 
 void render() {
 //    t+=.05f;
 //    std::cout << t << std::endl;
-    render_path(path_2());
+//    render_path(path_resh());
+//    render_path(path_2());
+    render_path(path_tri());
+//    render_path(path_2());
 }
 
 
@@ -86,21 +101,26 @@ void render_path(std::vector<vec2<T>> path) {
     PathTessellation path_tess{true};
 
     uint8_t precision = M;
-    index stroke = 10<<precision;
+    index stroke = 15<<precision;
     auto type = TrianglesIndices::TRIANGLES_STRIP;
 //    index indices[size_indices];
     static_array<index, 128> indices;
     static_array<vec2_32i, 128> vertices;
 
-    path_tess.compute(stroke,
+    path_tess.compute(
+            stroke,
+            true,
+            PathTessellation::gravity::center,
+//            PathTessellation::gravity::inward,
+//            PathTessellation::gravity::outward,
             path.data(),
             path.size(),
             precision,
             indices,
             vertices,
-            type,
-            true
-            );
+            type
+    );
+
 
 //    indices.pop_back();
     // draw triangles batch
@@ -113,7 +133,7 @@ void render_path(std::vector<vec2<T>> path) {
             120,
             precision);
 
-    return;
+//    return;
     // draw triangulation
     canvas->drawTrianglesWireframe(BLACK,
             vertices.data(),
@@ -179,7 +199,7 @@ void loop() {
                 break;
         }
 //
-        render();
+//        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());
