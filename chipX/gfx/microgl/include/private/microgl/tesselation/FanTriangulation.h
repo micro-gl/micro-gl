@@ -20,16 +20,18 @@ namespace tessellation {
         explicit FanTriangulation(bool DEBUG = false);;
 
         void compute(vec2_f * $pts,
-                        index size,
-                        array_container<index> & indices_buffer_triangulation,
-                        const triangles::TrianglesIndices &requested =
+                     index size,
+                     array_container<index> & indices_buffer_triangulation,
+                     array_container<triangles::boundary_info> * boundary_buffer,
+                     const triangles::TrianglesIndices &requested =
                                 triangles::TrianglesIndices::TRIANGLES_FAN
         );
 
         void compute(vec2_32i * $pts,
-                        index size,
-                        array_container<index> & indices_buffer_triangulation,
-                        const triangles::TrianglesIndices &requested =
+                     index size,
+                     array_container<index> & indices_buffer_triangulation,
+                     array_container<triangles::boundary_info> * boundary_buffer,
+                     const triangles::TrianglesIndices &requested =
                                 triangles::TrianglesIndices::TRIANGLES_FAN
                         );
 

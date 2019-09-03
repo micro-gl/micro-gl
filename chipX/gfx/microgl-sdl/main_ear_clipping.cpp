@@ -102,7 +102,7 @@ void render_polygon(std::vector<vec2<T>> polygon) {
     using index = unsigned int;
 
     polygon[1].x = 140 + 20 +  t;
-//    polygon[1].y = 140 + 20 -  t;
+
     canvas->clear(WHITE);
 
     EarClippingTriangulation ear{true};
@@ -112,12 +112,12 @@ void render_polygon(std::vector<vec2<T>> polygon) {
     index size_indices = EarClippingTriangulation::required_indices_size(polygon.size(),
             type);
     static_array<index, 128> indices;
-
-//    index indices[size_indices];
+    static_array<boundary_info , 128> boundary_buffer;
 
     ear.compute(polygon.data(),
             polygon.size(),
             indices,
+            &boundary_buffer,
             type
             );
 
@@ -126,13 +126,17 @@ void render_polygon(std::vector<vec2<T>> polygon) {
             RED,
             polygon.data(),
             indices.data(),
+            boundary_buffer.data(),
             indices.size(),
             type,
             122,
             precision);
 
+    return;
+
     // draw triangulation
-    canvas->drawTrianglesWireframe(BLACK,
+    canvas->drawTrianglesWireframe(
+            BLACK,
             polygon.data(),
             indices.data(),
             indices.size(),

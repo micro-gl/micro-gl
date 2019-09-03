@@ -8,7 +8,8 @@ namespace tessellation {
     void EarClippingTriangulation::compute(microgl::vec2_f *$pts,
                                              index size,
                                              array_container<index> & indices_buffer_triangulation,
-                                             const triangles::TrianglesIndices &requested) {
+                                            array_container<triangles::boundary_info> * boundary_buffer,
+                                           const triangles::TrianglesIndices &requested) {
         // I could have made a template for point types and
         // conserve stack memory, but the hell with it for now
         vec2_32i vertices_int[size];
@@ -17,16 +18,18 @@ namespace tessellation {
             vertices_int[ix] = $pts[ix]<<12;
         }
 
-        compute(vertices_int, size,
-                       indices_buffer_triangulation,
-//                       indices_buffer_size,
-                       requested);
+        compute(vertices_int,
+                size,
+                indices_buffer_triangulation,
+                boundary_buffer,
+                requested);
     }
 
     void EarClippingTriangulation::compute(microgl::vec2_32i *$pts,
-                                             index size,
-                                             array_container<index> & indices_buffer_triangulation,
-                                             const triangles::TrianglesIndices &requested) {
+                                           index size,
+                                           array_container<index> & indices_buffer_triangulation,
+                                           array_container<triangles::boundary_info> * boundary_buffer,
+                                           const triangles::TrianglesIndices &requested) {
 
 //        if(requested==triangles::TrianglesIndices::TRIANGLES) {
 //            if(required_indices_size(size, requested) > indices_buffer_size)
@@ -91,11 +94,12 @@ namespace tessellation {
 
                         index info = triangles::create_boundary_info(first, second, third);
 
-                        indices.push_back(info);
+//                        indices.push_back(info);
+                        boundary_buffer->push_back(info);
 //                        indices[ind + 3] = info;
                     }
 
-                    ind += requested_triangles_with_boundary ? 4 : 3;
+                    ind += 3;
 
                     // prune the point from the polygon
                     pts.unlink(point);
@@ -204,9 +208,8 @@ namespace tessellation {
                                                           const triangles::TrianglesIndices &requested) {
         switch (requested) {
             case triangles::TrianglesIndices::TRIANGLES:
-                return (polygon_size - 2)*3;
             case triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
-                return (polygon_size - 2)*4;
+                return (polygon_size - 2)*3;
             default:
                 return 0;
         }

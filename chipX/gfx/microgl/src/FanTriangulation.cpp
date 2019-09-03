@@ -7,9 +7,10 @@ namespace tessellation {
     }
 
     void FanTriangulation::compute(vec2_32i *$pts,
-                                     index size,
-                                     array_container<index> & indices_buffer_triangulation,
-                                     const triangles::TrianglesIndices &requested) {
+                                   index size,
+                                   array_container<index> & indices_buffer_triangulation,
+                                   array_container<triangles::boundary_info> * boundary_buffer,
+                                   const triangles::TrianglesIndices &requested) {
 
 //        if(requested==triangles::TrianglesIndices::TRIANGLES_FAN) {
 //            if(required_indices_size(size, requested) > indices_buffer_size)
@@ -28,17 +29,16 @@ namespace tessellation {
         bool requested_triangles_with_boundary =
                 requested==triangles::TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY;
         auto &indices = indices_buffer_triangulation;
-        index count = requested_triangles_with_boundary ? 2*size - 2 : size;
+
+        for (index ix = 0; ix < size; ++ix) {
+            indices.push_back(ix);
+        }
 
         if(requested_triangles_with_boundary) {
+
             const index num_triangles = size-2;
 
             for (index ix = 0; ix < num_triangles; ++ix) {
-                if(ix==0) {
-                    indices.push_back(0);
-                    indices.push_back(1);
-                }
-
                 bool aa_first_edge = ix==0;
                 bool aa_second_edge = true;
                 bool aa_third_edge = ix==num_triangles-1;
@@ -48,18 +48,10 @@ namespace tessellation {
                                                         aa_second_edge,
                                                         aa_third_edge);
 
-//                index ind = (ix+1)*2;
-//                indices[ind]     = ix + 2;
-//                indices[ind + 1] = aa_info;
-                indices.push_back(ix + 2);
-                indices.push_back(aa_info);
+                boundary_buffer->push_back(aa_info);
 
             }
-        }
-        else {
-            for (index ix = 0; ix < count; ++ix) {
-                indices.push_back(ix);
-            }
+
         }
 
     }
@@ -68,6 +60,7 @@ namespace tessellation {
     FanTriangulation::compute(vec2_f *$pts,
                               index size,
                               array_container<index> & indices_buffer_triangulation,
+                              array_container<triangles::boundary_info> * boundary_buffer,
                               const triangles::TrianglesIndices &requested) {
         // I could have made a template for point types and
         // conserve stack memory, but the hell with it for now
@@ -78,17 +71,17 @@ namespace tessellation {
         }
 
         compute(vertices_int, size,
-                       indices_buffer_triangulation,
-                       requested);
+               indices_buffer_triangulation,
+                boundary_buffer,
+                requested);
     }
 
     index FanTriangulation::required_indices_size(const index polygon_size,
                                                   const triangles::TrianglesIndices &requested) {
         switch (requested) {
             case triangles::TrianglesIndices::TRIANGLES_FAN:
-                return polygon_size;
             case triangles::TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY:
-                return (polygon_size - 1)*2;
+                return polygon_size;
             default:
                 return 0;
         }

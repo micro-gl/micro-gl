@@ -433,6 +433,7 @@ template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                      const vec2_f *vertices,
                                      const index *indices,
+                                     const boundary_info * boundary_buffer,
                                      const index size,
                                      const TrianglesIndices type,
                                      const uint8_t opacity,
@@ -445,8 +446,12 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
         vertices_int[ix] = vertices[ix]<<sub_pixel_precision;
     }
 
-    drawTriangles<BlendMode, PorterDuff, antialias>(color,
-                vertices_int, indices, size, type, opacity,
+    drawTriangles<BlendMode, PorterDuff, antialias>(
+            color,
+            vertices_int,
+            indices,
+            boundary_buffer,
+            size, type, opacity,
             sub_pixel_precision);
 }
 
@@ -456,6 +461,7 @@ template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                      const vec2_32i *vertices,
                                      const index *indices,
+                                     const boundary_info * boundary_buffer,
                                      const index size,
                                      const TrianglesIndices type,
                                      const uint8_t opacity,
@@ -479,9 +485,10 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
 
             break;
         case TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
-
-            for (index ix = 0; ix < size; ix+=4) {
-                boundary_info aa_info = IND(ix + 3);
+        {
+            index idx_boundary=0;
+            for (index ix = 0; ix < size; ix+=3) {
+                boundary_info aa_info = boundary_buffer[idx_boundary++];
 
                 bool aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
                 bool aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
@@ -489,16 +496,18 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
 
 //                drawTriangle<BlendMode, PorterDuff, antialias>(color,
                 drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
-                   vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
-                   vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
-                   vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
-                   opacity,
-                   sub_pixel_precision,
-                   aa_first_edge, aa_second_edge, aa_third_edge
+                                                                   vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
+                                                                   vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
+                                                                   vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
+                                                                   opacity,
+                                                                   sub_pixel_precision,
+                                                                   aa_first_edge, aa_second_edge, aa_third_edge
                 );
             }
 
             break;
+
+        }
         case TrianglesIndices::TRIANGLES_FAN:
 
             for (index ix = 1; ix < size-1; ++ix) {
@@ -516,15 +525,13 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             break;
         case TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY:
         {
-            const index num_triangles = (size-2)>>1;
+            index idx_boundary=0;
 
-            for (index ix = 0; ix < num_triangles; ++ix) {
+            for (index ix = 1; ix < size-1; ++ix) {
                 index first_index = 0;
-                index second_index = ix==0 ? 1 : (ix << 1);
-                index third_index = ix==0 ? 2 : (second_index + 2);
-                index boundary_index = third_index + 1;
-
-                boundary_info aa_info = IND(boundary_index);
+                index second_index = ix;
+                index third_index = ix+1;
+                boundary_info aa_info = boundary_buffer[idx_boundary++];
 
                 bool aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
                 bool aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
@@ -590,6 +597,7 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
 
     switch (type) {
         case TrianglesIndices::TRIANGLES:
+        case TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
 
             for (index ix = 0; ix < size; ix+=3) {
 
@@ -601,19 +609,8 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
             }
 
             break;
-        case TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
-
-            for (index ix = 0; ix < size; ix+=4) {
-
-                drawTriangleWireframe(color,
-                                      vertices[IND(ix + 0)],
-                                      vertices[IND(ix + 1)],
-                                      vertices[IND(ix + 2)],
-                                      sub_pixel_precision);
-            }
-
-            break;
         case TrianglesIndices::TRIANGLES_FAN:
+        case TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY:
 
             for (index ix = 1; ix < size-1; ++ix) {
 
@@ -625,25 +622,10 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
             }
 
             break;
-        case TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY:
-        {
-            const index num_triangles = (size-2)>>1;
 
-            for (index ix = 0; ix < num_triangles; ++ix) {
-                index first_index = 0;
-                index second_index = ix==0 ? 1 : (ix << 1);
-                index third_index = ix==0 ? 2 : (second_index + 2);
-
-                drawTriangleWireframe(color,
-                                      vertices[IND(first_index)],
-                                      vertices[IND(second_index)],
-                                      vertices[IND(third_index)],
-                                      sub_pixel_precision);
-            }
-
-            break;
-        }
         case TrianglesIndices::TRIANGLES_STRIP:
+        case TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY:
+        {
             bool even = true;
 
             for (index ix = 0; ix < size-2; ++ix) {
@@ -668,6 +650,8 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
             }
 
             break;
+        }
+
     }
 
 #undef IND
@@ -686,6 +670,7 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
 #define IND(a) indices[(a)]
 
     switch (type) {
+        case TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
         case TrianglesIndices::TRIANGLES:
 
             for (index ix = 0; ix < size; ix+=3) {
@@ -698,19 +683,8 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
             }
 
             break;
-        case TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
-
-            for (index ix = 0; ix < size; ix+=4) {
-
-                drawTriangleWireframe(color,
-                                      vertices[IND(ix + 0)],
-                                      vertices[IND(ix + 1)],
-                                      vertices[IND(ix + 2)],
-                                      sub_pixel_precision);
-            }
-
-            break;
         case TrianglesIndices::TRIANGLES_FAN:
+        case TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY:
 
             for (index ix = 1; ix < size - 1; ++ix) {
 
@@ -722,25 +696,9 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
             }
 
             break;
-        case TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY:
-        {
-            const index num_triangles = (size-2)>>1;
 
-            for (index ix = 0; ix < num_triangles; ++ix) {
-                index first_index = 0;
-                index second_index = ix==0 ? 1 : (ix << 1);
-                index third_index = ix==0 ? 2 : (second_index + 2);
-
-                drawTriangleWireframe(color,
-                                      vertices[IND(first_index)],
-                                      vertices[IND(second_index)],
-                                      vertices[IND(third_index)],
-                                      sub_pixel_precision);
-            }
-
-            break;
-        }
         case TrianglesIndices::TRIANGLES_STRIP:
+        case TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY:
             bool even = true;
 
             for (index ix = 0; ix < size; ++ix) {
@@ -2545,6 +2503,7 @@ void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
     TrianglesIndices type;
     // currently static on the stack
     static_array<index, 128> indices;
+    static_array<boundary_info , 128> boundary_buffer;
 
     switch (hint) {
 
@@ -2557,6 +2516,7 @@ void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
             ear.compute(points,
                         size,
                         indices,
+                        &boundary_buffer,
                         type
             );
 
@@ -2570,6 +2530,7 @@ void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
             fan.compute(points,
                         size,
                         indices,
+                        &boundary_buffer,
                         type
             );
 
