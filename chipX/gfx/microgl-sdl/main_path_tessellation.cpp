@@ -83,8 +83,8 @@ void render() {
 //    t+=.05f;
 //    std::cout << t << std::endl;
 //    render_path(path_resh());
-//    render_path(path_2());
-    render_path(path_tri());
+    render_path(path_2());
+//    render_path(path_tri());
 //    render_path(path_2());
 }
 
@@ -101,7 +101,7 @@ void render_path(std::vector<vec2<T>> path) {
     PathTessellation path_tess{true};
 
     uint8_t precision = M;
-    index stroke = 1<<precision;
+    index stroke = 25<<precision;
 //    auto type = TrianglesIndices::TRIANGLES_STRIP;
     auto type = TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY;
 

@@ -33,19 +33,60 @@ template <typename T>
 void render_path(std::vector<vec2<T>> path);
 
 float t = 0;
+int M = 1;
 
-std::vector<vec2_32i> path_1() {
-    vec2_32i p0 = {100,300};
-    vec2_32i p1 = {500, 300};
-    vec2_32i p2 = {300, 500};
+std::vector<vec2_32i> path_diagonal() {
+    vec2_32i p0 = {100,100};
+    vec2_32i p1 = {200, 200};
+    vec2_32i p2 = {300, 300};
 
-    return {p0, p1};//, p2};
+    return {p0, p1, p2};
+}
+
+std::vector<vec2_32i> path_horizontal() {
+    vec2_32i p0 = {100,100};
+    vec2_32i p1 = {300, 100};
+    vec2_32i p2 = {500, 100};
+    return {p0<<M, p1<<M};
+//    return {p0<<M, p1<<M, p2<<M};
+}
+
+std::vector<vec2_32i> path_resh() {
+    vec2_32i p0 = {100,100};
+    vec2_32i p1 = {300, 100};
+    vec2_32i p2 = {300, 300};
+//    return {p0<<M, p1<<M};
+    return {p0<<M, p1<<M, p2<<M};
+}
+std::vector<vec2_32i> path_2() {
+    vec2_32i p0 = {100,100};
+    vec2_32i p1 = {300, 400};
+    vec2_32i p2 = {400, 100};
+    vec2_32i p3 = {400, 300};
+
+//    return {p0<<M, p1<<M};
+//    return {p0<<M, p1<<M};//, p2<<M};
+    return {p0<<M, p1<<M, p2<<M, p3<<M};
+}
+
+std::vector<vec2_32i> path_tri() {
+    vec2_32i p0 = {100,100};
+    vec2_32i p1 = {300, 100};
+    vec2_32i p2 = {200, 300};
+
+//    return {p0<<M, p1<<M};
+//    return {p0<<M, p1<<M};//, p2<<M};
+    return {p0<<M, p1<<M, p2<<M};
 }
 
 void render() {
 //    t+=.05f;
 //    std::cout << t << std::endl;
-    render_path(path_1());
+//    render_path(path_resh());
+//    render_path(path_2());
+    render_path(path_tri());
+//    render_path(path_horizontal());
+//    render_path(path_2());
 }
 
 
@@ -60,20 +101,29 @@ void render_path(std::vector<vec2<T>> path) {
 
     PathTessellation path_tess{true};
 
-    uint8_t precision = 0;
-    auto type = TrianglesIndices::TRIANGLES_STRIP;
-//    index indices[size_indices];
+    uint8_t precision = M;
+    index stroke = 10<<precision;
+//    auto type = TrianglesIndices::TRIANGLES_STRIP;
+    auto type = TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY;
+
     static_array<index, 128> indices;
     static_array<vec2_32i, 128> vertices;
+    static_array<boundary_info , 128> boundary_buffer;
 
-    path_tess.compute(10,
+    path_tess.compute(
+            stroke,
+            true,
+            PathTessellation::gravity::center,
+//            PathTessellation::gravity::inward,
+//            PathTessellation::gravity::outward,
             path.data(),
             path.size(),
+            precision,
             indices,
             vertices,
-            type,
-            false
-            );
+            &boundary_buffer,
+            type
+    );
 
 //    indices.pop_back();
     // draw triangles batch
@@ -81,19 +131,21 @@ void render_path(std::vector<vec2<T>> path) {
             RED,
             vertices.data(),
             indices.data(),
+            boundary_buffer.data(),
             indices.size(),
             type,
-            120,
+            122,
             precision);
 
+    return;
     // draw triangulation
-//    canvas->drawTrianglesWireframe(BLACK,
-//            vertices.data(),
-//            indices.data(),
-//            indices.size(),
-//            type,
-//            255,
-//            precision);
+    canvas->drawTrianglesWireframe(BLACK,
+                                   vertices.data(),
+                                   indices.data(),
+                                   indices.size(),
+                                   type,
+                                   255,
+                                   precision);
 
 }
 
@@ -106,10 +158,10 @@ void init_sdl(int width, int height) {
     SDL_Init(SDL_INIT_VIDEO);
 
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED,
-            SDL_WINDOWPOS_UNDEFINED, width, height, 0);
+                              SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, 0);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
-            SDL_TEXTUREACCESS_STATIC, width, height);
+                                SDL_TEXTUREACCESS_STATIC, width, height);
 
     canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
 
@@ -151,10 +203,10 @@ void loop() {
                 break;
         }
 //
-        render();
+//        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
-                canvas->width() * canvas->sizeofPixel());
+                          canvas->width() * canvas->sizeofPixel());
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, texture, nullptr, nullptr);
         SDL_RenderPresent(renderer);

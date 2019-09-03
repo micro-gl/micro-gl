@@ -596,6 +596,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                 index second_index = IND(ix + 1);
                 index third_index = even ?  IND(ix + 2) : IND(ix + 0);
 
+//                drawTriangle<BlendMode, PorterDuff, antialias>(color,
                 drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
                                                                    vertices[first_index].x, vertices[first_index].y,
                                                                    vertices[second_index].x, vertices[second_index].y,
@@ -1015,7 +1016,7 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
 
     color_t color_int;
     coder()->convert(color, color_int);
-
+    bool perform_opacity = opacity < _max_alpha_value;
     // sub_pixel_precision;
     // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
     uint8_t MAX_BITS_FOR_PROCESSING_PRECISION = 15;
@@ -1044,6 +1045,7 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
     }
 
     // bbox
+//    max_sub_pixel_precision_value = 0;
     int minX = (functions::min(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
     int minY = (functions::min(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
     int maxX = (functions::max(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
@@ -1059,8 +1061,10 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
     int bias_w2 = top_left.third  ? 0 : -1;
     //
     const int block = 8;
-    maxX += block;
-    maxY += block;
+//    minX -= block;
+//    minY -= block;
+//    maxX += block;
+//    maxY += block;
 
 //    minX &= ~(block - 1);
 //    minY &= ~(block - 1);
@@ -1283,13 +1287,21 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                                 int delta = ((distance) + max_distance_scaled_space_anti_alias);
                                 bool perform_aa = aa_all_edges;
 
+
                                 // test edges
                                 if(!perform_aa) {
-                                    if(distance==(w0_h_) && aa_first_edge)
+                                    if((distance==w0_h_) && aa_first_edge)
                                         perform_aa = true;
-                                    else if(distance==(w1_h_) && aa_second_edge)
+                                    else if((distance==w1_h_) && aa_second_edge)
                                         perform_aa = true;
-                                    else perform_aa = distance == (w2_h_) && aa_third_edge;
+                                    else perform_aa = (distance == w2_h_) && aa_third_edge;
+                                }
+
+                                {
+                                    bool on_cusp = w0_h_<=0 && w1_h_<=0;
+                                    on_cusp |= (w1_h_<=0 && w2_h_<=0);
+                                    on_cusp |= (w2_h_<=0 && w0_h_<=0);
+                                    perform_aa &= !(on_cusp);
                                 }
 
                                 if (perform_aa && delta>=0) {
@@ -1298,7 +1310,7 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                                     uint8_t blend = functions::clamp<int>(((int64_t)delta << bits_distance_complement)>>(PR),
                                                                           0, 255);
 
-                                    if (opacity < _max_alpha_value) {
+                                    if (perform_opacity) {
                                         blend = (blend * opacity) >> 8;
                                     }
 
