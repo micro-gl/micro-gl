@@ -38,6 +38,7 @@ namespace tessellation {
                                    const index size,
                                    array_container<index> &indices_buffer_tessellation,
                                    array_container<vec2_32i> &output_vertices_buffer_tessellation,
+                                   array_container<triangles::boundary_info> * boundary_buffer,
                                    const microgl::triangles::TrianglesIndices &requested) {
 
     }
@@ -122,11 +123,15 @@ namespace tessellation {
                                    const precision precision,
                                    array_container<index> &indices_buffer_tessellation,
                                    array_container<vec2_32i> &output_vertices_buffer_tessellation,
+                                   array_container<triangles::boundary_info> * boundary_buffer,
                                    const microgl::triangles::TrianglesIndices &requested
                                    ) {
 
         bool with_boundary =
                 requested==triangles::TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY;
+
+        triangles::boundary_info common_info =
+                triangles::create_boundary_info(false, false, true);
 
         switch (gravity) {
             case gravity::center:
@@ -206,13 +211,12 @@ namespace tessellation {
             output_vertices_buffer_tessellation.push_back(merge_out);
             output_vertices_buffer_tessellation.push_back(merge_in);
             indices_buffer_tessellation.push_back(idx++);
-            if(with_boundary)
-                indices_buffer_tessellation.push_back(
-                        triangles::create_boundary_info(false, false, true));
             indices_buffer_tessellation.push_back(idx++);
-            if(with_boundary)
-                indices_buffer_tessellation.push_back(
-                        triangles::create_boundary_info(false, false, true));
+
+            if(with_boundary) {
+                boundary_buffer->push_back(common_info);
+                boundary_buffer->push_back(common_info);
+            }
 
             p0_out_current = p0_out_next;
             p1_out_current = p1_out_next;
@@ -247,18 +251,16 @@ namespace tessellation {
             output_vertices_buffer_tessellation.push_back(merge_out);
             output_vertices_buffer_tessellation.push_back(merge_in);
             indices_buffer_tessellation.push_back(idx++);
-            if(with_boundary)
-                indices_buffer_tessellation.push_back(
-                        triangles::create_boundary_info(false, false, true));
             indices_buffer_tessellation.push_back(idx++);
-            if(with_boundary)
-                indices_buffer_tessellation.push_back(
-                        triangles::create_boundary_info(true, false, true));
 
             // fix the first triangle boundary
-            if(with_boundary)
-                indices_buffer_tessellation[3] =
+            if(with_boundary) {
+                boundary_buffer->push_back(common_info);
+                boundary_buffer->push_back(
+                        triangles::create_boundary_info(true, false, true));
+                (*boundary_buffer)[0] =
                         triangles::create_boundary_info(true, false, true);
+            }
 
         }
         else {
@@ -343,25 +345,19 @@ namespace tessellation {
             output_vertices_buffer_tessellation.push_back(merge_out);
             output_vertices_buffer_tessellation.push_back(merge_in);
             indices_buffer_tessellation.push_back(idx++);
-            if(with_boundary)
-                indices_buffer_tessellation.push_back(
-                        triangles::create_boundary_info(false, false, true));
             indices_buffer_tessellation.push_back(idx++);
-            if(with_boundary)
-                indices_buffer_tessellation.push_back(
-                        triangles::create_boundary_info(false, false, true));
 
             output_vertices_buffer_tessellation.push_back(output_vertices_buffer_tessellation[0]);
             output_vertices_buffer_tessellation.push_back(output_vertices_buffer_tessellation[1]);
             indices_buffer_tessellation.push_back(idx++);
-            if(with_boundary)
-                indices_buffer_tessellation.push_back(
-                        triangles::create_boundary_info(false, false, true));
-
             indices_buffer_tessellation.push_back(idx++);
-            if(with_boundary)
-                indices_buffer_tessellation.push_back(
-                        triangles::create_boundary_info(false, false, true));
+
+            if(with_boundary) {
+                boundary_buffer->push_back(common_info);
+                boundary_buffer->push_back(common_info);
+                boundary_buffer->push_back(common_info);
+                boundary_buffer->push_back(common_info);
+            }
 
         }
 

@@ -502,7 +502,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                                                    opacity,
                                                                    sub_pixel_precision,
                                                                    aa_first_edge, aa_second_edge, aa_third_edge
-                );
+                                                                   );
             }
 
             break;
@@ -518,7 +518,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                        vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
                                        opacity,
                                        sub_pixel_precision
-                );
+                                       );
 
             }
 
@@ -544,40 +544,73 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                opacity,
                                sub_pixel_precision,
                                aa_first_edge, aa_second_edge, aa_third_edge
-                );
+                               );
 
             }
 
             break;
         }
         case TrianglesIndices::TRIANGLES_STRIP:
+        {
             bool even = true;
 
             for (index ix = 0; ix < size-2; ++ix) {
                 // we alternate order inorder to preserve CCW or CW,
                 // in the future I will add face culling, which will
                 // support only CW or CCW orientation at a time.
-                if(even)
-                    drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
-                       vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
-                       vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
-                       vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
-                       opacity,
-                       sub_pixel_precision
-                    );
-                else
-                    drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
-                       vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
-                       vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
-                       vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
-                       opacity,
-                       sub_pixel_precision
-                    );
+
+                index first_index = even ?  IND(ix + 0) : IND(ix + 2);
+                index second_index = even ? IND(ix + 1) : IND(ix + 1);
+                index third_index = even ?  IND(ix + 2) : IND(ix + 0);
+
+                drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
+                                                                   vertices[first_index].x, vertices[first_index].y,
+                                                                   vertices[second_index].x, vertices[second_index].y,
+                                                                   vertices[third_index].x, vertices[third_index].y,
+                                                                   opacity,
+                                                                   sub_pixel_precision
+                                                                   );
 
                 even = !even;
             }
 
             break;
+        }
+        case TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY:
+        {
+            bool even = true;
+            index idx_boundary = 0;
+
+            for (index ix = 0; ix < size-2; ++ix) {
+                // we alternate order inorder to preserve CCW or CW,
+                // in the future I will add face culling, which will
+                // support only CW or CCW orientation at a time.
+
+                boundary_info aa_info = boundary_buffer[idx_boundary++];
+
+                bool aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
+                bool aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
+                bool aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
+
+                index first_index = even ?  IND(ix + 0) : IND(ix + 2);
+                index second_index = IND(ix + 1);
+                index third_index = even ?  IND(ix + 2) : IND(ix + 0);
+
+                drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
+                                                                   vertices[first_index].x, vertices[first_index].y,
+                                                                   vertices[second_index].x, vertices[second_index].y,
+                                                                   vertices[third_index].x, vertices[third_index].y,
+                                                                   opacity,
+                                                                   sub_pixel_precision,
+                                                                   aa_first_edge, aa_second_edge, aa_third_edge
+                                                                   );
+
+                even = !even;
+            }
+
+            break;
+        }
+
     }
 
 #undef IND

@@ -28,6 +28,7 @@ namespace tessellation {
                      index size,
                      array_container<index> & indices_buffer_tessellation,
                      array_container<vec2_32i> & output_vertices_buffer_tessellation,
+                     array_container<triangles::boundary_info> * boundary_buffer,
                      const triangles::TrianglesIndices &requested =
                             triangles::TrianglesIndices::TRIANGLES_STRIP
                             );
@@ -40,6 +41,7 @@ namespace tessellation {
                      precision precision,
                      array_container<index> & indices_buffer_tessellation,
                      array_container<vec2_32i> & output_vertices_buffer_tessellation,
+                     array_container<triangles::boundary_info> * boundary_buffer,
                      const triangles::TrianglesIndices &requested =
                             triangles::TrianglesIndices::TRIANGLES_STRIP
                              );

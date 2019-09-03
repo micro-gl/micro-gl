@@ -30,9 +30,9 @@ set(SOURCES
 #        main_speed_optimization.cpp
 #        main_quadrilaterals.cpp
 #        main_canvas_draw_polygon.cpp
-#        main_path_tessellation.cpp
+        main_path_tessellation.cpp
 #        main_fan_triangulation.cpp
-        main_ear_clipping.cpp
+#        main_ear_clipping.cpp
 #        main_aa_bug.cpp
 #        main_aa_bug_2.cpp
 #        main_bentley_ottmann.cpp

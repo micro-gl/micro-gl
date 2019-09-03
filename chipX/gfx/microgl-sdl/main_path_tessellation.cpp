@@ -101,11 +101,13 @@ void render_path(std::vector<vec2<T>> path) {
     PathTessellation path_tess{true};
 
     uint8_t precision = M;
-    index stroke = 15<<precision;
-    auto type = TrianglesIndices::TRIANGLES_STRIP;
+    index stroke = 1<<precision;
+//    auto type = TrianglesIndices::TRIANGLES_STRIP;
+    auto type = TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY;
 
     static_array<index, 128> indices;
     static_array<vec2_32i, 128> vertices;
+    static_array<boundary_info , 128> boundary_buffer;
 
     path_tess.compute(
             stroke,
@@ -118,20 +120,22 @@ void render_path(std::vector<vec2<T>> path) {
             precision,
             indices,
             vertices,
+            &boundary_buffer,
             type
     );
 
     // draw triangles batch
-    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
+    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
             RED,
             vertices.data(),
             indices.data(),
+            boundary_buffer.data(),
             indices.size(),
             type,
             120,
             precision);
 
-//    return;
+    return;
     // draw triangulation
     canvas->drawTrianglesWireframe(BLACK,
             vertices.data(),
