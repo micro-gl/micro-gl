@@ -33,9 +33,9 @@ namespace tessellation {
                             triangles::TrianglesIndices::TRIANGLES_STRIP
                             );
 
-        void compute(int stroke_size,
+        static void compute(int stroke_size,
                      bool closePath,
-                     const gravity gravity,
+                     gravity gravity,
                      const vec2_32i * points,
                      index size,
                      precision precision,

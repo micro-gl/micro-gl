@@ -130,8 +130,10 @@ namespace tessellation {
         bool with_boundary =
                 requested==triangles::TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY;
 
-        triangles::boundary_info common_info =
+        triangles::boundary_info common_info_1 =
                 triangles::create_boundary_info(false, false, true);
+        triangles::boundary_info common_info_2 =
+                triangles::create_boundary_info(true, false, true);
 
         switch (gravity) {
             case gravity::center:
@@ -214,8 +216,8 @@ namespace tessellation {
             indices_buffer_tessellation.push_back(idx++);
 
             if(with_boundary) {
-                boundary_buffer->push_back(common_info);
-                boundary_buffer->push_back(common_info);
+                boundary_buffer->push_back(common_info_1);
+                boundary_buffer->push_back(common_info_1);
             }
 
             p0_out_current = p0_out_next;
@@ -255,11 +257,9 @@ namespace tessellation {
 
             // fix the first triangle boundary
             if(with_boundary) {
-                boundary_buffer->push_back(common_info);
-                boundary_buffer->push_back(
-                        triangles::create_boundary_info(true, false, true));
-                (*boundary_buffer)[0] =
-                        triangles::create_boundary_info(true, false, true);
+                boundary_buffer->push_back(common_info_1);
+                boundary_buffer->push_back(common_info_2);
+                (*boundary_buffer)[0] = common_info_2;
             }
 
         }
@@ -353,10 +353,10 @@ namespace tessellation {
             indices_buffer_tessellation.push_back(idx++);
 
             if(with_boundary) {
-                boundary_buffer->push_back(common_info);
-                boundary_buffer->push_back(common_info);
-                boundary_buffer->push_back(common_info);
-                boundary_buffer->push_back(common_info);
+                boundary_buffer->push_back(common_info_1);
+                boundary_buffer->push_back(common_info_1);
+                boundary_buffer->push_back(common_info_1);
+                boundary_buffer->push_back(common_info_1);
             }
 
         }
