@@ -2357,17 +2357,18 @@ template<typename P, typename CODER>
 void
 Canvas<P, CODER>::drawLinePath(color_f_t &color,
                                vec2_32i *points,
+                               precision precision,
                                unsigned int size,
                                bool closed_path) {
-    int jx = 0;
+    index jx = 0;
     for (jx = 0; jx < size; jx++) {
 
         if(jx)
-            drawLine(color, points[jx-1].x, points[jx-1].y, points[jx].x, points[jx].y);
+            drawLine(color, points[jx-1].x, points[jx-1].y, points[jx].x, points[jx].y, precision);
     }
 
     if(closed_path)
-        drawLine(color, points[0].x, points[0].y, points[jx - 1].x, points[jx- 1].y);
+        drawLine(color, points[0].x, points[0].y, points[jx - 1].x, points[jx- 1].y, precision);
 
 }
 
@@ -2392,7 +2393,7 @@ Canvas<P, CODER>::drawLinePath(color_f_t &color,
     }
 
     if(closed_path)
-        drawLine(color, points[0].x, points[0].y, points[jx - 1].x, points[jx- 1].y);
+        drawLine(color, points[0].x, points[0].y, points[jx - 1].x, points[jx- 1].y, p);
 
 }
 

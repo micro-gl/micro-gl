@@ -389,6 +389,7 @@ public:
 
     void drawLinePath(color_f_t & color,
                       vec2_32i *points,
+                      precision precision,
                       unsigned int size = 4,
                       bool closed_path = false);
 

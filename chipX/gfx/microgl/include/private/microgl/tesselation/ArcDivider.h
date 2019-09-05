@@ -13,10 +13,11 @@ namespace tessellation {
 #define TWO_PI    6.28318530718
 #define min_(a, b) ((a)<(b) ? (a) : (b))
 #define max_(a, b) ((a)>(b) ? (a) : (b))
+#define abs_(a) ((a)<0 ? -(a) : (a))
 #define clamp_(v, e0, e1) (min_(max_(v,e0),e1))
 
     using index = unsigned int;
-    using precision = unsigned char;
+    using precision_t = unsigned char;
     using namespace microgl;
 
     class ArcDivider {
@@ -24,13 +25,16 @@ namespace tessellation {
 
         explicit ArcDivider(bool DEBUG = false);;
 
-        void compute(index radius,
-                     int start_angle,
-                     int end_angle,
-                     precision precision,
-                     index divisions,
-                     bool clockwise,
-                     array_container<vec2_32i> &output
+        static void compute(
+                     array_container<vec2_32i> &output,
+                     index radius,
+                     int center_x,
+                     int center_y,
+                     int start_angle_rad,
+                     int end_angle_rad,
+                     precision_t precision_angles,
+                     index divisions=32,
+                     bool anti_clockwise=false
                      );
 
         template<typename T>

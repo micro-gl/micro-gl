@@ -37,21 +37,24 @@ uint deg_to_rad(float degrees, uint requested_precision) {
 void render() {
     canvas->clear(WHITE);
 
-    ArcDivider arc_divider{};
-    precision precision = 5;
-    uint radius = 50u<<precision;
-    int start_angle = deg_to_rad(0.0f, precision);
-    int end_angle = deg_to_rad(180.0f, precision);
+    precision_t precision_angles = 5;
+    uint radius = 100u;
+    uint divisions = 4;
+    int start_angle = deg_to_rad(0.0f, precision_angles);
+    int end_angle = deg_to_rad(360.0f, precision_angles);
+    vec2_32i center = {200, 200};
     static_array<vec2_32i, 128> arc_points;
 
-    arc_divider.compute(
+    tessellation::ArcDivider::compute(
+            arc_points,
             radius,
+            center.x,
+            center.y,
             start_angle,
             end_angle,
-            precision,
-            5,
-            true,
-            arc_points
+            precision_angles,
+            divisions,
+            false
             );
 
     for (uint ix = 0; ix < arc_points.size(); ++ix) {
@@ -59,14 +62,15 @@ void render() {
                 color_f_t{0.0,0.0,1.0},
                 arc_points[ix].x,
                 arc_points[ix].y,
-                5<<precision,
-                precision,
-                255);
+                1u<<0,
+                0,
+                0);
     }
 
     canvas->drawLinePath(
             BLACK,
             arc_points.data(),
+            0,
             arc_points.size(),
             false
             );
@@ -111,7 +115,7 @@ void loop() {
 
     // 100 Quads
     int ms = render_test(TEST_ITERATIONS);
-    cout << ms << endl;
+//    cout << ms << endl;
 
     while (!quit)
     {
@@ -128,7 +132,7 @@ void loop() {
                 break;
         }
 //
-        render();
+//        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());
