@@ -57,3 +57,6 @@ https://github.com/pelson/antigrain/blob/master/agg-2.4/src/agg_curves.cpp
 ### tesselation
 - http://www.normalesup.org/~cagne/internship_l3/mncubes_red/doc/html/bentley__ottmann_8cpp_source.html
 - specialize tesselation algorithms for FPU as well
+
+#### svg to canvas tech
+- https://github.com/canvg/canvg
