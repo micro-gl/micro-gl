@@ -22,8 +22,23 @@ void init_sdl(int width, int height);
 
 inline void render() {
 
-//    canvas->setAntialiasing(false);
-//    canvas->clear(WHITE);
+    matrix<int, 3, 2> mat_0(1);
+    matrix<int, 3, 2> mat_1{1,2,3,4,5,6};
+    matrix<int, 2, 3> mat_2{7,8,9,10,11,12};
+
+    matrix<int, 2, 2> mat_3 = mat_1 * mat_2;
+
+    mat_0 *= 5;
+    vector<int, 3> vec_1{1,1,1};
+
+    auto b = mat_0 * vec_1;
+    auto c = vec_1.transpose()*vec_1;
+
+
+//    matrix<int, 2, 2> mat_4 = mat_1 *10;
+
+    int a1 = mat_1.columns();
+    int a = 5;
 }
 
 
