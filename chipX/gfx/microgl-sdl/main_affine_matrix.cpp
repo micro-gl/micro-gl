@@ -5,6 +5,8 @@
 #include "src/Resources.h"
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
+#include <microgl/matrix.h>
+#include <microgl/matrix_3x3.h>
 #include <microgl/quad_matrix.h>
 
 #define TEST_ITERATIONS 1
@@ -22,14 +24,17 @@ void init_sdl(int width, int height);
 
 inline void render() {
 
-    matrix<int, 3, 2> mat_0(1);
-    matrix<int, 3, 2> mat_1{1,2,3,4,5,6};
-    matrix<int, 2, 3> mat_2{7,8,9,10,11,12};
+    matrix<int, 2, 2> mat_rect(1);
+    quad_matrix<int, 2> mat_0(1);
+    quad_matrix<int, 2> mat_1{1, 2, 3, 4, 5, 6};
 
-    matrix<int, 2, 2> mat_3 = mat_1 * mat_2;
+    quad_matrix<int, 2> mat_3 = (mat_0 * mat_1);
+    quad_matrix<int, 2> mat_4 = mat_rect;
+
+    mat_4.identity();
 
     mat_0 *= 5;
-    vector<int, 3> vec_1{1,1,1};
+    vector<int, 2> vec_1{1,1,1};
 
     auto b = mat_0 * vec_1;
     auto c = vec_1.transpose()*vec_1;

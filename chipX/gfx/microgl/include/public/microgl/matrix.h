@@ -2,14 +2,19 @@
 
 namespace microgl {
 
-
     template <typename T, unsigned W, unsigned H>
     class matrix {
+    protected:
         using index = unsigned;
         using matrix_ref = matrix<T, W, H> &;
         using const_matrix_ref = const matrix<T, W, H> &;
         using type_ref = T &;
         using const_type_ref = const T &;
+
+        T _data[W * H];
+        index _cols = W;
+        index _rows = H;
+        index _size = W * H;
 
     public:
         explicit matrix() = default;
@@ -20,7 +25,7 @@ namespace microgl {
                 _data[ix++] = *it;
         }
 
-        matrix(const_type_ref fill_value) {
+        explicit matrix(const_type_ref fill_value) {
             fill(fill_value);
         }
 
@@ -29,7 +34,7 @@ namespace microgl {
                 _data[ix] = mat[ix];
         }
 
-        ~matrix() = default;
+        virtual ~matrix() = default;
 
         template<unsigned A, unsigned B, unsigned C>
         static
@@ -124,20 +129,12 @@ namespace microgl {
 
         bool operator==(const_matrix_ref mat) const {
             bool equals = true;
-            for(index ix = 0; ix < _size; ix++) {
+            for(index ix = 0; ix < size(); ix++) {
                 if(_data[ix]!=mat[ix])
                     return false;
             }
             return true;
         };
-
-        /*
-        void diagonal(const_type_ref value) {
-            for (index ix = 0; ix < W; ++ix) {
-                (*this)(ix, ix) = value;
-            }
-        }
-         */
 
         matrix<T, H, W> transpose() {
             matrix<T, H, W> result{};
@@ -157,23 +154,18 @@ namespace microgl {
                 _data[ix] = value;
         }
 
-        index columns() const {
+        inline index columns() const {
             return _cols;
         }
 
-        index rows() const {
+        inline index rows() const {
             return _rows;
         }
 
-        index size() const {
+        inline index size() const {
             return _size;
         }
 
-    private:
-        T _data[W * H];
-        index _cols = W;
-        index _rows = H;
-        index _size = W * H;
     };
 
     template <typename T, unsigned N>

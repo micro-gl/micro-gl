@@ -34,7 +34,8 @@ set(SOURCES
 #        main_arc_divider.cpp
 #        main_fan_triangulation.cpp
 #        main_ear_clipping.cpp
-        main_matrix.cpp
+        main_affine_matrix.cpp
+#        main_matrix.cpp
 #        main_aa_bug.cpp
 #        main_aa_bug_2.cpp
 #        main_bentley_ottmann.cpp

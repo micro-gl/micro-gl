@@ -60,3 +60,7 @@ https://github.com/pelson/antigrain/blob/master/agg-2.4/src/agg_curves.cpp
 
 #### svg to canvas tech
 - https://github.com/canvg/canvg
+- https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+
+#### fixed point motivation
+- https://johnmcfarlane.github.io/cnl/

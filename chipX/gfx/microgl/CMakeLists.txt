@@ -32,7 +32,9 @@ set(sources
         src/EarClippingTriangulation.cpp
         src/FanTriangulation.cpp
         src/TriangleIndices.cpp
-        include/public/microgl/polygons.h src/PathTessellation.cpp src/ArcDivider.cpp include/public/microgl/matrix.h)
+        src/PathTessellation.cpp
+        src/ArcDivider.cpp
+        include/public/microgl/quad_matrix.h)
 
 add_library(${PROJECT_NAME} ${sources})
 
