@@ -4,193 +4,173 @@
 
 #pragma once
 
-#include <cstdint>
-
 
 // WIP
+template <unsigned N>
 class Q {
+private:
+    using index = unsigned int;
+    using precision_t = unsigned char;
+    using s32 = int;
+    using const_ref = const Q &;
+    using const_exact_ref = const Q<N> &;
+    using const_signed_ref = const int &;
+    using q_ref = Q &;
+    precision_t _precision = N;
+    long _value = 0;
+//    long _inter = 0;
+
+    static inline
+    int scale(long long from_value,
+              precision_t from_precision,
+              precision_t to_precision) {
+        if(from_precision==to_precision)
+            return from_value;
+        else if(from_precision>to_precision)
+            return (from_value)>>(from_precision - to_precision);
+        else
+            return (from_value)<<(to_precision - from_precision);
+    }
+
+    inline
+    int scale_q_value_to_my_space(const_ref q) {
+        return scale(q.value(), q.precision(), this->precision());
+    }
+
 public:
-    Q(const Q &q) {
-        this->_bits = q.bits();
-        this->_value = q.value();
+    Q(const_ref q) {
+        this->_value = scale(q.value(),
+                q.precision(),
+                _precision);
     }
 
-    Q(const Q &q, uint8_t $bits) {
-        this->_value = q.value();
-
-        scale($bits);
+    Q(const_signed_ref int_val) {
+        this->_value = int_val<<N;
     }
 
-    Q(const int val, uint8_t $bits) {
-
-        this->_bits = $bits;
-        this->_value = val<<$bits;
-    }
-
-    Q(const float val, uint8_t $bits) {
-
-        this->_bits = $bits;
-        this->_value = long(val * (1 << $bits));
+    Q(const float &float_val) {
+        this->_value = int(float_val * float(1u << N));
     }
 
     // with assignments
-    Q& operator =(const Q &q) {
-        this->_bits = q.bits();
-        this->_value = q.value();
+    q_ref operator =(const_ref q) {
+        this->_value = scale(q.value(),
+                             q.precision(),
+                             _precision);
+        return *this;
+    }
+    q_ref operator *=(const_ref q) {
+        long long inter = ((long long)this->_value*q.value());
+        this->_value = scale(inter,
+                this->precision() + q.precision(),
+                this->precision());
+        return *this;
+    }
+    q_ref operator /=(const_ref q) {
+        long long inter = ((long long)this->_value)<<q.precision();
+        this->_value = inter/q.value();
+        return *this;
+    }
+    q_ref operator +=(const_ref q) {
+        this->_value += scale_q_value_to_my_space(q);
+        return *this;
+    }
+    q_ref operator -=(const_ref q) {
+        this->_value -= scale_q_value_to_my_space(q);
         return *this;
     }
 
-    Q& operator *=(const Q &q) {
-        this->_value = ((long)this->_value*q.value());
-        auto pre_bits = this->bits();
-        this->_bits += q.bits();
-        scale(pre_bits);
-        return *this;
-    }
-
-    Q& operator /=(const Q &q) {
-        // first scale up
-        scaleUp(this->bits() + q.bits());
-
-        this->_value /= q.value();
-        this->_bits -= q.bits();
-
-        return *this;
-    }
-
-    Q& operator +=(const Q &q) {
-        this->_value += q.value();
-        return *this;
-    }
-
-    Q& operator -=(const Q &q) {
-        this->_value -= q.value();
-        return *this;
-    }
-
-    // integer assignments
-    template <typename T>
-    Q& operator *=(const T i) {
+    // unsigned assignments
+    q_ref operator *=(const_signed_ref i) {
         this->_value *= i;
         return *this;
     }
-
-    template <typename T>
-    Q& operator /=(const T i) {
+    q_ref operator /=(const_signed_ref i) {
         this->_value /= i;
         return *this;
     }
-
-    template <typename T>
-    Q& operator +=(const T i) {
+    q_ref operator +=(const_signed_ref i) {
         this->_value += i;
         return *this;
     }
-
-    template <typename T>
-    Q& operator -=(const T i) {
+    q_ref operator -=(const_signed_ref i) {
         this->_value -= i;
         return *this;
     }
 
-    // intermidiate
-    Q operator +(const Q &q) {
-        Q temp(*this);
+    // intermediate Q
+    Q operator +(const_ref q) const {
+        Q temp{*this};
         temp += q;
         return temp;
     }
-
-    Q operator *(const Q &q) {
-        Q temp(*this);
+    Q operator *(const_ref q) const {
+        Q temp{*this};
         temp *= q;
         return temp;
     }
-
-    Q operator /(const Q &q) {
-        Q temp(*this);
+    Q operator /(const_ref q) const {
+        Q temp{*this};
         temp /= q;
         return temp;
     }
-
-    Q operator -(const Q &q) {
-        Q temp(*this);
+    Q operator -(const_ref q) const {
+        Q temp{*this};
         temp -= q;
         return temp;
     }
 
-    // non Q
-    template <typename T>
-    Q operator +(const T i) {
-        Q temp(*this);
+    // intermediate unsigned
+    Q operator +(const_signed_ref i) const {
+        Q temp{*this};
         temp += i;
         return temp;
     }
-
-    template <typename T>
-    Q operator *(const T i) {
-        Q temp(*this);
+    Q operator *(const_signed_ref i) const {
+        Q temp{*this};
         temp *= i;
         return temp;
     }
-
-    template <typename T>
-    Q operator /(const T i) {
-        Q temp(*this);
+    Q operator /(const_signed_ref i) const {
+        Q temp{*this};
         temp /= i;
         return temp;
     }
-
-    template <typename T>
-    Q operator -(const T i) {
-        Q temp(*this);
+    Q operator -(const_signed_ref i) const {
+        Q temp{*this};
         temp -= i;
         return temp;
     }
 
+    // negate
+    Q operator -() const {
+//        Q temp{-this->value()};
+        return {-this->value()};
+    }
+
     // convert
     int toInt() {
-        return this->_value>>(this->_bits);
+        return this->_value>>(this->_precision);
     }
 
     float toFloat() {
-        return this->_value/float(1<<this->_bits);
-    }
-
-    void scale(uint8_t $bits) {
-        if(_bits>$bits)
-            scaleDown($bits);
-        else
-            scaleUp($bits);
-    }
-
-    void scaleUp(uint8_t $bits) {
-        this->_bits = $bits;
-        this->_value = (this->_value)<<($bits - this->_bits);
-    }
-
-    void scaleDown(uint8_t $bits) {
-        this->_bits = $bits;
-        this->_value = (this->_value)>>(this->_bits - $bits);
+        return float(this->_value)/float(1u<<this->_precision);
     }
 
     long fraction() {
-        return _value & ((1<<_bits) - 1);
+        return _value & ((1u<<_precision) - 1);
     }
 
     long integral() {
-        return _value & (((1<<_bits) - 1)<<_bits);
+        return _value & (((1u<<_precision) - 1)<<_precision);
     }
 
-    inline uint8_t bits() const {
-        return _bits;
+    inline precision_t precision() const {
+        return _precision;
     }
 
     inline long value() const {
         return _value;
     }
 
-private:
-    uint8_t _bits = 16;
-    long _value = 0;
-//    long _inter = 0;
 };

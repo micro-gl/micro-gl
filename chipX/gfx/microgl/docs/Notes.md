@@ -64,3 +64,8 @@ https://github.com/pelson/antigrain/blob/master/agg-2.4/src/agg_curves.cpp
 
 #### fixed point motivation
 - https://johnmcfarlane.github.io/cnl/
+- https://www.touchgfx.com/documentation/html/structtouchgfx_1_1_c_w_r_util.html
+
+#### easing functions
+- https://easings.net/en
+- https://cubic-bezier.com/#1,0,0,1
