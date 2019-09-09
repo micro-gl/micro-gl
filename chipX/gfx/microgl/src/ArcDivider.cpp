@@ -43,15 +43,15 @@ namespace tessellation {
         using very_long = long long;
         using uint = unsigned int;
         const precision_t sine_precision = 15;
-        const precision_t pixel_to_sine_precision = sine_precision-precision_angles;
+        const precision_t angle_to_sine_precision = sine_precision - precision_angles;
         const auto two_pi_fixed = uint(TWO_PI * float(1u<<sine_precision));
         const auto half_pi_fixed = uint(HALF_PI * float(1u<<sine_precision));
         bool full_circle = false;
         if(start_angle_rad == end_angle_rad)
             return;
 
-        start_angle_rad <<= pixel_to_sine_precision;
-        end_angle_rad <<= pixel_to_sine_precision;
+        start_angle_rad <<= angle_to_sine_precision;
+        end_angle_rad <<= angle_to_sine_precision;
 
         start_angle_rad = (start_angle_rad) % int(two_pi_fixed);
         end_angle_rad = (end_angle_rad) % int(two_pi_fixed);

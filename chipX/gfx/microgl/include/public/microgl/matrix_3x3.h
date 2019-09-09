@@ -1,6 +1,7 @@
 #pragma once
 
 #include <microgl/matrix.h>
+#include <microgl/trigo_functions.h>
 
 namespace microgl {
 
@@ -52,14 +53,14 @@ namespace microgl {
         static
         matrix_3x3 shear_x(const_type_ref angles) {
             matrix_3x3 mat{};
-            mat[SKEWX] = tan(angles);
+            mat[SKEWX] = functions::tan(angles);
             return mat;
         }
 
         static
         matrix_3x3 shear_y(const_type_ref angles) {
             matrix_3x3 mat{};
-            mat[SKEWY] = tan(angles);
+            mat[SKEWY] = functions::tan(angles);
             return mat;
         }
 
@@ -67,8 +68,8 @@ namespace microgl {
         matrix_3x3 rotation(const_type_ref angle) {
             matrix_3x3 mat{};
 
-            const_type_ref cos_ = cos(angle);
-            const_type_ref sin_ = sin(angle);
+            const_type_ref cos_ = functions::cos(angle);
+            const_type_ref sin_ = functions::sin(angle);
 
             mat[0] = cos_;
             mat[1] = -sin_;
@@ -83,8 +84,8 @@ namespace microgl {
                             const_type_ref py) {
             matrix_3x3 mat{};
 
-            const_type_ref cos_ = cos(angle);
-            const_type_ref sin_ = sin(angle);
+            const_type_ref cos_ = functions::cos(angle);
+            const_type_ref sin_ = functions::sin(angle);
 
             mat[0] = cos_;
             mat[1] = -sin_;
@@ -96,7 +97,7 @@ namespace microgl {
             return mat;
         }
 
-        explicit matrix_3x3() {
+        matrix_3x3() {
             identity_fill();
         };
 
@@ -119,7 +120,10 @@ namespace microgl {
 
         matrix_ref identity_fill() {
             this->fill(0);
-            fill_diagonal(1);
+            T fill_one{1};
+//            fill_one = 1;
+//            functions::one(fill_one);
+            fill_diagonal(fill_one);
             return *this;
         }
 

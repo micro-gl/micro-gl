@@ -23,34 +23,27 @@ Resources resources{};
 void loop();
 void init_sdl(int width, int height);
 
+#define PI        3.14159265358979323846264338327950288
+
 inline void render() {
+    Q<4> vv{};
+    Q<10> a{0.3f};
+    Q<10> a1 = 4;
+    a1=5;
 
-    matrix<int, 2, 2> mat_rect(1);
-    quad_matrix<int, 2> mat_0(1);
-    quad_matrix<int, 2> mat_1{1, 2, 3, 4, 5, 6};
+    microgl::functions::sin(a1);
 
-    quad_matrix<int, 2> mat_3 = (mat_0 * mat_1);
-    quad_matrix<int, 2> mat_4 = mat_rect;
+    using matrix_3x3_q10 = matrix_3x3<Q<10>>;
+    using matrix_3x3_q4 = matrix_3x3<Q<4>>;
 
-    mat_4.identity();
+    matrix_3x3_q10 rotation = matrix_3x3_q10::rotation(Q<10>{float(PI)});
+    matrix_3x3_q4 identity = matrix_3x3_q4::identity();
+    matrix_3x3_q4 scale = matrix_3x3_q4::scale(2, 2);
 
-    mat_0 *= 5;
-    vector<int, 2> vec_1{1,1,1};
+    auto i_s = identity*scale*scale;
+    auto i_r = identity*rotation;
 
-    auto b = mat_0 * vec_1;
-    auto c = vec_1.transpose()*vec_1;
-
-
-//    matrix<int, 2, 2> mat_4 = mat_1 *10;
-
-    int a1 = mat_1.columns();
-    int a = 5;
-
-    Q<2> q = 1.5f;
-    q=3.2f;
-
-    Q<2> q2{1};
-    Q<2> q3{1.5f};
+    int b = 0;
 
 }
 

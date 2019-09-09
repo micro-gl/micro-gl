@@ -34,7 +34,7 @@ set(sources
         src/TriangleIndices.cpp
         src/PathTessellation.cpp
         src/ArcDivider.cpp
-        include/public/microgl/quad_matrix.h)
+        include/public/microgl/quad_matrix.h include/public/microgl/trigo_functions.h)
 
 add_library(${PROJECT_NAME} ${sources})
 

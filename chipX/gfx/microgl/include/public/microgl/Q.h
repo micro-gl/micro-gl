@@ -1,11 +1,5 @@
-//
-// Created by Tomer Shalev on 2019-07-17.
-//
-
 #pragma once
 
-
-// WIP
 template <unsigned N>
 class Q {
 private:
@@ -16,6 +10,7 @@ private:
     using const_exact_ref = const Q<N> &;
     using const_signed_ref = const int &;
     using q_ref = Q &;
+    // todo:: this can be removed if I only stick to N
     precision_t _precision = N;
     long _value = 0;
 //    long _inter = 0;
@@ -38,18 +33,23 @@ private:
     }
 
 public:
-    Q(const_ref q) {
-        this->_value = scale(q.value(),
-                q.precision(),
-                _precision);
+    Q() {
+        this->_value = 0;
     }
 
+    Q(const_ref q) {
+        this->_value = scale(q.value(),
+                             q.precision(),
+                             _precision);
+    }
+
+    // this is Q<0>, so we promote it to Q<N>
     Q(const_signed_ref int_val) {
-        this->_value = int_val<<N;
+        this->_value = int_val<<this->precision();
     }
 
     Q(const float &float_val) {
-        this->_value = int(float_val * float(1u << N));
+        this->_value = int(float_val * float(1u << this->precision()));
     }
 
     // with assignments
@@ -58,6 +58,15 @@ public:
                              q.precision(),
                              _precision);
         return *this;
+    }
+    // with assignments
+    // this is Q<N>
+    q_ref operator =(const_signed_ref signed_value) {
+        this->_value = signed_value;//<<this->precision();
+        return *this;
+    }
+    q_ref operator =(const float &float_value) {
+        return (*this)=Q{float_value};
     }
     q_ref operator *=(const_ref q) {
         long long inter = ((long long)this->_value*q.value());
@@ -144,24 +153,27 @@ public:
 
     // negate
     Q operator -() const {
-//        Q temp{-this->value()};
-        return {-this->value()};
+        return Q{int(-this->value())};
     }
 
+    template <unsigned P>
+    static Q<P> fromInteger(int val) {
+        return Q<P>{val<<P};
+    }
     // convert
-    int toInt() {
+    int toInt() const {
         return this->_value>>(this->_precision);
     }
 
-    float toFloat() {
+    float toFloat() const {
         return float(this->_value)/float(1u<<this->_precision);
     }
 
-    long fraction() {
+    long fraction() const {
         return _value & ((1u<<_precision) - 1);
     }
 
-    long integral() {
+    long integral() const {
         return _value & (((1u<<_precision) - 1)<<_precision);
     }
 

@@ -39,7 +39,7 @@ void render() {
 
     precision_t precision_angles = 5;
     uint radius = 100u;
-    uint divisions = 4;
+    uint divisions = 22;
     int start_angle = deg_to_rad(0.0f, precision_angles);
     int end_angle = deg_to_rad(360.0f, precision_angles);
     vec2_32i center = {200, 200};
