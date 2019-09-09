@@ -25,11 +25,18 @@ namespace microgl {
                 _data[ix++] = *it;
         }
 
-        explicit matrix(const_type_ref fill_value) {
+        explicit
+        matrix(const_type_ref fill_value) {
             fill(fill_value);
         }
 
         matrix(const_matrix_ref mat) {
+            for(index ix = 0; ix < _size; ix++)
+                _data[ix] = mat[ix];
+        }
+
+        template <typename T2>
+        matrix(const matrix<T2, W, H> mat) {
             for(index ix = 0; ix < _size; ix++)
                 _data[ix] = mat[ix];
         }

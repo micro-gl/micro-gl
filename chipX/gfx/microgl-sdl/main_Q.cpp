@@ -30,18 +30,19 @@ inline void render() {
     Q<10> a{0.3f};
     Q<10> a1 = 4;
     a1=5;
+    vv = a;
 
     microgl::functions::sin(a1);
 
     using matrix_3x3_q10 = matrix_3x3<Q<10>>;
     using matrix_3x3_q4 = matrix_3x3<Q<4>>;
-
+    matrix_3x3<float> aaa(0.3f);
     matrix_3x3_q10 rotation = matrix_3x3_q10::rotation(Q<10>{float(PI)});
     matrix_3x3_q4 identity = matrix_3x3_q4::identity();
     matrix_3x3_q4 scale = matrix_3x3_q4::scale(2, 2);
 
     auto i_s = identity*scale*scale;
-    auto i_r = identity*rotation;
+    auto i_r = matrix_3x3_q10{scale}*rotation;
 
     int b = 0;
 

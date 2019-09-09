@@ -110,6 +110,10 @@ namespace microgl {
         matrix_3x3(const base__ & mat) :
                 base__(mat) {}
 
+        template<typename T2>
+        matrix_3x3(const matrix<T2, 3, 3> & mat) :
+                base__(mat) {}
+
         virtual ~matrix_3x3() = default;
 
         void fill_diagonal(const_type_ref value) {
@@ -121,8 +125,6 @@ namespace microgl {
         matrix_ref identity_fill() {
             this->fill(0);
             T fill_one{1};
-//            fill_one = 1;
-//            functions::one(fill_one);
             fill_diagonal(fill_one);
             return *this;
         }

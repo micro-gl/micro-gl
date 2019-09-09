@@ -12,8 +12,7 @@ private:
     using q_ref = Q &;
     // todo:: this can be removed if I only stick to N
     precision_t _precision = N;
-    long _value = 0;
-//    long _inter = 0;
+    int _value = 0;
 
     static inline
     int scale(long long from_value,
@@ -40,7 +39,14 @@ public:
     Q(const_ref q) {
         this->_value = scale(q.value(),
                              q.precision(),
-                             _precision);
+                             this->precision());
+    }
+
+    template <unsigned N_2>
+    Q(const Q<N_2> &q) {
+        this->_value = scale(q.value(),
+                             q.precision(),
+                             this->precision());
     }
 
     // this is Q<0>, so we promote it to Q<N>
@@ -56,7 +62,7 @@ public:
     q_ref operator =(const_ref q) {
         this->_value = scale(q.value(),
                              q.precision(),
-                             _precision);
+                             this->precision());
         return *this;
     }
     // with assignments
@@ -162,23 +168,23 @@ public:
     }
     // convert
     int toInt() const {
-        return this->_value>>(this->_precision);
+        return this->_value>>(this->precision());
     }
 
     float toFloat() const {
-        return float(this->_value)/float(1u<<this->_precision);
+        return float(this->_value)/float(1u<<this->precision());
     }
 
     long fraction() const {
-        return _value & ((1u<<_precision) - 1);
+        return _value & ((1u<<precision()) - 1);
     }
 
     long integral() const {
-        return _value & (((1u<<_precision) - 1)<<_precision);
+        return _value & (((1u<<precision()) - 1)<<precision());
     }
 
     inline precision_t precision() const {
-        return _precision;
+        return N;
     }
 
     inline long value() const {
