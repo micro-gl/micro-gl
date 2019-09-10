@@ -1,23 +1,28 @@
 #pragma once
 
-template <unsigned N>
+template <unsigned P>
 class Q {
 private:
     using index = unsigned int;
     using precision_t = unsigned char;
-    using s32 = int;
     using const_ref = const Q &;
-    using const_exact_ref = const Q<N> &;
+    using const_exact_ref = const Q<P> &;
     using const_signed_ref = const int &;
     using q_ref = Q &;
-    // todo:: this can be removed if I only stick to N
-    precision_t _precision = N;
     int _value = 0;
 
+    inline
+    int convert_q_value_to_my_space(const_ref q) {
+        return convert(q.value(), q.precision, this->precision);
+    }
+
+public:
+    static const precision_t precision = P;
+
     static inline
-    int scale(long long from_value,
-              precision_t from_precision,
-              precision_t to_precision) {
+    int convert(long long from_value,
+                precision_t from_precision,
+                precision_t to_precision) {
         if(from_precision==to_precision)
             return from_value;
         else if(from_precision>to_precision)
@@ -26,55 +31,46 @@ private:
             return (from_value)<<(to_precision - from_precision);
     }
 
-    inline
-    int scale_q_value_to_my_space(const_ref q) {
-        return scale(q.value(), q.precision(), this->precision());
-    }
-
-public:
     Q() {
         this->_value = 0;
     }
 
     Q(const_ref q) {
-        this->_value = scale(q.value(),
-                             q.precision(),
-                             this->precision());
+        this->_value = q.value();
     }
 
-    template <unsigned N_2>
-    Q(const Q<N_2> &q) {
-        this->_value = scale(q.value(),
-                             q.precision(),
-                             this->precision());
+    // conversion constructor
+    template <unsigned P_2>
+    Q(const Q<P_2> &q) {
+        this->_value = convert(q.value(),
+                             P_2,
+                             P);
     }
 
-    // this is Q<0>, so we promote it to Q<N>
+    // this is Q<0>, so we promote it to Q<P>
     Q(const_signed_ref int_val) {
-        this->_value = int_val<<this->precision();
+        this->_value = int_val<<P;
     }
 
     Q(const_signed_ref q_val, precision_t q_precision) {
-        this->_value = scale(q_val,
+        this->_value = convert(q_val,
                              q_precision,
-                             this->precision());
+                             P);
     }
 
     Q(const float &float_val) {
-        this->_value = int(float_val * float(1u << this->precision()));
+        this->_value = int(float_val * float(1u<<P));
     }
 
     // with assignments
     q_ref operator =(const_ref q) {
-        this->_value = scale(q.value(),
-                             q.precision(),
-                             this->precision());
+        this->_value = q.value();
         return *this;
     }
     // with assignments
-    // this is Q<N>
+    // this is Q<P>
     q_ref operator =(const_signed_ref signed_value) {
-        this->_value = signed_value;//<<this->precision();
+        this->_value = signed_value;
         return *this;
     }
     q_ref operator =(const float &float_value) {
@@ -82,22 +78,20 @@ public:
     }
     q_ref operator *=(const_ref q) {
         long long inter = ((long long)this->_value*q.value());
-        this->_value = scale(inter,
-                this->precision() + q.precision(),
-                this->precision());
+        this->_value = inter>>P;
         return *this;
     }
     q_ref operator /=(const_ref q) {
-        long long inter = ((long long)this->_value)<<q.precision();
+        long long inter = ((long long)this->_value)<<P;
         this->_value = inter/q.value();
         return *this;
     }
     q_ref operator +=(const_ref q) {
-        this->_value += scale_q_value_to_my_space(q);
+        this->_value += convert_q_value_to_my_space(q);
         return *this;
     }
     q_ref operator -=(const_ref q) {
-        this->_value -= scale_q_value_to_my_space(q);
+        this->_value -= convert_q_value_to_my_space(q);
         return *this;
     }
 
@@ -165,32 +159,24 @@ public:
 
     // negate
     Q operator -() const {
-        return Q{-this->value(), this->precision()};
+        return Q{-this->value(), P};
     }
 
-    template <unsigned P>
-    static Q<P> fromInteger(int val) {
-        return Q<P>{val<<P};
-    }
     // convert
     int toInt() const {
-        return this->_value>>(this->precision());
+        return this->_value>>P;
     }
 
     float toFloat() const {
-        return float(this->_value)/float(1u<<this->precision());
+        return float(this->_value)/float(1u<<P);
     }
 
     long fraction() const {
-        return _value & ((1u<<precision()) - 1);
+        return _value & ((1u<<P) - 1);
     }
 
     long integral() const {
-        return _value & (((1u<<precision()) - 1)<<precision());
-    }
-
-    inline precision_t precision() const {
-        return N;
+        return _value & (((1u<<P) - 1)<<P);
     }
 
     inline int value() const {

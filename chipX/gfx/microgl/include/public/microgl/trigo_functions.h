@@ -46,7 +46,7 @@ namespace microgl {
 
         template <unsigned N>
         Q<N> cos(const Q<N> & radians) {
-            const auto half_pi_fixed = unsigned(HALF_PI * float(1u<<radians.precision()));
+            const auto half_pi_fixed = unsigned(HALF_PI * float(1u<<radians.precision));
             return sin(radians + half_pi_fixed);
         }
 

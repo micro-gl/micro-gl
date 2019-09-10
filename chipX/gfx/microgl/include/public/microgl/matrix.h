@@ -12,9 +12,9 @@ namespace microgl {
         using const_type_ref = const T &;
 
         T _data[W * H];
-        index _cols = W;
-        index _rows = H;
-        index _size = W * H;
+        static const index _cols = W;
+        static const index _rows = H;
+        static const index _size = W * H;
 
     public:
         explicit matrix() = default;

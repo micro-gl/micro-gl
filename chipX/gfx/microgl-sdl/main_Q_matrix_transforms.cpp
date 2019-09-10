@@ -1,14 +1,11 @@
 
-#include <stdio.h>
 #include <iostream>
 #include <chrono>
 #include "src/Resources.h"
 #include <SDL2/SDL.h>
 #include <microgl/color.h>
 #include <microgl/Canvas.h>
-#include <microgl/matrix.h>
 #include <microgl/matrix_3x3.h>
-#include <microgl/quad_matrix.h>
 #include <microgl/Q.h>
 
 #define TEST_ITERATIONS 1
@@ -40,20 +37,20 @@ inline void render() {
     a1=5;
     vv = a;
 
+    a = vv;
+
     microgl::functions::sin(a1);
 
-    using matrix_3x3_q10 = matrix_3x3<Q<10>>;
+    using q_trans = Q<10>;
+    using q_raster = Q<12>;
+    using matrix_3x3_q_trans = matrix_3x3<q_trans>;
     using matrix_3x3_q4 = matrix_3x3<Q<4>>;
-    using vector_3_q10 = vector<Q<10>, 3>;
-//    matrix_3x3<float> aaa(0.3f);
-//    matrix_3x3_q10 rotation = matrix_3x3_q10::rotation(Q<10>{float(PI)});
-//    matrix_3x3_q4 identity = matrix_3x3_q4::identity();
-//    matrix_3x3_q4 scale = matrix_3x3_q4::scale(2, 2);
-//
-//    auto i_s = identity*scale*scale;
-//    auto i_r = matrix_3x3_q10{scale}*rotation;
-//
-//    int b = 0;
+    using vector_3_q = vector<q_trans, 3>;
+    using vector_3_q_raster = vector<q_raster, 3>;
+    using precision_t = unsigned;
+
+    precision_t precision_transform = q_trans::precision;
+    precision_t precision_rasterizer = q_raster::precision;
 
     timer++;
     t += 0.001;
@@ -64,14 +61,19 @@ inline void render() {
     vec2_32i p3{0, 100};
 //    t=PI/8.0f;
 //t=0.0f;
-    matrix_3x3_q10 rotation = matrix_3x3_q10::rotation(float(t));
-    matrix_3x3_q10 translate = matrix_3x3_q10::translate(t,0);
+    matrix_3x3_q_trans rotation = matrix_3x3_q_trans::rotation(float(t));
+    matrix_3x3_q_trans translate = matrix_3x3_q_trans::translate(10.0f*t,0);
+    matrix_3x3_q_trans scale = matrix_3x3_q_trans::scale(2.0f,2.0f);
     matrix_3x3_q4 identity = matrix_3x3_q4::identity();
-    auto & transform = rotation;
-    auto vec_0 = transform * vector_3_q10{p0.x, p0.y, 1};
-    auto vec_1 = transform * vector_3_q10{p1.x, p1.y, 1};
-    auto vec_2 = transform * vector_3_q10{p2.x, p2.y, 1};
-    auto vec_3 = transform * vector_3_q10{p3.x, p3.y, 1};
+//    std::cout<<t<<std::endl;
+    matrix_3x3_q_trans transform = rotation*translate*scale;
+
+    // this also converts into the raster precision :-) with
+    // the conversion constructor
+    vector_3_q_raster vec_0 = transform * vector_3_q{p0.x, p0.y, 1};
+    vector_3_q_raster vec_1 = transform * vector_3_q{p1.x, p1.y, 1};
+    vector_3_q_raster vec_2 = transform * vector_3_q{p2.x, p2.y, 1};
+    vector_3_q_raster vec_3 = transform * vector_3_q{p3.x, p3.y, 1};
 
     vec2_32i p0_t{vec_0[0].value(), vec_0[1].value()};
     vec2_32i p1_t{vec_1[0].value(), vec_1[1].value()};
@@ -84,7 +86,7 @@ inline void render() {
             p1_t.x, p1_t.y,
             p2_t.x, p2_t.y,
             p3_t.x, p3_t.y,
-            10,
+            precision_rasterizer,
             255
             );
 }
