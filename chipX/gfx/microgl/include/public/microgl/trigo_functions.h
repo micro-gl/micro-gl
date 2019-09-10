@@ -39,19 +39,31 @@ namespace microgl {
         }
 
         template <unsigned N>
-        Q<10> sin(const Q<N> & radians) {
-            auto precision_out = float(1u<<10);
+        Q<N> sin(const Q<N> & radians) {
             const float radians_f = radians.toFloat();
-
-            return int(std::sinf(radians_f)*precision_out);
+            return Q<N>(std::sinf(radians_f));
         }
 
         template <unsigned N>
-        Q<10> cos(const Q<N> & radians) {
+        Q<N> cos(const Q<N> & radians) {
             const auto half_pi_fixed = unsigned(HALF_PI * float(1u<<radians.precision()));
             return sin(radians + half_pi_fixed);
         }
 
+//        template <unsigned N>
+//        Q<10> sin(const Q<N> & radians) {
+//            auto precision_out = float(1u<<10);
+//            const float radians_f = radians.toFloat();
+//
+//            return int(std::sinf(radians_f)*precision_out);
+//        }
+//
+//        template <unsigned N>
+//        Q<10> cos(const Q<N> & radians) {
+//            const auto half_pi_fixed = unsigned(HALF_PI * float(1u<<radians.precision()));
+//            return sin(radians + half_pi_fixed);
+//        }
+//
         uint deg_to_rad(float degrees, uint requested_precision) {
             return ((degrees*PI)/180.0f)*(1u<<requested_precision);
         }

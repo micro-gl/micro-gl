@@ -54,6 +54,12 @@ public:
         this->_value = int_val<<this->precision();
     }
 
+    Q(const_signed_ref q_val, precision_t q_precision) {
+        this->_value = scale(q_val,
+                             q_precision,
+                             this->precision());
+    }
+
     Q(const float &float_val) {
         this->_value = int(float_val * float(1u << this->precision()));
     }
@@ -159,7 +165,7 @@ public:
 
     // negate
     Q operator -() const {
-        return Q{int(-this->value())};
+        return Q{-this->value(), this->precision()};
     }
 
     template <unsigned P>
@@ -187,7 +193,7 @@ public:
         return N;
     }
 
-    inline long value() const {
+    inline int value() const {
         return _value;
     }
 

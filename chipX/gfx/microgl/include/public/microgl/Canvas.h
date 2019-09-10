@@ -12,7 +12,7 @@
 #include "Fixed.h"
 #include "Sampler.h"
 #include "Curves.h"
-#include "TriangleIndices.h"
+#include "triangles.h"
 #include <microgl/polygons.h>
 #include <microgl/tesselation/BezierCurveDivider.h>
 #include <microgl/static_array.h>
@@ -268,7 +268,7 @@ public:
                            fixed_signed v1_x, fixed_signed v1_y, fixed_signed u1, fixed_signed v1,
                            fixed_signed v2_x, fixed_signed v2_y, fixed_signed u2, fixed_signed v2,
                            fixed_signed v3_x, fixed_signed v3_y, fixed_signed u3, fixed_signed v3,
-                           uint8_t opacity, uint8_t sub_pixel_precision, uint8_t uv_precision);
+                           uint8_t opacity, precision sub_pixel_precision, precision uv_precision);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -289,6 +289,7 @@ public:
                            int v1_x, int v1_y,
                            int v2_x, int v2_y,
                            int v3_x, int v3_y,
+                           precision sub_pixel_precision,
                            uint8_t opacity = 255);
 
 

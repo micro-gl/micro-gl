@@ -35,7 +35,7 @@ set(SOURCES
 #        main_fan_triangulation.cpp
 #        main_ear_clipping.cpp
 #        main_affine_matrix.cpp
-        main_Q.cpp
+        main_Q_matrix_transforms.cpp
 #        main_matrix.cpp
 #        main_aa_bug.cpp
 #        main_aa_bug_2.cpp

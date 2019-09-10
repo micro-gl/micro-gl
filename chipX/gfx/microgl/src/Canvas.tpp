@@ -1021,7 +1021,7 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
     // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
     uint8_t MAX_BITS_FOR_PROCESSING_PRECISION = 15;
     uint8_t PR = MAX_BITS_FOR_PROCESSING_PRECISION;// - sub_pixel_precision;
-    unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
+    int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
 
     // anti-alias pad for distance calculation
     uint8_t bits_distance = 0;
@@ -1739,8 +1739,8 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
                                     fixed_signed v1_x, fixed_signed v1_y, fixed_signed u1, fixed_signed v1,
                                     fixed_signed v2_x, fixed_signed v2_y, fixed_signed u2, fixed_signed v2,
                                     fixed_signed v3_x, fixed_signed v3_y, fixed_signed u3, fixed_signed v3,
-                                    const uint8_t opacity, const uint8_t sub_pixel_precision,
-                                    const uint8_t uv_precision) {
+                                    const uint8_t opacity, const precision sub_pixel_precision,
+                                    const precision uv_precision) {
 
     int q_one = 1<<uv_precision;
 
@@ -1935,104 +1935,24 @@ void Canvas<P, CODER>::drawQuadrilateral(const color_f_t &color,
                                          const int v1_x, const int v1_y,
                                          const int v2_x, const int v2_y,
                                          const int v3_x, const int v3_y,
+                                         precision sub_pixel_precision,
                                          const uint8_t opacity) {
-    color_t color_int;
-    coder()->convert(color, color_int);
 
-    // bounding box
-    int minX = functions::min(v0_x, v1_x, v2_x, v3_x);
-    int minY = functions::min(v0_y, v1_y, v2_y, v3_y);
-    int maxX = functions::max(v0_x, v1_x, v2_x, v3_x);
-    int maxY = functions::max(v0_y, v1_y, v2_y, v3_y);
+    drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
+                                                       v0_x, v0_y,
+                                                       v1_x, v1_y,
+                                                       v2_x, v2_y,
+                                                       opacity,
+                                                       sub_pixel_precision,
+                                                       true, true, false);
 
-    // anti-alias pad for distance calculation
-    uint8_t bits_distance;
-    unsigned int max_distance_anti_alias=0;
-
-    if(antialias) {
-        bits_distance = 1;
-        max_distance_anti_alias = 1 << bits_distance;
-        // we can solve padding analytically with distance=(max_distance_anti_alias/Cos(angle))
-        // but I don't give a fuck about it since I am just using max value of 2
-        minX-=max_distance_anti_alias*2;minY-=max_distance_anti_alias*2;
-        maxX+=max_distance_anti_alias*2;maxY+=max_distance_anti_alias*2;
-    }
-
-    // clipping against canvas
-    minX = functions::max(0, minX); minY = functions::max(0, minY);
-    maxX = functions::min(width()-1, maxX); maxY = functions::min(height()-1, maxY);
-
-    // lengths of edges
-    unsigned int length_w0 = functions::length({v0_x, v0_y}, {v1_x, v1_y});
-    unsigned int length_w1 = functions::length({v1_x, v1_y}, {v2_x, v2_y});
-    unsigned int length_w2 = functions::length({v2_x, v2_y}, {v3_x, v3_y});
-    unsigned int length_w3 = functions::length({v3_x, v3_y}, {v0_x, v0_y});
-
-    // Triangle setup
-    int A01 = int_to_fixed(v0_y - v1_y)/length_w0, B01 = int_to_fixed(v1_x - v0_x)/length_w0;
-    int A12 = int_to_fixed(v1_y - v2_y)/length_w1, B12 = int_to_fixed(v2_x - v1_x)/length_w1;
-    int A23 = int_to_fixed(v2_y - v3_y)/length_w2, B23 = int_to_fixed(v3_x - v2_x)/length_w2;
-    int A30 = int_to_fixed(v3_y - v0_y)/length_w3, B30 = int_to_fixed(v0_x - v3_x)/length_w3;
-
-    // Barycentric coordinates at minX/minY corner
-    vec2_32i p = { minX, minY };
-
-    // overflow safety safe_bits>=(p-2)/2, i.e 15 bits (0..32,768) for 32 bits integers.
-    // https://fgiesen.wordpress.com/2013/02/08/triangle-rasterization-in-practice/
-    // this is good for coordinates in the 15 bits range.
-    int w0_row = ((long)int_to_fixed(functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, p)))/length_w0;
-    int w1_row = ((long)int_to_fixed(functions::orient2d({v1_x, v1_y}, {v2_x, v2_y}, p)))/length_w1;
-    int w2_row = ((long)int_to_fixed(functions::orient2d({v2_x, v2_y}, {v3_x, v3_y}, p)))/length_w2;
-    int w3_row = ((long)int_to_fixed(functions::orient2d({v3_x, v3_y}, {v0_x, v0_y}, p)))/length_w3;
-
-    // watch out for negative values
-    int index = p.y * _width;
-
-    for (p.y = minY; p.y <= maxY; p.y++) {
-
-        // Barycentric coordinates at start of row
-        int w0 = w0_row;
-        int w1 = w1_row;
-        int w2 = w2_row;
-        int w3 = w3_row;
-
-
-        for (p.x = minX; p.x <= maxX; p.x++) {
-            if ((w0 | w1 | w2 | w3) >= 0) {
-                blendColor<BlendMode, PorterDuff>(color_int, index + p.x, opacity);
-
-            } else if(antialias) {;// if(false){
-                int distance = functions::min(w0, w1, w2, w3);
-                int delta = (distance) + (max_distance_anti_alias<<(16));
-
-                if (delta >= 0) {
-                    uint8_t blend = ((long)((delta) << (8 - bits_distance)))>>16;
-
-                    if (opacity < _max_alpha_value) {
-                        blend = (blend * opacity) >> 8;
-                    }
-
-                    blendColor<BlendMode, PorterDuff>(color_int, index + p.x, blend);
-                }
-
-            }
-
-            // One step to the right
-            w0 += A01;
-            w1 += A12;
-            w2 += A23;
-            w3 += A30;
-
-        }
-
-        // One row step
-        w0_row += B01;
-        w1_row += B12;
-        w2_row += B23;
-        w3_row += B30;
-
-        index += _width;
-    }
+    drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
+                                                   v2_x, v2_y,
+                                                   v3_x, v3_y,
+                                                   v0_x, v0_y,
+                                                   opacity,
+                                                   sub_pixel_precision,
+                                                   true, true, false);
 
 }
 

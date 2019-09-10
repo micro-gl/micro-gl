@@ -1,4 +1,4 @@
-#include <microgl/TriangleIndices.h>
+#include <microgl/triangles.h>
 
 namespace microgl {
 

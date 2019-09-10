@@ -31,7 +31,7 @@ set(sources
         src/BezierCurveDivider.cpp
         src/EarClippingTriangulation.cpp
         src/FanTriangulation.cpp
-        src/TriangleIndices.cpp
+        src/triangles.cpp
         src/PathTessellation.cpp
         src/ArcDivider.cpp
         include/public/microgl/quad_matrix.h include/public/microgl/trigo_functions.h)
