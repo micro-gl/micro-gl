@@ -77,6 +77,12 @@ public:
     q_ref operator =(const float &float_value) {
         return (*this)=Q{float_value};
     }
+    template <unsigned P_2>
+    q_ref operator *=(const Q<P_2> &q) {
+        long long inter = ((long long)this->_value*q.value());
+        this->_value = inter>>P_2;
+        return *this;
+    }
     q_ref operator *=(const_ref q) {
         long long inter = ((long long)this->_value*q.value());
         this->_value = inter>>P;
@@ -118,6 +124,12 @@ public:
     Q operator +(const_ref q) const {
         Q temp{*this};
         temp += q;
+        return temp;
+    }
+    template <unsigned P_2>
+    Q operator *(const Q<P_2> &q) {
+        Q temp{*this};
+        temp *= q;
         return temp;
     }
     Q operator *(const_ref q) const {

@@ -88,7 +88,8 @@ namespace tessellation {
         right_3 = p3;
     }
 
-    void BezierCurveDivider::split_cubic_bezier_at(const unsigned int t, const BezierCurveDivider::precision range_bits,
+    void BezierCurveDivider::split_cubic_bezier_at(const unsigned int t,
+                                                   const BezierCurveDivider::precision range_bits,
                                                    const vec2_32i *points,
                                                    const BezierCurveDivider::precision sub_pixel_bits, vec2_32i &left_1,
                                                    vec2_32i &left_2, vec2_32i &left_3, vec2_32i &left_4, vec2_32i &right_1,
@@ -161,18 +162,18 @@ namespace tessellation {
     }
 
     vec2_32i
-    BezierCurveDivider::lerp_fixed(int t, BezierCurveDivider::precision range_bits, const vec2_32i &a, const vec2_32i &b,
-                                   BezierCurveDivider::precision point_precision) {
+    BezierCurveDivider::lerp_fixed(
+            int t,
+            BezierCurveDivider::precision range_bits,
+            const vec2_32i &a, const vec2_32i &b,
+            BezierCurveDivider::precision point_precision
+            ) {
+
         vec2_32i r {};
 
-        uint8_t bits = point_precision - point_precision;
-
-        r.x = (a.x<<bits) + ((((b.x - a.x)<<bits)*t)>>range_bits);
-        r.y = (a.y<<bits) + ((((b.y - a.y)<<bits)*t)>>range_bits);
+        r.x = (a.x) + ((((b.x - a.x))*t)>>range_bits);
+        r.y = (a.y) + ((((b.y - a.y))*t)>>range_bits);
 //        r.y = (a.y<<bits) + (((b.y - a.y)*t)>>range_bits);
-
-        r.x >>= bits;
-        r.y >>= bits;
 
         return r;
     }

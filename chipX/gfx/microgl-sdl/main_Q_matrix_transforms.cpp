@@ -31,11 +31,10 @@ float t = 0.0f;
 
 inline void render() {
 
-    Q<4> vv{};
-    Q<10> a{0.3f};
-    Q<10> a1 = 4;
-    a1=5;
-    vv = a;
+    Q<0> a{1024};
+    Q<10> b{0.5f};
+
+    Q<0> cc =  a*b;
 
     using q_trans = Q<10>;
     using q_raster = Q<12>;

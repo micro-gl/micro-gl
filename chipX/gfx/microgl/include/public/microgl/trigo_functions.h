@@ -12,6 +12,11 @@ namespace microgl {
 #define min_(a, b) ((a)<(b) ? (a) : (b))
 #define max_(a, b) ((a)>(b) ? (a) : (b))
 
+        template <typename T>
+        T pi() {
+            return T{float(PI)};
+        }
+
         float sin(const float & radians) {
             return std::sinf(radians);
         }
@@ -40,42 +45,10 @@ namespace microgl {
             return Q<N>(std::tanf(radians_f));
         }
 
-
-        //        template <unsigned N>
-//        Q<10> sin(const Q<N> & radians) {
-//            auto precision_out = float(1u<<10);
-//            const float radians_f = radians.toFloat();
-//
-//            return int(std::sinf(radians_f)*precision_out);
-//        }
-//
-//        template <unsigned N>
-//        Q<10> cos(const Q<N> & radians) {
-//            const auto half_pi_fixed = unsigned(HALF_PI * float(1u<<radians.precision()));
-//            return sin(radians + half_pi_fixed);
-//        }
-//
-        uint deg_to_rad(float degrees, uint requested_precision) {
+        unsigned int deg_to_rad(float degrees, unsigned int requested_precision) {
             return ((degrees*PI)/180.0f)*(1u<<requested_precision);
         }
 
-//        int compute_sin_fixed(const int radians,
-//                              precision_t input_precision,
-//                              precision_t output_precision) {
-//            auto precision_m = float(1u<<input_precision);
-//            auto precision_out = float(1u<<output_precision);
-//            float radians_f = float(radians) / precision_m;
-//
-//            return int(std::sin(radians_f)*precision_out);
-//        }
-
-//        int compute_cos_fixed(const int radians,
-//                              const precision_t input_precision,
-//                              const precision_t output_precision) {
-//            const auto half_pi_fixed = unsigned(HALF_PI * float(1u<<input_precision));
-//            return compute_sin_fixed(radians + half_pi_fixed, input_precision, output_precision);
-//        }
-
-
     }
+
 }
