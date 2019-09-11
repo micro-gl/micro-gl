@@ -1223,12 +1223,6 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                                                      abs(top_right_w1_h), abs(bottom_right_w1_h));
                     int distance_w2 = functions::min(abs(top_left_w2_h), abs(bottom_left_w2_h),
                                                      abs(top_right_w2_h), abs(bottom_right_w2_h));
-//                    if(distance_w0>=0)
-//                        distance_w0 = 11111;
-//                    if(distance_w1>=0)
-//                        distance_w1 = 11111;
-//                    if(distance_w2>=0)
-//                        distance_w2 = 11111;
 
                     // now take the minimum among absolute values of distances
                     int d_aa = functions::min((distance_w0), (distance_w1), (distance_w2));

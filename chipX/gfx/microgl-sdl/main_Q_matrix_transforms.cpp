@@ -50,19 +50,21 @@ inline void render() {
 
     timer++;
     t += 0.001;
-//    t=-1;
+
     vec2_32i p0{0, 0};
     vec2_32i p1{100, 0};
     vec2_32i p2{100, 100};
     vec2_32i p3{0, 100};
-//    t=PI/8.0f;
-//t=0.0f;
+
     matrix_3x3_q_trans rotation = matrix_3x3_q_trans::rotation(float(t));
-    matrix_3x3_q_trans translate = matrix_3x3_q_trans::translate(10.0f*t,0);
-    matrix_3x3_q_trans scale = matrix_3x3_q_trans::scale(2.0f,2.0f);
+    matrix_3x3_q_trans rotation_pivot = matrix_3x3_q_trans::rotation(float(t), 50, 50);
+    matrix_3x3_q_trans translate = matrix_3x3_q_trans::translate(100.0f,100);
+    matrix_3x3_q_trans scale = matrix_3x3_q_trans::scale(3.0f,3.0f);
+    matrix_3x3_q_trans shear_x = matrix_3x3_q_trans::shear_x(float(t));
     matrix_3x3_q4 identity = matrix_3x3_q4::identity();
-//    std::cout<<t<<std::endl;
-    matrix_3x3_q_trans transform = rotation*translate*scale;
+//    matrix_3x3_q_trans transform = rotation*translate*scale;
+    matrix_3x3_q_trans transform = translate*scale*rotation_pivot;
+//    matrix_3x3_q_trans transform = shear_x;
 
     // this also converts into the raster precision :-) with
     // the conversion constructor
@@ -77,13 +79,14 @@ inline void render() {
     vec2_32i p3_t{vec_3[0].value(), vec_3[1].value()};
 
     canvas->clear(WHITE);
-    canvas->drawQuadrilateral(RED,
+    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
+            RED,
             p0_t.x, p0_t.y,
             p1_t.x, p1_t.y,
             p2_t.x, p2_t.y,
             p3_t.x, p3_t.y,
             precision_rasterizer,
-            255
+            111
             );
 }
 

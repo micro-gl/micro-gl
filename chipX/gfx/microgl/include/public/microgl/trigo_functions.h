@@ -12,22 +12,6 @@ namespace microgl {
 #define min_(a, b) ((a)<(b) ? (a) : (b))
 #define max_(a, b) ((a)>(b) ? (a) : (b))
 
-//        template <typename T>
-//        T compute_sin(const T & radians) {
-//
-//        }
-
-        void one(int &val) {
-            val = 1;
-        }
-        void one(float &val) {
-            val = 1.0f;
-        }
-        template <unsigned N>
-        void one(Q<N> & val) {
-            val = Q<N>{1<<N};
-        }
-
         float sin(const float & radians) {
             return std::sinf(radians);
         }
@@ -50,7 +34,14 @@ namespace microgl {
             return sin(radians + half_pi_fixed);
         }
 
-//        template <unsigned N>
+        template <unsigned N>
+        Q<N> tan(const Q<N> & radians) {
+            const float radians_f = radians.toFloat();
+            return Q<N>(std::tanf(radians_f));
+        }
+
+
+        //        template <unsigned N>
 //        Q<10> sin(const Q<N> & radians) {
 //            auto precision_out = float(1u<<10);
 //            const float radians_f = radians.toFloat();

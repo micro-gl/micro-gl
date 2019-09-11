@@ -1,7 +1,7 @@
 #pragma once
 
 template <typename T>
-class CRPT
+class crpt
 {
 protected:
     T& derived() { return static_cast<T&>(*this); }

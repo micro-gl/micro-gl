@@ -9,7 +9,7 @@
 
 #include <microgl/vec2.h>
 #include <microgl/vec3.h>
-#include "CRPT.h"
+#include "crpt.h"
 
 using namespace microgl;
 
@@ -28,7 +28,7 @@ enum PixelFormat {
 };
 
 template<typename P, typename IMPL>
-class PixelCoder : public CRPT<IMPL> {
+class PixelCoder : public crpt<IMPL> {
 public:
     PixelCoder(uint8_t bits_red, uint8_t bits_green, uint8_t bits_blue, uint8_t bits_alpha)
                 : _bits_per_red{bits_red}, _bits_per_green{bits_green},

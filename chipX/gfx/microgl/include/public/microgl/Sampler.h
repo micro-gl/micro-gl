@@ -8,7 +8,7 @@
 #pragma once
 
 #include <microgl/vec2.h>
-#include "CRPT.h"
+#include "crpt.h"
 #include <microgl/Bitmap.h>
 #include <microgl/Fixed.h>
 
@@ -22,7 +22,7 @@ namespace sampler {
     };
 
     template<typename IMPL>
-    class SamplerBase : public CRPT<IMPL> {
+    class SamplerBase : public crpt<IMPL> {
     public:
 
         template<typename P, typename Coder>

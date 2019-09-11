@@ -9,7 +9,7 @@
 
 #include <microgl/vec2.h>
 #include <microgl/color.h>
-#include "CRPT.h"
+#include "crpt.h"
 #include <cmath>
 #include<algorithm>
 using namespace microgl;
@@ -57,7 +57,7 @@ namespace blendmode {
 
 
     template<typename IMPL>
-    class BlendModeBase : public CRPT<IMPL> {
+    class BlendModeBase : public crpt<IMPL> {
     public:
 
         static inline void blend(const color_t &b,
