@@ -33,8 +33,8 @@ inline void render() {
 
     Q<0> a{1024};
     Q<10> b{0.5f};
-
     Q<0> cc =  a*b;
+    Q<0> cc2 =  a/b;
 
     using q_trans = Q<10>;
     using q_raster = Q<12>;

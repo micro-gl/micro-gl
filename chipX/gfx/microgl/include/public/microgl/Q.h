@@ -88,6 +88,12 @@ public:
         this->_value = inter>>P;
         return *this;
     }
+    template <unsigned P_2>
+    q_ref operator /=(const Q<P_2> &q) {
+        long long inter = ((long long)this->_value)<<P_2;
+        this->_value = inter/q.value();
+        return *this;
+    }
     q_ref operator /=(const_ref q) {
         long long inter = ((long long)this->_value)<<P;
         this->_value = inter/q.value();
@@ -135,6 +141,12 @@ public:
     Q operator *(const_ref q) const {
         Q temp{*this};
         temp *= q;
+        return temp;
+    }
+    template <unsigned P_2>
+    Q operator /(const Q<P_2> &q) {
+        Q temp{*this};
+        temp /= q;
         return temp;
     }
     Q operator /(const_ref q) const {
