@@ -46,7 +46,7 @@ namespace tessellation {
         const precision_t angle_to_sine_precision = sine_precision - precision_angles;
         const auto two_pi_fixed = uint(TWO_PI * float(1u<<sine_precision));
         const auto half_pi_fixed = uint(HALF_PI * float(1u<<sine_precision));
-        bool full_circle = false;
+
         if(start_angle_rad == end_angle_rad)
             return;
 
@@ -70,7 +70,6 @@ namespace tessellation {
 
         if(delta==0) {
             end_angle_rad = start_angle_rad + two_pi_fixed;
-            full_circle = true;
         }
 
         delta = (int(end_angle_rad) - int(start_angle_rad)) / int(divisions);
