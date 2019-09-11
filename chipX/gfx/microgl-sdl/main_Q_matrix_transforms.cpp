@@ -37,10 +37,6 @@ inline void render() {
     a1=5;
     vv = a;
 
-    a = vv;
-
-    microgl::functions::sin(a1);
-
     using q_trans = Q<10>;
     using q_raster = Q<12>;
     using matrix_3x3_q_trans = matrix_3x3<q_trans>;

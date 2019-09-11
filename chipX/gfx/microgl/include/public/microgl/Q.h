@@ -39,7 +39,8 @@ public:
         this->_value = q.value();
     }
 
-    // conversion constructor
+    // conversion constructor, this reduces many other
+    // operators.
     template <unsigned P_2>
     Q(const Q<P_2> &q) {
         this->_value = convert(q.value(),
@@ -62,7 +63,7 @@ public:
         this->_value = int(float_val * float(1u<<P));
     }
 
-    // with assignments
+    // with assignments operators
     q_ref operator =(const_ref q) {
         this->_value = q.value();
         return *this;
@@ -95,7 +96,7 @@ public:
         return *this;
     }
 
-    // unsigned assignments
+    // int assignments
     q_ref operator *=(const_signed_ref i) {
         this->_value *= i;
         return *this;
@@ -135,7 +136,7 @@ public:
         return temp;
     }
 
-    // intermediate unsigned
+    // intermediate int
     Q operator +(const_signed_ref i) const {
         Q temp{*this};
         temp += i;
@@ -162,7 +163,14 @@ public:
         return Q{-this->value(), P};
     }
 
-    // convert
+    // conversion operators
+    explicit operator float() {
+        return toFloat();
+    }
+    explicit operator int() {
+        return toInt();
+    }
+
     int toInt() const {
         return this->_value>>P;
     }
