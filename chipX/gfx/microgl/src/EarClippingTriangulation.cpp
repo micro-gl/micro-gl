@@ -6,9 +6,9 @@ namespace tessellation {
             _DEBUG{DEBUG} {};
 
     void EarClippingTriangulation::compute(microgl::vec2_f *$pts,
-                                             index size,
-                                             array_container<index> & indices_buffer_triangulation,
-                                            array_container<triangles::boundary_info> * boundary_buffer,
+                                           index size,
+                                           array_container<index> & indices_buffer_triangulation,
+                                           array_container<triangles::boundary_info> * boundary_buffer,
                                            const triangles::TrianglesIndices &requested) {
         // I could have made a template for point types and
         // conserve stack memory, but the hell with it for now

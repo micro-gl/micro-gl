@@ -12,20 +12,6 @@ namespace tessellation {
                                    array_container<triangles::boundary_info> * boundary_buffer,
                                    const triangles::TrianglesIndices &requested) {
 
-//        if(requested==triangles::TrianglesIndices::TRIANGLES_FAN) {
-//            if(required_indices_size(size, requested) > indices_buffer_size)
-//                throw std::runtime_error("size of the indices buffer is "
-//                                         "not enough for TRIANGLES_FAN !!!");
-//        }
-//        else if(requested==triangles::TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY) {
-//            if(required_indices_size(size, requested) > indices_buffer_size)
-//                throw std::runtime_error("size of the indices buffer is not enough "
-//                                         "for TRIANGLES_FAN_WITH_BOUNDARY !!!");
-//        }
-//        else
-//            throw std::runtime_error("only TRIANGLES_FAN and TRIANGLES_FAN_WITH_BOUNDARY "
-//                                     "are supported !!!");
-
         bool requested_triangles_with_boundary =
                 requested==triangles::TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY;
         auto &indices = indices_buffer_triangulation;
@@ -62,15 +48,9 @@ namespace tessellation {
                               array_container<index> & indices_buffer_triangulation,
                               array_container<triangles::boundary_info> * boundary_buffer,
                               const triangles::TrianglesIndices &requested) {
-        // I could have made a template for point types and
-        // conserve stack memory, but the hell with it for now
-        vec2_32i vertices_int[size];
 
-        for (index ix = 0; ix < size; ++ix) {
-            vertices_int[ix] = $pts[ix]<<5;
-        }
-
-        compute(vertices_int, size,
+        compute((vec2_32i *)nullptr,
+                size,
                indices_buffer_triangulation,
                 boundary_buffer,
                 requested);

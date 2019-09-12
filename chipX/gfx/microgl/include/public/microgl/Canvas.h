@@ -17,6 +17,7 @@
 #include <microgl/tesselation/BezierCurveDivider.h>
 #include <microgl/static_array.h>
 #include <microgl/tesselation/EarClippingTriangulation.h>
+#include <microgl/tesselation/FanTriangulation.h>
 #include <stdexcept>
 
 using namespace microgl::triangles;

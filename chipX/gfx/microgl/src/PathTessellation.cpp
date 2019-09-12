@@ -47,7 +47,6 @@ namespace tessellation {
         return sqrt_64(int64_t(vec.x)*vec.x + int64_t(vec.y)*vec.y);
     }
 
-
     bool non_parallel_rays_intersect(const vec2_32i &a,
                    const vec2_32i &b,
                    const vec2_32i &c,

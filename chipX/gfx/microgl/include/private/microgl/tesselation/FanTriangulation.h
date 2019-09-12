@@ -19,6 +19,7 @@ namespace tessellation {
 
         explicit FanTriangulation(bool DEBUG = false);;
 
+        static
         void compute(vec2_f * $pts,
                      index size,
                      array_container<index> & indices_buffer_triangulation,
@@ -27,6 +28,7 @@ namespace tessellation {
                                 triangles::TrianglesIndices::TRIANGLES_FAN
         );
 
+        static
         void compute(vec2_32i * $pts,
                      index size,
                      array_container<index> & indices_buffer_triangulation,

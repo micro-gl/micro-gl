@@ -120,9 +120,11 @@ namespace tessellation {
         right_4 = p4;
     }
 
-    void BezierCurveDivider::evaluate_cubic_bezier_at(const unsigned int t, const BezierCurveDivider::precision range_bits,
+    void BezierCurveDivider::evaluate_cubic_bezier_at(const unsigned int t,
+                                                      const BezierCurveDivider::precision range_bits,
                                                       const vec2_32i *points,
-                                                      const BezierCurveDivider::precision sub_pixel_bits, vec2_32i &output) {
+                                                      const BezierCurveDivider::precision sub_pixel_bits,
+                                                      vec2_32i &output) {
 
         unsigned int resolution = range_bits;
         unsigned int resolution_triple = resolution*3;

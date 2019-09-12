@@ -9,7 +9,6 @@
 
 //#include <microgl/Canvas.h>
 
-#include <microgl/tesselation/FanTriangulation.h>
 
 template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
@@ -464,8 +463,8 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                      const boundary_info * boundary_buffer,
                                      const index size,
                                      const TrianglesIndices type,
-                                     const uint8_t opacity,
-                                     const uint8_t sub_pixel_precision) {
+                                     const opacity opacity,
+                                     const precision sub_pixel_precision) {
 
 #define IND(a) indices[(a)]
 
