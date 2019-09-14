@@ -20,7 +20,7 @@ namespace tessellation {
 
         explicit EarClippingTriangulation(bool DEBUG = false);
 
-        void compute(vec2_f * $pts,
+        static void compute(vec2_f * $pts,
                         index size,
                         array_container<index> & indices_buffer_triangulation,
                         array_container<triangles::boundary_info> * boundary_buffer,
@@ -28,7 +28,7 @@ namespace tessellation {
                                         triangles::TrianglesIndices::TRIANGLES
         );
 
-        void compute(vec2_32i * $pts,
+        static void compute(vec2_32i * $pts,
                         index size,
                         array_container<index> & indices_buffer_triangulation,
                         array_container<triangles::boundary_info> * boundary_buffer,
@@ -68,6 +68,9 @@ namespace tessellation {
 
         static bool isEmpty(const Node * v, const LinkedList * list);
 
+        static
+        bool areEqual(const EarClippingTriangulation::Node *a,
+                      const EarClippingTriangulation::Node *b);
         bool _DEBUG = false;
     };
 

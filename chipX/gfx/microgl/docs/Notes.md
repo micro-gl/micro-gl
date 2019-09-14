@@ -62,6 +62,9 @@ https://github.com/pelson/antigrain/blob/master/agg-2.4/src/agg_curves.cpp
 - https://github.com/canvg/canvg
 - https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
 
+#### svg stuff
+- https://www.w3.org/TR/SVG/painting.html#FillProperties
+
 #### fixed point motivation
 - https://johnmcfarlane.github.io/cnl/
 - https://www.touchgfx.com/documentation/html/structtouchgfx_1_1_c_w_r_util.html
@@ -70,3 +73,11 @@ https://github.com/pelson/antigrain/blob/master/agg-2.4/src/agg_curves.cpp
 #### easing functions
 - https://easings.net/en
 - https://cubic-bezier.com/#1,0,0,1
+
+#### paths
+- https://github.com/google/skia/blob/master/src/gpu/GrTessellator.cpp
+
+#### complex decompose
+- http://cis.usouthal.edu/~hain/general/Research.htm
+- http://www.cis.southalabama.edu/~hain/general/Theses/Subramaniam_thesis.pdf
+- https://github.com/mclaeysb/simplepolygon

@@ -15,7 +15,7 @@ namespace tessellation {
         vec2_32i vertices_int[size];
 
         for (index ix = 0; ix < size; ++ix) {
-            vertices_int[ix] = $pts[ix]<<12;
+            vertices_int[ix] = $pts[ix]<<0;
         }
 
         compute(vertices_int,
@@ -30,20 +30,6 @@ namespace tessellation {
                                            array_container<index> & indices_buffer_triangulation,
                                            array_container<triangles::boundary_info> * boundary_buffer,
                                            const triangles::TrianglesIndices &requested) {
-
-//        if(requested==triangles::TrianglesIndices::TRIANGLES) {
-//            if(required_indices_size(size, requested) > indices_buffer_size)
-//                throw std::runtime_error("size of the indices buffer is "
-//                                         "not enough for TRIANGLES !!!");
-//        }
-//        else if(requested==triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY) {
-//            if(required_indices_size(size, requested) > indices_buffer_size)
-//                throw std::runtime_error("size of the indices buffer is not enough "
-//                                         "for TRIANGLES_WITH_BOUNDARY !!!");
-//        }
-//        else
-//            throw std::runtime_error("only TRIANGLES and TRIANGLES_WITH_BOUNDARY "
-//                                     "are supported !!!");
 
         bool requested_triangles_with_boundary =
                 requested==triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
@@ -69,17 +55,14 @@ namespace tessellation {
 
             point = pts.getFirst();
 
-            for (index jx = 0; jx < size; ++jx) {
+//            for (index jx = 0; jx < size; ++jx) {
+            for (index jx = 0; jx < pts.size(); ++jx) {
 
                 if (isConvex(point, &pts) && isEmpty(point, &pts)) {
 
                     indices.push_back(point->predecessor()->data.original_index);
                     indices.push_back(point->data.original_index);
                     indices.push_back(point->successor()->data.original_index);
-
-//                    indices[ind + 0] = point->predecessor()->data.original_index;
-//                    indices[ind + 1] = point->data.original_index;
-//                    indices[ind + 2] = point->successor()->data.original_index;
 
                     // record boundary
                     if(requested_triangles_with_boundary) {
@@ -94,9 +77,7 @@ namespace tessellation {
 
                         index info = triangles::create_boundary_info(first, second, third);
 
-//                        indices.push_back(info);
                         boundary_buffer->push_back(info);
-//                        indices[ind + 3] = info;
                     }
 
                     ind += 3;
@@ -176,6 +157,13 @@ namespace tessellation {
                neighborhood_orientation_sign(maximal_y_element(list)) > 0;
     }
 
+    bool EarClippingTriangulation::areEqual(const EarClippingTriangulation::Node *a,
+                                            const EarClippingTriangulation::Node *b) {
+        return
+            a->data.pt->x==b->data.pt->x &&
+            a->data.pt->y==b->data.pt->y;
+    }
+
     bool EarClippingTriangulation::isEmpty(const EarClippingTriangulation::Node *v,
                                            const EarClippingTriangulation::LinkedList *list) {
         int tsv;
@@ -190,8 +178,10 @@ namespace tessellation {
 
         do {
 
-            if(n==v || n==l || n==r)
+            if(areEqual(n, v) || areEqual(n, l) || areEqual(n, r))
                 continue;
+//            if(n==v || n==l || n==r)
+//                continue;
 
             if(tsv * sign_orientation_value(v, l, n)>=0 &&
                tsv * sign_orientation_value(l, r, n)>=0 &&
@@ -215,5 +205,6 @@ namespace tessellation {
         }
 
     }
+
 
 }

@@ -69,12 +69,12 @@ std::vector<vec2_32i> poly_hole() {
     vec2_32i p3 = {100, 300};
 
     vec2_32i p4 = {150,150};
-    vec2_32i p5 = {250, 150};
-    vec2_32i p6 = {250, 250};
     vec2_32i p7 = {150, 250};
+    vec2_32i p6 = {250, 250};
+    vec2_32i p5 = {250, 150};
 
 //    return {p4, p5, p6, p7};
-    return {p0, p1, p2, p3, p7, p6, p5, p4};
+    return {p0, p1, p2, p3,   p4, p7, p6, p5, p4,p3};//,p5_,p4_};
 }
 
 std::vector<vec2_f> poly_diamond() {
@@ -90,10 +90,10 @@ void render() {
     t+=.05f;
 //    std::cout << t << std::endl;
 //    render_polygon(poly_rect());
-    render_polygon(poly_2());
+//    render_polygon(poly_2());
+    render_polygon(poly_hole());
 //    render_polygon(poly_diamond());
 //    render_polygon(poly_tri());
-//    render_polygon(poly_hole());
 }
 
 
@@ -101,13 +101,13 @@ template <typename T>
 void render_polygon(std::vector<vec2<T>> polygon) {
     using index = unsigned int;
 
-    polygon[1].x = 140 + 20 +  t;
+//    polygon[1].x = 140 + 20 +  t;
 
     canvas->clear(WHITE);
 
     EarClippingTriangulation ear{true};
 
-    uint8_t precision = 10;
+    uint8_t precision = 0;
     auto type = TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
     index size_indices = EarClippingTriangulation::required_indices_size(polygon.size(),
             type);
