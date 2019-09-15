@@ -2507,19 +2507,20 @@ void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
             RED,
             points,
             indices.data(),
+            boundary_buffer.data(),
             indices.size(),
             type,
             opacity,
             precision);
 
     // draw triangulation
-//    drawTrianglesWireframe(BLACK,
-//                           points,
-//                           indices.data(),
-//                           indices.size(),
-//                           type,
-//                           255,
-//                           precision);
+    drawTrianglesWireframe(BLACK,
+                           points,
+                           indices.data(),
+                           indices.size(),
+                           type,
+                           255,
+                           precision);
 
 }
 
@@ -2538,7 +2539,8 @@ void Canvas<P, CODER>::drawPolygon(vec2_f *points,
     for (index ix = 0; ix < size; ++ix)
         points_int.push_back(points[ix]<<sub_pixel_precision);
 
-    drawPolygon<BlendMode, PorterDuff, antialias>(points_int.data(),
+    drawPolygon<BlendMode, PorterDuff, antialias>(
+            points_int.data(),
             size,
             sub_pixel_precision,
             opacity,

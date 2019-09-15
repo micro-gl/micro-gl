@@ -8,10 +8,10 @@
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/color.h>
-#include <microgl/Segment.h>
+#include <microgl/tesselation/Segment.h>
 //#include <microgl/PixelFormat.h>
 #include <microgl/PixelCoder.h>
-#include <microgl/BentleyOttmannLineIntersection.h>
+#include <microgl/tesselation/BentleyOttmannLineIntersection.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -26,13 +26,6 @@ typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
 Canvas24Bit_Packed32 * canvas;
 
 Resources resources{};
-
-color_f_t RED{1.0,0.0,0.0, 1.0};
-color_f_t YELLOW{1.0,1.0,0.0, 1.0};
-color_f_t WHITE{1.0,1.0,1.0, 1.0};
-color_f_t GREEN{0.0,1.0,0.0, 1.0};
-color_f_t BLUE{0.0,0.0,1.0, 1.0};
-color_f_t BLACK{0.0,0.0,0.0, 1.0};
 
 void loop();
 void init_sdl(int width, int height);
@@ -124,7 +117,7 @@ void render_chaos() {
     auto & segments = segments_2;
     //cout << t <<endl;
     BentleyOttmann bentleyOttmann(true);
-    uint8_t precision = 10;
+    uint8_t precision = 8;
     auto & I = bentleyOttmann.compute(segments.data(), segments.size(), precision);
 
     for (auto & inter : I) {

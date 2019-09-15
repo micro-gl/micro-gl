@@ -25,16 +25,18 @@ set(sources
         src/BlendMode.cpp
         src/PorterDuff.cpp
         src/Curves.cpp
-#        src/BentleyOttmannLineIntersection.cpp
-#        src/Rational.cpp
-#        src/Segment.cpp
+        src/BentleyOttmannLineIntersection.cpp
+        src/Rational.cpp
+        src/Segment.cpp
         src/BezierCurveDivider.cpp
         src/EarClippingTriangulation.cpp
         src/FanTriangulation.cpp
         src/triangles.cpp
         src/PathTessellation.cpp
         src/ArcDivider.cpp
-        include/public/microgl/quad_matrix.h include/public/microgl/trigo_functions.h include/public/number.h)
+        src/complex_to_simple_polygon.cpp
+        include/private/microgl/tesselation/nzw/Multipolygon.cpp
+        )
 
 add_library(${PROJECT_NAME} ${sources})
 

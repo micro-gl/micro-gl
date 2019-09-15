@@ -33,7 +33,7 @@ set(SOURCES
 #        main_path_tessellation.cpp
 #        main_arc_divider.cpp
 #        main_fan_triangulation.cpp
-        main_ear_clipping.cpp
+#        main_ear_clipping.cpp
 #        main_affine_matrix.cpp
 #        main_Q_matrix_transforms.cpp
 #        main_number_systems.cpp
@@ -41,6 +41,7 @@ set(SOURCES
 #        main_aa_bug.cpp
 #        main_aa_bug_2.cpp
 #        main_bentley_ottmann.cpp
+        main_complex_to_simple_polygon.cpp
 #        main_avl_tree.cpp
         libs/stb_image/stb_image.cpp
         src/Resources.cpp

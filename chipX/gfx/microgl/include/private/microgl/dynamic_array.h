@@ -3,32 +3,32 @@
 #include <microgl/array_container.h>
 
 template<typename T>
-class DynamicArray : public ArrayContainer<T> {
+class dynamic_array : public array_container<T> {
 public:
     using index = unsigned int;
 
-    explicit DynamicArray(index capacity = 10) {
+    explicit dynamic_array(index capacity = 10) {
         _cap = capacity;
         _data = new T[_cap];
     }
 
-    ~DynamicArray() {
+    ~dynamic_array() {
         delete [] _data;
         _data = nullptr;
         _cap = 0;
         _current = 0;
     }
 
-    T* data() {
+    T* data() override {
         return _data;
     }
 
-    T& operator[](index i) {
+    T& operator[](index i) override {
       return _data[i];
     }
 
-    const T& peek() {
-        return *this[_current];
+    const T& peek() override {
+        return (*this)[_current];
     }
 
     void alloc_(bool up) {
@@ -44,14 +44,14 @@ public:
         _data = _new;
     }
 
-    void push_back(const T & v) {
+    void push_back(const T & v) override {
         if(_current==_cap-1)
             alloc_(true);
 
         _data[_current++] = v;
     }
 
-    void pop_back() {
+    void pop_back() override {
         if(_current < (_cap>>1))
             alloc_(false);
 
@@ -66,15 +66,15 @@ public:
             _current = idx;
     }
 
-    void clear() {
+    void clear() override {
         _current = 0;
     }
 
-    index size() {
+    index size() override {
         return _current;
     }
 
-    index capacity() {
+    index capacity() override {
         return _cap;
     }
 
