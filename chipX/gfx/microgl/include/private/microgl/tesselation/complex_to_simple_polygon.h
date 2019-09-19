@@ -21,16 +21,17 @@ namespace tessellation {
 
         explicit complex_to_simple_polygon(bool DEBUG = false) {};
 
-        static void compute(vec2_f * $pts,
-                            index size,
+        static void compute(const vec2_f * $pts,
+                            const array_container<index> & pieces_locations,
+//                            index size,
                             array_container<vec2_f> & polygons_result,
                             array_container<index> & polygons_locations,
-                            vector<int> winding
+                            vector<int> &winding
         );
 
-        static void compute(vec2_32i * $pts,
-                        index size
-                        );
+//        static void compute(vec2_32i * $pts,
+//                        index size
+//                        );
 
     private:
 

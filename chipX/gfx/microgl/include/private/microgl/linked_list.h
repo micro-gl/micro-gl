@@ -1,5 +1,6 @@
 #pragma once
 
+// todo:: copy,move constructor and assignment operator
 template<typename T>
 struct linked_list {
 

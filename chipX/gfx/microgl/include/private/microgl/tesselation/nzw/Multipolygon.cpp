@@ -128,13 +128,13 @@ Poly::Poly(const Vertex &vtx, Coord resolution) {
     vtxList.push_back(Vertex(vtx.x , vtx.y + 10.0f).snap(resolution));
 }
 
-void Poly::nextCirc(list<Vertex>::iterator &it) // for circular linkage
+void Poly::nextCirc(vector<Vertex>::iterator &it) // for circular linkage
 {
     if (++it == vtxList.end())
         it = vtxList.begin();
 }
 
-void Poly::prevCirc(list<Vertex>::iterator &it) // for circular linkage
+void Poly::prevCirc(vector<Vertex>::iterator &it) // for circular linkage
 {
     if (it == vtxList.begin())
         it = vtxList.end();
@@ -449,7 +449,9 @@ LineSegment::IntersectionType MultiPoly::findIntersection( LineSegment &l1,
 // finds the intersections using trivial rejections considering the
 // bounding box overlap and monotonic chains
 vector<Vertex> MultiPoly::findMonotone(MultiPoly &resMPoly,
-                                       vector<int> &windingVector)
+                                       vector<int> &windingVector,
+                                       vector<int> &directions
+                                       )
 {
     vector<Vertex> intersections;
     // master intersection list
@@ -579,7 +581,7 @@ vector<Vertex> MultiPoly::findMonotone(MultiPoly &resMPoly,
     fillAddress(ivList, tempList);
 
     // now, we have a complete master list, we can traverse it for polygons.
-    polygonPartition( resMPoly,tempList,windingVector);
+    polygonPartition( resMPoly,tempList,windingVector, directions);
 
     return intersections;
 }
@@ -785,21 +787,18 @@ void MultiPoly::fillIndices (IntersectionList &ivList, vector<Intersection> &int
 // multipolygon has been processed
 // static method, depends only on it's inputm that means on the intersection master list
 void MultiPoly::polygonPartition(MultiPoly &resMPoly,
-                                 vector<Intersection> &tempList,
-                                 vector<int> &windingVector)
+                                 const vector<Intersection> &tempList,
+                                 vector<int> &windingVector,
+                                 vector<int> &directions
+                                 )
 {
-
-    // resulting polygon
     vector<Intersection> interVector;
     PolyIt pIt;
-//    VtxIt vit;
     bool finished = false;
     Vertex startVtx, currVtx;
-    Intersection prevInter;//,temp;
-    // todo:: this is a waste
-    interVector = tempList;
+    Intersection prevInter;
+    interVector = tempList; // todo:: this is a waste
     bool foundWinding = false;
-    int currEO =0;
     // todo:: interVector and tempList are mostly immutable so we can use indices
     // todo:: or pointers instead of objects
     stack<Intersection> interStack;
@@ -829,16 +828,26 @@ void MultiPoly::polygonPartition(MultiPoly &resMPoly,
             index= interStack.top().selfIndex;
         else
         {
+            // in case the algorithm operates on for example two components,
+            // that are not connected, therefore were not discoverable in the stack,
+            // then we need to look ahead in the master intersection list for a next candidate.
+            //
             // we couldn't find a promising index from the stack, therefore
             // we go over the intersection vector from below to top
             // to find the first index that leads somewhere, i.e has
             // a next intersection point
+            //
+            // the first time we visit, then the first index we find is a convex
+            // vertex, because the intersection list was sorted lexically by (x, y)
+            //
+            // todo: this might be optimizes by recording the last position of
+            // todo: valid index (index that satisfies the condition in the loop)
+            // todo: this index should be monotone, though I guess it is not performing
+            // todo: a lot of work now, it just compares things
             index=0;
             while(( interVector[index].index1 == -1)
                   && ( interVector[index].index2 == -1 ) &&(index < interVector.size()) )
             {
-                // this can be optimized
-//                temp = interVector[index];
                 index++;
             }
         }
@@ -851,6 +860,7 @@ void MultiPoly::polygonPartition(MultiPoly &resMPoly,
             currIndex = index;
 
 
+        // start a new polygon vertex walk
         if ( !finished )
         {
             int currWinding = 0;
@@ -858,6 +868,8 @@ void MultiPoly::polygonPartition(MultiPoly &resMPoly,
             startVtx = interVector[currIndex].v;
             currVtx = interVector[currIndex].v;
             prevInter = interVector[currIndex];
+
+//            /*
             const int startIndex = currIndex;
             int firstIndex = startIndex;
 
@@ -884,10 +896,16 @@ void MultiPoly::polygonPartition(MultiPoly &resMPoly,
             if ( interVector[startIndex].index1 == -1 || interVector[startIndex].index2== -1 )
                 currWinding = interVector[startIndex].winding;
 
+            // end winding setup
+//             */
+
             currPoly.vtxList.push_back( currVtx);
             interStack.push(interVector[currIndex]);
 
+            // walk the polygon until we get back to the start point,
+            // on the way, push potential companion vertices into the stack
             do {
+                // find the next vertex to visit and tag visited companion vertices
                 if (( interVector[currIndex].index1 == -1) && ( interVector[currIndex].index2 == -1 ) )
                     currIndex++;
                 else
@@ -927,6 +945,7 @@ void MultiPoly::polygonPartition(MultiPoly &resMPoly,
                     currPoly.vtxList.push_back( currVtx);
                     interStack.push(interVector[currIndex]);
 
+//                    /*
                     // this part is only for resolving winding
                     if ( !foundWinding)
                     {
@@ -999,9 +1018,11 @@ void MultiPoly::polygonPartition(MultiPoly &resMPoly,
                         interVector[currIndex].winding = currWinding;
                         interVector[currIndex].direction = currDirection;
                     }
+//                     */
                 }
             } while ( (currVtx != startVtx) && ( currIndex > -1 ) ) ;
             wVector.push_back(currWinding);
+            directions.push_back(currDirection);
             foundWinding = false;
             resMP.m_polyList.push_back(currPoly);
         } ;

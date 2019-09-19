@@ -14,7 +14,7 @@
 
 #define TEST_ITERATIONS 1
 #define W 640*1
-#define H 480*1
+#define H 640*1
 
 SDL_Window * window;
 SDL_Renderer * renderer;
@@ -30,9 +30,7 @@ void loop();
 void init_sdl(int width, int height);
 
 using namespace tessellation;
-
-template <typename T>
-void render_polygon(std::vector<vec2<T>> polygon);
+using index_t = unsigned int;
 
 float t = 0;
 
@@ -88,7 +86,7 @@ std::vector<vec2_f> poly_diamond() {
     return {p1, p2, p3, p0};
 }
 
-std::vector<vec2_f> poly_inter_1() {
+dynamic_array<vec2_f> poly_inter_1() {
     vec2_f p1 = {100, 100};
     vec2_f p2 = {400, 400};
     vec2_f p3 = {100, 400};
@@ -97,6 +95,81 @@ std::vector<vec2_f> poly_inter_1() {
     return {p1, p2, p3, p0};
 }
 
+std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_2() {
+    dynamic_array<index_t> locations;
+
+    dynamic_array<vec2_f> A2{
+            {100,100},
+            {200,100},
+            {200,200},
+            {100,200}
+    };
+
+    dynamic_array<vec2_f> B{
+            {0.0+0,0.0+0},
+            {0+300,0+0},
+            {0+300,0+300},
+            {0+0,0+300}
+    };
+
+    dynamic_array<vec2_f> A{
+            {0,0},
+            {90,0},
+            {90,90},
+            {0,90}
+    };
+
+    locations.push_back(0);
+    locations.push_back(A.size());
+    locations.push_back(A.size() + B.size());
+//    locations.push_back(A.size() + B.size() + C.size());
+
+    A.push_back(B);
+//    A.push_back(C);
+
+//    dynamic_array<vec2_f> C = A;
+
+    return {A, locations};
+}
+
+std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_deg() {
+    dynamic_array<index_t> locations;
+
+    dynamic_array<vec2_f> A{
+            {400,400},
+            {10,400},
+            {10,10},
+            {400,10},
+
+            {50,350},
+            {100,350},
+            {100,100},
+
+    };
+
+    locations.push_back(0);
+    locations.push_back(A.size());
+//    locations.push_back(A.size() + B.size());
+
+//    A.push_back(B);
+//    dynamic_array<vec2_f> C = A;
+
+    return {A, locations};
+}
+
+std::vector<vec2_f> poly_inter_star() {
+    vec2_f p0 = {150, 150};
+    vec2_f p1 = {450,150};
+    vec2_f p2 = {200,450};
+    vec2_f p3 = {300,50};
+    vec2_f p4 = {400,450};
+
+    return {p0, p1, p2, p3, p4};
+}
+
+template <typename T>
+void render_polygon(const std::pair<dynamic_array<vec2<T>>, dynamic_array<index_t>> &pieces);
+
 void render() {
     t+=.05f;
 //    std::cout << t << std::endl;
@@ -104,46 +177,46 @@ void render() {
 //    render_polygon(poly_2());
 //    render_polygon(poly_hole());
 //    render_polygon(poly_diamond());
-    render_polygon(poly_inter_1());
+//    render_polygon(poly_inter_1());
+    render_polygon(poly_inter_2());
+//    render_polygon(poly_inter_deg());
+//    render_polygon(poly_inter_star());
 //    render_polygon(poly_tri());
 }
 
 
 template <typename T>
-void render_polygon(std::vector<vec2<T>> polygon) {
+void render_polygon(const std::pair<dynamic_array<vec2<T>>, dynamic_array<index_t>> &pieces) {
     using index = unsigned int;
 
-//    polygon[1].x = 140 + 20 +  t;
+//    polygon[3].y = 50 -  t;
 
     canvas->clear(WHITE);
 
     tessellation::complex_to_simple_polygon simplifier{true};
     vector<int> winding;
-    dynamic_array<vec2<T>> simple_polygons_result;
-    dynamic_array<index> simple_polygons_locations;
+    static_array<vec2<T>, 256> simple_polygons_result;
+    static_array<index, 256> simple_polygons_locations;
 
     simplifier.compute(
-            polygon.data(),
-            polygon.size(),
+            pieces.first.data(),
+            pieces.second,
             simple_polygons_result,
             simple_polygons_locations,
             winding);
 
-    uint8_t precision = 0;
-    static_array<index, 128> indices;
+    for (index ix = 0; ix < simple_polygons_locations.size()-1; ++ix) {
+        index offset = simple_polygons_locations[ix];
+        index size = simple_polygons_locations[ix+1] - offset;
 
-    int offset = 0;
-    for (index ix = 0; ix < simple_polygons_locations.size(); ++ix) {
-        int size = simple_polygons_locations[ix];
-
-        canvas->drawPolygon(
+//        if(ix==0)
+        canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
                 &(simple_polygons_result.data()[offset]),
                 size - 1,
                 120,
                 polygons::hints::SIMPLE
                 );
 
-        offset += size;
     }
 
     // draw triangles batch

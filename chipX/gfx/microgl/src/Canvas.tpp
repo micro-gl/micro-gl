@@ -2513,6 +2513,7 @@ void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
             opacity,
             precision);
 
+//    return;
     // draw triangulation
     drawTrianglesWireframe(BLACK,
                            points,

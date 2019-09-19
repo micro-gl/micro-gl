@@ -92,7 +92,7 @@ public:
     // order by left edge of bounding box
     bool operator< (const LineSegment &ls) const;
 };
-typedef list<Vertex>::iterator VtxIt;
+typedef vector<Vertex>::iterator VtxIt;
 
 // Intersection - to create the master list
 // The most important object is an intersection object, which contains information about
@@ -178,18 +178,18 @@ typedef vector<Pseudovertex>::iterator PseudoIt;
 class Poly
 {
 public:
-    list<Vertex> vtxList;
+    vector<Vertex> vtxList;
     Poly(const Poly &p);
     Poly();
     Poly(const Vertex &vtx, Coord resolution);
-    void nextCirc(list<Vertex>::iterator &it);
+    void nextCirc(vector<Vertex>::iterator &it);
 
-    void prevCirc(list<Vertex>::iterator &it);
+    void prevCirc(vector<Vertex>::iterator &it);
 
     int size() const;
 };
 
-typedef list<Poly>::iterator PolyIt;
+typedef vector<Poly>::iterator PolyIt;
 
 // IntersectionList - list of polygon edges
 class IntersectionList
@@ -204,7 +204,7 @@ public:
 class MultiPoly
 {
 public:
-    list<Poly> m_polyList{};
+    vector<Poly> m_polyList{};
 
 //    struct MPPos
 //    {
@@ -228,13 +228,15 @@ public:
         m_polyList.push_back(p);
     }
     vector<Vertex> findIntersections(vector<Intersection> &tempList);
-    vector<Vertex> findMonotone(MultiPoly &resMPoly, vector<int> &windingVector);
+    vector<Vertex> findMonotone(MultiPoly &resMPoly, vector<int> &windingVector,
+                                vector<int> &directions);
     static void fillAddress(IntersectionList &ivList, vector <Intersection> &interVector);
     static void fillIndices(IntersectionList &ivList, vector <Intersection> &interVector);
     static LineSegment::IntersectionType findIntersection( LineSegment &l1, LineSegment &l2,
                                                     Vertex &intersection, float &alpha1, float &alpha2);
-    static void polygonPartition(MultiPoly &resMPoly, vector<Intersection> &tempList,
-                          vector<int> &windingVector);
+    static void polygonPartition(MultiPoly &resMPoly, const vector<Intersection> &tempList,
+                          vector<int> &windingVector,
+                                 vector<int> &directions);
 
     // cross-product, pq x qr
     static float xProd(const Vertex &p, Vertex &q, Vertex &r);

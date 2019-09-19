@@ -7,6 +7,16 @@ class dynamic_array : public array_container<T> {
 public:
     using index = unsigned int;
 
+    dynamic_array(const std::initializer_list<T> &list) : dynamic_array(list.size()) {
+        for(auto it = list.begin(); it!=list.end(); it++)
+            this->push_back(*it);
+    }
+
+    dynamic_array(const dynamic_array<T> &container) : dynamic_array(container.size()) {
+        for(auto ix = 0; ix < container.size(); ix++)
+            this->push_back(container[ix]);
+    }
+
     explicit dynamic_array(index capacity = 10) {
         _cap = capacity;
         _data = new T[_cap];
@@ -23,8 +33,25 @@ public:
         return _data;
     }
 
+    const T* data() const override {
+        return _data;
+    }
+
+    dynamic_array<T> & operator=(const dynamic_array<T> &container) {
+        this->clear();
+        for(auto ix = 0; ix < container.size(); ix++)
+            this->push_back(container[ix]);
+
+        return (*this);
+    }
+
+
     T& operator[](index i) override {
-      return _data[i];
+        return _data[i];
+    }
+
+    const T& operator[](index i) const override {
+        return _data[i];
     }
 
     const T& peek() override {
@@ -51,6 +78,13 @@ public:
         _data[_current++] = v;
     }
 
+    void push_back(const array_container<T> & container) override {
+        const int count = container.size();
+        for (int ix = 0; ix < count; ++ix) {
+            this->push_back(container[ix]);
+        }
+    }
+
     void pop_back() override {
         if(_current < (_cap>>1))
             alloc_(false);
@@ -70,11 +104,11 @@ public:
         _current = 0;
     }
 
-    index size() override {
+    index size() const override {
         return _current;
     }
 
-    index capacity() override {
+    index capacity() const override {
         return _cap;
     }
 

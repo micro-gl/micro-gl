@@ -76,6 +76,7 @@ https://github.com/pelson/antigrain/blob/master/agg-2.4/src/agg_curves.cpp
 
 #### paths
 - https://github.com/google/skia/blob/master/src/gpu/GrTessellator.cpp
+- https://www.w3.org/TR/2dcontext/#drawing-paths-to-the-canvas
 
 #### complex decompose
 - http://cis.usouthal.edu/~hain/general/Research.htm
