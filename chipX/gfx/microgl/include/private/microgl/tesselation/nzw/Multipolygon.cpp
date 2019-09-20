@@ -713,7 +713,7 @@ void MultiPoly::fillAddress(IntersectionList &ivList, vector<Intersection> &inte
             Vertex searchVertex1 = interVector[i].origin1;
             Vertex searchVertex2 = interVector[i].origin2;
 
-            // zero index is always a concrete polygon vertex or an intersection,
+            // zero index is always a concrete polygon vertex ,
             // but always concrete part of the polygon, thus can be identified with
             // unique id
             while ( ivList.p_list[i11].ilist[0].v != searchVertex1)
@@ -751,6 +751,7 @@ void MultiPoly::fillAddress(IntersectionList &ivList, vector<Intersection> &inte
 // master list (interVector)
 void MultiPoly::fillIndices (IntersectionList &ivList, vector<Intersection> &interVector)
 {
+    // this adds the last intersecting segment
     PseudoIt ps;
     for (ps = ivList.p_list.begin(); ps != ivList.p_list.end(); ++ps)
     {
@@ -769,19 +770,29 @@ void MultiPoly::fillIndices (IntersectionList &ivList, vector<Intersection> &int
         ps->ilist.push_back( nVertex( searchVtx, vtxIt,(ps->ilist.end() - 1)->l ) ) ;
     }
 
-    // setting up the indices for the intersections in the interVector
+    // go over on the edges list (this may represent a polygon if there is one component
+    // given to the algorithm)
+    // setting up the indices for the intersections in the interVector,
+    // this is what we worked for
     for ( ps = ivList.p_list.begin(); ps != ivList.p_list.end(); ++ps) {
+        // go over the intersections of each edge
         for (int i= 0; i < ps->ilist.size()-1; ++i)
         {
             nVertex tempVtx = ps->ilist[i+1];
             int tempIndex = ps->ilist[i].index;
+
+            // this is actually very simple. each edge is broken/ represented as
+            // segments *--*--*-*----* etc..
+            // for each point on the edge, update the master list where do we
+            // go next.
+            // I think we may avoid the third condition, in case we record
+            // polygon vertices with origin 2 as well. currently the code does not,
+            // no idea why
             if ( interVector[tempIndex].origin2 == ps->ilist[0].v )
                 interVector[tempIndex].index2 = tempVtx.index;
-            else
-            if ( interVector[tempIndex].origin1 == ps->ilist[0].v )
+            else if ( interVector[tempIndex].origin1 == ps->ilist[0].v )
                 interVector[tempIndex].index1 = tempVtx.index;
-            else
-            if ( interVector[tempIndex].v == ps->ilist[0].v )
+            else if ( interVector[tempIndex].v == ps->ilist[0].v )
                 interVector[tempIndex].index1 = tempVtx.index;
         }
     }

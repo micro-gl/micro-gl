@@ -145,7 +145,7 @@ public:
     // the parametric value of intersection
     float param;
     // the index of the position of the pseudovertex in the intersection master list
-    // this is the pointer into the linked-list of intersections of this vertex-edge
+    // this is the pointer into the intersections master-list of this vertex-edge
     int index;
     // the intersecting line segment
     LineSegment l;

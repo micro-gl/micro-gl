@@ -106,7 +106,7 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_2() {
     };
 
     dynamic_array<vec2_f> A{
-            {10.0,10.0},
+            {0.0,0.0},
             {50,0},
             {50,50},
             {0,50},
@@ -121,10 +121,11 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_2() {
 
     locations.push_back(0);
     locations.push_back(A.size());
-    locations.push_back(A.size() + B.size());
+//    locations.push_back(A.size() + B.size());
+
 //    locations.push_back(A.size() + B.size() + C.size());
 
-    A.push_back(B);
+//    A.push_back(B);
 //    A.push_back(C);
 
 //    dynamic_array<vec2_f> C = A;
@@ -132,7 +133,7 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_2() {
     return {A, locations};
 }
 
-std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_3() {
+std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_3() {
     dynamic_array<index_t> locations;
 
     dynamic_array<vec2_f> A{
@@ -233,8 +234,8 @@ void render() {
 //    render_polygon(poly_hole());
 //    render_polygon(poly_diamond());
 //    render_polygon(poly_inter_1());
-    render_polygon(poly_inter_3());
-//    render_polygon(poly_inter_2());
+//    render_polygon(poly_inter_nested_3());
+    render_polygon(poly_inter_2());
 //    render_polygon(poly_inter_deg());
 //    render_polygon(poly_inter_star());
 //    render_polygon(poly_tri());

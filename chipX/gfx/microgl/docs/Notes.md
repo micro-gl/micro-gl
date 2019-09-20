@@ -88,3 +88,9 @@ https://github.com/pelson/antigrain/blob/master/agg-2.4/src/agg_curves.cpp
 2. two components that touch the same point
 3. an edge that touches another edge
 4. the algorithm does not handle degenerarte polygons
+5. touching edges at endpoints are not considered intersections, unless
+   they are part of a polygon definition
+
+#### explenations
+- every edge list contains sections intersecting points on the edge, sorted
+by their order on the edge, this took me a while to figure out. :()
