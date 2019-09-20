@@ -451,7 +451,7 @@ LineSegment::IntersectionType MultiPoly::findIntersection( LineSegment &l1,
 vector<Vertex> MultiPoly::findMonotone(MultiPoly &resMPoly,
                                        vector<int> &windingVector,
                                        vector<int> &directions
-                                       )
+)
 {
     vector<Vertex> intersections;
     // master intersection list
@@ -593,6 +593,7 @@ vector<Vertex> MultiPoly::findIntersections(vector<Intersection> &tempList)
     vector<Vertex> intersections;
     for (PolyIt pi = m_polyList.begin(); pi != m_polyList.end(); ++pi)
     {
+        edges.clear();
         PolyIt pi0 = pi;
         VtxIt vi0 = pi0->vtxList.begin(), vi1;
         unsigned nVtx = pi0->vtxList.size();
@@ -610,6 +611,7 @@ vector<Vertex> MultiPoly::findIntersections(vector<Intersection> &tempList)
         ++pi0;
         while ( pi0 != m_polyList.end() )
         {
+            edges1.clear();
             VtxIt vi2 = pi0->vtxList.begin(), vi3;
             unsigned nVtx = pi0->vtxList.size();
             for (unsigned i = 0; i < nVtx; ++i)
@@ -702,6 +704,9 @@ void MultiPoly::fillAddress(IntersectionList &ivList, vector<Intersection> &inte
 
     for ( int i =0; i < interVector.size() ; i ++ )
     {
+        // push real intersection into the polygon edges list, for each edge push
+        // it's intersecting edges, thus at each edge create a linked list
+        // of intersections, later ont we will sort them
         if ( (interVector[i].param1 != 0 ) && (interVector[i].param2 != 0 ) )
         {
             int i11 = 0, i21 = 0;
@@ -709,7 +714,8 @@ void MultiPoly::fillAddress(IntersectionList &ivList, vector<Intersection> &inte
             Vertex searchVertex2 = interVector[i].origin2;
 
             // zero index is always a concrete polygon vertex or an intersection,
-            // but always concrete part of the polygon
+            // but always concrete part of the polygon, thus can be identified with
+            // unique id
             while ( ivList.p_list[i11].ilist[0].v != searchVertex1)
                 i11++;
             while ( ivList.p_list[i21].ilist[0].v != searchVertex2)
@@ -721,7 +727,7 @@ void MultiPoly::fillAddress(IntersectionList &ivList, vector<Intersection> &inte
             ivList.p_list[i11].ilist.push_back(Inter1);
             ivList.p_list[i21].ilist.push_back(Inter2);
         }
-        else
+        else // natural polygon vertex joints can be filled with indices already
         {
             int vtxIt = 0;
             Vertex vtx = interVector[i].v;
@@ -751,12 +757,15 @@ void MultiPoly::fillIndices (IntersectionList &ivList, vector<Intersection> &int
         int vtxIt = 0;
         Vertex searchVtx;
         LineSegment ls( (ps->ilist.end() - 1)->l );
+
         if ( ls.m_swappedVertices)
             searchVtx = ls.vertex0;
         else
             searchVtx = ls.vertex1;
+
         while ( interVector[vtxIt].v != searchVtx )
             vtxIt++;
+
         ps->ilist.push_back( nVertex( searchVtx, vtxIt,(ps->ilist.end() - 1)->l ) ) ;
     }
 
@@ -790,7 +799,7 @@ void MultiPoly::polygonPartition(MultiPoly &resMPoly,
                                  const vector<Intersection> &tempList,
                                  vector<int> &windingVector,
                                  vector<int> &directions
-                                 )
+)
 {
     vector<Intersection> interVector;
     PolyIt pIt;

@@ -105,18 +105,18 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_2() {
             {100,200}
     };
 
-    dynamic_array<vec2_f> B{
-            {0.0+0,0.0+0},
-            {0+300,0+0},
-            {0+300,0+300},
-            {0+0,0+300}
+    dynamic_array<vec2_f> A{
+            {10.0,10.0},
+            {50,0},
+            {50,50},
+            {0,50},
     };
 
-    dynamic_array<vec2_f> A{
-            {0,0},
-            {90,0},
-            {90,90},
-            {0,90}
+    dynamic_array<vec2_f> B{
+            {50+0.0,50+0.0},
+            {50+50,0+50},
+            {50+50,50+50},
+            {0+50,50+50},
     };
 
     locations.push_back(0);
@@ -126,6 +126,52 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_2() {
 
     A.push_back(B);
 //    A.push_back(C);
+
+//    dynamic_array<vec2_f> C = A;
+
+    return {A, locations};
+}
+
+std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_3() {
+    dynamic_array<index_t> locations;
+
+    dynamic_array<vec2_f> A{
+            {0.0,0.0},
+            {300,0},
+            {300,300},
+            {0,300},
+    };
+
+    dynamic_array<vec2_f> B{
+            {50+0.0,50+0.0},
+            {300+50,0+50},
+            {300+50,300-50},
+            {0+50,300-50},
+    };
+
+    dynamic_array<vec2_f> C{
+            {100+0.0,100+0.0},
+            {300+100,0+100},
+            {300+100,300-100},
+            {0+100,300-100},
+    };
+
+    dynamic_array<vec2_f> D{
+            {11,150},
+            {500,150},
+            {500,170},
+            {11,170},
+    };
+
+    locations.push_back(0);
+    locations.push_back(A.size());
+    locations.push_back(A.size() + B.size());
+    locations.push_back(A.size() + B.size() + C.size());
+    locations.push_back(A.size() + B.size() + C.size() + D.size());
+
+    A.push_back(B);
+    A.push_back(C);
+    A.push_back(D);
 
 //    dynamic_array<vec2_f> C = A;
 
@@ -157,14 +203,23 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_deg() {
     return {A, locations};
 }
 
-std::vector<vec2_f> poly_inter_star() {
-    vec2_f p0 = {150, 150};
-    vec2_f p1 = {450,150};
-    vec2_f p2 = {200,450};
-    vec2_f p3 = {300,50};
-    vec2_f p4 = {400,450};
+std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_star() {
+    dynamic_array<index_t> locations;
 
-    return {p0, p1, p2, p3, p4};
+    dynamic_array<vec2_f> A{
+            {150, 150},
+            {450,150},
+            {200,450},
+            {300,50},
+
+            {400,450},
+
+    };
+
+    locations.push_back(0);
+    locations.push_back(A.size());
+
+    return {A, locations};
 }
 
 template <typename T>
@@ -178,7 +233,8 @@ void render() {
 //    render_polygon(poly_hole());
 //    render_polygon(poly_diamond());
 //    render_polygon(poly_inter_1());
-    render_polygon(poly_inter_2());
+    render_polygon(poly_inter_3());
+//    render_polygon(poly_inter_2());
 //    render_polygon(poly_inter_deg());
 //    render_polygon(poly_inter_star());
 //    render_polygon(poly_tri());
@@ -299,7 +355,7 @@ void loop() {
                 break;
         }
 //
-        render();
+//        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());

@@ -82,3 +82,9 @@ https://github.com/pelson/antigrain/blob/master/agg-2.4/src/agg_curves.cpp
 - http://cis.usouthal.edu/~hain/general/Research.htm
 - http://www.cis.southalabama.edu/~hain/general/Theses/Subramaniam_thesis.pdf
 - https://github.com/mclaeysb/simplepolygon
+
+#### bugs in simplifier
+1. more than two components intersecetions - solved
+2. two components that touch the same point
+3. an edge that touches another edge
+4. the algorithm does not handle degenerarte polygons

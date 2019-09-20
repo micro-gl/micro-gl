@@ -233,9 +233,9 @@ public:
     static void fillAddress(IntersectionList &ivList, vector <Intersection> &interVector);
     static void fillIndices(IntersectionList &ivList, vector <Intersection> &interVector);
     static LineSegment::IntersectionType findIntersection( LineSegment &l1, LineSegment &l2,
-                                                    Vertex &intersection, float &alpha1, float &alpha2);
+                                                           Vertex &intersection, float &alpha1, float &alpha2);
     static void polygonPartition(MultiPoly &resMPoly, const vector<Intersection> &tempList,
-                          vector<int> &windingVector,
+                                 vector<int> &windingVector,
                                  vector<int> &directions);
 
     // cross-product, pq x qr
