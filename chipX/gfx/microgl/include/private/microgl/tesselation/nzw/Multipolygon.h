@@ -30,38 +30,6 @@ public:
     Vertex& snap(Coord resolution);
 };
 
-/*
-struct Rect
-{
-    Coord x0, y0, x1, y1;
-    Rect(const Coord _x0 = 0, const Coord _y0 = 0,
-         const Coord _x1 = 0, const Coord _y1 = 0)
-            : x0(_x0), y0(_y0), x1(_x1), y1(_y1) {}
-    Rect(const Vertex &v0, const Vertex &v1): x0(v0.x), y0(v0.y), x1(v1.x), y1(v1.y) {}
-    Rect(const Rect &r): x0(r.x0), y0(r.y0), x1(r.x1), y1(r.y1) {}
-    void normalize()
-    {
-        if (x0 > x1)
-            swap(x0,x1);
-        if (y0 > y1)
-            swap(y0,y1);
-    }
-
-    // Precondition: rectangle is normalized
-    bool isVertexInside(const Vertex &v) const {
-        return v.x >= x0 && v.x <= x1 && v.y >= y0 && v.y <= y1;
-    }
-
-    // Precondition: rectangle is normalized
-    void inflate(const Coord &dx, const Coord &dy) {
-        x0 -= dx;
-        x1 += dx;
-        y0 -= dy;
-        y1 += dy;
-    }
-};
- */
-
 class LineSegment
 {
     static const float NOISE; // used for determining limit of parallel lines

@@ -106,7 +106,7 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_2() {
     };
 
     dynamic_array<vec2_f> A{
-            {0.0,0.0},
+            {10.0,10.0},
             {50,0},
             {50,50},
             {0,50},
@@ -121,11 +121,11 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_2() {
 
     locations.push_back(0);
     locations.push_back(A.size());
-//    locations.push_back(A.size() + B.size());
+    locations.push_back(A.size() + B.size());
 
 //    locations.push_back(A.size() + B.size() + C.size());
 
-//    A.push_back(B);
+    A.push_back(B);
 //    A.push_back(C);
 
 //    dynamic_array<vec2_f> C = A;
