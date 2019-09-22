@@ -2535,7 +2535,7 @@ void Canvas<P, CODER>::drawPolygon(vec2_f *points,
                                    polygons::hints hint
                                    ) {
     static_array<vec2_32i, 128> points_int;
-    precision sub_pixel_precision = 4;
+    precision sub_pixel_precision = 4; //todo:: raise to 4
 
     for (index ix = 0; ix < size; ++ix)
         points_int.push_back(points[ix]<<sub_pixel_precision);

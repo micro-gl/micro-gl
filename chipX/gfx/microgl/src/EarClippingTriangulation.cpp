@@ -112,7 +112,7 @@ namespace tessellation {
 
         // pay attention that this can return 0, although in the algorithm
         // it does not return 0 never here.
-        return sign_orientation_value(l, v, r) > 0 ? 1 : -1;
+        return sign_orientation_value(l, v, r) >= 0 ? 1 : -1;
     }
 
     char

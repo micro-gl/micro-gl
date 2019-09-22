@@ -179,10 +179,10 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_3() {
     };
 
     dynamic_array<vec2_f> B{
-            {11,50+0.0},
+            {0,50+0.0},
             {300+50,0+50},
             {300+50,300-50},
-            {11,300-50},
+            {0,300-50},
     };
 
     dynamic_array<vec2_f> C{
@@ -225,10 +225,10 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_2() {
     };
 
     dynamic_array<vec2_f> B{
-            {11,50.},
-            {350,50},
-            {350,250},
-            {11,250},
+            {0,50.},
+            {250,50},
+            {250,250},
+            {0,250},
     };
 
     dynamic_array<vec2_f> C{
@@ -240,8 +240,8 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_2() {
 
     dynamic_array<vec2_f> D{
             {10,150},
-            {500,150},
-            {500,170},
+            {300,150},
+            {300,170},
             {10,170},
     };
 
@@ -315,7 +315,7 @@ void render() {
 //    render_polygon(poly_inter_1());
 
 //    render_polygon(poly_inter_nested_3());
-    render_polygon(poly_inter_nested_2());
+//    render_polygon(poly_inter_nested_2());
 
 //    render_polygon(poly_inter_2());
 
@@ -353,7 +353,46 @@ void render_polygon(const std::pair<dynamic_array<vec2<T>>, dynamic_array<index_
         index offset = simple_polygons_locations[ix];
         index size = simple_polygons_locations[ix+1] - offset;
 
-//        if(ix==0)
+//        if(ix!=1)
+//            continue;
+
+        static_array<vec2_f, 13> dd = {
+                {250, 200},
+                {100, 200},
+                {100, 170},
+                {10, 170},
+                {10, 150},
+                {100, 150},
+                {100, 100},
+                {250, 100},
+                {250, 150},
+                {300, 150},
+                {300, 170},
+                {250, 170},
+                };
+
+        static_array<vec2_f, 13> dd1 = {
+                {250, 200},
+                {100, 200},
+                {100, 170},
+                {10, 170},
+                {10, 150},
+                {100, 150},
+                {100, 100},
+                {250, 100},
+                {250, 150},
+                {300, 150},
+                {300, 170},
+                {250, 170},
+        };
+
+//        canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
+//                dd.data(),
+//                dd.size(),
+//                100,
+//                polygons::hints::SIMPLE
+//                );
+
         canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
                 &(simple_polygons_result.data()[offset]),
                 size - 1,
@@ -361,30 +400,14 @@ void render_polygon(const std::pair<dynamic_array<vec2<T>>, dynamic_array<index_
                 polygons::hints::SIMPLE
                 );
 
+        if(false)
+        canvas->drawLinePath(
+        BLACK,
+        dd.data(),
+        dd.size(),
+        false);
+
     }
-
-    // draw triangles batch
-//    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-//            RED,
-//            polygon.data(),
-//            indices.data(),
-//            boundary_buffer.data(),
-//            indices.size(),
-//            type,
-//            122,
-//            precision);
-
-    return;
-
-    // draw triangulation
-//    canvas->drawTrianglesWireframe(
-//            BLACK,
-//            polygon.data(),
-//            indices.data(),
-//            indices.size(),
-//            type,
-//            255,
-//            precision);
 
 }
 
