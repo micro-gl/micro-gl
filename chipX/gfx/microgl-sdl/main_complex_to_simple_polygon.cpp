@@ -62,19 +62,55 @@ std::vector<vec2_f> poly_tri() {
     return {p0, p3, p4};
 }
 
-std::vector<vec2_f> poly_hole() {
-    vec2_32i p0 = {100,100};
-    vec2_32i p1 = {300, 100};
-    vec2_32i p2 = {300, 300};
-    vec2_32i p3 = {100, 300};
+std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_degenerate_hole() {
+    dynamic_array<vec2_f> A{
+            {100,100},
+            {300,100},
+            {300,300},
+            {100,300},
 
-    vec2_32i p4 = {150,150};
-    vec2_32i p7 = {150, 250};
-    vec2_32i p6 = {250, 250};
-    vec2_32i p5 = {250, 150};
+            {150,150},
+            {150,250},
+            {250,250},
+            {250,150},
 
-//    return {p4, p5, p6, p7};
-    return {p0, p1, p2, p3,   p4, p7, p6, p5, p4,p3};//,p5_,p4_};
+            {150,150},
+            {100,300},
+
+    };
+
+    dynamic_array<index_t> locations = {0, A.size()};
+
+    return {A, locations};
+}
+
+std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_degenerate_multipepoints() {
+    dynamic_array<vec2_f> A{
+            {100,100},
+            {100,100},
+            {100,100},
+            {100,100},
+
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+
+            {300,300},
+            {300,300},
+            {300,300},
+            {300,300},
+
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+
+    };
+
+    dynamic_array<index_t> locations = {0, A.size()};
+
+    return {A, locations};
 }
 
 std::vector<vec2_f> poly_diamond() {
@@ -310,7 +346,11 @@ void render() {
 //    std::cout << t << std::endl;
 //    render_polygon<float>(poly_rect());
 //    render_polygon(poly_2());
-//    render_polygon(poly_hole());
+
+    render_polygon(poly_degenerate_hole());
+
+//    render_polygon(poly_degenerate_multipepoints());
+
 //    render_polygon(poly_diamond());
 //    render_polygon(poly_inter_1());
 
@@ -356,43 +396,6 @@ void render_polygon(const std::pair<dynamic_array<vec2<T>>, dynamic_array<index_
 //        if(ix!=1)
 //            continue;
 
-        static_array<vec2_f, 13> dd = {
-                {250, 200},
-                {100, 200},
-                {100, 170},
-                {10, 170},
-                {10, 150},
-                {100, 150},
-                {100, 100},
-                {250, 100},
-                {250, 150},
-                {300, 150},
-                {300, 170},
-                {250, 170},
-                };
-
-        static_array<vec2_f, 13> dd1 = {
-                {250, 200},
-                {100, 200},
-                {100, 170},
-                {10, 170},
-                {10, 150},
-                {100, 150},
-                {100, 100},
-                {250, 100},
-                {250, 150},
-                {300, 150},
-                {300, 170},
-                {250, 170},
-        };
-
-//        canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
-//                dd.data(),
-//                dd.size(),
-//                100,
-//                polygons::hints::SIMPLE
-//                );
-
         canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
                 &(simple_polygons_result.data()[offset]),
                 size - 1,
@@ -400,12 +403,12 @@ void render_polygon(const std::pair<dynamic_array<vec2<T>>, dynamic_array<index_
                 polygons::hints::SIMPLE
                 );
 
-        if(false)
-        canvas->drawLinePath(
-        BLACK,
-        dd.data(),
-        dd.size(),
-        false);
+//        if(false)
+//        canvas->drawLinePath(
+//        BLACK,
+//        dd.data(),
+//        dd.size(),
+//        false);
 
     }
 

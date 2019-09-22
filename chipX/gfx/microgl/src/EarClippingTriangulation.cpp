@@ -40,6 +40,7 @@ namespace tessellation {
         LinkedList pts{true};
         Node nodes[size];
 
+        // todo:: filter out degenerate points, points at the same location
         for (index ix = 0; ix < size; ++ix) {
             nodes[ix].data = {&$pts[ix], ix};
 
