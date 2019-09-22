@@ -86,13 +86,17 @@ std::vector<vec2_f> poly_diamond() {
     return {p1, p2, p3, p0};
 }
 
-dynamic_array<vec2_f> poly_inter_1() {
-    vec2_f p1 = {100, 100};
-    vec2_f p2 = {400, 400};
-    vec2_f p3 = {100, 400};
-    vec2_f p0 = {400,100};
+std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_1() {
+    dynamic_array<vec2_f> A{
+            {100,100},
+            {400,400},
+            {100,400},
+            {400,100}
+    };
 
-    return {p1, p2, p3, p0};
+    dynamic_array<index_t> locations = {0, A.size()};
+
+    return {A, locations};
 }
 
 std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_2() {
@@ -106,7 +110,7 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_2() {
     };
 
     dynamic_array<vec2_f> A{
-            {10.0,10.0},
+            {0.0,0.0},
             {50,0},
             {50,50},
             {0,50},
@@ -117,6 +121,37 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_2() {
             {50+50,0+50},
             {50+50,50+50},
             {0+50,50+50},
+    };
+
+    locations.push_back(0);
+    locations.push_back(A.size());
+    locations.push_back(A.size() + B.size());
+
+//    locations.push_back(A.size() + B.size() + C.size());
+
+    A.push_back(B);
+//    A.push_back(C);
+
+//    dynamic_array<vec2_f> C = A;
+
+    return {A, locations};
+}
+
+std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_side() {
+    dynamic_array<index_t> locations;
+
+    dynamic_array<vec2_f> A{
+            {0.0,0.0},
+            {400,0},
+            {400,400},
+            {0,400},
+    };
+
+    dynamic_array<vec2_f> B{
+            {0.0,0.0},
+            {400,0},
+            {400,400},
+            {0,400},
     };
 
     locations.push_back(0);
@@ -144,10 +179,10 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_3() {
     };
 
     dynamic_array<vec2_f> B{
-            {50+0.0,50+0.0},
+            {11,50+0.0},
             {300+50,0+50},
             {300+50,300-50},
-            {0+50,300-50},
+            {11,300-50},
     };
 
     dynamic_array<vec2_f> C{
@@ -158,10 +193,10 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_3() {
     };
 
     dynamic_array<vec2_f> D{
-            {11,150},
+            {10,150},
             {500,150},
             {500,170},
-            {11,170},
+            {10,170},
     };
 
     locations.push_back(0);
@@ -179,14 +214,58 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_3() {
     return {A, locations};
 }
 
+std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_2() {
+    dynamic_array<index_t> locations;
+
+    dynamic_array<vec2_f> A{
+//            {0.0,0.0},
+//            {300,0},
+//            {300,300},
+//            {0,300},
+    };
+
+    dynamic_array<vec2_f> B{
+            {11,50.},
+            {350,50},
+            {350,250},
+            {11,250},
+    };
+
+    dynamic_array<vec2_f> C{
+            {100,100},
+            {400,100},
+            {400,200},
+            {100,200},
+    };
+
+    dynamic_array<vec2_f> D{
+            {10,150},
+            {500,150},
+            {500,170},
+            {10,170},
+    };
+
+    locations.push_back(0);
+    locations.push_back(A.size());
+    locations.push_back(A.size() + B.size());
+    locations.push_back(A.size() + B.size() + C.size());
+    locations.push_back(A.size() + B.size() + C.size() + D.size());
+
+    A.push_back(B);
+    A.push_back(C);
+    A.push_back(D);
+
+    return {A, locations};
+}
+
 std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_deg() {
     dynamic_array<index_t> locations;
 
     dynamic_array<vec2_f> A{
             {400,400},
-            {10,400},
-            {10,10},
-            {400,10},
+            {0,400},
+            {0,0},
+            {400,0},
 
             {50,350},
             {100,350},
@@ -234,10 +313,18 @@ void render() {
 //    render_polygon(poly_hole());
 //    render_polygon(poly_diamond());
 //    render_polygon(poly_inter_1());
+
 //    render_polygon(poly_inter_nested_3());
-    render_polygon(poly_inter_2());
+    render_polygon(poly_inter_nested_2());
+
+//    render_polygon(poly_inter_2());
+
+//    render_polygon(poly_inter_side());
+
 //    render_polygon(poly_inter_deg());
+
 //    render_polygon(poly_inter_star());
+
 //    render_polygon(poly_tri());
 }
 

@@ -34,7 +34,7 @@ class LineSegment
 {
     static const float NOISE; // used for determining limit of parallel lines
 public:
-    Vertex vertex0, vertex1;
+    Vertex *vertex0, *vertex1;
     bool m_swappedVertices; // have vertices been swapped during sortVertices?
     Coord ymin, ymax; // y component of bounding box [don't use before call to sortVertices()]
 
@@ -49,7 +49,7 @@ public:
 
     // Sets bounding box of line segment to (vertex0.x, ymin, vertex1.x, ymax)
     void sortVertices();
-    LineSegment(const Vertex &vtx0, const Vertex &vtx1);
+    LineSegment(Vertex *vtx0, Vertex *vtx1);
     LineSegment(const LineSegment &l);
 
     IntersectionType calcIntersection(const LineSegment &l, Vertex &intersection,
@@ -68,23 +68,23 @@ class Intersection
 {
 public:
     // intersection point
-    Vertex v;
+    Vertex *v;
 
     float param1,param2;
     // the pointers to the next intersection objects i.e., the value of
     // the index position in the intersection master list
     int index1, index2;
     // the starting vertices of the two intersecting polygon edges
-    Vertex origin1, origin2;
+    Vertex *origin1, *origin2;
     int winding;
     int direction;
     int selfIndex;
     LineSegment l1, l2;
 
     Intersection(){}
-    Intersection (const Vertex &vtx, Vertex &org1, Vertex &org2,
+    Intersection (Vertex *vtx, Vertex *org1, Vertex *org2,
                   float &p1,float &p2, LineSegment &li, LineSegment &lj);
-    Intersection ( const Vertex &vtx, LineSegment &li, LineSegment &lj);
+    Intersection (  Vertex *vtx, LineSegment &li, LineSegment &lj);
     Intersection( const Intersection &i): v(i.v), index1(i.index1), index2(i.index2),
                                           param1(i.param1),param2(i.param2), origin1(i.origin1), origin2(i.origin2),
                                           l1(i.l1), l2( i.l2 ), winding (i.winding), direction (i.direction),
@@ -109,7 +109,7 @@ class nVertex
 {
 public:
     // polygon/intersection pseudo-vertex
-    Vertex v;
+    Vertex *v;
     // the parametric value of intersection
     float param;
     // the index of the position of the pseudovertex in the intersection master list
@@ -119,9 +119,9 @@ public:
     LineSegment l;
 
     nVertex();
-    nVertex ( const Vertex &vtx, float &p, int & i, LineSegment &l2 );
-    nVertex ( const Vertex &vtx, int & i, LineSegment &l2 );
-    nVertex ( const Vertex &vtx, LineSegment &l2 );
+    nVertex ( Vertex *vtx, float p, int i, LineSegment &l2 );
+    nVertex ( Vertex *vtx, int & i, LineSegment &l2 );
+    nVertex ( Vertex *vtx, LineSegment &l2 );
     void operator= ( const nVertex &i);
     bool operator< (const nVertex &n) const;
     bool operator<= (const nVertex &i) const;
@@ -137,7 +137,7 @@ public:
     Pseudovertex ( const nVertex &n );
     Pseudovertex ( const Pseudovertex &p );
     bool operator< (const Pseudovertex &s) const;
-    bool operator== (const Pseudovertex &p) const;
+//    bool operator== (const Pseudovertex &p) const;
 };
 
 typedef vector<Pseudovertex>::iterator PseudoIt;
@@ -173,6 +173,7 @@ class MultiPoly
 {
 public:
     vector<Poly> m_polyList{};
+    vector<Vertex *> v_interesections{};
 
 //    struct MPPos
 //    {
