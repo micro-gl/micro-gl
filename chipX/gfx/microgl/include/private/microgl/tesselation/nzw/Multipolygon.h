@@ -34,8 +34,8 @@ class LineSegment
 {
     static const float NOISE; // used for determining limit of parallel lines
 public:
-    Vertex *vertex0, *vertex1;
-    bool m_swappedVertices; // have vertices been swapped during sortVertices?
+    Vertex *vertex0= nullptr, *vertex1= nullptr;
+    bool m_swappedVertices=false; // have vertices been swapped during sortVertices?
     Coord ymin, ymax; // y component of bounding box [don't use before call to sortVertices()]
 
     typedef enum
@@ -44,6 +44,14 @@ public:
         NO_INTERSECT, // lines segments don't intersect
         INTERSECT // line segments intersect
     } IntersectionType;
+
+    Vertex * start() {
+        return !m_swappedVertices ? vertex0 : vertex1;
+    }
+
+    Vertex * end() {
+        return !m_swappedVertices ? vertex1 : vertex0;
+    }
 
     LineSegment(){}
 
@@ -54,8 +62,6 @@ public:
 
     IntersectionType calcIntersection(const LineSegment &l, Vertex &intersection,
                                       float &alpha, float &alpha1);
-
-//    bool isVertexNear(const Vertex &p, const Coord &resolution);
 
     // order by left edge of bounding box
     bool operator< (const LineSegment &ls) const;
@@ -68,25 +74,32 @@ class Intersection
 {
 public:
     // intersection point
-    Vertex *v;
+    Vertex *v{};
 
-    float param1,param2;
+    float param1{},param2{};
     // the pointers to the next intersection objects i.e., the value of
     // the index position in the intersection master list
-    int index1, index2;
+    int index1{}, index2{};
     // the starting vertices of the two intersecting polygon edges
-    Vertex *origin1, *origin2;
-    int winding;
-    int direction;
-    int selfIndex;
+//    Vertex *origin1, *origin2;
+    int winding{};
+    int direction{};
+    int selfIndex{};
     LineSegment l1, l2;
 
-    Intersection(){}
-    Intersection (Vertex *vtx, Vertex *org1, Vertex *org2,
-                  float &p1,float &p2, LineSegment &li, LineSegment &lj);
-    Intersection (  Vertex *vtx, LineSegment &li, LineSegment &lj);
+    Vertex * origin1() {
+        return l1.start();
+    }
+
+    Vertex * origin2() {
+        return l2.start();
+    }
+
+    Intersection()= default;
+    Intersection (Vertex *vtx, /*Vertex *org1, Vertex *org2 */float p1,float p2, const LineSegment &li, const LineSegment &lj);
+    Intersection (  Vertex *vtx, const LineSegment &li, const LineSegment &lj);
     Intersection( const Intersection &i): v(i.v), index1(i.index1), index2(i.index2),
-                                          param1(i.param1),param2(i.param2), origin1(i.origin1), origin2(i.origin2),
+                                          param1(i.param1),param2(i.param2),//, origin1(i.origin1), origin2(i.origin2),
                                           l1(i.l1), l2( i.l2 ), winding (i.winding), direction (i.direction),
                                           selfIndex(i.selfIndex) {}
     bool operator< (const Intersection &i) const;
@@ -110,18 +123,20 @@ class nVertex
 public:
     // polygon/intersection pseudo-vertex
     Vertex *v;
-    // the parametric value of intersection
+    // the parametric value of intersection, this can be omitted with some more work
+    // because we have the index in the intersection masterlist and therefore can
+    // take this info from there
     float param;
     // the index of the position of the pseudovertex in the intersection master list
     // this is the pointer into the intersections master-list of this vertex-edge
     int index;
     // the intersecting line segment
-    LineSegment l;
+//    LineSegment l;
 
     nVertex();
-    nVertex ( Vertex *vtx, float p, int i, LineSegment &l2 );
-    nVertex ( Vertex *vtx, int & i, LineSegment &l2 );
-    nVertex ( Vertex *vtx, LineSegment &l2 );
+    nVertex ( Vertex *vtx, float p, int i);
+//    nVertex ( Vertex *vtx, int & i, LineSegment &l2 );
+//    nVertex ( Vertex *vtx, LineSegment &l2 );
     void operator= ( const nVertex &i);
     bool operator< (const nVertex &n) const;
     bool operator<= (const nVertex &i) const;

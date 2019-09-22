@@ -347,7 +347,7 @@ void render() {
 //    render_polygon<float>(poly_rect());
 //    render_polygon(poly_2());
 
-    render_polygon(poly_degenerate_hole());
+//    render_polygon(poly_degenerate_hole());
 
 //    render_polygon(poly_degenerate_multipepoints());
 
@@ -363,7 +363,7 @@ void render() {
 
 //    render_polygon(poly_inter_deg());
 
-//    render_polygon(poly_inter_star());
+    render_polygon(poly_inter_star());
 
 //    render_polygon(poly_tri());
 }

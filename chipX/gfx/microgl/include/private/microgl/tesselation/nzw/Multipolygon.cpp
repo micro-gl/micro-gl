@@ -30,26 +30,25 @@ Vertex &Vertex::snap(Coord resolution) // Snap coords to given resolution
     return *this;
 }
 
-Intersection::Intersection( Vertex *vtx, Vertex *org1, Vertex *org2, float &p1, float &p2, LineSegment &li,
-                           LineSegment &lj) {
+Intersection::Intersection( Vertex *vtx, float p1, float p2, const LineSegment &li, const LineSegment &lj) {
     v = vtx;
     index1 = -1;
     index2 = -1;
     param1 = p1;
     param2 = p2;
-    origin1 = org1;
-    origin2 = org2;
+//    origin1 = org1;
+//    origin2 = org2;
     l1 = li;
     l2 = lj;
 }
 
-Intersection::Intersection( Vertex *vtx, LineSegment &li, LineSegment &lj) {
+Intersection::Intersection( Vertex *vtx, const LineSegment &li, const LineSegment &lj) {
     v = vtx;
     index1 = -1;
     index2 = -1;
     param1 = 0;
     param2 = 0;
-    origin1 = v;
+//    origin1 = v;
     l1 = li;
     l2 = lj;
     winding = 0;
@@ -67,8 +66,8 @@ void Intersection::operator=(const Intersection &i) {
     index2= i.index2;
     param1 = i.param1;
     param2 = i.param2;
-    origin1 = i.origin1;
-    origin2 = i.origin2;
+//    origin1 = i.origin1;
+//    origin2 = i.origin2;
     l1 = i.l1;
     l2 = i.l2;
     winding = i.winding;
@@ -76,30 +75,18 @@ void Intersection::operator=(const Intersection &i) {
     selfIndex = i.selfIndex;
 }
 
+
 nVertex::nVertex() {}
 
-nVertex::nVertex( Vertex *vtx, float p, int i, LineSegment &l2) {
+nVertex::nVertex( Vertex *vtx, float p, int i) {
     v = vtx;
     param = p;
     index = i;
-    l = l2;
 }
 
-nVertex::nVertex( Vertex *vtx, int &i, LineSegment &l2) {
-    v = vtx;
-    param = 0;
-    index = i;
-    l = l2;
-}
-
-nVertex::nVertex( Vertex *vtx, LineSegment &l2) {
-    v = vtx;
-    l = l2;
-}
 
 void nVertex::operator=(const nVertex &i) {
     v = i.v;
-    l = i.l;
     param= i.param;
     index = i.index;
 }
@@ -115,8 +102,6 @@ Pseudovertex::Pseudovertex(const nVertex &n) { ilist.push_back(n); }
 Pseudovertex::Pseudovertex(const Pseudovertex &p) : ilist(p.ilist) {}
 
 bool Pseudovertex::operator<(const Pseudovertex &s) const { return ( *(ilist.begin()->v) < *(s.ilist.begin()->v) ); }
-
-//bool Pseudovertex::operator==(const Pseudovertex &p) const { return ( *(ilist.begin()->v) == *(p.ilist.begin()->v) ); }
 
 Poly::Poly(const Poly &p) : vtxList(p.vtxList){}
 
@@ -221,189 +206,6 @@ bool LineSegment::operator<(const LineSegment &ls) const {
     return *vertex0 < *(ls.vertex0);
 }
 
-/*
-
- // Snap all vertex coordinates to given resolution
-void MultiPoly::gridify(Coord resolution)
-{
-    if (resolution != 0)
-        for (PolyIt pi = m_polyList.begin(); pi != m_polyList.end(); ++pi)
-            for (VtxIt vi = pi->vtxList.begin(); vi != pi->vtxList.end(); ++vi)
-                vi->snap(resolution);
-}
-
-
- bool LineSegment::isVertexNear(const Vertex &vtx, const Coord &resolution)
-{
-// CRect activeRect(vertex0.m_point, vertex1.m_point);
-// activeRect.NormalizeRect();
-// activeRect.InflateRect(resolution, resolution); // for vertical or horizontal edges
-// if (!activeRect.PtInRect(*this))
-// return false; // trivial reject (i.e., *this is not within line seg's bounding box)
-//Rectangle rect(*this);
-//rect.inflate(resolution, resolution);
-//if (!rect.isVertexInside(vtx))
-// return false;
-    Coord x1 = vertex0.x,
-            y1 = vertex0.y;
-    Coord x2 = vertex1.x,
-            y2 = vertex1.y;
-    Coord a = (y1 - y2),
-            b = - (x1 - x2),
-            c = ( x1 * (y2 - y1) - y1 * (x2 - x1) );
-    Coord xba = x2 - x1,
-            yba = y2 - y1;
-    double lsqr = xba * xba + yba * yba,
-            l = sqrt(lsqr);
-    Coord yac = y1 - vtx.y,
-            xac = x1 - vtx.x;
-    double r = ( -yac * yba - xac * xba);
-    double s = ( yac * xba - xac * yba) / l;
-    return (fabs(s) < resolution && r > -resolution && r < lsqr + resolution);
-}
-
-
-///////////////////// MultiPoly //////////////////////
-//
-// Find first vertex such that vtx is within a distance 'resolution' of it.
-// Output MPPos for that 'active' vertex, or invalid if none is found .
-MultiPoly::MPPos MultiPoly::GetActiveVtxPos(const Vertex &vtx, Coord resolution)
-{
-    Rect activeArea(vtx, vtx);
-    activeArea.inflate(resolution, resolution);
-    for (PolyIt pi = m_polyList.begin(); pi != m_polyList.end(); ++pi)
-        for (VtxIt vi = pi->vtxList.begin(); vi != pi->vtxList.end(); ++vi)
-            if (activeArea.isVertexInside(*vi))
-                return MPPos(pi,vi);
-    return MPPos();
-//    return MPPos(NULL,NULL);
-}
-
-// Find first edge such that vtx is within a distance 'resolution' of it.
-// Output (activePolyIter,activeVtxIter) is only valid if active edge is found, and
-// refers to vertex at one end of edge. Vertex at other end of edge is
-// (activePolyPos,GetNextCirc(activeVtxPos)).
-// Returns true if an active edge is found .
-MultiPoly::MPPos MultiPoly::GetActiveEdgePos(const Vertex &vtx, Coord resolution)
-{
-    for (PolyIt pi = m_polyList.begin(); pi != m_polyList.end(); ++pi) {
-        VtxIt vi = pi->vtxList.begin();
-        Vertex v0 = *vi;
-        for (int i = 0; i < pi->size(); ++i) {
-            pi->prevCirc(vi);
-            Vertex v1 = *vi;
-            LineSegment l(v0, v1);
-            if (l.isVertexNear(vtx, resolution))
-                return MPPos(pi, vi);
-            v0 = v1;
-        }
-    }
-    return MPPos();
-//    return MPPos(NULL, NULL);
-}
-
-bool MultiPoly::writePS(const char *file_name, bool bEOfill)
-{
-    ofstream out(file_name);
-    Rect rect(boundingBox());
-    out << "/poly {newpath";
-    for (PolyIt pi = m_polyList.begin(); pi != m_polyList.end(); ++pi)
-    {
-        out << "\n\t" << pi->vtxList.begin()->x << " " << pi->vtxList.begin()->y
-            << " moveto\n";
-        for (VtxIt vi = pi->vtxList.begin()++; vi != pi->vtxList.end(); ++vi)
-            out << "\t" << vi->x << " " << vi->y << " lineto\n";
-        out << "\tclosepath\n";
-    }
-    out << "} def\n\t16 774 translate\n\t0.8 setgray\n\tpoly "
-        << (bEOfill? "eofill\n" : "fill\n")
-        << "\t0 setgray\n\tpoly stroke\n\tshowpage";
-    return true;
-}
-
-bool MultiPoly::write(const char *file_name)
-{
-    ofstream out(file_name);
-    out << m_polyList.size() << "\n";
-    for (PolyIt pi = m_polyList.begin(); pi != m_polyList.end(); ++pi)
-    {
-        out << pi->vtxList.size() << " ";
-        for (VtxIt vi = pi->vtxList.begin(); vi != pi->vtxList.end(); ++vi)
-            out << vi->y << " " << vi->x << " ";
-    }
-    out << "\n";
-    return true;
-}
-bool MultiPoly::read(const char *file_name)
-{
-    ifstream in(file_name);
-    m_polyList.clear();
-    list<Poly>::size_type nPoly(*istream_iterator<typedef list<Poly>::size_type>(in));
-    for (list<Poly>::size_type p = 0; p < nPoly; ++p)
-    {
-        Poly poly;
-        list<Vertex>::size_type nVtx(*istream_iterator<list<Vertex>::size_type>(in));
-        for (list<Vertex>::size_type v = 0; v < nVtx; ++v)
-        {
-            Vertex vtx(*istream_iterator<Coord>(in),*istream_iterator<Coord>(in));
-            poly.vtxList.push_back(vtx);
-        }
-        m_polyList.push_back(poly);
-    }
-    return true;
-}
-void MultiPoly::dump()
-{
-    ofstream out("dump.txt");
-    out << m_polyList.size() << "\n";
-    for (PolyIt pi = m_polyList.begin(); pi != m_polyList.end(); ++pi)
-    {
-        out << pi->vtxList.size() << " ";
-        for (VtxIt vi = pi->vtxList.begin(); vi != pi->vtxList.end(); ++vi)
-            out << vi->y << " " << vi->x << " ";
-    }
-    out << "\n";
-}
-
-// generates a random multi polygon within the given rectangular area,
-// for a given number of vertices and number of polygons
-void MultiPoly::random(Rect boundRect, int nVtx, int nPoly)
-{
-    srand( (unsigned)time( NULL ) );
-    boundRect.normalize();
-    m_polyList.clear();
-    for (int p = 0; p < nPoly; ++p)
-    {
-        Poly poly;
-        for (int v = 0; v < nVtx; ++v)
-        {
-            Vertex vtx
-                    (
-                            boundRect.x0 + rand()%((int)(boundRect.x1-boundRect.x0)),
-                            boundRect.y0 + rand()%((int)(boundRect.y1-boundRect.y0))
-                    );
-            poly.vtxList.push_back(vtx);
-        }
-        m_polyList.push_back(poly);
-    }
-}
-
- Rect MultiPoly::boundingBox()
-{
-    Rect rect(*m_polyList.begin()->vtxList.begin(), *m_polyList.begin()->vtxList.begin());
-    for (PolyIt pi = m_polyList.begin(); pi != m_polyList.end(); ++pi)
-        for (VtxIt vi = pi->vtxList.begin(); vi != pi->vtxList.end(); ++vi)
-        {
-            rect.x0 = min(rect.x0, vi->x);
-            rect.y0 = min(rect.y0, vi->y);
-            rect.x1 = max(rect.x1, vi->x);
-            rect.y1 = max(rect.y1, vi->y);
-        }
-    return rect;
-}
-
- */
-
 // finds the intersection point between two line segments and thier parametric
 // values with respect to each intersecting line segment
 LineSegment::IntersectionType MultiPoly::findIntersection( LineSegment &l1,
@@ -491,14 +293,17 @@ vector<Vertex> MultiPoly::findMonotone(MultiPoly &resMPoly,
 
             l2.sortVertices();
 
-            nVertex i(&(*vi), l2);
+            // first vertex of the edge
+            nVertex i(&(*vi), 0, -1);
 
-            tempList.push_back(Intersection ( &(*vi), l2, l1 ) );
+            tempList.push_back(Intersection ( &(*vi), 1, 0, l1, l2 ) );
+//            tempList.push_back(Intersection ( &(*vi), l2, l1 ) );
             // first element is the edge vertex
             pseudo.ilist.push_back(i);
 
-//            nVertex i2(*vit1, 1.0f, -1, l2);
-//            pseudo.ilist.push_back(i2);
+            // last vertex of the edge
+            nVertex i2( &(*vit1), 2, -1);
+            pseudo.ilist.push_back(i2);
 
             p_list.push_back( pseudo );
 
@@ -556,17 +361,24 @@ vector<Vertex> MultiPoly::findMonotone(MultiPoly &resMPoly,
 
                     v_interesections.push_back(found_intersection);
 
-                    Vertex *searchVertex1, *searchVertex2;
-                    if (l1.m_swappedVertices)
-                        searchVertex1 = l1.vertex1;
-                    else
-                        searchVertex1 = l1.vertex0;
-                    if ( l2.m_swappedVertices)
-                        searchVertex2 = l2.vertex1;
-                    else
-                        searchVertex2 = l2.vertex0;
-                    tempList.push_back( Intersection ( found_intersection, searchVertex1,
-                                                       searchVertex2, al1, al2, l1, l2 ) );
+//                    Vertex *searchVertex1, *searchVertex2;
+//                    searchVertex1 = l1.start();
+//                    searchVertex2 = l2.start();
+
+//                    if (l1.m_swappedVertices)
+//                        searchVertex1 = l1.vertex1;
+//                    else
+//                        searchVertex1 = l1.vertex0;
+//
+//                    if ( l2.m_swappedVertices)
+//                        searchVertex2 = l2.vertex1;
+//                    else
+//                        searchVertex2 = l2.vertex0;
+
+//                    tempList.push_back( Intersection ( found_intersection, searchVertex1,
+//                                                       searchVertex2, al1, al2, l1, l2 ) );
+
+                    tempList.push_back( Intersection ( found_intersection, al1, al2, l1, l2 ) );
                 }
                 walker= walker1;
                 ++walker1;
@@ -649,6 +461,7 @@ vector<Vertex> MultiPoly::findIntersections(vector<Intersection> &tempList)
                     for (unsigned j = 0; j < nEdges1; ++j)
                     {
                         LineSegment li, lj;
+
                         if ( !edges[i].m_swappedVertices )
                             li = edges[i];
                         else
@@ -656,6 +469,7 @@ vector<Vertex> MultiPoly::findIntersections(vector<Intersection> &tempList)
                             li.vertex0 = edges[i].vertex1;
                             li.vertex1 = edges[i].vertex0;
                         }
+
                         if ( !edges1[j].m_swappedVertices )
                             lj = edges1[j];
                         else
@@ -688,20 +502,28 @@ vector<Vertex> MultiPoly::findIntersections(vector<Intersection> &tempList)
                                     Vertex * found_intersection = new Vertex(intersection);
 
                                     v_interesections.push_back(found_intersection);
-                                    Vertex *searchVertex1, *searchVertex2;
-                                    if (edges[i].m_swappedVertices)
-                                        searchVertex1 = edges[i].vertex1;
-                                    else
-                                        searchVertex1 = edges[i].vertex0;
-                                    if ( edges1[j].m_swappedVertices)
-                                        searchVertex2 = edges1[j].vertex1;
-                                    else
-                                        searchVertex2 = edges1[j].vertex0;
+//                                    Vertex *searchVertex1, *searchVertex2;
+//
+//                                    if (edges[i].m_swappedVertices)
+//                                        searchVertex1 = edges[i].vertex1;
+//                                    else
+//                                        searchVertex1 = edges[i].vertex0;
+//
+//                                    if ( edges1[j].m_swappedVertices)
+//                                        searchVertex2 = edges1[j].vertex1;
+//                                    else
+//                                        searchVertex2 = edges1[j].vertex0;
+
                                     li.sortVertices();
                                     lj.sortVertices();
+
                                     tempList.push_back( Intersection ( found_intersection,
-                                                                       searchVertex1, searchVertex2, param1, param2,
+                                                                       param1, param2,
                                                                        li , lj) );
+
+//                                    tempList.push_back( Intersection ( found_intersection,
+//                                                                       searchVertex1, searchVertex2, param1, param2,
+//                                                                       li , lj) );
                                 }
                             }
                         }
@@ -729,8 +551,8 @@ void MultiPoly::fillAddress(IntersectionList &ivList, vector<Intersection> &inte
         if ( (interVector[i].param1 != 0 ) && (interVector[i].param2 != 0 ) )
         {
             int i11 = 0, i21 = 0;
-            Vertex *searchVertex1 = interVector[i].origin1;
-            Vertex *searchVertex2 = interVector[i].origin2;
+            Vertex *searchVertex1 = interVector[i].origin1();
+            Vertex *searchVertex2 = interVector[i].origin2();
 
             // zero index is always a concrete polygon vertex ,
             // but always concrete part of the polygon, thus can be identified with
@@ -740,21 +562,49 @@ void MultiPoly::fillAddress(IntersectionList &ivList, vector<Intersection> &inte
             while ( ivList.p_list[i21].ilist[0].v != searchVertex2)
                 i21++;
 
-            nVertex Inter1(interVector[i].v, interVector[i].param1, i,interVector[i].l1);
-            nVertex Inter2(interVector[i].v, interVector[i].param2, i,interVector[i].l2);
+            nVertex Inter1(interVector[i].v, interVector[i].param1, i);
+            nVertex Inter2(interVector[i].v, interVector[i].param2, i);
 
             ivList.p_list[i11].ilist.push_back(Inter1);
             ivList.p_list[i21].ilist.push_back(Inter2);
         }
-        else // natural polygon vertex joints can be filled with indices already
+        else
         {
+            // natural polygon vertex joints can be filled with indices already
+            // this are the first vertex and last vertex, that define an edge of a polygon.
+            // first vertex is the start vertex, and second one is the end vertex.
+            // other vertices are in between, later on we will sort them
             int vtxIt = 0;
             Vertex *vtx = interVector[i].v;
             while ( ivList.p_list[vtxIt].ilist[0].v != vtx )
                 vtxIt++;
             ivList.p_list[vtxIt].ilist[0].index = i;
+
+            vtxIt = 0;
+            while ( ivList.p_list[vtxIt].ilist[1].v != vtx )
+                vtxIt++;
+            ivList.p_list[vtxIt].ilist[1].index = i;
         }
     }
+
+//    PseudoIt ps;
+//    for (ps = ivList.p_list.begin(); ps != ivList.p_list.end(); ++ps)
+//    {
+//        int vtxIt = 0;
+//        Vertex *searchVtx;
+//        LineSegment ls( (ps->ilist.end() - 1)->l );
+//
+//        // get the last endpoint
+//        if ( ls.m_swappedVertices)
+//            searchVtx = ls.vertex0;
+//        else
+//            searchVtx = ls.vertex1;
+//
+//        while ( interVector[vtxIt].v != searchVtx )
+//            vtxIt++;
+//
+//        ps->ilist.push_back( nVertex( searchVtx, vtxIt,(ps->ilist.end() - 1)->l ) ) ;
+//    }
 
     // sort ONLY the intersections of the poly edge array
     for ( PseudoIt ps = ivList.p_list.begin(); ps != ivList.p_list.end(); ++ps)
@@ -773,23 +623,23 @@ void MultiPoly::fillIndices (IntersectionList &ivList, vector<Intersection> &int
     // go over the edges and add the last vertex to each edge
     // COMPARE AS POINTERS, VERY IMPORTANT !!!!
     PseudoIt ps;
-    for (ps = ivList.p_list.begin(); ps != ivList.p_list.end(); ++ps)
-    {
-        int vtxIt = 0;
-        Vertex *searchVtx;
-        LineSegment ls( (ps->ilist.end() - 1)->l );
-
-        // get the last endpoint
-        if ( ls.m_swappedVertices)
-            searchVtx = ls.vertex0;
-        else
-            searchVtx = ls.vertex1;
-
-        while ( interVector[vtxIt].v != searchVtx )
-            vtxIt++;
-
-        ps->ilist.push_back( nVertex( searchVtx, vtxIt,(ps->ilist.end() - 1)->l ) ) ;
-    }
+//    for (ps = ivList.p_list.begin(); ps != ivList.p_list.end(); ++ps)
+//    {
+//        int vtxIt = 0;
+//        Vertex *searchVtx;
+//        LineSegment ls( (ps->ilist.end() - 1)->l );
+//
+//        // get the last endpoint
+//        if ( ls.m_swappedVertices)
+//            searchVtx = ls.vertex0;
+//        else
+//            searchVtx = ls.vertex1;
+//
+//        while ( interVector[vtxIt].v != searchVtx )
+//            vtxIt++;
+//
+//        ps->ilist.push_back( nVertex( searchVtx, vtxIt,(ps->ilist.end() - 1)->l ) ) ;
+//    }
 
     // go over on the edges list (this may represent a polygon if there is one component
     // given to the algorithm)
@@ -809,9 +659,9 @@ void MultiPoly::fillIndices (IntersectionList &ivList, vector<Intersection> &int
             // I think we may avoid the third condition, in case we record
             // polygon vertices with origin 2 as well. currently the code does not,
             // no idea why
-            if ( interVector[tempIndex].origin2 == ps->ilist[0].v )
+            if ( interVector[tempIndex].origin2() == ps->ilist[0].v )
                 interVector[tempIndex].index2 = tempVtx.index;
-            else if ( interVector[tempIndex].origin1 == ps->ilist[0].v )
+            else if ( interVector[tempIndex].origin1() == ps->ilist[0].v )
                 interVector[tempIndex].index1 = tempVtx.index;
             else if ( interVector[tempIndex].v == ps->ilist[0].v )
                 interVector[tempIndex].index1 = tempVtx.index;
@@ -951,7 +801,7 @@ void MultiPoly::polygonPartition(MultiPoly &resMPoly,
                     currIndex++;
                 else
                 {
-                    if ( ( interVector[currIndex].origin1 == currVtx )
+                    if ( ( interVector[currIndex].origin1() == currVtx )
                          && ( interVector[currIndex].index2 == -1 ) )
                     {
                         int tempIndex = interVector[currIndex].index1;
@@ -961,8 +811,8 @@ void MultiPoly::polygonPartition(MultiPoly &resMPoly,
                     }
                     else
                     {
-                        if ( (( interVector[currIndex].origin1 == prevInter.origin1)
-                              ||( interVector[currIndex].origin1 == prevInter.origin2 ))
+                        if ( (( interVector[currIndex].origin1() == prevInter.origin1())
+                              ||( interVector[currIndex].origin1() == prevInter.origin2() ))
                              && ( interVector[currIndex].index2 != -1 ) )
                         {
                             int tempIndex = interVector[currIndex].index2;
@@ -1001,13 +851,13 @@ void MultiPoly::polygonPartition(MultiPoly &resMPoly,
                             temp2 = interVector[secondIndex];
                             // tests if this is intersection is a T intersection |-
                             if ((( interVector[startIndex].v->x
-                                   == interVector[startIndex].origin1->x)
+                                   == interVector[startIndex].origin1()->x)
                                  && ( interVector[startIndex].v->y
-                                      == interVector[startIndex].origin1->y ))
+                                      == interVector[startIndex].origin1()->y ))
                                 || (( interVector[startIndex].v->x
-                                      == interVector[startIndex].origin2->x)
+                                      == interVector[startIndex].origin2()->x)
                                     && ( interVector[startIndex].v->y
-                                         == interVector[startIndex].origin2->y )))
+                                         == interVector[startIndex].origin2()->y )))
                             {
                                 float win1;
                                 win1 = xProd(*interVector[startIndex].l2.vertex0,
