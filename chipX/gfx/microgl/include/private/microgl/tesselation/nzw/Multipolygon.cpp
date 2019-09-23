@@ -36,8 +36,6 @@ Intersection::Intersection( Vertex *vtx, float p1, float p2, const LineSegment &
     index2 = -1;
     param1 = p1;
     param2 = p2;
-//    origin1 = org1;
-//    origin2 = org2;
     l1 = li;
     l2 = lj;
 }
@@ -48,7 +46,6 @@ Intersection::Intersection( Vertex *vtx, const LineSegment &li, const LineSegmen
     index2 = -1;
     param1 = 0;
     param2 = 0;
-//    origin1 = v;
     l1 = li;
     l2 = lj;
     winding = 0;
@@ -66,8 +63,6 @@ void Intersection::operator=(const Intersection &i) {
     index2= i.index2;
     param1 = i.param1;
     param2 = i.param2;
-//    origin1 = i.origin1;
-//    origin2 = i.origin2;
     l1 = i.l1;
     l2 = i.l2;
     winding = i.winding;
@@ -135,6 +130,7 @@ IntersectionList::IntersectionList() {}
 IntersectionList::IntersectionList(const vector<Pseudovertex> &p) : p_list(p) {}
 
 const float LineSegment::NOISE = 1e-5f;
+
 ////////////////////// Line Intersection ///////////////////////////
 //
 // Calculates the point of intersection of two line segments.
@@ -147,23 +143,29 @@ const float LineSegment::NOISE = 1e-5f;
 LineSegment::IntersectionType LineSegment::calcIntersection
         (const LineSegment &l, Vertex &intersection, float &alpha, float &alpha1)
 {
-    float dx21 = vertex1->x - vertex0->x, dy21 = vertex1->y - vertex0->y,
-            dx43 = l.vertex1->x - l.vertex0->x, dy43 = l.vertex1->y - l.vertex0->y;
+    auto * l0_vertex0 = this->start();
+    auto * l0_vertex1 = this->end();
+
+    auto * l1_vertex0 = l.start();
+    auto * l1_vertex1 = l.end();
+
+    float dx21 = l0_vertex1->x - l0_vertex0->x, dy21 = l0_vertex1->y - l0_vertex0->y,
+            dx43 = l1_vertex1->x - l1_vertex0->x, dy43 = l1_vertex1->y - l1_vertex0->y;
     float dem = dx21 * dy43 - dy21 * dx43;
-// parallel lines
+    // parallel lines
     if (fabs(dem) < NOISE)
         return PARALLEL;
     else {
-        float dx12 = vertex0->x - l.vertex0->x,
-                dy12 = vertex0->y - l.vertex0->y;
-        float dx = l.vertex0->x - vertex0->x,
-                dy = l.vertex0->y - vertex0->y;
+        float dx12 = l0_vertex0->x - l1_vertex0->x,
+                dy12 = l0_vertex0->y - l1_vertex0->y;
+        float dx = l1_vertex0->x - l0_vertex0->x,
+                dy = l1_vertex0->y - l0_vertex0->y;
         alpha = (dy12*dx43 - dx12*dy43)/dem;
         alpha1 = ( dy21*dx - dx21*dy)/dem;
-// The intersecting point
-        intersection.x = vertex0->x + dx21 * alpha;
-        intersection.y = vertex0->y + dy21 * alpha;
-// test for segment intersecting (alpha)
+        // The intersecting point
+        intersection.x = l0_vertex0->x + dx21 * alpha;
+        intersection.y = l0_vertex0->y + dy21 * alpha;
+        // test for segment intersecting (alpha)
         if ((alpha < 0.0) || (alpha > 1.0))
             return NO_INTERSECT;
         else {
@@ -185,77 +187,22 @@ void LineSegment::sortVertices() {
     m_swappedVertices = !(*vertex0 < *vertex1);
     if (m_swappedVertices)
         swap(vertex0, vertex1);
-    if (vertex0->y < vertex1->y)
-    {
-        ymin = vertex0->y;
-        ymax = vertex1->y;
-    }
-    else
-    {
-        ymin = vertex1->y;
-        ymax = vertex0->y;
-    }
 }
 
 LineSegment::LineSegment(Vertex *vtx0, Vertex *vtx1) : vertex0(vtx0), vertex1(vtx1) {}
-
-LineSegment::LineSegment(const LineSegment &l) : vertex0(l.vertex0),vertex1(l.vertex1),ymin(l.ymin),
-                                                 ymax(l.ymax), m_swappedVertices(l.m_swappedVertices) {}
 
 bool LineSegment::operator<(const LineSegment &ls) const {
     return *vertex0 < *(ls.vertex0);
 }
 
-// finds the intersection point between two line segments and thier parametric
-// values with respect to each intersecting line segment
-LineSegment::IntersectionType MultiPoly::findIntersection( LineSegment &l1,
-                                                           LineSegment &l2,
-                                                           Vertex &intersection,
-                                                           float &alpha1,
-                                                           float &alpha2)
-{
-    LineSegment l3(l1);
-    LineSegment l4(l2);
-    l1.sortVertices();
-    l2.sortVertices();
-    Vertex vtx;
-    LineSegment::IntersectionType resultType;
-    if ( *l1.vertex1 < *l2.vertex0 ) // no x-overlap
-    {
-// check for y-overlap
-        if ( l1 < l2 )
-        {
-            if (l1.ymax < l2.ymin )
-                return (LineSegment::NO_INTERSECT );
-        }
-        else
-        if (l2.ymin < l1.ymax)
-            return LineSegment::NO_INTERSECT;
-    }
-    else
-// check for adjacency
-    if ( (*l1.vertex0 == *l2.vertex0) ||(*l1.vertex1 == *l2.vertex1) ||
-         (*l1.vertex0 == *l2.vertex1) || (*l1.vertex1 == *l2.vertex0) )
-        return ( LineSegment::NO_INTERSECT );
-    resultType = l3.calcIntersection(l4, vtx, alpha1, alpha2 );
-    if ( resultType == LineSegment::INTERSECT )
-    {
-        intersection = vtx;
-
-        return resultType;
-    }
-    return (resultType);
-}
-
 // this is the method called to fill the polygon useing NZW algorithm
 // finds the intersections using trivial rejections considering the
 // bounding box overlap and monotonic chains
-vector<Vertex> MultiPoly::findMonotone(MultiPoly &resMPoly,
+void MultiPoly::findMonotone(MultiPoly &resMPoly,
                                        vector<int> &windingVector,
                                        vector<int> &directions
 )
 {
-    vector<Vertex> intersections;
     // master intersection list
     vector<Intersection> tempList;
     // the edges intersection list
@@ -275,148 +222,132 @@ vector<Vertex> MultiPoly::findMonotone(MultiPoly &resMPoly,
     //
     // note:: don't get confused between the edge intersection lists and the master intersection list.
     //
-    int idx = 0;
-    for ( PolyIt pii = m_polyList.begin(); pii != m_polyList.end(); ++pii)
-    {
-        VtxIt vit0, vit1;
-        for (VtxIt vi = pii->vtxList.begin(); vi != pii->vtxList.end();++vi)
-        {
+//    for ( PolyIt pii = m_polyList.begin(); pii != m_polyList.end(); ++pii){
+    for (unsigned long poly = 0; poly < m_polyList.size(); ++poly) {
+//
+        auto & current_list = m_polyList[poly].vtxList;
+        const auto size = current_list.size();
+
+//        VtxIt vit0, vit1;
+        for (unsigned long ix = 0; ix < size; ++ix) {
+//        for (VtxIt vi = pii->vtxList.begin(); vi != pii->vtxList.end();++vi) {
+//            /*
+            int ix_next = ix+1 >= size ? 0 : ix+1;
+            int ix_prev = int(ix-1) < 0 ? size-1 : ix-1;
+            Vertex * current = &current_list[ix];
+            Vertex * next = &current_list[ix_next];
+            Vertex * prev = &current_list[ix_prev];
+
+            LineSegment l1(prev, current);
+            LineSegment l2(current, next);
             Pseudovertex pseudo;
+            l1.sortVertices();
+            l2.sortVertices();
+
+            nVertex i1(current, 0, -1);
+            nVertex i2(next, 2, -1);
+
+            tempList.push_back(Intersection(current, 1, 0, l1, l2 ));
+//             first element is the edge vertex
+            pseudo.ilist.push_back(i1);
+//             last vertex of the edge
+            pseudo.ilist.push_back(i2);
+//
+            p_list.push_back( pseudo );
+//*/
+
+            /*
             vit0 = vi;
             vit1 = vi;
 
             pii->prevCirc(vit0);
             pii->nextCirc(vit1);
+            Pseudovertex pseudo;
 
             LineSegment l1(&(*vit0), &(*vi));
             LineSegment l2(&(*vi), &(*vit1));
-
             l2.sortVertices();
 
             // first vertex of the edge
-            nVertex i(&(*vi), 0, -1);
+            nVertex i1(&(*vi), 0, -1);
+            nVertex i2( &(*vit1), 2, -1);
 
             tempList.push_back(Intersection ( &(*vi), 1, 0, l1, l2 ) );
-//            tempList.push_back(Intersection ( &(*vi), l2, l1 ) );
             // first element is the edge vertex
-            pseudo.ilist.push_back(i);
-
+            pseudo.ilist.push_back(i1);
             // last vertex of the edge
-            nVertex i2( &(*vit1), 2, -1);
             pseudo.ilist.push_back(i2);
 
             p_list.push_back( pseudo );
 
-            idx++;
+             */
         }
     }
 
     // the edges intersection list
     IntersectionList ivList(p_list);
 
-    // add the intersection points to the list, as Intersection objects
-    // phase 2: for each polygon, find intersection among it's own edges
-    // and insert them into master intersection list
-    for (PolyIt pi = m_polyList.begin(); pi != m_polyList.end(); ++pi)
+    // phase 2:: find self intersections of each polygon
+    for (unsigned long poly = 0; poly < m_polyList.size(); ++poly)
     {
-        if(pi->vtxList.empty())
+        auto & current_list = m_polyList[poly].vtxList;
+        const unsigned long current_list_size = current_list.size();
+
+        if(current_list.empty())
             continue;
-        VtxIt vi0 = pi->vtxList.begin(), vi1;
-        unsigned int x_monotone=0;
-        bool reached = false;
-        vi1 = vi0;
-        VtxIt start = vi0;
-        ++vi1;
-        //find intersection points for every polygon.
-        while ( vi1 != pi->vtxList.end() && (reached == false))
-        {
-            LineSegment l1(&(*vi0), &(*vi1));
-            vi0 = vi1;
-            ++vi1;
-            if ( vi1 == pi->vtxList.end() )
-            {
-                vi1 = start;
-                reached = true ;
-            }
-            LineSegment l2(&(*vi0), &(*vi1));
-            LineSegment temp(l2 );
-            VtxIt walker, walker1;
-            walker = start;
-            walker1 = walker;
-            ++walker1;
-            // walk thru the list from the beginning to find
-            // intersection with the non-monotone edge
-            while ( walker1 != vi0 )
-            {
-                LineSegment l1(&(*walker), &(*walker1));
-                l2 = temp;
+
+        for (unsigned long ix = 0; ix < current_list_size-1; ++ix) {
+
+            LineSegment edge_0{&current_list[ix], &current_list[(ix+1)]};
+
+            for (unsigned long jx = ix+1; jx < current_list_size; ++jx) {
+                LineSegment edge_1{&current_list[jx],
+                                   &current_list[(jx+1)%current_list_size]};
+
                 Vertex intersection;
                 float al1, al2;
-                if ( findIntersection(l1,l2,intersection, al1, al2)
-                     == LineSegment::INTERSECT )
-                {
-                    intersections.push_back(intersection);
 
-                    Vertex * found_intersection = new Vertex(intersection);
+                // see if any of the segments have a mutual endpoint
+                if(!edge_1.is_bbox_overlapping_with(edge_0))
+                    continue;
+                if (edge_1.has_mutual_endpoint(edge_0))
+                    continue;
+                if(edge_1.calcIntersection(edge_0, intersection, al1, al2)
+                                                        !=LineSegment::INTERSECT)
+                    continue;
 
-                    v_interesections.push_back(found_intersection);
+                auto * found_intersection = new Vertex(intersection);
 
-//                    Vertex *searchVertex1, *searchVertex2;
-//                    searchVertex1 = l1.start();
-//                    searchVertex2 = l2.start();
+                v_interesections.push_back(found_intersection);
 
-//                    if (l1.m_swappedVertices)
-//                        searchVertex1 = l1.vertex1;
-//                    else
-//                        searchVertex1 = l1.vertex0;
-//
-//                    if ( l2.m_swappedVertices)
-//                        searchVertex2 = l2.vertex1;
-//                    else
-//                        searchVertex2 = l2.vertex0;
+                tempList.push_back(Intersection(found_intersection,
+                        al1, al2, edge_1, edge_0));
 
-//                    tempList.push_back( Intersection ( found_intersection, searchVertex1,
-//                                                       searchVertex2, al1, al2, l1, l2 ) );
-
-                    tempList.push_back( Intersection ( found_intersection, al1, al2, l1, l2 ) );
-                }
-                walker= walker1;
-                ++walker1;
             }
         }
+
     }
 
     // phase 3:: find intersections of polygons between themselves and
     // add the intersections into the master list, this uses bounding boxes optimizations
-    vector<Vertex> resultIntersections = findIntersections(tempList);
-
-
-    // intersections and resultIntersections are redundant, they are
-    // just used for debugging
-//    for ( unsigned int i=0; i < resultIntersections.size() ; i++ )
-//        intersections.push_back(resultIntersections[i]);
-
+    findIntersections(tempList);
 
     sort ( ivList.p_list.begin(), ivList.p_list.end() );
 
-    // a function to fill polygon edge array(ivList) with the indices from the
-    // intersection master list.
-    // after most of the intersection master list, we use it to fill index information
-    // for the edge array list, and then we use it again to fill pointer data in the
-    // master list
     fillAddress(ivList, tempList);
 
     // now, we have a complete master list, we can traverse it for polygons.
     polygonPartition( resMPoly,tempList,windingVector, directions);
-
-    return intersections;
 }
 
 // finds the intersection points between every polygon edge
-vector<Vertex> MultiPoly::findIntersections(vector<Intersection> &tempList)
+vector<Vertex *> MultiPoly::findIntersections(vector<Intersection> &tempList)
 {
     vector<LineSegment> edges, edges1;
-    vector<Vertex> intersections;
+//    vector<Vertex> intersections;
+//    const index_t size = m_polyList.size();
+
+//    for (index_t poly = 0; poly < size; ++poly)
     for (PolyIt pi = m_polyList.begin(); pi != m_polyList.end(); ++pi)
     {
         edges.clear();
@@ -447,97 +378,78 @@ vector<Vertex> MultiPoly::findIntersections(vector<Intersection> &tempList)
                 Vertex v0(*vi2),v1(*vi3);
                 LineSegment edge(&(*vi2), &(*vi3));
 
+                // we have to sort them on x-axis for the bigger sort later
                 edge.sortVertices();
                 edges1.push_back(edge);
                 vi2 = vi3;
             }
+
             sort(edges1.begin(), edges1.end());
             // make vector of intersections
             unsigned nEdges = edges.size();
             unsigned nEdges1 = edges1.size();
             if (nEdges > 2)
             {
-                for (unsigned i = 0; i < nEdges; ++i)
-                    for (unsigned j = 0; j < nEdges1; ++j)
-                    {
-                        LineSegment li, lj;
+                for (unsigned i = 0; i < nEdges; ++i) {
+                    auto &edge_0 = edges[i];
 
-                        if ( !edges[i].m_swappedVertices )
-                            li = edges[i];
-                        else
-                        {
-                            li.vertex0 = edges[i].vertex1;
-                            li.vertex1 = edges[i].vertex0;
+                    for (unsigned j = 0; j < nEdges1; ++j) {
+
+                        auto &edge_1 = edges1[j];
+
+                        // if edge_1 is completely to the right of edge_0, then no intersection
+                        // occurs, and also, since edge_1 syblings are sorted on the x-axis,
+                        // we can skip it's upcoming syblings, therefore we break;
+                        auto h_classify = edge_1.classify_horizontal(edge_0);
+                        if (h_classify == LineSegment::bbox_axis::end_of)
+                            break;
+                        else if (h_classify != LineSegment::bbox_axis::overlaps)
+                            continue;
+                        else {
+                            // we have horizontal overlap, let's test for vertical overlap
+                            if (edge_1.classify_vertical(edge_0) != LineSegment::bbox_axis::overlaps)
+                                continue;
                         }
 
-                        if ( !edges1[j].m_swappedVertices )
-                            lj = edges1[j];
-                        else
-                        {
-                            lj.vertex0 = edges1[j].vertex1;
-                            lj.vertex1 = edges1[j].vertex0;
-                        }
-                        // Because of sort above: edges[i].rect.x0 <= edges[j].rect.x0
-                        // if bounding boxes have x-overlap
-                        if (edges1[j].vertex0->x < edges[i].vertex1->x)
-                        {
-                            // check for y-overlap of bounding boxes
-                            if (edges[i].ymin < edges1[j].ymin)
-                            {
-                                if (edges[i].ymax <= edges1[j].ymin) continue;
-                            }
-                            else
-                            if (edges1[j].ymax <= edges[i].ymin) continue;
-                            // Check if both left [right] ends are not coincident (i.e.,
-                            // valid intersection)
-                            if(*edges[i].vertex0!= *edges1[j].vertex0  &&  *edges[i].vertex1!= *edges1[j].vertex1)
-                            {
-                                Vertex intersection;
-                                float param1, param2;
-                                if (li.calcIntersection(lj, intersection, param1, param2)
-                                    == LineSegment::INTERSECT)
-                                {
-                                    intersections.push_back(intersection);
+                        // see if any of the segments have a mutual endpoint
+                        if (edge_1.has_mutual_endpoint(edge_0))
+                            continue;
 
-                                    Vertex * found_intersection = new Vertex(intersection);
+                        Vertex intersection;
+                        float param1, param2;
 
-                                    v_interesections.push_back(found_intersection);
-//                                    Vertex *searchVertex1, *searchVertex2;
-//
-//                                    if (edges[i].m_swappedVertices)
-//                                        searchVertex1 = edges[i].vertex1;
-//                                    else
-//                                        searchVertex1 = edges[i].vertex0;
-//
-//                                    if ( edges1[j].m_swappedVertices)
-//                                        searchVertex2 = edges1[j].vertex1;
-//                                    else
-//                                        searchVertex2 = edges1[j].vertex0;
+                        // test and compute intersection
+                        if (edge_0.calcIntersection(edge_1, intersection, param1, param2)
+                            != LineSegment::INTERSECT)
+                            continue;
 
-                                    li.sortVertices();
-                                    lj.sortVertices();
+                        auto *found_intersection = new Vertex(intersection);
 
-                                    tempList.push_back( Intersection ( found_intersection,
-                                                                       param1, param2,
-                                                                       li , lj) );
+                        v_interesections.push_back(found_intersection);
 
-//                                    tempList.push_back( Intersection ( found_intersection,
-//                                                                       searchVertex1, searchVertex2, param1, param2,
-//                                                                       li , lj) );
-                                }
-                            }
-                        }
+                        tempList.push_back(Intersection(found_intersection,
+                                                        param1, param2,
+                                                        edge_0, edge_1));
 
                     }
+
+                }
+
             }
+
             ++pi0;
-        }// end of while for pi0 counter
-    }// end of for
-    return intersections;
+        }
+
+    }
+
+    return v_interesections;
 }
 
 // a function to fill polygon edge array(ivList) with the indices from the
-// intersection master list
+// intersection master list.
+// after most of the intersection master list, we use it to fill index information
+// for the edge array list, and then we use it again to fill pointer data in the
+// master list
 void MultiPoly::fillAddress(IntersectionList &ivList, vector<Intersection> &interVector)
 {
     sort(interVector.begin() , interVector.end());
@@ -587,25 +499,6 @@ void MultiPoly::fillAddress(IntersectionList &ivList, vector<Intersection> &inte
         }
     }
 
-//    PseudoIt ps;
-//    for (ps = ivList.p_list.begin(); ps != ivList.p_list.end(); ++ps)
-//    {
-//        int vtxIt = 0;
-//        Vertex *searchVtx;
-//        LineSegment ls( (ps->ilist.end() - 1)->l );
-//
-//        // get the last endpoint
-//        if ( ls.m_swappedVertices)
-//            searchVtx = ls.vertex0;
-//        else
-//            searchVtx = ls.vertex1;
-//
-//        while ( interVector[vtxIt].v != searchVtx )
-//            vtxIt++;
-//
-//        ps->ilist.push_back( nVertex( searchVtx, vtxIt,(ps->ilist.end() - 1)->l ) ) ;
-//    }
-
     // sort ONLY the intersections of the poly edge array
     for ( PseudoIt ps = ivList.p_list.begin(); ps != ivList.p_list.end(); ++ps)
         sort ( ps->ilist.begin() + 1, ps->ilist.end() );
@@ -623,23 +516,6 @@ void MultiPoly::fillIndices (IntersectionList &ivList, vector<Intersection> &int
     // go over the edges and add the last vertex to each edge
     // COMPARE AS POINTERS, VERY IMPORTANT !!!!
     PseudoIt ps;
-//    for (ps = ivList.p_list.begin(); ps != ivList.p_list.end(); ++ps)
-//    {
-//        int vtxIt = 0;
-//        Vertex *searchVtx;
-//        LineSegment ls( (ps->ilist.end() - 1)->l );
-//
-//        // get the last endpoint
-//        if ( ls.m_swappedVertices)
-//            searchVtx = ls.vertex0;
-//        else
-//            searchVtx = ls.vertex1;
-//
-//        while ( interVector[vtxIt].v != searchVtx )
-//            vtxIt++;
-//
-//        ps->ilist.push_back( nVertex( searchVtx, vtxIt,(ps->ilist.end() - 1)->l ) ) ;
-//    }
 
     // go over on the edges list (this may represent a polygon if there is one component
     // given to the algorithm)
@@ -768,6 +644,12 @@ void MultiPoly::polygonPartition(MultiPoly &resMPoly,
             // fix vertex to find the winding number before changing the index values!!
             Vertex *vtx;
             if ( interVector[startIndex].index1 == -1 )
+                vtx = interVector[startIndex].origin1();
+            else
+                vtx = interVector[startIndex].origin2();
+
+            /*
+            if ( interVector[startIndex].index1 == -1 )
             {
                 // todo:: get original starting vertex of segment, this can be simplified
                 if ( interVector[startIndex].l1.m_swappedVertices)
@@ -783,6 +665,8 @@ void MultiPoly::polygonPartition(MultiPoly &resMPoly,
                 else
                     vtx = interVector[startIndex].l2.vertex0;
             }
+             */
+
 
             if ( interVector[startIndex].index1 == -1 || interVector[startIndex].index2== -1 )
                 currWinding = interVector[startIndex].winding;
@@ -860,7 +744,9 @@ void MultiPoly::polygonPartition(MultiPoly &resMPoly,
                                          == interVector[startIndex].origin2()->y )))
                             {
                                 float win1;
-                                win1 = xProd(*interVector[startIndex].l2.vertex0,
+                                // todo:: might be problematic
+//                                win1 = xProd(*interVector[startIndex].l2.vertex0,
+                                win1 = xProd(*interVector[startIndex].l2.start(),
                                              *interVector[startIndex].v, *interVector[firstIndex].v);
                                 if (win1 > 0 )
                                 {

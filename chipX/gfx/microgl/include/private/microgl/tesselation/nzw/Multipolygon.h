@@ -11,7 +11,6 @@
 #include <cmath>
 using namespace std;
 typedef float Coord;
-
 class Vertex//: public CObject
 {
 public:
@@ -35,8 +34,10 @@ class LineSegment
     static const float NOISE; // used for determining limit of parallel lines
 public:
     Vertex *vertex0= nullptr, *vertex1= nullptr;
-    bool m_swappedVertices=false; // have vertices been swapped during sortVertices?
-    Coord ymin, ymax; // y component of bounding box [don't use before call to sortVertices()]
+    // have vertices been swapped during sortVertices?
+    bool m_swappedVertices=false;
+
+    LineSegment()= default;
 
     typedef enum
     {
@@ -44,6 +45,12 @@ public:
         NO_INTERSECT, // lines segments don't intersect
         INTERSECT // line segments intersect
     } IntersectionType;
+
+    enum class bbox_axis {
+        overlaps,
+        start_of,
+        end_of,
+    };
 
     Vertex * start() {
         return !m_swappedVertices ? vertex0 : vertex1;
@@ -53,15 +60,65 @@ public:
         return !m_swappedVertices ? vertex1 : vertex0;
     }
 
-    LineSegment(){}
+    Vertex * start() const {
+        return !m_swappedVertices ? vertex0 : vertex1;
+    }
+
+    Vertex * end() const {
+        return !m_swappedVertices ? vertex1 : vertex0;
+    }
 
     // Sets bounding box of line segment to (vertex0.x, ymin, vertex1.x, ymax)
     void sortVertices();
     LineSegment(Vertex *vtx0, Vertex *vtx1);
-    LineSegment(const LineSegment &l);
 
     IntersectionType calcIntersection(const LineSegment &l, Vertex &intersection,
                                       float &alpha, float &alpha1);
+
+    bool is_bbox_overlapping_with(const LineSegment &a) {
+        return classify_aligned_segment_relative_to(a, true)==bbox_axis::overlaps &&
+                classify_aligned_segment_relative_to(a, false)==bbox_axis::overlaps;
+    }
+
+    bbox_axis classify_horizontal(const LineSegment &a) {
+        return classify_aligned_segment_relative_to(a, true);
+    }
+
+    bbox_axis classify_vertical(const LineSegment &a) {
+        return classify_aligned_segment_relative_to(a, false);
+    }
+
+    bbox_axis classify_aligned_segment_relative_to(const LineSegment &a, bool compare_x) {
+        auto min_a = compare_x ? a.start()->x : a.start()->y;
+        auto max_a = compare_x ? a.end()->x : a.end()->y;
+        auto min_me = compare_x ? this->start()->x : this->start()->y;
+        auto max_me = compare_x ? this->end()->x : this->end()->y;
+
+        if(min_a > max_a) {
+            auto temp = min_a;
+            min_a = max_a;
+            max_a = temp;
+        }
+
+        if(min_me > max_me) {
+            auto temp = min_me;
+            min_me = max_me;
+            max_me = temp;
+        }
+
+        if(max_me <= min_a)
+            return bbox_axis::start_of;
+        else if(min_me >= max_a)
+            return bbox_axis::end_of;
+        else
+            return bbox_axis::overlaps;
+    }
+
+    bool has_mutual_endpoint(const LineSegment &a) {
+        if(*a.start()==*this->start() || *a.start()==*this->end())
+            return true;
+        return *a.end() == *this->start() || *a.end() == *this->end();
+    }
 
     // order by left edge of bounding box
     bool operator< (const LineSegment &ls) const;
@@ -81,7 +138,6 @@ public:
     // the index position in the intersection master list
     int index1{}, index2{};
     // the starting vertices of the two intersecting polygon edges
-//    Vertex *origin1, *origin2;
     int winding{};
     int direction{};
     int selfIndex{};
@@ -98,25 +154,12 @@ public:
     Intersection()= default;
     Intersection (Vertex *vtx, /*Vertex *org1, Vertex *org2 */float p1,float p2, const LineSegment &li, const LineSegment &lj);
     Intersection (  Vertex *vtx, const LineSegment &li, const LineSegment &lj);
-    Intersection( const Intersection &i): v(i.v), index1(i.index1), index2(i.index2),
-                                          param1(i.param1),param2(i.param2),//, origin1(i.origin1), origin2(i.origin2),
-                                          l1(i.l1), l2( i.l2 ), winding (i.winding), direction (i.direction),
-                                          selfIndex(i.selfIndex) {}
     bool operator< (const Intersection &i) const;
     bool operator<= (const Intersection &i) const;
     void operator= ( const Intersection &i);
 };
 
 typedef vector<Intersection> ::iterator InterIt;
-
-// nVertex - temporary class to create the objects in the
-// polygon edge array
-// every pseudo-vertex in the input polygon.
-// The array of polygon
-// edges is implemented as a vector (nVertex objects holding polygon vertices), each having
-// a pointer to a linked list of intersections (nVertex objects of intersections), as shown in
-// Figure 12 . It is implemented with the nVertex objects that hold necessary information to
-// create the master list.
 
 class nVertex
 {
@@ -135,8 +178,6 @@ public:
 
     nVertex();
     nVertex ( Vertex *vtx, float p, int i);
-//    nVertex ( Vertex *vtx, int & i, LineSegment &l2 );
-//    nVertex ( Vertex *vtx, LineSegment &l2 );
     void operator= ( const nVertex &i);
     bool operator< (const nVertex &n) const;
     bool operator<= (const nVertex &i) const;
@@ -190,34 +231,17 @@ public:
     vector<Poly> m_polyList{};
     vector<Vertex *> v_interesections{};
 
-//    struct MPPos
-//    {
-//        list<Poly>::iterator m_polyIt;
-//        list<Vertex>::iterator m_vtxIt;
-//        MPPos(): m_vtxIt(nullptr), m_polyIt(NULL) {}
-//        MPPos() = default;
-//        MPPos(PolyIt pi, VtxIt vi): m_polyIt(pi), m_vtxIt(vi) {}
-//        bool operator== (const MPPos pos) const;
-//        bool operator!= (const MPPos pos) const;
-//        void operator= (const MPPos pos);
-//        bool isValid() const
-//        {
-//            return m_polyIt != NULL;
-//        }
-//    };
     MultiPoly(const MultiPoly &mp);
     MultiPoly()= default;
 
     void add(const Poly &p) {
         m_polyList.push_back(p);
     }
-    vector<Vertex> findIntersections(vector<Intersection> &tempList);
-    vector<Vertex> findMonotone(MultiPoly &resMPoly, vector<int> &windingVector,
+    vector<Vertex *> findIntersections(vector<Intersection> &tempList);
+    void findMonotone(MultiPoly &resMPoly, vector<int> &windingVector,
                                 vector<int> &directions);
     static void fillAddress(IntersectionList &ivList, vector <Intersection> &interVector);
     static void fillIndices(IntersectionList &ivList, vector <Intersection> &interVector);
-    static LineSegment::IntersectionType findIntersection( LineSegment &l1, LineSegment &l2,
-                                                           Vertex &intersection, float &alpha1, float &alpha2);
     static void polygonPartition(MultiPoly &resMPoly, const vector<Intersection> &tempList,
                                  vector<int> &windingVector,
                                  vector<int> &directions);

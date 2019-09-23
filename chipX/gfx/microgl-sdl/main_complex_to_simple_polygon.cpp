@@ -294,6 +294,32 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_2() {
     return {A, locations};
 }
 
+std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_disjoint() {
+    dynamic_array<index_t> locations;
+
+    dynamic_array<vec2_f> A{
+            {0.0,0.0},
+            {300,0},
+            {300,300},
+            {0,300},
+    };
+
+    dynamic_array<vec2_f> B{
+            {50,50.},
+            {350,50},
+            {350,250},
+            {50,250},
+    };
+
+    locations.push_back(0);
+    locations.push_back(A.size());
+    locations.push_back(A.size() + B.size());
+
+    A.push_back(B);
+
+    return {A, locations};
+}
+
 std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_deg() {
     dynamic_array<index_t> locations;
 
@@ -355,6 +381,7 @@ void render() {
 //    render_polygon(poly_inter_1());
 
 //    render_polygon(poly_inter_nested_3());
+    render_polygon(poly_inter_nested_disjoint());
 //    render_polygon(poly_inter_nested_2());
 
 //    render_polygon(poly_inter_2());
@@ -363,7 +390,7 @@ void render() {
 
 //    render_polygon(poly_inter_deg());
 
-    render_polygon(poly_inter_star());
+//    render_polygon(poly_inter_star());
 
 //    render_polygon(poly_tri());
 }
@@ -393,7 +420,7 @@ void render_polygon(const std::pair<dynamic_array<vec2<T>>, dynamic_array<index_
         index offset = simple_polygons_locations[ix];
         index size = simple_polygons_locations[ix+1] - offset;
 
-//        if(ix!=1)
+//        if(ix!=3)
 //            continue;
 
         canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
