@@ -7,7 +7,7 @@
 #include <microgl/triangles.h>
 #include <microgl/linked_list.h>
 #include <microgl/array_container.h>
-#include <microgl/tesselation/nzw/Multipolygon.h>
+#include <microgl/tesselation/nzw/simplify_components.h>
 #include <stdexcept>
 
 namespace tessellation {
@@ -16,10 +16,10 @@ namespace tessellation {
     using index = unsigned int;
     using namespace microgl;
 
-    class complex_to_simple_polygon {
+    class simplifier {
     public:
 
-        explicit complex_to_simple_polygon(bool DEBUG = false) {};
+        explicit simplifier(bool DEBUG = false) {};
 
         static void compute(const vec2_f * $pts,
                             const array_container<index> & pieces_locations,

@@ -106,6 +106,7 @@ namespace tessellation {
                k->data.pt->x * int64_t(i->data.pt->y - j->data.pt->y);
     }
 
+    // ts
     int EarClippingTriangulation::neighborhood_orientation_sign(
             const EarClippingTriangulation::Node *v) {
         const Node * l = v->predecessor();
@@ -113,9 +114,10 @@ namespace tessellation {
 
         // pay attention that this can return 0, although in the algorithm
         // it does not return 0 never here.
-        return sign_orientation_value(l, v, r) >= 0 ? 1 : -1;
+        return sign_orientation_value(l, v, r) > 0 ? 1 : -1;
     }
 
+    // tv
     char
     EarClippingTriangulation::sign_orientation_value(const EarClippingTriangulation::Node *i,
                                                      const EarClippingTriangulation::Node *j,
@@ -136,12 +138,17 @@ namespace tessellation {
         Node * first = list->getFirst();
         Node * maximal_index = first;
         Node * node = first;
-        int maximal_y = first->data.pt->y;//pts[maximal_index].y;
+        int maximal_y = first->data.pt->y;
 
         for (unsigned int ix = 0; ix < list->size(); ++ix) {
             if(node->data.pt->y > maximal_y) {
                 maximal_y = node->data.pt->y;
                 maximal_index = node;
+            } else if(node->data.pt->y == maximal_y) {
+                if(node->data.pt->x < maximal_index->data.pt->x) {
+                    maximal_y = node->data.pt->y;
+                    maximal_index = node;
+                }
             }
 
             node = node->successor();

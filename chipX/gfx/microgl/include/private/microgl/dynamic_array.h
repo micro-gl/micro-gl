@@ -60,13 +60,22 @@ public:
 
     void alloc_(bool up) {
         _cap = up ? _cap<<1 : _cap>>1;
-        T* _new = new T[_cap];
+        T* _new = nullptr;
 
-        for (int ix = 0; ix < size(); ++ix) {
-            _new[ix] = _data[ix];
+        if(_cap==0 && up)
+            _cap = 1;
+
+        if(_cap>0) {
+            _new = new T[_cap];
+
+            for (int ix = 0; ix < size(); ++ix) {
+                _new[ix] = _data[ix];
+            }
+
         }
 
-        delete [] _data;
+        if(_data)
+            delete [] _data;
 
         _data = _new;
     }

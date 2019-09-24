@@ -10,7 +10,7 @@
 #include <microgl/PixelCoder.h>
 #include <microgl/dynamic_array.h>
 #include <microgl/static_array.h>
-#include <microgl/tesselation/complex_to_simple_polygon.h>
+#include <microgl/tesselation/simplifier.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -294,6 +294,35 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_2() {
     return {A, locations};
 }
 
+
+std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_weird_touch() {
+    dynamic_array<index_t> locations;
+
+    dynamic_array<vec2_f> A{
+            {50.0,50.0},
+            {300,50},
+            {300,350},
+            {100,350},
+
+            {100,50},
+    };
+
+    dynamic_array<vec2_f> B{
+            {50.0,350.0},
+            {300,350},
+            {300,50},
+            {100,50},
+
+            {100,350},
+    };
+
+    locations.push_back(0);
+    locations.push_back(A.size());
+
+    return {B, locations};
+}
+
+
 std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_disjoint() {
     dynamic_array<index_t> locations;
 
@@ -306,16 +335,25 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_disjo
 
     dynamic_array<vec2_f> B{
             {50,50.},
-            {350,50},
-            {350,250},
             {50,250},
+            {400,250},
+            {400,50},
+    };
+
+    dynamic_array<vec2_f> C{
+            {350,100.},
+            {500,100},
+            {500,150},
+            {350,150},
     };
 
     locations.push_back(0);
     locations.push_back(A.size());
     locations.push_back(A.size() + B.size());
+    locations.push_back(A.size() + B.size() + C.size());
 
     A.push_back(B);
+    A.push_back(C);
 
     return {A, locations};
 }
@@ -380,8 +418,10 @@ void render() {
 //    render_polygon(poly_diamond());
 //    render_polygon(poly_inter_1());
 
+//    render_polygon(poly_inter_weird_touch());
+
 //    render_polygon(poly_inter_nested_3());
-    render_polygon(poly_inter_nested_disjoint());
+//    render_polygon(poly_inter_nested_disjoint());
 //    render_polygon(poly_inter_nested_2());
 
 //    render_polygon(poly_inter_2());
@@ -390,7 +430,7 @@ void render() {
 
 //    render_polygon(poly_inter_deg());
 
-//    render_polygon(poly_inter_star());
+    render_polygon(poly_inter_star());
 
 //    render_polygon(poly_tri());
 }
@@ -404,7 +444,7 @@ void render_polygon(const std::pair<dynamic_array<vec2<T>>, dynamic_array<index_
 
     canvas->clear(WHITE);
 
-    tessellation::complex_to_simple_polygon simplifier{true};
+    tessellation::simplifier simplifier{true};
     vector<int> winding;
     static_array<vec2<T>, 256> simple_polygons_result;
     static_array<index, 256> simple_polygons_locations;
@@ -420,7 +460,7 @@ void render_polygon(const std::pair<dynamic_array<vec2<T>>, dynamic_array<index_
         index offset = simple_polygons_locations[ix];
         index size = simple_polygons_locations[ix+1] - offset;
 
-//        if(ix!=3)
+//        if(ix!=0)
 //            continue;
 
         canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(

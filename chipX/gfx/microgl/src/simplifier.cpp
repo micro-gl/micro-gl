@@ -1,4 +1,4 @@
-#include <microgl/tesselation/complex_to_simple_polygon.h>
+#include <microgl/tesselation/simplifier.h>
 
 namespace tessellation {
 
@@ -173,12 +173,11 @@ namespace tessellation {
 //        int a = 0;
 //    }
 
-    void complex_to_simple_polygon::compute(const vec2_f *$pts,
-                                            const array_container<index> & pieces_locations,
-//                                            index size,
-                                            array_container<vec2_f> & polygons_result,
-                                            array_container<index> & polygons_locations,
-                                            vector<int> &winding) {
+    void simplifier::compute(const vec2_f *$pts,
+                             const array_container<index> & pieces_locations,
+                             array_container<vec2_f> & polygons_result,
+                             array_container<index> & polygons_locations,
+                             vector<int> &winding) {
         MultiPoly multi, result_multi;
         vector<int> directions;
         // todo::
@@ -230,7 +229,7 @@ namespace tessellation {
         int a =0;
     }
 
-//    void complex_to_simple_polygon::compute(vec2_32i *$pts,
+//    void simplifier::compute(vec2_32i *$pts,
 //                                            index size) {
 //
 //    }

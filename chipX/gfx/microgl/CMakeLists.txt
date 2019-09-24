@@ -34,8 +34,8 @@ set(sources
         src/triangles.cpp
         src/PathTessellation.cpp
         src/ArcDivider.cpp
-        src/complex_to_simple_polygon.cpp
-        include/private/microgl/tesselation/nzw/Multipolygon.cpp
+        src/simplifier.cpp
+        include/private/microgl/tesselation/nzw/simplify_components.cpp
         )
 
 add_library(${PROJECT_NAME} ${sources})
