@@ -14,24 +14,38 @@ private:
     using array_container_ref = array_container<T> &;
     using const_array_container_ref = const array_container<T> &;
 
-    dynamic_array<T> _data{};
-    dynamic_array<index> _locations{0};
+    dynamic_array<T> _data;
+    dynamic_array<index> _locations;
+//    C<T, Rest> _data{};
+//    C<index, Rest...> _locations{0};
+//    C<T, Rest...> aasa;
 
 public:
     struct chunk {
-        type_pointer data;
+        T* data;
         index size;
     };
 
-    chunker(const_chunker_ref chunker) {
+//    chunker(const_chunker_ref chunker) {
+//        _data = chunker._data;
+//        _locations = chunker._locations;
+//    }
+
+    chunker(const chunker<T> &chunker) {
         _data = chunker._data;
         _locations = chunker._locations;
     }
 
-    chunker(const std::initializer_list<T> &list) : _data{list} {
+    explicit chunker(unsigned initial_capacity=0) : _data{initial_capacity}, _locations(initial_capacity) {
+        _locations.push_back(0);
     }
 
-    chunker(const dynamic_array<T> &container) : _data(container) {
+    chunker(const std::initializer_list<T> &list) : _data{list}, _locations(1) {
+        _locations.push_back(0);
+    }
+
+    chunker(const_array_container_ref container) : _data(container), _locations(1) {
+        _locations.push_back(0);
     }
 
     ~chunker() {
@@ -68,20 +82,21 @@ public:
         return (*this);
     }
 
-    chunk chunk_for(index i) const {
+    chunk chunk_for(index i) {
         index idx_start = _locations[i];
         index size = _locations[i+1] - idx_start;
+        type_pointer pointer = &(_data[idx_start]);
 
-        return {_data[idx_start], size};
+        return {pointer, size};
     }
 
     chunk operator[](index i) {
         return chunk_for(i);
     }
 
-    const T& operator[](index i) const {
-        return chunk_for(i);
-    }
+//    chunk operator[](index i) const {
+//        return chunk_for(i);
+//    }
 
     void clear() {
     }

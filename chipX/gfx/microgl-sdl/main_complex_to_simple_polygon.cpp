@@ -383,10 +383,20 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_deg() {
     return {A, locations};
 }
 
-std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_star() {
-    dynamic_array<index_t> locations;
+chunker<vec2_f> poly_inter_star() {
+//    dynamic_array<index_t> locations;
 
-    dynamic_array<vec2_f> A{
+//    dynamic_array<vec2_f> A{
+//            {150, 150},
+//            {450,150},
+//            {200,450},
+//            {300,50},
+//
+//            {400,450},
+//
+//    };
+
+    chunker<vec2_f> A{
             {150, 150},
             {450,150},
             {200,450},
@@ -396,14 +406,16 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_star() {
 
     };
 
-    locations.push_back(0);
-    locations.push_back(A.size());
+    A.cut_chunk();
 
-    return {A, locations};
+//    locations.push_back(0);
+//    locations.push_back(A.size());
+
+    return A;
 }
 
 template <typename T>
-void render_polygon(const std::pair<dynamic_array<vec2<T>>, dynamic_array<index_t>> &pieces);
+void render_polygon(chunker<T> pieces);
 
 void render() {
     t+=.05f;
@@ -437,7 +449,7 @@ void render() {
 
 
 template <typename T>
-void render_polygon(const std::pair<dynamic_array<vec2<T>>, dynamic_array<index_t>> &pieces) {
+void render_polygon(chunker<T> pieces) {
     using index = unsigned int;
 
 //    polygon[3].y = 50 -  t;
@@ -446,26 +458,29 @@ void render_polygon(const std::pair<dynamic_array<vec2<T>>, dynamic_array<index_
 
     tessellation::simplifier simplifier{true};
     vector<int> winding;
-    static_array<vec2<T>, 256> simple_polygons_result;
-    static_array<index, 256> simple_polygons_locations;
+//    static_array<vec2<T>, 256> simple_polygons_result;
+//    static_array<index, 256> simple_polygons_locations;
+
+    chunker<vec2_f> result;
+
 
     simplifier.compute(
-            pieces.first.data(),
-            pieces.second,
-            simple_polygons_result,
-            simple_polygons_locations,
+            pieces,
+            result,
             winding);
+//    return;
 
-    for (index ix = 0; ix < simple_polygons_locations.size()-1; ++ix) {
-        index offset = simple_polygons_locations[ix];
-        index size = simple_polygons_locations[ix+1] - offset;
+    for (index ix = 0; ix < result.size(); ++ix) {
+        auto chunk = result[ix];
+//        index offset = simple_polygons_locations[ix];
+//        index size = simple_polygons_locations[ix+1] - offset;
 
 //        if(ix!=0)
 //            continue;
 
         canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
-                &(simple_polygons_result.data()[offset]),
-                size - 1,
+                chunk.data,
+                chunk.size-1,
                 120,
                 polygons::hints::SIMPLE
                 );
@@ -480,6 +495,7 @@ void render_polygon(const std::pair<dynamic_array<vec2<T>>, dynamic_array<index_
     }
 
 }
+
 
 
 int main() {

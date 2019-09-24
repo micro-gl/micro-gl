@@ -173,38 +173,41 @@ namespace tessellation {
 //        int a = 0;
 //    }
 
-    void simplifier::compute(const vec2_f *$pts,
-                             const array_container<index> & pieces_locations,
-                             array_container<vec2_f> & polygons_result,
-                             array_container<index> & polygons_locations,
+    void simplifier::compute(chunker<vec2_f> & pieces,
+                             chunker<vec2_f> & result,
                              vector<int> &winding) {
+
         MultiPoly multi, result_multi;
         vector<int> directions;
+
         // todo::
         // algorithm screws with co-linear intersections, for example
         // a line contained in a line
 
 
         // prepare input, convert input pieces into multi poly
-        for (index ix = 0; ix < pieces_locations.size()-1; ++ix) {
-            index offset = pieces_locations[ix];
-            index size = pieces_locations[ix+1] - offset;
-            Poly poly{};
-
-            for (index jx = 0; jx < size; ++jx) {
-
-                auto pt = $pts[offset + jx];
-                Vertex v{pt.x, pt.y};
-
-                poly.vtxList.push_back(v);
-            }
-
+//        for (index ix = 0; ix < pieces_locations.size()-1; ++ix) {
+//            index offset = pieces_locations[ix];
+//            index size = pieces_locations[ix+1] - offset;
+//            Poly poly{};
+//
+//            for (index jx = 0; jx < size; ++jx) {
+//
+//                auto pt = $pts[offset + jx];
+//                Vertex v{pt.x, pt.y};
+//
+//                poly.vtxList.push_back(v);
+//            }
+//
 //            multi.add(poly);
-            multi.add(poly);
-        }
+//        }
 
 //        auto bb = multi.m_polyList.front();
         // compute
+
+        simplify_components::compute(pieces, result, winding, directions);
+
+        /*
         multi.findMonotone(result_multi, winding, directions);
 //        multi.findMonotone(result_multi, winding);
 
@@ -222,6 +225,7 @@ namespace tessellation {
         }
         // the last one
         polygons_locations.push_back(ref_location);
+*/
 
         // experiment
 //        compute_component_tree(result_multi, winding, directions);

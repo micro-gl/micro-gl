@@ -19,7 +19,9 @@ public:
 
     explicit dynamic_array(index capacity = 10) {
         _cap = capacity;
-        _data = new T[_cap];
+
+        if(_cap > 0)
+            _data = new T[_cap];
     }
 
     ~dynamic_array() {
@@ -81,7 +83,7 @@ public:
     }
 
     void push_back(const T & v) override {
-        if(_current==_cap-1)
+        if(int(_current)>int(_cap-1))
             alloc_(true);
 
         _data[_current++] = v;
@@ -123,6 +125,6 @@ public:
 
 private:
     T *_data = nullptr;
-    index _current = 0;
-    index _cap = 0;
+    index _current = 0u;
+    index _cap = 0u;
 };
