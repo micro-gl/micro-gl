@@ -9,7 +9,7 @@ private:
     using type_ref = T &;
     using type_pointer= T *;
     using chunker_ref = chunker<T> &;
-    using const_chunker_ref = chunker<T> &;
+    using const_chunker_ref = const chunker<T> &;
     using dyn_array_ref = dynamic_array<T> &;
     using array_container_ref = array_container<T> &;
     using const_array_container_ref = const array_container<T> &;
@@ -26,17 +26,12 @@ public:
         index size;
     };
 
-//    chunker(const_chunker_ref chunker) {
-//        _data = chunker._data;
-//        _locations = chunker._locations;
-//    }
-
-    chunker(const chunker<T> &chunker) {
+    chunker(const_chunker_ref chunker) {
         _data = chunker._data;
         _locations = chunker._locations;
     }
 
-    explicit chunker(unsigned initial_capacity=0) : _data{initial_capacity}, _locations(initial_capacity) {
+    explicit chunker(unsigned initial_capacity=0) : _data{initial_capacity}, _locations(1) {
         _locations.push_back(0);
     }
 
@@ -65,6 +60,16 @@ public:
 
     void push_back(const std::initializer_list<T> &list) {
         _data.push_back(dynamic_array<T> {list});
+    }
+
+    void push_back_and_cut(const std::initializer_list<T> &list) {
+        _data.push_back(dynamic_array<T> {list});
+        cut_chunk();
+    }
+
+    void push_back_and_cut(const_array_container_ref container) {
+        _data.push_back(container);
+        cut_chunk();
     }
 
     type_pointer raw_data() {

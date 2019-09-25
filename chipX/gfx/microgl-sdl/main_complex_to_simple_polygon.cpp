@@ -34,36 +34,11 @@ using index_t = unsigned int;
 
 float t = 0;
 
-std::vector<vec2_f> poly_rect() {
-    vec2_32i p0 = {100,100};
-    vec2_32i p1 = {300, 100};
-    vec2_32i p2 = {300, 300};
-    vec2_32i p3 = {100, 300};
 
-    return {p0, p1, p2, p3};
-}
+chunker<vec2_f> poly_degenerate_hole() {
+    chunker<vec2_f> A;
 
-float b = 1;
-std::vector<vec2_f> poly_2() {
-    vec2_f p0 = {100/b,100/b};
-    vec2_f p1 = {300/b, 100/b};
-    vec2_f p2 = {300/b, 300/b};
-    vec2_f p3 = {200/b, 200/b};
-    vec2_f p4 = {100/b, 300/b};
-
-    return {p0, p1, p2, p3, p4};
-}
-
-std::vector<vec2_f> poly_tri() {
-    vec2_f p0 = {100,100};
-    vec2_f p3 = {300, 100};
-    vec2_f p4 = {100, 300};
-
-    return {p0, p3, p4};
-}
-
-std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_degenerate_hole() {
-    dynamic_array<vec2_f> A{
+    A.push_back_and_cut({
             {100,100},
             {300,100},
             {300,300},
@@ -77,15 +52,15 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_degenerate_hole() 
             {150,150},
             {100,300},
 
-    };
+    });
 
-    dynamic_array<index_t> locations = {0, A.size()};
-
-    return {A, locations};
+    return A;
 }
 
-std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_degenerate_multipepoints() {
-    dynamic_array<vec2_f> A{
+chunker<vec2_f> poly_degenerate_multipepoints() {
+    chunker<vec2_f> A;
+
+    A.push_back_and_cut({
             {100,100},
             {100,100},
             {100,100},
@@ -105,263 +80,187 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_degenerate_multipe
             {100,300},
             {100,300},
             {100,300},
+    });
 
-    };
-
-    dynamic_array<index_t> locations = {0, A.size()};
-
-    return {A, locations};
+    return A;
 }
 
-std::vector<vec2_f> poly_diamond() {
-    vec2_f p1 = {300, 100};
-    vec2_f p2 = {400, 300};
-    vec2_f p3 = {300, 400};
-    vec2_f p0 = {100,300};
+chunker<vec2_f> poly_inter_1() {
+    chunker<vec2_f> A;
 
-    return {p1, p2, p3, p0};
-}
-
-std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_1() {
-    dynamic_array<vec2_f> A{
+    A.push_back_and_cut({
             {100,100},
             {400,400},
             {100,400},
             {400,100}
-    };
+    });
 
-    dynamic_array<index_t> locations = {0, A.size()};
-
-    return {A, locations};
+    return A;
 }
 
-std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_2() {
-    dynamic_array<index_t> locations;
+chunker<vec2_f> poly_inter_2() {
 
-    dynamic_array<vec2_f> A2{
-            {100,100},
-            {200,100},
-            {200,200},
-            {100,200}
-    };
+    chunker<vec2_f> A;
 
-    dynamic_array<vec2_f> A{
+    A.push_back_and_cut({
             {0.0,0.0},
             {50,0},
             {50,50},
             {0,50},
-    };
+    });
 
-    dynamic_array<vec2_f> B{
-            {50+0.0,50+0.0},
-            {50+50,0+50},
-            {50+50,50+50},
-            {0+50,50+50},
-    };
+    A.push_back_and_cut({
+        {50+0.0,50+0.0},
+        {50+50,0+50},
+        {50+50,50+50},
+        {0+50,50+50}
+    });
 
-    locations.push_back(0);
-    locations.push_back(A.size());
-    locations.push_back(A.size() + B.size());
-
-//    locations.push_back(A.size() + B.size() + C.size());
-
-    A.push_back(B);
-//    A.push_back(C);
-
-//    dynamic_array<vec2_f> C = A;
-
-    return {A, locations};
+    return A;
 }
 
-std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_side() {
+chunker<vec2_f> poly_inter_side() {
     dynamic_array<index_t> locations;
 
-    dynamic_array<vec2_f> A{
+    chunker<vec2_f> A{
             {0.0,0.0},
             {400,0},
             {400,400},
             {0,400},
     };
 
-    dynamic_array<vec2_f> B{
+    A.cut_chunk();
+
+    A.push_back_and_cut({
             {0.0,0.0},
             {400,0},
             {400,400},
             {0,400},
-    };
+    });
 
-    locations.push_back(0);
-    locations.push_back(A.size());
-    locations.push_back(A.size() + B.size());
-
-//    locations.push_back(A.size() + B.size() + C.size());
-
-    A.push_back(B);
-//    A.push_back(C);
-
-//    dynamic_array<vec2_f> C = A;
-
-    return {A, locations};
+    return A;
 }
 
-std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_3() {
-    dynamic_array<index_t> locations;
+chunker<vec2_f> poly_inter_nested_3() {
 
-    dynamic_array<vec2_f> A{
+    chunker<vec2_f> A;
+
+    A.push_back_and_cut({
             {0.0,0.0},
             {300,0},
             {300,300},
             {0,300},
-    };
+    });
 
-    dynamic_array<vec2_f> B{
-            {0,50+0.0},
-            {300+50,0+50},
-            {300+50,300-50},
-            {0,300-50},
-    };
+    A.push_back_and_cut({
+        {0,50 + 0.0},
+        {300 + 50, 0 + 50},
+        {300 + 50, 300 - 50},
+        {0,300 - 50}
+    });
 
-    dynamic_array<vec2_f> C{
-            {100+0.0,100+0.0},
-            {300+100,0+100},
-            {300+100,300-100},
-            {0+100,300-100},
-    };
+    A.push_back_and_cut({
+        {100+0.0,100+0.0},
+        {300+100,0+100},
+        {300+100,300-100},
+        {0+100,300-100},
+    });
 
-    dynamic_array<vec2_f> D{
+    A.push_back_and_cut({
             {10,150},
             {500,150},
             {500,170},
             {10,170},
-    };
+    });
 
-    locations.push_back(0);
-    locations.push_back(A.size());
-    locations.push_back(A.size() + B.size());
-    locations.push_back(A.size() + B.size() + C.size());
-    locations.push_back(A.size() + B.size() + C.size() + D.size());
-
-    A.push_back(B);
-    A.push_back(C);
-    A.push_back(D);
-
-//    dynamic_array<vec2_f> C = A;
-
-    return {A, locations};
+    return A;
 }
 
-std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_2() {
-    dynamic_array<index_t> locations;
+chunker<vec2_f> poly_inter_nested_2() {
 
-    dynamic_array<vec2_f> A{
-//            {0.0,0.0},
-//            {300,0},
-//            {300,300},
-//            {0,300},
-    };
+    chunker<vec2_f> A;
 
-    dynamic_array<vec2_f> B{
+    A.push_back_and_cut({
             {0,50.},
             {250,50},
             {250,250},
             {0,250},
-    };
+    });
 
-    dynamic_array<vec2_f> C{
+    A.push_back_and_cut({
             {100,100},
             {400,100},
             {400,200},
             {100,200},
-    };
+    });
 
-    dynamic_array<vec2_f> D{
+    A.push_back_and_cut({
             {10,150},
             {300,150},
             {300,170},
             {10,170},
-    };
+    });
 
-    locations.push_back(0);
-    locations.push_back(A.size());
-    locations.push_back(A.size() + B.size());
-    locations.push_back(A.size() + B.size() + C.size());
-    locations.push_back(A.size() + B.size() + C.size() + D.size());
-
-    A.push_back(B);
-    A.push_back(C);
-    A.push_back(D);
-
-    return {A, locations};
+    return A;
 }
 
 
-std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_weird_touch() {
-    dynamic_array<index_t> locations;
+chunker<vec2_f> poly_inter_weird_touch() {
+    chunker<vec2_f> A, B;
 
-    dynamic_array<vec2_f> A{
+    A.push_back_and_cut({
             {50.0,50.0},
             {300,50},
             {300,350},
             {100,350},
 
             {100,50},
-    };
+    });
 
-    dynamic_array<vec2_f> B{
+    B.push_back_and_cut({
             {50.0,350.0},
             {300,350},
             {300,50},
             {100,50},
 
             {100,350},
-    };
+    });
 
-    locations.push_back(0);
-    locations.push_back(A.size());
-
-    return {B, locations};
+    return B;
 }
 
 
-std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_nested_disjoint() {
-    dynamic_array<index_t> locations;
+chunker<vec2_f> poly_inter_nested_disjoint() {
+    chunker<vec2_f> A;
 
-    dynamic_array<vec2_f> A{
+    A.push_back_and_cut({
             {0.0,0.0},
             {300,0},
             {300,300},
             {0,300},
-    };
+    });
 
-    dynamic_array<vec2_f> B{
+    A.push_back_and_cut({
             {50,50.},
             {50,250},
             {400,250},
             {400,50},
-    };
+    });
 
-    dynamic_array<vec2_f> C{
+    A.push_back_and_cut({
             {350,100.},
             {500,100},
             {500,150},
             {350,150},
-    };
+    });
 
-    locations.push_back(0);
-    locations.push_back(A.size());
-    locations.push_back(A.size() + B.size());
-    locations.push_back(A.size() + B.size() + C.size());
-
-    A.push_back(B);
-    A.push_back(C);
-
-    return {A, locations};
+    return A;
 }
 
-std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_deg() {
-    dynamic_array<index_t> locations;
+chunker<vec2_f> poly_inter_deg() {
+    chunker<vec2_f> A;
 
-    dynamic_array<vec2_f> A{
+    A.push_back_and_cut({
             {400,400},
             {0,400},
             {0,0},
@@ -371,45 +270,21 @@ std::pair<dynamic_array<vec2_f>, dynamic_array<index_t>> poly_inter_deg() {
             {100,350},
             {100,100},
 
-    };
+    });
 
-    locations.push_back(0);
-    locations.push_back(A.size());
-//    locations.push_back(A.size() + B.size());
-
-//    A.push_back(B);
-//    dynamic_array<vec2_f> C = A;
-
-    return {A, locations};
+    return A;
 }
 
 chunker<vec2_f> poly_inter_star() {
-//    dynamic_array<index_t> locations;
+    chunker<vec2_f> A;
 
-//    dynamic_array<vec2_f> A{
-//            {150, 150},
-//            {450,150},
-//            {200,450},
-//            {300,50},
-//
-//            {400,450},
-//
-//    };
-
-    chunker<vec2_f> A{
+    A.push_back_and_cut({
             {150, 150},
             {450,150},
             {200,450},
             {300,50},
-
             {400,450},
-
-    };
-
-    A.cut_chunk();
-
-//    locations.push_back(0);
-//    locations.push_back(A.size());
+    });
 
     return A;
 }
@@ -432,7 +307,7 @@ void render() {
 
 //    render_polygon(poly_inter_weird_touch());
 
-//    render_polygon(poly_inter_nested_3());
+    render_polygon(poly_inter_nested_3());
 //    render_polygon(poly_inter_nested_disjoint());
 //    render_polygon(poly_inter_nested_2());
 
@@ -442,7 +317,7 @@ void render() {
 
 //    render_polygon(poly_inter_deg());
 
-    render_polygon(poly_inter_star());
+//    render_polygon(poly_inter_star());
 
 //    render_polygon(poly_tri());
 }
