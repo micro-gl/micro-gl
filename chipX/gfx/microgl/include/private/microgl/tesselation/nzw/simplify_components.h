@@ -67,20 +67,16 @@ namespace tessellation {
         vertex *v{};
         float param1{},param2{};
         int index1{}, index2{};
-        int winding{};
-        int direction{};
-        int selfIndex{};
         segment l1, l2;
 
         vertex * origin1();
         vertex * origin2();
-
         intersection()= default;
         intersection (vertex *vtx, float p1, float p2, const segment &li, const segment &lj);
         bool operator< (const intersection &i) const;
-
-        bool isDeadEnd() {
-            return index1==-1 && index2==-1;
+        bool isDeadEnd();
+        bool isPolygonVertex() {
+            return v==origin1() || v==origin2();
         }
     };
 
@@ -121,7 +117,7 @@ namespace tessellation {
             compute_master_list(pieces, master_list, allocated_intersection);
 
             // now, we have a complete master list, we can traverse it for polygons.
-            polygonPartition(pieces_result, master_list, directions, winding);
+            polygonPartition(pieces_result, master_list, directions);
 
             // delete allocated intersections.
             for (unsigned long ix = 0; ix < allocated_intersection.size(); ++ix) {
@@ -179,16 +175,14 @@ namespace tessellation {
         static
         void polygonPartition(chunker<vertex> &result,
                               master_intersection_list &master_list,
-                              vector<int> &directions,
-                              vector<int> &windingVector) {
+                              vector<int> &directions) {
 
-            bool finished = false;
             vertex *currVtx;
             intersection *prevInter;
             vector<intersection> &interVector = master_list; // todo:: this is a waste
-            bool foundWinding = false;
+            bool found_direction = false;
             vector<int> stack;
-            int currDirection =0;
+            int current_direction = 0;
 
             do
             {
@@ -211,7 +205,8 @@ namespace tessellation {
                     currIndex = stack.back();
                 else {
                     currIndex=0;
-                    while(master_list[currIndex].isDeadEnd() && (currIndex < master_list.size()))
+                    while(master_list[currIndex].isDeadEnd() &&
+                          (currIndex < master_list.size()))
                         currIndex++;
                 }
 
@@ -220,23 +215,12 @@ namespace tessellation {
                 if ( currIndex >= master_list.size()-1 )
                     break;
 
-                /////
-                /////
-
-                int currWinding = 0;
-
                 currVtx = interVector[currIndex].v;
                 prevInter = &interVector[currIndex];
 
                 // start index marks a beginning of a component ?
                 const int startIndex = currIndex;
                 int firstIndex = startIndex;
-
-                // this is for winding caclulations
-                // fix vertex to find the winding number before changing the index values!!
-
-                if (interVector[startIndex].index1==-1 || interVector[startIndex].index2==-1)
-                    currWinding = interVector[startIndex].winding;
 
                 result.push_back(*currVtx);
                 stack.push_back(currIndex);
@@ -286,84 +270,48 @@ namespace tessellation {
                     result.push_back(*currVtx);
                     stack.push_back(currIndex);
 
-//                    /*
-                    // this part is only for resolving winding
-                    if ( !foundWinding)
+                    // this part is only for resolving directions
+                    // this part of code relies on the fact that the
+                    // vertices are sorted to infer the left-most vertex etc..
+                    if (found_direction)
+                        continue;
+                    // this is a mechanism to get the next vertex, when we get into
+                    // direction calculation.
+                    if (firstIndex == startIndex)
+                        firstIndex = currIndex;
+                    else
                     {
-                        if (firstIndex == startIndex)
-                            firstIndex = currIndex;
-                        else
-                        {
-//                            const int secondIndex = currIndex;
-                            foundWinding = true;
-                            // tests if polygon vertex
-                            if (interVector[startIndex].v==interVector[startIndex].origin1()
-                                || interVector[startIndex].v== interVector[startIndex].origin2())
-                            {
-                                // todo:: might be problematic
-//                                win1 = xProd(*interVector[startIndex].l2.vertex0,
-                                auto win = xProd(*interVector[startIndex].origin1(),
-                                             *interVector[startIndex].v,
-                                             *interVector[firstIndex].v);
-                                if (win > 0 ) {
-                                    currDirection = 0;
-                                    currWinding--;
-                                }
-                                else {
-                                    currDirection = 1;
-                                    currWinding++;
-                                }
-                                interVector[startIndex].direction = currDirection;
-                            }
-                            else
-                            {
-                                vertex *vtx ;
-                                if ( interVector[startIndex].index1 == -1 )
-                                    vtx = interVector[startIndex].origin1();
-                                else
-                                    vtx = interVector[startIndex].origin2();
+                        found_direction = true;
 
-                                auto win = xProd(*vtx,
-                                        *interVector[startIndex].v,
-                                        *interVector[firstIndex].v);
+                        // tests if polygon vertex
+                        if (interVector[startIndex].isPolygonVertex()) {
+                            auto win = xProd(*interVector[startIndex].origin1(),
+                                         *interVector[startIndex].v,
+                                         *interVector[firstIndex].v);
 
-                                if (win > 0 ) {
-                                    currDirection = 0;
-                                    if ( interVector[startIndex].direction != currDirection)
-                                        currWinding= currWinding - 2;
-                                    else
-                                        currWinding--;
-                                }
-                                else {
-                                    currDirection = 1;
-                                    if ( interVector[startIndex].direction != currDirection)
-                                        currWinding= currWinding + 2;
-                                    else
-                                        currWinding++;
-                                }
-                            }
-
-                            interVector[startIndex].direction = currDirection;
-                            interVector[firstIndex].direction = currDirection;
-//                            interVector[secondIndex].direction = currDirection;
-                            interVector[startIndex].winding = currWinding;
-                            interVector[firstIndex].winding = currWinding;
-//                            interVector[secondIndex].winding = currWinding;
+                            current_direction = win>0 ? 0 : 1;
                         }
+                        else {
+                            vertex *vtx ;
+                            if ( interVector[startIndex].index1 == -1 )
+                                vtx = interVector[startIndex].origin1();
+                            else
+                                vtx = interVector[startIndex].origin2();
+
+                            auto win = xProd(*vtx,
+                                    *interVector[startIndex].v,
+                                    *interVector[firstIndex].v);
+
+                            current_direction = win>0 ? 0 : 1;
+                        }
+
                     }
 
-//                    else
-//                    {
-                    interVector[currIndex].winding = currWinding;
-                    interVector[currIndex].direction = currDirection;
-//                    }
+                } while ((currIndex!=startIndex) && (currIndex!=-1)) ;
 
-                } while ( (currIndex != startIndex) && ( currIndex != -1 ) ) ;
-
-                windingVector.push_back(currWinding);
-                directions.push_back(currDirection);
+                directions.push_back(current_direction);
                 result.cut_chunk();
-                foundWinding = false;
+                found_direction = false;
 
             } while (true);
 
@@ -382,7 +330,8 @@ namespace tessellation {
                 auto & intersection = master_list[ix];
 
                 // todo:: break it into more cases to support point on an edge
-                if ((intersection.param1 != 0 ) && (intersection.param2 != 0 )) {
+                if (!intersection.isPolygonVertex()) {
+//                if ((intersection.param1 != 0 ) && (intersection.param2 != 0 )) {
                     int i11 = 0, i21 = 0;
                     vertex *searchVertex1 = intersection.origin1();
                     vertex *searchVertex2 = intersection.origin2();
@@ -453,8 +402,8 @@ namespace tessellation {
             }
 
             // setting up the self-index of each interseciton object
-            for (unsigned long ix = 0 ; ix < master_list.size() ; ix++)
-                master_list[ix].selfIndex = int(ix);
+//            for (unsigned long ix = 0 ; ix < master_list.size() ; ix++)
+//                master_list[ix].selfIndex = int(ix);
         }
 
         static

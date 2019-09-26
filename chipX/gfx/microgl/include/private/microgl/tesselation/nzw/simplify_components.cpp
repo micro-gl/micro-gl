@@ -28,6 +28,10 @@ namespace tessellation {
         return l2.start();
     }
 
+    bool intersection::isDeadEnd() {
+        return index1==-1 && index2==-1;
+    }
+
     edge_vertex::edge_vertex(vertex *vtx, float p, int i) {
         v = vtx;
         param = p;
