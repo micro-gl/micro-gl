@@ -17,7 +17,7 @@ public:
             this->push_back(container[ix]);
     }
 
-    explicit dynamic_array(index capacity = 10) {
+    explicit dynamic_array(index capacity = 0) {
         _cap = capacity;
 
         if(_cap > 0)
@@ -70,7 +70,7 @@ public:
         if(_cap>0) {
             _new = new T[_cap];
 
-            for (int ix = 0; ix < size(); ++ix) {
+            for (index ix = 0; ix < size(); ++ix) {
                 _new[ix] = _data[ix];
             }
 

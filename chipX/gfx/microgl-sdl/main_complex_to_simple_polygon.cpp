@@ -307,7 +307,7 @@ void render() {
 
 //    render_polygon(poly_inter_weird_touch());
 
-    render_polygon(poly_inter_nested_3());
+//    render_polygon(poly_inter_nested_3());
 //    render_polygon(poly_inter_nested_disjoint());
 //    render_polygon(poly_inter_nested_2());
 
@@ -318,6 +318,7 @@ void render() {
 //    render_polygon(poly_inter_deg());
 
 //    render_polygon(poly_inter_star());
+    render_polygon(poly_inter_nested_3());
 
 //    render_polygon(poly_tri());
 }
@@ -333,9 +334,6 @@ void render_polygon(chunker<T> pieces) {
 
     tessellation::simplifier simplifier{true};
     vector<int> winding;
-//    static_array<vec2<T>, 256> simple_polygons_result;
-//    static_array<index, 256> simple_polygons_locations;
-
     chunker<vec2_f> result;
 
 
@@ -347,11 +345,9 @@ void render_polygon(chunker<T> pieces) {
 
     for (index ix = 0; ix < result.size(); ++ix) {
         auto chunk = result[ix];
-//        index offset = simple_polygons_locations[ix];
-//        index size = simple_polygons_locations[ix+1] - offset;
 
-//        if(ix!=0)
-//            continue;
+//                if(ix!=1)
+//                    continue;
 
         canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
                 chunk.data,
@@ -363,8 +359,8 @@ void render_polygon(chunker<T> pieces) {
 //        if(false)
 //        canvas->drawLinePath(
 //        BLACK,
-//        dd.data(),
-//        dd.size(),
+//        chunk.data,
+//        chunk.size,
 //        false);
 
     }

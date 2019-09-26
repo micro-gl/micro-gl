@@ -177,35 +177,13 @@ namespace tessellation {
                              chunker<vec2_f> & result,
                              vector<int> &winding) {
 
-        MultiPoly multi, result_multi;
         vector<int> directions;
 
-        // todo::
-        // algorithm screws with co-linear intersections, for example
-        // a line contained in a line
-
-
-        // prepare input, convert input pieces into multi poly
-//        for (index ix = 0; ix < pieces_locations.size()-1; ++ix) {
-//            index offset = pieces_locations[ix];
-//            index size = pieces_locations[ix+1] - offset;
-//            Poly poly{};
-//
-//            for (index jx = 0; jx < size; ++jx) {
-//
-//                auto pt = $pts[offset + jx];
-//                Vertex v{pt.x, pt.y};
-//
-//                poly.vtxList.push_back(v);
-//            }
-//
-//            multi.add(poly);
-//        }
-
-//        auto bb = multi.m_polyList.front();
-        // compute
-
-        simplify_components::compute(pieces, result, winding, directions);
+        simplify_components::compute(
+                pieces,
+                result,
+                winding,
+                directions);
 
         /*
         multi.findMonotone(result_multi, winding, directions);
