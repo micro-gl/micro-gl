@@ -135,7 +135,7 @@ chunker<vec2_f> poly_inter_side() {
             {0.0,0.0},
             {400,0},
             {400,400},
-            {0,400},
+//            {0,400},
     });
 
     return A;
@@ -313,12 +313,12 @@ void render() {
 
 //    render_polygon(poly_inter_2());
 
-//    render_polygon(poly_inter_side());
+    render_polygon(poly_inter_side());
 
 //    render_polygon(poly_inter_deg());
-
+//
 //    render_polygon(poly_inter_star());
-    render_polygon(poly_inter_nested_3());
+//    render_polygon(poly_inter_nested_3());
 
 //    render_polygon(poly_tri());
 }
@@ -333,14 +333,13 @@ void render_polygon(chunker<T> pieces) {
     canvas->clear(WHITE);
 
     tessellation::simplifier simplifier{true};
-    vector<int> winding;
+    vector<int> directions;
     chunker<vec2_f> result;
-
 
     simplifier.compute(
             pieces,
             result,
-            winding);
+            directions);
 //    return;
 
     for (index ix = 0; ix < result.size(); ++ix) {

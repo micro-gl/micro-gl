@@ -109,11 +109,11 @@ namespace tessellation {
         static
         void compute(chunker<microgl::vec2_f> & pieces,
                      chunker<microgl::vec2_f> & pieces_result,
-                     vector<int> &winding,
                      vector<int> &directions) {
             master_intersection_list master_list;
             vector<vertex *> allocated_intersection;
 
+            // compute the intersection master list
             compute_master_list(pieces, master_list, allocated_intersection);
 
             // now, we have a complete master list, we can traverse it for polygons.
@@ -177,22 +177,19 @@ namespace tessellation {
                               master_intersection_list &master_list,
                               vector<int> &directions) {
 
-            vertex *currVtx;
-            intersection *prevInter;
-            vector<intersection> &interVector = master_list; // todo:: this is a waste
-            bool found_direction = false;
             vector<int> stack;
-            int current_direction = 0;
 
             do
             {
-                int currIndex=0;
+                int current_index = 0;
+                bool found_direction = false;
+                int current_direction = 0;
 
                 // remove top intersections that have been
                 // completely visited or are dead ends
                 while (!stack.empty()) {
                     int idx = stack.back();
-                    if ( interVector[idx].isDeadEnd())
+                    if (master_list[idx].isDeadEnd())
                         stack.pop_back();
                     else
                         break;
@@ -202,73 +199,74 @@ namespace tessellation {
                 // the top of the stack (spawned sub-component) then find in
                 // the master list, this is HOW we jump between disjoint components !!!
                 if (!stack.empty() && stack.back() > 0)
-                    currIndex = stack.back();
+                    current_index = stack.back();
                 else {
-                    currIndex=0;
-                    while(master_list[currIndex].isDeadEnd() &&
-                          (currIndex < master_list.size()))
-                        currIndex++;
+                    current_index=0;
+                    while(master_list[current_index].isDeadEnd() &&
+                          (current_index < master_list.size()))
+                        current_index++;
                 }
 
                 // if we reached the last intersection, we are done
                 // else, this is out current index for work
-                if ( currIndex >= master_list.size()-1 )
+                if (current_index >= master_list.size() - 1 )
                     break;
 
-                currVtx = interVector[currIndex].v;
-                prevInter = &interVector[currIndex];
+                auto *current_intersection = &master_list[current_index];
+                auto *prev_intersection = &master_list[current_index];
 
                 // start index marks a beginning of a component ?
-                const int startIndex = currIndex;
+                const int startIndex = current_index;
                 int firstIndex = startIndex;
 
-                result.push_back(*currVtx);
-                stack.push_back(currIndex);
+                result.push_back(*current_intersection->v);
+                stack.push_back(current_index);
 
                 // walk the polygon until we get back to the start point,
                 // on the way, push potential companion vertices into the stack
                 do {
                     // find the next vertex to visit and tag visited companion vertices
-                    if (interVector[currIndex].isDeadEnd())
-                        currIndex++;
+                    if (current_intersection->isDeadEnd())
+                        current_index++;
                     else
                     {
 
-                        if ( ( interVector[currIndex].origin1() == currVtx )
-                             && ( interVector[currIndex].index2 == -1 ) )
+                        if ((current_intersection->origin1() == current_intersection->v) &&
+                            (current_intersection->index2 == -1))
                         {
-                            int tempIndex = interVector[currIndex].index1;
-                            prevInter = &interVector[currIndex];
-                            interVector[currIndex].index1 = -1;
-                            currIndex = tempIndex;
+                            int tempIndex = current_intersection->index1;
+                            prev_intersection = current_intersection;
+                            current_intersection->index1 = -1;
+                            current_index = tempIndex;
                         }
                         else
                         {
-                            if ( (( interVector[currIndex].origin1() == prevInter->origin1())
-                                  ||( interVector[currIndex].origin1() == prevInter->origin2() ))
-                                 && ( interVector[currIndex].index2 != -1 ) )
+                            if ( ((current_intersection->origin1() == prev_intersection->origin1())
+                                  ||(current_intersection->origin1() == prev_intersection->origin2() ))
+                                 && (current_intersection->index2 != -1 ))
                             {
-                                int tempIndex = interVector[currIndex].index2;
-                                prevInter = &interVector[currIndex];
-                                interVector[currIndex].index2 = -1;
-                                currIndex = tempIndex;
+                                int tempIndex = current_intersection->index2;
+                                prev_intersection = current_intersection;
+                                current_intersection->index2 = -1;
+                                current_index = tempIndex;
                             }
                             else
                             {
-                                int tempIndex = interVector[currIndex].index1;
-                                prevInter = &interVector[currIndex];
-                                interVector[currIndex].index1 = -1;
-                                currIndex = tempIndex;
+                                int tempIndex = current_intersection->index1;
+                                prev_intersection = current_intersection;
+                                current_intersection->index1 = -1;
+                                current_index = tempIndex;
                             }
                         }
                     }
 
-                    if (currIndex == -1)
+                    if (current_index == -1)
                         continue;
 
-                    currVtx = interVector[currIndex].v;
-                    result.push_back(*currVtx);
-                    stack.push_back(currIndex);
+                    current_intersection = &master_list[current_index];
+
+                    result.push_back(*current_intersection->v);
+                    stack.push_back(current_index);
 
                     // this part is only for resolving directions
                     // this part of code relies on the fact that the
@@ -278,40 +276,39 @@ namespace tessellation {
                     // this is a mechanism to get the next vertex, when we get into
                     // direction calculation.
                     if (firstIndex == startIndex)
-                        firstIndex = currIndex;
+                        firstIndex = current_index;
                     else
                     {
                         found_direction = true;
 
                         // tests if polygon vertex
-                        if (interVector[startIndex].isPolygonVertex()) {
-                            auto win = xProd(*interVector[startIndex].origin1(),
-                                         *interVector[startIndex].v,
-                                         *interVector[firstIndex].v);
+                        if (master_list[startIndex].isPolygonVertex()) {
+                            auto win = xProd(*master_list[startIndex].origin1(),
+                                         *master_list[startIndex].v,
+                                         *master_list[firstIndex].v);
 
                             current_direction = win>0 ? 0 : 1;
                         }
                         else {
                             vertex *vtx ;
-                            if ( interVector[startIndex].index1 == -1 )
-                                vtx = interVector[startIndex].origin1();
+                            if (master_list[startIndex].index1 == -1)
+                                vtx = master_list[startIndex].origin1();
                             else
-                                vtx = interVector[startIndex].origin2();
+                                vtx = master_list[startIndex].origin2();
 
                             auto win = xProd(*vtx,
-                                    *interVector[startIndex].v,
-                                    *interVector[firstIndex].v);
+                                    *master_list[startIndex].v,
+                                    *master_list[firstIndex].v);
 
                             current_direction = win>0 ? 0 : 1;
                         }
 
                     }
 
-                } while ((currIndex!=startIndex) && (currIndex!=-1)) ;
+                } while ((current_index != startIndex) && (current_index != -1)) ;
 
                 directions.push_back(current_direction);
                 result.cut_chunk();
-                found_direction = false;
 
             } while (true);
 

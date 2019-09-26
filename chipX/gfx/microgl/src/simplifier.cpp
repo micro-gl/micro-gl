@@ -175,14 +175,13 @@ namespace tessellation {
 
     void simplifier::compute(chunker<vec2_f> & pieces,
                              chunker<vec2_f> & result,
-                             vector<int> &winding) {
+                             vector<int> &directions) {
 
-        vector<int> directions;
+//        vector<int> directions;
 
         simplify_components::compute(
                 pieces,
                 result,
-                winding,
                 directions);
 
         /*
