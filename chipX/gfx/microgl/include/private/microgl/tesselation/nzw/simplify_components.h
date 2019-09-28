@@ -16,7 +16,7 @@ namespace tessellation {
     struct segment
     {
         // used for determining limit of parallel lines
-        static const float NOISE;
+        constexpr static const float NOISE = 1e-5f;;
 
         vertex *vertex0= nullptr, *vertex1= nullptr;
         // have vertices been swapped during sortVertices?

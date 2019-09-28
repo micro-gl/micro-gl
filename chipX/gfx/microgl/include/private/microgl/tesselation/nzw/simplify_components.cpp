@@ -45,8 +45,6 @@ namespace tessellation {
 //    return ( *(ilist.begin()->v) < *(s.ilist.begin()->v) );
     }
 
-
-    const float segment::NOISE = 1e-5f;
 #define abs(x) ((x)<0 ? -(x) : (x))
 
     segment::IntersectionType segment::calcIntersection

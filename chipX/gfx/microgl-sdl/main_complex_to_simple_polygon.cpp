@@ -313,12 +313,12 @@ void render() {
 
 //    render_polygon(poly_inter_2());
 
-    render_polygon(poly_inter_side());
+//    render_polygon(poly_inter_side());
 
 //    render_polygon(poly_inter_deg());
 //
 //    render_polygon(poly_inter_star());
-//    render_polygon(poly_inter_nested_3());
+    render_polygon(poly_inter_nested_3());
 
 //    render_polygon(poly_tri());
 }
