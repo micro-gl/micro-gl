@@ -19,38 +19,45 @@ namespace microgl {
 #define abs(a) ((a)<0 ? -(a) : (a))
 
         template <typename T>
-        inline int min(const T &p0, const T &p1) {
+        inline T min(const T &p0, const T &p1) {
             return p0<p1 ? p0 : p1;
         }
 
         template <typename T>
-        inline int min(const T &p0, const T &p1, const T &p2) {
+        inline T min(const T &p0, const T &p1, const T &p2) {
             return min(min(p0, p1), p2);
         }
 
         template <typename T>
-        inline int min(const T &p0, const T &p1, const T &p2, const T &p3) {
+        inline T min(const T &p0, const T &p1, const T &p2, const T &p3) {
             return min(min(min(p0, p1), p2), p3);
         }
 
         template <typename T>
-        inline int max(const T &p0, const T &p1) {
+        inline T max(const T &p0, const T &p1) {
             return p0>p1 ? p0 : p1;
         }
 
         template <typename T>
-        inline int max(const T &p0, const T &p1, const T &p2) {
+        inline T max(const T &p0, const T &p1, const T &p2) {
             return max(max(p0, p1), p2);
         }
 
         template <typename T>
-        inline int max(const T &p0, const T &p1, const T &p2, const T &p3) {
+        inline T max(const T &p0, const T &p1, const T &p2, const T &p3) {
             return max(max(max(p0, p1), p2), p3);
         }
 
         template <typename T>
-        inline int clamp(const T &val, const T &e0, const T &e1) {
+        inline T clamp(const T &val, const T &e0, const T &e1) {
             return min(max(val,e0),e1);
+        }
+
+        template <typename T>
+        inline void swap(T &a, T &b) {
+            auto temp = a;
+            a = b;
+            b = temp;
         }
 
         uint32_t sqrt_int(uint32_t a_nInput);

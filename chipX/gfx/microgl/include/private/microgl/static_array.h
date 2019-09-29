@@ -8,6 +8,7 @@ public:
     using index = unsigned int;
 
     explicit static_array() = default;
+    static_array(int dummy){}
 
     static_array(const std::initializer_list<T> &list) : static_array() {
         for(auto it = list.begin(); it!=list.end(); it++)

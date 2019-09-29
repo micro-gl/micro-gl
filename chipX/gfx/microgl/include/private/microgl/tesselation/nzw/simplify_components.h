@@ -13,6 +13,10 @@ namespace tessellation {
 
     using vertex = microgl::vec2_f;
 
+    enum class direction {
+        CW, CCW
+    };
+
     struct segment
     {
         // used for determining limit of parallel lines
@@ -107,9 +111,9 @@ namespace tessellation {
         using index = unsigned int;
 
         static
-        void compute(chunker<microgl::vec2_f> & pieces,
-                     chunker<microgl::vec2_f> & pieces_result,
-                     vector<int> &directions) {
+        void compute(chunker<vertex> & pieces,
+                     chunker<vertex> & pieces_result,
+                     vector<direction> &directions) {
             master_intersection_list master_list;
             vector<vertex *> allocated_intersection;
 
@@ -175,7 +179,7 @@ namespace tessellation {
         static
         void polygonPartition(chunker<vertex> &result,
                               master_intersection_list &master_list,
-                              vector<int> &directions) {
+                              vector<direction> &directions) {
 
             vector<int> stack;
 
@@ -183,7 +187,7 @@ namespace tessellation {
             {
                 int current_index = 0;
                 bool found_direction = false;
-                int current_direction = 0;
+                direction current_direction;
 
                 // remove top intersections that have been
                 // completely visited or are dead ends
@@ -287,7 +291,7 @@ namespace tessellation {
                                          *master_list[startIndex].v,
                                          *master_list[firstIndex].v);
 
-                            current_direction = win>0 ? 0 : 1;
+                            current_direction = win>0 ? direction::CW : direction::CCW ;
                         }
                         else {
                             vertex *vtx ;
@@ -300,7 +304,7 @@ namespace tessellation {
                                     *master_list[startIndex].v,
                                     *master_list[firstIndex].v);
 
-                            current_direction = win>0 ? 0 : 1;
+                            current_direction = win>0 ? direction::CW : direction::CCW ;
                         }
 
                     }

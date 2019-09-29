@@ -999,19 +999,27 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
-                                    const fixed_signed v0_x, const fixed_signed v0_y,
-                                    const fixed_signed v1_x, const fixed_signed v1_y,
-                                    const fixed_signed v2_x, const fixed_signed v2_y,
+                                    int v0_x, int v0_y,
+                                    int v1_x, int v1_y,
+                                    int v2_x, int v2_y,
                                     const uint8_t opacity,
                                     const uint8_t sub_pixel_precision,
                                     bool aa_first_edge,
                                     bool aa_second_edge,
                                     bool aa_third_edge) {
 
-//    fixed_signed area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
-//
-//    if(area<=0)
-//        return;
+    fixed_signed sign = functions::orient2d({v0_x, v0_y},
+            {v1_x, v1_y}, {v2_x, v2_y},
+            sub_pixel_precision);
+    // discard degenerate triangle
+    if(sign==0)
+        return;
+    // convert CCW to CW triangle
+    if(sign<0) {
+        functions::swap(v1_x, v2_x);
+        functions::swap(v1_y, v2_y);
+        functions::swap(aa_first_edge, aa_third_edge);
+    }
 
     color_t color_int;
     coder()->convert(color, color_int);
@@ -1398,24 +1406,6 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 }
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
-                                    const int v0_x, const int v0_y,
-                                    const int v1_x, const int v1_y,
-                                    const int v2_x, const int v2_y,
-                                    const uint8_t opacity,
-                                    bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-
-    drawTriangle<BlendMode, PorterDuff, antialias>(color,
-            v0_x, v0_y,
-            v1_x, v1_y,
-            v2_x, v2_y,
-            opacity, 0,
-            aa_first_edge, aa_second_edge, aa_third_edge);
-}
-
-
-template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
         bool antialias, bool perspective_correct,
         typename Sampler,
@@ -1696,27 +1686,6 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
             v2_x_, v2_y_, u2_, v2_, q_,
             opacity, prec_pixel, prec_uv,
             aa_first_edge, aa_second_edge, aa_third_edge);
-
-}
-
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff,
-        bool antialias, typename Sampler,
-        typename P2, typename CODER2>
-void
-Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
-                               const int v0_x, const int v0_y, float u0, float v0,
-                               const int v1_x, const int v1_y, float u1, float v1,
-                               const int v2_x, const int v2_y, float u2, float v2,
-                               const uint8_t opacity,
-                               bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    // draw without perspective
-    drawTriangle<BlendMode, PorterDuff, antialias, false, Sampler>(bmp,
-                                                    v0_x, v0_y, u0, v0, 0.0f,
-                                                    v1_x, v1_y, u1, v1, 0.0f,
-                                                    v2_x, v2_y, u2, v2, 0.0f,
-                                                    opacity, 0,
-                                                    aa_first_edge, aa_second_edge, aa_third_edge);
 
 }
 

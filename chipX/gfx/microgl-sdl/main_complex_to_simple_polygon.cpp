@@ -303,6 +303,7 @@ void render() {
 //    render_polygon(poly_degenerate_multipepoints());
 
 //    render_polygon(poly_diamond());
+
 //    render_polygon(poly_inter_1());
 
 //    render_polygon(poly_inter_weird_touch());

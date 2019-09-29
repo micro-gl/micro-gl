@@ -194,19 +194,6 @@ public:
                           bool aa_second_edge = true,
                           bool aa_third_edge = true);
 
-    // integer version
-    template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false>
-    void drawTriangle(const color_f_t & color,
-                      int v0_x, int v0_y,
-                      int v1_x, int v1_y,
-                      int v2_x, int v2_y,
-                      uint8_t opacity=255,
-                      bool aa_first_edge = true,
-                      bool aa_second_edge = true,
-                      bool aa_third_edge = true);
-
     // float version
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
