@@ -131,6 +131,39 @@ chunker<vec2_f> poly_case_touches_1() {
     return A;
 }
 
+dynamic_array<vec2_f> box(float left, float top, float right, float bottom, bool ccw=false) {
+    if(!ccw)
+        return {
+                {left,top},
+                {right,top},
+                {right,bottom},
+                {left,bottom},
+        };
+
+    return{
+        {left,top},
+        {left,bottom},
+        {right,bottom},
+        {right,top},
+    };
+};
+
+chunker<vec2_f> poly_tag_merge_test() {
+    chunker<vec2_f> A;
+
+    A.push_back_and_cut(box(0,0,400,400));
+    A.push_back_and_cut(box(20,20,400-20,400-20));
+//    A.push_back_and_cut(box(40,40,400-40,400-40));
+
+    A.push_back_and_cut(box(60,60,400-60,400-60, true));
+    A.push_back_and_cut(box(80,80,400-80,400-80, true));
+//    A.push_back_and_cut(box(100,100,400-100,400-100, true));
+
+    A.push_back_and_cut(box(100,100,400-100,400-100,true));
+
+    return A;
+}
+
 chunker<vec2_f> poly_inter_2() {
 
     chunker<vec2_f> A;
@@ -354,7 +387,9 @@ void render() {
 //    render_polygon(poly_inter_star());
 //    render_polygon(poly_inter_nested_3());
 //    render_polygon(poly_inter_1());
-    render_polygon(poly_case_touches_1());
+//    render_polygon(poly_case_touches_1());
+
+    render_polygon(poly_tag_merge_test());
 
 //    render_polygon(poly_tri());
 }

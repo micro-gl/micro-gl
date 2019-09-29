@@ -6,6 +6,7 @@ namespace tessellation {
         // may have missing null children, that were removed
         std::vector<node *> children;
         int index_poly = -1;
+        int accumulated_winding = 0;
     };
 
     // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
@@ -45,14 +46,14 @@ namespace tessellation {
                 // an upward crossing
                 if (poly[ix + 1].y >= point.y)
                     // P left of  edge
-                    if (isLeft(point, poly[ix], poly[ix + 1]) > 0)
+                    if (classify_point(point, poly[ix], poly[ix + 1]) > 0)
                         ++wn;
             }
             else {                        // start y > P.y (no test needed)
                 // a downward crossing
                 if (poly[ix + 1].y < point.y)
                     // P right of  edge
-                    if (isLeft(point, poly[ix], poly[ix + 1]) < 0)
+                    if (classify_point(point, poly[ix], poly[ix + 1]) < 0)
                         --wn;
             }
         }
@@ -148,7 +149,7 @@ namespace tessellation {
                                         const int size,
                                         bool CCW = true) {
         int vi = find_convex_vertex(poly, size);
-        int ai = vi-1 < 0 ? size-1 : vi-1;
+        int ai = vi-1 < 0 ? size-1 : vi-1; 
         int bi = vi+1 == size ? 0 : vi+1;
 
         vertex v = poly[vi];
@@ -157,8 +158,7 @@ namespace tessellation {
         vertex triangle[3] = {a, v, b};
 
         vertex q;
-        auto min_qv_distance = poly[0].x;
-        min_qv_distance = 0;
+        auto min_qv_distance = v.x - v.x; // i do it to implicitly infer the type
 
         for (int ix = 0; ix < size; ++ix) {
             const auto & q_candidate = poly[ix];
@@ -290,13 +290,53 @@ namespace tessellation {
         root->children.push_back(current);
     }
 
+    void tag_and_merge(node * root,
+                       const vector<direction> &directions) {
+        int root_accumulated_winding = root->accumulated_winding;
+
+        // lets' go over the root's children
+        for (int ix = 0; ix < root->children.size(); ++ix) {
+            auto * child_node = root->children[ix];
+
+            if(child_node== nullptr)
+                continue;
+
+            auto child_winding = directions[child_node->index_poly]==direction::CW ? 1 : -1;
+            child_winding += root_accumulated_winding;
+
+            child_node->accumulated_winding += child_winding;
+
+            bool fill_root = root_accumulated_winding!=0;
+            bool fill_child = child_node->accumulated_winding!=0;
+
+            if(fill_root == fill_child) {
+                root->children[ix] = nullptr;
+
+                // insert candidate children, they will be processed at end of loop
+                for (index jx = 0; jx < child_node->children.size(); ++jx) {
+                    auto * grandson = child_node->children[jx];
+
+                    if(grandson) {
+                        grandson->accumulated_winding += child_node->accumulated_winding - root_accumulated_winding;
+                        root->children.push_back(grandson);
+                    }
+                }
+            } else {
+                tag_and_merge(child_node, directions);
+            }
+
+        }
+
+    }
+
     void compute_component_tree(chunker<vec2_f> & components,
                                 const vector<direction> &directions) {
 
-        node nodes[components.size()];
+        const index components_size = components.size();
+        node nodes[components_size];
         node root{};
 
-        for (unsigned long ix = 0; ix < components.size(); ++ix)
+        for (unsigned long ix = 0; ix < components_size; ++ix)
         {
             auto * current = &(nodes[ix]);
             current->index_poly = int(ix);
@@ -309,7 +349,24 @@ namespace tessellation {
                     directions);
 
         }
+        
+        // tag and compress
+        const index root_children_count = root.children.size();
+        for (unsigned long ix = 0; ix < root_children_count; ++ix)
+        {
+            auto * current = root.children[ix];
+            if(current== nullptr)
+                continue;
 
+            auto current_winding = directions[current->index_poly]==direction::CW ? 1 : -1;
+            current->accumulated_winding = current_winding;
+            // now start hustling
+            tag_and_merge(
+                    current,
+                    directions);
+
+        }
+        
         int a = 0;
     }
 
