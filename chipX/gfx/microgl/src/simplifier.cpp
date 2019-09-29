@@ -161,7 +161,7 @@ namespace tessellation {
         min_qv_distance = 0;
 
         for (int ix = 0; ix < size; ++ix) {
-            auto & q_candidate = poly[ix];
+            const auto & q_candidate = poly[ix];
 
             // avoid degenerate case
             if(v==q)

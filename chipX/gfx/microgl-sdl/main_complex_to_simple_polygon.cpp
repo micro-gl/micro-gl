@@ -89,11 +89,44 @@ chunker<vec2_f> poly_inter_1() {
     chunker<vec2_f> A;
 
     A.push_back_and_cut({
-            {100,100},
-            {400,400},
-            {100,400},
-            {400,100}
-    });
+                                {100,100},
+                                {400,400},
+                                {100,400},
+                                {400,100}
+                        });
+
+    return A;
+}
+
+chunker<vec2_f> poly_case_touches_1() {
+    chunker<vec2_f> A;
+
+    A.push_back_and_cut({
+                                {100,100},
+                                {100,400},
+                                {400,400},
+                                {400,100},
+                                {250,250}
+                        });
+
+    A.push_back_and_cut({
+                                {100,100},
+                                {250,250},
+                                {400,100},
+                        });
+
+    A.push_back_and_cut({
+                                {100,100},
+                                {100,400},
+                                {250,250},
+                        });
+
+    A.push_back_and_cut({
+                                {0,0},
+                                {500,0},
+                                {500,500},
+                                {0,500},
+                        });
 
     return A;
 }
@@ -319,7 +352,9 @@ void render() {
 //    render_polygon(poly_inter_deg());
 //
 //    render_polygon(poly_inter_star());
-    render_polygon(poly_inter_nested_3());
+//    render_polygon(poly_inter_nested_3());
+//    render_polygon(poly_inter_1());
+    render_polygon(poly_case_touches_1());
 
 //    render_polygon(poly_tri());
 }
