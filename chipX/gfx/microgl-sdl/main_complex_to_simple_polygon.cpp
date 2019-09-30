@@ -45,11 +45,19 @@ chunker<vec2_f> poly_degenerate_hole() {
             {100,300},
 
             {150,150},
-            {150,250},
-            {250,250},
-            {250,150},
+            {150,200},
+            {200,200},
 
+            {220,200},
+            {220,250},
+            {250,250},
+            {250,200},
+            {220,200},
+
+            {200,200},
+            {200,150},
             {150,150},
+
             {100,300},
 
     });
@@ -364,7 +372,7 @@ void render() {
 //    render_polygon<float>(poly_rect());
 //    render_polygon(poly_2());
 
-//    render_polygon(poly_degenerate_hole());
+    render_polygon(poly_degenerate_hole());
 
 //    render_polygon(poly_degenerate_multipepoints());
 
@@ -389,7 +397,7 @@ void render() {
 //    render_polygon(poly_inter_1());
 //    render_polygon(poly_case_touches_1());
 
-    render_polygon(poly_tag_merge_test());
+//    render_polygon(poly_tag_merge_test());
 
 //    render_polygon(poly_tri());
 }

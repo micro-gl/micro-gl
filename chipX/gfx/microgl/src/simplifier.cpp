@@ -158,7 +158,8 @@ namespace tessellation {
         vertex triangle[3] = {a, v, b};
 
         vertex q;
-        auto min_qv_distance = v.x - v.x; // i do it to implicitly infer the type
+        // i do it to implicitly infer the type
+        auto min_qv_distance = v.x - v.x;
 
         for (int ix = 0; ix < size; ++ix) {
             const auto & q_candidate = poly[ix];
@@ -167,9 +168,9 @@ namespace tessellation {
             if(v==q)
                 continue;
 
-            if(point_inside_convex_poly_interior(q, triangle, 3, CCW)) {
-                auto qv_distance = (q.x-v.x)*(q.x-v.x) +
-                        (q.y-v.y)*(q.x-v.y);
+            if(point_inside_convex_poly_interior(q_candidate, triangle, 3, CCW)) {
+                auto qv_distance = (q_candidate.x-v.x)*(q_candidate.x-v.x) +
+                        (q_candidate.y-v.y)*(q_candidate.x-v.y);
                 if(qv_distance < min_qv_distance) {
                     q = q_candidate;
                     min_qv_distance = qv_distance;
@@ -294,7 +295,8 @@ namespace tessellation {
                        const vector<direction> &directions) {
         int root_accumulated_winding = root->accumulated_winding;
 
-        // lets' go over the root's children
+        // lets' go over the root's children, this list may expend
+        // during the iteration, therefore we constantly query it.
         for (int ix = 0; ix < root->children.size(); ++ix) {
             auto * child_node = root->children[ix];
 
@@ -309,6 +311,9 @@ namespace tessellation {
             bool fill_root = root_accumulated_winding!=0;
             bool fill_child = child_node->accumulated_winding!=0;
 
+            // we merge nodes with similar fill status, we do it by disconnecting
+            // them from the root parent and adding their children to the root
+            // so they can also be processed soon
             if(fill_root == fill_child) {
                 root->children[ix] = nullptr;
 
@@ -317,6 +322,8 @@ namespace tessellation {
                     auto * grandson = child_node->children[jx];
 
                     if(grandson) {
+                        // we added a grandson which will be picked up soon later, so let's subtract
+                        // the root winding, since it will be added again when this node will be processed.
                         grandson->accumulated_winding += child_node->accumulated_winding - root_accumulated_winding;
                         root->children.push_back(grandson);
                     }
@@ -329,13 +336,74 @@ namespace tessellation {
 
     }
 
+    bool test_intersect(const vertex &a, const vertex &b,
+                        const vertex &c, const vertex &d) {
+        auto ab = b - a;
+        auto cd = d - c;
+        auto ca = a - c;
+
+        auto ab_cd = ab.x * cd.y - cd.x * ab.y;
+        auto s = (ab.x * ca.y - ab.y * ca.x);
+        auto t = (cd.x * ca.y - cd.y * ca.x);
+
+        bool test = s >= 0 && s <= ab_cd && t >= 0 && t <= ab_cd;
+
+        return test;
+    }
+
+    int find_mutually_visible_vertex_in_polygon(const vertex & main_vertex,
+                                                vertex * poly_2, int size_2) {
+
+        for (int ix = 0; ix < size_2; ++ix) {
+            vertex against = poly_2[ix];
+            bool fails = false;
+
+            for (int jx = 0; jx < size_2; ++jx) {
+                // (main_vertex, against)
+                if(test_intersect(main_vertex,
+                        against,
+                        poly_2[jx],
+                        poly_2[(jx+1)%size_2])) {
+                    fails = true;
+                    break;
+                }
+
+            }
+
+            if(!fails) {
+                return ix;
+            }
+
+        }
+
+        return -1;
+    }
+
+    void extract_components(node * root,
+                            chunker<vec2_f> & components,
+                            chunker<vec2_f> & result) {
+
+        for (int ix = 0; ix < root->children.size(); ++ix) {
+            auto * child_node = root->children[ix];
+
+            if(child_node== nullptr)
+                continue;
+
+
+
+        }
+
+    }
+
     void compute_component_tree(chunker<vec2_f> & components,
-                                const vector<direction> &directions) {
+                                const vector<direction> &directions,
+                                chunker<vec2_f> & result) {
 
         const index components_size = components.size();
         node nodes[components_size];
         node root{};
 
+        // build components inclusion tree
         for (unsigned long ix = 0; ix < components_size; ++ix)
         {
             auto * current = &(nodes[ix]);
@@ -350,8 +418,8 @@ namespace tessellation {
 
         }
         
-        // tag and compress
-        const index root_children_count = root.children.size();
+        // tag and compress similar
+        index root_children_count = root.children.size();
         for (unsigned long ix = 0; ix < root_children_count; ++ix)
         {
             auto * current = root.children[ix];
@@ -366,7 +434,24 @@ namespace tessellation {
                     directions);
 
         }
-        
+
+        // extract components with holes
+        root_children_count = root.children.size();
+        for (unsigned long ix = 0; ix < root_children_count; ++ix)
+        {
+            auto * current = root.children[ix];
+
+            if(current== nullptr)
+                continue;
+
+            // now start hustling
+            extract_components(
+                    current,
+                    components,
+                    result);
+
+        }
+
         int a = 0;
     }
 
@@ -374,16 +459,21 @@ namespace tessellation {
                              chunker<vec2_f> & result,
                              vector<int> &directions_comps) {
 
-        vector<direction> directions;
+        vector<direction> components_directions;
+        chunker<vec2_f> simplified_components;
 
         simplify_components::compute(
                 pieces,
-                result,
-                directions);
+                simplified_components,
+                components_directions);
 
         // experiment
-        compute_component_tree(result, directions);
+        compute_component_tree(
+                simplified_components,
+                components_directions,
+                result);
 
+        result = simplified_components;
         int a =0;
     }
 
