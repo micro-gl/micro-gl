@@ -2,9 +2,8 @@
 // Written by T. Hain. Extended by L. Subramaniam, Spring, 2003
 #pragma once
 
-#include <vector>
 #include <algorithm>
-#include <stack>
+#include <microgl/dynamic_array.h>
 #include <microgl/chunker.h>
 #include <microgl/vec2.h>
 using namespace std;
@@ -89,22 +88,22 @@ namespace tessellation {
         vertex *v;
         float param;
         int index;
-
+        edge_vertex()=default;
         edge_vertex (vertex *vtx, float p, int i);
         bool operator< (const edge_vertex &n) const;
     };
 
     struct edge
     {
-        vector<edge_vertex> vertices;
+        dynamic_array<edge_vertex> vertices;
         edge() = default;
         bool operator< (const edge &s) const;
     };
 
     // edge_list - list of polygon edges
-    using edge_list = vector<edge>;
+    using edge_list = dynamic_array<edge>;
     // master intersection list
-    using master_intersection_list = vector<intersection>;
+    using master_intersection_list = dynamic_array<intersection>;
 
     class simplify_components {
     public:
@@ -113,9 +112,9 @@ namespace tessellation {
         static
         void compute(chunker<vertex> & pieces,
                      chunker<vertex> & pieces_result,
-                     vector<direction> &directions) {
+                     dynamic_array<direction> &directions) {
             master_intersection_list master_list;
-            vector<vertex *> allocated_intersection;
+            dynamic_array<vertex *> allocated_intersection;
 
             // compute the intersection master list
             compute_master_list(pieces, master_list, allocated_intersection);
@@ -133,7 +132,7 @@ namespace tessellation {
         static
         void compute_master_list(chunker<vertex> & pieces,
                                  master_intersection_list &master_list,
-                                 vector<vertex *> &allocated_intersection) {
+                                 dynamic_array<vertex *> &allocated_intersection) {
             edge_list edges;
 
             // phase 1:: fill the edges structure and initial intersections
@@ -179,16 +178,15 @@ namespace tessellation {
         static
         void polygonPartition(chunker<vertex> &result,
                               master_intersection_list &master_list,
-                              vector<direction> &directions) {
+                              dynamic_array<direction> &directions) {
 
-            vector<int> stack;
+            dynamic_array<int> stack;
 
             do
             {
                 int current_index = 0;
                 bool found_direction = false;
                 direction current_direction;
-
                 // remove top intersections that have been
                 // completely visited or are dead ends
                 while (!stack.empty()) {
@@ -322,8 +320,8 @@ namespace tessellation {
         void fillAddress(edge_list &edges, master_intersection_list &master_list)
         {
             // sort the polygons edges and master list
-            sort (edges.begin(), edges.end());
-            sort(master_list.begin() , master_list.end());
+            sort(edges.data(), edges.data() + edges.size());
+            sort(master_list.data(), master_list.data() + master_list.size());
 
             // push real intersection into the polygon edges lists, for each edge push
             // it's intersecting vertex
@@ -402,15 +400,12 @@ namespace tessellation {
                 }
             }
 
-            // setting up the self-index of each interseciton object
-//            for (unsigned long ix = 0 ; ix < master_list.size() ; ix++)
-//                master_list[ix].selfIndex = int(ix);
         }
 
         static
         void findIntersections(chunker<vertex> & pieces,
                                master_intersection_list &master_list,
-                               vector<vertex *> &allocated_intersection)
+                               dynamic_array<vertex *> &allocated_intersection)
         {
             // phase 2:: find self intersections of each polygon
             for (unsigned long poly = 0; poly < pieces.size(); ++poly)
@@ -456,7 +451,7 @@ namespace tessellation {
 
             // finds the intersection points between every polygon edge
 
-            vector<segment> edges, edges1;
+            dynamic_array<segment> edges, edges1;
 
             for (unsigned long poly1 = 0; poly1 < pieces.size()-1; ++poly1) {
                 auto current_chunk1 = pieces[poly1];
@@ -474,7 +469,7 @@ namespace tessellation {
                     edges.push_back(edge);
                 }
 
-                sort(edges.begin(), edges.end());
+                sort(edges.data(), edges.data() + edges.size());
 
                 for (unsigned long poly2 = poly1+1; poly2 < pieces.size(); ++poly2) {
 
@@ -494,7 +489,7 @@ namespace tessellation {
                         edges1.push_back(edge);
                     }
 
-                    sort(edges1.begin(), edges1.end());
+                    sort(edges1.data(), edges1.data() + edges1.size());
 
                     unsigned nEdges = edges.size();
                     unsigned nEdges1 = edges1.size();

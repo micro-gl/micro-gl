@@ -7,6 +7,7 @@
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 #pragma once
 
+#include <microgl/color.h>
 #include <microgl/vec2.h>
 #include <microgl/vec3.h>
 #include "crpt.h"

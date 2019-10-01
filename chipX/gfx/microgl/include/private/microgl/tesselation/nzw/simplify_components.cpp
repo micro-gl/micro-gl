@@ -41,7 +41,7 @@ namespace tessellation {
     bool edge_vertex::operator<(const edge_vertex &n) const { return (param < n.param); }
 
     bool edge::operator<(const edge &s) const {
-        return compare_vertices(*(vertices.begin()->v), *(s.vertices.begin()->v));
+        return compare_vertices(*(vertices[0].v), *(s.vertices[0].v));
 //    return ( *(ilist.begin()->v) < *(s.ilist.begin()->v) );
     }
 

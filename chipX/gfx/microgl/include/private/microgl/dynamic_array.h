@@ -115,6 +115,14 @@ public:
         _current = 0;
     }
 
+    T& back() {
+        return _data[_current-1];
+    }
+
+    bool empty() {
+        return _current==0;
+    }
+
     index size() const override {
         return _current;
     }

@@ -5,11 +5,8 @@
 
 #include <microgl/vec2.h>
 #include <microgl/triangles.h>
-#include <microgl/linked_list.h>
-#include <microgl/array_container.h>
 #include <microgl/chunker.h>
 #include <microgl/tesselation/nzw/simplify_components.h>
-#include <stdexcept>
 
 namespace tessellation {
 
@@ -23,8 +20,7 @@ namespace tessellation {
         explicit simplifier(bool DEBUG = false) {};
 
         static void compute(chunker<vec2_f> & pieces,
-                            chunker<vec2_f> & result,
-                            vector<int> &winding
+                            chunker<vec2_f> & result
                             );
 
 //        static void compute(vec2_32i * $pts,

@@ -4,7 +4,7 @@ namespace tessellation {
 
     struct node {
         // may have missing null children, that were removed
-        std::vector<node *> children;
+        dynamic_array<node *> children;
         int index_poly = -1;
         int accumulated_winding = 0;
     };
@@ -120,8 +120,8 @@ namespace tessellation {
     }
 
     // the extremal left-bottom most vertex is always a convex vertex
-    int find_convex_vertex(vertex * poly,
-                           const int size) {
+    int find_left_bottom_most_vertex(vertex * poly,
+                                     const int size) {
         int index = 0;
         vertex value = poly[0];
 
@@ -148,8 +148,9 @@ namespace tessellation {
     vertex find_point_in_simple_polygon_interior(vertex * poly,
                                         const int size,
                                         bool CCW = true) {
-        int vi = find_convex_vertex(poly, size);
-        int ai = vi-1 < 0 ? size-1 : vi-1; 
+        // find a convex vertex
+        int vi = find_left_bottom_most_vertex(poly, size);
+        int ai = vi-1 < 0 ? size-1 : vi-1;
         int bi = vi+1 == size ? 0 : vi+1;
 
         vertex v = poly[vi];
@@ -218,7 +219,7 @@ namespace tessellation {
     void compute_component_tree_recurse(node * root,
                                         node * current,
                                         chunker<vec2_f> & components,
-                                        const vector<direction> &directions) {
+                                        const dynamic_array<direction> &directions) {
         int root_children_count = root->children.size();
         int compare;
 
@@ -292,7 +293,7 @@ namespace tessellation {
     }
 
     void tag_and_merge(node * root,
-                       const vector<direction> &directions) {
+                       const dynamic_array<direction> &directions) {
         int root_accumulated_winding = root->accumulated_winding;
 
         // lets' go over the root's children, this list may expend
@@ -396,7 +397,7 @@ namespace tessellation {
     }
 
     void compute_component_tree(chunker<vec2_f> & components,
-                                const vector<direction> &directions,
+                                const dynamic_array<direction> &directions,
                                 chunker<vec2_f> & result) {
 
         const index components_size = components.size();
@@ -417,7 +418,7 @@ namespace tessellation {
                     directions);
 
         }
-        
+
         // tag and compress similar
         index root_children_count = root.children.size();
         for (unsigned long ix = 0; ix < root_children_count; ++ix)
@@ -456,10 +457,9 @@ namespace tessellation {
     }
 
     void simplifier::compute(chunker<vec2_f> & pieces,
-                             chunker<vec2_f> & result,
-                             vector<int> &directions_comps) {
+                             chunker<vec2_f> & result) {
 
-        vector<direction> components_directions;
+        dynamic_array<direction> components_directions;
         chunker<vec2_f> simplified_components;
 
         simplify_components::compute(

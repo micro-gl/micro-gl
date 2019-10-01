@@ -166,8 +166,8 @@ Rational Rational::operator-(const Rational &val) const {
 }
 
 void Rational::throwIfDenomIsZero() const {
-    if(denominator==0)
-        throw std::invalid_argument( "denom==0" );
+//    if(denominator==0)
+//        throw std::invalid_argument( "denom==0" );
 }
 
 bool Rational::operator!=(const long &rhs) const {

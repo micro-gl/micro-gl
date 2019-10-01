@@ -3,13 +3,12 @@
 
 #include <iostream>
 #include <chrono>
-#include "src/Resources.h"
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/PixelCoder.h>
-#include <microgl/dynamic_array.h>
-#include <microgl/static_array.h>
+//#include <microgl/dynamic_array.h>
+//#include <microgl/static_array.h>
 #include <microgl/tesselation/simplifier.h>
 
 #define TEST_ITERATIONS 1
@@ -23,8 +22,6 @@ SDL_Texture * texture;
 typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
 
 Canvas24Bit_Packed32 * canvas;
-
-Resources resources{};
 
 void loop();
 void init_sdl(int width, int height);
@@ -84,6 +81,11 @@ chunker<vec2_f> poly_degenerate_multipepoints() {
             {300,300},
             {300,300},
 
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
             {100,300},
             {100,300},
             {100,300},
@@ -372,17 +374,17 @@ void render() {
 //    render_polygon<float>(poly_rect());
 //    render_polygon(poly_2());
 
-    render_polygon(poly_degenerate_hole());
+//    render_polygon(poly_degenerate_hole());
 
 //    render_polygon(poly_degenerate_multipepoints());
 
 //    render_polygon(poly_diamond());
 
 //    render_polygon(poly_inter_1());
-
+//
 //    render_polygon(poly_inter_weird_touch());
 
-//    render_polygon(poly_inter_nested_3());
+    render_polygon(poly_inter_nested_3());
 //    render_polygon(poly_inter_nested_disjoint());
 //    render_polygon(poly_inter_nested_2());
 
@@ -408,17 +410,19 @@ void render_polygon(chunker<T> pieces) {
     using index = unsigned int;
 
 //    polygon[3].y = 50 -  t;
+    Canvas<vec3<uint8_t>, RGB888_ARRAY> vv{400, 400, new RGB888_ARRAY()};
+    vv.clear(RED);
+    vv.drawQuad(RED, 0, 0, 100,100, 0,255);
 
     canvas->clear(WHITE);
 
-    tessellation::simplifier simplifier{true};
-    vector<int> directions;
-    chunker<vec2_f> result;
+//    tessellation::simplifier simplifier{true};
+    chunker<vec2_f> result = pieces;
 
-    simplifier.compute(
-            pieces,
-            result,
-            directions);
+//    tessellation::simplifier::compute(
+//            pieces,
+//            result);
+
 //    return;
 
     for (index ix = 0; ix < result.size(); ++ix) {
@@ -427,13 +431,15 @@ void render_polygon(chunker<T> pieces) {
 //                if(ix!=1)
 //                    continue;
 
-        canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
+//        canvas->drawQuad(RED, 0, 0, 100,100, 0,255);
+        canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
                 chunk.data,
                 chunk.size-1,
                 120,
                 polygons::hints::SIMPLE
-                );
+        );
 
+        canvas->drawQuad(*vv.bitmapCanvas(), 0, 0, 200, 200, 0.0f, 0.0f, 1.0, 1.0f, 255);
 //        if(false)
 //        canvas->drawLinePath(
 //        BLACK,
@@ -463,7 +469,6 @@ void init_sdl(int width, int height) {
 
     canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
 
-    resources.init();
 }
 
 int render_test(int N) {

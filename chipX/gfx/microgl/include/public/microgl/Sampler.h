@@ -49,7 +49,7 @@ namespace sampler {
 
         template<typename P, typename Coder>
         inline static void sample(const Bitmap<P, Coder> &bmp,
-                                  const fixed_signed u, const fixed_signed v,
+                                  const int u, const int v,
                                   const uint8_t bits, color_t & output) {
 
             int h = 0;//(1<<bits) - 1;

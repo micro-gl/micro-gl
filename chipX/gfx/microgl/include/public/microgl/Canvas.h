@@ -286,29 +286,29 @@ public:
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque>
     void drawQuad(const color_f_t &color,
-                  fixed_signed left, fixed_signed top,
-                  fixed_signed right, fixed_signed bottom,
-                  uint8_t sub_pixel_precision,
-                  uint8_t opacity = 255);
+                  int left, int top,
+                  int right, int bottom,
+                  precision sub_pixel_precision,
+                  opacity opacity = 255);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque>
     void drawQuad(const color_f_t &color,
                   float left, float top,
                   float right, float bottom,
-                  uint8_t opacity = 255);
+                  opacity opacity = 255);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             typename Sampler=sampler::NearestNeighbor,
             typename P2, typename CODER2>
     void drawQuad(const Bitmap<P2, CODER2> &bmp,
-                  fixed_signed left, fixed_signed top,
-                  fixed_signed right, fixed_signed bottom,
-                  fixed_signed u0, fixed_signed v0,
-                  fixed_signed u1, fixed_signed v1,
-                  uint8_t sub_pixel_precision, uint8_t uv_precision,
-                  uint8_t opacity = 255);
+                  int left, int top,
+                  int right, int bottom,
+                  int u0, int v0,
+                  int u1, int v1,
+                  precision sub_pixel_precision, precision uv_precision,
+                  opacity opacity = 255);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -319,7 +319,7 @@ public:
                   float right, float bottom,
                   float u0=0.0f, float v0=0.0f,
                   float u1=1.0f, float v1=1.0f,
-                  uint8_t opacity = 255);
+                  opacity opacity = 255);
 
     // polygons
 

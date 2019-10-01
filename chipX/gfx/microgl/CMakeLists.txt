@@ -10,9 +10,8 @@ set (CMAKE_CXX_STANDARD 11)
 
 message(${CMAKE_BUILD_TYPE})
 #use this - should warn on inline functions that were not inlined -Winline
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-fstrict-aliasing -O3 -Wstrict-aliasing")
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g")
+set(CMAKE_CXX_FLAGS_RELEASE "-fstrict-aliasing -Os -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics")
 
 set(sources
 #        src/FrameBuffer.tpp
