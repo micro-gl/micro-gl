@@ -72,6 +72,9 @@ namespace tessellation {
         bool areEqual(const EarClippingTriangulation::Node *a,
                       const EarClippingTriangulation::Node *b);
         bool _DEBUG = false;
+
+        static
+        bool isDegenrate(const Node *v, const LinkedList *list);
     };
 
 

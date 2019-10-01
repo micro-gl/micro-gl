@@ -59,7 +59,7 @@ namespace tessellation {
 //            for (index jx = 0; jx < size; ++jx) {
             for (index jx = 0; jx < pts.size(); ++jx) {
 
-                if (isConvex(point, &pts) && isEmpty(point, &pts)) {
+                if (isDegenrate(point, &pts) || (isConvex(point, &pts) && isEmpty(point, &pts))) {
 
                     indices.push_back(point->predecessor()->data.original_index);
                     indices.push_back(point->data.original_index);
@@ -155,6 +155,15 @@ namespace tessellation {
         }
 
         return maximal_index;
+    }
+
+    bool EarClippingTriangulation::isDegenrate(const EarClippingTriangulation::Node *v,
+                                            const EarClippingTriangulation::LinkedList *list) {
+        const Node * l = v->predecessor();
+        const Node * r = v->successor();
+
+        bool test  = sign_orientation_value(l, v, r)==0;
+        return test;
     }
 
     bool EarClippingTriangulation::isConvex(const EarClippingTriangulation::Node *v,
