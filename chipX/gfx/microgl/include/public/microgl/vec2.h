@@ -87,9 +87,9 @@ namespace microgl {
     };
 
     typedef vec2<float> vec2_f;
-    typedef vec2<uint8_t > vec2_8i;
-    typedef vec2<uint16_t > vec2_16i;
-    typedef vec2<uint32_t > vec2_32ui;
     typedef vec2<int32_t > vec2_32i;
+
+//    extern template class vec2<float>;
+//    extern template class vec2<int32_t>;
 
 }

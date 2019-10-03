@@ -1,7 +1,7 @@
 #pragma once
 
 #include <microgl/dynamic_array.h>
-//#include <microgl/static_array.h>
+#include <microgl/static_array.h>
 
 template<typename T>
 class chunker {
@@ -14,10 +14,10 @@ private:
     using array_container_ref = array_container<T> &;
     using const_array_container_ref = const array_container<T> &;
 
-    dynamic_array<T> _data;
-    dynamic_array<index> _locations;
-//    static_array<T, 256> _data;
-//    static_array<index, 256> _locations;
+//    dynamic_array<T> _data;
+//    dynamic_array<index> _locations;
+    static_array<T, 256> _data;
+    static_array<index, 256> _locations;
 
 //    C<T, Rest> _data{};
 //    C<index, Rest...> _locations{0};

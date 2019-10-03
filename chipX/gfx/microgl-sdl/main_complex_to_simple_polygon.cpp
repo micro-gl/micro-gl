@@ -302,7 +302,7 @@ chunker<vec2_f> poly_inter_weird_touch() {
             {100,350},
     });
 
-    return B;
+    return A;
 }
 
 
@@ -355,15 +355,52 @@ chunker<vec2_f> poly_inter_star() {
     chunker<vec2_f> A;
 
     A.push_back_and_cut({
-            {150, 150},
-            {450,150},
-            {200,450},
-            {300,50},
-            {400,450},
-    });
+                                {150, 150},
+                                {450,150},
+                                {200,450},
+                                {300,50},
+                                {400,450},
+                        });
 
     return A;
 }
+
+chunker<vec2_f> poly_double() {
+    chunker<vec2_f> A;
+
+    A.push_back_and_cut(box(0,0,200,200));
+    A.push_back_and_cut(box(100,0,300,200));
+
+//    A.push_back_and_cut(box(0,0,200,200));
+//    A.push_back_and_cut({
+//                                {0,200},
+//                                {200,0},
+//                                {300,0},
+//                                {300,300},
+//                                {0,300},
+//    });
+
+
+//    A.push_back_and_cut(box(50,50,300,300, true));
+
+//    A.push_back_and_cut(box(200,0,400,200));
+//    A.push_back_and_cut(box(50,50,400,250, true));
+
+//    A.push_back_and_cut({
+//                                {10, 10},
+//                                {400, 10},
+//                                {400, 500},
+//                                {300, 500},
+//                                {300, 10},
+//                                {500, 10},
+//                                {500, 500},
+//                                {10, 500},
+//    });
+
+    return A;
+}
+
+// todo:: directions of degenrate polygons is incorrect
 
 template <typename T>
 void render_polygon(chunker<T> pieces);
@@ -371,20 +408,16 @@ void render_polygon(chunker<T> pieces);
 void render() {
     t+=.05f;
 //    std::cout << t << std::endl;
-//    render_polygon<float>(poly_rect());
-//    render_polygon(poly_2());
 
 //    render_polygon(poly_degenerate_hole());
 
 //    render_polygon(poly_degenerate_multipepoints());
 
-//    render_polygon(poly_diamond());
-
 //    render_polygon(poly_inter_1());
 //
 //    render_polygon(poly_inter_weird_touch());
 
-    render_polygon(poly_inter_nested_3());
+//    render_polygon(poly_inter_nested_3());
 //    render_polygon(poly_inter_nested_disjoint());
 //    render_polygon(poly_inter_nested_2());
 
@@ -393,15 +426,15 @@ void render() {
 //    render_polygon(poly_inter_side());
 
 //    render_polygon(poly_inter_deg());
+//    render_polygon(poly_double());
 //
 //    render_polygon(poly_inter_star());
-//    render_polygon(poly_inter_nested_3());
+    render_polygon(poly_inter_nested_3());
 //    render_polygon(poly_inter_1());
 //    render_polygon(poly_case_touches_1());
 
 //    render_polygon(poly_tag_merge_test());
 
-//    render_polygon(poly_tri());
 }
 
 
@@ -409,26 +442,21 @@ template <typename T>
 void render_polygon(chunker<T> pieces) {
     using index = unsigned int;
 
-//    polygon[3].y = 50 -  t;
-    Canvas<vec3<uint8_t>, RGB888_ARRAY> vv{400, 400, new RGB888_ARRAY()};
-    vv.clear(RED);
-    vv.drawQuad(RED, 0, 0, 100,100, 0,255);
-
     canvas->clear(WHITE);
-
 //    tessellation::simplifier simplifier{true};
     chunker<vec2_f> result = pieces;
 
-//    tessellation::simplifier::compute(
-//            pieces,
-//            result);
+    tessellation::simplifier::compute(
+            pieces,
+            result);
 
 //    return;
 
     for (index ix = 0; ix < result.size(); ++ix) {
         auto chunk = result[ix];
+        std::cout << "chunk: " << chunk.size -1 << endl;
 
-//                if(ix!=1)
+//                if(ix!=0)
 //                    continue;
 
 //        canvas->drawQuad(RED, 0, 0, 100,100, 0,255);
@@ -439,7 +467,6 @@ void render_polygon(chunker<T> pieces) {
                 polygons::hints::SIMPLE
         );
 
-        canvas->drawQuad(*vv.bitmapCanvas(), 0, 0, 200, 200, 0.0f, 0.0f, 1.0, 1.0f, 255);
 //        if(false)
 //        canvas->drawLinePath(
 //        BLACK,
@@ -448,6 +475,12 @@ void render_polygon(chunker<T> pieces) {
 //        false);
 
     }
+
+    //    polygon[3].y = 50 -  t;
+//    Canvas<vec3<uint8_t>, RGB888_ARRAY> vv{400, 400, new RGB888_ARRAY()};
+//    vv.clear(RED);
+//    vv.drawQuad(RED, 0, 0, 100,100, 0,255);
+//    canvas->drawQuad(*vv.bitmapCanvas(), 0, 0, 200, 200, 0.0f, 0.0f, 1.0, 1.0f, 255);
 
 }
 

@@ -1,4 +1,5 @@
 #include <microgl/tesselation/simplifier.h>
+#include <vector>
 
 namespace tessellation {
 
@@ -7,6 +8,13 @@ namespace tessellation {
         dynamic_array<node *> children;
         int index_poly = -1;
         int accumulated_winding = 0;
+    };
+
+    struct node2 {
+        // may have missing null children, that were removed
+//        char index_poly;
+        vector<node *> children;
+//        int accumulated_winding = 0;
     };
 
     // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
@@ -380,6 +388,10 @@ namespace tessellation {
         return -1;
     }
 
+    void merge_hole() {
+
+    }
+
     void extract_components(node * root,
                             chunker<vec2_f> & components,
                             chunker<vec2_f> & result) {
@@ -399,6 +411,7 @@ namespace tessellation {
     void compute_component_tree(chunker<vec2_f> & components,
                                 const dynamic_array<direction> &directions,
                                 chunker<vec2_f> & result) {
+//        node2 **nddd = new node2 *[3]{nullptr, nullptr, nullptr};
 
         const index components_size = components.size();
         node nodes[components_size];

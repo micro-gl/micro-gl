@@ -77,7 +77,7 @@ namespace tessellation {
             // test for segment intersecting (alpha)
             if ((alpha < 0.0) || (alpha > 1.0))
                 return NO_INTERSECT;
-            else {
+            else {//if(false){
                 float num = ca.y * ab.x - ca.x * ab.y;
 
                 if (dem > 0.0) {
@@ -141,9 +141,9 @@ namespace tessellation {
             max_me = temp;
         }
 
-        if(max_me <= min_a)
+        if(max_me < min_a)
             return bbox_axis::start_of;
-        else if(min_me >= max_a)
+        else if(min_me > max_a)
             return bbox_axis::end_of;
         else
             return bbox_axis::overlaps;
