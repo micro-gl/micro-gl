@@ -46,6 +46,7 @@ namespace tessellation {
         vertex * end();
         vertex * start() const;
         vertex * end() const;
+        segment reverse();
 
         // Sets bounding box of line segment to (vertex0.x, ymin, vertex1.x, ymax)
         void sortVertices();
@@ -234,7 +235,7 @@ namespace tessellation {
                         current_index++;
                     else
                     {
-
+                        // starting a new edge, try to walk on it's natural order
                         if ((current_intersection->origin1() == current_intersection->v) &&
                             (current_intersection->index1 != -1))
                         {
@@ -323,12 +324,34 @@ namespace tessellation {
 
         }
 
+#define abs(a) ((a)<0 ? -(a) : (a))
+
+        static float raised_distance_to_segment(const vertex &p, const vertex &a, const vertex &b) {
+            auto area_double = abs((a.x - p.x)*(b.y - a.y) - (a.x - b.x) * (p.y - a.y));
+            auto raised_length = (a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y);
+            auto distance = (area_double*area_double)/raised_length;
+            return distance;
+        }
+
+        static int
+        classify_point(const vertex & point, const vertex &a, const vertex & b)
+        {
+            auto result = ((b.x - a.x) * (point.y - a.y)
+                       - (point.x - a.x) * (b.y - a.y) );
+
+            if(result > 0)
+                return 1;
+            else if(result < 0)
+                return -1;
+            else return 0;
+        }
+
         static
         void fillAddress(edge_list &edges, master_intersection_list &master_list)
         {
             // sort the polygons edges and master list
-            sort(edges.data(), edges.data() + edges.size());
-            sort(master_list.data(), master_list.data() + master_list.size());
+            stable_sort(edges.data(), edges.data() + edges.size());
+            stable_sort(master_list.data(), master_list.data() + master_list.size());
 
             // push real intersection into the polygon edges lists, for each edge push
             // it's intersecting vertex
@@ -380,10 +403,72 @@ namespace tessellation {
 
             }
 
+            struct compare_edge_vertex {
+                master_intersection_list * master = nullptr;
+                edge_vertex * edge_start = nullptr;
+                edge_vertex * edge_end = nullptr;
+                bool operator()(const edge_vertex &a, const edge_vertex &b) const
+                {
+                    if(a.param < b.param)
+                        return true;
+                    else if(a.param > b.param)
+                        return false;
+
+                    // equality, this is the real deal
+
+                    auto & inter_a = (*master)[a.index];
+                    auto & inter_b = (*master)[b.index];
+
+                    auto seg_a = inter_a.origin1()==edge_start->v ? inter_a.l2 : inter_a.l1;
+                    auto seg_b = inter_b.origin1()==edge_start->v ? inter_b.l2 : inter_b.l1;
+
+                    // reorient the segments
+                    if(*seg_a.end()==*inter_a.v)
+                        seg_a = seg_a.reverse();
+                    if(*seg_b.end()==*inter_b.v)
+                        seg_b = seg_b.reverse();
+
+                    vertex main_edge_vec = *edge_end->v - *edge_start->v;
+
+                    int class_a = classify_point(*seg_a.end(), *edge_start->v, *edge_end->v);
+                    int class_b = classify_point(*seg_b.end(), *edge_start->v, *edge_end->v);
+                    bool is_a_left_on = class_a>=0;
+                    bool is_b_left_on = class_b>=0;
+
+                    // if they span different sides, we don't care BUT give left priority so we can be a true partial order
+                    if(class_a!=class_b) {
+                        return is_a_left_on;
+                    }
+
+                    // both are on the same side
+                    // classify a with respect to b segment
+                    auto ab_sign = classify_point(*seg_a.end(), *seg_b.start(), *seg_b.end());
+
+                    if(is_a_left_on && ab_sign>=0)
+                        return true;
+                    if(!is_a_left_on && ab_sign<0)
+                        return true;
+
+                    return false;
+//                    auto theta_a = main_edge_vec*(*seg_a.end());
+
+//                    auto b_sign = classify_point(*seg_b.end(), *seg_a.start(), *seg_a.end());
+//                    auto s_sign = classify_point(*edge_start->v, *seg_a.start(), *seg_a.end());
+//                    bool strict_between = b_sign * s_sign < 0;
+
+                }
+            };
+
+            compare_edge_vertex cmp;
+            cmp.master = &master_list;
+
             // sort ONLY the intersections of the poly edge array
             for (unsigned long ix = 0; ix < edges.size(); ix++) {
                 auto & edge_vertices = edges[ix].vertices;
-                sort(edge_vertices.data(), edge_vertices.data() + edge_vertices.size());
+
+                cmp.edge_start = &edge_vertices[0];
+                cmp.edge_end = &edge_vertices[edge_vertices.size()-1];
+                stable_sort(edge_vertices.data(), edge_vertices.data() + edge_vertices.size(), cmp);
             }
 
             // setting up the indices for the intersections in the master_list,

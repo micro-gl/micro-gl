@@ -25,10 +25,10 @@ namespace tessellation {
     //            =0 for P2  on the line
     //            <0 for P2  right of the line
     //    See: Algorithm 1 "Area of Triangles and Polygons"
-    inline int
+    inline float
     classify_point(const vertex & point, const vertex &a, const vertex & b)
     {
-        return int((b.x - a.x) * (point.y - a.y)
+        return float((b.x - a.x) * (point.y - a.y)
                    - (point.x - a.x) * (b.y - a.y) );
     }
 

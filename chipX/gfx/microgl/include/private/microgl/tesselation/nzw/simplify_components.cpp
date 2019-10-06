@@ -178,4 +178,8 @@ namespace tessellation {
         return !m_swappedVertices ? vertex1 : vertex0;
     }
 
+    segment segment::reverse() {
+        return {end(), start()};
+    }
+
 }
