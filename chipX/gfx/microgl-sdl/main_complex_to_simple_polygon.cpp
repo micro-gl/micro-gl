@@ -369,20 +369,21 @@ chunker<vec2_f> poly_double() {
     chunker<vec2_f> A;
 
     A.push_back_and_cut(box(0,0,300,300));
-//    A.push_back_and_cut({
-//                                {320,250},
-//                                {150,150},
-//                                {200,150},
-//                        });
     A.push_back_and_cut({
-                                {100,300},
-                                {200,150},
-                                {150,150},
+                                {100,0},
+                                {300-10,10},
+                                {300-10,100},
                         });
 
+//    A.push_back_and_cut({
+//                                {300,300},
+//                                {200,150},
+//                                {150,150},
+//                        });
+//
 
 //    A.push_back_and_cut(box(100,0,300,200));
-//    A.push_back_and_cut(box(100,0,400,300));
+//    A.push_back_and_cut(box(200,0,400,200));
 
     return A;
 }
@@ -441,8 +442,8 @@ void render_polygon(chunker<T> pieces) {
         auto chunk = result[ix];
         std::cout << "chunk: " << chunk.size -1 << endl;
 
-                if(ix!=0)
-                    continue;
+//                if(ix!=0)
+//                    continue;
 
 //        canvas->drawQuad(RED, 0, 0, 100,100, 0,255);
         canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(

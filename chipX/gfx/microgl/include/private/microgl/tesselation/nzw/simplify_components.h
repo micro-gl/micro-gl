@@ -158,8 +158,11 @@ namespace tessellation {
                     l1.sortVertices();
                     l2.sortVertices();
 
-                    edge_vertex i1(current, -2, -1);
-                    edge_vertex i2(next, 2.0, -1);
+                    edge_vertex i1(current, 0.0, -1);
+                    edge_vertex i2(next, 1.0, -1);
+
+//                    edge_vertex i1(current, -2, -1);
+//                    edge_vertex i2(next, 2.0, -1);
                     // report vertex as a vertex intersection in the master list
                     master_list.push_back(intersection(current, 1, 0, l1, l2 ));
                     // first element is the edge vertex
@@ -339,9 +342,10 @@ namespace tessellation {
             auto result = ((b.x - a.x) * (point.y - a.y)
                        - (point.x - a.x) * (b.y - a.y) );
 
-            if(result > 0)
+            // since on inverted axis
+            if(result < 0)
                 return 1;
-            else if(result < 0)
+            else if(result > 0)
                 return -1;
             else return 0;
         }
@@ -443,6 +447,7 @@ namespace tessellation {
                     // both are on the same side
                     // classify a with respect to b segment
                     auto ab_sign = classify_point(*seg_a.end(), *seg_b.start(), *seg_b.end());
+                    auto ab_sign2 = classify_point({0,5}, {0,0}, {1,0});
 
                     if(is_a_left_on && ab_sign>=0)
                         return true;
@@ -450,11 +455,6 @@ namespace tessellation {
                         return true;
 
                     return false;
-//                    auto theta_a = main_edge_vec*(*seg_a.end());
-
-//                    auto b_sign = classify_point(*seg_b.end(), *seg_a.start(), *seg_a.end());
-//                    auto s_sign = classify_point(*edge_start->v, *seg_a.start(), *seg_a.end());
-//                    bool strict_between = b_sign * s_sign < 0;
 
                 }
             };

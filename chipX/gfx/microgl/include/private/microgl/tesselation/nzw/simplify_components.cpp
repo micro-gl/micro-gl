@@ -77,7 +77,7 @@ namespace tessellation {
             // test for segment intersecting (alpha)
             if ((alpha < 0.0) || (alpha > 1.0))
                 return NO_INTERSECT;
-            else {//if(false){
+            else if(false){
                 float num = ca.y * ab.x - ca.x * ab.y;
 
                 if (dem > 0.0) {
