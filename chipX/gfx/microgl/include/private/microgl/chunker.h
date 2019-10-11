@@ -16,8 +16,8 @@ private:
 
 //    dynamic_array<T> _data;
 //    dynamic_array<index> _locations;
-    static_array<T, 256> _data;
-    static_array<index, 256> _locations;
+    static_array<T, 512> _data;
+    static_array<index, 512> _locations;
 
 //    C<T, Rest> _data{};
 //    C<index, Rest...> _locations{0};

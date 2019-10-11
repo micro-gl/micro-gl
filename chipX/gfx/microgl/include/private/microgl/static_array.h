@@ -22,7 +22,7 @@ public:
 
     static_array & operator=(const static_array&container) {
         this->clear();
-        for(auto ix = 0; ix < container.size(); ix++)
+        for(index ix = 0; ix < container.size(); ix++)
             this->push_back(container[ix]);
 
         return (*this);
@@ -55,7 +55,7 @@ public:
     }
 
     void push_back(const array_container<T> & container) override {
-        for (int ix = 0; ix < container.size(); ++ix) {
+        for (index ix = 0; ix < container.size(); ++ix) {
             this->push_back(container[ix]);
         }
     }

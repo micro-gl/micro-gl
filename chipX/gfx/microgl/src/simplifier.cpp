@@ -1,5 +1,4 @@
 #include <microgl/tesselation/simplifier.h>
-#include <vector>
 
 namespace tessellation {
 
@@ -10,13 +9,6 @@ namespace tessellation {
         int accumulated_winding = 0;
     };
 
-    struct node2 {
-        // may have missing null children, that were removed
-//        char index_poly;
-        vector<node *> children;
-//        int accumulated_winding = 0;
-    };
-
     // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
     // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
 
@@ -25,11 +17,17 @@ namespace tessellation {
     //            =0 for P2  on the line
     //            <0 for P2  right of the line
     //    See: Algorithm 1 "Area of Triangles and Polygons"
-    inline float
+    inline int
     classify_point(const vertex & point, const vertex &a, const vertex & b)
     {
-        return float((b.x - a.x) * (point.y - a.y)
+        auto result = ((b.x - a.x) * (point.y - a.y)
                    - (point.x - a.x) * (b.y - a.y) );
+
+        if(result <0)
+            return 1;
+        else if(result > 0)
+            return -1;
+        else return 0;
     }
 
     inline int
@@ -44,7 +42,7 @@ namespace tessellation {
                                    const int size)
     {
         // the  winding number counter
-        int    wn = 0;
+        int wn = 0;
 
         // loop through all edges of the polygon
         // edge from V[i] to  V[i+1]
@@ -152,14 +150,56 @@ namespace tessellation {
         return index;
     }
 
+
+    int find_next_unique_vertex(const int idx,
+                                  vertex * poly,
+                                  const int size) {
+        const vertex &point = poly[idx];
+        auto follow_idx = idx;
+        while(true) {
+            if(++follow_idx==size-1)
+                follow_idx=0;
+
+            // completed a cycle and haven't found
+            if(follow_idx==idx)
+                return -1;
+            const vertex & follow_vertex = poly[follow_idx];
+            if(point.x!=follow_vertex.x || point.y!=follow_vertex.y)
+                return follow_idx;
+        }
+    }
+
+    direction compute_polygon_direction(vertex * poly,
+                                        const int size) {
+        // find a convex vertex
+        int vi = find_left_bottom_most_vertex(poly, size);
+        // this should always be unique unless the entire poly is a single vertex
+        int ai = vi-1 < 0 ? size-1 : vi-1;
+        // avoid degenerate cases
+        int bi = find_next_unique_vertex(vi, poly, size);
+        // poly is one point
+        if(bi==-1)
+            return direction::unknown;
+
+        int classify = classify_point(poly[bi], poly[ai], poly[vi]);
+
+        return classify < 0 ? direction::cw : direction::ccw;
+    }
+
     // find a point via the diagonal method, a linear time algorithm
     vertex find_point_in_simple_polygon_interior(vertex * poly,
                                         const int size,
                                         bool CCW = true) {
         // find a convex vertex
         int vi = find_left_bottom_most_vertex(poly, size);
+        // this should always be unique unless the entire poly is a single vertex
         int ai = vi-1 < 0 ? size-1 : vi-1;
-        int bi = vi+1 == size ? 0 : vi+1;
+//        int bi = vi+1 == size ? 0 : vi+1;
+        // avoid degenerate cases
+        int bi = find_next_unique_vertex(vi, poly, size);
+        // poly is one point
+        if(bi==-1)
+            return poly[vi];
 
         vertex v = poly[vi];
         vertex a = poly[ai];
@@ -167,8 +207,9 @@ namespace tessellation {
         vertex triangle[3] = {a, v, b};
 
         vertex q;
-        // i do it to implicitly infer the type
-        auto min_qv_distance = v.x - v.x;
+        // pick a distance
+        auto min_qv_distance = (a.x - v.x)*(a.x - v.x) + (a.y - v.y)*(a.y - v.y);
+        bool found_candidate = false;
 
         for (int ix = 0; ix < size; ++ix) {
             const auto & q_candidate = poly[ix];
@@ -181,6 +222,7 @@ namespace tessellation {
                 auto qv_distance = (q_candidate.x-v.x)*(q_candidate.x-v.x) +
                         (q_candidate.y-v.y)*(q_candidate.x-v.y);
                 if(qv_distance < min_qv_distance) {
+                    found_candidate = true;
                     q = q_candidate;
                     min_qv_distance = qv_distance;
                 }
@@ -189,7 +231,8 @@ namespace tessellation {
 
         }
 
-        if(min_qv_distance==0)
+        // if candidate not found, take halfway the diagonal
+        if(!found_candidate)
             return (a+b)/2;
 
         return (q+v)/2;
@@ -205,8 +248,8 @@ namespace tessellation {
      * -1=poly 2 inside poly 1
      * 0=poly 1 and poly 2 are disjoint/separable
      */
-    int compare_simple_non_intersecting_polygons(vertex * poly_1, int size_1, bool poly_1_CCW,
-                                                 vertex * poly_2, int size_2, bool poly_2_CCW) {
+    int compare_simple_non_intersecting_polygons(vertex * poly_1, index size_1, bool poly_1_CCW,
+                                                 vertex * poly_2, index size_2, bool poly_2_CCW) {
 
         vertex sample = find_point_in_simple_polygon_interior(poly_1, size_1, poly_1_CCW);
 
@@ -239,10 +282,10 @@ namespace tessellation {
             compare = compare_simple_non_intersecting_polygons(
                     poly_current.data,
                     poly_current.size - 1,
-                    directions[current->index_poly]==direction::CCW,
+                    directions[current->index_poly]==direction::ccw,
                     poly_root.data,
-                    poly_root.size-1,
-                    directions[root->index_poly]==direction::CCW);
+                    poly_root.size - 1,
+                    directions[root->index_poly]==direction::ccw);
 
             // compare against the root polygon
 
@@ -275,10 +318,10 @@ namespace tessellation {
             compare = compare_simple_non_intersecting_polygons(
                     poly_current.data,
                     poly_current.size-1,
-                    directions[current->index_poly]==direction::CCW,
+                    directions[current->index_poly]==direction::ccw,
                     child_poly.data,
                     child_poly.size-1,
-                    directions[child_poly_index]==direction::CCW);
+                    directions[child_poly_index]==direction::ccw);
 
             switch (compare) {
                 case 1: // current inside the child, bubble it down, and exit
@@ -306,13 +349,13 @@ namespace tessellation {
 
         // lets' go over the root's children, this list may expend
         // during the iteration, therefore we constantly query it.
-        for (int ix = 0; ix < root->children.size(); ++ix) {
+        for (index ix = 0; ix < root->children.size(); ++ix) {
             auto * child_node = root->children[ix];
 
             if(child_node== nullptr)
                 continue;
 
-            auto child_winding = directions[child_node->index_poly]==direction::CW ? 1 : -1;
+            auto child_winding = directions[child_node->index_poly]==direction::cw ? 1 : -1;
             child_winding += root_accumulated_winding;
 
             child_node->accumulated_winding += child_winding;
@@ -333,7 +376,8 @@ namespace tessellation {
                     if(grandson) {
                         // we added a grandson which will be picked up soon later, so let's subtract
                         // the root winding, since it will be added again when this node will be processed.
-                        grandson->accumulated_winding += child_node->accumulated_winding - root_accumulated_winding;
+                        grandson->accumulated_winding += child_node->accumulated_winding
+                                                - root_accumulated_winding;
                         root->children.push_back(grandson);
                     }
                 }
@@ -396,7 +440,7 @@ namespace tessellation {
                             chunker<vec2_f> & components,
                             chunker<vec2_f> & result) {
 
-        for (int ix = 0; ix < root->children.size(); ++ix) {
+        for (index ix = 0; ix < root->children.size(); ++ix) {
             auto * child_node = root->children[ix];
 
             if(child_node== nullptr)
@@ -411,8 +455,6 @@ namespace tessellation {
     void compute_component_tree(chunker<vec2_f> & components,
                                 const dynamic_array<direction> &directions,
                                 chunker<vec2_f> & result) {
-//        node2 **nddd = new node2 *[3]{nullptr, nullptr, nullptr};
-
         const index components_size = components.size();
         node nodes[components_size];
         node root{};
@@ -440,7 +482,7 @@ namespace tessellation {
             if(current== nullptr)
                 continue;
 
-            auto current_winding = directions[current->index_poly]==direction::CW ? 1 : -1;
+            auto current_winding = directions[current->index_poly]==direction::cw ? 1 : -1;
             current->accumulated_winding = current_winding;
             // now start hustling
             tag_and_merge(
@@ -469,6 +511,18 @@ namespace tessellation {
         int a = 0;
     }
 
+    void compute_directions(chunker<vec2_f> & components,
+                            dynamic_array<direction> &directions) {
+        const auto count = components.size();
+        for (index ix = 0; ix < count; ++ix) {
+            auto comp = components[ix];
+            auto direction = compute_polygon_direction(comp.data, comp.size);
+            directions.push_back(direction);
+        }
+
+    }
+
+
     void simplifier::compute(chunker<vec2_f> & pieces,
                              chunker<vec2_f> & result) {
 
@@ -479,6 +533,8 @@ namespace tessellation {
                 pieces,
                 simplified_components,
                 components_directions);
+
+        compute_directions(simplified_components, components_directions);
 
         // experiment
         compute_component_tree(

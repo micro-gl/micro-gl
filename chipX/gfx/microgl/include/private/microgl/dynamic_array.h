@@ -42,7 +42,7 @@ public:
 
     dynamic_array<T> & operator=(const dynamic_array<T> &container) {
         this->clear();
-        for(auto ix = 0; ix < container.size(); ix++)
+        for(index ix = 0; ix < container.size(); ix++)
             this->push_back(container[ix]);
 
         return (*this);

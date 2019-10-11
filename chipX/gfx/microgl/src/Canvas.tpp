@@ -623,8 +623,8 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
                                               const index *indices,
                                               const index size,
                                               const TrianglesIndices type,
-                                              const uint8_t opacity,
-                                              const uint8_t sub_pixel_precision) {
+                                              const opacity opacity,
+                                              const precision sub_pixel_precision) {
 
 #define IND(a) indices[(a)]
 
@@ -2425,8 +2425,8 @@ void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
 
     TrianglesIndices type;
     // currently static on the stack
-    static_array<index, 128> indices;
-    static_array<boundary_info , 128> boundary_buffer;
+    static_array<index, 256> indices;
+    static_array<boundary_info , 256> boundary_buffer;
 
     switch (hint) {
 

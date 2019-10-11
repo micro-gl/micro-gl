@@ -12,7 +12,7 @@ namespace tessellation {
     using vertex = microgl::vec2_f;
 
     enum class direction {
-        CW, CCW
+        cw, ccw, unknown
     };
 
     struct segment
@@ -132,12 +132,41 @@ namespace tessellation {
         }
 
     private:
+        static void next_perturbation(vertex &point) {
+            static int ix = 0;
+            static const float pert = 1.0/256.0;
+            static vertex vec_1{pert, 0};
+            static vertex vec_2{0, 0};
+            static vertex vec_3{pert, 0};
+
+            if(ix==256) {
+                vec_3.x = 0;
+                vec_3.y = 0;
+            }
+
+            vec_3.x += pert;
+            vec_3.y += pert;
+
+            point.x += vec_3.x;
+            point.y += vec_3.y;
+            ix++;
+        }
+
         static
         void compute_master_list(chunker<vertex> & pieces,
                                  master_intersection_list &master_list,
                                  dynamic_array<vertex *> &allocated_intersection) {
             edge_list edges;
 
+            for (unsigned long poly = 0; poly < pieces.size(); ++poly) {
+                auto current_chunk = pieces[poly];
+                auto *current_list = current_chunk.data;
+                const auto size = current_chunk.size;
+
+                for (unsigned long ix = 0; ix < size; ++ix) {
+                    next_perturbation(current_list[ix]);
+                }
+            }
             // phase 1:: fill the edges structure and initial intersections
             // in the master list
             for (unsigned long poly = 0; poly < pieces.size(); ++poly) {
@@ -164,13 +193,13 @@ namespace tessellation {
 //                    edge_vertex i1(current, -2, -1);
 //                    edge_vertex i2(next, 2.0, -1);
                     // report vertex as a vertex intersection in the master list
-                    master_list.push_back(intersection(current, 1, 0, l1, l2 ));
+                    master_list.push_back(intersection(current, 2.0, -1.0, l1, l2 ));
                     // first element is the edge vertex
                     edge.vertices.push_back(i1);
                     // last vertex of the edge
                     edge.vertices.push_back(i2);
 
-                    edges.push_back( edge );
+//                    edges.push_back( edge );
                 }
             }
 
@@ -274,12 +303,13 @@ namespace tessellation {
                         continue;
 //                    if (current_index >= master_list.size() - 1)
 //                        break;
-
+//
                     current_intersection = &master_list[current_index];
 
                     result.push_back(*current_intersection->v);
                     stack.push_back(current_index);
 
+                    /*
                     // this part is only for resolving directions
                     // this part of code relies on the fact that the
                     // vertices are sorted to infer the left-most vertex etc..
@@ -317,10 +347,11 @@ namespace tessellation {
                         found_direction = true;
 
                     }
+                    */
 
                 } while ((current_index != startIndex) && (current_index != -1)) ;
 
-                directions.push_back(current_direction);
+                //directions.push_back(current_direction);
                 result.cut_chunk();
 
             } while (true);
@@ -354,7 +385,7 @@ namespace tessellation {
         void fillAddress(edge_list &edges, master_intersection_list &master_list)
         {
             // sort the polygons edges and master list
-            stable_sort(edges.data(), edges.data() + edges.size());
+//            stable_sort(edges.data(), edges.data() + edges.size());
             stable_sort(master_list.data(), master_list.data() + master_list.size());
 
             // push real intersection into the polygon edges lists, for each edge push
@@ -363,26 +394,67 @@ namespace tessellation {
                 auto & intersection = master_list[ix];
 
                 // todo:: break it into more cases to support point on an edge
-                if (!intersection.isPolygonVertex()) {
-//                if ((intersection.param1 != 0 ) && (intersection.param2 != 0 )) {
-                    int i11 = 0, i21 = 0;
-                    vertex *searchVertex1 = intersection.origin1();
-                    vertex *searchVertex2 = intersection.origin2();
+//                if (!intersection.isPolygonVertex()) {
+//                    int i11 = 0, i21 = 0;
+                    vertex *origin1 = intersection.origin1();
+                    vertex *origin2 = intersection.origin2();
 
                     // zero index is always a concrete polygon vertex ,
                     // but always concrete part of the polygon, thus can be identified with
                     // unique id
-                    while (edges[i11].vertices[0].v != searchVertex1)
+                edge_vertex Inter1(intersection.v, intersection.param1, int(ix));
+                edge_vertex Inter2(intersection.v, intersection.param2, int(ix));
+
+                bool found_1 = false, found_2 = false;
+                for (index jx = 0; jx < edges.size(); ++jx) {
+                    if(edges[jx].vertices[0].v == origin1){
+                        found_1 = true;
+                        if(origin1 != Inter1.v)
+                            edges[jx].vertices.push_back(Inter1);
+                        else
+                            edges[jx].vertices[0] = Inter1;
+
+                        break;
+                    }
+                }
+
+                if(!found_1) {
+                    edge new_edge;
+                    if(origin1 != Inter1.v)
+                        new_edge.vertices.push_back(edge_vertex(origin1, -2.0, -1));
+                    new_edge.vertices.push_back(Inter1);
+                    edges.push_back(new_edge);
+                }
+
+                for (index jx = 0; jx < edges.size(); ++jx) {
+                    if(edges[jx].vertices[0].v == origin2){
+                        found_2 = true;
+                        if(origin2 != Inter2.v)
+                            edges[jx].vertices.push_back(Inter2);
+                        else
+                            edges[jx].vertices[0] = Inter2;
+
+                        break;
+                    }
+                }
+
+                if(!found_2) {
+                    edge new_edge;
+                    if(origin2 != Inter2.v)
+                        new_edge.vertices.push_back(edge_vertex(origin2, -2.0, -1));
+                    new_edge.vertices.push_back(Inter2);
+                    edges.push_back(new_edge);
+                }
+
+/*
+0
+                while (edges[i11].vertices[0].v != origin1)
                         i11++;
-                    while (edges[i21].vertices[0].v != searchVertex2)
+                    while (edges[i21].vertices[0].v != origin2)
                         i21++;
 
-                    edge_vertex Inter1(intersection.v, intersection.param1, int(ix));
-                    edge_vertex Inter2(intersection.v, intersection.param2, int(ix));
 
-//                    if(Inter1.param!=0 && Inter1.param!=1)
                         edges[i11].vertices.push_back(Inter1);
-//                    if(Inter2.param!=0 && Inter2.param!=1)
                         edges[i21].vertices.push_back(Inter2);
                 }
                 else {
@@ -404,7 +476,7 @@ namespace tessellation {
 
                     edges[vertexIndex].vertices[1].index = int(ix);
                 }
-
+*/
             }
 
             struct compare_edge_vertex {
@@ -613,8 +685,8 @@ namespace tessellation {
                             }
 
                             // see if any of the segments have a mutual endpoint
-//                            if (edge_1.has_mutual_endpoint(edge_0))
-//                                continue;
+                            if (edge_1.has_mutual_endpoint(edge_0))
+                                continue;
 
                             vertex intersection_v;
                             float param1, param2;
@@ -624,20 +696,9 @@ namespace tessellation {
                                 != segment::INTERSECT)
                                 continue;
 
-                            vertex *found_intersection;// = new vertex(intersection_v);
+                            auto *found_intersection = new vertex(intersection_v);
 
-//                            if(intersection_v==*edge_0.start())
-//                                found_intersection = edge_0.start();
-//                            else if(intersection_v==*edge_0.end())
-//                                found_intersection = edge_0.end();
-//                            else if(intersection_v==*edge_1.start())
-//                                found_intersection = edge_1.start();
-//                            else if(intersection_v==*edge_1.end())
-//                                found_intersection = edge_1.end();
-//                            else  {
-                                found_intersection = new vertex(intersection_v);
-                                allocated_intersection.push_back(found_intersection);
-//                            }
+                            allocated_intersection.push_back(found_intersection);
 
                             master_list.push_back(intersection(found_intersection,
                                                                param1, param2,

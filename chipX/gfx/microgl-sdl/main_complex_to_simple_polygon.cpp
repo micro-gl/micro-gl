@@ -62,9 +62,28 @@ chunker<vec2_f> poly_degenerate_hole() {
     return A;
 }
 
+
+dynamic_array<vec2_f> box(float left, float top, float right, float bottom, bool ccw=false) {
+    if(!ccw)
+        return {
+                {left,top},
+                {right,top},
+                {right,bottom},
+                {left,bottom},
+        };
+
+    return{
+            {left,top},
+            {left,bottom},
+            {right,bottom},
+            {right,top},
+    };
+};
+
 chunker<vec2_f> poly_degenerate_multipepoints() {
     chunker<vec2_f> A;
 
+//    /*
     A.push_back_and_cut({
             {100,100},
             {100,100},
@@ -75,12 +94,75 @@ chunker<vec2_f> poly_degenerate_multipepoints() {
             {300,100},
             {300,100},
             {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
+            {300,100},
 
             {300,300},
             {300,300},
             {300,300},
             {300,300},
 
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
+            {100,300},
             {100,300},
             {100,300},
             {100,300},
@@ -91,6 +173,8 @@ chunker<vec2_f> poly_degenerate_multipepoints() {
             {100,300},
             {100,300},
     });
+//     */
+
 
     return A;
 }
@@ -140,23 +224,6 @@ chunker<vec2_f> poly_case_touches_1() {
 
     return A;
 }
-
-dynamic_array<vec2_f> box(float left, float top, float right, float bottom, bool ccw=false) {
-    if(!ccw)
-        return {
-                {left,top},
-                {right,top},
-                {right,bottom},
-                {left,bottom},
-        };
-
-    return{
-        {left,top},
-        {left,bottom},
-        {right,bottom},
-        {right,top},
-    };
-};
 
 chunker<vec2_f> poly_tag_merge_test() {
     chunker<vec2_f> A;
@@ -368,12 +435,12 @@ chunker<vec2_f> poly_inter_star() {
 chunker<vec2_f> poly_double() {
     chunker<vec2_f> A;
 
-    A.push_back_and_cut(box(0,0,300,300));
-    A.push_back_and_cut({
-                                {100,0},
-                                {300-10,10},
-                                {300-10,100},
-                        });
+//    A.push_back_and_cut(box(0,0,300,300));
+//    A.push_back_and_cut({
+//                                {50,0},
+//                                {300,0},
+//                                {300,300},
+//                        });
 
 //    A.push_back_and_cut({
 //                                {300,300},
@@ -382,8 +449,8 @@ chunker<vec2_f> poly_double() {
 //                        });
 //
 
-//    A.push_back_and_cut(box(100,0,300,200));
-//    A.push_back_and_cut(box(200,0,400,200));
+    A.push_back_and_cut(box(100,0,300,200));
+    A.push_back_and_cut(box(200,0,400,200));
 
     return A;
 }
@@ -398,7 +465,7 @@ void render() {
 //    std::cout << t << std::endl;
 
 //    render_polygon(poly_degenerate_hole());
-
+//
 //    render_polygon(poly_degenerate_multipepoints());
 
 //    render_polygon(poly_inter_1());
@@ -414,11 +481,12 @@ void render() {
 //    render_polygon(poly_inter_side());
 
 //    render_polygon(poly_inter_deg());
-    render_polygon(poly_double());
+
+//    render_polygon(poly_double());
 //
 //    render_polygon(poly_inter_star());
 //    render_polygon(poly_inter_nested_3());
-//    render_polygon(poly_inter_1());
+    render_polygon(poly_inter_1());
 //    render_polygon(poly_case_touches_1());
 
 //    render_polygon(poly_tag_merge_test());
@@ -442,7 +510,7 @@ void render_polygon(chunker<T> pieces) {
         auto chunk = result[ix];
         std::cout << "chunk: " << chunk.size -1 << endl;
 
-//                if(ix!=0)
+//                if(ix!=1)
 //                    continue;
 
 //        canvas->drawQuad(RED, 0, 0, 100,100, 0,255);
