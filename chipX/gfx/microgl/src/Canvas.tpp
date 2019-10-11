@@ -1,10 +1,4 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "bugprone-narrowing-conversions"
-#pragma ide diagnostic ignored "cppcoreguidelines-narrowing-conversions"
-#pragma ide diagnostic ignored "hicpp-signed-bitwise"
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
- 
+
 //#include "../include/public/microgl/Canvas.h"
 
 //#include <microgl/Canvas.h>
@@ -12,7 +6,7 @@
 
 template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
-                        : _bitmap_canvas($bmp), _width{$bmp->width()}, _height{$bmp->height()} {
+                        : _width{$bmp->width()}, _height{$bmp->height()}, _bitmap_canvas($bmp) {
 
 
     uint8_t alpha_bits = coder()->bits_per_alpha();
@@ -441,7 +435,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
     vec2_32i vertices_int[size];
     precision sub_pixel_precision = requested_sub_pixel_precision;
 
-    for (int ix = 0; ix < size; ++ix) {
+    for (index ix = 0; ix < size; ++ix) {
         vertices_int[ix] = vertices[ix]<<sub_pixel_precision;
     }
 
@@ -1419,7 +1413,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                                bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
 
     fixed_signed area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
-    int bmp_width = bmp.width();
+    //int bmp_width = bmp.width();
 
     // sub_pixel_precision;
     // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
@@ -2512,6 +2506,3 @@ void Canvas<P, CODER>::drawPolygon(vec2_f *points,
             hint);
 }
 
-
-#pragma clang diagnostic pop
-#pragma clang diagnostic pop

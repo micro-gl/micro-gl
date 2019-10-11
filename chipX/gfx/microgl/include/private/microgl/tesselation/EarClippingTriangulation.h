@@ -1,5 +1,4 @@
 #pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #pragma once
 
@@ -74,7 +73,7 @@ namespace tessellation {
         bool _DEBUG = false;
 
         static
-        bool isDegenrate(const Node *v, const LinkedList *list);
+        bool isDegenrate(const EarClippingTriangulation::Node *v);
     };
 
 

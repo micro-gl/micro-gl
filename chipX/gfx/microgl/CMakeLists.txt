@@ -10,8 +10,8 @@ set (CMAKE_CXX_STANDARD 11)
 
 message(${CMAKE_BUILD_TYPE})
 #use this - should warn on inline functions that were not inlined -Winline
-set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g")
-set(CMAKE_CXX_FLAGS_RELEASE "-fstrict-aliasing -Os -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics")
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g ")
+set(CMAKE_CXX_FLAGS_RELEASE "-fstrict-aliasing -Os -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
 
 set(sources
 #        src/FrameBuffer.tpp
@@ -24,9 +24,9 @@ set(sources
         src/BlendMode.cpp
         src/PorterDuff.cpp
         src/Curves.cpp
-        src/BentleyOttmannLineIntersection.cpp
-        src/Rational.cpp
-        src/Segment.cpp
+#        src/BentleyOttmannLineIntersection.cpp
+#        src/Rational.cpp
+#        src/Segment.cpp
         src/BezierCurveDivider.cpp
         src/EarClippingTriangulation.cpp
         src/FanTriangulation.cpp
@@ -49,15 +49,15 @@ target_include_directories(${PROJECT_NAME}
         )
 
 # private include directory
-target_include_directories(${PROJECT_NAME}
-        PRIVATE
-        ${PROJECT_SOURCE_DIR}/src
-        .
-        ${PROJECT_SOURCE_DIR}/include/public
-        ${PROJECT_SOURCE_DIR}/include/public/microgl
-        ${PROJECT_SOURCE_DIR}/include/private/microgl
-        ${PROJECT_SOURCE_DIR}/include/private
-        )
+#target_include_directories(${PROJECT_NAME}
+#        PRIVATE
+#        ${PROJECT_SOURCE_DIR}/src
+#        .
+#        ${PROJECT_SOURCE_DIR}/include/public
+#        ${PROJECT_SOURCE_DIR}/include/public/microgl
+#        ${PROJECT_SOURCE_DIR}/include/private/microgl
+#        ${PROJECT_SOURCE_DIR}/include/private
+#        )
 
-include_directories(${PROJECT_SOURCE_DIR}/include)
+#include_directories(${PROJECT_SOURCE_DIR}/include)
 

@@ -1,10 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "MemberFunctionCanBeStaticInspection"
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
-#pragma clang diagnostic ignored "-Wconstant-conversion"
-#pragma ide diagnostic ignored "OCUnusedStructInspection"
-#pragma ide diagnostic ignored "hicpp-signed-bitwise"
 #pragma once
 
 #include <microgl/vec2.h>
@@ -71,8 +64,8 @@ namespace sampler {
                                   const fixed_signed u, const fixed_signed v,
                                   const uint8_t bits, color_t & output) {
 
-            unsigned int bmp_w_max = bmp.width() - 1;
-            unsigned int bmp_h_max = bmp.height() - 1;
+            const int bmp_w_max = bmp.width() - 1;
+            const int bmp_h_max = bmp.height() - 1;
             fixed_signed sampleU = u;
             fixed_signed sampleV = v;
 
@@ -120,5 +113,3 @@ namespace sampler {
     };
 
 }
-
-#pragma clang diagnostic pop

@@ -1,18 +1,16 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #pragma once
 
 #include <microgl/vec2.h>
 #include <microgl/color.h>
-#include "Functions.h"
-#include "PorterDuff.h"
-#include "BlendMode.h"
-#include "PixelCoder.h"
-#include "Bitmap.h"
-#include "Fixed.h"
-#include "Sampler.h"
-#include "Curves.h"
-#include "triangles.h"
+#include <microgl/Functions.h>
+#include <microgl/PorterDuff.h>
+#include <microgl/BlendMode.h>
+#include <microgl/PixelCoder.h>
+#include <microgl/Bitmap.h>
+#include <microgl/Fixed.h>
+#include <microgl/Sampler.h>
+#include <microgl/Curves.h>
+#include <microgl/triangles.h>
 #include <microgl/polygons.h>
 #include <microgl/tesselation/BezierCurveDivider.h>
 #include <microgl/static_array.h>
@@ -218,7 +216,7 @@ public:
                       fixed_signed v0_x, fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
                       fixed_signed v1_x, fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
                       fixed_signed v2_x, fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
-                      uint8_t opacity, uint8_t sub_pixel_precision, uint8_t uv_precision,
+                      opacity opacity, precision sub_pixel_precision, precision uv_precision,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,
@@ -230,21 +228,8 @@ public:
                       float v0_x, float v0_y, float u0, float v0,
                       float v1_x, float v1_y, float u1, float v1,
                       float v2_x, float v2_y, float u2, float v2,
-                      uint8_t opacity = 255,
+                      opacity opacity = 255,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
-
-    template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false,
-            typename Sampler=sampler::NearestNeighbor,
-            typename P2, typename CODER2>
-    void drawTriangle(const Bitmap<P2, CODER2> &bmp,
-                      int v0_x, int v0_y, float u0, float v0,
-                      int v1_x, int v1_y, float u1, float v1,
-                      int v2_x, int v2_y, float u2, float v2,
-                      uint8_t opacity = 255,
-                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
-
 
     // Quadrilaterals
     template <typename BlendMode=blendmode::Normal,
@@ -256,7 +241,7 @@ public:
                            fixed_signed v1_x, fixed_signed v1_y, fixed_signed u1, fixed_signed v1,
                            fixed_signed v2_x, fixed_signed v2_y, fixed_signed u2, fixed_signed v2,
                            fixed_signed v3_x, fixed_signed v3_y, fixed_signed u3, fixed_signed v3,
-                           uint8_t opacity, precision sub_pixel_precision, precision uv_precision);
+                           opacity opacity, precision sub_pixel_precision, precision uv_precision);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -267,7 +252,7 @@ public:
                            float v1_x, float v1_y, float u1, float v1,
                            float v2_x, float v2_y, float u2, float v2,
                            float v3_x, float v3_y, float u3, float v3,
-                           uint8_t opacity = 255);
+                           opacity opacity = 255);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -278,7 +263,7 @@ public:
                            int v2_x, int v2_y,
                            int v3_x, int v3_y,
                            precision sub_pixel_precision,
-                           uint8_t opacity = 255);
+                           opacity opacity = 255);
 
 
     // QUADS
@@ -400,7 +385,3 @@ private:
 };
 
 #include "../../src/Canvas.tpp"
-
-
-
-//#pragma clang diagnostic pop

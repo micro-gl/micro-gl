@@ -1,14 +1,9 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "cert-err58-cpp"
-
 #include <iostream>
 #include <chrono>
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/PixelCoder.h>
-//#include <microgl/dynamic_array.h>
-//#include <microgl/static_array.h>
 #include <microgl/tesselation/simplifier.h>
 
 #define TEST_ITERATIONS 1
@@ -605,5 +600,3 @@ void loop() {
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
-
-#pragma clang diagnostic pop

@@ -12,6 +12,7 @@ namespace microgl {
                     CONCAVE,
             // self intersecting polygon
                     NON_SIMPLE,
+                    COMPLEX,
                     SELF_INTERSECTING,
         };
 

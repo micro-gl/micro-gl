@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedMacroInspection"
 #pragma once
 
 /* DEFINE THE MACROS */
@@ -62,5 +60,3 @@ returning the result in q3 format */
 typedef unsigned int fixed;
 typedef int fixed_signed;
 #define ABS(x) ((x)<0?(-(x)) :(x))
-
-#pragma clang diagnostic pop

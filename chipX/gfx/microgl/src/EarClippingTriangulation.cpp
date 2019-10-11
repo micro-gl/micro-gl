@@ -59,7 +59,7 @@ namespace tessellation {
 //            for (index jx = 0; jx < size; ++jx) {
             for (index jx = 0; jx < pts.size(); ++jx) {
 
-                if (isDegenrate(point, &pts) || (isConvex(point, &pts) && isEmpty(point, &pts))) {
+                if (isDegenrate(point) || (isConvex(point, &pts) && isEmpty(point, &pts))) {
 
                     indices.push_back(point->predecessor()->data.original_index);
                     indices.push_back(point->data.original_index);
@@ -68,9 +68,9 @@ namespace tessellation {
                     // record boundary
                     if(requested_triangles_with_boundary) {
                         // classify if edges are on boundary
-                        int first_edge_index_distance = abs((int)indices[ind + 0] - (int)indices[ind + 1]);
-                        int second_edge_index_distance = abs((int)indices[ind + 1] - (int)indices[ind + 2]);
-                        int third_edge_index_distance = abs((int)indices[ind + 2] - (int)indices[ind + 0]);
+                        unsigned int first_edge_index_distance = abs((int)indices[ind + 0] - (int)indices[ind + 1]);
+                        unsigned int second_edge_index_distance = abs((int)indices[ind + 1] - (int)indices[ind + 2]);
+                        unsigned int third_edge_index_distance = abs((int)indices[ind + 2] - (int)indices[ind + 0]);
 
                         bool first = first_edge_index_distance==1 || first_edge_index_distance==size-1;
                         bool second = second_edge_index_distance==1 || second_edge_index_distance==size-1;
@@ -157,8 +157,7 @@ namespace tessellation {
         return maximal_index;
     }
 
-    bool EarClippingTriangulation::isDegenrate(const EarClippingTriangulation::Node *v,
-                                            const EarClippingTriangulation::LinkedList *list) {
+    bool EarClippingTriangulation::isDegenrate(const EarClippingTriangulation::Node *v) {
         const Node * l = v->predecessor();
         const Node * r = v->successor();
 

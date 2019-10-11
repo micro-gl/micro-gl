@@ -1,5 +1,4 @@
 #pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #pragma once
 

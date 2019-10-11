@@ -1,4 +1,4 @@
-#include <Curves.h>
+#include <microgl/Curves.h>
 
 namespace curves {
 

@@ -30,7 +30,7 @@ void Bitmap<P, CODER>::copyToBitmap(Bitmap<P2, CODER2> & bmp) {
 
 template<typename P, typename CODER>
 Bitmap<P, CODER>::Bitmap(P* $pixels, int w, int h, PixelCoder<P, CODER> * $coder) :
-        FrameBuffer<P>($pixels, w * h), _width{w}, _height{h}, _coder{$coder}, _format{$coder->format()} {
+        FrameBuffer<P>($pixels, w * h), _width{w}, _height{h}, _format{$coder->format()}, _coder{$coder} {
 }
 
 template<typename P, typename CODER>
@@ -110,9 +110,7 @@ void Bitmap<P, CODER>::writeColor(int index, const color_t &color) {
 
 template<typename P, typename CODER>
 void Bitmap<P, CODER>::writeColor(int x, int y, const color_t &color) {
-    P output;
-    _coder->encode(color, output);
-    this->_data[index] = output;
+    writeColor(y*_width + x, color);
 }
 
 template<typename P, typename CODER>
@@ -124,8 +122,6 @@ void Bitmap<P, CODER>::writeColor(int index, const color_f_t &color) {
 
 template<typename P, typename CODER>
 void Bitmap<P, CODER>::writeColor(int x, int y, const color_f_t &color) {
-    P output;
-    _coder->encode(color, output);
-    this->_data[index] = output;
+    writeColor(y*_width + x, color);
 }
 

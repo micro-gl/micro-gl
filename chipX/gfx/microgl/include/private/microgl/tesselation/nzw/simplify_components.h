@@ -114,8 +114,7 @@ namespace tessellation {
 
         static
         void compute(chunker<vertex> & pieces,
-                     chunker<vertex> & pieces_result,
-                     dynamic_array<direction> &directions) {
+                     chunker<vertex> & pieces_result) {
             master_intersection_list master_list;
             dynamic_array<vertex *> allocated_intersection;
 
@@ -123,7 +122,7 @@ namespace tessellation {
             compute_master_list(pieces, master_list, allocated_intersection);
 
             // now, we have a complete master list, we can traverse it for polygons.
-            polygonPartition(pieces_result, master_list, directions);
+            polygonPartition(pieces_result, master_list);
 
             // delete allocated intersections.
             for (unsigned long ix = 0; ix < allocated_intersection.size(); ++ix) {
@@ -212,16 +211,13 @@ namespace tessellation {
 
         static
         void polygonPartition(chunker<vertex> &result,
-                              master_intersection_list &master_list,
-                              dynamic_array<direction> &directions) {
+                              master_intersection_list &master_list) {
 
             dynamic_array<int> stack;
 
             do
             {
                 int current_index = 0;
-                bool found_direction = false;
-                direction current_direction;
                 // remove top intersections that have been
                 // completely visited or are dead ends
                 while (!stack.empty()) {
@@ -240,13 +236,13 @@ namespace tessellation {
                 else {
                     current_index=0;
                     while(master_list[current_index].isDeadEnd() &&
-                          (current_index < master_list.size()))
+                          (current_index < int(master_list.size())))
                         current_index++;
                 }
 
                 // if we reached the last intersection, we are done
                 // else, this is out current index for work
-                if (current_index >= master_list.size() - 1 )
+                if (current_index >= int(master_list.size()) - 1 )
                     break;
 
                 auto *current_intersection = &master_list[current_index];
@@ -254,7 +250,6 @@ namespace tessellation {
 
                 // start index marks a beginning of a component ?
                 const int startIndex = current_index;
-                int firstIndex = startIndex;
 
                 result.push_back(*current_intersection->v);
                 stack.push_back(current_index);
@@ -301,57 +296,14 @@ namespace tessellation {
 
                     if (current_index == -1)
                         continue;
-//                    if (current_index >= master_list.size() - 1)
-//                        break;
-//
+
                     current_intersection = &master_list[current_index];
 
                     result.push_back(*current_intersection->v);
                     stack.push_back(current_index);
 
-                    /*
-                    // this part is only for resolving directions
-                    // this part of code relies on the fact that the
-                    // vertices are sorted to infer the left-most vertex etc..
-                    if (found_direction)
-                        continue;
-                    // this is a mechanism to get the next vertex, when we get into
-                    // direction calculation.
-                    if (firstIndex == startIndex)
-                        firstIndex = current_index;
-                    else
-                    {
-
-                        // tests if polygon vertex
-                        if (master_list[startIndex].isPolygonVertex()) {
-                            auto win = xProd(*master_list[startIndex].origin1(),
-                                         *master_list[startIndex].v,
-                                         *master_list[firstIndex].v);
-
-                            current_direction = win>0 ? direction::CW : direction::CCW ;
-                        }
-                        else {
-                            vertex *vtx ;
-                            if (master_list[startIndex].index1 == -1)
-                                vtx = master_list[startIndex].origin1();
-                            else
-                                vtx = master_list[startIndex].origin2();
-
-                            auto win = xProd(*vtx,
-                                    *master_list[startIndex].v,
-                                    *master_list[firstIndex].v);
-
-                            current_direction = win>0 ? direction::CW : direction::CCW ;
-                        }
-
-                        found_direction = true;
-
-                    }
-                    */
-
                 } while ((current_index != startIndex) && (current_index != -1)) ;
 
-                //directions.push_back(current_direction);
                 result.cut_chunk();
 
             } while (true);

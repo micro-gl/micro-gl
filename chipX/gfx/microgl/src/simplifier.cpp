@@ -531,10 +531,10 @@ namespace tessellation {
 
         simplify_components::compute(
                 pieces,
-                simplified_components,
-                components_directions);
+                simplified_components);
 
-        compute_directions(simplified_components, components_directions);
+        compute_directions(simplified_components,
+                components_directions);
 
         // experiment
         compute_component_tree(

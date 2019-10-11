@@ -1,10 +1,4 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "MemberFunctionCanBeStaticInspection"
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
 #pragma clang diagnostic ignored "-Wconstant-conversion"
-#pragma ide diagnostic ignored "OCUnusedStructInspection"
-#pragma ide diagnostic ignored "hicpp-signed-bitwise"
 #pragma once
 
 #include <microgl/vec2.h>
@@ -760,5 +754,3 @@ namespace blendmode {
 
 
 }
-
-#pragma clang diagnostic pop

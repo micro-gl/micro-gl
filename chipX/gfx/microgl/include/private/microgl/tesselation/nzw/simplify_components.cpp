@@ -45,8 +45,6 @@ namespace tessellation {
 //    return ( *(ilist.begin()->v) < *(s.ilist.begin()->v) );
     }
 
-#define abs(x) ((x)<0 ? -(x) : (x))
-
     segment::IntersectionType segment::calcIntersection
             (const segment &l, vertex &intersection, float &alpha, float &alpha1) {
         // endpoints
