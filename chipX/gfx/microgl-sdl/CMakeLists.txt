@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.12)
 project(microgl-sdl)
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS_RELEASE "-fstrict-aliasing -Os -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -fno-exceptions")
+set(CMAKE_CXX_FLAGS_RELEASE "-fno-exceptions -fstrict-aliasing -Os -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
 
 message("using compiler: ${CMAKE_CXX_COMPILER_ID}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)

@@ -16,7 +16,8 @@ void Bitmap<P, CODER>::copyToBitmap(Bitmap<P2, CODER2> & bmp) {
 
     bool size_is_same = bmp.size()==this->size();
     if(!size_is_same)
-        throw std::invalid_argument("sizes are not the same !!!");
+        return;
+//        throw std::invalid_argument("sizes are not the same !!!");
 
     int size = this->size();
     color_f_t color_bmp_1{};

@@ -338,7 +338,7 @@ namespace tessellation {
         {
             // sort the polygons edges and master list
 //            stable_sort(edges.data(), edges.data() + edges.size());
-            stable_sort(master_list.data(), master_list.data() + master_list.size());
+            sort(master_list.data(), master_list.data() + master_list.size());
 
             // push real intersection into the polygon edges lists, for each edge push
             // it's intersecting vertex
@@ -431,6 +431,7 @@ namespace tessellation {
 */
             }
 
+            /*
             struct compare_edge_vertex {
                 master_intersection_list * master = nullptr;
                 edge_vertex * edge_start = nullptr;
@@ -486,13 +487,16 @@ namespace tessellation {
             compare_edge_vertex cmp;
             cmp.master = &master_list;
 
+*/
+
             // sort ONLY the intersections of the poly edge array
             for (unsigned long ix = 0; ix < edges.size(); ix++) {
                 auto & edge_vertices = edges[ix].vertices;
 
-                cmp.edge_start = &edge_vertices[0];
-                cmp.edge_end = &edge_vertices[edge_vertices.size()-1];
-                stable_sort(edge_vertices.data(), edge_vertices.data() + edge_vertices.size(), cmp);
+//                cmp.edge_start = &edge_vertices[0];
+//                cmp.edge_end = &edge_vertices[edge_vertices.size()-1];
+//                stable_sort(edge_vertices.data(), edge_vertices.data() + edge_vertices.size(), cmp);
+                sort(edge_vertices.data(), edge_vertices.data() + edge_vertices.size());
             }
 
             // setting up the indices for the intersections in the master_list,

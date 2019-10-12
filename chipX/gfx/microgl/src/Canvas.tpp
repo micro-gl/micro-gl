@@ -2456,7 +2456,8 @@ void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
         case hints::NON_SIMPLE:
         case hints::SELF_INTERSECTING:
         default:
-            throw std::runtime_error("Non-Simple polygons are not supported yet !!!");
+            return;
+//            throw std::runtime_error("Non-Simple polygons are not supported yet !!!");
             break;
     }
 

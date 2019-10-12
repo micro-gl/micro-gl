@@ -5,7 +5,6 @@
 #include <microgl/vec2.h>
 #include <microgl/triangles.h>
 #include <microgl/array_container.h>
-#include <stdexcept>
 
 namespace tessellation {
 

@@ -6,7 +6,6 @@
 #include <microgl/triangles.h>
 #include <microgl/linked_list.h>
 #include <microgl/array_container.h>
-#include <stdexcept>
 
 namespace tessellation {
 

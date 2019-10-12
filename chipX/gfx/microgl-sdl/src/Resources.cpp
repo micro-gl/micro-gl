@@ -43,7 +43,8 @@ std::vector<unsigned char> * Resources::loadFileAsByteArray(const std::string &f
     auto isGood = ifs.good();
 
     if(!isGood)
-        throw std::runtime_error("error loading file - " + file_name);
+        return nullptr;
+//        throw std::runtime_error("error loading file - " + file_name);
 
     auto length = static_cast<size_t>(ifs.tellg());
 
