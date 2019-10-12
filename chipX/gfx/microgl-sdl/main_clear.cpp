@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <chrono>
-#include "src/Resources.h"
+//#include "src/Resources.h"
 #include <SDL2/SDL.h>
 //#include <microgl/FrameBuffer.h>
 #include <microgl/Canvas.h>
@@ -20,7 +20,7 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-Resources resources{};
+//Resources resources{};
 
 void loop();
 void init_sdl(int width, int height);
@@ -46,7 +46,7 @@ void init_sdl(int width, int height) {
 
 //    canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
 
-    resources.init();
+//    resources.init();
 }
 
 int render_test(int N) {
@@ -68,7 +68,7 @@ void loop() {
 
     // 100 Quads
     int ms = render_test(TEST_ITERATIONS);
-    cout << ms << endl;
+//    cout << ms << endl;
 
     while (!quit)
     {

@@ -64,13 +64,14 @@ inline void render() {
 //                                                                             true, true, true);
 
 
+        canvas->drawQuad<blendmode::Normal, porterduff::None>(RED, 0, 0, W, H, 0, 255);
+
         canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(RED,
                                                                              0,0,
                                                                              W, 0,
                                                                              W, H,
                                                                              255, 0,
                                                                              false, false, false);
-//                                                                             true, true, true);
 
 //        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED,
 //                                                                             0,0,

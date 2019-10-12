@@ -13,6 +13,7 @@
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
+//extern template class chunker<microgl::vec2_f>;
 
 typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
 
@@ -78,7 +79,6 @@ dynamic_array<vec2_f> box(float left, float top, float right, float bottom, bool
 chunker<vec2_f> poly_degenerate_multipepoints() {
     chunker<vec2_f> A;
 
-//    /*
     A.push_back_and_cut({
             {100,100},
             {100,100},
@@ -168,7 +168,6 @@ chunker<vec2_f> poly_degenerate_multipepoints() {
             {100,300},
             {100,300},
     });
-//     */
 
 
     return A;

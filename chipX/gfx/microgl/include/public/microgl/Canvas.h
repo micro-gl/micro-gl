@@ -13,7 +13,7 @@
 #include <microgl/triangles.h>
 #include <microgl/polygons.h>
 #include <microgl/tesselation/BezierCurveDivider.h>
-#include <microgl/static_array.h>
+#include <microgl/dynamic_array.h>
 #include <microgl/tesselation/EarClippingTriangulation.h>
 #include <microgl/tesselation/FanTriangulation.h>
 

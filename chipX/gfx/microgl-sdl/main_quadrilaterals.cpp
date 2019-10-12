@@ -36,13 +36,6 @@ Bitmap24bit_Packed32 * bmp_uv;
 Resources resources{};
 Resources::image_info_t img_1;
 
-color_f_t RED{1.0,0.0,0.0, 1.0};
-color_f_t YELLOW{1.0,1.0,0.0, 1.0};
-color_f_t WHITE{1.0,1.0,1.0, 1.0};
-color_f_t GREEN{0.0,1.0,0.0, 1.0};
-color_f_t BLUE{0.0,0.0,1.0, 1.0};
-color_f_t BLACK{0.0,0.0,0.0, 1.0};
-
 void loop();
 void init_sdl(int width, int height);
 

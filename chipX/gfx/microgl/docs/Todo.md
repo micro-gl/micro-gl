@@ -31,3 +31,17 @@
 
 #### triangulation
 http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.htm
+
+#### code bloat
+- vec2 is intantiated all over the place it seems
+- array container virtual methods are included in every instance of template, consider throwing it away,
+  I have seen a 6kb reduction in release mode which is a lot
+- follow http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rt-abi
+
+#### svg:
+1. create hole puncher
+2. create path maker
+3. templatize arc_divider, path_tess, simplifier.
+4. deal with holes AA bridge
+5. use ear clipper from J. Orourke book
+6. investigate solving degenrate cases some day.

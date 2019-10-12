@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <chrono>
-#include "src/Resources.h"
+#include <vector>
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
@@ -21,8 +21,6 @@ SDL_Texture * texture;
 typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
 
 Canvas24Bit_Packed32 * canvas;
-
-Resources resources{};
 
 void loop();
 void init_sdl(int width, int height);
@@ -163,7 +161,6 @@ void init_sdl(int width, int height) {
 
     canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
 
-    resources.init();
 }
 
 int render_test(int N) {
@@ -184,7 +181,6 @@ void loop() {
 
     // 100 Quads
     int ms = render_test(TEST_ITERATIONS);
-    cout << ms << endl;
 
     while (!quit)
     {

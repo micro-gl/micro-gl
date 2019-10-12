@@ -18,8 +18,8 @@ namespace tessellation {
 
         explicit simplifier(bool DEBUG = false) {};
 
-        static void compute(chunker<vec2_f> & pieces,
-                            chunker<vec2_f> & result
+        static void compute(chunker<microgl::vec2_f> & pieces,
+                            chunker<microgl::vec2_f> & result
                             );
 
 //        static void compute(vec2_32i * $pts,

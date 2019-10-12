@@ -376,8 +376,6 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
 
 }
 
-
-
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawCircle(const color_f_t & color,
@@ -2293,7 +2291,7 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *poin
                                                uint8_t sub_pixel_bits,
                                                tessellation::BezierCurveDivider::CurveDivisionAlgorithm algorithm) {
 
-    static_array<vec2_32i, 128> samples;
+    dynamic_array<vec2_32i> samples;
     vec2_32i previous, current;
 
     using c = tessellation::BezierCurveDivider;
@@ -2359,7 +2357,7 @@ void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
                                            unsigned int size,
                                            uint8_t sub_pixel_bits,
                                            tessellation::BezierCurveDivider::CurveDivisionAlgorithm algorithm) {
-    static_array<vec2_32i, 128> samples;
+    dynamic_array<vec2_32i> samples;
     vec2_32i previous, current;
     int count = 0;
     using c = tessellation::BezierCurveDivider;
@@ -2419,8 +2417,8 @@ void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
 
     TrianglesIndices type;
     // currently static on the stack
-    static_array<index, 256> indices;
-    static_array<boundary_info , 256> boundary_buffer;
+    dynamic_array<index> indices;
+    dynamic_array<boundary_info> boundary_buffer;
 
     switch (hint) {
 
@@ -2493,7 +2491,7 @@ void Canvas<P, CODER>::drawPolygon(vec2_f *points,
                                    opacity opacity,
                                    polygons::hints hint
                                    ) {
-    static_array<vec2_32i, 128> points_int;
+    dynamic_array<vec2_32i> points_int;
     precision sub_pixel_precision = 4; //todo:: raise to 4
 
     for (index ix = 0; ix < size; ++ix)

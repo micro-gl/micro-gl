@@ -1,7 +1,7 @@
 #pragma once
 
 #include <microgl/dynamic_array.h>
-#include <microgl/static_array.h>
+//#include <microgl/static_array.h>
 
 template<typename T>
 class chunker {
@@ -9,15 +9,16 @@ class chunker {
 private:
     using type_ref = T &;
     using type_pointer= T *;
+    using const_type_pointer= const T *;
     using chunker_ref = chunker<T> &;
     using const_chunker_ref = const chunker<T> &;
     using array_container_ref = array_container<T> &;
     using const_array_container_ref = const array_container<T> &;
 
-//    dynamic_array<T> _data;
-//    dynamic_array<index> _locations;
-    static_array<T, 512> _data;
-    static_array<index, 512> _locations;
+    dynamic_array<T> _data;
+    dynamic_array<index> _locations;
+//    static_array<T, 512> _data;
+//    static_array<index, 512> _locations;
 
 //    C<T, Rest> _data{};
 //    C<index, Rest...> _locations{0};
@@ -39,10 +40,6 @@ public:
     }
 
     chunker(const std::initializer_list<T> &list) : _data{list}, _locations() {
-        _locations.push_back(0);
-    }
-
-    chunker(const_array_container_ref container) : _data(container), _locations() {
         _locations.push_back(0);
     }
 
@@ -77,7 +74,7 @@ public:
         return _data.data();
     }
 
-    type_pointer raw_data() const {
+    const_type_pointer raw_data() const {
         return _data.data();
     }
 
@@ -116,3 +113,4 @@ public:
     }
 
 };
+
