@@ -462,6 +462,9 @@ namespace tessellation {
         // build components inclusion tree
         for (unsigned long ix = 0; ix < components_size; ++ix)
         {
+            if(directions[ix]==direction::cw)
+                continue;
+
             auto * current = &(nodes[ix]);
             current->index_poly = int(ix);
 

@@ -64,9 +64,11 @@ inline void render() {
 //                                                                             true, true, true);
 
 
-        canvas->drawQuad<blendmode::Normal, porterduff::None>(RED, 0, 0, W, H, 0, 255);
-
-        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(RED,
+//        canvas->drawQuad<blendmode::Normal, porterduff::None>(RED, 0, 0, W, H, 0, 255);
+//
+        // with O3 i get 28-32 for drawTriangle and 14-16 for drawTriangleFast
+        // with Os i get 52 for drawTriangle and 24-26 for drawTriangleFast
+        canvas->drawTriangleFast<blendmode::Normal, porterduff::None, false>(RED,
                                                                              0,0,
                                                                              W, 0,
                                                                              W, H,

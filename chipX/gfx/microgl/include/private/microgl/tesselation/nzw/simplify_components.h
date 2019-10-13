@@ -11,10 +11,6 @@ namespace tessellation {
 
     using vertex = microgl::vec2_f;
 
-    enum class direction {
-        cw, ccw, unknown
-    };
-
     struct segment
     {
         // used for determining limit of parallel lines

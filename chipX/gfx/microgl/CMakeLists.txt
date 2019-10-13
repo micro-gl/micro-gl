@@ -11,7 +11,7 @@ set (CMAKE_CXX_STANDARD 11)
 message(${CMAKE_BUILD_TYPE})
 #use this - should warn on inline functions that were not inlined -Winline
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -fno-exceptions")
-set(CMAKE_CXX_FLAGS_RELEASE "-fno-exceptions -fstrict-aliasing -Os -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
+set(CMAKE_CXX_FLAGS_RELEASE "-fno-exceptions -fstrict-aliasing -O3 -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
 
 set(sources
 #        src/FrameBuffer.tpp

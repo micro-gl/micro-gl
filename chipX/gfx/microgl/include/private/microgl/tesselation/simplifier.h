@@ -13,6 +13,11 @@ namespace tessellation {
     using index = unsigned int;
     using namespace microgl;
 
+    enum class direction {
+        cw, ccw, unknown
+    };
+
+
     class simplifier {
     public:
 

@@ -3,7 +3,7 @@ project(microgl-sdl)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -fno-exceptions")
-set(CMAKE_CXX_FLAGS_RELEASE "-fno-exceptions -fstrict-aliasing -Os -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
+set(CMAKE_CXX_FLAGS_RELEASE "-fno-exceptions -fstrict-aliasing -O3 -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
 
 message("using compiler: ${CMAKE_CXX_COMPILER_ID}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
@@ -28,7 +28,7 @@ include_directories("${PROJECT_BINARY_DIR}")
 set(SOURCES
 #        main_clear.cpp
 #        main_curves.cpp
-#        main_speed_optimization.cpp
+        main_speed_optimization.cpp
 #        main_quadrilaterals.cpp
 #        main_canvas_draw_polygon.cpp
 #        main_path_tessellation.cpp
@@ -42,7 +42,7 @@ set(SOURCES
 #        main_aa_bug.cpp
 #        main_aa_bug_2.cpp
 #        main_bentley_ottmann.cpp
-        main_complex_to_simple_polygon.cpp
+#        main_complex_to_simple_polygon.cpp
 #        main_avl_tree.cpp
         libs/stb_image/stb_image.cpp
         src/Resources.cpp
