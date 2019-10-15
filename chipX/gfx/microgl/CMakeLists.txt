@@ -33,7 +33,8 @@ set(sources
         src/triangles.cpp
         src/PathTessellation.cpp
         src/ArcDivider.cpp
-        src/simplifier.cpp
+        src/simple_components_tree.cpp
+        src/complex_poly_tess.cpp
         include/private/microgl/tesselation/nzw/simplify_components.cpp
         )
 

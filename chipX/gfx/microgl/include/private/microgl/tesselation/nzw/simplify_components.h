@@ -8,7 +8,6 @@ using namespace std;
 
 namespace tessellation {
 
-
     using vertex = microgl::vec2_f;
 
     struct segment
@@ -74,12 +73,6 @@ namespace tessellation {
         intersection (vertex *vtx, float p1, float p2, const segment &li, const segment &lj);
         bool operator< (const intersection &i) const;
         bool isDeadEnd();
-        bool isPolygonVertex() {
-            return v==origin1() || v==origin2();
-        }
-        bool isTVertex() {
-            return v==origin1() || v==origin2();
-        }
     };
 
     struct edge_vertex
@@ -178,7 +171,7 @@ namespace tessellation {
 
                     segment l1(prev, current);
                     segment l2(current, next);
-                    edge edge;
+//                    edge edge;
                     l1.sortVertices();
                     l2.sortVertices();
 
@@ -190,9 +183,9 @@ namespace tessellation {
                     // report vertex as a vertex intersection in the master list
                     master_list.push_back(intersection(current, 2.0, -1.0, l1, l2 ));
                     // first element is the edge vertex
-                    edge.vertices.push_back(i1);
+//                    edge.vertices.push_back(i1);
                     // last vertex of the edge
-                    edge.vertices.push_back(i2);
+//                    edge.vertices.push_back(i2);
 
 //                    edges.push_back( edge );
                 }
@@ -495,6 +488,7 @@ namespace tessellation {
                 sort(edge_vertices.data(), edge_vertices.data() + edge_vertices.size());
             }
 
+            // todo:: do i need to sort the edges as well ?
             // setting up the indices for the intersections in the master_list,
             for (unsigned long edge = 0; edge < edges.size(); edge++) {
                 // go over the intersections of each edge

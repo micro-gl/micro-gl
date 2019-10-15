@@ -1,17 +1,10 @@
-#include <microgl/tesselation/simplifier.h>
+#include <microgl/tesselation/simple_components_tree.h>
 
 namespace tessellation {
 
-    struct node {
-        // may have missing null children, that were removed
-        dynamic_array<node *> children;
-        int index_poly = -1;
-        int accumulated_winding = 0;
-    };
 
     // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
     // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
-
     //    Input:  three points p, a, b
     //    Return: >0 for P2 left of the line through a and b
     //            =0 for P2  on the line
@@ -267,8 +260,11 @@ namespace tessellation {
         return 0;
     }
 
-    void compute_component_tree_recurse(node * root,
-                                        node * current,
+    using tree = simple_components_tree::tree;
+    using node = simple_components_tree::tree::node;
+
+    void compute_component_tree_recurse(tree::node * root,
+                                        tree::node * current,
                                         chunker<vec2_f> & components,
                                         const dynamic_array<direction> &directions) {
         int root_children_count = root->children.size();
@@ -343,7 +339,7 @@ namespace tessellation {
         root->children.push_back(current);
     }
 
-    void tag_and_merge(node * root,
+    void tag_and_merge(tree::node * root,
                        const dynamic_array<direction> &directions) {
         int root_accumulated_winding = root->accumulated_winding;
 
@@ -363,15 +359,21 @@ namespace tessellation {
             bool fill_root = root_accumulated_winding!=0;
             bool fill_child = child_node->accumulated_winding!=0;
 
+            child_node->type = fill_child ? tree::node_type::fill : tree::node_type::hole;
             // we merge nodes with similar fill status, we do it by disconnecting
             // them from the root parent and adding their children to the root
             // so they can also be processed soon
             if(fill_root == fill_child) {
                 root->children[ix] = nullptr;
+                // child node is marked as non-interesting
+                child_node->type = tree::node_type::unknown;
 
                 // insert candidate children, they will be processed at end of loop
                 for (index jx = 0; jx < child_node->children.size(); ++jx) {
                     auto * grandson = child_node->children[jx];
+
+                    // remove child from him and
+                    child_node->children[jx] = nullptr;
 
                     if(grandson) {
                         // we added a grandson which will be picked up soon later, so let's subtract
@@ -389,88 +391,27 @@ namespace tessellation {
 
     }
 
-    bool test_intersect(const vertex &a, const vertex &b,
-                        const vertex &c, const vertex &d) {
-        auto ab = b - a;
-        auto cd = d - c;
-        auto ca = a - c;
-
-        auto ab_cd = ab.x * cd.y - cd.x * ab.y;
-        auto s = (ab.x * ca.y - ab.y * ca.x);
-        auto t = (cd.x * ca.y - cd.y * ca.x);
-
-        bool test = s >= 0 && s <= ab_cd && t >= 0 && t <= ab_cd;
-
-        return test;
-    }
-
-    int find_mutually_visible_vertex_in_polygon(const vertex & main_vertex,
-                                                vertex * poly_2, int size_2) {
-
-        for (int ix = 0; ix < size_2; ++ix) {
-            vertex against = poly_2[ix];
-            bool fails = false;
-
-            for (int jx = 0; jx < size_2; ++jx) {
-                // (main_vertex, against)
-                if(test_intersect(main_vertex,
-                        against,
-                        poly_2[jx],
-                        poly_2[(jx+1)%size_2])) {
-                    fails = true;
-                    break;
-                }
-
-            }
-
-            if(!fails) {
-                return ix;
-            }
-
-        }
-
-        return -1;
-    }
-
-    void merge_hole() {
-
-    }
-
-    void extract_components(node * root,
-                            chunker<vec2_f> & components,
-                            chunker<vec2_f> & result) {
-
-        for (index ix = 0; ix < root->children.size(); ++ix) {
-            auto * child_node = root->children[ix];
-
-            if(child_node== nullptr)
-                continue;
-
-
-
-        }
-
-    }
-
     void compute_component_tree(chunker<vec2_f> & components,
                                 const dynamic_array<direction> &directions,
-                                chunker<vec2_f> & result) {
+                                tree & tree) {
         const index components_size = components.size();
-        node nodes[components_size];
-        node root{};
+
+        tree.nodes = new tree::node[components_size];
+        tree.nodes_count = components_size;
+        auto * root = tree.root = new tree::node();
 
         // build components inclusion tree
         for (unsigned long ix = 0; ix < components_size; ++ix)
         {
-            if(directions[ix]==direction::cw)
+            if(directions[ix]==direction::unknown)
                 continue;
 
-            auto * current = &(nodes[ix]);
+            auto * current = &(tree.nodes[ix]);
             current->index_poly = int(ix);
 
             // now start hustling
             compute_component_tree_recurse(
-                    &root,
+                    root,
                     current,
                     components,
                     directions);
@@ -478,36 +419,20 @@ namespace tessellation {
         }
 
         // tag and compress similar
-        index root_children_count = root.children.size();
+        index root_children_count = root->children.size();
         for (unsigned long ix = 0; ix < root_children_count; ++ix)
         {
-            auto * current = root.children[ix];
+            auto * current = root->children[ix];
             if(current== nullptr)
                 continue;
 
             auto current_winding = directions[current->index_poly]==direction::cw ? 1 : -1;
             current->accumulated_winding = current_winding;
+            current->type = tree::node_type::fill;
             // now start hustling
             tag_and_merge(
                     current,
                     directions);
-
-        }
-
-        // extract components with holes
-        root_children_count = root.children.size();
-        for (unsigned long ix = 0; ix < root_children_count; ++ix)
-        {
-            auto * current = root.children[ix];
-
-            if(current== nullptr)
-                continue;
-
-            // now start hustling
-            extract_components(
-                    current,
-                    components,
-                    result);
 
         }
 
@@ -526,11 +451,12 @@ namespace tessellation {
     }
 
 
-    void simplifier::compute(chunker<vec2_f> & pieces,
-                             chunker<vec2_f> & result) {
+    void simple_components_tree::compute(chunker<vec2_f> & pieces,
+                                         tree & tree
+                                         ) {
 
         dynamic_array<direction> components_directions;
-        chunker<vec2_f> simplified_components;
+        auto & simplified_components = tree.pieces;
 
         simplify_components::compute(
                 pieces,
@@ -543,9 +469,8 @@ namespace tessellation {
         compute_component_tree(
                 simplified_components,
                 components_directions,
-                result);
+                tree);
 
-        result = simplified_components;
         int a =0;
     }
 

@@ -4,7 +4,7 @@
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/PixelCoder.h>
-#include <microgl/tesselation/simplifier.h>
+#include <microgl/tesselation/simple_components_tree.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -493,15 +493,16 @@ void render_polygon(chunker<T> pieces) {
     using index = unsigned int;
 
     canvas->clear(WHITE);
-//    tessellation::simplifier simplifier{true};
-    chunker<vec2_f> result = pieces;
+//    tessellation::simple_components_tree simple_components_tree{true};
+//    chunker<vec2_f> result = pieces;
 
-    tessellation::simplifier::compute(
+    tessellation::simple_components_tree::tree tree;
+    tessellation::simple_components_tree::compute(
             pieces,
-            result);
+            tree);
 
-    for (index ix = 0; ix < result.size(); ++ix) {
-        auto chunk = result[ix];
+    for (index ix = 0; ix < tree.pieces.size(); ++ix) {
+        auto chunk = tree.pieces[ix];
         std::cout << "chunk: " << chunk.size -1 << endl;
 
 //                if(ix!=1)

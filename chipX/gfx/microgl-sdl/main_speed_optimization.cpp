@@ -126,7 +126,7 @@ void init_sdl(int width, int height) {
 //    canvas = new Canvas16Bit(width, height, PixelFormat::RGB565, new RGB565_PACKED_16());
     canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
 //    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
-
+/*
     img_1 = resources.loadImageFromCompressedPath("charsprites.png");
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
 
@@ -137,8 +137,8 @@ void init_sdl(int width, int height) {
     bmp_uv_U8 = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_2.data, img_2.width, img_2.height, new RGB888_ARRAY());
     bmp_uv = bmp_uv_U8->convertToBitmap<uint32_t , RGB888_PACKED_32>();
 //    bmp_uv = new Bitmap<uint32_t , RGB888_PACKED_32>(img_2.width, img_2.height, new RGB888_PACKED_32());
-
     resources.init();
+*/
 }
 
 int render_test(int N) {
