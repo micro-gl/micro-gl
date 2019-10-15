@@ -42,7 +42,8 @@ set(SOURCES
 #        main_aa_bug.cpp
 #        main_aa_bug_2.cpp
 #        main_bentley_ottmann.cpp
-        main_complex_to_simple_polygon.cpp
+#        main_complex_to_simple_polygon.cpp
+        main_ear_clipping_holes.cpp
 #        main_avl_tree.cpp
         libs/stb_image/stb_image.cpp
         src/Resources.cpp
