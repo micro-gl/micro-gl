@@ -5,7 +5,7 @@
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/PixelCoder.h>
-#include <microgl/tesselation/EarClippingTriangulation.h>
+#include <microgl/tesselation/ear_clipping_triangulation.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -58,16 +58,16 @@ dynamic_array<vec2_f> poly_tri() {
     return {p0, p3, p4};
 }
 
-dynamic_array<vec2_32i> poly_hole() {
-    vec2_32i p0 = {100,100};
-    vec2_32i p1 = {300, 100};
-    vec2_32i p2 = {300, 300};
-    vec2_32i p3 = {100, 300};
+dynamic_array<vec2_f> poly_hole() {
+    vec2_f p0 = {100,100};
+    vec2_f p1 = {300, 100};
+    vec2_f p2 = {300, 300};
+    vec2_f p3 = {100, 300};
 
-    vec2_32i p4 = {150,150};
-    vec2_32i p7 = {150, 250};
-    vec2_32i p6 = {250, 250};
-    vec2_32i p5 = {250, 150};
+    vec2_f p4 = {150,150};
+    vec2_f p7 = {150, 250};
+    vec2_f p6 = {250, 250};
+    vec2_f p5 = {250, 150};
 
 //    return {p4, p5, p6, p7};
     return {p0, p1, p2, p3,   p4, p7, p6, p5, p4,p3};//,p5_,p4_};
@@ -97,11 +97,7 @@ template <typename T>
 void render_polygon(dynamic_array<vec2<T>> polygon) {
     using index = unsigned int;
 
-//    polygon[1].x = 140 + 20 +  t;
-
     canvas->clear(WHITE);
-
-    EarClippingTriangulation ear{true};
 
     uint8_t precision = 0;
     auto type = TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
@@ -109,7 +105,7 @@ void render_polygon(dynamic_array<vec2<T>> polygon) {
     dynamic_array<index> indices;
     dynamic_array<boundary_info> boundary_buffer;
 
-    ear.compute(polygon.data(),
+    ear_clipping_triangulation::compute(polygon.data(),
             polygon.size(),
             indices,
             &boundary_buffer,

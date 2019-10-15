@@ -5,6 +5,7 @@ template<typename T>
 struct linked_list {
 
 public:
+    int index=-1;
     struct node_t {
         T data;
         node_t * prev = nullptr;

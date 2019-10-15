@@ -29,6 +29,7 @@ set(sources
 #        src/Segment.cpp
         src/BezierCurveDivider.cpp
         src/EarClippingTriangulation.cpp
+        src/ear_clipping_triangulation.cpp
         src/FanTriangulation.cpp
         src/triangles.cpp
         src/PathTessellation.cpp
@@ -36,7 +37,7 @@ set(sources
         src/simple_components_tree.cpp
         src/complex_poly_tess.cpp
         include/private/microgl/tesselation/nzw/simplify_components.cpp
-        )
+        src/qsort.cpp)
 
 add_library(${PROJECT_NAME} ${sources})
 

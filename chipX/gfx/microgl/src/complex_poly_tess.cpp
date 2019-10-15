@@ -71,7 +71,7 @@ namespace tessellation {
 
         // go over the tree and extract fill nodes with holes
         dynamic_array<int> locations;
-        for (int ix = 0; ix < tree.nodes_count; ++ix) {
+        for (index ix = 0; ix < tree.nodes_count; ++ix) {
             auto n = tree.nodes[ix];
             auto type = n.type;
             // unknown node types are nodes that have been compressed
@@ -85,7 +85,7 @@ namespace tessellation {
 
             // find hole children, as a matter of fact these should
             // be it's only children. note, children may be null
-            for (int jx = 0; jx < children_count; ++jx) {
+            for (index jx = 0; jx < children_count; ++jx) {
                 auto child = n.children[jx];
                 if(child && child->type==node_type_t::hole)
                     locations.push_back(child->index_poly);
