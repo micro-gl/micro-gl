@@ -187,7 +187,6 @@ namespace tessellation {
         int vi = find_left_bottom_most_vertex(poly, size);
         // this should always be unique unless the entire poly is a single vertex
         int ai = vi-1 < 0 ? size-1 : vi-1;
-//        int bi = vi+1 == size ? 0 : vi+1;
         // avoid degenerate cases
         int bi = find_next_unique_vertex(vi, poly, size);
         // poly is one point

@@ -68,13 +68,23 @@ std::vector<vec2_32i> poly_hole() {
     vec2_32i p2 = {300, 300};
     vec2_32i p3 = {100, 300};
 
-    vec2_32i p4 = {150,150};
-    vec2_32i p7 = {150, 250};
-    vec2_32i p6 = {250, 250};
-    vec2_32i p5 = {250, 150};
+    vec2_32i p0_1 = {150,150};
+    vec2_32i p1_1 = {150, 200};
+    vec2_32i p2_1 = {200, 200};
+    vec2_32i p3_1 = {200, 150};
+
+    vec2_32i p0_2 = {200,200};
+    vec2_32i p1_2 = {200, 300};
+    vec2_32i p2_2 = {300, 300};
+    vec2_32i p3_2 = {300, 200};
 
 //    return {p4, p5, p6, p7};
-    return {p0, p1, p2, p3,   p4, p7, p6, p5, p4,p3};//,p5_,p4_};
+    return {p0, p1, p2, p3,
+            p0_1, p1_1, p2_1,
+            p0_2, p1_2, p2_2, p3_2,
+            p0_2,
+            p3_1,
+            p0_1,p3};
 }
 
 std::vector<vec2_f> poly_diamond() {
@@ -111,8 +121,8 @@ void render_polygon(std::vector<vec2<T>> polygon) {
     auto type = TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
     index size_indices = EarClippingTriangulation::required_indices_size(polygon.size(),
             type);
-    static_array<index, 128> indices;
-    static_array<boundary_info , 128> boundary_buffer;
+    dynamic_array<index> indices;
+    dynamic_array<boundary_info> boundary_buffer;
 
     ear.compute(polygon.data(),
             polygon.size(),

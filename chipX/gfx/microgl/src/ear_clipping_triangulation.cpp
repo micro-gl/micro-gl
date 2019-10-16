@@ -3,63 +3,202 @@
 
 namespace tessellation {
 
-    // the extremal left-bottom most vertex is always a convex vertex
-    int find_left_bottom_most_vertex(vertex * poly,
-                                     const int size) {
-        int index = 0;
-        vertex value = poly[0];
+    bool test_intersect(const vertex &a, const vertex &b,
+                        const vertex &c, const vertex &d,
+                        bool interior_only=false) {
+        auto ab = b - a;
+        auto cd = d - c;
+        auto ca = a - c;
 
-        for (int ix = 0; ix < size; ++ix) {
-            auto & v = poly[ix];
+        auto ab_cd = ab.x * cd.y - cd.x * ab.y;
+        auto s = (ab.x * ca.y - ab.y * ca.x);
+        auto t = (cd.x * ca.y - cd.y * ca.x);
+
+        bool test = interior_only ? s > 0 && s < ab_cd && t > 0 && t < ab_cd :
+                    s >= 0 && s <= ab_cd && t >= 0 && t <= ab_cd;
+
+        return test;
+    }
+
+    using ect = ear_clipping_triangulation;
+
+    // the extremal left-bottom most vertex is always a convex vertex
+    ect::node_t * find_left_bottom_most_vertex(ect::node_t * poly) {
+        auto * first = poly;
+        auto * candidate = first;
+        vertex value = *candidate->pt;
+        auto * iter = candidate->next;
+
+        do {
+            auto & v = *iter->pt;
 
             if(v.x < value.x) {
                 value = v;
-                index = ix;
+                candidate = iter;
             }
             else if(v.x==value.x) {
                 if(v.y > value.y) {
                     value = v;
-                    index = ix;
+                    candidate = iter;
                 }
             }
 
-        }
+        } while ((iter=iter->next) && iter!=first);
 
-        return index;
+        return candidate;
     }
 
     ear_clipping_triangulation::ear_clipping_triangulation(bool DEBUG) :
             _DEBUG{DEBUG} {};
 
-    ear_clipping_triangulation::LinkedList *
+    ear_clipping_triangulation::node_t *
     ear_clipping_triangulation::polygon_to_linked_list(vertex *$pts,
                                                        index offset,
-                                                       index size
+                                                       index size,
+                                                       ect::pool_nodes_t &pool
                                                        ) {
-        // create a linked list with static memory on the stack :)
-        // lets also make heap version
-        auto *pts = new LinkedList{true};
+        node_t * first = nullptr, * last = nullptr;
 
-        // todo:: filter out degenerate points, points at the same location
+        if (size==0)
+            return nullptr;
+
         for (index ix = 0; ix < size; ++ix) {
-            auto * node = new Node{};
-            node->data.pt = &$pts[ix];
-            node->data.original_index = offset + ix;
+            auto * node = pool.get();//new node_t{};
+            node->pt = &$pts[ix];
+            node->original_index = offset + ix;
 
-            pts->addLast(node);
+            // record first node
+            if(first== nullptr)
+                first = node;
+
+            // build the list
+            if (last) {
+                last->next = node;
+                node->prev = last;
+            }
+
+            last = node;
         }
 
-        return pts;
+        // make it cyclic
+        last->next = first;
+        first->prev = last;
+
+        return first;
     }
 
-    int compare (const void * a, const void * b, void * ctx)
-    {
-        auto * left_mosts = (vertex *) ctx;
-        auto * a_casted = (ear_clipping_triangulation::LinkedList *)a;
-        auto * b_casted = (ear_clipping_triangulation::LinkedList *)b;
 
-        vertex &a_lm = left_mosts[a_casted->index];
-        vertex &b_lm = left_mosts[b_casted->index];
+    bool is_bbox_overlaps_axis(const vertex &a, const vertex &b,
+                                              const vertex &c, const vertex &d,
+                                              bool compare_x,
+                                              bool interior_only=false) {
+
+        auto min_ab = compare_x ? a.x : a.y, max_ab = compare_x ? a.x : a.y;
+        auto min_cd = compare_x ? c.x : c.y, max_cd = compare_x ? c.x : c.y;
+
+        // sort
+        if(min_ab > max_ab) {
+            auto temp = min_ab;
+            min_ab = max_ab;
+            max_ab = temp;
+        }
+
+        if(min_cd > max_cd) {
+            auto temp = min_cd;
+            min_cd = max_cd;
+            max_cd = temp;
+        }
+
+        bool disjoint = interior_only ? (max_cd < min_ab) && (min_cd > max_ab) :
+                        (max_cd <= min_ab) && (min_cd >= max_ab);
+
+        return !disjoint;
+    }
+
+    bool is_bbox_overlaps(const vertex &a, const vertex &b,
+                          const vertex &c, const vertex &d,
+                          bool interior_only=false) {
+        return is_bbox_overlaps_axis(a,b,c,d,true,interior_only) &&
+                is_bbox_overlaps_axis(a,b,c,d,false,interior_only);
+    }
+
+    ect::node_t * find_mutually_visible_vertex(ect::node_t * poly,
+                                               const vertex& v) {
+
+        auto * first = poly;
+        auto * iter_1 = first;
+        auto * iter_2 = first;
+
+        do {
+            const auto &a = *(iter_1->pt);
+            const auto &b = v;
+            bool fails = false;
+
+            do {
+                // this works because the linked-list is cyclic
+                const auto &c = *(iter_2->pt);
+                const auto &d = *(iter_2->next->pt);
+
+                // here we can use bbox
+                const bool bbox_overlaps = is_bbox_overlaps(a,b,c,d, true);
+
+                if(bbox_overlaps) {
+                    bool intersects = test_intersect(a,b,c,d,true);
+
+                    if(intersects) {
+                        fails = true;
+                        break;
+                    }
+                }
+
+            } while ((iter_2=iter_2->next) && iter_2!=first);
+
+            if(!fails)
+                return iter_1;
+
+        } while ((iter_1=iter_1->next) && iter_1!=first);
+
+        return nullptr;
+    }
+
+    void merge_hole(ect::node_t * outer,
+                    ect::node_t * inner,
+                    ect::node_t * inner_left_most_node,
+                    ect::pool_nodes_t &pool) {
+
+        // found mutually visible vertex in outer
+        auto * outer_node = find_mutually_visible_vertex(
+                outer,
+                *(inner_left_most_node->pt));
+
+        // clone the second pair of bridge
+//        auto * cloned_outer_node = new ect::node_t();
+//        auto * cloned_inner_node = new ect::node_t();
+        auto * cloned_outer_node = pool.get();
+        auto * cloned_inner_node = pool.get();
+        cloned_inner_node->pt = inner_left_most_node->pt;
+        cloned_outer_node->pt = outer_node->pt;
+
+        cloned_inner_node->prev = inner_left_most_node->prev;
+        cloned_inner_node->next = cloned_outer_node;
+
+        cloned_outer_node->prev = cloned_inner_node;
+        cloned_outer_node->next = outer_node->next;
+
+        // connect outer node to inner
+        outer_node->next = inner_left_most_node;
+        inner_left_most_node->prev = outer_node;
+    }
+
+
+    int compare_poly_contexts (const void * a, const void * b, void * ctx)
+    {
+//        auto * left_mosts = (ect::LinkedList::node_t **) ctx;
+        auto * a_casted = (const ect::poly_context_t *)a;
+        auto * b_casted = (const ect::poly_context_t *)b;
+
+        vertex &a_lm = *(a_casted->left_most->pt);
+        vertex &b_lm = *(b_casted->left_most->pt);
 
         bool a_before_b = a_lm.x < b_lm.x || (a_lm.x==b_lm.x && a_lm.y > b_lm.y);
 
@@ -72,76 +211,85 @@ namespace tessellation {
         return 1;
     }
 
-
     void ear_clipping_triangulation::compute(vertex *$pts,
                                              index size,
                                              dynamic_array<index> & indices_buffer_triangulation,
+                                             const triangles::TrianglesIndices &requested,
                                              dynamic_array<triangles::boundary_info> * boundary_buffer,
                                              dynamic_array<hole> * holes,
-                                             dynamic_array<vec2_f> * result,
-                                             const triangles::TrianglesIndices &requested) {
+                                             dynamic_array<vec2_f> * result
+                                             ) {
+
+        const auto holes_count = (holes ? holes->size() : 0);
+        index outer_size = size;
+        for (index hx = 0; hx < holes_count; ++hx) {
+            outer_size += (*holes)[hx].size + 2;
+        }
+
+        // this is much better to allocate memory once
+        pool_nodes_t pool{outer_size};
+
+        auto * outer = polygon_to_linked_list($pts, 0, size, pool);
 
         if(holes) {
-            auto count = 1 + holes->size();
+            poly_context_t poly_contexts[holes_count];
 
-            vertex left_mosts[count];
-            LinkedList *lists[count];
-            // we need to populate the lists and sort them by left-most points
-            left_mosts[0] = $pts[find_left_bottom_most_vertex($pts, size)];
-            lists[0] = polygon_to_linked_list($pts, size, 0);
-            lists[0]->index = 0;
-
-            for (index ix = 0; ix < holes->size(); ++ix) {
+            for (index ix = 0; ix < holes_count; ++ix) {
                 auto hole = (*holes)[ix];
-                left_mosts[ix + 1] = hole.points[find_left_bottom_most_vertex(hole.points, hole.size)];
-                lists[ix + 1] = polygon_to_linked_list(hole.points, hole.offset, hole.size);
-                lists[ix + 1]->index = ix + 1;
+                poly_contexts[ix].polygon = polygon_to_linked_list(hole.points, hole.offset, hole.size, pool);
+                poly_contexts[ix].left_most = find_left_bottom_most_vertex(poly_contexts[ix+1].polygon);
+                poly_contexts[ix].size = hole.size;
             }
 
-            qsort_s(lists, count, sizeof(LinkedList), compare, left_mosts);
+            qsort_s(&poly_contexts[1], holes_count, sizeof(poly_context_t), compare_poly_contexts, nullptr);
+
+            for (index jx = 0; jx < holes_count; ++jx) {
+                merge_hole(outer,
+                        poly_contexts[jx].polygon,
+                        poly_contexts[jx+1].left_most,
+                        pool);
+
+            }
+
+            // since we inserted holes we need to redo the indices
+            auto * node = outer;
+            for (index kx = 0; kx < outer_size; ++kx) {
+                node->original_index = kx;
+                node = node->next;
+            }
+
         }
+
+        compute(outer,
+                outer_size, indices_buffer_triangulation,
+                boundary_buffer, requested);
 
     }
 
-    void ear_clipping_triangulation::compute(microgl::vec2_32i *$pts,
-                                           index size,
+    void ear_clipping_triangulation::compute(node_t *list,
+                                             index size,
                                              dynamic_array<index> & indices_buffer_triangulation,
                                              dynamic_array<triangles::boundary_info> * boundary_buffer,
-                                           const triangles::TrianglesIndices &requested) {
+                                             const triangles::TrianglesIndices &requested) {
 
         bool requested_triangles_with_boundary =
                 requested==triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
         auto &indices = indices_buffer_triangulation;
 
-        // create a linked list with static memory on the stack :)
-        // lets also make heap version
-        LinkedList pts{true};
-        Node nodes[size];
-
-        // todo:: filter out degenerate points, points at the same location
-//        for (index ix = 0; ix < size; ++ix) {
-//            nodes[ix].data = {&$pts[ix], ix};
-//
-//            pts.addLast(&nodes[ix]);
-//        }
-
-        // start algorithm
-
         index ind = 0;
-        Node * point;
+        node_t * point;
+        node_t * first = list;
 
         for (index ix = 0; ix < size - 2; ++ix) {
 
-            point = pts.getFirst();
+            point = first;
 
-//            for (index jx = 0; jx < size; ++jx) {
-            for (index jx = 0; jx < pts.size(); ++jx) {
+            do {
+                if (isDegenrate(point) || (isConvex(point, first) && isEmpty(point, first))) {
 
-                if (isDegenrate(point) || (isConvex(point, &pts) && isEmpty(point, &pts))) {
-
-                    indices.push_back(point->predecessor()->data.original_index);
-                    indices.push_back(point->data.original_index);
-                    indices.push_back(point->successor()->data.original_index);
+                    indices.push_back(point->prev->original_index);
+                    indices.push_back(point->original_index);
+                    indices.push_back(point->next->original_index);
 
                     // record boundary
                     if(requested_triangles_with_boundary) {
@@ -150,11 +298,11 @@ namespace tessellation {
                         unsigned int second_edge_index_distance = abs((int)indices[ind + 1] - (int)indices[ind + 2]);
                         unsigned int third_edge_index_distance = abs((int)indices[ind + 2] - (int)indices[ind + 0]);
 
-                        bool first = first_edge_index_distance==1 || first_edge_index_distance==size-1;
-                        bool second = second_edge_index_distance==1 || second_edge_index_distance==size-1;
-                        bool third = third_edge_index_distance==1 || third_edge_index_distance==size-1;
+                        bool first_edge = first_edge_index_distance==1 || first_edge_index_distance==size-1;
+                        bool second_edge = second_edge_index_distance==1 || second_edge_index_distance==size-1;
+                        bool third_edge = third_edge_index_distance==1 || third_edge_index_distance==size-1;
 
-                        index info = triangles::create_boundary_info(first, second, third);
+                        index info = triangles::create_boundary_info(first_edge, second_edge, third_edge);
 
                         boundary_buffer->push_back(info);
                     }
@@ -162,33 +310,35 @@ namespace tessellation {
                     ind += 3;
 
                     // prune the point from the polygon
-                    pts.unlink(point);
+                    point->prev->next = point->next;
+                    point->next->prev = point->prev;
+                    // set a new linked list first element
+                    if(point==first)
+                        first=point->next;
 
                     break;
                 }
 
-                point = point->next;
-            }
+            } while((point = point->next));
 
         }
 
-        pts.clear();
     }
 
     long long
-    ear_clipping_triangulation::orientation_value(const ear_clipping_triangulation::Node *i,
-                                                const ear_clipping_triangulation::Node *j,
-                                                const ear_clipping_triangulation::Node *k) {
-        return i->data.pt->x * int64_t(j->data.pt->y - k->data.pt->y) +
-               j->data.pt->x * int64_t(k->data.pt->y - i->data.pt->y) +
-               k->data.pt->x * int64_t(i->data.pt->y - j->data.pt->y);
+    ear_clipping_triangulation::orientation_value(const node_t *i,
+                                                  const node_t *j,
+                                                  const node_t *k) {
+        return i->pt->x * (j->pt->y - k->pt->y) +
+               j->pt->x * (k->pt->y - i->pt->y) +
+               k->pt->x * (i->pt->y - j->pt->y);
     }
 
     // ts
     int ear_clipping_triangulation::neighborhood_orientation_sign(
-            const ear_clipping_triangulation::Node *v) {
-        const Node * l = v->predecessor();
-        const Node * r = v->successor();
+            const node_t *v) {
+        const node_t * l = v->prev;
+        const node_t * r = v->next;
 
         // pay attention that this can return 0, although in the algorithm
         // it does not return 0 never here.
@@ -197,9 +347,9 @@ namespace tessellation {
 
     // tv
     char
-    ear_clipping_triangulation::sign_orientation_value(const ear_clipping_triangulation::Node *i,
-                                                     const ear_clipping_triangulation::Node *j,
-                                                     const ear_clipping_triangulation::Node *k) {
+    ear_clipping_triangulation::sign_orientation_value(const node_t *i,
+                                                       const node_t *j,
+                                                       const node_t *k) {
         auto v = orientation_value(i, j, k);
 
         // we clip, to avoid overflows down the road
@@ -211,71 +361,66 @@ namespace tessellation {
             return 0;
     }
 
-    ear_clipping_triangulation::Node *ear_clipping_triangulation::maximal_y_element(
-                                const ear_clipping_triangulation::LinkedList *list) {
-        Node * first = list->getFirst();
-        Node * maximal_index = first;
-        Node * node = first;
-        int maximal_y = first->data.pt->y;
+    ear_clipping_triangulation::node_t *ear_clipping_triangulation::maximal_y_element(node_t *list) {
+        node_t * first = list;
+        node_t * maximal_index = first;
+        node_t * node = first;
+        auto maximal_y = first->pt->y;
 
-        for (unsigned int ix = 0; ix < list->size(); ++ix) {
-            if(node->data.pt->y > maximal_y) {
-                maximal_y = node->data.pt->y;
+        do {
+            if(node->pt->y > maximal_y) {
+                maximal_y = node->pt->y;
                 maximal_index = node;
-            } else if(node->data.pt->y == maximal_y) {
-                if(node->data.pt->x < maximal_index->data.pt->x) {
-                    maximal_y = node->data.pt->y;
+            } else if(node->pt->y == maximal_y) {
+                if(node->pt->x < maximal_index->pt->x) {
+                    maximal_y = node->pt->y;
                     maximal_index = node;
                 }
             }
 
-            node = node->successor();
-        }
+        } while ((node = node->next) && node!=first);
 
         return maximal_index;
     }
 
-    bool ear_clipping_triangulation::isDegenrate(const ear_clipping_triangulation::Node *v) {
-        const Node * l = v->predecessor();
-        const Node * r = v->successor();
+    bool ear_clipping_triangulation::isDegenrate(const node_t *v) {
+        const node_t * l = v->prev;
+        const node_t * r = v->next;
 
         bool test  = sign_orientation_value(l, v, r)==0;
         return test;
     }
 
-    bool ear_clipping_triangulation::isConvex(const ear_clipping_triangulation::Node *v,
-                                            const ear_clipping_triangulation::LinkedList *list) {
-        // the maximal y elemnt is always convex, therefore if
+    bool ear_clipping_triangulation::isConvex(const node_t *v,
+                                              node_t *list) {
+        // the maximal y element is always convex, therefore if
         // they have the same orientation, then v is also convex
         return neighborhood_orientation_sign(v) *
                neighborhood_orientation_sign(maximal_y_element(list)) > 0;
     }
 
-    bool ear_clipping_triangulation::areEqual(const ear_clipping_triangulation::Node *a,
-                                            const ear_clipping_triangulation::Node *b) {
+    bool ear_clipping_triangulation::areEqual(const node_t *a,
+                                            const node_t *b) {
         return
-            a->data.pt->x==b->data.pt->x &&
-            a->data.pt->y==b->data.pt->y;
+            a->pt->x==b->pt->x &&
+            a->pt->y==b->pt->y;
     }
 
-    bool ear_clipping_triangulation::isEmpty(const ear_clipping_triangulation::Node *v,
-                                           const ear_clipping_triangulation::LinkedList *list) {
+    bool ear_clipping_triangulation::isEmpty(const node_t *v,
+                                             node_t *list){
         int tsv;
 
-        const Node * l = v->predecessor();
-        const Node * r = v->successor();
+        const node_t * l = v->next;
+        const node_t * r = v->prev;
 
         tsv = sign_orientation_value(v, l, r);
 
-        Node * n  = list->getFirst();
-        index ix = 0;
+        node_t * n  = list;
 
         do {
 
             if(areEqual(n, v) || areEqual(n, l) || areEqual(n, r))
                 continue;
-//            if(n==v || n==l || n==r)
-//                continue;
 
             if(tsv * sign_orientation_value(v, l, n)>=0 &&
                tsv * sign_orientation_value(l, r, n)>=0 &&
@@ -283,7 +428,7 @@ namespace tessellation {
                     )
                 return false;
 
-        } while(ix++<list->size() && (n=n->successor()));
+        } while((n=n->next) && (n!=list));
 
         return true;
     }

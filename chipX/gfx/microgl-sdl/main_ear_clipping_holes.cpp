@@ -25,97 +25,58 @@ void init_sdl(int width, int height);
 using namespace tessellation;
 using namespace microgl;
 
-template <typename T>
-void render_polygon(dynamic_array<microgl::vec2<T>> polygon);
+dynamic_array<vec2_f> box(float left, float top,
+                          float right, float bottom,
+                          bool ccw=false) {
+    if(!ccw)
+        return {
+                {left,top},
+                {right,top},
+                {right,bottom},
+                {left,bottom},
+        };
 
-float t = 0;
+    return{
+            {left,top},
+            {left,bottom},
+            {right,bottom},
+            {right,top},
+    };
+};
 
-dynamic_array<vec2_32i> poly_rect() {
-    vec2_32i p0 = {100,100};
-    vec2_32i p1 = {300, 100};
-    vec2_32i p2 = {300, 300};
-    vec2_32i p3 = {100, 300};
-
-    return {p0, p1, p2, p3};
-}
-
-float b = 1;
-dynamic_array<vec2_f> poly_2() {
-    vec2_f p0 = {100/b,100/b};
-    vec2_f p1 = {300/b, 100/b};
-    vec2_f p2 = {300/b, 300/b};
-    vec2_f p3 = {200/b, 200/b};
-    vec2_f p4 = {100/b, 300/b};
-
-    return {p0, p1, p2, p3, p4};
-}
-
-dynamic_array<vec2_f> poly_tri() {
-    vec2_f p0 = {100,100};
-    vec2_f p3 = {300, 100};
-    vec2_f p4 = {100, 300};
-
-    return {p0, p3, p4};
-}
-
-dynamic_array<vec2_f> poly_hole() {
-    vec2_f p0 = {100,100};
-    vec2_f p1 = {300, 100};
-    vec2_f p2 = {300, 300};
-    vec2_f p3 = {100, 300};
-
-    vec2_f p4 = {150,150};
-    vec2_f p7 = {150, 250};
-    vec2_f p6 = {250, 250};
-    vec2_f p5 = {250, 150};
-
-//    return {p4, p5, p6, p7};
-    return {p0, p1, p2, p3,   p4, p7, p6, p5, p4,p3};//,p5_,p4_};
-}
-
-dynamic_array<vec2_f> poly_diamond() {
-    vec2_f p1 = {300, 100};
-    vec2_f p2 = {400, 300};
-    vec2_f p3 = {300, 400};
-    vec2_f p0 = {100,300};
-
-    return {p1, p2, p3, p0};
-}
-
-void render() {
-    t+=.05f;
-//    std::cout << t << std::endl;
-//    render_polygon(poly_rect());
-//    render_polygon(poly_2());
-    render_polygon(poly_hole());
-//    render_polygon(poly_diamond());
-//    render_polygon(poly_tri());
-}
-
-
-template <typename T>
-void render_polygon(dynamic_array<vec2<T>> polygon) {
+void test_1() {
     using index = unsigned int;
-
-    canvas->clear(WHITE);
-
+    using ect = ear_clipping_triangulation;
     uint8_t precision = 0;
     auto type = TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
-
     dynamic_array<index> indices;
     dynamic_array<boundary_info> boundary_buffer;
+    dynamic_array<ect::hole> holes;
 
-    ear_clipping_triangulation::compute(polygon.data(),
-            polygon.size(),
+    dynamic_array<vec2_f> outer = box(10,10,400,400);
+    dynamic_array<vec2_f> inner_1 = box(20,20,100,100, true);
+
+    ect::hole hole_1;
+    hole_1.points = inner_1.data();
+    hole_1.size = inner_1.size();
+
+    holes.push_back(hole_1);
+
+    ect::compute(
+            outer.data(),
+            outer.size(),
             indices,
+            type,
             &boundary_buffer,
-            type
-            );
+            &holes,
+            nullptr
+    );
 
+    canvas->clear(WHITE);
     // draw triangles batch
     canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
             RED,
-            polygon.data(),
+            outer.data(),
             indices.data(),
             boundary_buffer.data(),
             indices.size(),
@@ -128,13 +89,17 @@ void render_polygon(dynamic_array<vec2<T>> polygon) {
     // draw triangulation
     canvas->drawTrianglesWireframe(
             BLACK,
-            polygon.data(),
+            outer.data(),
             indices.data(),
             indices.size(),
             type,
             255,
             precision);
 
+}
+
+void render() {
+    test_1();
 }
 
 
@@ -189,8 +154,8 @@ void loop() {
                     quit = true;
                 break;
         }
-//
-        render();
+
+//        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());

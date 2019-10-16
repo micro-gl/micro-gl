@@ -59,6 +59,8 @@ int qsort_s(void *b, size_t n, size_t s,
     const size_t size = n*s;//st_mult(n, s);
     char buf[1024];
 
+    if(s<2)
+        return 0;
     if (!n)
         return 0;
     if (!b || !cmp)
