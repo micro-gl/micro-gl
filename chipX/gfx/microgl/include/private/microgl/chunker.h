@@ -103,10 +103,6 @@ public:
         return chunk_for(i);
     }
 
-//    chunk operator[](index i) const {
-//        return chunk_for(i);
-//    }
-
     void clear() {
     }
 

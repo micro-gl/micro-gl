@@ -504,6 +504,7 @@ void render_polygon(chunker<T> pieces) {
             pieces,
             tree);
 
+//    std::cout<<tree.nodes->index_poly;
     for (index ix = 0; ix < tree.pieces.size(); ++ix) {
         auto chunk = tree.pieces[ix];
         std::cout << "chunk: " << chunk.size -1 << std::endl;

@@ -1,4 +1,4 @@
-#include <microgl/tesselation/nzw/simplify_components.h>
+#include <microgl/tesselation/simplify_components.h>
 #include <microgl/qsort.h>
 
 namespace tessellation {
@@ -204,7 +204,8 @@ namespace tessellation {
         ix++;
     }
 
-    void simplify_components::compute_master_list(chunker<vertex> &pieces, master_intersection_list &master_list,
+    void simplify_components::compute_master_list(chunker<vertex> &pieces,
+                                                  master_intersection_list &master_list,
                                                   dynamic_array<vertex *> &allocated_intersection) {
 
         for (unsigned long poly = 0; poly < pieces.size(); ++poly) {
@@ -216,7 +217,6 @@ namespace tessellation {
                 next_perturbation(current_list[ix]);
             }
         }
-
         // phase 3:: find intersections of polygons among other polygons and
         // add the intersections into the master list, this uses bounding boxes optimizations
         findIntersections(pieces, master_list, allocated_intersection);

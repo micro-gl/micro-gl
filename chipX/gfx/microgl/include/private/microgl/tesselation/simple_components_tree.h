@@ -5,18 +5,17 @@
 #include <microgl/vec2.h>
 #include <microgl/triangles.h>
 #include <microgl/chunker.h>
-#include <microgl/tesselation/nzw/simplify_components.h>
+#include <microgl/tesselation/simplify_components.h>
 
 namespace tessellation {
 
 #define abs(a) ((a)<0 ? -(a) : (a))
     using index = unsigned int;
-    using namespace microgl;
+    using vertex = microgl::vec2_f;
 
     enum class direction {
         cw, ccw, unknown
     };
-
 
     class simple_components_tree {
     public:
@@ -38,7 +37,7 @@ namespace tessellation {
             node * nodes = nullptr;
             node * root = nullptr;
             int nodes_count = 0;
-            chunker<vec2_f> pieces;
+            chunker<vertex> pieces;
 
             ~tree() {
                 if(nodes)
@@ -48,13 +47,12 @@ namespace tessellation {
         };
 
         static
-        void compute(chunker<microgl::vec2_f> & pieces,
+        void compute(chunker<vertex> & pieces,
                             tree & tree
                             );
 
     private:
 
-        bool _DEBUG = false;
     };
 
 

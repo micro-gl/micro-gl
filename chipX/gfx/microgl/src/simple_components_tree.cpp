@@ -10,6 +10,7 @@ namespace tessellation {
     //            =0 for P2  on the line
     //            <0 for P2  right of the line
     //    See: Algorithm 1 "Area of Triangles and Polygons"
+    static
     inline int
     classify_point(const vertex & point, const vertex &a, const vertex & b)
     {
@@ -23,12 +24,14 @@ namespace tessellation {
         else return 0;
     }
 
+    static
     inline int
     isLeft(const vertex & point, const vertex &a, const vertex & b)
     {
         return classify_point(point, a, b) > 0;
     }
 
+    static
     int
     point_inside_simple_polygon_wn(const vertex &point,
                                    const vertex *poly,
@@ -60,6 +63,7 @@ namespace tessellation {
         return wn!=0;
     }
 
+    static
     bool point_inside_simple_polygon_cn(const vertex &point,
                                         const vertex *poly,
                                         const int size) {
@@ -91,6 +95,7 @@ namespace tessellation {
     }
 
     // tests if a point is completely inside, excluding boundary
+    static
     bool point_inside_convex_poly_interior(const vertex &point,
                                            const vertex * poly,
                                            int size,
@@ -119,6 +124,7 @@ namespace tessellation {
     }
 
     // the extremal left-bottom most vertex is always a convex vertex
+    static
     int find_left_bottom_most_vertex(vertex * poly,
                                      const int size) {
         int index = 0;
@@ -144,6 +150,7 @@ namespace tessellation {
     }
 
 
+    static
     int find_next_unique_vertex(const int idx,
                                   vertex * poly,
                                   const int size) {
@@ -162,6 +169,7 @@ namespace tessellation {
         }
     }
 
+    static
     direction compute_polygon_direction(vertex * poly,
                                         const int size) {
         // find a convex vertex
@@ -180,6 +188,7 @@ namespace tessellation {
     }
 
     // find a point via the diagonal method, a linear time algorithm
+    static
     vertex find_point_in_simple_polygon_interior(vertex * poly,
                                         const int size,
                                         bool CCW = true) {
@@ -240,6 +249,7 @@ namespace tessellation {
      * -1=poly 2 inside poly 1
      * 0=poly 1 and poly 2 are disjoint/separable
      */
+    static
     int compare_simple_non_intersecting_polygons(vertex * poly_1, index size_1, bool poly_1_CCW,
                                                  vertex * poly_2, index size_2, bool poly_2_CCW) {
 
@@ -262,9 +272,10 @@ namespace tessellation {
     using tree = simple_components_tree::tree;
     using node = simple_components_tree::tree::node;
 
+    static
     void compute_component_tree_recurse(tree::node * root,
                                         tree::node * current,
-                                        chunker<vec2_f> & components,
+                                        chunker<vertex> & components,
                                         const dynamic_array<direction> &directions) {
         int root_children_count = root->children.size();
         int compare;
@@ -338,6 +349,7 @@ namespace tessellation {
         root->children.push_back(current);
     }
 
+    static
     void tag_and_merge(tree::node * root,
                        const dynamic_array<direction> &directions) {
         int root_accumulated_winding = root->accumulated_winding;
@@ -390,7 +402,8 @@ namespace tessellation {
 
     }
 
-    void compute_component_tree(chunker<vec2_f> & components,
+    static
+    void compute_component_tree(chunker<vertex> & components,
                                 const dynamic_array<direction> &directions,
                                 tree & tree) {
         const index components_size = components.size();
@@ -438,7 +451,8 @@ namespace tessellation {
         int a = 0;
     }
 
-    void compute_directions(chunker<vec2_f> & components,
+    static
+    void compute_directions(chunker<vertex> & components,
                             dynamic_array<direction> &directions) {
         const auto count = components.size();
         for (index ix = 0; ix < count; ++ix) {
@@ -450,7 +464,7 @@ namespace tessellation {
     }
 
 
-    void simple_components_tree::compute(chunker<vec2_f> & pieces,
+    void simple_components_tree::compute(chunker<vertex> & pieces,
                                          tree & tree
                                          ) {
 
@@ -470,7 +484,6 @@ namespace tessellation {
                 components_directions,
                 tree);
 
-        int a =0;
     }
 
 }
