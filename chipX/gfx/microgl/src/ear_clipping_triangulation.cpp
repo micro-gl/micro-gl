@@ -172,8 +172,6 @@ namespace tessellation {
                 *(inner_left_most_node->pt));
 
         // clone the second pair of bridge
-//        auto * cloned_outer_node = new ect::node_t();
-//        auto * cloned_inner_node = new ect::node_t();
         auto * cloned_outer_node = pool.get();
         auto * cloned_inner_node = pool.get();
         cloned_inner_node->pt = inner_left_most_node->pt;
@@ -181,9 +179,11 @@ namespace tessellation {
 
         cloned_inner_node->prev = inner_left_most_node->prev;
         cloned_inner_node->next = cloned_outer_node;
+        inner_left_most_node->prev->next = cloned_inner_node;
 
         cloned_outer_node->prev = cloned_inner_node;
         cloned_outer_node->next = outer_node->next;
+        outer_node->next->prev = cloned_outer_node;
 
         // connect outer node to inner
         outer_node->next = inner_left_most_node;
@@ -223,38 +223,45 @@ namespace tessellation {
         const auto holes_count = (holes ? holes->size() : 0);
         index outer_size = size;
         for (index hx = 0; hx < holes_count; ++hx) {
+            // each hole induces two more bridge points
             outer_size += (*holes)[hx].size + 2;
         }
 
-        // this is much better to allocate memory once
+        // this is much better to allocate memory once,
+        // it will also deallocate once we we go out of scope
         pool_nodes_t pool{outer_size};
 
         auto * outer = polygon_to_linked_list($pts, 0, size, pool);
 
-        if(holes) {
+        if(holes_count) {
             poly_context_t poly_contexts[holes_count];
 
+            // contain holes for further processing
             for (index ix = 0; ix < holes_count; ++ix) {
                 auto hole = (*holes)[ix];
                 poly_contexts[ix].polygon = polygon_to_linked_list(hole.points, hole.offset, hole.size, pool);
-                poly_contexts[ix].left_most = find_left_bottom_most_vertex(poly_contexts[ix+1].polygon);
+                poly_contexts[ix].left_most = find_left_bottom_most_vertex(poly_contexts[ix].polygon);
                 poly_contexts[ix].size = hole.size;
             }
 
-            qsort_s(&poly_contexts[1], holes_count, sizeof(poly_context_t), compare_poly_contexts, nullptr);
+            // sort the holes by left-most vertex
+            qsort_s(poly_contexts, holes_count, sizeof(poly_context_t), compare_poly_contexts, nullptr);
 
+            // merge holes with outer boundary
             for (index jx = 0; jx < holes_count; ++jx) {
                 merge_hole(outer,
                         poly_contexts[jx].polygon,
-                        poly_contexts[jx+1].left_most,
+                        poly_contexts[jx].left_most,
                         pool);
 
             }
 
             // since we inserted holes we need to redo the indices
             auto * node = outer;
+            const auto result_buffer_size = result->size();
             for (index kx = 0; kx < outer_size; ++kx) {
-                node->original_index = kx;
+                result->push_back(*node->pt);
+                node->original_index = result_buffer_size + kx;
                 node = node->next;
             }
 
@@ -277,8 +284,8 @@ namespace tessellation {
         auto &indices = indices_buffer_triangulation;
 
         index ind = 0;
-        node_t * point;
         node_t * first = list;
+        node_t * point;
 
         for (index ix = 0; ix < size - 2; ++ix) {
 

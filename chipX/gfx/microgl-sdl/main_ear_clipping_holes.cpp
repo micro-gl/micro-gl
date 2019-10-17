@@ -52,15 +52,24 @@ void test_1() {
     dynamic_array<index> indices;
     dynamic_array<boundary_info> boundary_buffer;
     dynamic_array<ect::hole> holes;
+    dynamic_array<vec2_f> result;
 
     dynamic_array<vec2_f> outer = box(10,10,400,400);
     dynamic_array<vec2_f> inner_1 = box(20,20,100,100, true);
+    dynamic_array<vec2_f> inner_2 = box(150,150,200,200, true);
+    dynamic_array<vec2_f> inner_3 = box(250,20,400-10,220, true);
 
-    ect::hole hole_1;
+    ect::hole hole_1, hole_2, hole_3;
     hole_1.points = inner_1.data();
     hole_1.size = inner_1.size();
+    hole_2.points = inner_2.data();
+    hole_2.size = inner_2.size();
+    hole_3.points = inner_3.data();
+    hole_3.size = inner_3.size();
 
     holes.push_back(hole_1);
+    holes.push_back(hole_2);
+    holes.push_back(hole_3);
 
     ect::compute(
             outer.data(),
@@ -69,14 +78,15 @@ void test_1() {
             type,
             &boundary_buffer,
             &holes,
-            nullptr
+            &result
     );
 
     canvas->clear(WHITE);
+
     // draw triangles batch
     canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
             RED,
-            outer.data(),
+            result.data(),
             indices.data(),
             boundary_buffer.data(),
             indices.size(),
