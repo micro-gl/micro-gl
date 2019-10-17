@@ -1,9 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <SDL2/SDL.h>
-#include <microgl/dynamic_array.h>
 #include <microgl/Canvas.h>
-#include <microgl/vec2.h>
 #include <microgl/PixelCoder.h>
 #include <microgl/tesselation/ear_clipping_triangulation.h>
 
@@ -71,7 +69,7 @@ void test_1() {
     holes.push_back(hole_2);
     holes.push_back(hole_3);
 
-    ect::compute(
+    auto status = ect::compute(
             outer.data(),
             outer.size(),
             indices,
@@ -80,6 +78,12 @@ void test_1() {
             &holes,
             &result
     );
+
+    if (status!=0) {
+        //std::cout << "error code " << status << std::endl;
+        return;
+    }
+
 
     canvas->clear(WHITE);
 
@@ -99,7 +103,7 @@ void test_1() {
     // draw triangulation
     canvas->drawTrianglesWireframe(
             BLACK,
-            outer.data(),
+            result.data(),
             indices.data(),
             indices.size(),
             type,

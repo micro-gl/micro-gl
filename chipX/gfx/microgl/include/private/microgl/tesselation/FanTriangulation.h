@@ -4,7 +4,7 @@
 
 #include <microgl/vec2.h>
 #include <microgl/triangles.h>
-#include <microgl/array_container.h>
+#include <microgl/dynamic_array.h>
 
 namespace tessellation {
 
@@ -20,8 +20,8 @@ namespace tessellation {
         static
         void compute(vec2_f * $pts,
                      index size,
-                     array_container<index> & indices_buffer_triangulation,
-                     array_container<triangles::boundary_info> * boundary_buffer,
+                     dynamic_array<index> & indices_buffer_triangulation,
+                     dynamic_array<triangles::boundary_info> * boundary_buffer,
                      const triangles::TrianglesIndices &requested =
                                 triangles::TrianglesIndices::TRIANGLES_FAN
         );
@@ -29,8 +29,8 @@ namespace tessellation {
         static
         void compute(vec2_32i * $pts,
                      index size,
-                     array_container<index> & indices_buffer_triangulation,
-                     array_container<triangles::boundary_info> * boundary_buffer,
+                     dynamic_array<index> & indices_buffer_triangulation,
+                     dynamic_array<triangles::boundary_info> * boundary_buffer,
                      const triangles::TrianglesIndices &requested =
                                 triangles::TrianglesIndices::TRIANGLES_FAN
                         );

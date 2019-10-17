@@ -1,7 +1,8 @@
 #pragma once
 
 #include <microgl/vec2.h>
-#include <microgl/array_container.h>
+//#include <microgl/dynamic_array.h>
+#include <microgl/dynamic_array.h>
 
 using namespace microgl;
 
@@ -34,50 +35,50 @@ namespace tessellation {
 
         static void compute(const vec2_32i *points,
                             precision precision,
-                            array_container<vec2_32i> &output,
+                            dynamic_array<vec2_32i> &output,
                             CurveDivisionAlgorithm algorithm,
                             Type $type);
 
     private:
 
         static void sub_divide_cubic_bezier(const vec2_32i *points, BezierCurveDivider::precision precision,
-                                            array_container<vec2_32i> &output,
+                                            dynamic_array<vec2_32i> &output,
                                             BezierCurveDivider::CurveDivisionAlgorithm algorithm);
 
         static void sub_divide_quadratic_bezier(const vec2_32i *points,
                                                 precision precision,
-                                                array_container<vec2_32i> &output,
+                                                dynamic_array<vec2_32i> &output,
                                                 CurveDivisionAlgorithm algorithm);
 
 
         static void uniform_sub_divide_cubic_bezier(const vec2_32i *points,
                                                     precision precision_point,
                                                     precision subdivision_bits,
-                                                    array_container<vec2_32i> &output
+                                                    dynamic_array<vec2_32i> &output
                                              );
 
         static void uniform_sub_divide_quadratic_bezier(const vec2_32i *points,
                                                         precision precision_point,
                                                         precision subdivision_bits,
-                                                        array_container<vec2_32i> &output
+                                                        dynamic_array<vec2_32i> &output
                                                  );
 
         static void adaptive_sub_divide_cubic_bezier_internal(const vec2_32i *points,
                                                               precision precision,
                                                               unsigned int tolerance_distance_pixels,
-                                                              array_container<vec2_32i> &output
+                                                              dynamic_array<vec2_32i> &output
                                                        );
 
         static void adaptive_sub_divide_cubic_bezier(const vec2_32i *points,
                                                      precision precision,
                                                      unsigned int tolerance_distance_pixels,
-                                                     array_container<vec2_32i> &output
+                                                     dynamic_array<vec2_32i> &output
                                               );
 
         static void adaptive_sub_divide_quadratic_bezier(const vec2_32i *points,
                                                          precision precision,
                                                          unsigned int tolerance_distance_pixels,
-                                                         array_container<vec2_32i> &output
+                                                         dynamic_array<vec2_32i> &output
                                                   );
 
         static vec2_32i lerp_fixed(int t, precision range_bits, const vec2_32i &a, const vec2_32i &b, precision point_precision);

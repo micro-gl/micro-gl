@@ -48,9 +48,6 @@ namespace tessellation {
         return candidate;
     }
 
-    ear_clipping_triangulation::ear_clipping_triangulation(bool DEBUG) :
-            _DEBUG{DEBUG} {};
-
     ear_clipping_triangulation::node_t *
     ear_clipping_triangulation::polygon_to_linked_list(vertex *$pts,
                                                        index offset,
@@ -211,13 +208,13 @@ namespace tessellation {
         return 1;
     }
 
-    void ear_clipping_triangulation::compute(vertex *$pts,
+    int ear_clipping_triangulation::compute(vertex *$pts,
                                              index size,
                                              dynamic_array<index> & indices_buffer_triangulation,
-                                             const triangles::TrianglesIndices &requested,
-                                             dynamic_array<triangles::boundary_info> * boundary_buffer,
+                                             const microgl::triangles::TrianglesIndices &requested,
+                                             dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
                                              dynamic_array<hole> * holes,
-                                             dynamic_array<vec2_f> * result
+                                             dynamic_array<vertex > * result
                                              ) {
 
         const auto holes_count = (holes ? holes->size() : 0);
@@ -234,6 +231,10 @@ namespace tessellation {
         auto * outer = polygon_to_linked_list($pts, 0, size, pool);
 
         if(holes_count) {
+
+            if(result== nullptr)
+                return ERR_HOLES_MUST_BE_OPERATED_WITH_RESULT_BUFFER;
+
             poly_context_t poly_contexts[holes_count];
 
             // contain holes for further processing
@@ -257,6 +258,7 @@ namespace tessellation {
             }
 
             // since we inserted holes we need to redo the indices
+            // also holes induce new vertices, so we need a result buffer
             auto * node = outer;
             const auto result_buffer_size = result->size();
             for (index kx = 0; kx < outer_size; ++kx) {
@@ -271,16 +273,25 @@ namespace tessellation {
                 outer_size, indices_buffer_triangulation,
                 boundary_buffer, requested);
 
+        return SUCCEED;
+    }
+
+    void ear_clipping_triangulation::compute(vertex *polygon,
+                                             index size,
+                                             dynamic_array<index> & indices_buffer_triangulation,
+                                             dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
+                                             const microgl::triangles::TrianglesIndices &requested) {
+        compute(polygon, size, indices_buffer_triangulation, requested, boundary_buffer, nullptr, nullptr);
     }
 
     void ear_clipping_triangulation::compute(node_t *list,
                                              index size,
                                              dynamic_array<index> & indices_buffer_triangulation,
-                                             dynamic_array<triangles::boundary_info> * boundary_buffer,
-                                             const triangles::TrianglesIndices &requested) {
+                                             dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
+                                             const microgl::triangles::TrianglesIndices &requested) {
 
         bool requested_triangles_with_boundary =
-                requested==triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
+                requested==microgl::triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
         auto &indices = indices_buffer_triangulation;
 
         index ind = 0;
@@ -309,7 +320,7 @@ namespace tessellation {
                         bool second_edge = second_edge_index_distance==1 || second_edge_index_distance==size-1;
                         bool third_edge = third_edge_index_distance==1 || third_edge_index_distance==size-1;
 
-                        index info = triangles::create_boundary_info(first_edge, second_edge, third_edge);
+                        index info = microgl::triangles::create_boundary_info(first_edge, second_edge, third_edge);
 
                         boundary_buffer->push_back(info);
                     }
@@ -441,10 +452,10 @@ namespace tessellation {
     }
 
     index ear_clipping_triangulation::required_indices_size(const index polygon_size,
-                                                          const triangles::TrianglesIndices &requested) {
+                                                          const microgl::triangles::TrianglesIndices &requested) {
         switch (requested) {
-            case triangles::TrianglesIndices::TRIANGLES:
-            case triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
+            case microgl::triangles::TrianglesIndices::TRIANGLES:
+            case microgl::triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
                 return (polygon_size - 2)*3;
             default:
                 return 0;

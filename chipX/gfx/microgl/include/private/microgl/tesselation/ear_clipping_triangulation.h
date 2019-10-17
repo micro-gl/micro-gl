@@ -8,11 +8,12 @@ namespace tessellation {
 
 #define abs(a) ((a)<0 ? -(a) : (a))
     using index = unsigned int;
-    using namespace microgl;
     using vertex = microgl::vec2_f;
 
     class ear_clipping_triangulation {
     public:
+        static const int SUCCEED = 0;
+        static const int ERR_HOLES_MUST_BE_OPERATED_WITH_RESULT_BUFFER = 1;
 
         struct node_t {
             vertex * pt= nullptr;
@@ -47,27 +48,33 @@ namespace tessellation {
             index offset=0, size=0;
         };
 
-        explicit ear_clipping_triangulation(bool DEBUG = false);
-
-        static void compute(vertex *$pts,
+        static int compute(vertex *$pts,
                             index size,
                             dynamic_array<index> & indices_buffer_triangulation,
-                            const triangles::TrianglesIndices &requested,
-                            dynamic_array<triangles::boundary_info> * boundary_buffer,
+                            const microgl::triangles::TrianglesIndices &requested,
+                            dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
                             dynamic_array<hole> * holes,
-                            dynamic_array<vec2_f> * result);
+                            dynamic_array<vertex> * result);
+
+        static void compute(vertex *polygon,
+                            index size,
+                            dynamic_array<index> & indices_buffer_triangulation,
+                            dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
+                            const microgl::triangles::TrianglesIndices &requested =
+                            microgl::triangles::TrianglesIndices::TRIANGLES
+        );
 
         static void compute(node_t *list,
                             index size,
                             dynamic_array<index> & indices_buffer_triangulation,
-                            dynamic_array<triangles::boundary_info> * boundary_buffer,
-                            const triangles::TrianglesIndices &requested =
-                                    triangles::TrianglesIndices::TRIANGLES
-                        );
+                            dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
+                            const microgl::triangles::TrianglesIndices &requested =
+                            microgl::triangles::TrianglesIndices::TRIANGLES
+        );
 
         static index required_indices_size(index polygon_size,
-                                           const triangles::TrianglesIndices &requested =
-                                                        triangles::TrianglesIndices::TRIANGLES);
+                                           const microgl::triangles::TrianglesIndices &requested =
+                                           microgl::triangles::TrianglesIndices::TRIANGLES);
 
 
     private:
