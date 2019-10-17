@@ -112,7 +112,7 @@ namespace tessellation {
 #define abs(a) ((a)<0 ? -(a) : (a))
 
         static
-        void fillAddress(edge_list &edges, master_intersection_list &master_list);
+        void fillAddress(master_intersection_list &master_list);
 
         static
         void findIntersections(chunker<vertex> & pieces,

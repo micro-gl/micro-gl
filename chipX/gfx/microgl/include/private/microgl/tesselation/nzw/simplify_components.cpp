@@ -189,8 +189,6 @@ namespace tessellation {
     void simplify_components::next_perturbation(vertex &point) {
         static int ix = 0;
         static const float pert = 1.0/256.0;
-        static vertex vec_1{pert, 0};
-        static vertex vec_2{0, 0};
         static vertex vec_3{pert, 0};
 
         if(ix==256) {
@@ -208,7 +206,6 @@ namespace tessellation {
 
     void simplify_components::compute_master_list(chunker<vertex> &pieces, master_intersection_list &master_list,
                                                   dynamic_array<vertex *> &allocated_intersection) {
-        edge_list edges;
 
         for (unsigned long poly = 0; poly < pieces.size(); ++poly) {
             auto current_chunk = pieces[poly];
@@ -219,47 +216,12 @@ namespace tessellation {
                 next_perturbation(current_list[ix]);
             }
         }
-        // phase 1:: fill the edges structure and initial intersections
-        // in the master list
-        for (unsigned long poly = 0; poly < pieces.size(); ++poly) {
-            auto current_chunk = pieces[poly];
-            auto * current_list = current_chunk.data;
-            const auto size = current_chunk.size;
-
-            for (unsigned long ix = 0; ix < size; ++ix) {
-                int ix_next = ix+1 >= size ? 0 : int(ix+1);
-                int ix_prev = int(ix-1) < 0 ? int(size-1) : int(ix-1);
-                vertex * current = &current_list[ix];
-                vertex * next = &current_list[ix_next];
-                vertex * prev = &current_list[ix_prev];
-
-                segment l1(prev, current);
-                segment l2(current, next);
-//                    edge edge;
-                l1.sortVertices();
-                l2.sortVertices();
-
-                edge_vertex i1(current, 0.0, -1);
-                edge_vertex i2(next, 1.0, -1);
-
-//                    edge_vertex i1(current, -2, -1);
-//                    edge_vertex i2(next, 2.0, -1);
-                // report vertex as a vertex intersection in the master list
-                master_list.push_back(intersection(current, 2.0, -1.0, l1, l2 ));
-                // first element is the edge vertex
-//                    edge.vertices.push_back(i1);
-                // last vertex of the edge
-//                    edge.vertices.push_back(i2);
-
-//                    edges.push_back( edge );
-            }
-        }
 
         // phase 3:: find intersections of polygons among other polygons and
         // add the intersections into the master list, this uses bounding boxes optimizations
         findIntersections(pieces, master_list, allocated_intersection);
         // use the edge structure to fill the master list
-        fillAddress(edges, master_list);
+        fillAddress(master_list);
     }
 
     void simplify_components::polygonPartition(chunker<vertex> &result, master_intersection_list &master_list) {
@@ -464,7 +426,6 @@ namespace tessellation {
         else if(a_casted->param==b_casted->param)
             return 0;
         else return 1;
-//        return compare_vertices_int(*a_casted->v, *b_casted->v);
     }
 
     static
@@ -475,16 +436,12 @@ namespace tessellation {
         return compare_vertices_int(*a_casted->vertex0, *b_casted->vertex0);
     }
 
-    void simplify_components::fillAddress(edge_list &edges, master_intersection_list &master_list) {
-        // sort the polygons edges and master list
-//            stable_sort(edges.data(), edges.data() + edges.size());
-//        sort(master_list.data(), master_list.data() + master_list.size());
-//
+    void simplify_components::fillAddress(master_intersection_list &master_list) {
+        edge_list edges;
+
 //        qsort_s(master_list.data(), master_list.size(), sizeof(intersection), compare_poly_contexts, nullptr);
 
-
-        // push real intersection into the polygon edges lists, for each edge push
-        // it's intersecting vertex
+        // build the edges lists, this might seem a bit complicated
         for (unsigned long ix =0; ix < master_list.size() ; ix++ ) {
             auto & intersection = master_list[ix];
 
@@ -637,7 +594,6 @@ namespace tessellation {
 //                cmp.edge_end = &edge_vertices[edge_vertices.size()-1];
 //                stable_sort(edge_vertices.data(), edge_vertices.data() + edge_vertices.size(), cmp);
 
-//            sort(edge_vertices.data(), edge_vertices.data() + edge_vertices.size());
             qsort_s(edge_vertices.data(), edge_vertices.size(), sizeof(edge_vertex),
                     compare_edge_vertices, nullptr);
         }
@@ -670,6 +626,29 @@ namespace tessellation {
 
     void simplify_components::findIntersections(chunker<vertex> &pieces, master_intersection_list &master_list,
                                                 dynamic_array<vertex *> &allocated_intersection) {
+        // phase 1:: record trivial intersections
+        for (unsigned long poly = 0; poly < pieces.size(); ++poly) {
+            auto current_chunk = pieces[poly];
+            auto * current_list = current_chunk.data;
+            const auto size = current_chunk.size;
+
+            for (unsigned long ix = 0; ix < size; ++ix) {
+                int ix_next = ix+1 >= size ? 0 : int(ix+1);
+                int ix_prev = int(ix-1) < 0 ? int(size-1) : int(ix-1);
+                vertex * current = &current_list[ix];
+                vertex * next = &current_list[ix_next];
+                vertex * prev = &current_list[ix_prev];
+
+                segment l1(prev, current);
+                segment l2(current, next);
+
+                l1.sortVertices();
+                l2.sortVertices();
+
+                master_list.push_back(intersection(current, 2.0, -1.0, l1, l2 ));
+            }
+        }
+
         // phase 2:: find self intersections of each polygon
         for (unsigned long poly = 0; poly < pieces.size(); ++poly)
         {
@@ -732,7 +711,6 @@ namespace tessellation {
                 edges.push_back(edge);
             }
 
-//            sort(edges.data(), edges.data() + edges.size());
             qsort_s(edges.data(), edges.size(), sizeof(segment),
                     compare_edges, nullptr);
 
@@ -754,7 +732,6 @@ namespace tessellation {
                     edges1.push_back(edge);
                 }
 
-//                sort(edges1.data(), edges1.data() + edges1.size());
                 qsort_s(edges1.data(), edges1.size(), sizeof(segment),
                         compare_edges, nullptr);
 
@@ -807,7 +784,6 @@ namespace tessellation {
 
                     }
 
-
                 }
 
             }
@@ -815,4 +791,5 @@ namespace tessellation {
         }
 
     }
+
 }
