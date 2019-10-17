@@ -2,10 +2,6 @@
 
 namespace tessellation {
 
-    FanTriangulation::FanTriangulation(bool DEBUG) {
-
-    }
-
     void FanTriangulation::compute(vec2_32i *$pts,
                                    index size,
                                    dynamic_array<index> & indices_buffer_triangulation,

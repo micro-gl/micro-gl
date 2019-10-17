@@ -60,7 +60,7 @@ namespace tessellation {
             return nullptr;
 
         for (index ix = 0; ix < size; ++ix) {
-            auto * node = pool.get();//new node_t{};
+            auto * node = pool.get();
             node->pt = &$pts[ix];
             node->original_index = offset + ix;
 

@@ -180,7 +180,7 @@ chunker<vec2_f> poly_inter_1() {
                                 {100,100},
                                 {400,400},
                                 {100,400},
-                                {400,100}
+                                {400,100},
                         });
 
     return A;
@@ -202,19 +202,19 @@ chunker<vec2_f> poly_case_touches_1() {
                                 {250,250},
                                 {400,100},
                         });
-
-    A.push_back_and_cut({
-                                {100,100},
-                                {100,400},
-                                {250,250},
-                        });
-
-    A.push_back_and_cut({
-                                {0,0},
-                                {500,0},
-                                {500,500},
-                                {0,500},
-                        });
+//
+//    A.push_back_and_cut({
+//                                {100,100},
+//                                {100,400},
+//                                {250,250},
+//                        });
+//
+//    A.push_back_and_cut({
+//                                {0,0},
+//                                {500,0},
+//                                {500,500},
+//                                {0,500},
+//                        });
 
     return A;
 }
@@ -479,8 +479,8 @@ void render() {
 //    render_polygon(poly_double());
 //
 //    render_polygon(poly_inter_star());
-//    render_polygon(poly_inter_nested_3());
-    render_polygon(poly_inter_1());
+    render_polygon(poly_inter_nested_3());
+//    render_polygon(poly_inter_1());
 //    render_polygon(poly_case_touches_1());
 
 //    render_polygon(poly_tag_merge_test());
@@ -488,13 +488,16 @@ void render() {
 }
 
 
+// debug - 354kb, O3 - 64kb, Os - 44kb
+// debug - 340kb, O3 - 60kb, Os - 40kb
+// debug - 332kb, O3 - 56kb, Os - 36kb
+// debug - 324kb, O3 - 56kb, Os - 36kb
+
 template <typename T>
 void render_polygon(chunker<T> pieces) {
     using index = unsigned int;
 
     canvas->clear(WHITE);
-//    tessellation::simple_components_tree simple_components_tree{true};
-//    chunker<vec2_f> result = pieces;
 
     tessellation::simple_components_tree::tree tree;
     tessellation::simple_components_tree::compute(
@@ -503,9 +506,9 @@ void render_polygon(chunker<T> pieces) {
 
     for (index ix = 0; ix < tree.pieces.size(); ++ix) {
         auto chunk = tree.pieces[ix];
-        std::cout << "chunk: " << chunk.size -1 << endl;
+        std::cout << "chunk: " << chunk.size -1 << std::endl;
 
-//                if(ix!=1)
+//                if(ix!=2)
 //                    continue;
 
 //        canvas->drawQuad(RED, 0, 0, 100,100, 0,255);
@@ -516,20 +519,7 @@ void render_polygon(chunker<T> pieces) {
                 polygons::hints::SIMPLE
         );
 
-//        if(false)
-//        canvas->drawLinePath(
-//        BLACK,
-//        chunk.data,
-//        chunk.size,
-//        false);
-
     }
-
-    //    polygon[3].y = 50 -  t;
-//    Canvas<vec3<uint8_t>, RGB888_ARRAY> vv{400, 400, new RGB888_ARRAY()};
-//    vv.clear(RED);
-//    vv.drawQuad(RED, 0, 0, 100,100, 0,255);
-//    canvas->drawQuad(*vv.bitmapCanvas(), 0, 0, 200, 200, 0.0f, 0.0f, 1.0, 1.0f, 255);
 
 }
 
@@ -571,7 +561,7 @@ void loop() {
 
     // 100 Quads
     int ms = render_test(TEST_ITERATIONS);
-    cout << ms << endl;
+    std::cout << ms << std::endl;
 
     while (!quit)
     {

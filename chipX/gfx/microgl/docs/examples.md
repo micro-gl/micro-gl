@@ -1942,3 +1942,10 @@ Canvas<P, CODER>::drawTriangleFast(const Bitmap<P2, CODER2> & bmp,
 ////
 
 ```
+
+```
+        static
+        float xProd(const vertex &p, vertex &q, vertex &r) {
+            return q.x*(r.y - p.y) + p.x*(q.y - r.y) + r.x*(p.y - q.y);
+        }
+```

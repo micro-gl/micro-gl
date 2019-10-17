@@ -16,8 +16,6 @@ namespace tessellation {
     class EarClippingTriangulation {
     public:
 
-        explicit EarClippingTriangulation(bool DEBUG = false);
-
         static void compute(vec2_f * $pts,
                         index size,
                         dynamic_array<index> & indices_buffer_triangulation,

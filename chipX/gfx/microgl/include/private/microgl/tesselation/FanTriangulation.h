@@ -15,8 +15,6 @@ namespace tessellation {
     class FanTriangulation {
     public:
 
-        explicit FanTriangulation(bool DEBUG = false);;
-
         static
         void compute(vec2_f * $pts,
                      index size,

@@ -47,8 +47,6 @@ namespace tessellation {
             }
         };
 
-        explicit simple_components_tree(bool DEBUG = false) {};
-
         static
         void compute(chunker<microgl::vec2_f> & pieces,
                             tree & tree

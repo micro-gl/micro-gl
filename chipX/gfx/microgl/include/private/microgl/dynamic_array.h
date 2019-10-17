@@ -140,11 +140,14 @@
 
 #pragma once
 
-#include <microgl/array_container.h>
-#include <type_traits>
+//#include <microgl/array_container.h>
+//#include <type_traits>
+#include <initializer_list>
 
 template<typename T>
 class dynamic_array {//: public array_container<T> {
+    using dynamic_array_ref = dynamic_array<T> &;
+    using const_dynamic_array_ref = const dynamic_array<T> &;
 public:
     using index = unsigned int;
 
@@ -230,7 +233,14 @@ public:
         _data[_current++] = v;
     }
 
-    void push_back(const array_container<T> & container)  {
+    void push_back(const_dynamic_array_ref container)  {
+        const int count = container.size();
+        for (int ix = 0; ix < count; ++ix) {
+            this->push_back(container[ix]);
+        }
+    }
+
+    void push_back(dynamic_array_ref container)  {
         const int count = container.size();
         for (int ix = 0; ix < count; ++ix) {
             this->push_back(container[ix]);

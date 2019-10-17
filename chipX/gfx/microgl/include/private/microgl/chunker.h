@@ -1,5 +1,6 @@
 #pragma once
 
+#include <initializer_list>
 #include <microgl/dynamic_array.h>
 //#include <microgl/static_array.h>
 
@@ -12,8 +13,8 @@ private:
     using const_type_pointer= const T *;
     using chunker_ref = chunker<T> &;
     using const_chunker_ref = const chunker<T> &;
-    using array_container_ref = array_container<T> &;
-    using const_array_container_ref = const array_container<T> &;
+    using dynamic_array_ref = dynamic_array<T> &;
+    using const_dynamic_array_ref = const dynamic_array<T> &;
 
     dynamic_array<T> _data;
     dynamic_array<index> _locations;
@@ -51,7 +52,7 @@ public:
         _data.push_back(v);
     }
 
-    void push_back(const_array_container_ref container) {
+    void push_back(const_dynamic_array_ref container) {
         _data.push_back(container);
     }
 
@@ -65,7 +66,12 @@ public:
         cut_chunk();
     }
 
-    void push_back_and_cut(const_array_container_ref container) {
+    void push_back_and_cut(dynamic_array_ref container) {
+        _data.push_back(container);
+        cut_chunk();
+    }
+
+    void push_back_and_cut(const_dynamic_array_ref container) {
         _data.push_back(container);
         cut_chunk();
     }

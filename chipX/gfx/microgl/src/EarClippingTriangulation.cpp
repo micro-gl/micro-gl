@@ -2,9 +2,6 @@
 
 namespace tessellation {
 
-    EarClippingTriangulation::EarClippingTriangulation(bool DEBUG) :
-            _DEBUG{DEBUG} {};
-
     void EarClippingTriangulation::compute(microgl::vec2_f *$pts,
                                            index size,
                                            dynamic_array<index> & indices_buffer_triangulation,

@@ -4,6 +4,8 @@
 //#include <microgl/Canvas.h>
 
 
+#include <microgl/tesselation/ear_clipping_triangulation.h>
+
 template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
                         : _width{$bmp->width()}, _height{$bmp->height()}, _bitmap_canvas($bmp) {
@@ -2427,13 +2429,13 @@ void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
         {
             type = antialias ? triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY :
                    triangles::TrianglesIndices::TRIANGLES;
-            tessellation::EarClippingTriangulation ear{false};
-            ear.compute(points,
-                        size,
-                        indices,
-                        &boundary_buffer,
-                        type
-            );
+//            tessellation::EarClippingTriangulation ear{false};
+//            tessellation::ear_clipping_triangulation::compute(points,
+//                                                              size,
+//                                                              indices,
+//                                                              &boundary_buffer,
+//                                                              type
+//            );
 
             break;
         }
@@ -2441,12 +2443,11 @@ void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
         {
             type = antialias ? triangles::TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY :
                    triangles::TrianglesIndices::TRIANGLES_FAN;
-            tessellation::FanTriangulation fan{false};
-            fan.compute(points,
-                        size,
-                        indices,
-                        &boundary_buffer,
-                        type
+            tessellation::FanTriangulation::compute(points,
+                                                    size,
+                                                    indices,
+                                                    &boundary_buffer,
+                                                    type
             );
 
             break;
@@ -2491,17 +2492,67 @@ void Canvas<P, CODER>::drawPolygon(vec2_f *points,
                                    opacity opacity,
                                    polygons::hints hint
                                    ) {
-    dynamic_array<vec2_32i> points_int;
-    precision sub_pixel_precision = 4; //todo:: raise to 4
+    TrianglesIndices type;
+    // currently static on the stack
+    dynamic_array<index> indices;
+    dynamic_array<boundary_info> boundary_buffer;
 
-    for (index ix = 0; ix < size; ++ix)
-        points_int.push_back(points[ix]<<sub_pixel_precision);
+    switch (hint) {
 
-    drawPolygon<BlendMode, PorterDuff, antialias>(
-            points_int.data(),
-            size,
-            sub_pixel_precision,
+        case hints::CONCAVE:
+        case hints::SIMPLE:
+        {
+            type = antialias ? triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY :
+                   triangles::TrianglesIndices::TRIANGLES;
+            tessellation::ear_clipping_triangulation::compute(points,
+                                                              size,
+                                                              indices,
+                                                              &boundary_buffer,
+                                                              type
+            );
+
+            break;
+        }
+        case hints::CONVEX:
+        {
+            type = antialias ? triangles::TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY :
+                   triangles::TrianglesIndices::TRIANGLES_FAN;
+            tessellation::FanTriangulation::compute(points,
+                                                    size,
+                                                    indices,
+                                                    &boundary_buffer,
+                                                    type
+            );
+
+            break;
+        }
+        case hints::NON_SIMPLE:
+        case hints::SELF_INTERSECTING:
+        default:
+            return;
+//            throw std::runtime_error("Non-Simple polygons are not supported yet !!!");
+            break;
+    }
+
+    // draw triangles batch
+    drawTriangles<BlendMode, PorterDuff, antialias>(
+            RED,
+            points,
+            indices.data(),
+            boundary_buffer.data(),
+            indices.size(),
+            type,
             opacity,
-            hint);
+            4);
+
+//    return;
+    // draw triangulation
+    drawTrianglesWireframe(BLACK,
+                           points,
+                           indices.data(),
+                           indices.size(),
+                           type,
+                           255,
+                           4);
 }
 

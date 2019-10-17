@@ -1,9 +1,9 @@
 #pragma once
 
-#include <microgl/array_container.h>
+//#include <microgl/array_container.h>
 
 template<typename T, unsigned N>
-class static_array : public array_container<T> {
+class static_array {
 public:
     using index = unsigned int;
 
@@ -28,59 +28,65 @@ public:
         return (*this);
     }
 
-    T& operator[](index i) override {
+    T& operator[](index i) {
         return _data[i];
     }
 
-    const T& operator[](index i) const override {
+    const T& operator[](index i) const {
         return _data[i];
     }
 
-    T* data() override {
+    T* data() {
         return _data;
     }
 
-    const T* data() const override {
+    const T* data() const {
         return _data;
     }
 
-    const T& peek() override {
+    const T& peek() {
         return (*this)[_current];
     }
 
-    void push_back(const T & v) override {
+    void push_back(const T & v) {
         if(_current==N-1)
             return;
         _data[_current++] = v;
     }
 
-    void push_back(const array_container<T> & container) override {
+    void push_back(const static_array<T> & container) {
         for (index ix = 0; ix < container.size(); ++ix) {
             this->push_back(container[ix]);
         }
     }
 
-    void pop_back() override {
+    void push_back(static_array<T> & container) {
+        for (index ix = 0; ix < container.size(); ++ix) {
+            this->push_back(container[ix]);
+        }
+    }
+
+    void pop_back() {
         if(_current==0)
             return;
 
         _data[_current--].~T();
     }
 
-    void move(index idx) override {
+    void move(index idx) {
         if(idx < capacity())
             _current = idx;
     }
 
-    void clear() override {
+    void clear() {
         _current = 0;
     }
 
-    index size() const override {
+    index size() const {
         return _current;
     }
 
-    index capacity() const override {
+    index capacity() const {
         return N;
     }
 
