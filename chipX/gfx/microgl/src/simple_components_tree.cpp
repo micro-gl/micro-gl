@@ -471,7 +471,7 @@ namespace tessellation {
         dynamic_array<direction> components_directions;
         auto & simplified_components = tree.pieces;
 
-        simplify_components::compute(
+        simplify_components<float>::compute(
                 pieces,
                 simplified_components);
 

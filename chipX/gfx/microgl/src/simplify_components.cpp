@@ -1,14 +1,15 @@
-#include <microgl/tesselation/simplify_components.h>
+//#include <microgl/tesselation/simplify_components.h>
 #include <microgl/qsort.h>
 
 namespace tessellation {
 
-    bool compare_vertices(const vertex &v1, const vertex &v2) {
+    template <typename number>
+    bool simplify_components<number>::compare_vertices(const simplify_components<number>::vertex &v1, const simplify_components<number>::vertex &v2) {
         return v1.x < v2.x || (v1.x == v2.x && v1.y < v2.y);
     }
 
-    static
-    int compare_vertices_int(const vertex &v1, const vertex &v2) {
+    template <typename number>
+    int simplify_components<number>::compare_vertices_int(const simplify_components<number>::vertex &v1, const simplify_components<number>::vertex &v2) {
         bool smaller = v1.x < v2.x || (v1.x == v2.x && v1.y < v2.y);
         if(smaller)
             return -1;
@@ -16,7 +17,8 @@ namespace tessellation {
         return equal ? 0 : 1;
     }
 
-    intersection::intersection(vertex *vtx, float p1, float p2, const segment &li, const segment &lj) {
+    template <typename number>
+    simplify_components<number>::intersection::intersection(vertex *vtx, float p1, float p2, const segment &li, const segment &lj) {
         v = vtx;
         index1 = -1;
         index2 = -1;
@@ -26,25 +28,30 @@ namespace tessellation {
         l2 = lj;
     }
 
-    vertex *intersection::origin1() {
+    template <typename number>
+    typename simplify_components<number>::vertex *simplify_components<number>::intersection::origin1() {
         return l1.start();
     }
 
-    vertex *intersection::origin2() {
+    template <typename number>
+    typename simplify_components<number>::vertex *simplify_components<number>::intersection::origin2() {
         return l2.start();
     }
 
-    bool intersection::isDeadEnd() {
+    template <typename number>
+    bool simplify_components<number>::intersection::isDeadEnd() {
         return index1==-1 && index2==-1;
     }
 
-    edge_vertex::edge_vertex(vertex *vtx, float p, int i) {
+    template <typename number>
+    simplify_components<number>::edge_vertex::edge_vertex(vertex *vtx, float p, int i) {
         v = vtx;
         param = p;
         index = i;
     }
 
-    segment::IntersectionType segment::calcIntersection
+    template <typename number>
+    typename simplify_components<number>::segment::IntersectionType simplify_components<number>::segment::calcIntersection
             (const segment &l, vertex &intersection, float &alpha, float &alpha1) {
         // endpoints
         auto a = *(this->start());
@@ -61,7 +68,7 @@ namespace tessellation {
         // parallel lines
         // todo:: revisit when thinking about fixed points
         if (abs(dem) < NOISE)
-            return PARALLEL;
+            return IntersectionType::PARALLEL;
         else {
             auto ca = a - c;
             auto ac = -ca;
@@ -73,23 +80,24 @@ namespace tessellation {
 
             // test for segment intersecting (alpha)
             if ((alpha < 0.0) || (alpha > 1.0))
-                return NO_INTERSECT;
+                return IntersectionType::NO_INTERSECT;
             else {;//if(false){
                 float num = ca.y * ab.x - ca.x * ab.y;
 
                 if (dem > 0.0) {
                     if (num < 0.0 || num > dem)
-                        return NO_INTERSECT;
+                        return IntersectionType::NO_INTERSECT;
                 } else {
                     if (num > 0.0 || num < dem)
-                        return NO_INTERSECT;
+                        return IntersectionType::NO_INTERSECT;
                 }
             }
         }
-        return INTERSECT;
+        return IntersectionType::INTERSECT;
     }
 
-    void segment::sortVertices() {
+    template <typename number>
+    void simplify_components<number>::segment::sortVertices() {
         m_swappedVertices = !(compare_vertices(*vertex0, *vertex1));
         if (m_swappedVertices) {
             auto *tmp = vertex0;
@@ -98,9 +106,11 @@ namespace tessellation {
         }
     }
 
-    segment::segment(vertex *vtx0, vertex *vtx1) : vertex0(vtx0), vertex1(vtx1) {}
+    template <typename number>
+    simplify_components<number>::segment::segment(vertex *vtx0, vertex *vtx1) : vertex0(vtx0), vertex1(vtx1) {}
 
-    bool segment::has_mutual_endpoint(const segment &a) {
+    template <typename number>
+    bool simplify_components<number>::segment::has_mutual_endpoint(const segment &a) {
         bool a_start_start = a.start()->x==this->start()->x && a.start()->y==this->start()->y;
         bool a_start_end = a.start()->x==this->end()->x && a.start()->y==this->end()->y;
 
@@ -115,7 +125,9 @@ namespace tessellation {
 
     }
 
-    segment::bbox_axis segment::classify_aligned_segment_relative_to(const segment &a, bool compare_x) {
+    template <typename number>
+    typename simplify_components<number>::segment::bbox_axis
+    simplify_components<number>::segment::classify_aligned_segment_relative_to(const segment &a, bool compare_x) {
         auto min_a = compare_x ? a.start()->x : a.start()->y;
         auto max_a = compare_x ? a.end()->x : a.end()->y;
         auto min_me = compare_x ? this->start()->x : this->start()->y;
@@ -141,36 +153,50 @@ namespace tessellation {
             return bbox_axis::overlaps;
     }
 
-    segment::bbox_axis segment::classify_vertical(const segment &a) {
+    template <typename number>
+    typename
+    simplify_components<number>::segment::bbox_axis simplify_components<number>::segment::classify_vertical(const segment &a) {
         return classify_aligned_segment_relative_to(a, false);
     }
 
-    segment::bbox_axis segment::classify_horizontal(const segment &a) {
+    template <typename number>
+    typename simplify_components<number>::segment::bbox_axis
+    simplify_components<number>::segment::classify_horizontal(const segment &a) {
         return classify_aligned_segment_relative_to(a, true);
     }
 
-    bool segment::is_bbox_overlapping_with(const segment &a) {
+    template <typename number>
+    bool simplify_components<number>::segment::is_bbox_overlapping_with(const segment &a) {
         return classify_aligned_segment_relative_to(a, true)==bbox_axis::overlaps &&
                classify_aligned_segment_relative_to(a, false)==bbox_axis::overlaps;
     }
 
-    vertex *segment::start() {
+    template <typename number>
+    typename simplify_components<number>::vertex *
+    simplify_components<number>::segment::start() {
         return !m_swappedVertices ? vertex0 : vertex1;
     }
 
-    vertex *segment::end() {
+    template <typename number>
+    typename simplify_components<number>::vertex *
+    simplify_components<number>::segment::end() {
         return !m_swappedVertices ? vertex1 : vertex0;
     }
 
-    vertex *segment::start() const {
+    template <typename number>
+    typename simplify_components<number>::vertex *
+    simplify_components<number>::segment::start() const {
         return !m_swappedVertices ? vertex0 : vertex1;
     }
 
-    vertex *segment::end() const {
+    template <typename number>
+    typename simplify_components<number>::vertex *
+    simplify_components<number>::segment::end() const {
         return !m_swappedVertices ? vertex1 : vertex0;
     }
 
-    void simplify_components::compute(chunker<vertex> &pieces, chunker<vertex> &pieces_result) {
+    template <typename number>
+    void simplify_components<number>::compute(chunker<vertex> &pieces, chunker<vertex> &pieces_result) {
         master_intersection_list master_list;
         dynamic_array<vertex *> allocated_intersection;
 
@@ -186,7 +212,8 @@ namespace tessellation {
         }
     }
 
-    void simplify_components::next_perturbation(vertex &point) {
+    template <typename number>
+    void simplify_components<number>::next_perturbation(vertex &point) {
         static int ix = 0;
         static const float pert = 1.0/256.0;
         static vertex vec_3{pert, 0};
@@ -204,7 +231,8 @@ namespace tessellation {
         ix++;
     }
 
-    void simplify_components::compute_master_list(chunker<vertex> &pieces,
+    template <typename number>
+    void simplify_components<number>::compute_master_list(chunker<vertex> &pieces,
                                                   master_intersection_list &master_list,
                                                   dynamic_array<vertex *> &allocated_intersection) {
 
@@ -224,7 +252,8 @@ namespace tessellation {
         fillAddress(master_list);
     }
 
-    void simplify_components::polygonPartition(chunker<vertex> &result, master_intersection_list &master_list) {
+    template <typename number>
+    void simplify_components<number>::polygonPartition(chunker<vertex> &result, master_intersection_list &master_list) {
 
         const auto size = master_list.size();
 
@@ -416,11 +445,11 @@ namespace tessellation {
     }
      */
 
-    static
-    int compare_edge_vertices (const void * a, const void * b, void * ctx)
+    template <typename number>
+    int simplify_components<number>::compare_edge_vertices (const void * a, const void * b, void * ctx)
     {
-        auto *a_casted = (edge_vertex *)a;
-        auto *b_casted = (edge_vertex *)b;
+        auto *a_casted = (simplify_components::edge_vertex *)a;
+        auto *b_casted = (simplify_components::edge_vertex *)b;
         if(a_casted->param<b_casted->param)
             return -1;
         else if(a_casted->param==b_casted->param)
@@ -428,15 +457,16 @@ namespace tessellation {
         else return 1;
     }
 
-    static
-    int compare_edges (const void * a, const void * b, void * ctx)
+    template <typename number>
+    int simplify_components<number>::compare_edges (const void * a, const void * b, void * ctx)
     {
         auto *a_casted = (segment *)a;
         auto *b_casted = (segment *)b;
         return compare_vertices_int(*a_casted->vertex0, *b_casted->vertex0);
     }
 
-    void simplify_components::fillAddress(master_intersection_list &master_list) {
+    template <typename number>
+    void simplify_components<number>::fillAddress(master_intersection_list &master_list) {
         edge_list edges;
 
 //        qsort_s(master_list.data(), master_list.size(), sizeof(intersection), compare_poly_contexts, nullptr);
@@ -624,8 +654,10 @@ namespace tessellation {
 
     }
 
-    void simplify_components::findIntersections(chunker<vertex> &pieces, master_intersection_list &master_list,
-                                                dynamic_array<vertex *> &allocated_intersection) {
+    template <typename number>
+    void simplify_components<number>::findIntersections(chunker<vertex> &pieces,
+                                                        master_intersection_list &master_list,
+                                                        dynamic_array<vertex *> &allocated_intersection) {
         // phase 1:: record trivial intersections
         for (unsigned long poly = 0; poly < pieces.size(); ++poly) {
             auto current_chunk = pieces[poly];
@@ -676,7 +708,7 @@ namespace tessellation {
                     if (edge_1.has_mutual_endpoint(edge_0))
                         continue;
                     if(edge_1.calcIntersection(edge_0, intersection_v, al1, al2)
-                       != segment::INTERSECT)
+                       != segment::IntersectionType::INTERSECT)
                         continue;
 
                     auto * found_intersection = new vertex(intersection_v);
@@ -771,7 +803,7 @@ namespace tessellation {
 
                         // test and compute intersection
                         if (edge_0.calcIntersection(edge_1, intersection_v, param1, param2)
-                            != segment::INTERSECT)
+                            != segment::IntersectionType::INTERSECT)
                             continue;
 
                         auto *found_intersection = new vertex(intersection_v);

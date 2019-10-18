@@ -492,6 +492,7 @@ void render() {
 // debug - 340kb, O3 - 60kb, Os - 40kb
 // debug - 332kb, O3 - 56kb, Os - 36kb
 // debug - 323kb, O3 - 56kb, Os - 36kb
+// debug - 328kb, O3 - 56kb, Os - 36kb
 
 template <typename T>
 void render_polygon(chunker<T> pieces) {

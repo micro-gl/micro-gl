@@ -36,7 +36,7 @@ set(sources
         src/ArcDivider.cpp
         src/simple_components_tree.cpp
         src/complex_poly_tess.cpp
-        src/simplify_components.cpp
+#        src/simplify_components.cpp
         src/qsort.cpp)
 
 add_library(${PROJECT_NAME} ${sources})
