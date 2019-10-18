@@ -18,7 +18,9 @@ namespace tessellation {
 
         static void compute(chunker<vertex> & pieces,
                             dynamic_array<vertex> & result,
-                            dynamic_array<vertex> & indices
+                            dynamic_array<index> & indices,
+                            const microgl::triangles::TrianglesIndices &requested = microgl::triangles::TrianglesIndices::TRIANGLES,
+                            dynamic_array<microgl::triangles::boundary_info> * boundary_buffer = nullptr
                             );
 
     private:

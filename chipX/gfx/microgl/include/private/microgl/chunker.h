@@ -29,6 +29,7 @@ public:
     struct chunk {
         T* data;
         index size;
+//        index offset;
     };
 
     chunker(const_chunker_ref chunker) {
@@ -97,6 +98,7 @@ public:
         type_pointer pointer = &(_data[idx_start]);
 
         return {pointer, size};
+//        return {pointer, size, idx_start};
     }
 
     chunk operator[](index i) {

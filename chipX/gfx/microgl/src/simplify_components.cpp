@@ -314,7 +314,9 @@ namespace tessellation {
 
                 current_intersection = &master_list[running_index];
 
-                result.push_back(*current_intersection->v);
+                // avoid the first point again
+                if(running_index!=startIndex)
+                    result.push_back(*current_intersection->v);
 
             } while ((running_index != startIndex) && (running_index != -1)) ;
 

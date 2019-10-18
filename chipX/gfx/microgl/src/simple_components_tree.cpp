@@ -133,7 +133,7 @@ namespace tessellation {
         for (int ix = 0; ix < size; ++ix) {
             auto & v = poly[ix];
 
-            if(v.x < value.x) {
+            if(v.x <= value.x) {
                 value = v;
                 index = ix;
             }
@@ -157,7 +157,7 @@ namespace tessellation {
         const vertex &point = poly[idx];
         auto follow_idx = idx;
         while(true) {
-            if(++follow_idx==size-1)
+            if(++follow_idx==size)
                 follow_idx=0;
 
             // completed a cycle and haven't found
@@ -286,10 +286,10 @@ namespace tessellation {
 
             compare = compare_simple_non_intersecting_polygons(
                     poly_current.data,
-                    poly_current.size - 1,
+                    poly_current.size,
                     directions[current->index_poly]==direction::ccw,
                     poly_root.data,
-                    poly_root.size - 1,
+                    poly_root.size,
                     directions[root->index_poly]==direction::ccw);
 
             // compare against the root polygon
@@ -322,10 +322,10 @@ namespace tessellation {
 
             compare = compare_simple_non_intersecting_polygons(
                     poly_current.data,
-                    poly_current.size-1,
+                    poly_current.size,
                     directions[current->index_poly]==direction::ccw,
                     child_poly.data,
-                    child_poly.size-1,
+                    child_poly.size,
                     directions[child_poly_index]==direction::ccw);
 
             switch (compare) {

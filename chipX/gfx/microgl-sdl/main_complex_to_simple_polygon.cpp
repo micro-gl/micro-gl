@@ -498,32 +498,48 @@ void render() {
 template <typename T>
 void render_polygon(chunker<T> pieces) {
     using index = unsigned int;
-
-    canvas->clear(WHITE);
     using cpt = tessellation::complex_poly_tess<float>;
+    dynamic_array<vec2_f> result;
+    dynamic_array<index> indices;
+    dynamic_array<boundary_info> boundary;
+    auto requested_indices = microgl::triangles::TrianglesIndices::TRIANGLES;
 
-    sct::tree tree;
-    sct::compute(
+    cpt::compute(
             pieces,
-            tree);
+            result,
+            indices,
+            requested_indices,
+            &boundary
+            );
 
 //    std::cout<<tree.nodes->index_poly;
-    for (index ix = 0; ix < tree.pieces.size(); ++ix) {
-        auto chunk = tree.pieces[ix];
-        std::cout << "chunk: " << chunk.size -1 << std::endl;
+
+    canvas->clear(WHITE);
+
+//    for (index ix = 0; ix < result.size(); ++ix) {
+
+    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+            RED,
+            result.data(),
+            indices.data(),
+            boundary.data(),
+            indices.size(),
+            requested_indices,
+            122,
+            4);
 
 //                if(ix!=2)
 //                    continue;
 
 //        canvas->drawQuad(RED, 0, 0, 100,100, 0,255);
-        canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-                chunk.data,
-                chunk.size-1,
-                120,
-                polygons::hints::SIMPLE
-        );
+//        canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+//                chunk.data,
+//                chunk.size-1,
+//                120,
+//                polygons::hints::SIMPLE
+//        );
 
-    }
+//    }
 
 }
 

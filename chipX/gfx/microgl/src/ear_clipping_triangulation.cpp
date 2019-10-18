@@ -32,7 +32,7 @@ namespace tessellation {
         do {
             auto & v = *iter->pt;
 
-            if(v.x < value.x) {
+            if(v.x <= value.x) {
                 value = v;
                 candidate = iter;
             }

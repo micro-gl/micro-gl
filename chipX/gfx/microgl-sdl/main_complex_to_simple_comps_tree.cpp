@@ -510,7 +510,7 @@ void render_polygon(chunker<T> pieces) {
 //    std::cout<<tree.nodes->index_poly;
     for (index ix = 0; ix < tree.pieces.size(); ++ix) {
         auto chunk = tree.pieces[ix];
-        std::cout << "chunk: " << chunk.size -1 << std::endl;
+        std::cout << "chunk: " << chunk.size << std::endl;
 
 //                if(ix!=2)
 //                    continue;
@@ -518,7 +518,7 @@ void render_polygon(chunker<T> pieces) {
 //        canvas->drawQuad(RED, 0, 0, 100,100, 0,255);
         canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
                 chunk.data,
-                chunk.size-1,
+                chunk.size,
                 120,
                 polygons::hints::SIMPLE
         );
