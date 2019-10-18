@@ -2504,7 +2504,7 @@ void Canvas<P, CODER>::drawPolygon(vec2_f *points,
         {
             type = antialias ? triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY :
                    triangles::TrianglesIndices::TRIANGLES;
-            tessellation::ear_clipping_triangulation::compute(points,
+            tessellation::ear_clipping_triangulation<float>::compute(points,
                                                               size,
                                                               indices,
                                                               &boundary_buffer,

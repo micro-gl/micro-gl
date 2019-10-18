@@ -44,7 +44,7 @@ dynamic_array<vec2_f> box(float left, float top,
 
 void test_1() {
     using index = unsigned int;
-    using ect = ear_clipping_triangulation;
+    using ect = tessellation::ear_clipping_triangulation<float>;
     uint8_t precision = 0;
     auto type = TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
     dynamic_array<index> indices;

@@ -1,11 +1,11 @@
-#include <microgl/tesselation/ear_clipping_triangulation.h>
 #include <microgl/qsort.h>
 
 namespace tessellation {
 
-    bool test_intersect(const vertex &a, const vertex &b,
+    template <typename number>
+    bool ear_clipping_triangulation<number>::test_intersect(const vertex &a, const vertex &b,
                         const vertex &c, const vertex &d,
-                        bool interior_only=false) {
+                        bool interior_only) {
         auto ab = b - a;
         auto cd = d - c;
         auto ca = a - c;
@@ -20,10 +20,10 @@ namespace tessellation {
         return test;
     }
 
-    using ect = ear_clipping_triangulation;
-
     // the extremal left-bottom most vertex is always a convex vertex
-    ect::node_t * find_left_bottom_most_vertex(ect::node_t * poly) {
+    template <typename number>
+    typename ear_clipping_triangulation<number>::node_t *
+    ear_clipping_triangulation<number>::find_left_bottom_most_vertex(node_t * poly) {
         auto * first = poly;
         auto * candidate = first;
         vertex value = *candidate->pt;
@@ -48,11 +48,12 @@ namespace tessellation {
         return candidate;
     }
 
-    ear_clipping_triangulation::node_t *
-    ear_clipping_triangulation::polygon_to_linked_list(vertex *$pts,
+    template <typename number>
+    typename ear_clipping_triangulation<number>::node_t *
+    ear_clipping_triangulation<number>::polygon_to_linked_list(vertex *$pts,
                                                        index offset,
                                                        index size,
-                                                       ect::pool_nodes_t &pool
+                                                       pool_nodes_t &pool
                                                        ) {
         node_t * first = nullptr, * last = nullptr;
 
@@ -84,11 +85,11 @@ namespace tessellation {
         return first;
     }
 
-
-    bool is_bbox_overlaps_axis(const vertex &a, const vertex &b,
+    template <typename number>
+    bool ear_clipping_triangulation<number>::is_bbox_overlaps_axis(const vertex &a, const vertex &b,
                                               const vertex &c, const vertex &d,
                                               bool compare_x,
-                                              bool interior_only=false) {
+                                              bool interior_only) {
 
         auto min_ab = compare_x ? a.x : a.y, max_ab = compare_x ? a.x : a.y;
         auto min_cd = compare_x ? c.x : c.y, max_cd = compare_x ? c.x : c.y;
@@ -112,14 +113,17 @@ namespace tessellation {
         return !disjoint;
     }
 
-    bool is_bbox_overlaps(const vertex &a, const vertex &b,
+    template <typename number>
+    bool ear_clipping_triangulation<number>::is_bbox_overlaps(const vertex &a, const vertex &b,
                           const vertex &c, const vertex &d,
-                          bool interior_only=false) {
+                          bool interior_only) {
         return is_bbox_overlaps_axis(a,b,c,d,true,interior_only) &&
                 is_bbox_overlaps_axis(a,b,c,d,false,interior_only);
     }
 
-    ect::node_t * find_mutually_visible_vertex(ect::node_t * poly,
+    template <typename number>
+    typename ear_clipping_triangulation<number>::node_t *
+    ear_clipping_triangulation<number>::find_mutually_visible_vertex(node_t * poly,
                                                const vertex& v) {
 
         auto * first = poly;
@@ -158,10 +162,11 @@ namespace tessellation {
         return nullptr;
     }
 
-    void merge_hole(ect::node_t * outer,
-                    ect::node_t * inner,
-                    ect::node_t * inner_left_most_node,
-                    ect::pool_nodes_t &pool) {
+    template <typename number>
+    void ear_clipping_triangulation<number>::merge_hole(node_t * outer,
+                                                        node_t * inner,
+                                                        node_t * inner_left_most_node,
+                                                        pool_nodes_t &pool) {
 
         // found mutually visible vertex in outer
         auto * outer_node = find_mutually_visible_vertex(
@@ -188,11 +193,12 @@ namespace tessellation {
     }
 
 
-    int compare_poly_contexts (const void * a, const void * b, void * ctx)
+    template <typename number>
+    int ear_clipping_triangulation<number>::compare_poly_contexts (const void * a, const void * b, void * ctx)
     {
 //        auto * left_mosts = (ect::LinkedList::node_t **) ctx;
-        auto * a_casted = (const ect::poly_context_t *)a;
-        auto * b_casted = (const ect::poly_context_t *)b;
+        auto * a_casted = (const poly_context_t *)a;
+        auto * b_casted = (const poly_context_t *)b;
 
         vertex &a_lm = *(a_casted->left_most->pt);
         vertex &b_lm = *(b_casted->left_most->pt);
@@ -208,7 +214,8 @@ namespace tessellation {
         return 1;
     }
 
-    int ear_clipping_triangulation::compute(vertex *$pts,
+    template <typename number>
+    int ear_clipping_triangulation<number>::compute(vertex *$pts,
                                              index size,
                                              dynamic_array<index> & indices_buffer_triangulation,
                                              const microgl::triangles::TrianglesIndices &requested,
@@ -276,7 +283,8 @@ namespace tessellation {
         return SUCCEED;
     }
 
-    void ear_clipping_triangulation::compute(vertex *polygon,
+    template <typename number>
+    void ear_clipping_triangulation<number>::compute(vertex *polygon,
                                              index size,
                                              dynamic_array<index> & indices_buffer_triangulation,
                                              dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
@@ -284,7 +292,8 @@ namespace tessellation {
         compute(polygon, size, indices_buffer_triangulation, requested, boundary_buffer, nullptr, nullptr);
     }
 
-    void ear_clipping_triangulation::compute(node_t *list,
+    template <typename number>
+    void ear_clipping_triangulation<number>::compute(node_t *list,
                                              index size,
                                              dynamic_array<index> & indices_buffer_triangulation,
                                              dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
@@ -343,8 +352,9 @@ namespace tessellation {
 
     }
 
+    template <typename number>
     long long
-    ear_clipping_triangulation::orientation_value(const node_t *i,
+    ear_clipping_triangulation<number>::orientation_value(const node_t *i,
                                                   const node_t *j,
                                                   const node_t *k) {
         return i->pt->x * (j->pt->y - k->pt->y) +
@@ -353,7 +363,8 @@ namespace tessellation {
     }
 
     // ts
-    int ear_clipping_triangulation::neighborhood_orientation_sign(
+    template <typename number>
+    int ear_clipping_triangulation<number>::neighborhood_orientation_sign(
             const node_t *v) {
         const node_t * l = v->prev;
         const node_t * r = v->next;
@@ -364,8 +375,9 @@ namespace tessellation {
     }
 
     // tv
+    template <typename number>
     char
-    ear_clipping_triangulation::sign_orientation_value(const node_t *i,
+    ear_clipping_triangulation<number>::sign_orientation_value(const node_t *i,
                                                        const node_t *j,
                                                        const node_t *k) {
         auto v = orientation_value(i, j, k);
@@ -379,7 +391,9 @@ namespace tessellation {
             return 0;
     }
 
-    ear_clipping_triangulation::node_t *ear_clipping_triangulation::maximal_y_element(node_t *list) {
+    template <typename number>
+    typename ear_clipping_triangulation<number>::node_t *
+    ear_clipping_triangulation<number>::maximal_y_element(node_t *list) {
         node_t * first = list;
         node_t * maximal_index = first;
         node_t * node = first;
@@ -401,7 +415,8 @@ namespace tessellation {
         return maximal_index;
     }
 
-    bool ear_clipping_triangulation::isDegenrate(const node_t *v) {
+    template <typename number>
+    bool ear_clipping_triangulation<number>::isDegenrate(const node_t *v) {
         const node_t * l = v->prev;
         const node_t * r = v->next;
 
@@ -409,7 +424,8 @@ namespace tessellation {
         return test;
     }
 
-    bool ear_clipping_triangulation::isConvex(const node_t *v,
+    template <typename number>
+    bool ear_clipping_triangulation<number>::isConvex(const node_t *v,
                                               node_t *list) {
         // the maximal y element is always convex, therefore if
         // they have the same orientation, then v is also convex
@@ -417,14 +433,16 @@ namespace tessellation {
                neighborhood_orientation_sign(maximal_y_element(list)) > 0;
     }
 
-    bool ear_clipping_triangulation::areEqual(const node_t *a,
+    template <typename number>
+    bool ear_clipping_triangulation<number>::areEqual(const node_t *a,
                                             const node_t *b) {
         return
             a->pt->x==b->pt->x &&
             a->pt->y==b->pt->y;
     }
 
-    bool ear_clipping_triangulation::isEmpty(const node_t *v,
+    template <typename number>
+    bool ear_clipping_triangulation<number>::isEmpty(const node_t *v,
                                              node_t *list){
         int tsv;
 
@@ -451,7 +469,8 @@ namespace tessellation {
         return true;
     }
 
-    index ear_clipping_triangulation::required_indices_size(const index polygon_size,
+    template <typename number>
+    index ear_clipping_triangulation<number>::required_indices_size(const index polygon_size,
                                                           const microgl::triangles::TrianglesIndices &requested) {
         switch (requested) {
             case microgl::triangles::TrianglesIndices::TRIANGLES:

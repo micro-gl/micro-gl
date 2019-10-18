@@ -4,7 +4,7 @@
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/PixelCoder.h>
-#include <microgl/tesselation/complex_poly_tess.h>
+#include <microgl/tesselation/simple_components_tree.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -500,7 +500,7 @@ void render_polygon(chunker<T> pieces) {
     using index = unsigned int;
 
     canvas->clear(WHITE);
-    using cpt = tessellation::complex_poly_tess<float>;
+    using sct = tessellation::simple_components_tree<float>;
 
     sct::tree tree;
     sct::compute(

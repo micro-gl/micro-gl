@@ -29,7 +29,7 @@ set(sources
 #        src/Segment.cpp
         src/BezierCurveDivider.cpp
         src/EarClippingTriangulation.cpp
-        src/ear_clipping_triangulation.cpp
+#        src/ear_clipping_triangulation.cpp
         src/FanTriangulation.cpp
         src/triangles.cpp
         src/PathTessellation.cpp
