@@ -1,4 +1,5 @@
-#include <microgl/tesselation/simple_components_tree.h>
+//#include <microgl/tesselation/simple_components_tree.h>
+//#include <microgl/tesselation/ear_clipping_triangulation.h>
 
 namespace tessellation {
 
@@ -10,9 +11,9 @@ namespace tessellation {
     //            =0 for P2  on the line
     //            <0 for P2  right of the line
     //    See: Algorithm 1 "Area of Triangles and Polygons"
-    static
+    template <typename number>
     inline int
-    classify_point(const vertex & point, const vertex &a, const vertex & b)
+    simple_components_tree<number>::classify_point(const vertex & point, const vertex &a, const vertex & b)
     {
         auto result = ((b.x - a.x) * (point.y - a.y)
                    - (point.x - a.x) * (b.y - a.y) );
@@ -24,16 +25,16 @@ namespace tessellation {
         else return 0;
     }
 
-    static
+    template <typename number>
     inline int
-    isLeft(const vertex & point, const vertex &a, const vertex & b)
+    simple_components_tree<number>::isLeft(const vertex & point, const vertex &a, const vertex & b)
     {
         return classify_point(point, a, b) > 0;
     }
 
-    static
+    template <typename number>
     int
-    point_inside_simple_polygon_wn(const vertex &point,
+    simple_components_tree<number>::point_inside_simple_polygon_wn(const vertex &point,
                                    const vertex *poly,
                                    const int size)
     {
@@ -63,11 +64,10 @@ namespace tessellation {
         return wn!=0;
     }
 
-    static
-    bool point_inside_simple_polygon_cn(const vertex &point,
+    template <typename number>
+    bool simple_components_tree<number>::point_inside_simple_polygon_cn(const vertex &point,
                                         const vertex *poly,
                                         const int size) {
-
         int cn = 0;
 
         // loop through all edges of the polygon
@@ -95,11 +95,11 @@ namespace tessellation {
     }
 
     // tests if a point is completely inside, excluding boundary
-    static
-    bool point_inside_convex_poly_interior(const vertex &point,
+    template <typename number>
+    bool simple_components_tree<number>::point_inside_convex_poly_interior(const vertex &point,
                                            const vertex * poly,
                                            int size,
-                                           bool CCW = true) {
+                                           bool CCW) {
         bool fails = true;
         int direction = CCW ? 1 : -1;
 
@@ -124,8 +124,8 @@ namespace tessellation {
     }
 
     // the extremal left-bottom most vertex is always a convex vertex
-    static
-    int find_left_bottom_most_vertex(vertex * poly,
+    template <typename number>
+    int simple_components_tree<number>::find_left_bottom_most_vertex(vertex * poly,
                                      const int size) {
         int index = 0;
         vertex value = poly[0];
@@ -150,8 +150,8 @@ namespace tessellation {
     }
 
 
-    static
-    int find_next_unique_vertex(const int idx,
+    template <typename number>
+    int simple_components_tree<number>::find_next_unique_vertex(const int idx,
                                   vertex * poly,
                                   const int size) {
         const vertex &point = poly[idx];
@@ -169,8 +169,9 @@ namespace tessellation {
         }
     }
 
-    static
-    direction compute_polygon_direction(vertex * poly,
+    template <typename number>
+    typename simple_components_tree<number>::direction
+    simple_components_tree<number>::compute_polygon_direction(vertex * poly,
                                         const int size) {
         // find a convex vertex
         int vi = find_left_bottom_most_vertex(poly, size);
@@ -188,10 +189,11 @@ namespace tessellation {
     }
 
     // find a point via the diagonal method, a linear time algorithm
-    static
-    vertex find_point_in_simple_polygon_interior(vertex * poly,
-                                        const int size,
-                                        bool CCW = true) {
+    template <typename number>
+    typename simple_components_tree<number>::vertex
+    simple_components_tree<number>::find_point_in_simple_polygon_interior(vertex * poly,
+                                                                          const int size,
+                                                                          bool CCW) {
         // find a convex vertex
         int vi = find_left_bottom_most_vertex(poly, size);
         // this should always be unique unless the entire poly is a single vertex
@@ -249,8 +251,8 @@ namespace tessellation {
      * -1=poly 2 inside poly 1
      * 0=poly 1 and poly 2 are disjoint/separable
      */
-    static
-    int compare_simple_non_intersecting_polygons(vertex * poly_1, index size_1, bool poly_1_CCW,
+    template <typename number>
+    int simple_components_tree<number>::compare_simple_non_intersecting_polygons(vertex * poly_1, index size_1, bool poly_1_CCW,
                                                  vertex * poly_2, index size_2, bool poly_2_CCW) {
 
         vertex sample = find_point_in_simple_polygon_interior(poly_1, size_1, poly_1_CCW);
@@ -269,12 +271,9 @@ namespace tessellation {
         return 0;
     }
 
-    using tree = simple_components_tree::tree;
-    using node = simple_components_tree::tree::node;
-
-    static
-    void compute_component_tree_recurse(tree::node * root,
-                                        tree::node * current,
+    template <typename number>
+    void simple_components_tree<number>::compute_component_tree_recurse(typename tree::node * root,
+                                        typename tree::node * current,
                                         chunker<vertex> & components,
                                         const dynamic_array<direction> &directions) {
         int root_children_count = root->children.size();
@@ -349,8 +348,8 @@ namespace tessellation {
         root->children.push_back(current);
     }
 
-    static
-    void tag_and_merge(tree::node * root,
+    template <typename number>
+    void simple_components_tree<number>::tag_and_merge(typename tree::node * root,
                        const dynamic_array<direction> &directions) {
         int root_accumulated_winding = root->accumulated_winding;
 
@@ -402,15 +401,15 @@ namespace tessellation {
 
     }
 
-    static
-    void compute_component_tree(chunker<vertex> & components,
+    template <typename number>
+    void simple_components_tree<number>::compute_component_tree(chunker<vertex> & components,
                                 const dynamic_array<direction> &directions,
                                 tree & tree) {
         const index components_size = components.size();
 
-        tree.nodes = new tree::node[components_size];
+        tree.nodes = new typename tree::node[components_size];
         tree.nodes_count = components_size;
-        auto * root = tree.root = new tree::node();
+        auto * root = tree.root = new typename tree::node();
 
         // build components inclusion tree
         for (unsigned long ix = 0; ix < components_size; ++ix)
@@ -451,8 +450,8 @@ namespace tessellation {
         int a = 0;
     }
 
-    static
-    void compute_directions(chunker<vertex> & components,
+    template <typename number>
+    void simple_components_tree<number>::compute_directions(chunker<vertex> & components,
                             dynamic_array<direction> &directions) {
         const auto count = components.size();
         for (index ix = 0; ix < count; ++ix) {
@@ -464,14 +463,15 @@ namespace tessellation {
     }
 
 
-    void simple_components_tree::compute(chunker<vertex> & pieces,
-                                         tree & tree
-                                         ) {
+    template <typename number>
+    void simple_components_tree<number>::compute(chunker<vertex> & pieces,
+                                                 tree & tree
+                                                 ) {
 
         dynamic_array<direction> components_directions;
         auto & simplified_components = tree.pieces;
 
-        simplify_components<float>::compute(
+        simplify_components<number>::compute(
                 pieces,
                 simplified_components);
 

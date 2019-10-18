@@ -4,12 +4,14 @@
 namespace tessellation {
 
     template <typename number>
-    bool simplify_components<number>::compare_vertices(const simplify_components<number>::vertex &v1, const simplify_components<number>::vertex &v2) {
+    bool simplify_components<number>::compare_vertices(const simplify_components<number>::vertex &v1,
+                                                       const simplify_components<number>::vertex &v2) {
         return v1.x < v2.x || (v1.x == v2.x && v1.y < v2.y);
     }
 
     template <typename number>
-    int simplify_components<number>::compare_vertices_int(const simplify_components<number>::vertex &v1, const simplify_components<number>::vertex &v2) {
+    int simplify_components<number>::compare_vertices_int(const simplify_components<number>::vertex &v1,
+                                                          const simplify_components<number>::vertex &v2) {
         bool smaller = v1.x < v2.x || (v1.x == v2.x && v1.y < v2.y);
         if(smaller)
             return -1;
@@ -743,6 +745,9 @@ namespace tessellation {
                 edges.push_back(edge);
             }
 
+            // sorting is crucial for the integrity of the output,
+            // since I am applying an optimization to discard future edges based
+            // on sorting
             qsort_s(edges.data(), edges.size(), sizeof(segment),
                     compare_edges, nullptr);
 

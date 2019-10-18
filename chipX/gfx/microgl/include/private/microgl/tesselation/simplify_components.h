@@ -5,12 +5,12 @@
 
 namespace tessellation {
 
-
     template <typename number>
     class simplify_components {
-    private:
-//        using vertex = microgl::vec2_f;
+    public:
         using vertex = microgl::vec2<number>;
+
+    private:
 
         struct segment
         {
@@ -23,11 +23,9 @@ namespace tessellation {
 
             segment()= default;
 
-            enum class IntersectionType
-            {
+            enum class IntersectionType{
                 PARALLEL, NO_INTERSECT, INTERSECT
             };
-
             enum class bbox_axis {
                 overlaps, start_of, end_of,
             };

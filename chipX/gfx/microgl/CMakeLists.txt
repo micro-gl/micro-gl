@@ -34,8 +34,8 @@ set(sources
         src/triangles.cpp
         src/PathTessellation.cpp
         src/ArcDivider.cpp
-        src/simple_components_tree.cpp
-        src/complex_poly_tess.cpp
+#        src/complex_poly_tess.cpp
+#        src/simple_components_tree.cpp
 #        src/simplify_components.cpp
         src/qsort.cpp)
 

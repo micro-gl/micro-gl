@@ -492,16 +492,18 @@ void render() {
 // debug - 340kb, O3 - 60kb, Os - 40kb
 // debug - 332kb, O3 - 56kb, Os - 36kb
 // debug - 323kb, O3 - 56kb, Os - 36kb
-// debug - 328kb, O3 - 56kb, Os - 36kb
+// debug - 328kb, O3 - 56kb, Os - 36kb // templatized simplify_comps
+// debug - 332kb, O3 - 56kb, Os - 36kb // templatized comps_tree
 
 template <typename T>
 void render_polygon(chunker<T> pieces) {
     using index = unsigned int;
 
     canvas->clear(WHITE);
+    using sct = tessellation::simple_components_tree<float>;
 
-    tessellation::simple_components_tree::tree tree;
-    tessellation::simple_components_tree::compute(
+    sct::tree tree;
+    sct::compute(
             pieces,
             tree);
 

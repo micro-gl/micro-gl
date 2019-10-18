@@ -1,24 +1,21 @@
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
 #pragma once
 
-#include <microgl/vec2.h>
-#include <microgl/triangles.h>
-#include <microgl/chunker.h>
 #include <microgl/tesselation/simplify_components.h>
 
 namespace tessellation {
 
 #define abs(a) ((a)<0 ? -(a) : (a))
     using index = unsigned int;
-    using vertex = microgl::vec2_f;
 
-    enum class direction {
-        cw, ccw, unknown
-    };
-
+    template <typename number>
     class simple_components_tree {
     public:
+//        using vertex = microgl::vec2_f;
+        using vertex = microgl::vec2<number>;
+
+        enum class direction {
+            cw, ccw, unknown
+        };
 
         struct tree {
         public:
@@ -53,9 +50,53 @@ namespace tessellation {
 
     private:
 
+        static
+        void compute_directions(chunker<vertex> &components, dynamic_array<direction> &directions);
+
+        static void
+        compute_component_tree(chunker<vertex> &components, const dynamic_array<direction> &directions, tree &tree);
+
+        static
+        void tag_and_merge(typename tree::node *root, const dynamic_array<direction> &directions);
+
+        static
+        void compute_component_tree_recurse(typename tree::node *root, typename tree::node *current, chunker<vertex> &components,
+                                            const dynamic_array<direction> &directions);
+
+        static int
+        compare_simple_non_intersecting_polygons(vertex *poly_1, index size_1, bool poly_1_CCW, vertex *poly_2,
+                                                 index size_2,
+                                                 bool poly_2_CCW);
+
+        static vertex
+        find_point_in_simple_polygon_interior(vertex *poly, int size, bool CCW=true);
+
+        static
+        simple_components_tree::direction compute_polygon_direction(vertex *poly, int size);
+
+        static
+        int find_next_unique_vertex(int idx, vertex *poly, int size);
+
+        static
+        int find_left_bottom_most_vertex(vertex *poly, int size);
+
+        static
+        bool point_inside_convex_poly_interior(const vertex &point, const vertex *poly, int size, bool CCW=true);
+
+        static
+        bool point_inside_simple_polygon_cn(const vertex &point, const vertex *poly, int size);
+
+        static
+        int point_inside_simple_polygon_wn(const vertex &point, const vertex *poly, int size);
+
+        static
+        int isLeft(const vertex &point, const vertex &a, const vertex &b);
+
+        static
+        int classify_point(const vertex &point, const vertex &a, const vertex &b);
     };
 
 
 }
 
-#pragma clang diagnostic pop
+#include "../../src/simple_components_tree.cpp"
