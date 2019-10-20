@@ -494,6 +494,7 @@ void render() {
 // debug - 323kb, O3 - 56kb, Os - 36kb
 // debug - 328kb, O3 - 56kb, Os - 36kb // templatized simplify_comps
 // debug - 332kb, O3 - 56kb, Os - 36kb // templatized comps_tree
+// debug - 320kb, O3 - 56kb, Os - 31kb // templatized comples_tess
 
 template <typename T>
 void render_polygon(chunker<T> pieces) {

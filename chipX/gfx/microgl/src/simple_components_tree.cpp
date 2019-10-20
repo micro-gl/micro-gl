@@ -44,19 +44,21 @@ namespace tessellation {
         // loop through all edges of the polygon
         // edge from V[i] to  V[i+1]
         for (int ix=0; ix < size; ix++) {
+            int ix_next = ix==size-1 ? 0 : ix+1;
+
             // start y <= P.y
             if (poly[ix].y < point.y) {
                 // an upward crossing
-                if (poly[ix + 1].y >= point.y)
+                if (poly[ix_next].y >= point.y)
                     // P left of  edge
-                    if (classify_point(point, poly[ix], poly[ix + 1]) > 0)
+                    if (classify_point(point, poly[ix], poly[ix_next]) > 0)
                         ++wn;
             }
             else {                        // start y > P.y (no test needed)
                 // a downward crossing
-                if (poly[ix + 1].y < point.y)
+                if (poly[ix_next].y < point.y)
                     // P right of  edge
-                    if (classify_point(point, poly[ix], poly[ix + 1]) < 0)
+                    if (classify_point(point, poly[ix], poly[ix_next]) < 0)
                         --wn;
             }
         }
@@ -72,19 +74,21 @@ namespace tessellation {
 
         // loop through all edges of the polygon
         for (int ix=0; ix < size; ix++) {
+            int ix_next = ix==size-1 ? 0 : ix+1;
+
             // an upward crossing
 //            if ((poly[ix].y<=point.y && poly[ix + 1].y>point.y)
                 // a downward crossing
 //                || (poly[ix].y>point.y && poly[ix + 1].y<=point.y)) {
-            if ((poly[ix].y<point.y && poly[ix + 1].y>=point.y)
+            if ((poly[ix].y<point.y && poly[ix_next].y>=point.y)
                 // a downward crossing
-                || (poly[ix].y>=point.y && poly[ix + 1].y<point.y)) {
+                || (poly[ix].y>=point.y && poly[ix_next].y<point.y)) {
                 // compute  the actual edge-ray intersect x-coordinate
                 float vt = (point.y  - poly[ix].y) /
-                            (poly[ix + 1].y - poly[ix].y);
+                            (poly[ix_next].y - poly[ix].y);
 
                 // P.x < intersect
-                if (point.x < poly[ix].x + vt * (poly[ix + 1].x - poly[ix].x))
+                if (point.x < poly[ix].x + vt * (poly[ix_next].x - poly[ix].x))
                     // a valid crossing of y=P.y right of P.x
                     ++cn;
             }

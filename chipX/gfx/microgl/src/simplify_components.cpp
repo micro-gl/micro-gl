@@ -259,7 +259,7 @@ namespace tessellation {
 
         const auto size = master_list.size();
 
-        for (int current_index = 0; current_index < size; ++current_index) {
+        for (index current_index = 0; current_index < size; ++current_index) {
             auto & inter = master_list[current_index];
 
             if(inter.isDeadEnd())

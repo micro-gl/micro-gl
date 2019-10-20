@@ -264,8 +264,9 @@ namespace tessellation {
 
             }
 
-            // since we inserted holes we need to redo the indices
-            // also holes induce new vertices, so we need a result buffer
+        }
+
+        if(result) {
             auto * node = outer;
             const auto result_buffer_size = result->size();
             for (index kx = 0; kx < outer_size; ++kx) {

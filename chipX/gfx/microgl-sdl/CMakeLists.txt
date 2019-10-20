@@ -3,7 +3,7 @@ project(microgl-sdl)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -fno-exceptions")
-set(CMAKE_CXX_FLAGS_RELEASE "-fno-exceptions -fstrict-aliasing -O3 -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
+set(CMAKE_CXX_FLAGS_RELEASE "-fno-exceptions -fstrict-aliasing -Os -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
 
 message("using compiler: ${CMAKE_CXX_COMPILER_ID}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
@@ -41,8 +41,8 @@ set(SOURCES
 #        main_aa_bug.cpp
 #        main_aa_bug_2.cpp
 #        main_bentley_ottmann.cpp
-#        main_complex_to_simple_polygon.cpp
-        main_complex_to_simple_comps_tree.cpp
+        main_complex_to_simple_polygon.cpp
+#        main_complex_to_simple_comps_tree.cpp
 #         main_ear_clipping.cpp
 #        main_ear_clipping_holes.cpp
 #        main_q_sort.cpp

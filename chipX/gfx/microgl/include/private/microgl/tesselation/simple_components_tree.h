@@ -33,7 +33,7 @@ namespace tessellation {
 
             node * nodes = nullptr;
             node * root = nullptr;
-            int nodes_count = 0;
+            index nodes_count = 0;
             chunker<vertex> pieces;
 
             ~tree() {
