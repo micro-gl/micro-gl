@@ -550,7 +550,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             for (index ix = 0; ix < size-2; ++ix) {
                 // we alternate order inorder to preserve CCW or CW,
                 // in the future I will add face culling, which will
-                // support only CW or CCW orientation at a time.
+                // support only CW or CCW orientation_t at a time.
 
                 index first_index = even ?  IND(ix + 0) : IND(ix + 2);
                 index second_index = even ? IND(ix + 1) : IND(ix + 1);
@@ -577,7 +577,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             for (index ix = 0; ix < size-2; ++ix) {
                 // we alternate order inorder to preserve CCW or CW,
                 // in the future I will add face culling, which will
-                // support only CW or CCW orientation at a time.
+                // support only CW or CCW orientation_t at a time.
 
                 boundary_info aa_info = boundary_buffer[idx_boundary++];
 
@@ -658,7 +658,7 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
             for (index ix = 0; ix < size-2; ++ix) {
                 // we alternate order inorder to preserve CCW or CW,
                 // in the future I will add face culling, which will
-                // support only CW or CCW orientation at a time.
+                // support only CW or CCW orientation_t at a time.
                 if(even)
                     drawTriangleWireframe(color,
                                           vertices[IND(ix + 0)],
@@ -732,7 +732,7 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
                 even = !even;
                 // we alternate order inorder to preserve CCW or CW,
                 // in the future I will add face culling, which will
-                // support only CW or CCW orientation at a time.
+                // support only CW or CCW orientation_t at a time.
                 if(even)
                     drawTriangleWireframe(color,
                                           vertices[IND(ix + 0)],

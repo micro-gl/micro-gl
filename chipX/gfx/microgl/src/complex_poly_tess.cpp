@@ -1,3 +1,5 @@
+#include <microgl/tesselation/simple_components_tree.h>
+#include <microgl/tesselation/ear_clipping_triangulation.h>
 namespace tessellation {
 
     template <typename number>
@@ -50,6 +52,7 @@ namespace tessellation {
                     ect_hole hole;
                     hole.size = hole_chunk.size;
                     hole.points = hole_chunk.data;
+                    hole.orients_like_parent = child->orientation==node.orientation;
 //                    hole.offset = hole_chunk.offset;
 
                     holes.push_back(hole);

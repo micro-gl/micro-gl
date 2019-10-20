@@ -191,16 +191,15 @@ chunker<vec2_f> poly_case_touches_1() {
 
     A.push_back_and_cut({
                                 {100,100},
-                                {100,400},
-                                {400,400},
                                 {400,100},
-                                {250,250}
+                                {400,400},
+                                {100,400},
                         });
 
     A.push_back_and_cut({
                                 {100,100},
-                                {250,250},
-                                {400,100},
+                                {400,400},
+                                {600,0},
                         });
 //
 //    A.push_back_and_cut({
@@ -495,6 +494,7 @@ void render() {
 // debug - 328kb, O3 - 56kb, Os - 36kb // templatized simplify_comps
 // debug - 332kb, O3 - 56kb, Os - 36kb // templatized comps_tree
 // debug - 320kb, O3 - 56kb, Os - 31kb // templatized comples_tess
+// debug - 317kb, O3 - 56kb, Os - 31kb // removed directions vector
 
 template <typename T>
 void render_polygon(chunker<T> pieces) {
@@ -513,11 +513,7 @@ void render_polygon(chunker<T> pieces) {
             &boundary
             );
 
-//    std::cout<<tree.nodes->index_poly;
-
     canvas->clear(WHITE);
-
-//    for (index ix = 0; ix < result.size(); ++ix) {
 
     canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
             RED,
@@ -528,6 +524,8 @@ void render_polygon(chunker<T> pieces) {
             requested_indices,
             122,
             4);
+
+    //    for (index ix = 0; ix < result.size(); ++ix) {
 
 //                if(ix!=2)
 //                    continue;

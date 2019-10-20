@@ -1,14 +1,10 @@
 #pragma once
 
-//#include <microgl/vec2.h>
 #include <microgl/triangles.h>
-//#include <microgl/chunker.h>
-#include <microgl/tesselation/simple_components_tree.h>
-#include <microgl/tesselation/ear_clipping_triangulation.h>
+#include <microgl/chunker.h>
 
 namespace tessellation {
 
-#define abs(a) ((a)<0 ? -(a) : (a))
     using index = unsigned int;
 
     template <typename number>

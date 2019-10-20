@@ -52,14 +52,15 @@ void test_1() {
     dynamic_array<ect::hole> holes;
     dynamic_array<vec2_f> result;
 
-    dynamic_array<vec2_f> outer = box(10,10,400,400);
-    dynamic_array<vec2_f> inner_1 = box(20,20,100,100, true);
+    dynamic_array<vec2_f> outer = box(10,10,400,400,false);
+    dynamic_array<vec2_f> inner_1 = box(20,20,100,100, false);
     dynamic_array<vec2_f> inner_2 = box(150,150,200,200, true);
     dynamic_array<vec2_f> inner_3 = box(250,20,400-10,220, true);
 
     ect::hole hole_1, hole_2, hole_3;
     hole_1.points = inner_1.data();
     hole_1.size = inner_1.size();
+    hole_1.orients_like_parent=true;
     hole_2.points = inner_2.data();
     hole_2.size = inner_2.size();
     hole_3.points = inner_3.data();

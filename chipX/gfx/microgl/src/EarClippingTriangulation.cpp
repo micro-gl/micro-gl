@@ -165,7 +165,7 @@ namespace tessellation {
     bool EarClippingTriangulation::isConvex(const EarClippingTriangulation::Node *v,
                                             const EarClippingTriangulation::LinkedList *list) {
         // the maximal y elemnt is always convex, therefore if
-        // they have the same orientation, then v is also convex
+        // they have the same orientation_t, then v is also convex
         return neighborhood_orientation_sign(v) *
                neighborhood_orientation_sign(maximal_y_element(list)) > 0;
     }

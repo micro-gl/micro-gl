@@ -26,9 +26,8 @@ namespace microgl {
             Right,
         };
 
-        enum class TriangleOrientation {
-            CW,
-            CCW,
+        enum class orientation {
+            cw, ccw
         };
 
         struct top_left_t {

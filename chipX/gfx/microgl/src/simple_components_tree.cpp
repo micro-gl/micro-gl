@@ -1,8 +1,4 @@
-//#include <microgl/tesselation/simple_components_tree.h>
-//#include <microgl/tesselation/ear_clipping_triangulation.h>
-
 namespace tessellation {
-
 
     // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
     // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
@@ -137,7 +133,7 @@ namespace tessellation {
         for (int ix = 0; ix < size; ++ix) {
             auto & v = poly[ix];
 
-            if(v.x <= value.x) {
+            if(v.x < value.x) {
                 value = v;
                 index = ix;
             }
@@ -174,7 +170,7 @@ namespace tessellation {
     }
 
     template <typename number>
-    typename simple_components_tree<number>::direction
+    typename simple_components_tree<number>::orientation_t
     simple_components_tree<number>::compute_polygon_direction(vertex * poly,
                                         const int size) {
         // find a convex vertex
@@ -185,11 +181,11 @@ namespace tessellation {
         int bi = find_next_unique_vertex(vi, poly, size);
         // poly is one point
         if(bi==-1)
-            return direction::unknown;
+            return orientation_t::unknown;
 
         int classify = classify_point(poly[bi], poly[ai], poly[vi]);
 
-        return classify < 0 ? direction::cw : direction::ccw;
+        return classify < 0 ? orientation_t::cw : orientation_t::ccw;
     }
 
     // find a point via the diagonal method, a linear time algorithm
@@ -278,8 +274,7 @@ namespace tessellation {
     template <typename number>
     void simple_components_tree<number>::compute_component_tree_recurse(typename tree::node * root,
                                         typename tree::node * current,
-                                        chunker<vertex> & components,
-                                        const dynamic_array<direction> &directions) {
+                                        chunker<vertex> & components) {
         int root_children_count = root->children.size();
         int compare;
 
@@ -291,23 +286,21 @@ namespace tessellation {
             compare = compare_simple_non_intersecting_polygons(
                     poly_current.data,
                     poly_current.size,
-                    directions[current->index_poly]==direction::ccw,
+                    current->orientation == orientation_t::ccw,
                     poly_root.data,
                     poly_root.size,
-                    directions[root->index_poly]==direction::ccw);
+                    root->orientation == orientation_t::ccw);
 
             // compare against the root polygon
-
             switch (compare) {
                 case 1: // current inside the root node
                     // we need to find a suitable place for it among children later
                     break;
                 case -1: // root inside current node
                     // bubble root down to current and exit
-                    compute_component_tree_recurse(current, root, components, directions);
+                    compute_component_tree_recurse(current, root, components);
                     return;
 //                    throw std::runtime_error("weird !!!");
-                    break;
                 case 0: // complete strangers, let's exit
                     return;
             }
@@ -327,14 +320,14 @@ namespace tessellation {
             compare = compare_simple_non_intersecting_polygons(
                     poly_current.data,
                     poly_current.size,
-                    directions[current->index_poly]==direction::ccw,
+                    current->orientation == orientation_t::ccw,
                     child_poly.data,
                     child_poly.size,
-                    directions[child_poly_index]==direction::ccw);
+                    child_node->orientation == orientation_t::ccw);
 
             switch (compare) {
                 case 1: // current inside the child, bubble it down, and exit
-                    compute_component_tree_recurse(child_node, current, components, directions);
+                    compute_component_tree_recurse(child_node, current, components);
                     return;
                 case -1: // child inside current node, so add it to the current node
                     // and also, disconnect the child from the root, so it will have one parent
@@ -354,8 +347,8 @@ namespace tessellation {
 
     template <typename number>
     void simple_components_tree<number>::tag_and_merge(typename tree::node * root,
-                       const dynamic_array<direction> &directions) {
-        int root_accumulated_winding = root->accumulated_winding;
+                                                       const fill_rule & rule) {
+        const int root_accumulated_winding = root->accumulated_winding;
 
         // lets' go over the root's children, this list may expend
         // during the iteration, therefore we constantly query it.
@@ -365,19 +358,20 @@ namespace tessellation {
             if(child_node== nullptr)
                 continue;
 
-            auto child_winding = directions[child_node->index_poly]==direction::cw ? 1 : -1;
+            auto child_winding = child_node->orientation == orientation_t::cw ? 1 : -1;
             child_winding += root_accumulated_winding;
 
             child_node->accumulated_winding += child_winding;
+            child_node->type = classify_fill_status(child_node->accumulated_winding, rule);
 
-            bool fill_root = root_accumulated_winding!=0;
-            bool fill_child = child_node->accumulated_winding!=0;
+//            bool fill_root = root_accumulated_winding!=0;
+//            bool fill_child = child_node->accumulated_winding!=0;
+//            child_node->type = fill_child ? tree::node_type::fill : tree::node_type::hole;
 
-            child_node->type = fill_child ? tree::node_type::fill : tree::node_type::hole;
             // we merge nodes with similar fill status, we do it by disconnecting
             // them from the root parent and adding their children to the root
             // so they can also be processed soon
-            if(fill_root == fill_child) {
+            if(root->type == child_node->type) {
                 root->children[ix] = nullptr;
                 // child node is marked as non-interesting
                 child_node->type = tree::node_type::unknown;
@@ -398,7 +392,7 @@ namespace tessellation {
                     }
                 }
             } else {
-                tag_and_merge(child_node, directions);
+                tag_and_merge(child_node, rule);
             }
 
         }
@@ -407,8 +401,7 @@ namespace tessellation {
 
     template <typename number>
     void simple_components_tree<number>::compute_component_tree(chunker<vertex> & components,
-                                const dynamic_array<direction> &directions,
-                                tree & tree) {
+                                                                tree & tree) {
         const index components_size = components.size();
 
         tree.nodes = new typename tree::node[components_size];
@@ -418,18 +411,20 @@ namespace tessellation {
         // build components inclusion tree
         for (unsigned long ix = 0; ix < components_size; ++ix)
         {
-            if(directions[ix]==direction::unknown)
-                continue;
-
             auto * current = &(tree.nodes[ix]);
             current->index_poly = int(ix);
+            auto chunk = components[current->index_poly];
+            current->orientation = compute_polygon_direction(chunk.data, chunk.size);
+
+            // avoid degenerate componenets
+            if(current->orientation == orientation_t::unknown)
+                continue;
 
             // now start hustling
             compute_component_tree_recurse(
                     root,
                     current,
-                    components,
-                    directions);
+                    components);
 
         }
 
@@ -438,55 +433,53 @@ namespace tessellation {
         for (unsigned long ix = 0; ix < root_children_count; ++ix)
         {
             auto * current = root->children[ix];
-            if(current== nullptr)
+            if(current==nullptr || current->orientation == orientation_t::unknown)
                 continue;
 
-            auto current_winding = directions[current->index_poly]==direction::cw ? 1 : -1;
+            auto current_winding = current->orientation == orientation_t::cw ? 1 : -1;
             current->accumulated_winding = current_winding;
-            current->type = tree::node_type::fill;
+            current->type = classify_fill_status(current->accumulated_winding, tree.rule);
+
             // now start hustling
-            tag_and_merge(
-                    current,
-                    directions);
-
-        }
-
-        int a = 0;
-    }
-
-    template <typename number>
-    void simple_components_tree<number>::compute_directions(chunker<vertex> & components,
-                            dynamic_array<direction> &directions) {
-        const auto count = components.size();
-        for (index ix = 0; ix < count; ++ix) {
-            auto comp = components[ix];
-            auto direction = compute_polygon_direction(comp.data, comp.size);
-            directions.push_back(direction);
+            tag_and_merge(current, tree.rule);
         }
 
     }
 
+    template<typename number>
+    typename simple_components_tree<number>::tree::node_type
+    simple_components_tree<number>::classify_fill_status(int accumulated_winding,
+                                                         const fill_rule & rule) {
+        using type = typename tree::node_type;
+
+        switch (rule) {
+            case fill_rule::non_zero:
+                return accumulated_winding!=0 ? type::fill : type::hole;
+            case fill_rule::even_odd:
+                return (accumulated_winding&1) ? type::fill : type::hole;
+            default:
+                return tree::node_type::unknown;
+        }
+
+    }
 
     template <typename number>
     void simple_components_tree<number>::compute(chunker<vertex> & pieces,
-                                                 tree & tree
+                                                 tree & tree,
+                                                 fill_rule rule
                                                  ) {
 
-        dynamic_array<direction> components_directions;
         auto & simplified_components = tree.pieces;
+        tree.rule = rule;
 
         simplify_components<number>::compute(
                 pieces,
                 simplified_components);
 
-        compute_directions(simplified_components,
-                components_directions);
-
-        // experiment
         compute_component_tree(
                 simplified_components,
-                components_directions,
-                tree);
+                tree
+                );
 
     }
 

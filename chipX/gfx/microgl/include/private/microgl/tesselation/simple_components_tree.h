@@ -10,10 +10,13 @@ namespace tessellation {
     template <typename number>
     class simple_components_tree {
     public:
-//        using vertex = microgl::vec2_f;
         using vertex = microgl::vec2<number>;
 
-        enum class direction {
+        enum class fill_rule {
+            non_zero, even_odd
+        };
+
+        enum class orientation_t {
             cw, ccw, unknown
         };
 
@@ -29,12 +32,14 @@ namespace tessellation {
                 int index_poly = -1;
                 int accumulated_winding = 0;
                 node_type type = node_type::unknown;
+                orientation_t orientation= orientation_t::unknown;
             };
 
             node * nodes = nullptr;
             node * root = nullptr;
             index nodes_count = 0;
             chunker<vertex> pieces;
+            fill_rule rule=fill_rule::non_zero;
 
             ~tree() {
                 if(nodes)
@@ -45,23 +50,24 @@ namespace tessellation {
 
         static
         void compute(chunker<vertex> & pieces,
-                            tree & tree
-                            );
+                     tree & tree,
+                     fill_rule rule=fill_rule::non_zero
+                     );
 
     private:
 
-        static
-        void compute_directions(chunker<vertex> &components, dynamic_array<direction> &directions);
+        static typename tree::node_type
+        classify_fill_status(int accumulated_winding, const fill_rule & rule);
 
         static void
-        compute_component_tree(chunker<vertex> &components, const dynamic_array<direction> &directions, tree &tree);
+        compute_component_tree(chunker<vertex> &components, tree &tree);
 
         static
-        void tag_and_merge(typename tree::node *root, const dynamic_array<direction> &directions);
+        void tag_and_merge(typename tree::node *root, const fill_rule & rule);
 
         static
-        void compute_component_tree_recurse(typename tree::node *root, typename tree::node *current, chunker<vertex> &components,
-                                            const dynamic_array<direction> &directions);
+        void compute_component_tree_recurse(typename tree::node *root,
+                typename tree::node *current, chunker<vertex> &components);
 
         static int
         compare_simple_non_intersecting_polygons(vertex *poly_1, index size_1, bool poly_1_CCW, vertex *poly_2,
@@ -72,7 +78,7 @@ namespace tessellation {
         find_point_in_simple_polygon_interior(vertex *poly, int size, bool CCW=true);
 
         static
-        simple_components_tree::direction compute_polygon_direction(vertex *poly, int size);
+        simple_components_tree::orientation_t compute_polygon_direction(vertex *poly, int size);
 
         static
         int find_next_unique_vertex(int idx, vertex *poly, int size);

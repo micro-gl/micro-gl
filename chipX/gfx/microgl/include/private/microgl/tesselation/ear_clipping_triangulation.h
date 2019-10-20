@@ -26,6 +26,7 @@ namespace tessellation {
         struct hole {
             vertex * points= nullptr;
             index offset=0, size=0;
+            bool orients_like_parent=false;
         };
 
     private:
@@ -80,13 +81,13 @@ namespace tessellation {
                                            const microgl::triangles::TrianglesIndices &requested =
                                            microgl::triangles::TrianglesIndices::TRIANGLES);
 
-
     private:
 
         static
         node_t * polygon_to_linked_list(vertex *$pts,
                                             index offset,
                                             index size,
+                                            bool reverse,
                                             pool_nodes_t &
                                             );
 

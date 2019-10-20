@@ -32,7 +32,7 @@ namespace tessellation {
         do {
             auto & v = *iter->pt;
 
-            if(v.x <= value.x) {
+            if(v.x < value.x) {
                 value = v;
                 candidate = iter;
             }
@@ -53,6 +53,7 @@ namespace tessellation {
     ear_clipping_triangulation<number>::polygon_to_linked_list(vertex *$pts,
                                                        index offset,
                                                        index size,
+                                                       bool reverse,
                                                        pool_nodes_t &pool
                                                        ) {
         node_t * first = nullptr, * last = nullptr;
@@ -61,9 +62,10 @@ namespace tessellation {
             return nullptr;
 
         for (index ix = 0; ix < size; ++ix) {
+            index idx = reverse ? size-1-ix : ix;
             auto * node = pool.get();
-            node->pt = &$pts[ix];
-            node->original_index = offset + ix;
+            node->pt = &$pts[idx];
+            node->original_index = offset + idx;
 
             // record first node
             if(first== nullptr)
@@ -235,7 +237,7 @@ namespace tessellation {
         // it will also deallocate once we we go out of scope
         pool_nodes_t pool{outer_size};
 
-        auto * outer = polygon_to_linked_list($pts, 0, size, pool);
+        auto * outer = polygon_to_linked_list($pts, 0, size, false, pool);
 
         if(holes_count) {
 
@@ -247,7 +249,8 @@ namespace tessellation {
             // contain holes for further processing
             for (index ix = 0; ix < holes_count; ++ix) {
                 auto hole = (*holes)[ix];
-                poly_contexts[ix].polygon = polygon_to_linked_list(hole.points, hole.offset, hole.size, pool);
+                poly_contexts[ix].polygon = polygon_to_linked_list(hole.points, hole.offset, hole.size,
+                        hole.orients_like_parent,pool);
                 poly_contexts[ix].left_most = find_left_bottom_most_vertex(poly_contexts[ix].polygon);
                 poly_contexts[ix].size = hole.size;
             }
@@ -429,7 +432,7 @@ namespace tessellation {
     bool ear_clipping_triangulation<number>::isConvex(const node_t *v,
                                               node_t *list) {
         // the maximal y element is always convex, therefore if
-        // they have the same orientation, then v is also convex
+        // they have the same orientation_t, then v is also convex
         return neighborhood_orientation_sign(v) *
                neighborhood_orientation_sign(maximal_y_element(list)) > 0;
     }
