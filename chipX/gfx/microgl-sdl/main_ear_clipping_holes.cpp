@@ -53,6 +53,12 @@ void test_1() {
     dynamic_array<vec2_f> result;
 
     dynamic_array<vec2_f> outer = box(10,10,400,400,false);
+//    dynamic_array<vec2_f> inner_1 = {
+//            {20,20},
+//            {100,20},
+//            {100,100},
+//            {20,100},
+//    };
     dynamic_array<vec2_f> inner_1 = box(20,20,100,100, false);
     dynamic_array<vec2_f> inner_2 = box(150,150,200,200, true);
     dynamic_array<vec2_f> inner_3 = box(250,20,400-10,220, true);

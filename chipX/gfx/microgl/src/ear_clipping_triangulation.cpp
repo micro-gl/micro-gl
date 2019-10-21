@@ -4,19 +4,29 @@ namespace tessellation {
 
     template <typename number>
     bool ear_clipping_triangulation<number>::test_intersect(const vertex &a, const vertex &b,
-                        const vertex &c, const vertex &d,
-                        bool interior_only) {
+                                                            const vertex &c, const vertex &d,
+                                                            bool interior_only) {
         auto ab = b - a;
         auto cd = d - c;
         auto ca = a - c;
 
         auto ab_cd = ab.x * cd.y - cd.x * ab.y;
+//        auto s = (ab.x * ca.y - ab.y * ca.x)/ab_cd;
+//        auto t = (cd.x * ca.y - cd.y * ca.x)/ab_cd;
+//        bool test = interior_only ? s > 0 && s < 1 && t > 0 && t < 1 :
+//                    s >= 0 && s <= 1 && t >= 0 && t <= 1;
+        // as of now, I don't consider parallels as intersections
+        if(abs(ab_cd)==0)
+            return false;
+
         auto s = (ab.x * ca.y - ab.y * ca.x);
         auto t = (cd.x * ca.y - cd.y * ca.x);
-
-        bool test = interior_only ? s > 0 && s < ab_cd && t > 0 && t < ab_cd :
-                    s >= 0 && s <= ab_cd && t >= 0 && t <= ab_cd;
-
+        // we do these to avoid expensive divisions
+        bool s_same_sign_as_abcd = (s>0 && ab_cd >0) || (s<0 && ab_cd <0);
+        bool t_same_sign_as_abcd = (t>0 && ab_cd >0) || (t<0 && ab_cd <0);
+        bool s_test = (s==0 || s_same_sign_as_abcd) && abs(s)<=abs(ab_cd);
+        bool t_test = (t==0 || t_same_sign_as_abcd) && abs(t)<=abs(ab_cd);
+        bool test = s_test && t_test;
         return test;
     }
 
@@ -123,6 +133,12 @@ namespace tessellation {
                 is_bbox_overlaps_axis(a,b,c,d,false,interior_only);
     }
 
+//    template <typename number>
+//    bool ear_clipping_triangulation<number>::has_mutual_endpoint(const vertex &a, const vertex &b,
+//                                                                 const vertex &c, const vertex &d) {
+//
+//    }
+
     template <typename number>
     typename ear_clipping_triangulation<number>::node_t *
     ear_clipping_triangulation<number>::find_mutually_visible_vertex(node_t * poly,
@@ -146,7 +162,12 @@ namespace tessellation {
                 const bool bbox_overlaps = is_bbox_overlaps(a,b,c,d, true);
 
                 if(bbox_overlaps) {
-                    bool intersects = test_intersect(a,b,c,d,true);
+                    bool has_mutual_endpoint = a==c || a==d || b==c || b==d;
+
+                    if(has_mutual_endpoint)
+                        continue;
+
+                    bool intersects = test_intersect(a,b,c,d,false);
 
                     if(intersects) {
                         fails = true;
