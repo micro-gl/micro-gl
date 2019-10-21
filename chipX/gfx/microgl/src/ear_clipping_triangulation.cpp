@@ -209,7 +209,6 @@ namespace tessellation {
         inner_left_most_node->prev = outer_node;
     }
 
-
     template <typename number>
     int ear_clipping_triangulation<number>::compare_poly_contexts (const void * a, const void * b, void * ctx)
     {
@@ -381,11 +380,11 @@ namespace tessellation {
         return (b->pt->x - a->pt->x)*(c->pt->y - a->pt->y) -
                 (c->pt->x - a->pt->x)*(b->pt->y - a->pt->y);
 
-        /*
-        return a->pt->x * (b->pt->y - c->pt->y) +
-               b->pt->x * (c->pt->y - a->pt->y) +
-               c->pt->x * (a->pt->y - b->pt->y);
-               */
+//        /*
+//        return a->pt->x * (b->pt->y - c->pt->y) +
+//               b->pt->x * (c->pt->y - a->pt->y) +
+//               c->pt->x * (a->pt->y - b->pt->y);
+//               */
     }
 
     // ts
@@ -446,7 +445,7 @@ namespace tessellation {
         const node_t * l = v->prev;
         const node_t * r = v->next;
 
-        bool test  = sign_orientation_value(l, v, r)==0;
+        bool test  = abs(orientation_value(l, v, r))<=0.001;
         return test;
     }
 
@@ -462,9 +461,8 @@ namespace tessellation {
     template <typename number>
     bool ear_clipping_triangulation<number>::areEqual(const node_t *a,
                                             const node_t *b) {
-        return
-            a->pt->x==b->pt->x &&
-            a->pt->y==b->pt->y;
+//        return a==b;
+            return a->pt->x==b->pt->x && a->pt->y==b->pt->y;
     }
 
     template <typename number>

@@ -608,6 +608,15 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
     }
 
 #undef IND
+
+    drawTrianglesWireframe(BLACK,
+                           vertices,
+                           indices,
+                           size,
+                           type,
+                           255,
+                           sub_pixel_precision);
+
 }
 
 template<typename P, typename CODER>

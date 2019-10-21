@@ -462,6 +462,18 @@ chunker<vec2_f> poly_hard_1() {
 }
 
 
+chunker<vec2_f> poly_hard_2() {
+
+    chunker<vec2_f> A;
+
+    A.push_back_and_cut(box(10,10,300,300,false));
+    A.push_back_and_cut(box(10,10,300,300,false));
+    A.push_back_and_cut(box(100,100,500,200,true));
+    A.push_back_and_cut(box(100,100,500,200,true));
+//    A.push_back_and_cut(box(100,100,500,200,true));
+
+    return A;
+}
 // todo:: directions of degenrate polygons is incorrect
 
 template <typename T>
@@ -493,7 +505,7 @@ void render() {
 //
 //    render_polygon(poly_inter_star());
 //    render_polygon(poly_inter_nested_3());
-    render_polygon(poly_hard_1());
+    render_polygon(poly_hard_2());
 //    render_polygon(poly_inter_1());
 //    render_polygon(poly_case_touches_1());
 
@@ -519,14 +531,15 @@ void render_polygon(chunker<T> pieces) {
     sct::tree tree;
     sct::compute(
             pieces,
-            tree);
+            tree,
+            sct::fill_rule::even_odd);
 
 //    std::cout<<tree.nodes->index_poly;
     for (index ix = 0; ix < tree.pieces.size(); ++ix) {
         auto chunk = tree.pieces[ix];
         std::cout << "chunk: " << chunk.size << std::endl;
 
-//                if(ix!=2)
+//                if(ix!=3)
 //                    continue;
 
 //        canvas->drawQuad(RED, 0, 0, 100,100, 0,255);
