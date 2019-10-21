@@ -93,9 +93,9 @@ namespace tessellation {
 
         // t
         // positive if CCW
-        static long long orientation_value(const node_t * i,
-                                           const node_t * j,
-                                           const node_t * k);
+        static number orientation_value(const node_t * a,
+                                           const node_t * b,
+                                           const node_t * c);
 
         static int neighborhood_orientation_sign(const node_t * v);
 

@@ -103,8 +103,8 @@ namespace tessellation {
                                               bool compare_x,
                                               bool interior_only) {
 
-        auto min_ab = compare_x ? a.x : a.y, max_ab = compare_x ? a.x : a.y;
-        auto min_cd = compare_x ? c.x : c.y, max_cd = compare_x ? c.x : c.y;
+        auto min_ab = compare_x ? a.x : a.y, max_ab = compare_x ? b.x : b.y;
+        auto min_cd = compare_x ? c.x : c.y, max_cd = compare_x ? d.x : d.y;
 
         // sort
         if(min_ab > max_ab) {
@@ -132,12 +132,6 @@ namespace tessellation {
         return is_bbox_overlaps_axis(a,b,c,d,true,interior_only) &&
                 is_bbox_overlaps_axis(a,b,c,d,false,interior_only);
     }
-
-//    template <typename number>
-//    bool ear_clipping_triangulation<number>::has_mutual_endpoint(const vertex &a, const vertex &b,
-//                                                                 const vertex &c, const vertex &d) {
-//
-//    }
 
     template <typename number>
     typename ear_clipping_triangulation<number>::node_t *
@@ -377,14 +371,21 @@ namespace tessellation {
 
     }
 
+    // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
+    // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
     template <typename number>
-    long long
-    ear_clipping_triangulation<number>::orientation_value(const node_t *i,
-                                                  const node_t *j,
-                                                  const node_t *k) {
-        return i->pt->x * (j->pt->y - k->pt->y) +
-               j->pt->x * (k->pt->y - i->pt->y) +
-               k->pt->x * (i->pt->y - j->pt->y);
+    number
+    ear_clipping_triangulation<number>::orientation_value(const node_t *a,
+                                                          const node_t *b,
+                                                          const node_t *c) {
+        return (b->pt->x - a->pt->x)*(c->pt->y - a->pt->y) -
+                (c->pt->x - a->pt->x)*(b->pt->y - a->pt->y);
+
+        /*
+        return a->pt->x * (b->pt->y - c->pt->y) +
+               b->pt->x * (c->pt->y - a->pt->y) +
+               c->pt->x * (a->pt->y - b->pt->y);
+               */
     }
 
     // ts

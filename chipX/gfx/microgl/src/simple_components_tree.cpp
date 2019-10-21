@@ -101,7 +101,7 @@ namespace tessellation {
                                            int size,
                                            bool CCW) {
         bool fails = true;
-        int direction = CCW ? 1 : -1;
+        int direction = CCW ? -1 : 1;
 
         for (int ix = 0; ix < size; ++ix) {
             int a = ix;

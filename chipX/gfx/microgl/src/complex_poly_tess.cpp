@@ -29,6 +29,9 @@ namespace tessellation {
         const auto nodes_count = tree.nodes_count;
 
         for (index ix = 0; ix < nodes_count; ++ix) {
+//            if(ix!=2)
+//                continue;
+
             auto &node = tree.nodes[ix];
             auto type = node.type;
             // unknown node types are nodes that have been compressed
