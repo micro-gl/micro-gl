@@ -209,7 +209,7 @@ namespace tessellation {
         vertex b = poly[bi];
         vertex triangle[3] = {a, v, b};
 
-        vertex q;
+        vertex q = a;
         // pick a distance
         auto min_qv_distance = (a.x - v.x)*(a.x - v.x) + (a.y - v.y)*(a.y - v.y);
         bool found_candidate = false;

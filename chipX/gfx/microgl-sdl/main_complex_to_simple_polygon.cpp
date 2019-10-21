@@ -281,8 +281,13 @@ chunker<vec2_f> poly_hard_1() {
 
     chunker<vec2_f> A;
 
+//    A.push_back_and_cut(box(10,10,300,300,false));
     A.push_back_and_cut(box(10,10,300,300,false));
     A.push_back_and_cut(box(10,10,300,300,false));
+    A.push_back_and_cut(box(10,10,300,300,false));
+    A.push_back_and_cut(box(10,10,300,300,false));
+    A.push_back_and_cut(box(100,100,500,200,true));
+    A.push_back_and_cut(box(100,100,500,200,true));
     A.push_back_and_cut(box(100,100,500,200,true));
     A.push_back_and_cut(box(100,100,500,200,true));
 
@@ -489,8 +494,8 @@ void render() {
 
 //    render_polygon(poly_double());
 //
-//    render_polygon(poly_inter_star());
-    render_polygon(poly_hard_1());
+    render_polygon(poly_inter_star());
+//    render_polygon(poly_hard_1());
 //    render_polygon(poly_inter_nested_3());
 //    render_polygon(poly_inter_1());
 //    render_polygon(poly_case_touches_1());
@@ -517,11 +522,13 @@ void render_polygon(chunker<T> pieces) {
     dynamic_array<index> indices;
     dynamic_array<boundary_info> boundary;
     auto requested_indices = microgl::triangles::TrianglesIndices::TRIANGLES;
+    auto fill_rule = cpt::fill_rule::even_odd;
 
     cpt::compute(
             pieces,
             result,
             indices,
+            fill_rule,
             requested_indices,
             &boundary
             );

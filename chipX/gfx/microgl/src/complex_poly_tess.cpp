@@ -6,6 +6,7 @@ namespace tessellation {
     void complex_poly_tess<number>::compute(chunker<vertex> &pieces,
                                             dynamic_array<vertex> &result,
                                             dynamic_array<index> &indices,
+                                            const fill_rule & rule,
                                             const microgl::triangles::TrianglesIndices &requested,
                                             dynamic_array<microgl::triangles::boundary_info> * boundary_buffer
                                             ) {
@@ -16,13 +17,25 @@ namespace tessellation {
         using tree_t = typename sct::tree;
         using node_t = typename tree_t::node;
         using node_type_t = typename tree_t::node_type ;
+        using fill_rule_t = typename sct::fill_rule;
 
         tree_t tree;
+        fill_rule_t rule_propagated;
+
+        switch (rule) {
+            case fill_rule::non_zero:
+                rule_propagated = fill_rule_t::non_zero;
+                break;
+            case fill_rule::even_odd:
+                rule_propagated = fill_rule_t::even_odd;
+                break;
+        }
 
         // compute the simple component tree
         sct::compute(
                 pieces,
-                tree);
+                tree,
+                rule_propagated);
 
         // go over the tree and extract fill nodes with holes
         dynamic_array<ect_hole> holes;
