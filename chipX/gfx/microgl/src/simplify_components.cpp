@@ -217,10 +217,10 @@ namespace tessellation {
     template <typename number>
     void simplify_components<number>::next_perturbation(vertex &point) {
         static int ix = 0;
-        static const float pert = 1.0/1024.0;
+        static const float pert = 1.0/512.0;
         static vertex vec_3{pert, 0};
 
-        if(ix==1024) {
+        if(ix==512) {
             vec_3.x = 0;
             vec_3.y = 0;
         }

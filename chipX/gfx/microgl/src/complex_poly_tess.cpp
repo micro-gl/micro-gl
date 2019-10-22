@@ -42,7 +42,7 @@ namespace tessellation {
         const auto nodes_count = tree.nodes_count;
 
         for (index ix = 0; ix < nodes_count; ++ix) {
-//            if(ix!=0)
+//            if(ix==0)
 //                continue;
 
             auto &node = tree.nodes[ix];

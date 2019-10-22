@@ -45,6 +45,7 @@ set(SOURCES
 #        main_complex_to_simple_comps_tree.cpp
 #         main_ear_clipping.cpp
 #        main_ear_clipping_holes.cpp
+#        main_ear_clipping_deg.cpp
 #        main_q_sort.cpp
 #        main_avl_tree.cpp
         libs/stb_image/stb_image.cpp

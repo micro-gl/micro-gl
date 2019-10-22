@@ -16,11 +16,16 @@ namespace tessellation {
         static const int ERR_HOLES_MUST_BE_OPERATED_WITH_RESULT_BUFFER = 1;
         using vertex = microgl::vec2<number>;
 
+        enum class node_type_t {
+           outer, inner, bridge
+        };
+
         struct node_t {
             vertex * pt= nullptr;
             index original_index=-1;
             node_t * prev = nullptr;
             node_t * next = nullptr;
+            node_type_t type=node_type_t::outer;
         };
 
         struct hole {
@@ -87,20 +92,21 @@ namespace tessellation {
         node_t * polygon_to_linked_list(vertex *$pts,
                                             index offset,
                                             index size,
+                                            const node_type_t &type,
                                             bool reverse,
                                             pool_nodes_t &
                                             );
 
         // t
         // positive if CCW
-        static number orientation_value(const node_t * a,
-                                           const node_t * b,
-                                           const node_t * c);
+        static number orientation_value(const vertex * a,
+                                           const vertex * b,
+                                           const vertex * c);
 
         static int neighborhood_orientation_sign(const node_t * v);
 
         // tv
-        static char sign_orientation_value(const node_t * i, const node_t * j, const node_t * k);
+        static char sign_orientation_value(const vertex * i, const vertex * j, const vertex * k);
 
         // main
 

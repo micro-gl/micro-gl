@@ -56,6 +56,7 @@ namespace tessellation {
 //            for (index jx = 0; jx < size; ++jx) {
             for (index jx = 0; jx < pts.size(); ++jx) {
 
+//                if (isDegenrate(point) || (isConvex(point, &pts) && isEmpty(point, &pts))) {
                 if (isDegenrate(point) || (isConvex(point, &pts) && isEmpty(point, &pts))) {
 
                     indices.push_back(point->predecessor()->data.original_index);
@@ -138,7 +139,7 @@ namespace tessellation {
         int maximal_y = first->data.pt->y;
 
         for (unsigned int ix = 0; ix < list->size(); ++ix) {
-            if(node->data.pt->y > maximal_y) {
+            if(node->data.pt->y >= maximal_y) {
                 maximal_y = node->data.pt->y;
                 maximal_index = node;
             } else if(node->data.pt->y == maximal_y) {
@@ -172,6 +173,7 @@ namespace tessellation {
 
     bool EarClippingTriangulation::areEqual(const EarClippingTriangulation::Node *a,
                                             const EarClippingTriangulation::Node *b) {
+        return a==b;
         return
             a->data.pt->x==b->data.pt->x &&
             a->data.pt->y==b->data.pt->y;

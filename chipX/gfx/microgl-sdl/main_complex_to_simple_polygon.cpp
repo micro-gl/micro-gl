@@ -277,36 +277,6 @@ chunker<vec2_f> poly_inter_side() {
     return A;
 }
 
-chunker<vec2_f> poly_hard_1() {
-
-    chunker<vec2_f> A;
-
-//    A.push_back_and_cut(box(10,10,300,300,false));
-    A.push_back_and_cut(box(10,10,300,300,false));
-    A.push_back_and_cut(box(10,10,300,300,false));
-    A.push_back_and_cut(box(10,10,300,300,false));
-    A.push_back_and_cut(box(10,10,300,300,false));
-    A.push_back_and_cut(box(100,100,500,200,true));
-    A.push_back_and_cut(box(100,100,500,200,true));
-    A.push_back_and_cut(box(100,100,500,200,true));
-    A.push_back_and_cut(box(100,100,500,200,true));
-
-    return A;
-}
-
-chunker<vec2_f> poly_hard_2() {
-
-    chunker<vec2_f> A;
-
-    A.push_back_and_cut(box(10,10,300,300,false));
-    A.push_back_and_cut(box(10,10,300,300,false));
-    A.push_back_and_cut(box(100,100,500,200,true));
-    A.push_back_and_cut(box(100,100,500,200,true));
-//    A.push_back_and_cut(box(100,100,500,200,true));
-//    A.push_back_and_cut(box(100,100,500,200,true));
-
-    return A;
-}
 
 chunker<vec2_f> poly_inter_nested_3() {
 
@@ -479,6 +449,33 @@ chunker<vec2_f> poly_double() {
     return A;
 }
 
+chunker<vec2_f> poly_hard_1() {
+
+    chunker<vec2_f> A;
+
+//    A.push_back_and_cut(box(10,10,300,300,false));
+    A.push_back_and_cut(box(10,10,300,300,false));
+    A.push_back_and_cut(box(10,10,300,300,false));
+    A.push_back_and_cut(box(10,10,300,300,false));
+    A.push_back_and_cut(box(10,10,300,300,false));
+    A.push_back_and_cut(box(100,100,500,200,true));
+    A.push_back_and_cut(box(100,100,500,200,true));
+    A.push_back_and_cut(box(100,100,500,200,true));
+    A.push_back_and_cut(box(100,100,500,200,true));
+
+    return A;
+}
+
+chunker<vec2_f> poly_hard_2() {
+
+    chunker<vec2_f> A;
+
+    A.push_back_and_cut(box(10,10,300,300,false));
+    A.push_back_and_cut(box(100,100,500,200,false));
+
+    return A;
+}
+
 // todo:: directions of degenrate polygons is incorrect
 
 template <typename T>
@@ -536,7 +533,7 @@ void render_polygon(chunker<T> pieces) {
     dynamic_array<vec2_f> result;
     dynamic_array<index> indices;
     dynamic_array<boundary_info> boundary;
-    auto requested_indices = microgl::triangles::TrianglesIndices::TRIANGLES;
+    auto requested_indices = microgl::triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
 //    auto fill_rule = cpt::fill_rule::non_zero;
     auto fill_rule = cpt::fill_rule::even_odd;
 

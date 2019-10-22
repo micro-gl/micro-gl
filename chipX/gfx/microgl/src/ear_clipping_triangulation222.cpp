@@ -63,7 +63,6 @@ namespace tessellation {
     ear_clipping_triangulation<number>::polygon_to_linked_list(vertex *$pts,
                                                        index offset,
                                                        index size,
-                                                       const node_type_t &type,
                                                        bool reverse,
                                                        pool_nodes_t &pool
                                                        ) {
@@ -77,7 +76,6 @@ namespace tessellation {
             auto * node = pool.get();
             node->pt = &$pts[idx];
             node->original_index = offset + idx;
-            node->type = type;
 
             // record first node
             if(first== nullptr)
@@ -145,9 +143,6 @@ namespace tessellation {
         auto * iter_2 = first;
 
         do {
-            if(iter_1->type==node_type_t::bridge)
-                continue;
-
             const auto &a = *(iter_1->pt);
             const auto &b = v;
             bool fails = false;
@@ -195,7 +190,7 @@ namespace tessellation {
                 outer,
                 *(inner_left_most_node->pt));
 
-//        outer_node = outer_node->next;
+        outer_node = outer_node->next;
 
         // clone the second pair of bridge
         auto * cloned_outer_node = pool.get();
@@ -214,11 +209,6 @@ namespace tessellation {
         // connect outer node to inner
         outer_node->next = inner_left_most_node;
         inner_left_most_node->prev = outer_node;
-
-        outer_node->type = node_type_t ::bridge;
-        inner_left_most_node->type = node_type_t ::bridge;
-        cloned_outer_node->type = node_type_t ::bridge;
-        cloned_inner_node->type = node_type_t ::bridge;
     }
 
     template <typename number>
@@ -263,7 +253,7 @@ namespace tessellation {
         // it will also deallocate once we we go out of scope
         pool_nodes_t pool{outer_size};
 
-        auto * outer = polygon_to_linked_list($pts, 0, size, node_type_t::outer, false, pool);
+        auto * outer = polygon_to_linked_list($pts, 0, size, false, pool);
 
         if(holes_count) {
 
@@ -276,7 +266,7 @@ namespace tessellation {
             for (index ix = 0; ix < holes_count; ++ix) {
                 auto hole = (*holes)[ix];
                 poly_contexts[ix].polygon = polygon_to_linked_list(hole.points, hole.offset, hole.size,
-                                                                   node_type_t::inner, hole.orients_like_parent,pool);
+                        hole.orients_like_parent,pool);
                 poly_contexts[ix].left_most = find_left_bottom_most_vertex(poly_contexts[ix].polygon);
                 poly_contexts[ix].size = hole.size;
             }
@@ -334,10 +324,9 @@ namespace tessellation {
         auto &indices = indices_buffer_triangulation;
 
         index ind = 0;
-        node_t * first = list;//->next->next->next;
+        node_t * first = list;
         node_t * point;
 
-//        for (index ix = 0; ix < 3; ++ix) {
         for (index ix = 0; ix < size - 2; ++ix) {
 
             point = first;
@@ -378,7 +367,6 @@ namespace tessellation {
                 }
 
             } while((point = point->next));
-//            } while((point = point->next) && point!=first);
 
         }
 
@@ -388,11 +376,16 @@ namespace tessellation {
     // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
     template <typename number>
     number
-    ear_clipping_triangulation<number>::orientation_value(const vertex *a,
-                                                          const vertex *b,
-                                                          const vertex *c) {
-        return (b->x - a->x)*(c->y - a->y) -
-                (c->x - a->x)*(b->y - a->y);
+    ear_clipping_triangulation<number>::orientation_value(const node_t *a,
+                                                          const node_t *b,
+                                                          const node_t *c) {
+        auto first = (b->pt->x - a->pt->x)*(c->pt->y - a->pt->y);
+        auto second = (c->pt->x - a->pt->x)*(b->pt->y - a->pt->y);
+
+
+
+        return (b->pt->x - a->pt->x)*(c->pt->y - a->pt->y) -
+                (c->pt->x - a->pt->x)*(b->pt->y - a->pt->y);
 
 //        /*
 //        return a->pt->x * (b->pt->y - c->pt->y) +
@@ -410,24 +403,23 @@ namespace tessellation {
 
         // pay attention that this can return 0, although in the algorithm
         // it does not return 0 never here.
-        if(sign_orientation_value(l->pt, v->pt, r->pt)==0) {
+        if(sign_orientation_value(l, v, r)==0) {
             int a=0 ;
         }
 
 
-//        return sign_orientation_value(l->pt, v->pt, r->pt) > 0 ? 1 : -1;
-        return sign_orientation_value(l->pt, v->pt, r->pt);// > 0 ? 1 : -1;
+        return sign_orientation_value(l, v, r) > 0 ? 1 : -1;
     }
 
     // tv
     template <typename number>
     char
-    ear_clipping_triangulation<number>::sign_orientation_value(const vertex *i,
-                                                               const vertex *j,
-                                                               const vertex *k) {
+    ear_clipping_triangulation<number>::sign_orientation_value(const node_t *i,
+                                                               const node_t *j,
+                                                               const node_t *k) {
         auto v = orientation_value(i, j, k);
 
-        bool test  = abs(v)<0.01;
+        bool test  = abs(v)<=2;
         if(test)
             return 0;
 
@@ -469,23 +461,18 @@ namespace tessellation {
         const node_t * l = v->prev;
         const node_t * r = v->next;
 
-        auto val = abs(orientation_value(l->pt, v->pt, r->pt));
-        bool test2  = val<0.01;
-        bool test  = sign_orientation_value(l->pt, v->pt, r->pt)==0;
+        auto val = abs(orientation_value(l, v, r));
+        bool test2  = val<=0.001;
+        bool test  = sign_orientation_value(l, v, r)==0;
         return test;
-//        return false;
     }
 
     template <typename number>
     bool ear_clipping_triangulation<number>::isConvex(const node_t *v,
                                               node_t *list) {
-//        if(neighborhood_orientation_sign(maximal_y_element(list))==0) {
-//            return false;
-//        }
-
-        auto a = neighborhood_orientation_sign(v);
-        auto b = neighborhood_orientation_sign(maximal_y_element(list));
-
+        if(neighborhood_orientation_sign(maximal_y_element(list))==0) {
+            int a =0;
+        }
         // the maximal y element is always convex, therefore if
         // they have the same orientation_t, then v is also convex
         return neighborhood_orientation_sign(v) *
@@ -496,8 +483,8 @@ namespace tessellation {
     template <typename number>
     bool ear_clipping_triangulation<number>::areEqual(const node_t *a,
                                                       const node_t *b) {
-        return a==b;
-//            return a->pt->x==b->pt->x && a->pt->y==b->pt->y;
+//        return a==b;
+            return a->pt->x==b->pt->x && a->pt->y==b->pt->y;
     }
 
     template <typename number>
@@ -508,7 +495,7 @@ namespace tessellation {
         const node_t * l = v->next;
         const node_t * r = v->prev;
 
-        tsv = sign_orientation_value(v->pt, l->pt, r->pt);
+        tsv = sign_orientation_value(v, l, r);
 
         if(tsv==0)
             return true;
@@ -519,21 +506,12 @@ namespace tessellation {
 
             if(areEqual(n, v) || areEqual(n, l) || areEqual(n, r))
                 continue;
-//            if(n->type==node_type_t::bridge )
-//                continue;
 
-            vertex m = (*n->pt + *n->next->pt)/2;
-//            m = (*n->pt);
-
-            if(tsv * sign_orientation_value(v->pt, l->pt, &m)>0 &&
-               tsv * sign_orientation_value(l->pt, r->pt, &m)>0 &&
-               tsv * sign_orientation_value(r->pt, v->pt, &m)>0
-                    ) {
-//                if(n->type==node_type_t::bridge )
-//                    continue;
-
+            if(tsv * sign_orientation_value(v, l, n)>=0 &&
+               tsv * sign_orientation_value(l, r, n)>=0 &&
+               tsv * sign_orientation_value(r, v, n)>=0
+                    )
                 return false;
-            }
 
         } while((n=n->next) && (n!=list));
 

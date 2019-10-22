@@ -87,13 +87,40 @@ std::vector<vec2_32i> poly_hole() {
             p0_1,p3};
 }
 
-std::vector<vec2_f> poly_diamond() {
-    vec2_f p1 = {300, 100};
-    vec2_f p2 = {400, 300};
-    vec2_f p3 = {300, 400};
-    vec2_f p0 = {100,300};
+std::vector<vec2_32i> poly_hole2() {
+    return {
+            {10,10},
+            {400,10},
+            {400,400},
+            {10,400},
 
-    return {p1, p2, p3, p0};
+            {10,10},
+
+            {10,10},
+            {10,400},
+            {400,400},
+            {400,10},
+
+            {10,10},
+    };
+}
+
+std::vector<vec2_f> poly_hole3() {
+    return {
+            {10,10},
+            {400,10},
+            {400,400},
+            {10,400},
+
+            {10,10},
+
+            {20,20},
+            {20,400-20},
+            {400-20,400-20},
+            {400-20,20},
+
+            {20,20},
+    };
 }
 
 void render() {
@@ -101,7 +128,7 @@ void render() {
 //    std::cout << t << std::endl;
 //    render_polygon(poly_rect());
 //    render_polygon(poly_2());
-    render_polygon(poly_hole());
+    render_polygon(poly_hole3());
 //    render_polygon(poly_diamond());
 //    render_polygon(poly_tri());
 }
@@ -115,7 +142,7 @@ void render_polygon(std::vector<vec2<T>> polygon) {
 
     canvas->clear(WHITE);
 
-    EarClippingTriangulation ear{true};
+    EarClippingTriangulation ear;
 
     uint8_t precision = 0;
     auto type = TrianglesIndices::TRIANGLES_WITH_BOUNDARY;

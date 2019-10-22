@@ -432,10 +432,16 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                      const uint8_t opacity,
                                      uint8_t requested_sub_pixel_precision) {
 
-    vec2_32i vertices_int[size];
+    int size_max = 0;
+    for (int ix = 0; ix < size; ++ix) {
+        if(indices[ix] >= size_max)
+            size_max=indices[ix];
+    }
+size_max+=1;
+    vec2_32i vertices_int[size_max];
     precision sub_pixel_precision = requested_sub_pixel_precision;
 
-    for (index ix = 0; ix < size; ++ix) {
+    for (index ix = 0; ix < size_max; ++ix) {
         vertices_int[ix] = vertices[ix]<<sub_pixel_precision;
     }
 
@@ -608,7 +614,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
     }
 
 #undef IND
-
+//    return;
     drawTrianglesWireframe(BLACK,
                            vertices,
                            indices,
@@ -2083,7 +2089,7 @@ template<typename P, typename CODER>
 void Canvas<P, CODER>::drawLine(const color_f_t & color,
                                 const vec2_32i &p0,
                                 const vec2_32i &p1,
-                                uint8_t bits) {
+                                precision bits) {
     drawLine(color, p0.x, p0.y, p1.x, p1.y, bits);
 }
 
@@ -2091,7 +2097,7 @@ template<typename P, typename CODER>
 void Canvas<P, CODER>::drawLine(const color_f_t &color,
                                 int x0, int y0,
                                 int x1, int y1,
-                                uint8_t bits) {
+                                precision bits) {
 
     int X0 = x0, Y0 = y0, X1 = x1, Y1=y1;
     color_t color_input{};
