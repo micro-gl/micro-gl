@@ -471,7 +471,8 @@ chunker<vec2_f> poly_hard_2() {
     chunker<vec2_f> A;
 
     A.push_back_and_cut(box(10,10,300,300,false));
-    A.push_back_and_cut(box(100,100,500,200,false));
+    A.push_back_and_cut(box(10,10,300,300,false));
+//    A.push_back_and_cut(box(100,100,500,200,false));
 
     return A;
 }

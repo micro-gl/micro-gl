@@ -26,6 +26,8 @@ namespace tessellation {
         bool t_same_sign_as_abcd = (t>0 && ab_cd >0) || (t<0 && ab_cd <0);
         bool s_test = (s==0 || s_same_sign_as_abcd) && abs(s)<=abs(ab_cd);
         bool t_test = (t==0 || t_same_sign_as_abcd) && abs(t)<=abs(ab_cd);
+//        bool s_test = (s_same_sign_as_abcd) && abs(s)<abs(ab_cd);
+//        bool t_test = (t_same_sign_as_abcd) && abs(t)<abs(ab_cd);
         bool test = s_test && t_test;
         return test;
     }
@@ -145,7 +147,9 @@ namespace tessellation {
         auto * iter_2 = first;
 
         do {
-            if(iter_1->type==node_type_t::bridge)
+//            if(iter_1->type==node_type_t::bridge)
+//                continue;
+            if(iter_1->pt->x > v.x)
                 continue;
 
             const auto &a = *(iter_1->pt);
@@ -337,7 +341,7 @@ namespace tessellation {
         node_t * first = list;//->next->next->next;
         node_t * point;
 
-//        for (index ix = 0; ix < 3; ++ix) {
+//        for (index ix = 0; ix < 1; ++ix) {
         for (index ix = 0; ix < size - 2; ++ix) {
 
             point = first;
@@ -523,17 +527,31 @@ namespace tessellation {
 //                continue;
 
             vertex m = (*n->pt + *n->next->pt)/2;
-//            m = (*n->pt);
+            m = (*n->pt);
 
-            if(tsv * sign_orientation_value(v->pt, l->pt, &m)>0 &&
-               tsv * sign_orientation_value(l->pt, r->pt, &m)>0 &&
-               tsv * sign_orientation_value(r->pt, v->pt, &m)>0
-                    ) {
-//                if(n->type==node_type_t::bridge )
-//                    continue;
+            auto *v_a =  n->pt;
+            auto *v_b =  n->next->pt;
 
+            // todo:: can break prematurely instead of calcing everything
+            bool w1 = (tsv * sign_orientation_value(v->pt, l->pt, v_a) <= 0) &&
+                      (tsv * sign_orientation_value(v->pt, l->pt, v_b) <= 0);
+            bool w2 = (tsv * sign_orientation_value(l->pt, r->pt, v_a) <= 0) &&
+                      (tsv * sign_orientation_value(l->pt, r->pt, v_b) <= 0);
+            bool w3 = (tsv * sign_orientation_value(r->pt, v->pt, v_a) <= 0) &&
+                      (tsv * sign_orientation_value(r->pt, v->pt, v_b) <= 0);
+
+            bool edge_outside_triangle = w1 || w2 || w3;
+            if(!edge_outside_triangle)
                 return false;
-            }
+//            if(tsv * sign_orientation_value(v->pt, l->pt, &m)>0 &&
+//               tsv * sign_orientation_value(l->pt, r->pt, &m)>0 &&
+//               tsv * sign_orientation_value(r->pt, v->pt, &m)>0
+//                    ) {
+////                if(n->type==node_type_t::bridge )
+////                    continue;
+//
+//                return false;
+//            }
 
         } while((n=n->next) && (n!=list));
 
