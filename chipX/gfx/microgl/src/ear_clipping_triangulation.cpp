@@ -162,7 +162,7 @@ namespace tessellation {
                 const auto &d = *(iter_2->next->pt);
 
                 // here we can use bbox
-                const bool bbox_overlaps = is_bbox_overlaps(a,b,c,d, true);
+                const bool bbox_overlaps = true;//is_bbox_overlaps(a,b,c,d, true);
 
                 if(bbox_overlaps) {
                     bool has_mutual_endpoint = a==c || a==d || b==c || b==d;
@@ -339,15 +339,45 @@ namespace tessellation {
 
         index ind = 0;
         node_t * first = list;//->next->next->next;
-        node_t * point;
+        node_t * point = first;
 
-//        for (index ix = 0; ix < 1; ++ix) {
+        // remove degenerate ears, I assume, that removing all deg ears
+        // will create a poly that will never have deg again (I might be wrong)
+        do {
+            bool is_degenerate = isDegenrate(point);
+
+            if(!is_degenerate)
+                continue;
+
+            point->prev->next = point->next;
+            point->next->prev = point->prev;
+            // set a new linked list first element
+            if(point==first)
+                first=point->next;
+
+            auto * bt = point->prev;
+            // back-track backwards
+            do {
+                is_degenerate = isDegenrate(bt);
+                if(!is_degenerate)
+                    break;
+                bt->prev->next = bt->next;
+                bt->next->prev = bt->prev;
+            } while(bt!=point->next && (bt=bt->prev));
+
+        } while((point!=first->prev) && (point = point->next));
+
+//        for (index ix = 0; ix < 2; ++ix) {
         for (index ix = 0; ix < size - 2; ++ix) {
 
             point = first;
 
             do {
-                if (isDegenrate(point) || (isConvex(point, first) && isEmpty(point, first))) {
+                bool is_degenerate = isDegenrate(point);
+                bool is_convex = isConvex(point, first);
+                bool is_empty = isEmpty(point, first);
+
+                if (is_degenerate || (is_convex && is_empty)) {
 
                     indices.push_back(point->prev->original_index);
                     indices.push_back(point->original_index);
@@ -382,7 +412,7 @@ namespace tessellation {
                 }
 
             } while((point = point->next));
-//            } while((point = point->next) && point!=first);
+//            } while(point!=first->prev && (point = point->next));
 
         }
 

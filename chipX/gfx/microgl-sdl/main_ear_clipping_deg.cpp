@@ -69,15 +69,15 @@ void test_1() {
             {10,10},
     };
 
-//    dynamic_array<vec2_f> inner_1 = box(10,10,400,400, false);
-    dynamic_array<vec2_f> inner_1 = box(10,10,150,150, false);
-    dynamic_array<vec2_f> inner_2 = box(150,150,200,200, true);
-    dynamic_array<vec2_f> inner_3 = box(200,10,400,400, true);
+    dynamic_array<vec2_f> inner_1 = box(10,10,400,400, false);
+//    dynamic_array<vec2_f> inner_1 = box(10,50,150,150, false);
+//    dynamic_array<vec2_f> inner_2 = box(150,150,200,200, true);
+//    dynamic_array<vec2_f> inner_3 = box(200,10,400,400, true);
 //
 //    dynamic_array<vec2_f> inner_1 = box(10,10,100,100, false);
-//    dynamic_array<vec2_f> inner_2 = box(150,150,200,200, true);
-//    dynamic_array<vec2_f> inner_3 = box(150,250,200,300, true);
-
+    dynamic_array<vec2_f> inner_2 = box(150,150,200,200, true);
+    dynamic_array<vec2_f> inner_3 = box(150,250,200,300, true);
+//
     ect::hole hole_1, hole_2, hole_3;
     hole_1.points = inner_1.data();
     hole_1.size = inner_1.size();
@@ -88,8 +88,8 @@ void test_1() {
     hole_3.size = inner_3.size();
 
     holes.push_back(hole_1);
-    holes.push_back(hole_2);
-    holes.push_back(hole_3);
+//    holes.push_back(hole_2);
+//    holes.push_back(hole_3);
 
     auto status = ect::compute(
             outer.data(),
