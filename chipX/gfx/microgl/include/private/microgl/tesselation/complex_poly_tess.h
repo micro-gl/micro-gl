@@ -7,6 +7,13 @@ namespace tessellation {
 
     using index = unsigned int;
 
+    /**
+     * convert a list of simple polygons into triangles using simplification
+     * and tree covering techniques. This does not work well though because
+     * the ear clipper procedure does not handle hole bridges well, so basically
+     * this whole effort was a complete EPIC fail by my side, but was nevertheless
+     * very educating and time consuming.
+     */
     template <typename number>
     class complex_poly_tess {
     public:

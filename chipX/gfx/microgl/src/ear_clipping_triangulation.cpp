@@ -5,6 +5,7 @@ namespace tessellation {
     template <typename number>
     bool ear_clipping_triangulation<number>::test_intersect(const vertex &a, const vertex &b,
                                                             const vertex &c, const vertex &d,
+                                                            vertex & st,
                                                             bool interior_only) {
         auto ab = b - a;
         auto cd = d - c;
@@ -29,6 +30,9 @@ namespace tessellation {
 //        bool s_test = (s_same_sign_as_abcd) && abs(s)<abs(ab_cd);
 //        bool t_test = (t_same_sign_as_abcd) && abs(t)<abs(ab_cd);
         bool test = s_test && t_test;
+        st.x = s/ab_cd;
+        st.y = t/ab_cd;
+
         return test;
     }
 
@@ -137,6 +141,89 @@ namespace tessellation {
                 is_bbox_overlaps_axis(a,b,c,d,false,interior_only);
     }
 
+
+    template <typename number>
+    bool ear_clipping_triangulation<number>::inCone(const vertex &a0,
+                                                    const vertex &a,
+                                                    const vertex &a1,
+                                                    const vertex &b) {
+
+        // is a0-a-a1 CCW
+//        int sign = sign_orientation_value(&a, &a1, &a0);
+        // CW for now
+        int sign = sign_orientation_value(&a, &a1, &a0);
+
+        bool is_convex = sign <= 0;
+        bool in_cone;
+
+        if(is_convex) {
+            in_cone = sign_orientation_value(&a, &b, &a0)>0 && sign_orientation_value(&b, &a, &a1)>0;
+        } else {
+            in_cone = !(sign_orientation_value(&a, &b, &a1)>=0 && sign_orientation_value(&b, &a, &a0)>=0);
+        }
+
+        return in_cone;
+    }
+
+    template <typename number>
+    bool ear_clipping_triangulation<number>::business(const node_t *v,
+                                                      const vertex &a,
+                                                      const vertex &b,
+                                                      node_t *list) {
+        int tsv;
+
+        const node_t * l = v->next;
+        const node_t * r = v->prev;
+
+        tsv = sign_orientation_value(v->pt, l->pt, r->pt);
+
+        // only consider CCW concave
+        if(tsv==1)
+            return false;
+
+        node_t * n = list;
+
+
+        auto *v_a =  n->pt;
+        auto *v_b =  n->next->pt;
+
+        bool w1 = (tsv * sign_orientation_value(v->pt, l->pt, v_a) <= 0) &&
+                  (tsv * sign_orientation_value(v->pt, l->pt, v_b) <= 0);
+        bool w2 = (tsv * sign_orientation_value(l->pt, r->pt, v_a) <= 0) &&
+                  (tsv * sign_orientation_value(l->pt, r->pt, v_b) <= 0);
+        bool w3 = (tsv * sign_orientation_value(r->pt, v->pt, v_a) <= 0) &&
+                  (tsv * sign_orientation_value(r->pt, v->pt, v_b) <= 0);
+
+        auto w4_0 = sign_orientation_value(v_a, v_b, v->pt);
+        auto w4_1 = sign_orientation_value(v_a, v_b, l->pt);
+        auto w4_2 = sign_orientation_value(v_a, v_b, r->pt);
+        bool w4 = w4_0*w4_1>=0 && w4_0*w4_2>=0 &&  w4_1*w4_2>=0;
+
+        bool edge_outside_triangle = w1 || w2 || w3 || w4;
+        if(!edge_outside_triangle)
+            return false;
+
+
+//        do {
+//
+//            if(areEqual(n, v) || areEqual(n, l) || areEqual(n, r))
+//                continue;
+//
+//
+//            vertex m = (*n->pt + *n->next->pt)/2;
+//            m = (*n->pt);
+//            if(tsv * sign_orientation_value(v->pt, l->pt, &m)>0 &&
+//               tsv * sign_orientation_value(l->pt, r->pt, &m)>0 &&
+//               tsv * sign_orientation_value(r->pt, v->pt, &m)>0
+//                    ) {
+//                return false;
+//            }
+//
+//        } while((n=n->next) && (n!=list));
+//
+//        return true;
+    }
+
     template <typename number>
     typename ear_clipping_triangulation<number>::node_t *
     ear_clipping_triangulation<number>::find_mutually_visible_vertex(node_t * poly,
@@ -145,6 +232,7 @@ namespace tessellation {
         auto * first = poly;
         auto * iter_1 = first;
         auto * iter_2 = first;
+        vertex st;
 
         do {
 //            if(iter_1->type==node_type_t::bridge)
@@ -155,6 +243,7 @@ namespace tessellation {
             const auto &a = *(iter_1->pt);
             const auto &b = v;
             bool fails = false;
+            iter_2 = first;
 
             do {
                 // this works because the linked-list is cyclic
@@ -165,23 +254,49 @@ namespace tessellation {
                 const bool bbox_overlaps = true;//is_bbox_overlaps(a,b,c,d, true);
 
                 if(bbox_overlaps) {
-                    bool has_mutual_endpoint = a==c || a==d || b==c || b==d;
+//                    bool has_mutual_endpoint = a==c || a==d || b==c || b==d;
+//                    bool has_mutual_endpoint = iter_1==iter_2 || iter_1==iter_2->next;
 
-                    if(has_mutual_endpoint)
-                        continue;
+//                    if(has_mutual_endpoint)
+//                        continue;
 
-                    bool intersects = test_intersect(a,b,c,d,false);
+                    bool intersects = test_intersect(a,b,c,d,st, false);
 
                     if(intersects) {
-                        fails = true;
-                        break;
+                        // found intersection, now let's classify and further process
+                        // 1. if it's a proper intersection, we are done
+                        // 2. if it's endpoints intersect in a degenerate manner, test for cone inclusion
+
+                        bool proper = st.x>0 && st.y>0 && st.x<1 && st.y<1;
+
+                        if(proper) {
+                            fails = true;
+                            break;
+                        }
+
+//                        bool intersects_at_cd_start = st.y==0;
+//                        if(!intersects_at_cd_start)
+//                            continue;
+
+                        // have intersection at cd start, test if we are in a cone
+                        bool in_cone = inCone(*iter_2->prev->pt, *iter_2->pt, *iter_2->next->pt, b);
+
                     }
                 }
 
             } while ((iter_2=iter_2->next) && iter_2!=first);
 
-            if(!fails)
+            if(!fails) {
+
+//                if(iter_1->type==node_type_t::bridge) {
+//                    int s_1 = sign_orientation_value(&a, &b, iter_1->prev->pt);
+//                    int s_2 = sign_orientation_value(&a, &b, iter_1->next->pt);
+//                    if(s_1*s_2>0)
+//                        continue;
+//                }
+
                 return iter_1;
+            }
 
         } while ((iter_1=iter_1->next) && iter_1!=first);
 
@@ -193,7 +308,7 @@ namespace tessellation {
                                                         node_t * inner,
                                                         node_t * inner_left_most_node,
                                                         pool_nodes_t &pool) {
-
+//
         // found mutually visible vertex in outer
         auto * outer_node = find_mutually_visible_vertex(
                 outer,
@@ -235,7 +350,7 @@ namespace tessellation {
         vertex &a_lm = *(a_casted->left_most->pt);
         vertex &b_lm = *(b_casted->left_most->pt);
 
-        bool a_before_b = a_lm.x < b_lm.x || (a_lm.x==b_lm.x && a_lm.y > b_lm.y);
+        bool a_before_b = a_lm.x < b_lm.x || (a_lm.x==b_lm.x && a_lm.y < b_lm.y);
 
         if(a_before_b)
             return -1;
@@ -413,6 +528,7 @@ namespace tessellation {
 
             } while((point = point->next));
 //            } while(point!=first->prev && (point = point->next));
+//            } while((point = point->next) && point!=first);
 
         }
 
@@ -427,12 +543,6 @@ namespace tessellation {
                                                           const vertex *c) {
         return (b->x - a->x)*(c->y - a->y) -
                 (c->x - a->x)*(b->y - a->y);
-
-//        /*
-//        return a->pt->x * (b->pt->y - c->pt->y) +
-//               b->pt->x * (c->pt->y - a->pt->y) +
-//               c->pt->x * (a->pt->y - b->pt->y);
-//               */
     }
 
     // ts
@@ -538,7 +648,7 @@ namespace tessellation {
     bool ear_clipping_triangulation<number>::isEmpty(const node_t *v,
                                              node_t *list){
         int tsv;
-
+        bool is_super_simple = false;
         const node_t * l = v->next;
         const node_t * r = v->prev;
 
@@ -553,35 +663,41 @@ namespace tessellation {
 
             if(areEqual(n, v) || areEqual(n, l) || areEqual(n, r))
                 continue;
-//            if(n->type==node_type_t::bridge )
-//                continue;
 
-            vertex m = (*n->pt + *n->next->pt)/2;
-            m = (*n->pt);
+            if(is_super_simple) {
+                vertex m = (*n->pt);
+                if(tsv * sign_orientation_value(v->pt, l->pt, &m)>0 &&
+                   tsv * sign_orientation_value(l->pt, r->pt, &m)>0 &&
+                   tsv * sign_orientation_value(r->pt, v->pt, &m)>0
+                        ) {
+                    return false;
+                }
 
-            auto *v_a =  n->pt;
-            auto *v_b =  n->next->pt;
+            } else {
+                // this can handle small degenerate cases, we basically test
+                // if the interior is completely empty, if we have used the regular
+                // tests than the degenerate cases where things just touch would fail the test
+                auto *v_a =  n->pt;
+                auto *v_b =  n->next->pt;
 
-            // todo:: can break prematurely instead of calcing everything
-            bool w1 = (tsv * sign_orientation_value(v->pt, l->pt, v_a) <= 0) &&
-                      (tsv * sign_orientation_value(v->pt, l->pt, v_b) <= 0);
-            bool w2 = (tsv * sign_orientation_value(l->pt, r->pt, v_a) <= 0) &&
-                      (tsv * sign_orientation_value(l->pt, r->pt, v_b) <= 0);
-            bool w3 = (tsv * sign_orientation_value(r->pt, v->pt, v_a) <= 0) &&
-                      (tsv * sign_orientation_value(r->pt, v->pt, v_b) <= 0);
+                // todo:: can break prematurely instead of calcing everything
+                bool w1 = (tsv * sign_orientation_value(v->pt, l->pt, v_a) <= 0) &&
+                          (tsv * sign_orientation_value(v->pt, l->pt, v_b) <= 0);
+                bool w2 = (tsv * sign_orientation_value(l->pt, r->pt, v_a) <= 0) &&
+                          (tsv * sign_orientation_value(l->pt, r->pt, v_b) <= 0);
+                bool w3 = (tsv * sign_orientation_value(r->pt, v->pt, v_a) <= 0) &&
+                          (tsv * sign_orientation_value(r->pt, v->pt, v_b) <= 0);
 
-            bool edge_outside_triangle = w1 || w2 || w3;
-            if(!edge_outside_triangle)
-                return false;
-//            if(tsv * sign_orientation_value(v->pt, l->pt, &m)>0 &&
-//               tsv * sign_orientation_value(l->pt, r->pt, &m)>0 &&
-//               tsv * sign_orientation_value(r->pt, v->pt, &m)>0
-//                    ) {
-////                if(n->type==node_type_t::bridge )
-////                    continue;
-//
-//                return false;
-//            }
+                auto w4_0 = sign_orientation_value(v_a, v_b, v->pt);
+                auto w4_1 = sign_orientation_value(v_a, v_b, l->pt);
+                auto w4_2 = sign_orientation_value(v_a, v_b, r->pt);
+                bool w4 = w4_0*w4_1>=0 && w4_0*w4_2>=0 &&  w4_1*w4_2>=0;
+
+                bool edge_outside_triangle = w1 || w2 || w3 || w4;
+                if(!edge_outside_triangle)
+                    return false;
+            }
+
 
         } while((n=n->next) && (n!=list));
 

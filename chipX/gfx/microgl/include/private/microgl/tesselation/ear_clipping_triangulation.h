@@ -9,6 +9,19 @@ namespace tessellation {
 #define abs(a) ((a)<0 ? -(a) : (a))
     using index = unsigned int;
 
+    /**
+     * todo:: we can:
+     *
+     * 1. make this O(n^2) by precomputing if a vertex is an ear, and every time we remove
+     *    an ear, only recompute for it's two adjescent vertices.
+     * 2. make it an O(r*n) algorithm where r are the number of reflex(concave) vertices,
+     *    simply track them, and when testing for earness of a vertex, compare it against
+     *    these reflex vertices.
+     * 3. right now, the algorithm can tolerate small degenerate cases
+     * 4. the hole punching technique might not work because of bad connections into
+     *    the wrong side of another bridge. we can use heuristics to overcome some of these,
+     *    but the better solution is much more work to do, which is a bummer :(
+     */
     template <typename number>
     class ear_clipping_triangulation {
     public:
@@ -124,7 +137,9 @@ namespace tessellation {
         bool isDegenrate(const node_t *v);
 
         static
-        bool test_intersect(const vertex &a, const vertex &b, const vertex &c, const vertex &d, bool interior_only=false);
+        bool test_intersect(const vertex &a, const vertex &b, const vertex &c, const vertex &d,
+                            vertex & st,
+                            bool interior_only=false);
 
         static
         node_t *find_left_bottom_most_vertex(node_t *poly);
@@ -144,6 +159,12 @@ namespace tessellation {
 
         static
         int compare_poly_contexts(const void *a, const void *b, void *ctx);
+
+        static
+        bool business(const node_t *v, const vertex &a, const vertex &b, node_t *list);
+
+        static
+        bool inCone(const vertex &a0, const vertex &a, const vertex &a1, const vertex &b);
     };
 
 }

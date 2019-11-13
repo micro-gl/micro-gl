@@ -7,6 +7,11 @@ namespace tessellation {
 #define abs(a) ((a)<0 ? -(a) : (a))
     using index = unsigned int;
 
+    /**
+     * given a set of non-intersecting simple polygons calculate
+     * the heap tree covering of the polygons. currently there is a bug inside the
+     * polygons compare function, see comment in there in the source file.
+     */
     template <typename number>
     class simple_components_tree {
     public:

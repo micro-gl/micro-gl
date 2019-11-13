@@ -246,6 +246,8 @@ namespace tessellation {
      * if one point is inside a polygon, then the entire polygon is inside, otherwise
      * it will contradict the fact that they are non-intersecting.
      * polygons may touch one another. this is a nice and fast algorithm
+     * todo:: this is incorrect, we should redo this procedure using smart branching
+     * todo:: and calculating the polygons area to resolve conflicts using the shoelace formula.
      *
      * 1=poly 1 inside poly 2
      * -1=poly 2 inside poly 1
