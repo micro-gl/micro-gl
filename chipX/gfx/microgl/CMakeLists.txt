@@ -28,7 +28,7 @@ set(sources
 #        src/Rational.cpp
 #        src/Segment.cpp
         src/BezierCurveDivider.cpp
-        src/EarClippingTriangulation.cpp
+#        src/EarClippingTriangulation.cpp
 #        src/ear_clipping_triangulation.cpp
         src/FanTriangulation.cpp
         src/triangles.cpp
@@ -37,7 +37,9 @@ set(sources
 #        src/complex_poly_tess.cpp
 #        src/simple_components_tree.cpp
 #        src/simplify_components.cpp
-        src/qsort.cpp)
+        src/qsort.cpp
+#        include/private/microgl/tesselation/planarize_division.cpp
+        include/private/microgl/tesselation/planarize_division.h)
 
 add_library(${PROJECT_NAME} ${sources})
 
