@@ -46,3 +46,16 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 4. deal with holes AA bridge
 5. use ear clipper from J. Orourke book
 6. investigate solving degenrate cases some day.
+
+#### road-map
+1. complex poly tesselator and stroker
+2. masks
+3. bezier patches tesselator
+4. catmaull-rom splines https://www.youtube.com/watch?v=9_aJGUTePYo (super great for music visualisazion)
+   c++ example with guide - https://qroph.github.io/2018/07/30/smooth-paths-using-catmull-rom-splines.html
+   converting catmull-rom to cubic - https://stackoverflow.com/questions/30748316/catmull-rom-interpolation-on-svg-paths
+5. explore pixels shaders
+6. explore external camera object, that does 3d and projections
+7. explore bugs with the anti aliaser
+8. add clip rectangles
+9. sine function approximation - https://www.youtube.com/watch?v=1xlCVBIF_ig

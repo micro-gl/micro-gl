@@ -27,7 +27,7 @@ private:
 
 public:
     struct chunk {
-        T* data;
+        const T* data;
         index size;
 //        index offset;
     };
@@ -101,7 +101,20 @@ public:
 //        return {pointer, size, idx_start};
     }
 
+    chunk chunk_for(index i) const {
+        index idx_start = _locations[i];
+        index size = _locations[i+1] - idx_start;
+        const_type_pointer pointer = &(_data[idx_start]);
+
+        return {pointer, size};
+//        return {pointer, size, idx_start};
+    }
+
     chunk operator[](index i) {
+        return chunk_for(i);
+    }
+
+    chunk operator[](index i) const {
         return chunk_for(i);
     }
 
@@ -114,6 +127,10 @@ public:
 
     index size() const {
         return _locations.size() - 1;
+    }
+
+    index unchunked_size() const {
+        return _data.size();
     }
 
 };

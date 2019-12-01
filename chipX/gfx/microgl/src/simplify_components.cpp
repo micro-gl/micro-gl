@@ -1,4 +1,4 @@
-//#include <microgl/tesselation/simplify_components.h>
+#include <microgl/tesselation/simplify_components.h>
 #include <microgl/qsort.h>
 
 namespace tessellation {
