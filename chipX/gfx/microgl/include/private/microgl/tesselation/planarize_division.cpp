@@ -4,9 +4,30 @@
 
 namespace tessellation {
 
+    // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
+    // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
+    //    Input:  three points p, a, b
+    //    Return: >0 for P2 left of the line through a and b
+    //            =0 for P2  on the line
+    //            <0 for P2  right of the line
+    //    See: Algorithm 1 "Area of Triangles and Polygons"
+    template <typename number>
+    inline int
+    planarize_division<number>::classify_point(const vertex & point, const vertex &a, const vertex & b)
+    {
+        auto result = ((b.x - a.x) * (point.y - a.y)
+                       - (point.x - a.x) * (b.y - a.y) );
+
+        if(result <0)
+            return 1;
+        else if(result > 0)
+            return -1;
+        else return 0;
+    }
+
     template<typename number>
     auto planarize_division<number>::create_frame(const chunker<vertex> &pieces,
-                                                  const static_pool & pool) -> half_edge_face * {
+                                                  static_pool & pool) -> half_edge_face * {
         // find bbox of all
         const auto pieces_length = pieces.size();
 
@@ -17,15 +38,15 @@ namespace tessellation {
             auto const piece = pieces[ix];
             const auto piece_size = piece.size;
             for (int jx = 0; jx < piece_size; ++jx) {
-                const auto * current_vertex = piece.data[jx];
-                if(current_vertex->x<left_top.x)
-                    left_top.x = current_vertex->x;
-                if(current_vertex->y<left_top.y)
-                    left_top.y = current_vertex->y;
-                if(current_vertex->x>right_bottom.x)
-                    right_bottom.x = current_vertex->x;
-                if(current_vertex->y>right_bottom.y)
-                    right_bottom.y = current_vertex->y;
+                const auto & current_vertex = piece.data[jx];
+                if(current_vertex.x<left_top.x)
+                    left_top.x = current_vertex.x;
+                if(current_vertex.y<left_top.y)
+                    left_top.y = current_vertex.y;
+                if(current_vertex.x>right_bottom.x)
+                    right_bottom.x = current_vertex.x;
+                if(current_vertex.y>right_bottom.y)
+                    right_bottom.y = current_vertex.y;
 
             }
         }
@@ -86,12 +107,16 @@ namespace tessellation {
     }
 
     template<typename number>
-    auto planarize_division<number>::build_edges(const chunker<vertex> &pieces,
-                                                 const static_pool & pool) -> conflict * {
+    auto planarize_division<number>::build_edges_and_conflicts(const chunker<vertex> &pieces,
+                                                               half_edge_face & main_frame,
+                                                               static_pool & pool) -> half_edge ** {
 
         const auto pieces_length = pieces.size();
         conflict * conflict_first = nullptr;
         conflict * conflict_last = nullptr;
+        const auto v_size = pieces.unchunked_size();
+        auto ** edges_list = new half_edge*[v_size];
+        index edges_list_counter = 0;
 
         // build edges and twins, do not make next/prev connections
         for (int ix = 0; ix < pieces_length; ++ix) {
@@ -108,8 +133,12 @@ namespace tessellation {
 
                 // hook current v to e and c
                 v->coords = piece.data[jx];
+                v->edge = e;
                 e->origin = v;
                 c->vertex = v;
+                c->vertex->type = point_type::unknown;
+                c->vertex->conflict_face = &main_frame;
+                edges_list[edges_list_counter++] = e;
 
                 // record first edge of polygon
                 if(edge_first==nullptr) {
@@ -135,6 +164,7 @@ namespace tessellation {
             }
 
             // hook the last edge, from last vertex into first vertex
+            // of the current polygon
             if(edge_last) {
                 auto * e_last_twin = pool.get_edge();
                 e_last_twin->origin = edge_first->origin;
@@ -144,77 +174,306 @@ namespace tessellation {
 
         }
 
-        return conflict_first;
+        main_frame.conflict_list = conflict_first;
+
+        return edges_list;
     }
 
+    template<typename number>
+    auto planarize_division<number>::infer_trapeze(const half_edge_face *face) -> trapeze {
+        auto * e = face->edge;
+        const auto * e_end = face->edge;
+        trapeze trapeze;
+        trapeze.left_top = trapeze.left_bottom = trapeze.right_bottom = trapeze.right_top = e;
+
+        do {
+            const auto * v = e->origin;
+            auto curr_x = v->coords.x;
+            auto curr_y = v->coords.y;
+
+            if(curr_x < trapeze.left_top->origin->coords.x || (curr_x == trapeze.left_top->origin->coords.x && curr_y < trapeze.left_top->origin->coords.y))
+                trapeze.left_top = e;
+            if(curr_x < trapeze.left_bottom->origin->coords.x || (curr_x == trapeze.left_bottom->origin->coords.x && curr_y > trapeze.left_bottom->origin->coords.y))
+                trapeze.left_bottom = e;
+            if(curr_x > trapeze.right_bottom->origin->coords.x || (curr_x == trapeze.right_bottom->origin->coords.x && curr_y > trapeze.right_bottom->origin->coords.y))
+                trapeze.right_bottom = e;
+            if(curr_x > trapeze.right_top->origin->coords.x || (curr_x == trapeze.right_top->origin->coords.x && curr_y < trapeze.right_top->origin->coords.y))
+                trapeze.right_top = e;
+
+            e=e->next;
+        } while(e!=e_end);
+
+        return trapeze;
+    }
+
+    template<typename number>
+    auto planarize_division<number>::classify_point_with_trapeze(const vertex & point, const trapeze &trapeze) -> point_with_trapeze {
+        if(point==trapeze.left_top) return point_with_trapeze::boundaey_vertex;
+        if(point==trapeze.left_bottom) return point_with_trapeze::boundaey_vertex;
+        if(point==trapeze.right_bottom) return point_with_trapeze::boundaey_vertex;
+        if(point==trapeze.right_top) return point_with_trapeze::boundaey_vertex;
+        if(classify_point(point, trapeze.left_top->origin->coords, trapeze.left_bottom->origin->coords)==0) return point_with_trapeze::left_wall;
+        if(classify_point(point, trapeze.right_top->origin->coords, trapeze.right_bottom->origin->coords)==0) return point_with_trapeze::right_wall;
+        if(classify_point(point, trapeze.left_top->origin->coords, trapeze.right_top->origin->coords)==0) return point_with_trapeze::top_wall;
+        if(classify_point(point, trapeze.left_bottom->origin->coords, trapeze.right_bottom->origin->coords)==0) return point_with_trapeze::bottom_wall;
+        return point_with_trapeze::inside;
+    }
+
+    template<typename number>
+    auto planarize_division<number>::split_edge_at(half_edge_vertex * point,
+                                                   half_edge *edge, dynamic_pool & pool) -> half_edge * {
+        // let's shorten both edge and it's twin,each from it's side
+        // main frame does not have twins because are needed.
+        bool has_twin = edge->twin!=nullptr;
+        auto * e_0 = edge;
+        auto * e_1 = pool.create_edge();
+        auto * e_t_0 = edge->twin;
+        auto * e_t_1 = has_twin ? pool.create_edge() : nullptr;
+
+        e_1->origin = point;
+        e_1->prev = e_0;
+        e_1->next = e_0->next;
+
+        e_0->next = e_1;
+
+        if(has_twin) {
+            e_t_1->origin = point;
+            e_t_1->prev = e_t_0;
+            e_t_1->next = e_t_0->next;
+
+            e_t_0->next = e_t_1;
+        }
+
+        // make sure point refers to any edge leaving it
+        point->edge = e_1;
+
+        return e_1;
+    }
+
+    template<typename number>
+    auto planarize_division<number>::try_insert_vertex_on_trapeze_boundary_at(const vertex & v,
+                                                                              const trapeze & trapeze,
+                                                                              point_with_trapeze where_boundary,
+                                                                              dynamic_pool & pool) -> half_edge * {
+        // given where on the boundary: left, top, right, bottom
+        // walk along that boundary ray and insert the vertex at the right place.
+        // if the vertex already exists, do nothing ?
+        // otherwise, insert a vertex and split the correct edge segment of the ray.
+        // at the end, return the corresponding half-edge, whose origin is the vertex.
+        // note:: it is better to return the edge than only the vertex, because
+        // the edge locates the vertex, while the vertex locates any edge that leaves it,
+        // and therefore would require traversing around the vertex to find the edge that belongs
+        // to the face we are interested in.
+        half_edge * e_start = nullptr;
+        half_edge * e_end = nullptr;
+        bool compare_y = false;
+        bool reverse_direction = false;
+
+        switch (where_boundary) {
+            case point_with_trapeze::inside:
+                return nullptr;
+            case point_with_trapeze::boundary_vertex:
+                if(v==trapeze.left_top) return trapeze.left_top;
+                if(v==trapeze.left_bottom) return trapeze.left_bottom;
+                if(v==trapeze.right_bottom) return trapeze.right_bottom;
+                if(v==trapeze.right_top) return trapeze.right_top;
+                break;
+            case point_with_trapeze::left_wall:
+                e_start = trapeze.left_top; e_end = trapeze.left_bottom->next;
+                compare_y=true;reverse_direction=false;
+                break;
+            case point_with_trapeze::right_wall:
+                e_start = trapeze.right_bottom; e_end = trapeze.right_top->next;
+                compare_y=true;reverse_direction=true;
+                break;
+            case point_with_trapeze::top_wall:
+                e_start = trapeze.right_top; e_end = trapeze.left_top->next;
+                compare_y=false;reverse_direction=true;
+                break;
+            case point_with_trapeze::bottom_wall:
+                e_start = trapeze.left_bottom; e_end = trapeze.right_bottom->next;
+                compare_y=false;reverse_direction=false;
+                break;
+
+        }
+
+        const auto * e_end_ref = e_end;
+
+        do {
+            auto coord_0 = compare_y ? e_start->origin->coords.y : e_start->origin->coords.x;
+            auto coord_1 = compare_y ? e_start->next->origin->coords.y : e_start->next->origin->coords.x;
+            auto v_coord = compare_y ? v.y : v.x;
+            bool on_segment = reverse_direction ? v_coord>coord_1 : v_coord<coord_1;
+
+            // v lies on e
+            if(on_segment) {
+                // check endpoints first
+                if(v_coord==coord_0)
+                    return e_start;
+                auto *point = pool.create_vertex(v);
+                return split_edge_at(point, e_start, pool);
+            }
+            e_start=e_start->next;
+        } while(e_start!=e_end_ref);
+
+    }
+
+    template<typename number>
+    number planarize_division<number>::evaluate_line_at_x(const number x, const vertex &a, const vertex &b) {
+        auto slope = (b.y-a.y)/(b.x-a.x);
+        auto y = a.y + slope*(x-a.x);
+        return y;
+    }
+
+    template<typename number>
+    void planarize_division<number>::sp(const number x, const vertex &a, const vertex &b) {
+    }
+
+    template<typename number>
+    auto planarize_division<number>::handle_start_face(half_edge_face *face, half_edge *edge,
+                                                        dynamic_pool & dynamic_pool) -> split_result {
+        // the mission of this method is to split a little to create an intermediate face
+        // for the regular procedure, this procedure might split a face to two or just
+        // split an edge on which the vertex lies on.
+        // thw two end points of the edge
+        const auto & a = edge->origin->coords;
+        const auto & b = edge->twin->origin->coords;
+        // find trapeze boundaries
+        trapeze trapeze = infer_trapeze(face);
+        // todo: what about degenerate trapeze with three vertices ?
+
+        // so,
+        // two things can occur, the vertex is completely inside the trapeze
+        // or the vertex is on the boundary.
+        // 1. if v is on boundary:
+        // 1.1. v is on the vertical lines, in this case just split the boundary
+        // 1.2. v is on the ceil or floor of the trapeze, in this case, split with a vertical line
+        //      the above and below and split to two faces
+        // 1.3. v is already existing, then just replace the reference to the one present already
+        // 2. if v is completely inside, then split with a vertical edge into two faces
+
+        // test point status
+        point_with_trapeze classs = classify_point_with_trapeze(a, trapeze);
+        // boundary
+        bool on_boundary = classs!=point_with_trapeze::inside;
+        bool on_boundary_vertices = classs==point_with_trapeze::boundaty_vertex;
+        // completely inside minus the endpoints
+        bool in_left_wall = classs==point_with_trapeze::left_wall;
+        bool in_right_wall = classs==point_with_trapeze::right_wall;
+        bool in_top_wall = classs==point_with_trapeze::top_wall;
+        bool in_bottom_wall = classs==point_with_trapeze::bottom_wall;
+        // should split the horizontal parts of the trapeze
+        bool should_split_horizontal_trapeze_parts = !in_left_wall && !in_right_wall && !on_boundary_vertices;
+
+
+        // should split the horizontal parts of the trapeze
+        if(should_split_horizontal_trapeze_parts) {
+            // we are on the boundary, we should try insert a vertex there
+            if(on_boundary) {
+                // split boundary and return the edge whose origin is the split vertex
+                half_edge * e = try_insert_vertex_on_trapeze_boundary_at(a, trapeze, classs, dynamic_pool);
+            } else {
+                // inside
+            }
+
+        }
+
+
+    }
+
+    template<typename number>
+    auto planarize_division<number>::split_intermediate_face_with_edge(half_edge_face *face, half_edge *edge,
+                                                                       dynamic_pool & pool) -> half_edge * {
+
+        // thw two end points of the edge
+        const auto & a = edge->origin->coords;
+        const auto & b = edge->twin->origin->coords;
+        // find trapeze boundaries
+        trapeze trapeze = infer_trapeze(face);
+
+        // now we have restored trapeze boundaries, todo: what about degenerate trapeze with three vertices ?
+        // now test intersections against boundaries
+
+
+
+    }
+
+    template<typename number>
+    void planarize_division<number>::insert_edge(half_edge *edge, dynamic_pool & pool) {
+
+        // record the conflicting face of the origin point
+        auto * conflicting_face = edge->origin->conflict_face;
+        // thw two end points of the edge
+        const auto & a = edge->origin->coords;
+        const auto & b = edge->twin->origin->coords;
+
+        // at first, suppose no edge cases
+        // notes:
+        // 1. every edge splits a face to most 4 faces
+        // 2. edge cases are when it just lies on an already present edge
+        // 2.1. if it lies on an edge, then split the edge
+        // 2.2. if it lies on a vertex, then insert edge at correct position like a clock
+
+        // let's start with just splitting a face at up to 4 places
+        handle_start_face(conflicting_face, edge, pool);
+        split_intermediate_face_with_edge(conflicting_face, edge, pool);
+
+    }
 
     template<typename number>
     void planarize_division<number>::compute(const chunker<vertex> &pieces) {
 
+        // vertices size is also edges size since these are polygons
         const auto v_size = pieces.unchunked_size();
         // plus 4s for the sake of frame
         static_pool static_pool(v_size + 4, 4 + v_size*2, 1, v_size);
         dynamic_pool dynamic_pool{};
-        // create the frame
+        // create the main frame
         auto * main_face = create_frame(pieces, static_pool);
         // create edges and conflict lists
-        auto * conflicts = build_edges(pieces, *main_face, static_pool);
-        // hook conflicts
-        main_face->conflict_list = conflicts;
-        // here make a permutation
-        // todo: take permutation.
+        auto ** edges_list = build_edges_and_conflicts(pieces, *main_face, static_pool);
+        // todo: here create a random permutation of edges
 
-
-
+        // now start iterations
+        for (int ix = 0; ix < v_size; ++ix) {
+            insert_edge(edges_list[ix], dynamic_pool);
+        }
 
     }
 
     template<typename number>
-    bool planarize_division<number>::calcIntersection(const half_edge &l, const half_edge &r,
-                                                      float &alpha, float &alpha1) {
-        /*
-        // endpoints
-        auto a = *(this->start());
-        auto b = *(this->end());
-        auto c = *(l.start());
-        auto d = *(l.end());
-
+    bool planarize_division<number>::segment_intersection_test(const vertex &a, const vertex &b,
+                                                               const vertex &c, const vertex &d,
+                                                               vertex & intersection,
+                                                               float &alpha, float &alpha1) {
         // vectors
         auto ab = b - a;
         auto cd = d - c;
-
         auto dem = ab.x * cd.y - ab.y * cd.x;
 
         // parallel lines
         // todo:: revisit when thinking about fixed points
-        if (abs(dem) < NOISE)
-            return IntersectionType::PARALLEL;
+        if (abs(dem) < 0.0001f)
+            return intersection::parallel;
         else {
             auto ca = a - c;
             auto ac = -ca;
+            auto numerator = ca.y * cd.x - ca.x * cd.y;
 
-            alpha = (ca.y * cd.x - ca.x * cd.y) / dem;
-            alpha1 = (ab.y * ac.x - ab.x * ac.y) / dem;
-
-            intersection = a + ab * alpha;
-
-            // test for segment intersecting (alpha)
-            if ((alpha < 0.0) || (alpha > 1.0))
-                return IntersectionType::NO_INTERSECT;
-            else {;//if(false){
-                float num = ca.y * ab.x - ca.x * ab.y;
-
-                if (dem > 0.0) {
-                    if (num < 0.0 || num > dem)
-                        return IntersectionType::NO_INTERSECT;
-                } else {
-                    if (num > 0.0 || num < dem)
-                        return IntersectionType::NO_INTERSECT;
-                }
+            if (dem > 0) {
+                if (numerator < 0 || numerator > dem)
+                    return intersection::none;
+            } else {
+                if (numerator > 0 || numerator < dem)
+                    return intersection::none;
             }
+
+            alpha = numerator / dem;
+//            alpha1 = (ab.y * ac.x - ab.x * ac.y) / dem;
+            intersection = a + ab * alpha;
         }
-        return IntersectionType::INTERSECT;
-         */
+
+        return intersection::intersect;
     }
 
 

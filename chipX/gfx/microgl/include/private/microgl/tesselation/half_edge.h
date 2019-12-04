@@ -8,6 +8,10 @@ namespace tessellation {
         regular, attachment, intersection, unknown
     };
 
+    enum class edge_type {
+        vertical, horizontal, unknown
+    };
+
     template <typename number>
     struct half_edge_vertex_t;
     template <typename number>
@@ -30,6 +34,7 @@ namespace tessellation {
         half_edge_vertex_t<number> * origin = nullptr;
         // left incident face
         half_edge_face_t<number> * face = nullptr;
+        edge_type type = edge_type::unknown;
         int winding = 0;
     };
 

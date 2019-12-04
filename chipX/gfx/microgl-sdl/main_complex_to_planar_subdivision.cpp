@@ -426,6 +426,18 @@ chunker<vec2_f> poly_inter_star() {
     return A;
 }
 
+chunker<vec2_f> poly_inter_simple_1() {
+    chunker<vec2_f> A;
+
+    A.push_back_and_cut({
+                                {20,20},
+                                {200,20},
+                                {100,200},
+                        });
+
+    return A;
+}
+
 chunker<vec2_f> poly_double() {
     chunker<vec2_f> A;
 
@@ -505,7 +517,8 @@ void render() {
 //
 //    render_polygon(poly_inter_star());
 //    render_polygon(poly_inter_nested_3());
-    render_polygon(poly_inter_star());
+//    render_polygon(poly_inter_star());
+    render_polygon(poly_inter_simple_1());
 //    render_polygon(poly_inter_1());
 //    render_polygon(poly_case_touches_1());
 
