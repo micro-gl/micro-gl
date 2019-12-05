@@ -50,6 +50,7 @@ namespace tessellation {
 
     template <typename number>
     struct half_edge_face_t {
+        // any edge of the face
         half_edge_t<number> * edge = nullptr;
         // list of conflicting vertices
         conflict_node_t<number> * conflict_list = nullptr;

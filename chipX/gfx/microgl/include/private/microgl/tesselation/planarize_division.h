@@ -174,6 +174,10 @@ namespace tessellation {
 
         static
         number evaluate_line_at_x(number x, const vertex &a, const vertex &b);
+
+        static
+        void
+        insert_edge_between_non_co_linear_vertices(half_edge *vertex_a_edge, half_edge *vertex_b_edge, dynamic_pool &dynamic_pool);
     };
 
 
