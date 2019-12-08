@@ -278,16 +278,16 @@ namespace tessellation {
     // note: two vertices on the same wall are symbolically on a straight line if if they have numeric inaccuracies
 
     template<typename number>
-    auto planarize_division<number>::try_split_edge_at(half_edge_vertex * point,
+    auto planarize_division<number>::try_split_edge_at(const vertex& point,
                                                        half_edge *edge, dynamic_pool & pool) -> half_edge * {
         // let's shorten both edge and it's twin,each from it's side
         // main frame does not have twins because are needed.
         //  --e0---*--e1--->
         // <--et1--*--et0--
         // if the point is already one of the edges endpoints skip fast
-        if(point->coords==edge->origin->coords)
+        if(point==edge->origin->coords)
             return edge;
-        if(point->coords==edge->twin->origin->coords)
+        if(point==edge->twin->origin->coords)
             return edge->twin;
 
         bool has_twin = edge->twin!=nullptr;
@@ -296,7 +296,7 @@ namespace tessellation {
         auto * e_t_0 = edge->twin;
         auto * e_t_1 = has_twin ? pool.create_edge() : nullptr;
 
-        e_1->origin = point;
+        e_1->origin = pool.create_vertex(point);
         e_1->prev = e_0;
         e_1->next = e_0->next;
         e_0->next->prev = e_1;
@@ -307,7 +307,7 @@ namespace tessellation {
         e_1->winding = e_0->winding;
 
         if(has_twin) {
-            e_t_1->origin = point;
+            e_t_1->origin = e_1->origin;
             e_t_1->prev = e_t_0;
             e_t_1->next = e_t_0->next;
             e_t_0->next->prev = e_t_1;
@@ -325,7 +325,7 @@ namespace tessellation {
         }
 
         // make sure point refers to any edge leaving it
-        point->edge = e_1;
+        e_1->origin->edge = e_1;
 
         return e_1;
     }
@@ -554,8 +554,10 @@ namespace tessellation {
     }
 
     template<typename number>
-    auto planarize_division<number>::handle_vertical_face_cut(const half_edge_face *face,
-                                                              half_edge_vertex * a,
+    auto planarize_division<number>::handle_vertical_face_cut(const trapeze &trapeze,
+                                                              vertex & a,
+                                                              const point_class_with_trapeze &a_classs,
+//                                                              half_edge_vertex * a,
                                                               dynamic_pool & dynamic_pool) -> half_edge * {
         // the procedure returns the half edge of the face for which it's origin vertex
         // is the insertion point. the half_edge_vertex *a will be inserted in place if it didn't exist yet.
@@ -586,18 +588,14 @@ namespace tessellation {
         //    in this case just split the vertical left or right walls vertically.
         // 3. btw, in case, a vertex already exists, we do not split anything
 
-        // test point status
-        const auto & a_coords = a->coords;
-        trapeze trapeze = infer_trapeze(face);
-        point_class_with_trapeze classs = classify_point_conflicting_trapeze(a_coords, trapeze);
         // boundary
-        bool on_boundary = classs != point_class_with_trapeze::strictly_inside;
-        bool on_boundary_vertices = classs == point_class_with_trapeze::boundaty_vertex;
+        bool on_boundary = a_classs != point_class_with_trapeze::strictly_inside;
+        bool on_boundary_vertices = a_classs == point_class_with_trapeze::boundaty_vertex;
         // completely inside minus the endpoints
-        bool in_left_wall = classs == point_class_with_trapeze::left_wall;
-        bool in_right_wall = classs == point_class_with_trapeze::right_wall;
-        bool in_top_wall = classs == point_class_with_trapeze::top_wall;
-        bool in_bottom_wall = classs == point_class_with_trapeze::bottom_wall;
+        bool in_left_wall = a_classs == point_class_with_trapeze::left_wall;
+        bool in_right_wall = a_classs == point_class_with_trapeze::right_wall;
+        bool in_top_wall = a_classs == point_class_with_trapeze::top_wall;
+        bool in_bottom_wall = a_classs == point_class_with_trapeze::bottom_wall;
         bool strictly_in_left_or_right_walls = (in_left_wall || in_right_wall) && !on_boundary_vertices;
         // should split the horizontal parts of the trapeze
         bool should_try_split_horizontal_trapeze_parts = !in_left_wall && !in_right_wall && !on_boundary_vertices;
@@ -612,33 +610,36 @@ namespace tessellation {
             // already present there.
             if(on_boundary) {
                 // split boundary and return the edge whose origin is the split vertex
-                half_edge * e = try_insert_vertex_on_trapeze_boundary_at(a_coords, trapeze, classs, dynamic_pool);
+                half_edge * e = try_insert_vertex_on_trapeze_boundary_at(a, trapeze, a_classs,
+                        dynamic_pool);
                 if(in_top_wall) top_vertex_edge=e;
                 else bottom_vertex_edge=e;
                 outgoing_vertex_edge = e;
             }
 
             if(top_vertex_edge== nullptr) {
-                auto y = evaluate_line_at_x(a_coords.x, trapeze.left_top->origin->coords,
+                auto y = evaluate_line_at_x(a.x, trapeze.left_top->origin->coords,
                         trapeze.right_top->origin->coords);
-                top_vertex_edge=try_insert_vertex_on_trapeze_boundary_at({a_coords.x,y}, trapeze,
-                                                                         point_class_with_trapeze::top_wall, dynamic_pool);
+                top_vertex_edge=try_insert_vertex_on_trapeze_boundary_at({a.x,y}, trapeze,
+                                                                         point_class_with_trapeze::top_wall,
+                                                                         dynamic_pool);
             }
 
             if(bottom_vertex_edge== nullptr) {
-                auto y = evaluate_line_at_x(a_coords.x, trapeze.left_bottom->origin->coords,
+                auto y = evaluate_line_at_x(a.x, trapeze.left_bottom->origin->coords,
                         trapeze.right_bottom->origin->coords);
-                bottom_vertex_edge=try_insert_vertex_on_trapeze_boundary_at({a_coords.x,y}, trapeze,
-                                                                            point_class_with_trapeze::bottom_wall, dynamic_pool);
+                bottom_vertex_edge=try_insert_vertex_on_trapeze_boundary_at({a.x,y}, trapeze,
+                                                                            point_class_with_trapeze::bottom_wall,
+                                                                            dynamic_pool);
             }
 
             // now, we need to split face in two
             // edge cannot exist yet because we are strictly inside horizontal part
-            auto *start_vertical_wall = insert_edge_between_non_co_linear_vertices(bottom_vertex_edge, top_vertex_edge,
-                    dynamic_pool);
+            auto *start_vertical_wall = insert_edge_between_non_co_linear_vertices(bottom_vertex_edge,
+                    top_vertex_edge,dynamic_pool);
             // clamp vertex to this new edge endpoints if it is before or after
             // this fights the geometric numeric precision errors, that can happen in y coords
-            clamp_vertex(a_coords, start_vertical_wall->origin->coords,
+            clamp_vertex(a, start_vertical_wall->origin->coords,
                     start_vertical_wall->twin->origin->coords);
             // if the vertex is on the edge boundary, it will not split of course
             outgoing_vertex_edge = try_split_edge_at(a, start_vertical_wall, dynamic_pool);
@@ -646,8 +647,8 @@ namespace tessellation {
         } // else we are on left or right walls already
         else {
             // we are on left or right boundary
-            outgoing_vertex_edge=try_insert_vertex_on_trapeze_boundary_at(a_coords, trapeze,
-                    classs, dynamic_pool);
+            outgoing_vertex_edge=try_insert_vertex_on_trapeze_boundary_at(a, trapeze,
+                                                                          a_classs, dynamic_pool);
         }
 
         return outgoing_vertex_edge;
@@ -675,28 +676,35 @@ namespace tessellation {
 
         // record the conflicting face of the origin point
         // thw two end points of the edge
-        const auto & a = edge->origin->coords;
-        const auto & b = edge->twin->origin->coords;
+        auto * a = edge->origin->coords;
+        auto * b = edge->twin->origin->coords;
+        auto * b_tag = b;
         const auto * conflict_face = edge->conflict_face;
         half_edge_face * face = conflict_face;
         // first face handling
-        auto * insertion_point_edge = handle_vertical_face_cut(conflict_face, edge->origin,
-                                                               dynamic_pool);
         trapeze trapeze;
-        point_class_with_trapeze classs = classify_point_with_trapeze(a_coords, trapeze);
-
-
 
         while(face) {
             // represent the face as trapeze for efficient info
             trapeze = infer_trapeze(face);
-            // is the edge overlapping/parallel and on
-//            bool is_edge_lies_trapeze_boundary=
+            // the class of endpoint "a"
+            point_class_with_trapeze class_a = classify_point_with_trapeze(*a, trapeze);
+            // the reporting of and class of the next interesting point of the edge against trapeze
+            conflicting_edge_intersection_status edge_status =
+                    compute_conflicting_edge_intersection_against_trapeze(trapeze, *a, *b);
+            b_tag = &edge_status.point_of_interest;
+            point_class_with_trapeze class_b_tag = classify_point_with_trapeze(*b_tag, trapeze);
 
+            bool co_linear_with_boundary = do_a_b_lies_on_same_trapeze_wall(trapeze, *a, *b_tag,
+                    class_a, class_b_tag);
+            // co-linear, so let's just insert vertices on the boundary
+            if(co_linear_with_boundary) {
+
+            }
+            // here update face and new "a" pointer and iterate
 
         }
 
-//        handle_intermediate_face_with_edge(conflicting_face, edge, pool);
 
     }
 
@@ -745,6 +753,78 @@ namespace tessellation {
     }
 
     template<typename number>
+    bool planarize_division<number>::is_trapeze_degenerate(const trapeze & trapeze) {
+        return (trapeze.left_top->origin==trapeze.left_bottom->origin) ||
+                (trapeze.right_top->origin==trapeze.right_bottom->origin);
+    }
+
+    template<typename number>
+    bool planarize_division<number>::do_a_b_lies_on_same_trapeze_wall(const trapeze & trapeze,
+                                                                        const vertex &a,
+                                                                        const vertex &b,
+                                                                        const point_class_with_trapeze & a_class,
+                                                                        const point_class_with_trapeze & b_class) {
+        // given an edge (a,b) where both a and b belong to trapeze, test if the edge is co-linear with one of the
+        // boundaries of the trapeze. we classify symbolically rather than analytically in order to be robust.
+        // this procedure also handles degenerate trapezes.
+        // skip inside
+        if(a_class==point_class_with_trapeze::strictly_inside ||
+            b_class==point_class_with_trapeze::strictly_inside)
+            return false;
+
+        bool a_on_boundary_vertex = a_class==point_class_with_trapeze::boundary_vertex;
+        bool b_on_boundary_vertex = b_class==point_class_with_trapeze::boundary_vertex;
+        bool same_class = a_class==b_class;
+
+        // test if on same wall
+        if(same_class && !a_on_boundary_vertex && !b_on_boundary_vertex)
+            return true;
+        // todo: what happens when trapeze is degenerate - a triangle
+        bool a_on_wall, b_on_wall;
+        // test left wall
+        a_on_wall = a_class==point_class_with_trapeze::left_wall ||
+                              (a_on_boundary_vertex &&
+                               (a==trapeze.left_top->origin->coords || a==trapeze.left_bottom->origin->coords));
+        b_on_wall = b_class==point_class_with_trapeze::left_wall ||
+                              (b_on_boundary_vertex &&
+                               (b==trapeze.left_top->origin->coords || b==trapeze.left_bottom->origin->coords));
+        if(a_on_wall && b_on_wall)
+            return true;
+
+        // test right wall
+        a_on_wall = a_class==point_class_with_trapeze::right_wall ||
+                               (a_on_boundary_vertex &&
+                                (a==trapeze.right_top->origin->coords || a==trapeze.right_bottom->origin->coords));
+        b_on_wall = b_class==point_class_with_trapeze::right_wall ||
+                               (b_on_boundary_vertex &&
+                                (b==trapeze.right_top->origin->coords || b==trapeze.right_bottom->origin->coords));
+        if(a_on_wall && b_on_wall)
+            return true;
+
+        // test top wall
+        a_on_wall = a_class==point_class_with_trapeze::top_wall ||
+                    (a_on_boundary_vertex &&
+                     (a==trapeze.right_top->origin->coords || a==trapeze.left_top->origin->coords));
+        b_on_wall = b_class==point_class_with_trapeze::top_wall ||
+                    (b_on_boundary_vertex &&
+                     (b==trapeze.right_top->origin->coords || b==trapeze.left_top->origin->coords));
+        if(a_on_wall && b_on_wall)
+            return true;
+
+        // test bottom wall
+        a_on_wall = a_class==point_class_with_trapeze::bottom_wall ||
+                    (a_on_boundary_vertex &&
+                     (a==trapeze.left_bottom->origin->coords || a==trapeze.right_bottom->origin->coords));
+        b_on_wall = b_class==point_class_with_trapeze::bottom_wall ||
+                    (b_on_boundary_vertex &&
+                     (b==trapeze.left_bottom->origin->coords || b==trapeze.right_bottom->origin->coords));
+        if(a_on_wall && b_on_wall)
+            return true;
+
+        return false;
+    }
+
+    template<typename number>
     auto planarize_division<number>::compute_conflicting_edge_intersection_against_trapeze(const trapeze & trapeze,
                                                                                            vertex &a,
                                                                                            const vertex &b) -> conflicting_edge_intersection_status {
@@ -764,9 +844,9 @@ namespace tessellation {
         // 1.2 if it is outside, the we need to hunt intersections with the biggest alpha or so
 
         // this can be injected from outside
-        point_class_with_trapeze  cla_a = classify_point_conflicting_trapeze(a, trapeze);
+//        point_class_with_trapeze  cla_a = classify_point_conflicting_trapeze(a, trapeze);
         point_class_with_trapeze  cla_b = classify_arbitrary_point_with_trapeze(b, trapeze);
-        conflicting_edge_intersection_status result;
+        conflicting_edge_intersection_status result{};
         // if it is inside or on the boundary, we are done
         if(cla_b!=point_class_with_trapeze::outside) {
             result.point_of_interest = b;
@@ -775,7 +855,7 @@ namespace tessellation {
         }
 
         // we now know, that b is outside, therefore hunt proper intersections
-        vertex intersection_point;
+        vertex intersection_point{};
         number alpha, alpha1;
         number biggest_alpha=number(0);
         intersection_status status, biggest_status;
@@ -861,6 +941,9 @@ namespace tessellation {
             }
         }
 
+        // now classify if (a,b) lies on the same wall
+
+        return result;
     }
 
 
@@ -914,176 +997,4 @@ namespace tessellation {
         return intersection_status::intersect;
     }
 
-
-    /*
-    template <typename number>
-    void planarize_division<number>::find_intersections(chunker<vertex> &pieces,
-                                                        master_intersection_list &master_list,
-                                                        dynamic_array<vertex *> &allocated_intersection) {
-        // phase 1:: record trivial intersections
-        for (unsigned long poly = 0; poly < pieces.size(); ++poly) {
-            auto current_chunk = pieces[poly];
-            auto *current_list = current_chunk.data;
-            const auto size = current_chunk.size;
-
-            for (unsigned long ix = 0; ix < size; ++ix) {
-                int ix_next = ix + 1 >= size ? 0 : int(ix + 1);
-                int ix_prev = int(ix - 1) < 0 ? int(size - 1) : int(ix - 1);
-                vertex *current = &current_list[ix];
-                vertex *next = &current_list[ix_next];
-                vertex *prev = &current_list[ix_prev];
-
-                segment l1(prev, current);
-                segment l2(current, next);
-
-                l1.sortVertices();
-                l2.sortVertices();
-
-                master_list.push_back(intersection(current, 2.0, -1.0, l1, l2));
-            }
-        }
-
-        // phase 2:: find self intersections of each polygon
-        for (unsigned long poly = 0; poly < pieces.size(); ++poly) {
-            auto current_chunk = pieces[poly];
-            auto *current_list = current_chunk.data;
-            const auto size = current_chunk.size;
-
-            if (size == 0)
-                continue;
-
-            for (unsigned long ix = 0; ix < size - 1; ++ix) {
-
-                segment edge_0{&current_list[ix], &current_list[(ix + 1)]};
-
-                for (unsigned long jx = ix + 1; jx < size; ++jx) {
-                    segment edge_1{&current_list[jx],
-                                   &current_list[(jx + 1) % size]};
-
-                    vertex intersection_v;
-                    float al1, al2;
-
-                    // see if any of the segments have a mutual endpoint
-                    if (!edge_1.is_bbox_overlapping_with(edge_0))
-                        continue;
-                    if (edge_1.has_mutual_endpoint(edge_0))
-                        continue;
-                    if (edge_1.calcIntersection(edge_0, intersection_v, al1, al2)
-                        != segment::IntersectionType::INTERSECT)
-                        continue;
-
-                    auto *found_intersection = new vertex(intersection_v);
-
-                    allocated_intersection.push_back(found_intersection);
-
-                    master_list.push_back(intersection(found_intersection,
-                                                       al1, al2, edge_1, edge_0));
-
-                }
-            }
-
-        }
-
-        // finds the intersection points between every polygon edge
-
-        dynamic_array<segment> edges, edges1;
-
-        for (unsigned long poly1 = 0; poly1 < pieces.size() - 1; ++poly1) {
-            auto current_chunk1 = pieces[poly1];
-            auto *current_poly1 = current_chunk1.data;
-            const unsigned long size = current_chunk1.size;
-
-            edges.clear();
-            for (unsigned ix = 0; ix < size; ++ix) {
-                unsigned ix_next = ix + 1 >= size ? 0 : ix + 1;
-                vertex *current = &current_poly1[ix];
-                vertex *next = &current_poly1[ix_next];
-
-                segment edge(current, next);
-                edge.sortVertices();
-                edges.push_back(edge);
-            }
-
-            // sorting is crucial for the integrity of the output,
-            // since I am applying an optimization to discard future edges based
-            // on sorting
-            qsort_s(edges.data(), edges.size(), sizeof(segment),
-                    compare_edges, nullptr);
-
-            for (unsigned long poly2 = poly1 + 1; poly2 < pieces.size(); ++poly2) {
-
-                edges1.clear();
-                auto current_chunk2 = pieces[poly2];
-                auto *current_poly2 = current_chunk2.data;
-                const unsigned long size2 = current_chunk2.size;
-
-                for (unsigned ix = 0; ix < size2; ++ix) {
-                    unsigned ix_next = ix + 1 >= size2 ? 0 : ix + 1;
-                    vertex *current = &current_poly2[ix];
-                    vertex *next = &current_poly2[ix_next];
-
-                    segment edge(current, next);
-                    edge.sortVertices();
-                    edges1.push_back(edge);
-                }
-
-                qsort_s(edges1.data(), edges1.size(), sizeof(segment),
-                        compare_edges, nullptr);
-
-                unsigned nEdges = edges.size();
-                unsigned nEdges1 = edges1.size();
-
-                if (nEdges < 3)
-                    continue;
-
-                for (unsigned i = 0; i < nEdges; ++i) {
-                    auto &edge_0 = edges[i];
-
-                    for (unsigned j = 0; j < nEdges1; ++j) {
-
-                        auto &edge_1 = edges1[j];
-
-                        // if edge_1 is completely to the right of edge_0, then no intersection
-                        // occurs, and also, since edge_1 syblings are sorted on the x-axis,
-                        // we can skip it's upcoming syblings, therefore we break;
-                        auto h_classify = edge_1.classify_horizontal(edge_0);
-                        if (h_classify == segment::bbox_axis::end_of)
-                            break;
-                        else if (h_classify != segment::bbox_axis::overlaps)
-                            continue;
-                        else {
-                            // we have horizontal overlap, let's test for vertical overlap
-                            if (edge_1.classify_vertical(edge_0) != segment::bbox_axis::overlaps)
-                                continue;
-                        }
-
-                        // see if any of the segments have a mutual endpoint
-                        if (edge_1.has_mutual_endpoint(edge_0))
-                            continue;
-
-                        vertex intersection_v;
-                        float param1, param2;
-
-                        // test and compute intersection
-                        if (edge_0.calcIntersection(edge_1, intersection_v, param1, param2)
-                            != segment::IntersectionType::INTERSECT)
-                            continue;
-
-                        auto *found_intersection = new vertex(intersection_v);
-
-                        allocated_intersection.push_back(found_intersection);
-
-                        master_list.push_back(intersection(found_intersection,
-                                                           param1, param2,
-                                                           edge_0, edge_1));
-
-                    }
-
-                }
-
-            }
-
-        }
-    }
-*/
 }

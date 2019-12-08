@@ -104,10 +104,6 @@ namespace tessellation {
         };
 
         struct trapeze {
-//            half_edge_vertex *left_top=nullptr;
-//            half_edge_vertex *left_bottom=nullptr;
-//            half_edge_vertex *right_bottom=nullptr;
-//            half_edge_vertex *right_top=nullptr;
             // in ccw order
             half_edge *left_top=nullptr;
             half_edge *left_bottom=nullptr;
@@ -121,6 +117,7 @@ namespace tessellation {
         };
 
         enum class point_class_with_trapeze {
+            // all of the walls enums are actually strictly inside excluding endpoints, open segments
             strictly_inside, left_wall, right_wall, top_wall, bottom_wall, boundary_vertex, outside
 //            left_top_vertex,left_bottom_vertex,right_bottom_vertex,right_top_vertex
         };
@@ -139,7 +136,7 @@ namespace tessellation {
         struct conflicting_edge_intersection_status {
             vertex point_of_interest;
             point_class_with_trapeze class_of_interest_point;
-
+            bool a_b_lies_on_wall;
         };
 
         static
@@ -173,13 +170,16 @@ namespace tessellation {
 
         // handle the starting face to create an intermediate face
         static
-        auto handle_vertical_face_cut(const half_edge_face *face, half_edge_vertex * a, dynamic_pool &pool) -> half_edge *;
+        auto handle_vertical_face_cut(const trapeze &trapeze,
+                                      vertex & a,
+                                      const point_class_with_trapeze &a_classs,
+                                      dynamic_pool &pool) -> half_edge *;
 
         static
         point_class_with_trapeze classify_point_conflicting_trapeze(vertex &point, const trapeze &trapeze);
 
         static
-        auto try_split_edge_at(half_edge_vertex *point, half_edge *edge, dynamic_pool &pool) -> half_edge * ;
+        auto try_split_edge_at(const vertex& point, half_edge *edge, dynamic_pool &pool) -> half_edge * ;
 
         static
         half_edge *
@@ -213,7 +213,16 @@ namespace tessellation {
 
         static
         auto
-        compute_conflicting_edge_intersection_against_trapeze(const trapeze &trapeze, vertex &a, const vertex &b) -> conflicting_edge_intersection_status;
+        compute_conflicting_edge_intersection_against_trapeze(const trapeze &trapeze,
+                vertex &a, const vertex &b) -> conflicting_edge_intersection_status;
+
+        static
+        bool is_trapeze_degenerate(const trapeze &trapeze);
+
+        static
+        bool do_a_b_lies_on_same_trapeze_wall(const trapeze &trapeze, const vertex &a, const vertex &b,
+                                              const point_class_with_trapeze &a_class,
+                                              const point_class_with_trapeze &b_class);
     };
 
 
