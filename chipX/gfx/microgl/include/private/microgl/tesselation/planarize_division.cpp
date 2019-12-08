@@ -224,7 +224,7 @@ namespace tessellation {
         if(point==trapeze.right_top) return point_class_with_trapeze::boundary_vertex;
 
         // left wall
-        bool on_left_wall = point.x==trapeze.left_top->origin->coords;
+        bool on_left_wall = point.x==trapeze.left_top->origin->coords.x;
         if(on_left_wall) {
             clamp(point.y, trapeze.left_top->origin->coords.y, trapeze.left_bottom->origin->coords.y);
             if(point==trapeze.left_top) return point_class_with_trapeze::boundary_vertex;
@@ -232,7 +232,7 @@ namespace tessellation {
             return point_class_with_trapeze::left_wall;
         }
         // right wall
-        bool on_right_wall = point.x==trapeze.right_top->origin->coords;
+        bool on_right_wall = point.x==trapeze.right_top->origin->coords.x;
         if(on_right_wall) {
             clamp(point.y, trapeze.right_top->origin->coords.y, trapeze.right_bottom->origin->coords.y);
             if(point==trapeze.right_top) return point_class_with_trapeze::boundary_vertex;
@@ -249,18 +249,33 @@ namespace tessellation {
         return point_class_with_trapeze::strictly_inside;
     }
 
-    // note: two vertices on the same wall are symbolically on a straight line if if they have numeric inaccuracies
-
-
     template<typename number>
-    auto planarize_division<number>::classify_edge_conflicting_trapeze(const vertex & a, const vertex & b,
-            const trapeze &trapeze) -> point_class_with_trapeze {
-        // given that edge(a,b) and vertex a is in conflict with trapeze: completely inside, on boundary, but not outside
+    auto planarize_division<number>::classify_arbitrary_point_with_trapeze(vertex & point, const trapeze &trapeze) -> point_class_with_trapeze {
+        // given any point, classify it against the trapeze, this is robust
+        if(point==trapeze.left_top) return point_class_with_trapeze::boundary_vertex;
+        if(point==trapeze.left_bottom) return point_class_with_trapeze::boundary_vertex;
+        if(point==trapeze.right_bottom) return point_class_with_trapeze::boundary_vertex;
+        if(point==trapeze.right_top) return point_class_with_trapeze::boundary_vertex;
 
-       auto cls_a = classify_point_with_trapeze(a, trapeze);
-       auto cls_b = classify_point_with_trapeze(b, trapeze);
+        // left wall
+        number left_wall = point.x-trapeze.left_top->origin->coords.x;
+        number right_wall = -point.x+trapeze.left_top->origin->coords.x;
+        int bottom_wall = classify_point(point, trapeze.left_bottom->origin->coords, trapeze.right_bottom->origin->coords);
+        int top_wall = classify_point(point, trapeze.right_top->origin->coords, trapeze.left_top->origin->coords);
 
+        bool inside_or_boundary = left_wall>=0 && right_wall>=0 && bottom_wall>=0 && top_wall>=0;
+        if(inside_or_boundary) {
+            if(left_wall==0) return point_class_with_trapeze::left_wall;
+            if(right_wall==0) return point_class_with_trapeze::right_wall;
+            if(bottom_wall==0) return point_class_with_trapeze::bottom_wall;
+            if(top_wall==0) return point_class_with_trapeze::top_wall;
+
+            return point_class_with_trapeze::strictly_inside;
+        }
+        return point_class_with_trapeze::outside;
     }
+
+    // note: two vertices on the same wall are symbolically on a straight line if if they have numeric inaccuracies
 
     template<typename number>
     auto planarize_division<number>::try_split_edge_at(half_edge_vertex * point,
@@ -393,6 +408,7 @@ namespace tessellation {
         return y;
     }
 
+    /*
     template<typename number>
     void planarize_division<number>::remove_edge_from_conflict_list(half_edge * edge) {
         auto * conflict_face = edge->origin->conflict_face;
@@ -421,6 +437,7 @@ namespace tessellation {
         // clear the ref from vertex to face
         edge->origin->conflict_face = nullptr;
     }
+     */
 
     template<typename number>
     void planarize_division<number>::re_distribute_conflicts_of_split_face(conflict *conflict_list,
@@ -539,7 +556,6 @@ namespace tessellation {
     template<typename number>
     auto planarize_division<number>::handle_vertical_face_cut(const half_edge_face *face,
                                                               half_edge_vertex * a,
-                                                              bool split_face_if_needed,
                                                               dynamic_pool & dynamic_pool) -> half_edge * {
         // the procedure returns the half edge of the face for which it's origin vertex
         // is the insertion point. the half_edge_vertex *a will be inserted in place if it didn't exist yet.
@@ -742,61 +758,108 @@ namespace tessellation {
         // 3. therefore, we might get two proper intersections for (a,b) edge against
         //    top/bottom/left/right boundaries.
         // 4. therefore, always consider the intersection with the biggest alpha as what we want.
+        // to make it robust and clear I propose:
+        // 1. at first figure out if "b" is strictly inside or the boundary of the trapeze
+        // 1.1. if it is return the point as is with the classification, we are done
+        // 1.2 if it is outside, the we need to hunt intersections with the biggest alpha or so
 
         // this can be injected from outside
         point_class_with_trapeze  cla_a = classify_point_conflicting_trapeze(a, trapeze);
+        point_class_with_trapeze  cla_b = classify_arbitrary_point_with_trapeze(b, trapeze);
         conflicting_edge_intersection_status result;
-        // test against trivial vertices of boundary
-        bool on_boundary_vertex = (b==trapeze.left_top->origin->coords) || (b==trapeze.left_bottom->origin->coords) ||
-                                  (b==trapeze.right_bottom->origin->coords) || (b==trapeze.right_top->origin->coords);
-        if(on_boundary_vertex) {
+        // if it is inside or on the boundary, we are done
+        if(cla_b!=point_class_with_trapeze::outside) {
             result.point_of_interest = b;
-            result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
+            result.class_of_interest_point = cla_b;
             return result;
         }
 
+        // we now know, that b is outside, therefore hunt proper intersections
         vertex intersection_point;
         number alpha, alpha1;
-        intersection_status status;
-        // test against intersections
+        number biggest_alpha=number(0);
+        intersection_status status, biggest_status;
+        bool is_bigger_alpha;
+
         // left-wall
-        status = segment_intersection_test(trapeze.left_top->origin->coords, trapeze.left_bottom->origin->coords,
-                                           a, b, intersection_point, alpha, alpha1);
-
+        status = segment_intersection_test(a, b,
+                trapeze.left_top->origin->coords, trapeze.left_bottom->origin->coords,
+                intersection_point, alpha, alpha1);
         if(status==intersection_status::intersect) {
-            result.point_of_interest = intersection_point;
-            result.class_of_interest_point = point_class_with_trapeze::left_wall;
-            // important to clamp for symbolic reasons as well in case of numeric errors.
-            result.point_of_interest.x=trapeze.left_top->origin->coords.x;
-            clamp(result.point_of_interest.y, trapeze.left_top.y, trapeze.left_bottom.y);
-        }
-        else if(status==intersection_status::parallel) {
-            // vertex lies on the ray extended by the wall, we need to work it out
-            result.point_of_interest = b;
-            result.class_of_interest_point = point_class_with_trapeze::left_wall;
-            // since it is a vertical wall, a clamp would do the trick
-            result.point_of_interest.x=trapeze.left_top->origin->coords.x;
-            clamp(result.point_of_interest.y, trapeze.left_top.y, trapeze.left_bottom.y);
+            is_bigger_alpha = alpha>=biggest_alpha;
+
+            if(is_bigger_alpha) {
+                biggest_alpha=alpha;
+                result.point_of_interest = intersection_point;
+                result.class_of_interest_point = point_class_with_trapeze::left_wall;
+                // important to clamp for symbolic reasons as well in case of numeric errors.
+                result.point_of_interest.x=trapeze.left_top->origin->coords.x;
+                clamp(result.point_of_interest.y, trapeze.left_top.y, trapeze.left_bottom.y);
+                if(result.point_of_interest==trapeze.left_top->origin->coords ||
+                    result.point_of_interest==trapeze.left_bottom->origin->coords)
+                    result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
+            }
         }
 
-        // bottom-wall
-        status = segment_intersection_test(trapeze.left_bottom->origin->coords, trapeze.right_bottom->origin->coords,
-                                           a, b, intersection_point, alpha, alpha1);
-
+        // right wall
+        status = segment_intersection_test(a, b,
+                                           trapeze.right_bottom->origin->coords, trapeze.right_top->origin->coords,
+                                           intersection_point, alpha, alpha1);
         if(status==intersection_status::intersect) {
-            result.point_of_interest = intersection_point;
-            result.class_of_interest_point = point_class_with_trapeze::bottom_wall;
-            // important to clamp for symbolic reasons as well
-            clamp(result.point_of_interest.y, trapeze.left_top.y, trapeze.left_bottom.y);
-        }
-        else if(status==intersection_status::parallel) {
-            // vertex lies on the ray extended by the wall, we need to work it out
-            result.point_of_interest = b;
-            result.class_of_interest_point = point_class_with_trapeze::left_wall;
-            // since it is a vertical wall, a clamp would do the trick
-            clamp(result.point_of_interest.y, trapeze.left_top.y, trapeze.left_bottom.y);
+            is_bigger_alpha = alpha>=biggest_alpha;
+
+            if(is_bigger_alpha) {
+                biggest_alpha=alpha;
+                result.point_of_interest = intersection_point;
+                result.class_of_interest_point = point_class_with_trapeze::right_wall;
+                // important to clamp for symbolic reasons as well in case of numeric errors.
+                result.point_of_interest.x=trapeze.right_top->origin->coords.x;
+                clamp(result.point_of_interest.y, trapeze.right_top.y, trapeze.right_bottom.y);
+                if(result.point_of_interest==trapeze.right_top->origin->coords ||
+                   result.point_of_interest==trapeze.right_bottom->origin->coords)
+                    result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
+            }
         }
 
+        // bottom wall
+        status = segment_intersection_test(a, b,
+                                           trapeze.left_bottom->origin->coords, trapeze.right_bottom->origin->coords,
+                                           intersection_point, alpha, alpha1);
+        if(status==intersection_status::intersect) {
+            is_bigger_alpha = alpha>=biggest_alpha;
+
+            if(is_bigger_alpha) {
+                biggest_alpha=alpha;
+                result.point_of_interest = intersection_point;
+                result.class_of_interest_point = point_class_with_trapeze::bottom_wall;
+                // important to clamp for symbolic reasons as well in case of numeric errors.
+                clamp_vertex(result.point_of_interest, trapeze.left_bottom->origin->coords,
+                             trapeze.right_bottom->origin->coords);
+                if(result.point_of_interest==trapeze.left_bottom->origin->coords ||
+                   result.point_of_interest==trapeze.right_bottom->origin->coords)
+                    result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
+            }
+        }
+
+        // top wall
+        status = segment_intersection_test(a, b,
+                                           trapeze.right_top->origin->coords, trapeze.left_top->origin->coords,
+                                           intersection_point, alpha, alpha1);
+        if(status==intersection_status::intersect) {
+            is_bigger_alpha = alpha>=biggest_alpha;
+
+            if(is_bigger_alpha) {
+                biggest_alpha=alpha;
+                result.point_of_interest = intersection_point;
+                result.class_of_interest_point = point_class_with_trapeze::top_wall;
+                // important to clamp for symbolic reasons as well in case of numeric errors.
+                clamp_vertex(result.point_of_interest, trapeze.right_top->origin->coords,
+                             trapeze.left_top->origin->coords);
+                if(result.point_of_interest==trapeze.right_top->origin->coords ||
+                   result.point_of_interest==trapeze.left_top->origin->coords)
+                    result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
+            }
+        }
 
     }
 

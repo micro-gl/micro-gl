@@ -121,7 +121,7 @@ namespace tessellation {
         };
 
         enum class point_class_with_trapeze {
-            strictly_inside, left_wall, right_wall, top_wall, bottom_wall, boundary_vertex
+            strictly_inside, left_wall, right_wall, top_wall, bottom_wall, boundary_vertex, outside
 //            left_top_vertex,left_bottom_vertex,right_bottom_vertex,right_top_vertex
         };
 
@@ -207,6 +207,13 @@ namespace tessellation {
 
         static
         void clamp_vertex(vertex &v, vertex &a, vertex &b);
+
+        static
+        point_class_with_trapeze classify_arbitrary_point_with_trapeze(vertex &point, const trapeze &trapeze);
+
+        static
+        auto
+        compute_conflicting_edge_intersection_against_trapeze(const trapeze &trapeze, vertex &a, const vertex &b) -> conflicting_edge_intersection_status;
     };
 
 
