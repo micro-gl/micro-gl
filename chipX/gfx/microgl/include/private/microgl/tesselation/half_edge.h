@@ -18,14 +18,6 @@ namespace tessellation {
     struct half_edge_face_t;
 
     template <typename number>
-    struct conflict_node_t {
-        // conflicting vertex
-        half_edge_vertex_t<number> *vertex = nullptr;
-        // next one
-        conflict_node_t * next = nullptr;
-    };
-
-    template <typename number>
     struct half_edge_t {
         half_edge_t * twin = nullptr;
         half_edge_t * next = nullptr;
@@ -34,6 +26,10 @@ namespace tessellation {
         half_edge_vertex_t<number> * origin = nullptr;
         // left incident face
         half_edge_face_t<number> * face = nullptr;
+        // pointer to the conflicting face, the face for which
+        // the start endpoint of the edge lies in for unadded edge
+        half_edge_face_t<number> *conflict_face = nullptr;
+
         edge_type type = edge_type::unknown;
         int winding = 0;
     };
@@ -43,9 +39,18 @@ namespace tessellation {
         microgl::vec2<number> coords;
         // pointer to any edge that has this vertex as starting point
         half_edge_t<number> * edge = nullptr;
-        // pointer to the conflicting face, valid for regular vertices
-        half_edge_face_t<number> *conflict_face = nullptr;
+//        // pointer to the conflicting face, valid for regular vertices
+//        half_edge_face_t<number> *conflict_face = nullptr;
         point_type type = point_type::unknown;
+    };
+
+    template <typename number>
+    struct conflict_node_t {
+        // conflicting vertex
+        half_edge_t<number> *edge = nullptr;
+//        half_edge_vertex_t<number> *vertex = nullptr;
+        // next one
+        conflict_node_t * next = nullptr;
     };
 
     template <typename number>
@@ -55,5 +60,6 @@ namespace tessellation {
         // list of conflicting vertices
         conflict_node_t<number> * conflict_list = nullptr;
     };
+
 
 }

@@ -120,12 +120,26 @@ namespace tessellation {
             half_edge * edge;
         };
 
-        enum class point_with_trapeze {
-            inside, left_wall, right_wall, top_wall, bottom_wall, boundaty_vertex
+        enum class point_class_with_trapeze {
+            strictly_inside, left_wall, right_wall, top_wall, bottom_wall, boundary_vertex
 //            left_top_vertex,left_bottom_vertex,right_bottom_vertex,right_top_vertex
         };
-        enum class intersection {
+
+        enum class edge_class_with_trapeze {
+            edge_overlaps_left,edge_overlaps_bottom,edge_overlaps_right,edge_overlaps_top,
+            edge_intersects_left,edge_intersects_bottom,edge_intersects_right,edge_intersects_top,
+            edge_b_strictly_inside
+
+        };
+
+        enum class intersection_status {
             intersect, none, parallel
+        };
+
+        struct conflicting_edge_intersection_status {
+            vertex point_of_interest;
+            point_class_with_trapeze class_of_interest_point;
+
         };
 
         static
@@ -149,35 +163,50 @@ namespace tessellation {
         auto split_intermediate_face_with_edge(half_edge_face *face, half_edge *edge, dynamic_pool &pool) -> half_edge *;
 
         static
-        bool segment_intersection_test(const vertex &a, const vertex &b,
+        intersection_status segment_intersection_test(const vertex &a, const vertex &b,
                                        const vertex &c, const vertex &d,
                                        vertex &intersection,
-                                       float &alpha, float &alpha1);
+                                       number &alpha, number &alpha1);
 
         static
         auto infer_trapeze(const half_edge_face *face) -> trapeze;
 
         // handle the starting face to create an intermediate face
         static
-        auto handle_start_face(half_edge_face *face, half_edge *edge, dynamic_pool &pool) -> split_result;
+        auto handle_vertical_face_cut(const half_edge_face *face, half_edge_vertex * a, dynamic_pool &pool) -> half_edge *;
 
         static
-        point_with_trapeze classify_point_with_trapeze(const vertex &point, const trapeze &trapeze);
+        point_class_with_trapeze classify_point_conflicting_trapeze(vertex &point, const trapeze &trapeze);
 
         static
-        auto split_edge_at(half_edge_vertex *point, half_edge *edge, dynamic_pool &pool) -> half_edge * ;
+        auto try_split_edge_at(half_edge_vertex *point, half_edge *edge, dynamic_pool &pool) -> half_edge * ;
 
         static
         half_edge *
         try_insert_vertex_on_trapeze_boundary_at(const vertex &v, const trapeze &trapeze,
-                                                 point_with_trapeze where_boundary, dynamic_pool &pool);
+                                                 point_class_with_trapeze where_boundary, dynamic_pool &pool);
 
         static
         number evaluate_line_at_x(number x, const vertex &a, const vertex &b);
 
         static
-        void
-        insert_edge_between_non_co_linear_vertices(half_edge *vertex_a_edge, half_edge *vertex_b_edge, dynamic_pool &dynamic_pool);
+        auto
+        insert_edge_between_non_co_linear_vertices(half_edge *vertex_a_edge, half_edge *vertex_b_edge, dynamic_pool &dynamic_pool) -> half_edge *;
+
+        static
+        auto classify_conflict_against_two_faces(const half_edge *face_separator, const half_edge *edge)->half_edge_face *;
+
+        static
+        void re_distribute_conflicts_of_split_face(conflict *conflict_list, const half_edge *face_separator);
+
+        static
+        void walk_and_update_edges_face(half_edge *edge_start, const half_edge_face *face);
+
+        static
+        void clamp(number &val, number &a, number &b);
+
+        static
+        void clamp_vertex(vertex &v, vertex &a, vertex &b);
     };
 
 
