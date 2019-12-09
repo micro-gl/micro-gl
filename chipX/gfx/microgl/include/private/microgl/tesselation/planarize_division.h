@@ -222,7 +222,15 @@ namespace tessellation {
         static
         bool do_a_b_lies_on_same_trapeze_wall(const trapeze &trapeze, const vertex &a, const vertex &b,
                                               const point_class_with_trapeze &a_class,
-                                              const point_class_with_trapeze &b_class);
+                                              const point_class_with_trapeze &b_class,
+                                              point_class_with_trapeze &resulting_wall);
+
+        static
+        int infer_edge_winding(const vertex &a, const vertex &b);
+
+        static
+        bool is_e1_before_or_equal_e2_on_same_boundary(half_edge *edge_1, half_edge *edge_2,
+                                                  const point_class_with_trapeze &wall);
     };
 
 
