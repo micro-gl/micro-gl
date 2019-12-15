@@ -164,6 +164,7 @@ namespace tessellation {
             // true/false if was split into two
             bool face_was_split = false;
             // if a vertical split occurs, vertex_a_edge_split_edge is oriented from bottom->top
+            // and has left_trapeze to it's left
             half_edge * vertex_a_edge_split_edge = nullptr;
             trapeze_t left_trapeze;
             trapeze_t right_trapeze;
@@ -241,10 +242,16 @@ namespace tessellation {
         point_class_with_trapeze
         locate_and_classify_point_that_is_already_on_trapeze(vertex &point, const trapeze_t &trapeze);
 
-        static void
+        static half_edge *
         handle_face_split(const trapeze_t &trapeze, const vertex &a, const vertex &b,
                           const point_class_with_trapeze &a_class,
                           const point_class_with_trapeze &b_class, dynamic_pool &dynamic_pool);
+
+        static
+        half_edge *locate_half_edge_of_face_rooted_at_vertex(const half_edge_vertex *root, const half_edge_face *face);
+
+        static
+        auto locate_face_of_a_b(const half_edge_vertex &a, const vertex &b) -> half_edge *;
     };
 
 

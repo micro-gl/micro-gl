@@ -713,7 +713,7 @@ namespace tessellation {
                                                                        half_edge ** result_edge_b,
                                                                        dynamic_pool& pool) {
         // given that (a,b) is co-linear with one of the 4 boundaries of the trapeze,
-        // try inserting vertices on that boundary, update windings and return the
+        // try inserting vertices on that boundary, update windings between them and return the
         // corresponding start and end half edges whose start points are a and b
         auto * edge_vertex_a =
                 try_insert_vertex_on_trapeze_boundary_at(a, trapeze, wall_class, pool);
@@ -740,6 +740,7 @@ namespace tessellation {
 
         while(start!=end) {
             start->winding+=winding;
+            start->twin->winding=start->winding;
             start=start->next;
         }
 
@@ -764,15 +765,68 @@ namespace tessellation {
     }
 
     template<typename number>
-    void planarize_division<number>::handle_face_split(const trapeze_t & trapeze,
+    auto planarize_division<number>::locate_half_edge_of_face_rooted_at_vertex(const half_edge_vertex *root,
+                                                                               const half_edge_face * face) -> half_edge * {
+        auto *iter = root->edge;
+        const auto *end = root->edge;
+        do {
+            if(iter->face==face)
+                return iter;
+            iter=iter->twin->next;
+        } while(iter!=end);
+
+        return nullptr;
+    }
+
+    template<typename number>
+    auto planarize_division<number>::locate_face_of_a_b(const half_edge_vertex &a,
+                                                        const vertex &b) -> half_edge * {
+        // given edge (a,b) as half_edge_vertex a and a vertex b, find out to which
+        // adjacent face does this edge should belong. we return the half_edge that
+        // has this face to it's left and vertex 'a' as an origin.
+        half_edge *iter = &a.edge;
+        half_edge *candidate = nullptr;
+        const half_edge *end = iter;
+        // we walk in CCW order around the vertex
+        do {
+            int cls= classify_point(b, iter->origin->coords,
+                    iter->twin->origin->coords);
+            if(cls==0) // b is exactly on the edge, bingo
+                return iter;
+            if(cls>0) // b is strictly to left of the edge, it is a candidate
+                candidate= iter;
+            if(cls<0) { // b is strictly to right of the edge
+                // if we had a candidate, then because we walk CCW, then the last
+                // candidate had to be the best candidate because we transitioned
+                // from left to right classification
+                if(candidate)
+                    return candidate;
+                // else do nothing
+            }
+
+            iter=iter->twin->next;
+        } while(iter!=end);
+
+        return candidate;
+    }
+
+    template<typename number>
+    auto planarize_division<number>::handle_face_split(const trapeze_t & trapeze,
                                                        const vertex &a, const vertex &b,
                                                        const point_class_with_trapeze &a_class,
                                                        const point_class_with_trapeze &b_class,
-                                                       dynamic_pool & dynamic_pool) {
-        // given that and edge (a,b) splits the face, i.e inside the face and is NOT
+                                                       dynamic_pool & dynamic_pool) -> half_edge * {
+        // given that edge (a,b) should split the face, i.e inside the face and is NOT
         // co-linear with a boundary wall (for that case we have another procedure),
-        // split the face to up to 4 pieces
+        // split the face to up to 4 pieces, strategy is:
+        // 1. use a vertical that goes through "a" to try and split the trapeze
+        // 2. if a cut has happened, two trapezes were created and "a" now lies on
+        //    th vertical wall between them.
+        // 3. infer the correct trapeze where "b" is in and perform roughly the same
+        //    operation
+        // 4. connect the two points, so they again split a face (in case they are not vertical)
 
+        int winding = infer_edge_winding(a, b);
         // first, try to split vertically with a endpoint
         vertical_face_cut_result a_cut_result = handle_vertical_face_cut(trapeze, a, a_class, dynamic_pool);
         // let's find out where b ended up after a split (that might have not happened)
@@ -782,17 +836,33 @@ namespace tessellation {
             bool left = b.x<=a_cut_result.vertex_a_edge_split_edge->origin->coords.x;
             trapeze_of_b = left ? &a_cut_result.left_trapeze : &a_cut_result.right_trapeze;
         }
+        // since, we deem b belongs to the trapeze, we classify with the following method
+        point_class_with_trapeze b_new_class = classify_point_conflicting_trapeze(b, *trapeze_of_b);
+        // next, try to split vertically with b endpoint
+        vertical_face_cut_result b_cut_result = handle_vertical_face_cut(*trapeze_of_b,
+                b, b_new_class, dynamic_pool);
 
-        auto * edge_vertex_b = handle_vertical_face_cut(trapeze, b, b_class, dynamic_pool);
-        // now, we have made vertical splits (when needed), we have two edge_vertex pointers,
-        // but we need these pointers to be such that (a,b) is to the left of each edge-vertex, so they both
-        // have a reference to the same face. this can easily be accomplished with simple compare
-        // and twin edges. since they represent vertical cuts, we need to compare x coords.
-        // both of these edge-vertex pointers represent vertical edges.
-        bool b_left_of__edge_vertex_a = classify_point(b, edge_vertex_a->origin->coords, edge_vertex_a->twin->origin->coords);
-        bool a_left_of__edge_vertex_a = classify_point(b, edge_vertex_a->origin->coords, edge_vertex_a->twin->origin->coords);
+        // two options ?
+        // 1. (a,b) is vertical, need to only update it's winding
+        // 2. (a,b) is NOT vertical, connect a new edge between them, split
+        // 3. BUT, first we need to infer the correct half edges, that go out of a and b
+        //    and have the mutual face to their left
 
+        // any edge of the trapeze of b will tell us the face
+        const auto * face = trapeze_of_b->right_bottom->face;
+        // a_edge/b_edge both are half edges rooted at a/b respectively and such that both belong to same face
+        auto * a_edge = locate_half_edge_of_face_rooted_at_vertex(a_cut_result.vertex_a_edge_split_edge->origin, face);
+        auto * b_edge = locate_half_edge_of_face_rooted_at_vertex(b_cut_result.vertex_a_edge_split_edge->origin, face);
+        auto * inserted_edge = a_edge;
+        bool is_a_b_vertical = a_edge->origin->coords.x==b_edge->origin->coords.x;
+        if(!is_a_b_vertical)
+            inserted_edge = insert_edge_between_non_co_linear_vertices(a_edge, b_edge, dynamic_pool);
 
+        a_edge->winding += winding;
+        // a_edge->twin is b_edge
+        a_edge->twin->winding = a_edge->winding;
+
+        return inserted_edge;
     }
 
     template<typename number>
@@ -800,45 +870,58 @@ namespace tessellation {
 
         // record the conflicting face of the origin point
         // thw two end points of the edge
-        auto * a = edge->origin->coords;
-        auto * b = edge->twin->origin->coords;
-        auto * b_tag = b;
+//        auto * a = &edge->origin->coords;
+//        auto * b = &edge->twin->origin->coords;
+//        auto * b_tag = b;
+        vertex a, b, b_tag;
         half_edge *a_vertex_edge, *b_tag_vertex_edge;
         const auto * conflict_face = edge->conflict_face;
         half_edge_face * face = conflict_face;
         point_class_with_trapeze wall_result;
-        // first face handling
         // represent the face as trapeze for efficient info
         trapeze_t trapeze=infer_trapeze(face);
-        // classify possibly unadded vertex, that should belong to trapeze
+        // classify possibly un added vertex, that should belong to trapeze
         point_class_with_trapeze class_a =
-                classify_point_conflicting_trapeze(*a, trapeze);
+                classify_point_conflicting_trapeze(edge->origin->coords, trapeze);
+        a= edge->origin->coords;
+        b=edge->twin->origin->coords;
 
-        while(face) {
+        bool are_we_done = false;
+
+        while(!are_we_done) {
 
             // the reporting of and class of the next interesting point of the edge against current trapeze
             conflicting_edge_intersection_status edge_status =
-                    compute_conflicting_edge_intersection_against_trapeze(trapeze, *a, *b);
-            b_tag = &edge_status.point_of_interest;
+                    compute_conflicting_edge_intersection_against_trapeze(trapeze, a, b);
+            b_tag = edge_status.point_of_interest;
             point_class_with_trapeze class_b_tag = edge_status.class_of_interest_point;
 
             // does edge (a,b') is co linear with boundary ? if so treat it
-            bool co_linear_with_boundary = do_a_b_lies_on_same_trapeze_wall(trapeze, *a, *b_tag,
+            bool co_linear_with_boundary = do_a_b_lies_on_same_trapeze_wall(trapeze, a, b_tag,
                                                                             class_a, class_b_tag, wall_result);
             // co-linear, so let's just insert vertices on the boundary and handle windings
             if(co_linear_with_boundary) {
-               handle_co_linear_edge_with_trapeze(trapeze, *a, *b_tag, wall_result, &a_vertex_edge, &b_tag_vertex_edge);
+                handle_co_linear_edge_with_trapeze(trapeze, a, b_tag, wall_result, &a_vertex_edge, &b_tag_vertex_edge);
             } else {
                 // not co-linear so we have to split the trapeze into up to 4 faces
-                handle_face_split(trapeze, a, b_tag, class_a, class_b_tag,dynamic_pool);
+                a_vertex_edge= handle_face_split(trapeze, a, b_tag, class_a, class_b_tag,dynamic_pool);
+                b_tag_vertex_edge= a_vertex_edge->twin;
+                // handle face merges
             }
 
             // if b'==b we are done
+            are_we_done = b==b_tag;
+            if(are_we_done)
+                break;
             // todo: if b is the last endpoint of the edge, update it's corrdinates with the original
             // todo: source copy, in case there was a clamping
 
             // here update face and new "a" pointer and iterate
-
+            a =b_tag;
+            half_edge * located_face_edge= locate_face_of_a_b(b_tag_vertex_edge->origin ,b);
+            face = located_face_edge->face;
+            trapeze=infer_trapeze(face);
+            class_a = classify_point_conflicting_trapeze(a, trapeze);
         }
 
 
@@ -1001,7 +1084,6 @@ namespace tessellation {
         // 1.2 if it is outside, the we need to hunt intersections with the biggest alpha or so
 
         // this can be injected from outside
-//        point_class_with_trapeze  cla_a = classify_point_conflicting_trapeze(a, trapeze);
         point_class_with_trapeze  cla_b = classify_arbitrary_point_with_trapeze(b, trapeze);
         conflicting_edge_intersection_status result{};
         // if it is inside or on the boundary, we are done
