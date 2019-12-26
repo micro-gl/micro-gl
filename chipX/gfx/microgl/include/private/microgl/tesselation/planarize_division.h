@@ -1,7 +1,11 @@
 #pragma once
+#define DEBUG_PLANAR true;
 
 #include <microgl/tesselation/half_edge.h>
 #include <microgl/chunker.h>
+#ifdef DEBUG_PLANAR
+#include <stdexcept>
+#endif
 
 namespace tessellation {
 #define abs(a) ((a)<0 ? -(a) : (a))
@@ -252,6 +256,15 @@ namespace tessellation {
 
         static
         auto locate_face_of_a_b(const half_edge_vertex &a, const vertex &b) -> half_edge *;
+
+        static
+        void is_distance_to_line_less_than_epsilon(const vertex &v, const vertex &a, const vertex &b, number epsilon);
+
+        static
+        void remove_edge(half_edge *edge);
+
+        static
+        void handle_face_merge(const half_edge_vertex *vertex_on_vertical_wall);
     };
 
 

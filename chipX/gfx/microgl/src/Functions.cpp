@@ -167,7 +167,6 @@ namespace microgl {
             uint64_t res = 0;
             uint64_t one = uint64_t(1) << 62; // The second-to-top bit is set: use 1u << 14 for uint16_t type; use 1uL<<30 for uint32_t type
 
-
             // "one" starts at the highest power of four <= than the argument.
             while (one > op)
             {

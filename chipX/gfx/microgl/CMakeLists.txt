@@ -10,7 +10,7 @@ set (CMAKE_CXX_STANDARD 11)
 
 message(${CMAKE_BUILD_TYPE})
 #use this - should warn on inline functions that were not inlined -Winline
-set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -fno-exceptions")
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g ")
 set(CMAKE_CXX_FLAGS_RELEASE "-fno-exceptions -fstrict-aliasing -O3 -s -fno-rtti -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
 
 set(sources

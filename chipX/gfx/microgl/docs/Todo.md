@@ -48,6 +48,9 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 6. investigate solving degenrate cases some day.
 
 #### road-map
+0. add < operator for Q types
+0. adapt bezier divider for generic number types
+0. improve ear_clipper
 1. complex poly tesselator and stroker
 2. masks
 3. bezier patches tesselator
