@@ -42,6 +42,7 @@ set(sources
 #        include/private/microgl/tesselation/planarize_division.cpp
         include/private/microgl/tesselation/planarize_division.h
         include/private/microgl/tesselation/half_edge.h
+        include/public/microgl/Q.h
         include/public/microgl/numbers.h)
 
 add_library(${PROJECT_NAME} ${sources})

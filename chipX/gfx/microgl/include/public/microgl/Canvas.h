@@ -13,7 +13,7 @@
 #include <microgl/triangles.h>
 #include <microgl/polygons.h>
 #include <microgl/numbers.h>
-//#include <microgl/tesselation/BezierCurveDivider.h>
+//#include <microgl/Q.h>
 #include <microgl/tesselation/curve_divider.h>
 #include <microgl/dynamic_array.h>
 #include <microgl/tesselation/EarClippingTriangulation.h>
@@ -82,23 +82,16 @@ public:
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
     void drawCircle(const color_f_t & color,
-                    fixed_signed centerX, fixed_signed centerY,
-                    fixed_signed radius, uint8_t sub_pixel_precision,
-                    uint8_t opacity=255);
-
-    template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false>
-    void drawCircle(const color_f_t & color,
                     int centerX, int centerY,
-                    int radius, uint8_t opacity=255);
+                    int radius, precision sub_pixel_precision,
+                    opacity opacity=255);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false>
+            bool antialias=false, typename number>
     void drawCircle(const color_f_t & color,
-                    float centerX, float centerY,
-                    float radius, uint8_t opacity=255);
+                    number centerX, number centerY,
+                    number radius, opacity opacity=255);
 
     // Triangles
     
@@ -330,41 +323,19 @@ public:
     template<typename number>
     void drawLine(const color_f_t & color,
                   number x0, number y0, number x1, number y1);
-//    void drawLine(const color_f_t & color,
-//                  float x0, float y0, float x1, float y1);
 
     void drawLine(const color_f_t & color,
                   int x0, int y0,
                   int x1, int y1,
                   uint8_t bits = 0);
 
-//    void drawLine(const color_f_t & color,
-//                  const vec2_32i &p0,
-//                  const vec2_32i &p1,
-//                  uint8_t bits = 0);
-
     template <typename number>
-    void drawQuadraticBezierPath(color_f_t & color, vec2<number> *points,
-                                 unsigned int size = 3,
-                                 uint8_t sub_pixel_bits = 4,
-                                 typename tessellation::curve_divider<number>::CurveDivisionAlgorithm algorithm
-                                 = tessellation::curve_divider<number>::CurveDivisionAlgorithm::Uniform_16);
-
-//    void drawQuadraticBezierPath(color_f_t & color, vec2_f *points,
-//                                 unsigned int size = 3,
-//                                 tessellation::curve_divider::CurveDivisionAlgorithm algorithm =
-//                                         tessellation::curve_divider::CurveDivisionAlgorithm::Uniform_16);
-//
-//    void drawCubicBezierPath(color_f_t & color, vec2_32i *points,
-//                             unsigned int size = 4,
-//                             uint8_t sub_pixel_bits = 4,
-//                             tessellation::curve_divider::CurveDivisionAlgorithm algorithm =
-//                                     tessellation::curve_divider::CurveDivisionAlgorithm::Uniform_16);
-//
-//    void drawCubicBezierPath(color_f_t & color, vec2_f *points,
-//                             unsigned int size = 4,
-//                             tessellation::curve_divider::CurveDivisionAlgorithm algorithm =
-//                                     tessellation::curve_divider::CurveDivisionAlgorithm::Uniform_16);
+    void drawBezierPath(color_f_t & color, vec2<number> *points,
+                         unsigned int size = 3,
+                        typename tessellation::curve_divider<number>::Type type
+                        = tessellation::curve_divider<number>::Type ::Quadratic,
+                         typename tessellation::curve_divider<number>::CurveDivisionAlgorithm algorithm
+                         = tessellation::curve_divider<number>::CurveDivisionAlgorithm::Uniform_16);
 
     void drawLinePath(color_f_t & color,
                       vec2_32i *points,

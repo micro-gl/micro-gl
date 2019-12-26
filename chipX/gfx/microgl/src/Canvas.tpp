@@ -294,20 +294,21 @@ inline void Canvas<P, CODER>::drawPixel(const P & val, int index) {
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawCircle(const color_f_t & color,
-                                  const fixed_signed centerX, const fixed_signed centerY,
-                                  const fixed_signed radius,
-                                  const uint8_t sub_pixel_precision,
-                                  const uint8_t opacity) {
+                                  const int centerX,
+                                  const int centerY,
+                                  const int radius,
+                                  const precision sub_pixel_precision,
+                                  const opacity opacity) {
     color_t color_int;
     uint8_t p = sub_pixel_precision;
     coder()->convert(color, color_int);
 
-    unsigned int bits_for_antialias_distance, max_blend_distance=0;
-    unsigned int a, b, c=0;
+    int bits_for_antialias_distance, max_blend_distance=0;
+    int a, b, c=0;
 
     if(antialias) {
         bits_for_antialias_distance = 1;
-        max_blend_distance = (1 << bits_for_antialias_distance)<<(p);
+        max_blend_distance = (1u << bits_for_antialias_distance)<<(p);
         a = fixed_mul_fixed_2(radius, radius, p);
         b = fixed_mul_fixed_2(radius+max_blend_distance, radius+max_blend_distance, p);
         c = b - a;
@@ -364,38 +365,23 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
 }
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
 void Canvas<P, CODER>::drawCircle(const color_f_t & color,
-                                  const float centerX, const float centerY,
-                                  const float radius,
-                                  uint8_t opacity) {
+                                  const number centerX,
+                                  const number centerY,
+                                  const number radius,
+                                  opacity opacity) {
 
-    uint8_t p = 4;
+    precision p = 10;
 
     drawCircle<BlendMode, PorterDuff, antialias>(color,
-               float_to_fixed_2(centerX, p),float_to_fixed_2(centerY, p),
-               float_to_fixed_2(radius, p), p, opacity
-
-    );
-
-}
-
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawCircle(const color_f_t & color,
-                                  int centerX, int centerY,
-                                  int radius,
-                                  uint8_t opacity) {
-    uint8_t p = 0;
-
-    drawCircle<BlendMode, PorterDuff, antialias>(color,
-            float_to_fixed_2(centerX, p),float_to_fixed_2(centerY, p),
-            float_to_fixed_2(radius, p), p, opacity
-
-    );
+                microgl::numbers::to_fixed(centerX, p),
+                microgl::numbers::to_fixed(centerY, p),
+                microgl::numbers::to_fixed(radius, p),
+                p, opacity
+                );
 
 }
-
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawGradient(const color_f_t & startColor,
@@ -2090,24 +2076,6 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
     drawLine(color, x0_, y0_, x1_, y1_, p);
 }
 
-//template<typename P, typename CODER>
-//void Canvas<P, CODER>::drawLine(const color_f_t &color, float x0, float y0, float x1, float y1) {
-//    uint8_t bits = 0;
-//    drawLine(color,
-//             float_to_fixed_2(x0, bits), float_to_fixed_2(y0, bits),
-//             float_to_fixed_2(x1, bits), float_to_fixed_2(y1, bits),
-//             bits
-//             );
-//}
-//
-//template<typename P, typename CODER>
-//void Canvas<P, CODER>::drawLine(const color_f_t & color,
-//                                const vec2_32i &p0,
-//                                const vec2_32i &p1,
-//                                precision bits) {
-//    drawLine(color, p0.x, p0.y, p1.x, p1.y, bits);
-//}
-
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawLine(const color_f_t &color,
                                 int x0, int y0,
@@ -2125,7 +2093,7 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
     uint32_t IntensityShift, ErrorAdj, ErrorAcc;
     unsigned int ErrorAccTemp, Weighting, WeightingComplementMask;
     int DeltaX, DeltaY, Temp, XDir;//, YDir;
-    unsigned int one = 1<<bits;
+    unsigned int one = 1u<<bits;
     unsigned int round = 0;//one>>1;// -1;
     // Make sure the line runs top to bottom
     if (Y0 > Y1) {
@@ -2138,9 +2106,9 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
     blendColor(color_input, (X0+round)>>bits, (Y0+round)>>bits, maxIntensity);
 
     if ((DeltaX = X1 - X0) >= 0) {
-        XDir = 1<<bits;
+        XDir = 1u<<bits;
     } else {
-        XDir = -(1<<bits);
+        XDir = -(1u<<bits);
         DeltaX = -DeltaX; // make DeltaX positive
     }
     DeltaY = Y1 - Y0;
@@ -2298,43 +2266,24 @@ Canvas<P, CODER>::drawLinePath(color_f_t &color,
 
 }
 
-//template<typename P, typename CODER>
-//void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color,
-//                                               vec2_f *points,
-//                                               unsigned int size,
-//                                               tessellation::curve_divider::CurveDivisionAlgorithm algorithm) {
-//
-//    // sub pixel looks bad with our current line algorithm
-//    uint8_t sub_p = 4;
-//    unsigned int MAX = 1<<sub_p;
-//    vec2_32i pts_fixed[size];// = new vec2_32i[size];
-//    // convert to fixed
-//    for (int jx = 0; jx < size; ++jx) {
-//        pts_fixed[jx] = vec2_32i(points[jx]*MAX);
-//    }
-//
-//    drawQuadraticBezierPath(color, pts_fixed, size, sub_p, algorithm);
-//}
-
-
 template<typename P, typename CODER>
 template<typename number>
-void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2<number> *points,
+void Canvas<P, CODER>::drawBezierPath(color_f_t & color, vec2<number> *points,
                                                unsigned int size,
-                                               uint8_t sub_pixel_bits,
+                                               typename tessellation::curve_divider<number>::Type type,
                                                typename tessellation::curve_divider<number>::CurveDivisionAlgorithm algorithm) {
-
-    dynamic_array<vec2<number>> samples;
-    vec2_32i previous, current;
-
+    using vertex = vec2<number>;
+    dynamic_array<vertex> samples;
+    vertex previous, current;
     using c = tessellation::curve_divider<number>;
-
-    for (index jx = 0; jx < size-2; jx+=2) {
+    index pitch = type==c::Type::Quadratic ? 2 : 3;
+    number circle_diameter = 5;
+    for (index jx = 0; jx < size-pitch; jx+=pitch) {
         auto * point_anchor = &points[jx];
 
         samples.clear();
 
-        c::compute(point_anchor, sub_pixel_bits, samples, algorithm, c::Type::Quadratic);
+        c::compute(point_anchor, samples, algorithm, type);
 
         for (index ix = 0; ix < samples.size(); ++ix) {
             current = samples[ix];
@@ -2342,152 +2291,33 @@ void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2<number> *
             if(ix)
                 drawLine<number>(color, previous.x, previous.y, current.x, current.y);
 
-//            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{1.0,0.0,0.0},
-//                                                                                current.x, current.y,
-//                                                                                1<<sub_pixel_bits, sub_pixel_bits, 255);
+            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(color_f_t{1.0,0.0,0.0},
+                                                                                current.x, current.y, circle_diameter, 255);
 
             previous = current;
         }
 
-//        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
-//                                                                            point_anchor[0].x, point_anchor[0].y,
-//                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
-//
-//        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
-//                                                                            point_anchor[1].x, point_anchor[1].y,
-//                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
-//
-//        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
-//                                                                            point_anchor[2].x, point_anchor[2].y,
-//                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
+        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(color_f_t{0.0,0.0,1.0},
+                                                                            point_anchor[0].x, point_anchor[0].y,
+                                                                                    circle_diameter, 255);
 
+        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
+                                                                            point_anchor[1].x, point_anchor[1].y,
+                                                                            circle_diameter, 255);
 
-    }
+        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
+                                                                            point_anchor[2].x, point_anchor[2].y,
+                                                                            circle_diameter, 255);
+        if(type==c::Type::Cubic ) {
+            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
+                                                                                point_anchor[3].x, point_anchor[3].y,
+                                                                                circle_diameter, 255);
 
-}
-
-/*
-
-template<typename P, typename CODER>
-void Canvas<P, CODER>::drawQuadraticBezierPath(color_f_t & color, vec2_32i *points,
-                                               unsigned int size,
-                                               uint8_t sub_pixel_bits,
-                                               tessellation::curve_divider::CurveDivisionAlgorithm algorithm) {
-
-    dynamic_array<vec2_32i> samples;
-    vec2_32i previous, current;
-
-    using c = tessellation::curve_divider;
-
-    for (index jx = 0; jx < size-2; jx+=2) {
-        auto * point_anchor = &points[jx];
-
-        samples.clear();
-
-        c::compute(point_anchor, sub_pixel_bits, samples, algorithm, c::Type::Quadratic);
-
-        for (index ix = 0; ix < samples.size(); ++ix) {
-            current = samples[ix];
-
-            if(ix)
-                drawLine(color, previous.x, previous.y, current.x, current.y, sub_pixel_bits);
-
-//            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{1.0,0.0,0.0},
-//                                                                                current.x, current.y,
-//                                                                                1<<sub_pixel_bits, sub_pixel_bits, 255);
-
-            previous = current;
         }
 
-//        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
-//                                                                            point_anchor[0].x, point_anchor[0].y,
-//                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
-//
-//        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
-//                                                                            point_anchor[1].x, point_anchor[1].y,
-//                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
-//
-//        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
-//                                                                            point_anchor[2].x, point_anchor[2].y,
-//                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
-
-
     }
 
 }
-
- */
-//
-//template<typename P, typename CODER>
-//void Canvas<P, CODER>::drawCubicBezierPath(color_f_t &color, vec2_f *points,
-//                                           unsigned int size,
-//                                           tessellation::curve_divider::CurveDivisionAlgorithm algorithm) {
-//    // sub pixel looks bad with our current line algorithm
-//    uint8_t sub_p = 4;
-//    unsigned int MAX = 1<<sub_p;
-//    vec2_32i pts_fixed[size];// = new vec2_32i[size];
-//
-//    // convert to fixed
-//    for (index jx = 0; jx < size; ++jx) {
-////        pts_fixed[jx] = (points[jx])*MAX);
-//        pts_fixed[jx].x = (points[jx].x)*MAX;
-//        pts_fixed[jx].y = (points[jx].y)*MAX;
-//    }
-//
-//    drawCubicBezierPath(color, pts_fixed, size, sub_p, algorithm);
-//}
-//
-//template<typename P, typename CODER>
-//void Canvas<P, CODER>::drawCubicBezierPath(color_f_t & color, vec2_32i *points,
-//                                           unsigned int size,
-//                                           uint8_t sub_pixel_bits,
-//                                           tessellation::curve_divider::CurveDivisionAlgorithm algorithm) {
-//    dynamic_array<vec2_32i> samples;
-//    vec2_32i previous, current;
-//    int count = 0;
-//    using c = tessellation::curve_divider;
-//
-//    for (index jx = 0; jx < size-3; jx+=3) {
-//        auto * point_anchor = &points[jx];
-//
-//        samples.clear();
-//
-//        c::compute(point_anchor, sub_pixel_bits, samples, algorithm, c::Type::Cubic);
-//
-//        count += samples.size();
-//
-//        for (index ix = 0; ix < samples.size(); ++ix) {
-//            current = samples[ix];
-//
-//            if(ix)
-//                drawLine(color, previous.x, previous.y, current.x, current.y, sub_pixel_bits);
-//
-//            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{1.0,0.0,0.0},
-//                                                                                current.x, current.y,
-//                                                                                1<<sub_pixel_bits, sub_pixel_bits, 255);
-//
-//            previous = current;
-//        }
-//
-//        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
-//                                                                            point_anchor[0].x, point_anchor[0].y,
-//                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
-//
-//        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
-//                                                                            point_anchor[1].x, point_anchor[1].y,
-//                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
-//
-//        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
-//                                                                            point_anchor[2].x, point_anchor[2].y,
-//                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
-//
-//        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
-//                                                                            point_anchor[3].x, point_anchor[3].y,
-//                                                                            5<<sub_pixel_bits, sub_pixel_bits, 255);
-//
-//    }
-//
-//}
 
 template<typename P, typename CODER>
 template <typename BlendMode,

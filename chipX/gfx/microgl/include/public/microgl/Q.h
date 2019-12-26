@@ -187,6 +187,29 @@ public:
         return Q{-this->value(), P};
     }
 
+    // booleans
+//    template <unsigned P_2>
+    bool operator <(const_ref q) {
+        return this->_value<q._value;
+    }
+//    template <unsigned P_2>
+    bool operator >(const_ref q) {
+        return this->_value>q._value;
+    }
+//    template <unsigned P_2>
+    bool operator <=(const_ref q) {
+        return this->_value<=q._value;
+    }
+//    template <unsigned P_2>
+    bool operator >=(const_ref q) {
+        return this->_value>=q._value;
+    }
+//    template <unsigned P_2>
+    bool operator ==(const_ref q) {
+        return this->_value==q._value;
+    }
+
+
     // conversion operators
     explicit operator float() {
         return toFloat();
@@ -197,6 +220,10 @@ public:
 
     int toInt() const {
         return this->_value>>P;
+    }
+
+    int toFixed(precision_t precision_value) const {
+        return convert(this->_value, P, precision_value);
     }
 
     float toFloat() const {
@@ -216,3 +243,16 @@ public:
     }
 
 };
+
+namespace microgl {
+    namespace numbers {
+//        template <>
+//        int to_fixed(const Q<8> & val, unsigned char precision) {
+//            return int(val.toFixed(precision));
+//        }
+        template<unsigned N>
+        int to_fixed(const Q<N> & val, unsigned char precision) {
+            return int(val.toFixed(precision));
+        }
+    }
+}

@@ -7,6 +7,7 @@
 #include <chrono>
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
+#include <microgl/Q.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -23,8 +24,6 @@ typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
 
 Canvas24Bit_Packed32 * canvas;
 
-//Resources resources{};
-
 
 void loop();
 void init_sdl(int width, int height);
@@ -33,14 +32,27 @@ vec2_32i a[3] = {{5, H - 5}, {0, 225}, {W/2, H - 5}};
 vec2_32i b[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2}, {W/2 + W/3, H/4}, {W-5, H - 5}};
 vec2_32i c[5] = {{5, H - 5}, {5, 225}, {W/2, H - 5}, {W-5,255}, {W-5, H-5}};
 
+// float verions
 vec2_f b_f[7] = {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}, {W/2+W/8, H/2}, {W/2 + W/3, H/4}, {W-5, H - 5}};
 vec2_f b_f_small[7] = {{5, 400}, {250, 400}, {500, 400}, {150, 200}};
 vec2_f c_f[5] = {{5, H - 5}, {5, 225}, {W/2, H - 5}, {W-5,255}, {W-5, H-5}};
 vec2_f c2_f[3] = {{20, 400}, {20+200, 300}, {20+400, 400}};
 
-inline void render() {
+// Q versions
 
-    canvas->setAntialiasing(false);
+
+// declar
+void test_float_version();
+void test_q_version();
+void test_curve_adaptive_subdivide();
+
+inline void render() {
+    test_q_version();
+//    test_float_version();
+
+}
+
+void test_float_version() {
     using bcd = tessellation::curve_divider<float>;
 
     for (int ix = 0; ix < 1; ++ix) {
@@ -48,13 +60,39 @@ inline void render() {
         canvas->clear(WHITE);
 
         b_f_small[2].y -= 0.025f;
-        canvas->drawQuadraticBezierPath(BLACK, b_f_small, 3, 0,
-                bcd::CurveDivisionAlgorithm::Uniform_16);
+//        canvas->drawBezierPath(BLACK, b_f_small, 3,
+//                               bcd::Type ::Quadratic,
+//                               bcd::CurveDivisionAlgorithm::Uniform_32);
+
+        canvas->drawBezierPath(BLACK, b_f_small, 3,
+                               bcd::Type::Quadratic,
+                               bcd::CurveDivisionAlgorithm::Uniform_16);
 
     }
 
 }
 
+void test_q_version() {
+    using q = Q<8>;
+    using bcd = tessellation::curve_divider<q>;
+    static vec2<q> data[7] = {{5, 400}, {250, 400}, {500, 400}, {150, 200}};
+
+    for (int ix = 0; ix < 1; ++ix) {
+
+        canvas->clear(WHITE);
+
+        data[2].y -= q{0.025f};
+//        canvas->drawBezierPath(BLACK, b_f_small, 3,
+//                               bcd::Type ::Quadratic,
+//                               bcd::CurveDivisionAlgorithm::Uniform_32);
+
+        canvas->drawBezierPath(BLACK, data, 3,
+                               bcd::Type::Quadratic,
+                               bcd::CurveDivisionAlgorithm::Uniform_16);
+
+    }
+
+}
 
 /**
  * test cubic curve split
