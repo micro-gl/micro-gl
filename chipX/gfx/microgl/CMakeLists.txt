@@ -27,7 +27,8 @@ set(sources
 #        src/BentleyOttmannLineIntersection.cpp
 #        src/Rational.cpp
 #        src/Segment.cpp
-        src/BezierCurveDivider.cpp
+#        src/BezierCurveDivider.cpp
+        include/private/microgl/tesselation/curve_divider.h
 #        src/EarClippingTriangulation.cpp
 #        src/ear_clipping_triangulation.cpp
         src/FanTriangulation.cpp
@@ -41,7 +42,7 @@ set(sources
 #        include/private/microgl/tesselation/planarize_division.cpp
         include/private/microgl/tesselation/planarize_division.h
         include/private/microgl/tesselation/half_edge.h
-        )
+        include/public/microgl/numbers.h)
 
 add_library(${PROJECT_NAME} ${sources})
 

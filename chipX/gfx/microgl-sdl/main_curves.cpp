@@ -5,7 +5,6 @@
 
 #include <iostream>
 #include <chrono>
-//#include "src/Resources.h"
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
 
@@ -24,7 +23,6 @@ typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
 
 Canvas24Bit_Packed32 * canvas;
 
-using bcd = tessellation::BezierCurveDivider;
 //Resources resources{};
 
 
@@ -43,14 +41,15 @@ vec2_f c2_f[3] = {{20, 400}, {20+200, 300}, {20+400, 400}};
 inline void render() {
 
     canvas->setAntialiasing(false);
+    using bcd = tessellation::curve_divider<float>;
 
     for (int ix = 0; ix < 1; ++ix) {
 
         canvas->clear(WHITE);
 
-        b_f_small[2].y -= 1.012;//0.05f;
-        canvas->drawQuadraticBezierPath(BLACK, b_f_small, 3,
-                bcd::CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small);
+        b_f_small[2].y -= 0.025f;
+        canvas->drawQuadraticBezierPath(BLACK, b_f_small, 3, 0,
+                bcd::CurveDivisionAlgorithm::Uniform_16);
 
     }
 
@@ -69,7 +68,7 @@ void test_curve_adaptive_subdivide() {
     vec2_32i split[7] = {left_1, left_2, left_3, left_4, right_2, right_3, right_4};
 
 //    canvas->drawCubicBezierPath(BLACK, b_f, 4, 5);
-    canvas->drawCubicBezierPath(BLACK, b_f_small, 4);
+//    canvas->drawCubicBezierPath(BLACK, b_f_small, 4);
 //    canvas->drawCubicBezierPath(BLACK, split, 7, 0, 4);
 }
 
