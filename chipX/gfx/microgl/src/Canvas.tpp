@@ -1120,7 +1120,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
     vec2_32i p = { minX, minY };
     vec2_32i p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
 
-    int bmp_w_max = bmp.width() - 1, bmp_h_max = bmp.height() - 1;
+    uint32_t bmp_w_max = bmp.width() - 1, bmp_h_max = bmp.height() - 1;
 
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     fixed_signed area_v1_v2_p = functions::orient2d({v1_x, v1_y}, {v2_x, v2_y}, p_fixed, sub_pixel_precision) + bias_w1,
@@ -1234,7 +1234,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                     // can get the last texel of the boundary
                     // I don't round since I don't care about it here
 
-                    int u_i, v_i;
+                    uint64_t u_i, v_i;
                     uint64_t u_fixed = (((uint64_t)((uint64_t)w0*u2 + (uint64_t)w1*u0 + (uint64_t)w2*u1)));
                     uint64_t v_fixed = (((uint64_t)((uint64_t)w0*v2 + (uint64_t)w1*v0 + (uint64_t)w2*v1)));
 
@@ -1243,20 +1243,22 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                         uint64_t q_fixed =(((uint64_t)((uint64_t)w0*q2 + (uint64_t)w1*q0 + (uint64_t)w2*q1)));
                         uint64_t one_over_q = ONE / q_fixed;
 
-                        u_i = (u_fixed*bmp_w_max*one_over_q)>>(LL-BITS_UV_COORDS);
-                        v_i = (v_fixed*bmp_h_max*one_over_q)>>(LL-BITS_UV_COORDS);
+                        u_i = uint64_t(u_fixed*bmp_w_max*one_over_q)>>(LL-BITS_UV_COORDS);
+                        v_i = uint64_t(v_fixed*bmp_h_max*one_over_q)>>(LL-BITS_UV_COORDS);
 
                     } else {
 
                         u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS));
                         v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
                         // coords in :BITS_UV_COORDS space
-                        u_i = (bmp_w_max*u_fixed)>>(BITS_UV_COORDS);
-                        v_i = (bmp_h_max*v_fixed)>>(BITS_UV_COORDS);
+                        u_i = uint64_t(uint64_t(bmp_w_max)*u_fixed)>>(BITS_UV_COORDS);
+                        v_i = uint64_t(uint64_t(bmp_h_max)*v_fixed)>>(BITS_UV_COORDS);
                     }
 
-                    u_i = functions::clamp<int>(u_i, 0, bmp_w_max<<BITS_UV_COORDS);
-                    v_i = functions::clamp<int>(v_i, 0, bmp_h_max<<BITS_UV_COORDS);
+                    // todo:: I have seen the last row of a quadrilateral rendering have the first row
+                    // todo: this is an overflow, that comes from v_i, research why
+                    u_i = functions::clamp<uint32_t>(u_i, 0, bmp_w_max<<BITS_UV_COORDS);
+                    v_i = functions::clamp<uint32_t>(v_i, 0, bmp_h_max<<BITS_UV_COORDS);
 
                     color_t col_bmp;
                     Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
@@ -1822,85 +1824,8 @@ void Canvas<P, CODER>::drawBezierPath(color_f_t & color, vec2<number> *points,
 template<typename P, typename CODER>
 template <typename BlendMode,
         typename PorterDuff,
-        bool antialias>
-void Canvas<P, CODER>::drawPolygon(vec2_32i *points,
-                                   Canvas::index size,
-                                   precision precision,
-                                   opacity opacity,
-                                   polygons::hints hint
-                                   ) {
-
-    TrianglesIndices type;
-    // currently static on the stack
-    dynamic_array<index> indices;
-    dynamic_array<boundary_info> boundary_buffer;
-
-    switch (hint) {
-
-        case hints::CONCAVE:
-        case hints::SIMPLE:
-        {
-            type = antialias ? triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY :
-                   triangles::TrianglesIndices::TRIANGLES;
-//            tessellation::EarClippingTriangulation ear{false};
-//            tessellation::ear_clipping_triangulation::compute(points,
-//                                                              size,
-//                                                              indices,
-//                                                              &boundary_buffer,
-//                                                              type
-//            );
-
-            break;
-        }
-        case hints::CONVEX:
-        {
-            type = antialias ? triangles::TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY :
-                   triangles::TrianglesIndices::TRIANGLES_FAN;
-            tessellation::FanTriangulation::compute(points,
-                                                    size,
-                                                    indices,
-                                                    &boundary_buffer,
-                                                    type
-            );
-
-            break;
-        }
-        case hints::NON_SIMPLE:
-        case hints::SELF_INTERSECTING:
-        default:
-            return;
-//            throw std::runtime_error("Non-Simple polygons are not supported yet !!!");
-            break;
-    }
-
-    // draw triangles batch
-    drawTriangles<BlendMode, PorterDuff, antialias>(
-            RED,
-            points,
-            indices.data(),
-            boundary_buffer.data(),
-            indices.size(),
-            type,
-            opacity,
-            precision);
-
-//    return;
-    // draw triangulation
-    drawTrianglesWireframe(BLACK,
-                           points,
-                           indices.data(),
-                           indices.size(),
-                           type,
-                           255,
-                           precision);
-
-}
-
-template<typename P, typename CODER>
-template <typename BlendMode,
-        typename PorterDuff,
-        bool antialias>
-void Canvas<P, CODER>::drawPolygon(vec2_f *points,
+        bool antialias, typename number>
+void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
                                    Canvas::index size,
                                    opacity opacity,
                                    polygons::hints hint
@@ -1917,7 +1842,7 @@ void Canvas<P, CODER>::drawPolygon(vec2_f *points,
         {
             type = antialias ? triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY :
                    triangles::TrianglesIndices::TRIANGLES;
-            tessellation::ear_clipping_triangulation<float>::compute(points,
+            tessellation::ear_clipping_triangulation<number>::compute(points,
                                                               size,
                                                               indices,
                                                               &boundary_buffer,
@@ -1930,11 +1855,11 @@ void Canvas<P, CODER>::drawPolygon(vec2_f *points,
         {
             type = antialias ? triangles::TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY :
                    triangles::TrianglesIndices::TRIANGLES_FAN;
-            tessellation::FanTriangulation::compute(points,
-                                                    size,
-                                                    indices,
-                                                    &boundary_buffer,
-                                                    type
+            tessellation::fan_triangulation<number>::compute(points,
+                                                     size,
+                                                     indices,
+                                                     &boundary_buffer,
+                                                     type
             );
 
             break;

@@ -31,7 +31,7 @@ set(sources
         include/private/microgl/tesselation/curve_divider.h
 #        src/EarClippingTriangulation.cpp
 #        src/ear_clipping_triangulation.cpp
-        src/FanTriangulation.cpp
+#        include/private/microgl/tesselation/fan_triangulation.h
         src/triangles.cpp
         src/PathTessellation.cpp
         src/ArcDivider.cpp

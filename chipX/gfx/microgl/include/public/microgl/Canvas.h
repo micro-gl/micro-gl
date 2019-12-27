@@ -17,7 +17,7 @@
 #include <microgl/tesselation/curve_divider.h>
 #include <microgl/dynamic_array.h>
 #include <microgl/tesselation/EarClippingTriangulation.h>
-#include <microgl/tesselation/FanTriangulation.h>
+#include <microgl/tesselation/fan_triangulation.h>
 
 using namespace microgl::triangles;
 using namespace microgl::polygons;
@@ -231,17 +231,8 @@ public:
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false>
-    void drawPolygon(vec2_32i * points,
-                     index size,
-                     precision precision,
-                     opacity opacity,
-                     polygons::hints hint = polygons::hints::SIMPLE);
-
-    template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false>
-    void drawPolygon(vec2_f * points,
+            bool antialias=false, typename number=float>
+    void drawPolygon(vec2<number> * points,
                      index size,
                      opacity opacity,
                      polygons::hints hint = polygons::hints::SIMPLE);

@@ -8,7 +8,7 @@
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/PixelCoder.h>
-#include <microgl/tesselation/FanTriangulation.h>
+#include <microgl/tesselation/fan_triangulation.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -52,19 +52,16 @@ template <typename T>
 void render_polygon(std::vector<vec2<T>> polygon) {
     using index = unsigned int;
     using tri = triangles::TrianglesIndices;
+    using fan = tessellation::fan_triangulation<T>;
 
     canvas->clear(WHITE);
 
-    FanTriangulation fan{true};
-
-    uint8_t precision = 0;
     auto type = TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY;
-    index size_indices = FanTriangulation::required_indices_size(polygon.size(),
-                                                                         type);
-    static_array<index, 128> indices;
-    static_array<boundary_info , 128> boundary_buffer;
 
-    fan.compute(
+    dynamic_array<index> indices;
+    dynamic_array<boundary_info> boundary_buffer;
+
+    fan::compute(
             polygon.data(),
             polygon.size(),
             indices,
@@ -80,10 +77,9 @@ void render_polygon(std::vector<vec2<T>> polygon) {
             boundary_buffer.data(),
             indices.size(),
             type,
-            120,
-            precision);
+            120);
 
-    return;
+//    return;
 
     // draw triangulation
     canvas->drawTrianglesWireframe(
@@ -92,8 +88,7 @@ void render_polygon(std::vector<vec2<T>> polygon) {
             indices.data(),
             indices.size(),
             type,
-            255,
-            precision);
+            255);
 
 }
 
