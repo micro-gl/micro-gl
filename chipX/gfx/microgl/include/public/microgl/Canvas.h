@@ -255,15 +255,9 @@ public:
                          typename tessellation::curve_divider<number>::CurveDivisionAlgorithm algorithm
                          = tessellation::curve_divider<number>::CurveDivisionAlgorithm::Uniform_16);
 // todo: drawLinePath will be removed once the path maker is ready
-
+    template <typename number>
     void drawLinePath(color_f_t & color,
-                      vec2_32i *points,
-                      precision precision,
-                      unsigned int size = 4,
-                      bool closed_path = false);
-
-    void drawLinePath(color_f_t & color,
-                      vec2_f *points,
+                      vec2<number> *points,
                       unsigned int size = 4,
                       bool closed_path = false);
 

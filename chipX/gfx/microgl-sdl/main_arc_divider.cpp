@@ -8,7 +8,7 @@
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/PixelCoder.h>
-#include <microgl/tesselation/ArcDivider.h>
+#include <microgl/tesselation/arc_divider.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -22,38 +22,66 @@ typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
 
 Canvas24Bit_Packed32 * canvas;
 using uint = unsigned int;
+using math = microgl::math;
+using namespace tessellation;
 
 Resources resources{};
 
 void loop();
 void init_sdl(int width, int height);
-
-using namespace tessellation;
+template <typename number>
+void render_arc(number start_angle_rad,
+                number end_angle_rad,
+                number center_x, number center_y,
+                number radius, uint divisions_count);
 
 uint deg_to_rad(float degrees, uint requested_precision) {
     return ((degrees*PI)/180.0f)*(1u<<requested_precision);
 }
 
+float deg_to_rad(float degrees) {
+    return ((degrees*math::pi<float>())/180.0f);
+}
+
+void render_float_arc();
+
 void render() {
+    render_float_arc();
+}
+
+void render_float_arc() {
+    float start_angle_rad = deg_to_rad(0.0f);
+    float end_angle_rad = deg_to_rad(180.0f);
+    float radius = 100;
+    float center_x = 200, center_y=200;
+
+    render_arc<float>(start_angle_rad, end_angle_rad, center_x, center_y, radius, 32);
+}
+
+template <typename number>
+void render_arc(number start_angle_rad,
+                number end_angle_rad,
+                number center_x, number center_y,
+                number radius, uint divisions_count) {
+    using arc = tessellation::arc_divider<number>;
     canvas->clear(WHITE);
 
-    precision_t precision_angles = 5;
-    uint radius = 100u;
-    uint divisions = 22;
-    int start_angle = deg_to_rad(0.0f, precision_angles);
-    int end_angle = deg_to_rad(360.0f, precision_angles);
-    vec2_32i center = {200, 200};
-    static_array<vec2_32i, 128> arc_points;
+//    precision_t precision_angles = 5;
+//    uint radius = 100u;
+//    uint divisions = 22;
+//    int start_angle = deg_to_rad(0.0f, precision_angles);
+//    int end_angle = deg_to_rad(360.0f, precision_angles);
+//    vec2_32i center = {200, 200};
+    dynamic_array<vec2<number>> arc_points;
 
-    tessellation::ArcDivider::compute(
+    arc::compute(
             arc_points,
             radius,
-            center.x,
-            center.y,
-            start_angle,
-            end_angle,
-            precision_angles,
-            divisions,
+            center_x,
+            center_y,
+            start_angle_rad,
+            end_angle_rad,
+            divisions_count,
             false
             );
 
@@ -62,15 +90,13 @@ void render() {
                 color_f_t{0.0,0.0,1.0},
                 arc_points[ix].x,
                 arc_points[ix].y,
-                1u<<0,
-                0,
-                0);
+                number(1),
+                120);
     }
 
     canvas->drawLinePath(
             BLACK,
             arc_points.data(),
-            0,
             arc_points.size(),
             false
             );
@@ -97,25 +123,11 @@ void init_sdl(int width, int height) {
     resources.init();
 }
 
-int render_test(int N) {
-    auto ms = std::chrono::milliseconds(1);
-    auto start = std::chrono::high_resolution_clock::now();
-
-    for (int i = 0; i < N; ++i) {
-        render();
-    }
-
-    auto end = std::chrono::high_resolution_clock::now();
-    return (end-start)/(ms*N);
-}
-
 void loop() {
     bool quit = false;
     SDL_Event event;
 
-    // 100 Quads
-    int ms = render_test(TEST_ITERATIONS);
-//    cout << ms << endl;
+    render();
 
     while (!quit)
     {

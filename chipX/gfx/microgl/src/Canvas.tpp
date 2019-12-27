@@ -372,7 +372,7 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
                                   const number radius,
                                   opacity opacity) {
 
-    precision p = 10;
+    precision p = 4;
 
     drawCircle<BlendMode, PorterDuff, antialias>(color,
                 microgl::math::to_fixed(centerX, p),
@@ -1723,47 +1723,30 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
 
 // todo: drawLinePath will be removed once the path maker is ready
 template<typename P, typename CODER>
+template <typename number>
 void
 Canvas<P, CODER>::drawLinePath(color_f_t &color,
-                               vec2_32i *points,
-                               precision precision,
+                               vec2<number> *points,
                                unsigned int size,
                                bool closed_path) {
-    index jx = 0;
-    for (jx = 0; jx < size; jx++) {
-
-        if(jx)
-            drawLine(color, points[jx-1].x, points[jx-1].y, points[jx].x, points[jx].y, precision);
-    }
-
-    if(closed_path)
-        drawLine(color, points[0].x, points[0].y, points[jx - 1].x, points[jx- 1].y, precision);
-
-}
-
-template<typename P, typename CODER>
-void
-Canvas<P, CODER>::drawLinePath(color_f_t &color,
-                               vec2_f *points,
-                               unsigned int size,
-                               bool closed_path) {
-
-    uint8_t p = 0;
+#define t_f microgl::math::to_fixed
+    uint8_t p = 4;
     int jx = 0;
 
     for (jx = 0; jx < size; jx++) {
 
         if(jx)
             drawLine(color,
-                     float_to_fixed_2(points[jx-1].x, p), float_to_fixed_2(points[jx-1].y, p),
-                     float_to_fixed_2(points[jx].x, p), float_to_fixed_2(points[jx].y, p),
+                     t_f(points[jx-1].x, p), t_f(points[jx-1].y, p),
+                     t_f(points[jx].x, p), t_f(points[jx].y, p),
                      p);
 
     }
 
     if(closed_path)
-        drawLine(color, points[0].x, points[0].y, points[jx - 1].x, points[jx- 1].y, p);
+        drawLine(color, t_f(points[0].x, p), t_f(points[0].y, p), t_f(points[jx - 1].x, p), t_f(points[jx- 1].y,p), p);
 
+#undef t_f
 }
 
 // todo: drawBezierPath will be removed once the path maker is ready

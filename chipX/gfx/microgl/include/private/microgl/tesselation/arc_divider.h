@@ -4,8 +4,8 @@
 #pragma once
 
 #include <microgl/vec2.h>
-#include <microgl/array_container.h>
-#include <cmath>
+#include <microgl/dynamic_array.h>
+#include <microgl/math.h>
 
 namespace tessellation {
 #define PI        3.14159265358979323846264338327950288
@@ -13,39 +13,35 @@ namespace tessellation {
 #define TWO_PI    6.28318530718
 #define min_(a, b) ((a)<(b) ? (a) : (b))
 #define max_(a, b) ((a)>(b) ? (a) : (b))
-#define abs_(a) ((a)<0 ? -(a) : (a))
-#define clamp_(v, e0, e1) (min_(max_(v,e0),e1))
 
     using index = unsigned int;
     using precision_t = unsigned char;
+    using math = microgl::math;
     using namespace microgl;
 
-    class ArcDivider {
+    template <typename number>
+    class arc_divider {
     public:
-
-        explicit ArcDivider(bool DEBUG = false);;
+        using vertex = vec2<number>;
 
         static void compute(
-                     array_container<vec2_32i> &output,
-                     index radius,
-                     int center_x,
-                     int center_y,
-                     int start_angle_rad,
-                     int end_angle_rad,
-                     precision_t precision_angles,
+                     dynamic_array<vertex> &output,
+                     number radius,
+                     number center_x,
+                     number center_y,
+                     number start_angle_rad,
+                     number end_angle_rad,
+//                     precision_t precision_angles,
                      index divisions=32,
                      bool anti_clockwise=false
                      );
 
-        template<typename T>
-        void swap(T& a, T& b);
-
     private:
-
-        bool _DEBUG = false;
     };
 
 
 }
+
+#include "../../../../src/arc_divider.cpp"
 
 #pragma clang diagnostic pop

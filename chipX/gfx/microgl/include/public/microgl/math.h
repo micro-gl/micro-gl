@@ -32,7 +32,7 @@ namespace microgl {
         }
 
         template <typename T>
-        T pi() {
+        static T pi() {
             return T{float(PI)};
         }
 
@@ -74,6 +74,34 @@ namespace microgl {
         unsigned int deg_to_rad(float degrees, unsigned int requested_precision) {
             return ((degrees*PI)/180.0f)*(1u<<requested_precision);
         }
+
+        static
+        float deg_to_rad(float degrees) {
+            return ((degrees*math::pi<float>())/180.0f);
+        }
+
+        static
+        float mod(float numer, float denom) {
+            return fmodf(numer, denom);
+        }
+
+        template <unsigned N>
+        static
+        Q<N> mod(const Q<N> & numer, const Q<N> & denom) {
+            return Q<N>(numer.value()%denom.value());
+        }
+
+        static
+        float abs_(const float &val) {
+            return fabs(val);
+        }
+
+        template <unsigned N>
+        static
+        Q<N> abs_(const Q<N> & val) {
+            return Q<N>(val.value()<0 ? -val.value() : val.value());
+        }
+
     private:
         static
         uint32_t sqrt_64(uint64_t a_nInput) {

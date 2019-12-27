@@ -8,7 +8,7 @@
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/PixelCoder.h>
-#include <microgl/tesselation/ArcDivider.h>
+#include <microgl/tesselation/arc_divider.h>
 #include <microgl/trigo_functions.h>
 
 #define TEST_ITERATIONS 1
