@@ -52,6 +52,27 @@ inline void render() {
 
 }
 
+
+//namespace microgl {
+//    namespace math {
+////        template <>
+////        int to_fixed(const Q<8> & val, unsigned char precision) {
+////            return int(val.toFixed(precision));
+////        }
+////        template<unsigned N>
+////        template<unsigned N>
+////        int to_fixed(const Q<N> & val, unsigned char precision) {
+////            return int(val.toFixed(precision));
+////        }
+//
+////        template<>
+//        int to_fixed(const float &val, unsigned char precision) {
+//            return int(val*float(1u<<precision));
+//        }
+//
+//    }
+//}
+
 void test_float_version() {
     using bcd = tessellation::curve_divider<float>;
 
@@ -88,7 +109,7 @@ void test_q_version() {
 
         canvas->drawBezierPath(BLACK, data, 3,
                                bcd::Type::Quadratic,
-                               bcd::CurveDivisionAlgorithm::Uniform_16);
+                               bcd::CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium);
 
     }
 

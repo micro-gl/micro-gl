@@ -278,7 +278,7 @@ namespace tessellation {
                                                                  output &output,
                                                                  const Type type) {
 
-        // this procedure was way more optimized for fixed point numbers
+        // this procedure was way more optimized for fixed point math
         // but decided, that to do a more generic thing. The cost is really small.
         // it's not like we are evaluating 100ks of point per second, so decided
         // to go generic.

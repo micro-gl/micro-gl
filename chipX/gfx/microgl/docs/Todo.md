@@ -48,8 +48,9 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 6. investigate solving degenrate cases some day.
 
 #### road-map
-0. add < operator for Q types
-0. adapt bezier divider for generic number types
+0. ongoing: adapt all algorithms for generic number system
+0. DONE: add < operator for Q types
+0. DONE: adapt bezier divider for generic number types
 0. improve ear_clipper
 1. complex poly tesselator and stroker
 2. masks
@@ -62,3 +63,5 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 7. explore bugs with the anti aliaser
 8. add clip rectangles
 9. sine function approximation - https://www.youtube.com/watch?v=1xlCVBIF_ig
+10. seperate pixel and uv coords numbers support. suppose we want to use Q numbers but with
+    different precisions for the pixels coords and uv coords

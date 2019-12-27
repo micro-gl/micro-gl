@@ -27,9 +27,9 @@ include_directories("${PROJECT_BINARY_DIR}")
 
 set(SOURCES
 #        main_clear.cpp
-        main_curves.cpp
+#        main_curves.cpp
 #        main_speed_optimization.cpp
-#        main_quadrilaterals.cpp
+        main_quadrilaterals.cpp
 #        main_canvas_draw_polygon.cpp
 #        main_path_tessellation.cpp
 #        main_arc_divider.cpp

@@ -70,6 +70,8 @@ public:
     }
     // with assignments
     // this is Q<P>
+    // note:: for assignment with integer we assume, that it is already in P bits space
+    // todo:: see if I am actually using it. this might have unwanted side effects
     q_ref operator =(const_signed_ref signed_value) {
         this->_value = signed_value;
         return *this;
@@ -208,6 +210,9 @@ public:
     bool operator ==(const_ref q) {
         return this->_value==q._value;
     }
+    bool operator !=(const_ref q) {
+        return this->_value!=q._value;
+    }
 
 
     // conversion operators
@@ -244,15 +249,15 @@ public:
 
 };
 
-namespace microgl {
-    namespace numbers {
-//        template <>
-//        int to_fixed(const Q<8> & val, unsigned char precision) {
+//namespace microgl {
+//    namespace math {
+////        template <>
+////        int to_fixed(const Q<8> & val, unsigned char precision) {
+////            return int(val.toFixed(precision));
+////        }
+//        template<unsigned N>
+//        int ato_fixed(const Q<N> & val, unsigned char precision) {
 //            return int(val.toFixed(precision));
 //        }
-        template<unsigned N>
-        int to_fixed(const Q<N> & val, unsigned char precision) {
-            return int(val.toFixed(precision));
-        }
-    }
-}
+//    }
+//}

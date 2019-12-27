@@ -375,9 +375,9 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
     precision p = 10;
 
     drawCircle<BlendMode, PorterDuff, antialias>(color,
-                microgl::numbers::to_fixed(centerX, p),
-                microgl::numbers::to_fixed(centerY, p),
-                microgl::numbers::to_fixed(radius, p),
+                microgl::math::to_fixed(centerX, p),
+                microgl::math::to_fixed(centerY, p),
+                microgl::math::to_fixed(radius, p),
                 p, opacity
                 );
 
@@ -408,65 +408,30 @@ void Canvas<P, CODER>::drawGradient(const color_f_t & startColor,
 
 // Triangles
 
-
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
 void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
-                                     const vec2_f *vertices,
+                                     const vec2<number> *vertices,
                                      const index *indices,
                                      const boundary_info * boundary_buffer,
                                      const index size,
                                      const TrianglesIndices type,
-                                     const uint8_t opacity,
-                                     uint8_t requested_sub_pixel_precision) {
-
-    int size_max = 0;
-    for (int ix = 0; ix < size; ++ix) {
-        if(indices[ix] >= size_max)
-            size_max=indices[ix];
-    }
-size_max+=1;
-    vec2_32i vertices_int[size_max];
-    precision sub_pixel_precision = requested_sub_pixel_precision;
-
-    for (index ix = 0; ix < size_max; ++ix) {
-        vertices_int[ix] = vertices[ix]<<sub_pixel_precision;
-    }
-
-    drawTriangles<BlendMode, PorterDuff, antialias>(
-            color,
-            vertices_int,
-            indices,
-            boundary_buffer,
-            size, type, opacity,
-            sub_pixel_precision);
-}
-
-
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
-                                     const vec2_32i *vertices,
-                                     const index *indices,
-                                     const boundary_info * boundary_buffer,
-                                     const index size,
-                                     const TrianglesIndices type,
-                                     const opacity opacity,
-                                     const precision sub_pixel_precision) {
+                                     const opacity opacity) {
 
 #define IND(a) indices[(a)]
+#define to_fixed microgl::math::to_fixed
+    const precision p = 4;
 
     switch (type) {
         case TrianglesIndices::TRIANGLES:
 
             for (index ix = 0; ix < size; ix+=3) {
 
-                drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
-                   vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
-                   vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
-                   vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
-                   opacity,
-                   sub_pixel_precision
+                drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                        to_fixed(vertices[IND(ix + 0)].x, p), to_fixed(vertices[IND(ix + 0)].y, p),
+                        to_fixed(vertices[IND(ix + 1)].x, p), to_fixed(vertices[IND(ix + 1)].y, p),
+                        to_fixed(vertices[IND(ix + 2)].x, p), to_fixed(vertices[IND(ix + 2)].y, p),
+                        opacity, p
                 );
             }
 
@@ -482,14 +447,13 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                 bool aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
 
 //                drawTriangle<BlendMode, PorterDuff, antialias>(color,
-                drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
-                                                                   vertices[IND(ix + 0)].x, vertices[IND(ix + 0)].y,
-                                                                   vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
-                                                                   vertices[IND(ix + 2)].x, vertices[IND(ix + 2)].y,
-                                                                   opacity,
-                                                                   sub_pixel_precision,
-                                                                   aa_first_edge, aa_second_edge, aa_third_edge
-                                                                   );
+                drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                           to_fixed(vertices[IND(ix + 0)].x, p), to_fixed(vertices[IND(ix + 0)].y, p),
+                           to_fixed(vertices[IND(ix + 1)].x, p), to_fixed(vertices[IND(ix + 1)].y, p),
+                           to_fixed(vertices[IND(ix + 2)].x, p), to_fixed(vertices[IND(ix + 2)].y, p),
+                           opacity, p,
+                           aa_first_edge, aa_second_edge, aa_third_edge
+                           );
             }
 
             break;
@@ -499,13 +463,12 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
 
             for (index ix = 1; ix < size-1; ++ix) {
 
-                drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
-                                       vertices[IND(0)].x, vertices[IND(0)].y,
-                                       vertices[IND(ix)].x, vertices[IND(ix)].y,
-                                       vertices[IND(ix + 1)].x, vertices[IND(ix + 1)].y,
-                                       opacity,
-                                       sub_pixel_precision
-                                       );
+                drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                        to_fixed(vertices[IND(0)].x, p), to_fixed(vertices[IND(0)].y, p),
+                        to_fixed(vertices[IND(ix)].x, p), to_fixed(vertices[IND(ix)].y, p),
+                        to_fixed(vertices[IND(ix + 1)].x, p), to_fixed(vertices[IND(ix + 1)].y, p),
+                        opacity, p
+                        );
 
             }
 
@@ -524,14 +487,13 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                 bool aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
                 bool aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
 
-                drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
-                               vertices[IND(first_index)].x,  vertices[IND(first_index)].y,
-                               vertices[IND(second_index)].x, vertices[IND(second_index)].y,
-                               vertices[IND(third_index)].x,  vertices[IND(third_index)].y,
-                               opacity,
-                               sub_pixel_precision,
-                               aa_first_edge, aa_second_edge, aa_third_edge
-                               );
+                drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                        to_fixed(vertices[IND(first_index)].x, p),  to_fixed(vertices[IND(first_index)].y, p),
+                        to_fixed(vertices[IND(second_index)].x, p), to_fixed(vertices[IND(second_index)].y, p),
+                        to_fixed(vertices[IND(third_index)].x, p),  to_fixed(vertices[IND(third_index)].y, p),
+                        opacity, p,
+                        aa_first_edge, aa_second_edge, aa_third_edge
+                        );
 
             }
 
@@ -550,13 +512,12 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                 index second_index = even ? IND(ix + 1) : IND(ix + 1);
                 index third_index = even ?  IND(ix + 2) : IND(ix + 0);
 
-                drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
-                                                                   vertices[first_index].x, vertices[first_index].y,
-                                                                   vertices[second_index].x, vertices[second_index].y,
-                                                                   vertices[third_index].x, vertices[third_index].y,
-                                                                   opacity,
-                                                                   sub_pixel_precision
-                                                                   );
+                drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                        to_fixed(vertices[first_index].x, p), to_fixed(vertices[first_index].y, p),
+                        to_fixed(vertices[second_index].x, p), to_fixed(vertices[second_index].y, p),
+                        to_fixed(vertices[third_index].x, p), to_fixed(vertices[third_index].y, p),
+                        opacity, p
+                        );
 
                 even = !even;
             }
@@ -584,14 +545,13 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                 index third_index = even ?  IND(ix + 2) : IND(ix + 0);
 
 //                drawTriangle<BlendMode, PorterDuff, antialias>(color,
-                drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
-                                                                   vertices[first_index].x, vertices[first_index].y,
-                                                                   vertices[second_index].x, vertices[second_index].y,
-                                                                   vertices[third_index].x, vertices[third_index].y,
-                                                                   opacity,
-                                                                   sub_pixel_precision,
-                                                                   aa_first_edge, aa_second_edge, aa_third_edge
-                                                                   );
+                drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                        to_fixed(vertices[first_index].x, p), to_fixed(vertices[first_index].y, p),
+                        to_fixed(vertices[second_index].x, p), to_fixed(vertices[second_index].y, p),
+                        to_fixed(vertices[third_index].x, p), to_fixed(vertices[third_index].y, p),
+                        opacity, p,
+                        aa_first_edge, aa_second_edge, aa_third_edge
+                        );
 
                 even = !even;
             }
@@ -602,26 +562,18 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
     }
 
 #undef IND
-//    return;
-    drawTrianglesWireframe(BLACK,
-                           vertices,
-                           indices,
-                           size,
-                           type,
-                           255,
-                           sub_pixel_precision);
+#undef to_fixed
 
 }
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
 void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
-                                              const vec2_32i *vertices,
+                                              const vec2<number> *vertices,
                                               const index *indices,
                                               const index size,
                                               const TrianglesIndices type,
-                                              const opacity opacity,
-                                              const precision sub_pixel_precision) {
+                                              const opacity opacity) {
 
 #define IND(a) indices[(a)]
 
@@ -634,8 +586,7 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
                 drawTriangleWireframe(color,
                                       vertices[IND(ix + 0)],
                                       vertices[IND(ix + 1)],
-                                      vertices[IND(ix + 2)],
-                                      sub_pixel_precision);
+                                      vertices[IND(ix + 2)]);
             }
 
             break;
@@ -647,8 +598,7 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
                 drawTriangleWireframe(color,
                                       vertices[IND(0)],
                                       vertices[IND(ix)],
-                                      vertices[IND(ix + 1)],
-                                      sub_pixel_precision);
+                                      vertices[IND(ix + 1)]);
             }
 
             break;
@@ -666,15 +616,13 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
                     drawTriangleWireframe(color,
                                           vertices[IND(ix + 0)],
                                           vertices[IND(ix + 1)],
-                                          vertices[IND(ix + 2)],
-                                          sub_pixel_precision);
+                                          vertices[IND(ix + 2)]);
 
                 else
                     drawTriangleWireframe(color,
                                           vertices[IND(ix + 2)],
                                           vertices[IND(ix + 1)],
-                                          vertices[IND(ix + 0)],
-                                          sub_pixel_precision);
+                                          vertices[IND(ix + 0)]);
 
                 even = !even;
             }
@@ -687,320 +635,27 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
 #undef IND
 }
 
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
-                                              const vec2_f *vertices,
-                                              const index *indices,
-                                              const index size,
-                                              const TrianglesIndices type,
-                                              const uint8_t opacity,
-                                              const uint8_t sub_pixel_precision) {
-
-#define IND(a) indices[(a)]
-
-    switch (type) {
-        case TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
-        case TrianglesIndices::TRIANGLES:
-
-            for (index ix = 0; ix < size; ix+=3) {
-
-                drawTriangleWireframe(color,
-                                      vertices[IND(ix + 0)],
-                                      vertices[IND(ix + 1)],
-                                      vertices[IND(ix + 2)],
-                                      sub_pixel_precision);
-            }
-
-            break;
-        case TrianglesIndices::TRIANGLES_FAN:
-        case TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY:
-
-            for (index ix = 1; ix < size - 1; ++ix) {
-
-                drawTriangleWireframe(color,
-                                      vertices[IND(0)],
-                                      vertices[IND(ix)],
-                                      vertices[IND(ix + 1)],
-                                      sub_pixel_precision);
-            }
-
-            break;
-
-        case TrianglesIndices::TRIANGLES_STRIP:
-        case TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY:
-            bool even = true;
-
-            for (index ix = 0; ix < size; ++ix) {
-                even = !even;
-                // we alternate order inorder to preserve CCW or CW,
-                // in the future I will add face culling, which will
-                // support only CW or CCW orientation_t at a time.
-                if(even)
-                    drawTriangleWireframe(color,
-                                          vertices[IND(ix + 0)],
-                                          vertices[IND(ix + 1)],
-                                          vertices[IND(ix + 2)],
-                                          sub_pixel_precision);
-
-                else
-                    drawTriangleWireframe(color,
-                                          vertices[IND(ix + 2)],
-                                          vertices[IND(ix + 1)],
-                                          vertices[IND(ix + 0)],
-                                          sub_pixel_precision);
-            }
-
-            break;
-    }
-
-#undef IND
-}
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
 void Canvas<P, CODER>::drawTriangleWireframe(const color_f_t &color,
-                                             const vec2_32i &p0,
-                                             const vec2_32i &p1,
-                                             const vec2_32i &p2,
-                                             const uint8_t sub_pixel_precision)
+                                             const vec2<number> &p0,
+                                             const vec2<number> &p1,
+                                             const vec2<number> &p2)
 {
-    drawLine(color, p0, p1, sub_pixel_precision);
-    drawLine(color, p1, p2, sub_pixel_precision);
-    drawLine(color, p2, p0, sub_pixel_precision);
-}
-
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawTriangleWireframe(const color_f_t &color,
-                                             const vec2_f &p0,
-                                             const vec2_f &p1,
-                                             const vec2_f &p2,
-                                             const uint8_t sub_pixel_precision)
-{
-    vec2_32i p0_ = p0<<sub_pixel_precision;
-    vec2_32i p1_ = p1<<sub_pixel_precision;
-    vec2_32i p2_ = p2<<sub_pixel_precision;
-
-    drawLine(color, p0_, p1_, sub_pixel_precision);
-    drawLine(color, p1_, p2_, sub_pixel_precision);
-    drawLine(color, p2_, p0_, sub_pixel_precision);
+    drawLine(color, p0.x, p0.y, p1.x, p1.y);
+    drawLine(color, p1.x, p1.y, p2.x, p2.y);
+    drawLine(color, p2.x, p2.y, p0.x, p0.y);
 }
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
-                                    const fixed_signed v0_x, const fixed_signed v0_y,
-                                    const fixed_signed v1_x, const fixed_signed v1_y,
-                                    const fixed_signed v2_x, const fixed_signed v2_y,
-                                    const uint8_t opacity,
-                                    const uint8_t sub_pixel_precision,
-                                    bool aa_first_edge,
-                                    bool aa_second_edge,
-                                    bool aa_third_edge) {
-    color_t color_int;
-    coder()->convert(color, color_int);
-
-    // sub_pixel_precision;
-    // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
-    uint8_t MAX_BITS_FOR_PROCESSING_PRECISION = 15;
-    uint8_t PR = MAX_BITS_FOR_PROCESSING_PRECISION;// - sub_pixel_precision;
-    unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
-
-    // bbox
-    int minX = (functions::min(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int minY = (functions::min(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int maxX = (functions::max(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int maxY = (functions::max(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-
-    // anti-alias pad for distance calculation
-    uint8_t bits_distance = 0;
-    uint8_t bits_distance_complement = 8;
-    // max distance to consider in scaled space
-    int max_distance_scaled_space_anti_alias=0;
-    // we now decide which edges we want to anti-alias
-    bool aa_all_edges=false;
-    if(antialias) {
-        aa_all_edges = aa_first_edge && aa_second_edge && aa_third_edge;
-
-        bits_distance = 0;
-        bits_distance_complement = 8 - bits_distance;
-        // max distance to consider in canvas space
-        int max_distance_canvas_space_anti_alias = 1 << bits_distance;
-        max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias << (PR);
-        // we can solve padding analytically with distance=(max_distance_anti_alias/Cos(angle))
-        // but I don't give a fuck about it since I am just using max value of 2
-        // minX-=max_distance_anti_alias*2;minY-=max_distance_anti_alias*2;
-        // maxX+=max_distance_anti_alias*2;maxY+=max_distance_anti_alias*2;
-    }
-
-    // fill rules adjustments
-    triangles::top_left_t top_left =
-            triangles::classifyTopLeftEdges(false,
-                                            v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
-
-    int bias_w0 = top_left.first  ? 0 : -1;
-    int bias_w1 = top_left.second ? 0 : -1;
-    int bias_w2 = top_left.third  ? 0 : -1;
-    //
-
-    minX = functions::max(0, minX); minY = functions::max(0, minY);
-    maxX = functions::min((width()-1), maxX); maxY = functions::min((height()-1), maxY);
-
-    // Triangle setup
-    int A01 = v0_y - v1_y, B01 = v1_x - v0_x;
-    int A12 = v1_y - v2_y, B12 = v2_x - v1_x;
-    int A20 = v2_y - v0_y, B20 = v0_x - v2_x;
-
-    // Barycentric coordinates at minX/minY corner
-    vec2_32i p_fixed = {  minX<<sub_pixel_precision, minY<<sub_pixel_precision };
-    vec2_32i p = { minX , minY };
-
-    int w0_row = (functions::orient2d(vec2_32i{v0_x, v0_y},vec2_32i{v1_x, v1_y},
-                                      p_fixed, sub_pixel_precision) + bias_w0);
-    int w1_row = (functions::orient2d(vec2_32i{v1_x, v1_y}, vec2_32i{v2_x, v2_y},
-                                      p_fixed, sub_pixel_precision) + bias_w1);
-    int w2_row = (functions::orient2d(vec2_32i{v2_x, v2_y}, vec2_32i{v0_x, v0_y},
-                                      p_fixed, sub_pixel_precision) + bias_w2);
-
-    // AA, 2A/L = h, therefore the division produces a P bit number
-    int w0_row_h=0, w1_row_h=0, w2_row_h=0;
-    int A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
-    if(antialias) {
-        int PP = PR;
-
-        // lengths of edges
-        unsigned int length_w0 = functions::length({v0_x, v0_y}, {v1_x, v1_y}, 0);
-        unsigned int length_w1 = functions::length({v1_x, v1_y}, {v2_x, v2_y}, 0);
-        unsigned int length_w2 = functions::length({v0_x, v0_y}, {v2_x, v2_y}, 0);
-
-        A01_h = (((int64_t)(v0_y - v1_y))<<(PP))/length_w0, B01_h = (((int64_t)(v1_x - v0_x))<<(PP))/length_w0;
-        A12_h = (((int64_t)(v1_y - v2_y))<<(PP))/length_w1, B12_h = (((int64_t)(v2_x - v1_x))<<(PP))/length_w1;
-        A20_h = (((int64_t)(v2_y - v0_y))<<(PP))/length_w2, B20_h = (((int64_t)(v0_x - v2_x))<<(PP))/length_w2;
-
-        w0_row_h = (((int64_t)(w0_row))<<(PP))/length_w0;
-        w1_row_h = (((int64_t)(w1_row))<<(PP))/length_w1;
-        w2_row_h = (((int64_t)(w2_row))<<(PP))/length_w2;
-    }
-
-    /*
-    //
-    // distance to edge is always h= (2*A)/L, where:
-    // h=distance from point to edge
-    // A = triangle area spanned by point and edge area
-    // L = length of the edge
-    // this simple geometric identity can be derived from
-    // area of triangle equation. We are going to interpolate
-    // the quantity h and we would like to evaluate h.
-    // NOTE:: this is a cheap way to calculate anti-alias with
-    // perpendicular distance, this is of course not correct for
-    // points that are "beyond" the edges. The real calculation
-    // has to use distance to points hence a square root function
-    // which is expensive for integer version. This version seems to
-    // work best with minimal artifacts when used with bits_distance=0 or 1.
-    //
-    // we interpolate in scaled precision so watch out. All of the working
-    // calculations are in 15 or 16 bits precision.
-
-     */
-
-    // watch out for negative values
-    int index = p.y * (_width);
-
-    for (p.y = minY; p.y <= maxY; p.y+=1) {
-
-        // Barycentric coordinates at start of row
-        int w0 = w0_row;
-        int w1 = w1_row;
-        int w2 = w2_row;
-
-        int w0_h=0,w1_h=0,w2_h=0;
-        if(antialias) {
-            w0_h = w0_row_h;
-            w1_h = w1_row_h;
-            w2_h = w2_row_h;
-        }
-
-        for (p.x = minX; p.x <= maxX; p.x+=1) {
-
-            if ((w0 | w1 | w2) >= 0) {
-
-                blendColor<BlendMode, PorterDuff>(color_int, (index + p.x), opacity);
-
-            } else if(antialias) {;// if(false){
-                // any of the distances are negative, we are outside.
-                // test if we can anti-alias
-                // take minimum of all meta distances
-
-                // find minimal distance along edges only, this does not take
-                // into account the junctions
-                int distance = functions::min(w0_h, w1_h, w2_h);
-                int delta = (distance) + max_distance_scaled_space_anti_alias;
-                bool perform_aa = aa_all_edges;
-
-                // test edges
-                if(!perform_aa) {
-                    if(distance==w0_h && aa_first_edge)
-                        perform_aa = true;
-                    else if(distance==w1_h && aa_second_edge)
-                        perform_aa = true;
-                    else perform_aa = distance == w2_h && aa_third_edge;
-                }
-
-                if (perform_aa && delta>=0) {
-
-                    // take the complement and rescale
-                    uint8_t blend = functions::clamp<int>(((int64_t)delta << bits_distance_complement)>>(PR),
-                                                          0, 255);
-
-                    if (opacity < _max_alpha_value) {
-                        blend = (blend * opacity) >> 8;
-                    }
-//                    blend=255;
-                    blendColor<BlendMode, PorterDuff>(color_int, (index + p.x), blend);
-                }
-
-            }
-
-            // One step to the right
-            w0 += A01;
-            w1 += A12;
-            w2 += A20;
-
-            if(antialias) {
-                w0_h += A01_h;
-                w1_h += A12_h;
-                w2_h += A20_h;
-            }
-
-        }
-
-        // One row step
-        w0_row += B01;
-        w1_row += B12;
-        w2_row += B20;
-
-        if(antialias) {
-            w0_row_h += B01_h;
-            w1_row_h += B12_h;
-            w2_row_h += B20_h;
-        }
-
-        index += (_width);
-    }
-
-}
-
-
-
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
                                     int v0_x, int v0_y,
                                     int v1_x, int v1_y,
                                     int v2_x, int v2_y,
-                                    const uint8_t opacity,
-                                    const uint8_t sub_pixel_precision,
+                                    const opacity opacity,
+                                    const precision sub_pixel_precision,
                                     bool aa_first_edge,
                                     bool aa_second_edge,
                                     bool aa_third_edge) {
@@ -1378,22 +1033,20 @@ void Canvas<P, CODER>::drawTriangleFast(const color_f_t &color,
 }
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
 void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
-                                    const float v0_x, const float v0_y,
-                                    const float v1_x, const float v1_y,
-                                    const float v2_x, const float v2_y,
-                                    const uint8_t opacity,
+                                    const number v0_x, const number v0_y,
+                                    const number v1_x, const number v1_y,
+                                    const number v2_x, const number v2_y,
+                                    const opacity opacity,
                                     bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-
-    uint8_t precision = 4;
-    fixed_signed v0_x_ = float_to_fixed_2(v0_x, precision);
-    fixed_signed v0_y_ = float_to_fixed_2(v0_y, precision);
-    fixed_signed v1_x_ = float_to_fixed_2(v1_x, precision);
-    fixed_signed v1_y_ = float_to_fixed_2(v1_y, precision);
-    fixed_signed v2_x_ = float_to_fixed_2(v2_x, precision);
-    fixed_signed v2_y_ = float_to_fixed_2(v2_y, precision);
-
+    precision precision = 4;
+    int v0_x_ = microgl::math::to_fixed(v0_x, precision);
+    int v0_y_ = microgl::math::to_fixed(v0_y, precision);
+    int v1_x_ = microgl::math::to_fixed(v1_x, precision);
+    int v1_y_ = microgl::math::to_fixed(v1_y, precision);
+    int v2_x_ = microgl::math::to_fixed(v2_x, precision);
+    int v2_y_ = microgl::math::to_fixed(v2_y, precision);
     drawTriangle<BlendMode, PorterDuff, antialias>(color,
             v0_x_, v0_y_,
             v1_x_, v1_y_,
@@ -1409,9 +1062,9 @@ template<typename BlendMode, typename PorterDuff,
         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
-                               const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
-                               const fixed_signed v1_x, const fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
-                               const fixed_signed v2_x, const fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
+                               const int v0_x, const int v0_y, int u0, int v0, int q0,
+                               const int v1_x, const int v1_y, int u1, int v1, int q1,
+                               const int v2_x, const int v2_y, int u2, int v2, int q2,
                                const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision,
                                bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
 
@@ -1646,36 +1299,36 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
 }
 
-
+// todo
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
         bool antialias,
         typename Sampler,
-        typename P2, typename CODER2>
+        typename P2, typename CODER2, typename number>
 void
 Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
-                               const float v0_x, const float v0_y, float u0, float v0,
-                               const float v1_x, const float v1_y, float u1, float v1,
-                               const float v2_x, const float v2_y, float u2, float v2,
+                               const number v0_x, const number v0_y, number u0, number v0,
+                               const number v1_x, const number v1_y, number u1, number v1,
+                               const number v2_x, const number v2_y, number u2, number v2,
                                const uint8_t opacity,
                                bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
 
-    uint8_t prec_pixel = 4;
-    uint8_t prec_uv = 5;
-    fixed_signed v0_x_ = float_to_fixed_2(v0_x, prec_pixel);
-    fixed_signed v0_y_ = float_to_fixed_2(v0_y, prec_pixel);
-    fixed_signed v1_x_ = float_to_fixed_2(v1_x, prec_pixel);
-    fixed_signed v1_y_ = float_to_fixed_2(v1_y, prec_pixel);
-    fixed_signed v2_x_ = float_to_fixed_2(v2_x, prec_pixel);
-    fixed_signed v2_y_ = float_to_fixed_2(v2_y, prec_pixel);
+    precision prec_pixel = 4;
+    precision prec_uv = 5;
+    int v0_x_ = microgl::math::to_fixed(v0_x, prec_pixel);
+    int v0_y_ = microgl::math::to_fixed(v0_y, prec_pixel);
+    int v1_x_ = microgl::math::to_fixed(v1_x, prec_pixel);
+    int v1_y_ = microgl::math::to_fixed(v1_y, prec_pixel);
+    int v2_x_ = microgl::math::to_fixed(v2_x, prec_pixel);
+    int v2_y_ = microgl::math::to_fixed(v2_y, prec_pixel);
 
-    fixed_signed u0_ = float_to_fixed_2(u0, prec_uv);
-    fixed_signed v0_ = float_to_fixed_2(v0, prec_uv);
-    fixed_signed u1_ = float_to_fixed_2(u1, prec_uv);
-    fixed_signed v1_ = float_to_fixed_2(v1, prec_uv);
-    fixed_signed u2_ = float_to_fixed_2(u2, prec_uv);
-    fixed_signed v2_ = float_to_fixed_2(v2, prec_uv);
-    fixed_signed q_ = float_to_fixed_2(1.0f, prec_uv);
+    int u0_ = microgl::math::to_fixed(u0, prec_uv);
+    int v0_ = microgl::math::to_fixed(v0, prec_uv);
+    int u1_ = microgl::math::to_fixed(u1, prec_uv);
+    int v1_ = microgl::math::to_fixed(v1, prec_uv);
+    int u2_ = microgl::math::to_fixed(u2, prec_uv);
+    int v2_ = microgl::math::to_fixed(v2, prec_uv);
+    int q_ = microgl::math::to_fixed(number(1), prec_uv);
 
     drawTriangle<BlendMode, PorterDuff, antialias, false, Sampler>(bmp,
             v0_x_, v0_y_, u0_, v0_, q_,
@@ -1686,235 +1339,80 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
 }
 
-// Quadrilaterals
-
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
-        bool antialias, typename Sampler,
+        bool antialias, typename Sampler, typename number,
         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
-                                    fixed_signed v0_x, fixed_signed v0_y, fixed_signed u0, fixed_signed v0,
-                                    fixed_signed v1_x, fixed_signed v1_y, fixed_signed u1, fixed_signed v1,
-                                    fixed_signed v2_x, fixed_signed v2_y, fixed_signed u2, fixed_signed v2,
-                                    fixed_signed v3_x, fixed_signed v3_y, fixed_signed u3, fixed_signed v3,
-                                    const uint8_t opacity, const precision sub_pixel_precision,
-                                    const precision uv_precision) {
+                                    number v0_x, number v0_y, number u0, number v0,
+                                    number v1_x, number v1_y, number u1, number v1,
+                                    number v2_x, number v2_y, number u2, number v2,
+                                    number v3_x, number v3_y, number u3, number v3,
+                                    const uint8_t opacity) {
+    precision uv_p = 8;
+    precision pixel_p = 4;
 
-    int q_one = 1<<uv_precision;
+#define f microgl::math::to_fixed
 
-//    bool isParallelogram_ = isParallelogram(p0, p1, p2, p3);
-    bool isParallelogram_ = functions::isParallelogram({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, {v3_x, v3_y});
+    number q0 = 1, q1 = 1, q2 = 1, q3 = 1;
+    number one(1), zero(0);
+    number p0x = v0_x; number p0y = v0_y;
+    number p1x = v1_x; number p1y = v1_y;
+    number p2x = v2_x; number p2y = v2_y;
+    number p3x = v3_x; number p3y = v3_y;
 
-    if(isParallelogram_) {
+    number ax = p2x - p0x;
+    number ay = p2y - p0y;
+    number bx = p3x - p1x;
+    number by = p3y - p1y;
+    number t, s;
+    number cross = ax * by - ay * bx;
 
-        if(functions::isAxisAlignedRectangle({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, {v3_x, v3_y})) {
-            fixed_signed left = functions::min(v0_x, v1_x, v2_x, v3_x);
-            fixed_signed top = functions::min(v0_y, v1_y, v2_y, v3_y);
-            fixed_signed right = functions::max(v0_x, v1_x, v2_x, v3_x);
-            fixed_signed bottom = functions::max(v0_y, v1_y, v2_y, v3_y);
-            fixed_signed u0_ = functions::min(u0, u1, u2, u3);
-            fixed_signed v0_ = functions::max(v0, v1, v2, v3);
-            fixed_signed u1_ = functions::max(0, u1, u2, u3);
-            fixed_signed v1_ = functions::min(v0, v1, v2, v3);
+    if (cross != zero) {
+        number cy = p0y - p1y;
+        number cx = p0x - p1x;
 
-            drawQuad<BlendMode, PorterDuff, Sampler>(bmp, left, top, right, bottom, u0_, v0_, u1_, v1_,
-                    sub_pixel_precision, uv_precision, opacity);
+        s = number(ax * cy - ay * cx) / cross;
+        if (s > zero && s < one) {
+            t = number(bx * cy - by * cx) / cross;
 
-            return;
-        }
+            if (t > zero && t < one) {
 
-        // Note:: this was faster than rasterizing the two triangles
-        // in the same loop for some reason.
-        drawTriangle<BlendMode, PorterDuff, antialias, false, Sampler>(bmp,
-                                                              v0_x, v0_y, u0, v0, q_one,
-                                                              v1_x, v1_y, u1, v1, q_one,
-                                                              v2_x, v2_y, u2, v2, q_one,
-                                                              opacity, sub_pixel_precision,
-                                                              uv_precision,
-                                                              true, true, false);
+                q0 = one / (one - t);
+                q1 = one / (one - s);
+                q2 = one / t;
+                q3 = one / s;
 
-        drawTriangle<BlendMode, PorterDuff, antialias, false, Sampler>(bmp,
-                                                              v2_x, v2_y, u2, v2, q_one,
-                                                              v3_x, v3_y, u3, v3, q_one,
-                                                              v0_x, v0_y, u0, v0, q_one,
-                                                              opacity, sub_pixel_precision,
-                                                              uv_precision,
-                                                              true, true, false);
-
-
-    } else {
-
-        uint8_t DIV_prec = (16 - sub_pixel_precision)>>1;
-        fixed_signed max = (1<<sub_pixel_precision);
-        fixed_signed q0 = (1<<uv_precision), q1 = (1<<uv_precision), q2 = (1<<uv_precision), q3 = (1<<uv_precision);
-        fixed_signed p0x = v0_x; fixed_signed p0y = v0_y;
-        fixed_signed p1x = v1_x; fixed_signed p1y = v1_y;
-        fixed_signed p2x = v2_x; fixed_signed p2y = v2_y;
-        fixed_signed p3x = v3_x; fixed_signed p3y = v3_y;
-
-        fixed_signed ax = p2x - p0x;
-        fixed_signed ay = p2y - p0y;
-        fixed_signed bx = p3x - p1x;
-        fixed_signed by = p3y - p1y;
-
-        fixed_signed t, s;
-
-        fixed_signed cross = fixed_mul_fixed_2(ax, by, sub_pixel_precision) -
-                             fixed_mul_fixed_2(ay, bx, sub_pixel_precision);
-
-        if (cross != 0) {
-            fixed_signed cy = p0y - p1y;
-            fixed_signed cx = p0x - p1x;
-
-            fixed_signed area_1 = fixed_mul_fixed_2(ax, cy, sub_pixel_precision) -
-                                    fixed_mul_fixed_2(ay, cx, sub_pixel_precision);
-
-            s = fixed_div_fixed_2((long)area_1<<DIV_prec, cross, sub_pixel_precision);
-
-            if (s > 0 && s < ((long)max<<DIV_prec)) {
-                fixed_signed area_2 = fixed_mul_fixed_2(bx, cy, sub_pixel_precision) -
-                                        fixed_mul_fixed_2(by, cx, sub_pixel_precision);
-
-                t = fixed_div_fixed_2((long)area_2<<DIV_prec, cross, sub_pixel_precision);
-
-                if (t > 0 && t < ((long)max<<DIV_prec)) {
-
-                    q0 = fixed_div_fixed_2((long)max<<(DIV_prec<<1), (max<<DIV_prec) - t, sub_pixel_precision);
-                    q1 = fixed_div_fixed_2((long)max<<(DIV_prec<<1), (max<<DIV_prec) - s, sub_pixel_precision);
-                    q2 = fixed_div_fixed_2((long)max<<(DIV_prec<<1), t, sub_pixel_precision);
-                    q3 = fixed_div_fixed_2((long)max<<(DIV_prec<<1), s, sub_pixel_precision);
-
-                }
             }
         }
-
-        fixed_signed u0_q0 = fixed_mul_fixed_2(u0, q0, sub_pixel_precision)>>(DIV_prec);
-        fixed_signed v0_q0 = fixed_mul_fixed_2(v0, q0, sub_pixel_precision)>>(DIV_prec);
-        fixed_signed u1_q1 = fixed_mul_fixed_2(u1, q1, sub_pixel_precision)>>(DIV_prec);
-        fixed_signed v1_q1 = fixed_mul_fixed_2(v1, q1, sub_pixel_precision)>>(DIV_prec);
-        fixed_signed u2_q2 = fixed_mul_fixed_2(u2, q2, sub_pixel_precision)>>(DIV_prec);
-        fixed_signed v2_q2 = fixed_mul_fixed_2(v2, q2, sub_pixel_precision)>>(DIV_prec);
-        fixed_signed u3_q3 = fixed_mul_fixed_2(u3, q3, sub_pixel_precision)>>(DIV_prec);
-        fixed_signed v3_q3 = fixed_mul_fixed_2(v3, q3, sub_pixel_precision)>>(DIV_prec);
-
-        q0 = fixed_convert_fixed(q0, sub_pixel_precision + DIV_prec, uv_precision);
-        q1 = fixed_convert_fixed(q1, sub_pixel_precision + DIV_prec, uv_precision);
-        q2 = fixed_convert_fixed(q2, sub_pixel_precision + DIV_prec, uv_precision);
-        q3 = fixed_convert_fixed(q3, sub_pixel_precision + DIV_prec, uv_precision);
-
-        // perspective correct version
-        drawTriangle<BlendMode, PorterDuff, antialias, true, Sampler>(bmp,
-                                                             v0_x, v0_y, u0_q0, v0_q0, q0,
-                                                             v1_x, v1_y, u1_q1, v1_q1, q1,
-                                                             v2_x, v2_y, u2_q2, v2_q2, q2,
-                                                             opacity, sub_pixel_precision,
-                                                             uv_precision,
-                                                             true, true, false);
-
-        drawTriangle<BlendMode, PorterDuff, antialias, true, Sampler>(bmp,
-                                                             v2_x, v2_y, u2_q2, v2_q2, q2,
-                                                             v3_x, v3_y, u3_q3, v3_q3, q3,
-                                                             v0_x, v0_y, u0_q0, v0_q0, q0,
-                                                             opacity, sub_pixel_precision,
-                                                             uv_precision,
-                                                             true, true, false);
-
-        /*
-        float q0 = 1, q1 = 1, q2 = 1, q3 = 1;
-
-        float p0x = v0_x; float p0y = v0_y;
-        float p1x = v1_x; float p1y = v1_y;
-        float p2x = v2_x; float p2y = v2_y;
-        float p3x = v3_x; float p3y = v3_y;
-
-        float ax = p2x - p0x;
-        float ay = p2y - p0y;
-        float bx = p3x - p1x;
-        float by = p3y - p1y;
-        float t, s;
-//    float cross = ax * by - ay * bx;
-        float cross = ax * by - ay * bx;
-
-        if (cross != 0) {
-            float cy = p0y - p1y;
-            float cx = p0x - p1x;
-
-            s = float(ax * cy - ay * cx) / cross;
-            if (s > 0 && s < 1) {
-                t = float(bx * cy - by * cx) / cross;
-
-                if (t > 0 && t < 1) {
-
-                    q0 = 1 / (1 - t);
-                    q1 = 1 / (1 - s);
-                    q2 = 1 / t;
-                    q3 = 1 / s;
-
-                }
-            }
-        }
-
-         */
-
     }
 
-}
+    number u0_q0 = u0*q0, v0_q0 = v0*q0;
+    number u1_q1 = u1*q1, v1_q1 = v1*q1;
+    number u2_q2 = u2*q2, v2_q2 = v2*q2;
+    number u3_q3 = u3*q3, v3_q3 = v3*q3;
 
+    // perspective correct version
+    drawTriangle<BlendMode, PorterDuff, antialias, true, Sampler>(bmp,
+          f(v0_x, pixel_p), f(v0_y, pixel_p), f(u0_q0, uv_p), f(v0_q0, uv_p), f(q0, uv_p),
+          f(v1_x, pixel_p), f(v1_y, pixel_p), f(u1_q1, uv_p), f(v1_q1, uv_p), f(q1, uv_p),
+          f(v2_x, pixel_p), f(v2_y, pixel_p), f(u2_q2, uv_p), f(v2_q2, uv_p), f(q2, uv_p),
+          opacity, pixel_p,
+          uv_p,
+          true, true, false);
 
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff,
-        bool antialias, typename Sampler,
-        typename P2, typename CODER2>
-void
-Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
-                                    const float v0_x, const float v0_y, const float u0, const float v0,
-                                    const float v1_x, const float v1_y, const float u1, const float v1,
-                                    const float v2_x, const float v2_y, const float u2, const float v2,
-                                    const float v3_x, const float v3_y, const float u3, const float v3,
-                                    const uint8_t opacity) {
+    drawTriangle<BlendMode, PorterDuff, antialias, true, Sampler>(bmp,
+          f(v2_x, pixel_p), f(v2_y, pixel_p), f(u2_q2, uv_p), f(v2_q2, uv_p), f(q2, uv_p),
+          f(v3_x, pixel_p), f(v3_y, pixel_p), f(u3_q3, uv_p), f(v3_q3, uv_p), f(q3, uv_p),
+          f(v0_x, pixel_p), f(v0_y, pixel_p), f(u0_q0, uv_p), f(v0_q0, uv_p), f(q0, uv_p),
+          opacity, pixel_p,
+          uv_p,
+          true, true, false);
 
-    uint8_t p_s = 4;
-    uint8_t p_uv = 8;
-
-    drawQuadrilateral<BlendMode, PorterDuff, antialias, Sampler>(bmp,
-                      float_to_fixed_2(v0_x, p_s), float_to_fixed_2(v0_y, p_s), float_to_fixed_2(u0, p_uv), float_to_fixed_2(v0, p_uv),
-                      float_to_fixed_2(v1_x, p_s), float_to_fixed_2(v1_y, p_s), float_to_fixed_2(u1, p_uv), float_to_fixed_2(v1, p_uv),
-                      float_to_fixed_2(v2_x, p_s), float_to_fixed_2(v2_y, p_s), float_to_fixed_2(u2, p_uv), float_to_fixed_2(v2, p_uv),
-                      float_to_fixed_2(v3_x, p_s), float_to_fixed_2(v3_y, p_s), float_to_fixed_2(u3, p_uv), float_to_fixed_2(v3, p_uv),
-                      opacity, p_s, p_uv);
-
-}
-
-
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawQuadrilateral(const color_f_t &color,
-                                         const int v0_x, const int v0_y,
-                                         const int v1_x, const int v1_y,
-                                         const int v2_x, const int v2_y,
-                                         const int v3_x, const int v3_y,
-                                         precision sub_pixel_precision,
-                                         const uint8_t opacity) {
-
-    drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
-                                                       v0_x, v0_y,
-                                                       v1_x, v1_y,
-                                                       v2_x, v2_y,
-                                                       opacity,
-                                                       sub_pixel_precision,
-                                                       true, true, false);
-
-    drawTriangleFast<BlendMode, PorterDuff, antialias>(color,
-                                                   v2_x, v2_y,
-                                                   v3_x, v3_y,
-                                                   v0_x, v0_y,
-                                                   opacity,
-                                                   sub_pixel_precision,
-                                                   true, true, false);
+#undef f
 
 }
-
 
 // quads
 
@@ -1947,16 +1445,16 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
 }
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff>
+template<typename BlendMode, typename PorterDuff, typename number>
 void Canvas<P, CODER>::drawQuad(const color_f_t & color,
-                                const float left, const float top,
-                                const float right, const float bottom,
+                                const number left, const number top,
+                                const number right, const number bottom,
                                 const opacity opacity) {
     uint8_t p = 4;
 
     drawQuad(color,
-             float_to_fixed_2(left, p), float_to_fixed_2(top, p),
-             float_to_fixed_2(right, p), float_to_fixed_2(bottom, p),
+             microgl::math::to_fixed(left, p), microgl::math::to_fixed(top, p),
+             microgl::math::to_fixed(right, p), microgl::math::to_fixed(bottom, p),
              p, opacity
     );
 
@@ -2044,23 +1542,23 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
 
 template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff, typename Sampler,
-        typename P2, typename CODER2>
+        typename P2, typename CODER2, typename number>
 void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
-                                const float left, const float top,
-                                const float right, const float bottom,
-                                const float u0, const float v0,
-                                const float u1, const float v1,
+                                const number left, const number top,
+                                const number right, const number bottom,
+                                const number u0, const number v0,
+                                const number u1, const number v1,
                                 const opacity opacity) {
-    uint8_t p_sub = 4;
-    uint8_t p_uv = 5;
+    precision p_sub = 4;
+    precision p_uv = 5;
 
     drawQuad<BlendMode, PorterDuff, Sampler>(bmp,
-                                    float_to_fixed_2(left, p_sub), float_to_fixed_2(top, p_sub),
-                                    float_to_fixed_2(right, p_sub), float_to_fixed_2(bottom, p_sub),
-                                    float_to_fixed_2(u0, p_uv), float_to_fixed_2(v0, p_uv),
-                                    float_to_fixed_2(u1, p_uv), float_to_fixed_2(v1, p_uv),
-                                    p_sub, p_uv, opacity
-                                    );
+            microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
+            microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
+            microgl::math::to_fixed(u0, p_uv), microgl::math::to_fixed(v0, p_uv),
+            microgl::math::to_fixed(u1, p_uv), microgl::math::to_fixed(v1, p_uv),
+            p_sub, p_uv, opacity
+            );
 }
 
 template<typename P, typename CODER>
@@ -2069,10 +1567,10 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
                                 number x0, number y0,
                                 number x1, number y1) {
     precision p = 4;
-    int x0_ = microgl::numbers::to_fixed(x0, p);
-    int y0_ = microgl::numbers::to_fixed(y0, p);
-    int x1_ = microgl::numbers::to_fixed(x1, p);
-    int y1_ = microgl::numbers::to_fixed(y1, p);
+    int x0_ = microgl::math::to_fixed(x0, p);
+    int y0_ = microgl::math::to_fixed(y0, p);
+    int x1_ = microgl::math::to_fixed(x1, p);
+    int y1_ = microgl::math::to_fixed(y1, p);
     drawLine(color, x0_, y0_, x1_, y1_, p);
 }
 
@@ -2221,7 +1719,7 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
     blendColor(color_input, (X1+round)>>bits, (Y1+round)>>bits, maxIntensity);
 }
 
-
+// todo: drawLinePath will be removed once the path maker is ready
 template<typename P, typename CODER>
 void
 Canvas<P, CODER>::drawLinePath(color_f_t &color,
@@ -2265,6 +1763,8 @@ Canvas<P, CODER>::drawLinePath(color_f_t &color,
         drawLine(color, points[0].x, points[0].y, points[jx - 1].x, points[jx- 1].y, p);
 
 }
+
+// todo: drawBezierPath will be removed once the path maker is ready
 
 template<typename P, typename CODER>
 template<typename number>
@@ -2455,8 +1955,7 @@ void Canvas<P, CODER>::drawPolygon(vec2_f *points,
             boundary_buffer.data(),
             indices.size(),
             type,
-            opacity,
-            4);
+            opacity);
 
 //    return;
     // draw triangulation
@@ -2465,8 +1964,7 @@ void Canvas<P, CODER>::drawPolygon(vec2_f *points,
                            indices.data(),
                            indices.size(),
                            type,
-                           255,
-                           4);
+                           255);
 }
 
 

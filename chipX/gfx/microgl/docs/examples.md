@@ -797,7 +797,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 //                    v_fixed = fixed_mul_fixed_2(v_fixed, qqs, PR);
                 }
 
-                // we round the numbers, which greatly improves things
+                // we round the math, which greatly improves things
                  int u_i = clamp(fixed_to_int_2(u_fixed, PR), 0, bmp_w_max);
                  int v_i = clamp(fixed_to_int_2(v_fixed, PR), 0, bmp_h_max);
                 int index_bmp = (bmp_width*v_i + u_i);
@@ -1335,7 +1335,7 @@ Canvas<P, CODER>::drawTriangle2(const Bitmap<P2, CODER2> & bmp,
                 }
 
 
-                // we round the numbers, which greatly improves things
+                // we round the math, which greatly improves things
                 int u_i = fixed_to_int_2(u_fixed, PR);
                 int v_i = fixed_to_int_2(v_fixed, PR);
 //                int u_i = clamp(fixed_to_int_2(u_fixed, PR), 0, bmp_w_max);

@@ -11,6 +11,7 @@
 #include <microgl/vec2.h>
 #include <microgl/color.h>
 #include <microgl/PixelCoder.h>
+#include <microgl/Q.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -39,7 +40,8 @@ Resources::image_info_t img_1;
 void loop();
 void init_sdl(int width, int height);
 
-static float d = 0;
+void render_float_quadrilateral();
+void render_Q_quadrilateral();
 
 inline void render() {
 
@@ -48,18 +50,39 @@ inline void render() {
     for (int ix = 0; ix < 1; ++ix) {
 
         canvas->clear(WHITE);
-//
-        int G = 256;
 
-        d+=1.01;
-        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear>(
-                *bmp_uv,
-                0,          0,0.0, 1.0,
-                G + 100 + d,0,1.0,1.0,
-                G + 0,           G,1.0,0.0,
-                0,               G,0.0,0.0,
-                122);
+//        render_float_quadrilateral();
+        render_Q_quadrilateral();
     }
+
+}
+
+void render_float_quadrilateral() {
+    static float d =0;
+    float G = 256;
+    d+=1.01;
+    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear>(
+            *bmp_uv,
+            0.0f,               0.0f,     0.0f, 1.0f,
+            G + 100.0f + d,     0.0f,       1.0f, 1.0f,
+            G + 0.0f,                G,         1.0f, 0.0f,
+            0.0f,                    G,         0.0f, 0.0f,
+            255);
+
+}
+
+void render_Q_quadrilateral() {
+    static float d =0;
+    float G = 256;
+    d +=(1.0f);
+
+    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear, Q<9>>(
+            *bmp_uv,
+            0.0f,               0.0f,     0.0f, 1.0f,
+            G + 100.0f + d,     0.0f,       1.0f, 1.0f,
+            G + 0.0f,                G,         1.0f, 0.0f,
+            0.0f,                    G,         0.0f, 0.0f,
+            255);
 
 }
 

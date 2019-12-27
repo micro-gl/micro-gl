@@ -1,7 +1,7 @@
 #pragma once
 
 /* DEFINE THE MACROS */
-/* The basic operations perfomed on two numbers a and b of fixed
+/* The basic operations perfomed on two math a and b of fixed
 point q format returning the answer in q format */
 #define Q_ 16 // number of bits for fractional part
 
