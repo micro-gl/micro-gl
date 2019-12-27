@@ -8,7 +8,7 @@
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/PixelCoder.h>
-#include <microgl/tesselation/EarClippingTriangulation.h>
+#include <microgl/tesselation/ear_clipping_triangulation.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -127,9 +127,8 @@ void render() {
     t+=.05f;
 //    std::cout << t << std::endl;
 //    render_polygon(poly_rect());
-//    render_polygon(poly_2());
-    render_polygon(poly_hole3());
-//    render_polygon(poly_diamond());
+    render_polygon(poly_2());
+//    render_polygon(poly_hole3());
 //    render_polygon(poly_tri());
 }
 
@@ -142,16 +141,13 @@ void render_polygon(std::vector<vec2<T>> polygon) {
 
     canvas->clear(WHITE);
 
-    EarClippingTriangulation ear;
+    using ear = tessellation::ear_clipping_triangulation<T>;
 
-    uint8_t precision = 0;
     auto type = TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
-    index size_indices = EarClippingTriangulation::required_indices_size(polygon.size(),
-            type);
     dynamic_array<index> indices;
     dynamic_array<boundary_info> boundary_buffer;
 
-    ear.compute(polygon.data(),
+    ear::compute(polygon.data(),
             polygon.size(),
             indices,
             &boundary_buffer,
@@ -166,10 +162,9 @@ void render_polygon(std::vector<vec2<T>> polygon) {
             boundary_buffer.data(),
             indices.size(),
             type,
-            122,
-            precision);
+            122);
 
-    return;
+//    return;
 
     // draw triangulation
     canvas->drawTrianglesWireframe(
@@ -178,8 +173,7 @@ void render_polygon(std::vector<vec2<T>> polygon) {
             indices.data(),
             indices.size(),
             type,
-            255,
-            precision);
+            255);
 
 }
 

@@ -28,7 +28,7 @@ set(sources
 #        src/Rational.cpp
 #        src/Segment.cpp
 #        src/BezierCurveDivider.cpp
-        include/private/microgl/tesselation/curve_divider.h
+#        include/private/microgl/tesselation/curve_divider.h
 #        src/EarClippingTriangulation.cpp
 #        src/ear_clipping_triangulation.cpp
 #        include/private/microgl/tesselation/fan_triangulation.h
