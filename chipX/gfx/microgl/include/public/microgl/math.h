@@ -56,6 +56,7 @@ namespace microgl {
             return Q<N>(std::sinf(radians_f));
         }
 
+        // todo: this is wrong
         template <unsigned N>
         static
         Q<N> cos(const Q<N> & radians) {
@@ -70,9 +71,11 @@ namespace microgl {
             return Q<N>(std::tanf(radians_f));
         }
 
+        template <unsigned N>
         static
-        unsigned int deg_to_rad(float degrees, unsigned int requested_precision) {
-            return ((degrees*PI)/180.0f)*(1u<<requested_precision);
+        Q<N> deg_to_rad(const Q<N> & degrees) {
+            using q = Q<N>;
+            return (degrees*math::pi<q>())/q(180);
         }
 
         static
@@ -88,7 +91,7 @@ namespace microgl {
         template <unsigned N>
         static
         Q<N> mod(const Q<N> & numer, const Q<N> & denom) {
-            return Q<N>(numer.value()%denom.value());
+            return numer%denom;
         }
 
         static
@@ -99,7 +102,7 @@ namespace microgl {
         template <unsigned N>
         static
         Q<N> abs_(const Q<N> & val) {
-            return Q<N>(val.value()<0 ? -val.value() : val.value());
+            return Q<N>(val.value()<0 ? -val.value() : val.value(), N);
         }
 
     private:

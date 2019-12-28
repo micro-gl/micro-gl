@@ -1,6 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-#pragma clang diagnostic ignored "-Wunused-variable"
 #pragma once
 
 #include <microgl/vec2.h>
@@ -8,11 +5,6 @@
 #include <microgl/math.h>
 
 namespace tessellation {
-#define PI        3.14159265358979323846264338327950288
-#define HALF_PI   1.5707963268
-#define TWO_PI    6.28318530718
-#define min_(a, b) ((a)<(b) ? (a) : (b))
-#define max_(a, b) ((a)>(b) ? (a) : (b))
 
     using index = unsigned int;
     using precision_t = unsigned char;
@@ -31,8 +23,7 @@ namespace tessellation {
                      number center_y,
                      number start_angle_rad,
                      number end_angle_rad,
-//                     precision_t precision_angles,
-                     index divisions=32,
+                     int divisions=32,
                      bool anti_clockwise=false
                      );
 
@@ -43,5 +34,3 @@ namespace tessellation {
 }
 
 #include "../../../../src/arc_divider.cpp"
-
-#pragma clang diagnostic pop

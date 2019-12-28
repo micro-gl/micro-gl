@@ -191,29 +191,34 @@ public:
 
     // booleans
 //    template <unsigned P_2>
-    bool operator <(const_ref q) {
+    bool operator <(const_ref q) const {
         return this->_value<q._value;
     }
 //    template <unsigned P_2>
-    bool operator >(const_ref q) {
+    bool operator >(const_ref q) const {
         return this->_value>q._value;
     }
 //    template <unsigned P_2>
-    bool operator <=(const_ref q) {
+    bool operator <=(const_ref q) const {
         return this->_value<=q._value;
     }
 //    template <unsigned P_2>
-    bool operator >=(const_ref q) {
+    bool operator >=(const_ref q) const {
         return this->_value>=q._value;
     }
 //    template <unsigned P_2>
-    bool operator ==(const_ref q) {
+    bool operator ==(const_ref q) const {
         return this->_value==q._value;
     }
-    bool operator !=(const_ref q) {
+    bool operator !=(const_ref q) const {
         return this->_value!=q._value;
     }
 
+    Q operator % (const_ref q) const {
+        Q res;
+        res._value = this->value()%q.value();
+        return res;
+    }
 
     // conversion operators
     explicit operator float() {
