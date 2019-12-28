@@ -34,7 +34,7 @@ set(sources
 #        include/private/microgl/tesselation/fan_triangulation.h
         src/triangles.cpp
         src/PathTessellation.cpp
-        include/private/microgl/tesselation/arc_divider.h
+#        include/private/microgl/tesselation/arc_divider.h
 #        src/complex_poly_tess.cpp
 #        src/simple_components_tree.cpp
         include/private/microgl/tesselation/simplify_components.h

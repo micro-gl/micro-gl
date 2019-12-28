@@ -16,7 +16,7 @@
 #include <microgl/Q.h>
 #include <microgl/tesselation/curve_divider.h>
 #include <microgl/dynamic_array.h>
-#include <microgl/tesselation/EarClippingTriangulation.h>
+#include <microgl/tesselation/ear_clipping_triangulation.h>
 #include <microgl/tesselation/fan_triangulation.h>
 
 using namespace microgl::triangles;

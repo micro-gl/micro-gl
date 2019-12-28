@@ -389,3 +389,18 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
 }
 
 ```
+
+#### arc_divider: adapting precision for sine vs deifferent input precision of radians
+```
+
+    int compute_sin_fixed(const int radians,
+                          precision_t input_precision,
+                          precision_t output_precision) {
+        auto precision_m = float(1u<<input_precision);
+        auto precision_out = float(1u<<output_precision);
+        float radians_f = float(radians) / precision_m;
+
+        return int(std::sin(radians_f)*precision_out);
+    }
+
+```
