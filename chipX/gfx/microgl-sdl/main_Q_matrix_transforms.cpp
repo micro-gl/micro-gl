@@ -1,7 +1,6 @@
 
 #include <iostream>
 #include <chrono>
-#include "src/Resources.h"
 #include <SDL2/SDL.h>
 #include <microgl/color.h>
 #include <microgl/Canvas.h>
@@ -19,76 +18,76 @@ using Canvas24Bit_Packed32 = Canvas<uint32_t, RGB888_PACKED_32>;
 
 Canvas24Bit_Packed32 * canvas;
 
-Resources resources{};
+float t = 0.0f;
 
 void loop();
 void init_sdl(int width, int height);
+template <typename number_transform, typename number_raster>
+void render_template();
 
-#define PI        3.14159265358979323846264338327950288
+void render() {
+    render_template<Q<10>, Q<4>>();
+//    render_template<float, float>();
+//    render_template<double, double>();
+}
 
-unsigned timer = 0;
-float t = 0.0f;
+template <typename number_transform, typename number_raster>
+void render_template() {
 
-inline void render() {
+    using vertex = vec2<number_transform>;
+    using matrix_3x3_trans = matrix_3x3<number_transform>;
+    using vector_3_transform = column_vector<number_transform, 3>;
+    using vector_3_raster = column_vector<number_raster, 3>;
 
-    Q<0> a{1024};
-    Q<10> b{0.5f};
-    Q<0> cc =  a*b;
-    Q<0> cc2 =  a/b;
-
-    using q_trans = Q<10>;
-    using q_raster = Q<12>;
-    using matrix_3x3_q_trans = matrix_3x3<q_trans>;
-    using matrix_3x3_q4 = matrix_3x3<Q<4>>;
-    using vector_3_q = vector<q_trans, 3>;
-    using vector_3_q_raster = vector<q_raster, 3>;
-    using precision_t = unsigned;
-
-    precision_t precision_transform = q_trans::precision;
-    precision_t precision_rasterizer = q_raster::precision;
-
-    timer++;
     t += 0.001;
+    auto t_number_angle = number_transform(t);
+    static float sine = 0.0f;
+    sine = microgl::math::sin(t*10);
+    auto number_scale = microgl::math::abs_(number_transform(sine)*2);
+    if (number_scale < 1.f)
+        number_scale=1.f;
+//    number_scale =5.0f;
 
-    vec2_32i p0{0, 0};
-    vec2_32i p1{100, 0};
-    vec2_32i p2{100, 100};
-    vec2_32i p3{0, 100};
+    vertex p0{0, 0};
+    vertex p1{100, 0};
+    vertex p2{100, 100};
+    vertex p3{0, 100};
 
-    matrix_3x3_q_trans rotation = matrix_3x3_q_trans::rotation(float(t));
-    matrix_3x3_q_trans rotation_pivot = matrix_3x3_q_trans::rotation(float(t), 50, 50);
-    matrix_3x3_q_trans translate = matrix_3x3_q_trans::translate(100.0f,100);
-    matrix_3x3_q_trans scale = matrix_3x3_q_trans::scale(3.0f,3.0f);
-    matrix_3x3_q_trans shear_x = matrix_3x3_q_trans::shear_x(float(t));
-    matrix_3x3_q4 identity = matrix_3x3_q4::identity();
-//    matrix_3x3_q_trans transform = rotation*translate*scale;
-    matrix_3x3_q_trans transform = translate*scale*rotation_pivot;
-//    matrix_3x3_q_trans transform = shear_x;
+    matrix_3x3_trans identity = matrix_3x3_trans::identity();
+    matrix_3x3_trans rotation = matrix_3x3_trans::rotation(t_number_angle);
+    matrix_3x3_trans rotation_pivot = matrix_3x3_trans::rotation(t_number_angle, 50, 50, number_scale, number_scale);
+    matrix_3x3_trans translate = matrix_3x3_trans::translate(100.0f, 100);
+    matrix_3x3_trans scale = matrix_3x3_trans::scale(number_scale, number_scale);
+    matrix_3x3_trans shear_x = matrix_3x3_trans::shear_x(float(t));
+    matrix_3x3_trans transform = translate  * rotation_pivot;
 
     // this also converts into the raster precision :-) with
     // the conversion constructor
-    vector_3_q_raster vec_0 = transform * vector_3_q{p0.x, p0.y, 1};
-    vector_3_q_raster vec_1 = transform * vector_3_q{p1.x, p1.y, 1};
-    vector_3_q_raster vec_2 = transform * vector_3_q{p2.x, p2.y, 1};
-    vector_3_q_raster vec_3 = transform * vector_3_q{p3.x, p3.y, 1};
-
-    vec2_32i p0_t{vec_0[0].value(), vec_0[1].value()};
-    vec2_32i p1_t{vec_1[0].value(), vec_1[1].value()};
-    vec2_32i p2_t{vec_2[0].value(), vec_2[1].value()};
-    vec2_32i p3_t{vec_3[0].value(), vec_3[1].value()};
+    vector_3_raster vec_0 = transform * vector_3_transform{p0.x, p0.y, 1};
+    vector_3_raster vec_1 = transform * vector_3_transform{p1.x, p1.y, 1};
+    vector_3_raster vec_2 = transform * vector_3_transform{p2.x, p2.y, 1};
+    vector_3_raster vec_3 = transform * vector_3_transform{p3.x, p3.y, 1};
 
     canvas->clear(WHITE);
-    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, false>(
+    canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number_raster>(
             RED,
-            p0_t.x, p0_t.y,
-            p1_t.x, p1_t.y,
-            p2_t.x, p2_t.y,
-            p3_t.x, p3_t.y,
-            precision_rasterizer,
-            111
-            );
-}
+            vec_0[0], vec_0[1],
+            vec_1[0], vec_1[1],
+            vec_2[0], vec_2[1],
+            150,
+            true, true, false
+    );
 
+    canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number_raster>(
+            RED,
+            vec_2[0], vec_2[1],
+            vec_3[0], vec_3[1],
+            vec_0[0], vec_0[1],
+            150,
+            true, true, false
+    );
+
+}
 
 int main() {
     init_sdl(W, H);
@@ -101,10 +100,7 @@ void init_sdl(int width, int height) {
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, 0);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
-
     canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
-
-    resources.init();
 }
 
 int render_test(int N) {
@@ -126,7 +122,7 @@ void loop() {
 
     // 100 Quads
     int ms = render_test(TEST_ITERATIONS);
-    cout << ms << endl;
+    std::cout << ms << std::endl;
 
     while (!quit)
     {

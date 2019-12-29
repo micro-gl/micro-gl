@@ -176,5 +176,7 @@ namespace microgl {
     };
 
     template <typename T, unsigned N>
-    using vector = matrix<T, 1, N>;
+    using column_vector = matrix<T, 1, N>;
+    template <typename T, unsigned N>
+    using row_vector = matrix<T, N, 1>;
 }

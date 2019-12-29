@@ -32,12 +32,10 @@ set(SOURCES
 #        main_quadrilaterals.cpp
 #        main_canvas_draw_polygon.cpp
 #        main_path_tessellation.cpp
-        main_arc_divider.cpp
+#        main_arc_divider.cpp
 #        main_fan_triangulation.cpp
-#        main_affine_matrix.cpp
-#        main_Q_matrix_transforms.cpp
+        main_Q_matrix_transforms.cpp
 #        main_number_systems.cpp
-#        main_matrix.cpp
 #        main_aa_bug.cpp
 #        main_aa_bug_2.cpp
 #        main_bentley_ottmann.cpp
