@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
 #pragma once
 
 #include <microgl/vec2.h>
@@ -31,5 +29,4 @@ namespace tessellation {
 
 }
 
-#include "../../../../src/fan_triangulation.cpp"
-#pragma clang diagnostic pop
+#include "fan_triangulation.cpp"

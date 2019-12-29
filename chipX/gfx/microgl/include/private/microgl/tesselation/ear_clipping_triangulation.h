@@ -169,4 +169,4 @@ namespace tessellation {
 
 }
 
-#include "../../src/ear_clipping_triangulation.cpp"
+#include "ear_clipping_triangulation.cpp"

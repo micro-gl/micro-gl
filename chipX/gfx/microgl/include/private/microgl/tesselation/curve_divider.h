@@ -109,4 +109,4 @@ namespace tessellation {
 
 }
 
-#include "../../../../src/curve_divider.cpp"
+#include "curve_divider.cpp"
