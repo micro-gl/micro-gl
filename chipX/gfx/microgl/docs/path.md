@@ -1,4 +1,5 @@
-#include <microgl/tesselation/PathTessellation.h>
+#include <microgl/tesselation/path_tessellation.h>
+#include <microgl/vec2.h>
 
 namespace tessellation {
 #define min_(a, b) ((a)<(b) ? (a) : (b))
@@ -29,17 +30,17 @@ namespace tessellation {
         return res;
     }
 
-    PathTessellation::PathTessellation(bool DEBUG) {
+    path_tessellation::path_tessellation(bool DEBUG) {
 
     }
 
-    void PathTessellation::compute(index stroke_size,
-                                   const microgl::vec2_f *$pts,
-                                   const index size,
-                                   array_container<index> &indices_buffer_tessellation,
-                                   array_container<vec2_32i> &output_vertices_buffer_tessellation,
-                                   array_container<triangles::boundary_info> * boundary_buffer,
-                                   const microgl::triangles::TrianglesIndices &requested) {
+    void path_tessellation::compute(index stroke_size,
+                                    const microgl::vec2_f *$pts,
+                                    const index size,
+                                    array_container<index> &indices_buffer_tessellation,
+                                    array_container<vec2_32i> &output_vertices_buffer_tessellation,
+                                    array_container<triangles::boundary_info> * boundary_buffer,
+                                    const microgl::triangles::TrianglesIndices &requested) {
 
     }
 
@@ -115,25 +116,26 @@ namespace tessellation {
             merge_out = b;
     }
 
-    void PathTessellation::compute(int stroke_size,
-                                   bool closePath,
-                                   const gravity gravity,
-                                   const microgl::vec2_32i *points,
-                                   const index size,
-                                   const precision precision,
-                                   array_container<index> &indices_buffer_tessellation,
-                                   array_container<vec2_32i> &output_vertices_buffer_tessellation,
-                                   array_container<triangles::boundary_info> * boundary_buffer,
-                                   const microgl::triangles::TrianglesIndices &requested
+    template <typename number>
+    void path_tessellation<number>::compute(int stroke_size,
+                                    bool closePath,
+                                    const gravity gravity,
+                                    const microgl::vec2_32i *points,
+                                    const index size,
+                                    const precision precision,
+                                    dynamic_array<index> &indices_buffer_tessellation,
+                                    dynamic_array<vertex> &output_vertices_buffer_tessellation,
+                                    dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
+                                    const microgl::triangles::TrianglesIndices &requested
                                    ) {
 
         bool with_boundary =
-                requested==triangles::TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY;
+                requested==microgl::triangles::TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY;
 
-        triangles::boundary_info common_info_1 =
-                triangles::create_boundary_info(false, false, true);
-        triangles::boundary_info common_info_2 =
-                triangles::create_boundary_info(true, false, true);
+        microgl::triangles::boundary_info common_info_1 =
+                microgl::triangles::create_boundary_info(false, false, true);
+        microgl::triangles::boundary_info common_info_2 =
+                microgl::triangles::create_boundary_info(true, false, true);
 
         switch (gravity) {
             case gravity::center:
@@ -148,8 +150,8 @@ namespace tessellation {
         }
 
         index idx = 0;
-        vec2_32i p0_out_current, p1_out_current;
-        vec2_32i p0_out_next, p1_out_next;
+        vertex p0_out_current, p1_out_current;
+        vertex p0_out_next, p1_out_next;
         vec2_32i merge_out, merge_in;
 
         comp_parallel_ray(points[0],

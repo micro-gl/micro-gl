@@ -31,8 +31,8 @@ set(SOURCES
 #        main_speed_optimization.cpp
 #        main_quadrilaterals.cpp
 #        main_canvas_draw_polygon.cpp
-#        main_path_tessellation.cpp
-        main_arc_divider.cpp
+        main_path_tessellation.cpp
+#        main_arc_divider.cpp
 #        main_fan_triangulation.cpp
 #        main_affine_matrix.cpp
 #        main_Q_matrix_transforms.cpp

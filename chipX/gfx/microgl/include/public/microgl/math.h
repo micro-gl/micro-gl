@@ -12,7 +12,9 @@ namespace microgl {
 #define TWO_PI    6.28318530718
 #define min_(a, b) ((a)<(b) ? (a) : (b))
 #define max_(a, b) ((a)>(b) ? (a) : (b))
-
+        using cfr = const float &;
+        template <unsigned N>
+        using cqr = const Q<N> &;
         static int to_fixed(const float &val, unsigned char precision) {
             return int(val*float(1u<<precision));
         }
@@ -27,8 +29,37 @@ namespace microgl {
         }
 
         template<unsigned N>
-        static int sqrt(const Q<N> & val) {
-            return sqrt_64(val.value());
+        static Q<N> sqrt(const Q<N> & val) {
+            return Q<N>(int(sqrt_64(val.value())), N>>1);
+        }
+
+        static float distance(cfr p0_x, cfr p0_y, cfr p1_x, cfr p1_y) {
+            auto dx= p0_x-p1_x;
+            auto dy= p0_y-p1_y;
+            return length(dx, dy);
+        }
+
+        static float length(cfr p_x, cfr p_y) {
+            return sqrtf(p_x*p_x + p_y*p_y);
+        }
+
+        template<unsigned N>
+        static Q<N> distance(cqr<N> p0_x, cqr<N> p0_y, cqr<N> p1_x, cqr<N> p1_y) {
+            auto dx= p0_x-p1_x;
+            auto dy= p0_y-p1_y;
+            // notice, that for fixed points we don't use the regular multiplication.
+            // why? suppose x is p bits-> x^2 is 2p bits, then squaring it would give p bits again
+            // which is what we want. But, if we use regular fixed point multiplication, then
+            // x*x would yield a p bit number (because we do (x*x)>>p) and then squaring would yield
+            // a p/2 bits result which is not what we wanted
+//            return sqrt_64(dx.value()*dx.value() + dy.value()*dy.value());
+            return length(dx, dy);
+        }
+
+        template<unsigned N>
+        static Q<N> length(cqr<N> p_x, cqr<N> p_y) {
+            return Q<N>(sqrt_64(int64_t (p_x.value())*p_x.value() + int64_t(p_y.value())*p_y.value()), N);
+//            return Q<N>(sqrt_64(p_x.value()*p_x.value() + p_y.value()*p_y.value(), N));
         }
 
         template <typename T>

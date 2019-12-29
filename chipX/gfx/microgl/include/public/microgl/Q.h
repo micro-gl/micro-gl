@@ -4,15 +4,17 @@ template <unsigned P>
 class Q {
 private:
     using index = unsigned int;
+    using integer = long long;
     using precision_t = unsigned char;
     using const_ref = const Q &;
     using const_exact_ref = const Q<P> &;
-    using const_signed_ref = const int &;
+    using const_signed_ref = const integer &;
     using q_ref = Q &;
-    int _value = 0;
+    integer _value = 0;
+//    int _value = 0;
 
     inline
-    int convert_q_value_to_my_space(const_ref q) {
+    integer convert_q_value_to_my_space(const_ref q) {
         return convert(q.value(), q.precision, this->precision);
     }
 
@@ -20,7 +22,7 @@ public:
     static const precision_t precision = P;
 
     static inline
-    int convert(long long from_value,
+    integer convert(long long from_value,
                 precision_t from_precision,
                 precision_t to_precision) {
         if(from_precision==to_precision)
@@ -53,6 +55,10 @@ public:
         this->_value = int_val<<P;
     }
 
+    Q(const int& int_val) {
+        this->_value = int_val<<P;
+    }
+
     Q(const_signed_ref q_val, precision_t q_precision) {
         this->_value = convert(q_val,
                              q_precision,
@@ -60,7 +66,7 @@ public:
     }
 
     Q(const float &float_val) {
-        this->_value = int(float_val * float(1u<<P));
+        this->_value = integer(float_val * float(1u<<P));
     }
 
     // with assignments operators
@@ -213,6 +219,9 @@ public:
     bool operator !=(const_ref q) const {
         return this->_value!=q._value;
     }
+    explicit operator bool() const {
+        return this->_value!=0;
+    }
 
     Q operator % (const_ref q) const {
         Q res;
@@ -228,11 +237,11 @@ public:
         return toInt();
     }
 
-    int toInt() const {
+    integer toInt() const {
         return this->_value>>P;
     }
 
-    int toFixed(precision_t precision_value) const {
+    integer toFixed(precision_t precision_value) const {
         return convert(this->_value, P, precision_value);
     }
 
@@ -240,15 +249,15 @@ public:
         return float(this->_value)/float(1u<<P);
     }
 
-    long fraction() const {
+    integer fraction() const {
         return _value & ((1u<<P) - 1);
     }
 
-    long integral() const {
+    integer integral() const {
         return _value & (((1u<<P) - 1)<<P);
     }
 
-    inline int value() const {
+    inline integer value() const {
         return _value;
     }
 
