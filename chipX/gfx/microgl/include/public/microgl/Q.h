@@ -78,10 +78,10 @@ public:
     // this is Q<P>
     // note:: for assignment with integer we assume, that it is already in P bits space
     // todo:: see if I am actually using it. this might have unwanted side effects
-    q_ref operator =(const_signed_ref signed_value) {
-        this->_value = signed_value;
-        return *this;
-    }
+//    q_ref operator =(const_signed_ref signed_value) {
+//        this->_value = signed_value;
+//        return *this;
+//    }
     q_ref operator =(const float &float_value) {
         return (*this)=Q{float_value};
     }

@@ -81,6 +81,30 @@ namespace microgl {
         static
         matrix_3x3 rotation(const_type_ref angle,
                             const_type_ref px,
+                            const_type_ref py) {
+            matrix_3x3 mat{};
+
+            const_type_ref cos_ = microgl::math::cos(angle);
+            const_type_ref sin_ = microgl::math::sin(angle);
+
+            mat[0] = cos_;
+            mat[1] = -sin_;
+            mat[2] = -cos_*px + sin_*py + px;
+
+            mat[3] = sin_;
+            mat[4] = cos_;
+            mat[5] = -sin_*px - cos_*py + py;
+
+            mat[6] = 0;
+            mat[7] = 0;
+            mat[8] = T(1);
+
+            return mat;
+        }
+
+        static
+        matrix_3x3 rotation(const_type_ref angle,
+                            const_type_ref px,
                             const_type_ref py,
                             const_type_ref sx,
                             const_type_ref sy) {
@@ -93,9 +117,13 @@ namespace microgl {
             mat[1] = -sy*sin_;
             mat[2] = -sx*cos_*px + sy*sin_*py + px;
 
-            mat[3] = sy*sin_;
+            mat[3] = sx*sin_;
             mat[4] = sy*cos_;
-            mat[5] = -sy*sin_*px - sy*cos_*py + py;
+            mat[5] = -sx*sin_*px - sy*cos_*py + py;
+
+            mat[6] = 0;
+            mat[7] = 0;
+            mat[8] = T(1);
 
             return mat;
         }

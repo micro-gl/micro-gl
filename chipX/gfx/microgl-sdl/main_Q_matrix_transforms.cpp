@@ -55,7 +55,7 @@ void render_template() {
 
     matrix_3x3_trans identity = matrix_3x3_trans::identity();
     matrix_3x3_trans rotation = matrix_3x3_trans::rotation(t_number_angle);
-    matrix_3x3_trans rotation_pivot = matrix_3x3_trans::rotation(t_number_angle, 50, 50, number_scale, number_scale);
+    matrix_3x3_trans rotation_pivot = matrix_3x3_trans::rotation(t_number_angle, 50, 50, number_scale, number_scale/2);
     matrix_3x3_trans translate = matrix_3x3_trans::translate(100.0f, 100);
     matrix_3x3_trans scale = matrix_3x3_trans::scale(number_scale, number_scale);
     matrix_3x3_trans shear_x = matrix_3x3_trans::shear_x(float(t));
