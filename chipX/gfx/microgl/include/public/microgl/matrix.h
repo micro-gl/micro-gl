@@ -1,7 +1,7 @@
 #pragma once
 
 namespace microgl {
-
+    // this is a column major matrix
     template <typename T, unsigned W, unsigned H>
     class matrix {
     protected:
@@ -142,6 +142,21 @@ namespace microgl {
             }
             return true;
         };
+
+        void setColumn(const index column_index, const T (&val)[H]) {
+            index ind = column_index;
+            for (index ix = 0; ix < H; ++ix) {
+                _data[ind] = val[ix];
+                ind+=W;
+            }
+        }
+
+        void setRow(const index row_index, const T (&val)[W]) {
+            index ind = row_index*W;
+            for (index ix = 0; ix < W; ++ix) {
+                _data[ind+ix] = val[ix];
+            }
+        }
 
         matrix<T, H, W> transpose() {
             matrix<T, H, W> result{};

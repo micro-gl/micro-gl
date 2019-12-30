@@ -34,7 +34,8 @@ set(SOURCES
 #        main_path_tessellation.cpp
 #        main_arc_divider.cpp
 #        main_fan_triangulation.cpp
-        main_Q_matrix_transforms.cpp
+#        main_Q_matrix_transforms.cpp
+        main_3d_camera.cpp
 #        main_number_systems.cpp
 #        main_aa_bug.cpp
 #        main_aa_bug_2.cpp

@@ -1,30 +1,85 @@
 #pragma once
-#include <cstdint>
+
+#include <microgl/math.h>
 
 namespace microgl {
 
-    template<typename T>
+    template<typename number>
     struct vec3 {
-        T x, y, z;
 
-        vec3 &operator=(const vec3 & a) {
-            x=a.x;
-            y=a.y;
-            z=a.z;
+        number x, y, z;
 
+        vec3() {
+
+        }
+
+        template<typename F>
+        vec3(const vec3<F> & a) {
+            this->x = static_cast<number>(a.x);
+            this->y = static_cast<number>(a.y);
+            this->z = static_cast<number>(a.z);
+        }
+
+        vec3 operator-() const {
+            return vec3{-this->x, -this->y,
+                        -this->z};
+        }
+
+        vec3 operator+(const vec3 & a) const {
+            return vec3{this->x + a.x, this->y + a.y,
+                        this->z + a.z};
+        }
+        vec3 operator-(const vec3 & a) const {
+            return *this + (-a);
+        }
+
+
+        number operator*(const vec3 & a) {
+            return (this->x*a.x + this->y*a.y+this->z*a.z);
+        }
+
+
+        template<typename F>
+        vec3<number> operator*(const F & a) const {
+            return vec3<number>{this->x*number(a), this->y*number(a),
+                           this->z*number(a)};
+        }
+
+        template<typename F>
+        vec3<number> operator/(const F & a) const {
+            return vec3<number>{this->x/number(a), this->y/number(a),
+                           this->z/number(a)};
+        }
+
+        bool operator==(const vec3 & rhs) const {
+            return this->x==rhs.x &&
+                   this->y==rhs.y &&
+                   this->z==rhs.z;
+        }
+
+        template<typename F>
+        vec3<number> & operator=(const vec3<F> & a) {
+            this->x = static_cast<number>(a.x);
+            this->y = static_cast<number>(a.y);
+            this->z = static_cast<number>(a.z);
             return *this;
         }
+
+        inline vec3 & normalize() {
+            auto d = x*x + y*y + z*z;
+            if(d==number(0))
+                return;
+            auto inv_len = number(1) / microgl::math::sqrt(d);
+            x *= inv_len;
+            y *= inv_len;
+            z *= inv_len;
+            return *this;
+        }
+
+        inline vec3 & cross(const vec3& rhs) const {
+            return {y*rhs.z - z*rhs.y, z*rhs.x - x*rhs.z, x*rhs.y - y*rhs.x};
+        }
+
     };
 
-    template<typename T>
-    struct vec4 {
-        T x, y, z, w;
-    };
-
-
-    typedef vec3<float> vec3_f;
-    typedef vec3<uint8_t > vec3_8i;
-    typedef vec3<uint16_t > vec3_16i;
-    typedef vec3<int32_t> vec3_32i;
-    typedef vec3<uint32_t > vec3_32ui;
 }

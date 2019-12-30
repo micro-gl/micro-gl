@@ -2,6 +2,7 @@
 
 #include <microgl/matrix.h>
 #include <microgl/math.h>
+#include <microgl/vec2.h>
 
 namespace microgl {
 
@@ -23,6 +24,9 @@ namespace microgl {
         static const index SKEWY = 3;
 
     public:
+        // in this derived class I overload * operator, this will default in
+        // c++ to hiding all previous * overloading, so we have to re-expose it
+        using base__::operator*;
 
         static
         matrix_3x3 identity() {
@@ -146,6 +150,18 @@ namespace microgl {
                 base__(mat) {}
 
         virtual ~matrix_3x3() = default;
+
+        int operator*(char value) const {
+            return 5;
+        };
+
+        vec2<T> operator*(const vec2<T>& point) const {
+            vec2<T> res;
+            const auto & m = (*this);
+            res.x = m[0]*point.x + m[1]*point.y + m[2];
+            res.y = m[3]*point.x + m[4]*point.y + m[5];
+            return res;
+        }
 
         void fill_diagonal(const_type_ref value) {
             index next = 0;

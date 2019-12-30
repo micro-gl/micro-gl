@@ -66,3 +66,10 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 10. seperate pixel and uv coords numbers support. suppose we want to use Q numbers but with
     different precisions for the pixels coords and uv coords
 11. overflow , I have seen the last row of a quadrilateral rendering have the first row, fix the texture mapper on boundary
+
+# 3d
+- https://www.scratchapixel.com/lessons/3d-basic-rendering/rasterization-practical-implementation/projection-stage
+- https://www.scratchapixel.com/lessons/3d-basic-rendering/rasterization-practical-implementation/projection-stage
+- https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix
+- https://www.scratchapixel.com/lessons/3d-basic-rendering/computing-pixel-coordinates-of-3d-point?url=3d-basic-rendering/computing-pixel-coordinates-of-3d-point
+- http://www.songho.ca/opengl/gl_transform.html

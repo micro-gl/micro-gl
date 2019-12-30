@@ -4,8 +4,9 @@
 #include <SDL2/SDL.h>
 #include <microgl/color.h>
 #include <microgl/Canvas.h>
-#include <microgl/matrix_3x3.h>
+#include <microgl/matrix_4x4.h>
 #include <microgl/Q.h>
+#include <microgl/camera.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -36,6 +37,8 @@ void render_template() {
 
     using vertex = vec2<number_transform>;
     using matrix_3x3_trans = matrix_3x3<number_transform>;
+    using vector_3_transform = column_vector<number_transform, 3>;
+    using vector_3_raster = column_vector<number_raster, 3>;
 
     t += 0.001;
     auto t_number_angle = number_transform(t);
@@ -57,30 +60,30 @@ void render_template() {
     matrix_3x3_trans translate = matrix_3x3_trans::translate(100.0f, 100);
     matrix_3x3_trans scale = matrix_3x3_trans::scale(number_scale, number_scale);
     matrix_3x3_trans shear_x = matrix_3x3_trans::shear_x(float(t));
-    matrix_3x3_trans transform = translate * rotation_pivot;
+    matrix_3x3_trans transform = translate  * rotation_pivot;
 
     // this also converts into the raster precision :-) with
     // the conversion constructor
-    vertex p0_t = transform * p0;
-    vertex p1_t = transform * p1;
-    vertex p2_t = transform * p2;
-    vertex p3_t = transform * p3;
+    vector_3_raster vec_0 = transform * vector_3_transform{p0.x, p0.y, 1};
+    vector_3_raster vec_1 = transform * vector_3_transform{p1.x, p1.y, 1};
+    vector_3_raster vec_2 = transform * vector_3_transform{p2.x, p2.y, 1};
+    vector_3_raster vec_3 = transform * vector_3_transform{p3.x, p3.y, 1};
 
     canvas->clear(WHITE);
     canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number_raster>(
             RED,
-            p0_t.x, p0_t.y,
-            p1_t.x, p1_t.y,
-            p2_t.x, p2_t.y,
+            vec_0[0], vec_0[1],
+            vec_1[0], vec_1[1],
+            vec_2[0], vec_2[1],
             150,
             true, true, false
     );
 
     canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number_raster>(
             RED,
-            p2_t.x, p2_t.y,
-            p3_t.x, p3_t.y,
-            p0_t.x, p0_t.y,
+            vec_2[0], vec_2[1],
+            vec_3[0], vec_3[1],
+            vec_0[0], vec_0[1],
             150,
             true, true, false
     );
