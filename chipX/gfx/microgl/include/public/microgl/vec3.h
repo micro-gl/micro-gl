@@ -9,8 +9,11 @@ namespace microgl {
 
         number x, y, z;
 
-        vec3() {
-
+        vec3() = default;
+        vec3(const number & x, const number & y, const number & z) {
+            this->x = x;
+            this->y = y;
+            this->z = z;
         }
 
         template<typename F>
@@ -26,49 +29,34 @@ namespace microgl {
         }
 
         vec3 operator+(const vec3 & a) const {
-            return vec3{this->x + a.x, this->y + a.y,
-                        this->z + a.z};
+            return vec3{this->x + a.x, this->y + a.y, this->z + a.z};
         }
+
         vec3 operator-(const vec3 & a) const {
             return *this + (-a);
         }
-
 
         number operator*(const vec3 & a) {
             return (this->x*a.x + this->y*a.y+this->z*a.z);
         }
 
-
-        template<typename F>
-        vec3<number> operator*(const F & a) const {
-            return vec3<number>{this->x*number(a), this->y*number(a),
-                           this->z*number(a)};
-        }
-
-        template<typename F>
-        vec3<number> operator/(const F & a) const {
-            return vec3<number>{this->x/number(a), this->y/number(a),
-                           this->z/number(a)};
+        vec3 operator/(const number & val) {
+            return {this->x/val, this->y/val, this->z/val};
         }
 
         bool operator==(const vec3 & rhs) const {
-            return this->x==rhs.x &&
-                   this->y==rhs.y &&
-                   this->z==rhs.z;
+            return this->x==rhs.x && this->y==rhs.y && this->z==rhs.z;
         }
 
-        template<typename F>
-        vec3<number> & operator=(const vec3<F> & a) {
-            this->x = static_cast<number>(a.x);
-            this->y = static_cast<number>(a.y);
-            this->z = static_cast<number>(a.z);
+        vec3 & operator=(const vec3 & a) {
+            this->x = a.x;this->y = a.y;this->z = a.z;
             return *this;
         }
 
-        inline vec3 & normalize() {
+        vec3 & normalize() {
             auto d = x*x + y*y + z*z;
             if(d==number(0))
-                return;
+                return *this;
             auto inv_len = number(1) / microgl::math::sqrt(d);
             x *= inv_len;
             y *= inv_len;
@@ -76,7 +64,7 @@ namespace microgl {
             return *this;
         }
 
-        inline vec3 & cross(const vec3& rhs) const {
+        vec3 cross(const vec3& rhs) const {
             return {y*rhs.z - z*rhs.y, z*rhs.x - x*rhs.z, x*rhs.y - y*rhs.x};
         }
 

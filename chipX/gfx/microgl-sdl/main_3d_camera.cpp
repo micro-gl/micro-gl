@@ -7,6 +7,7 @@
 #include <microgl/matrix_4x4.h>
 #include <microgl/Q.h>
 #include <microgl/camera.h>
+#include <microgl/dynamic_array.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -23,71 +24,80 @@ float t = 0.0f;
 
 void loop();
 void init_sdl(int width, int height);
-template <typename number_transform, typename number_raster>
-void render_template();
+//template <typename number_transform, typename number_raster>
+//void render_template();
 
-void render() {
-    render_template<Q<10>, Q<4>>();
-//    render_template<float, float>();
-//    render_template<double, double>();
+template <typename number>
+using arr = dynamic_array<vec3<number>>;
+
+template <typename number>
+arr<number> cube() {
+
+    return {
+            //down
+            {-50, -50, -50}, // left-bottom
+            {-50, -50, 50}, // left-top
+            {50, -50, 50}, // right-top
+            {50, -50, -50}, // right-bottom
+            //up
+            {-50, 50, -50}, // left-bottom
+            {-50, 50, 50}, // left-top
+            {50, 50, 50}, // right-top
+            {50, 50, -50}, // right-bottom
+    };
+
 }
 
-template <typename number_transform, typename number_raster>
-void render_template() {
+float z = 0;
 
-    using vertex = vec2<number_transform>;
-    using matrix_3x3_trans = matrix_3x3<number_transform>;
-    using vector_3_transform = column_vector<number_transform, 3>;
-    using vector_3_raster = column_vector<number_raster, 3>;
+template <typename number_coords>
+void render_template(const arr<number_coords> & vertices) {
+    using vertex = vec3<number_coords>;
+    using camera = microgl::camera<number_coords>;
+    using mat4 = matrix_4x4<number_coords>;
+    using math = microgl::math;
 
-    t += 0.001;
-    auto t_number_angle = number_transform(t);
-    static float sine = 0.0f;
-    sine = microgl::math::sin(t*10);
-    auto number_scale = microgl::math::abs_(number_transform(sine)*2);
-    if (number_scale < 1.f)
-        number_scale=1.f;
-//    number_scale =5.0f;
+    z+=0.121;
 
-    vertex p0{0, 0};
-    vertex p1{100, 0};
-    vertex p2{100, 100};
-    vertex p3{0, 100};
+    int canvas_width = canvas->width();
+    int canvas_height = canvas->height();
+    number_coords fov_horizontal = math::deg_to_rad(60);
+//    number_coords aspect_ratio = microgl::math::deg_to_rad(90);
 
-    matrix_3x3_trans identity = matrix_3x3_trans::identity();
-    matrix_3x3_trans rotation = matrix_3x3_trans::rotation(t_number_angle);
-    matrix_3x3_trans rotation_pivot = matrix_3x3_trans::rotation(t_number_angle, 50, 50, number_scale, number_scale/2);
-    matrix_3x3_trans translate = matrix_3x3_trans::translate(100.0f, 100);
-    matrix_3x3_trans scale = matrix_3x3_trans::scale(number_scale, number_scale);
-    matrix_3x3_trans shear_x = matrix_3x3_trans::shear_x(float(t));
-    matrix_3x3_trans transform = translate  * rotation_pivot;
-
-    // this also converts into the raster precision :-) with
-    // the conversion constructor
-    vector_3_raster vec_0 = transform * vector_3_transform{p0.x, p0.y, 1};
-    vector_3_raster vec_1 = transform * vector_3_transform{p1.x, p1.y, 1};
-    vector_3_raster vec_2 = transform * vector_3_transform{p2.x, p2.y, 1};
-    vector_3_raster vec_3 = transform * vector_3_transform{p3.x, p3.y, 1};
+    mat4 model = mat4::rotation(0, math::deg_to_rad(z), 0, {0,0,300});
+//    mat4 view = camera::lookAt({0, 0, 250}, {0,0, 0}, {0,1,0});
+    mat4 view = camera::angleAt({0, 0, 660}, math::deg_to_rad(0),
+            math::deg_to_rad(0), math::deg_to_rad(0));
+    mat4 perspective = camera::perspective(fov_horizontal, canvas_width, canvas_height, 1.0, 250.0);
+//    mat4 perspective = camera::orthographic(-canvas_width, canvas_width, -canvas_height, canvas_height, 1, 100.0);
+    mat4 mvp = perspective * (view * model);
 
     canvas->clear(WHITE);
-    canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number_raster>(
-            RED,
-            vec_0[0], vec_0[1],
-            vec_1[0], vec_1[1],
-            vec_2[0], vec_2[1],
-            150,
-            true, true, false
-    );
 
-    canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number_raster>(
-            RED,
-            vec_2[0], vec_2[1],
-            vec_3[0], vec_3[1],
-            vec_0[0], vec_0[1],
-            150,
-            true, true, false
-    );
+    for (unsigned ix = 0; ix < vertices.size(); ++ix) {
+        vertex ndc_projected = mvp * vertices[ix];
+        vertex raster;
+        // convert to raster space
+        raster.x = ((ndc_projected.x + number_coords(1))*canvas_width)/2;
+        raster.y = canvas_height - (((ndc_projected.y + number_coords(1))*canvas_height)/2); // invert y for raster space
+        raster.z = (ndc_projected.z);// + number_coords(1))/number_coords(2);
 
+        bool inside = (raster.x >= 0) &&  (raster.x < canvas_width) &&
+                (raster.y >= 0) &&  (raster.y < canvas_height);
+//        if(!inside)
+//            continue;
+
+        std::cout << raster.x << ", " << raster.y << ", " << raster.z << " - " << z <<std::endl;
+        auto color = RED;
+        if(ix>=7) color=BLUE;
+        canvas->drawCircle(color, raster.x, raster.y, number_coords(4), 255);
+    }
+
+}
+
+void render() {
+
+    render_template<float>(cube<float>());
 }
 
 int main() {
@@ -122,8 +132,8 @@ void loop() {
     SDL_Event event;
 
     // 100 Quads
-    int ms = render_test(TEST_ITERATIONS);
-    std::cout << ms << std::endl;
+//    int ms = render_test(TEST_ITERATIONS);
+//    std::cout << ms << std::endl;
 
     while (!quit)
     {
@@ -139,7 +149,7 @@ void loop() {
                     quit = true;
                 break;
         }
-//
+
         render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(), canvas->width() * canvas->sizeofPixel());

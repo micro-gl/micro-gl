@@ -67,7 +67,7 @@ namespace microgl {
         // |0 Sx  Cx| |-Sy  0 Cy| | 0   0 1|   |-CxSyCz+SxSz  CxSySz+SxCz  CxCy|
         ///////////////////////////////////////////////////////////////////////////////
         static
-        matrix_4x4 rotation(const T& theta_x, const T& theta_y, const T& theta_z)
+        matrix_4x4 rotation(const T& theta_x, const T& theta_y, const T& theta_z, const vertex & tranlation = {0, 0, 0})
         {
             matrix_4x4 result {};
             T sx, sy, sz, cx, cy, cz, theta;
@@ -104,6 +104,8 @@ namespace microgl {
             forward.y = -sx*cy;
             forward.z = cx*cy;
             result.setColumn(2, forward);
+
+            result.setColumn(3, tranlation);
 
             return result;
         }
@@ -165,7 +167,6 @@ namespace microgl {
             me[start + 2] = val.z;
         }
 
-
         vertex operator*(const vertex & point) {
             vec3<T> res;
             const auto & m = (*this);
@@ -179,7 +180,7 @@ namespace microgl {
             // this is the transform from homogeneous to Cartesian coordinate,
             // thus making also the z division
             if(w!=T(1))
-                res/=w;
+                res=res/w;
 
             return res;
         }

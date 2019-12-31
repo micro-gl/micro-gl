@@ -9,40 +9,10 @@ namespace microgl {
     template <typename number>
     class camera {
     private:
+        using const_ref = const number &;
         using vertex = vec3<number>;
         using mat4 = matrix_4x4<number> ;
-        vertex _coords;
-        number _pitch, _yaw, _roll; // x,y,z
-        mat4 _camera_matrix;
     public:
-
-        camera() : _coords{}, _pitch{0}, _yaw{0}, _roll {0}, _camera_matrix{} {
-        }
-
-        void rotateX(const number & radians) {
-            _pitch+=radians;
-        }
-        void rotateY(const number & radians) {
-            _yaw+=radians;
-        }
-        void rotateZ(const number & radians) {
-            _roll+=radians;
-        }
-        void rotate(const number & x, const number & y, const number & z) {
-            _pitch+=x;_yaw+=x;_roll+=z;
-        }
-        void translateX(const number & val) {
-            _coords.x+=val;
-        }
-        void translateY(const number & val) {
-            _coords.y+=val;
-        }
-        void translateZ(const number & val) {
-            _coords.z+=val;
-        }
-        void translate(const number & x, const number & y, const number & z) {
-            _coords.x+=x;_coords.y+=x;_coords.z+=z;
-        }
 
         /**
          * compute the world to camera matrix by computing
@@ -66,31 +36,39 @@ namespace microgl {
          *  [ --+-- ]   =  [ ----+--------- ]    (T denotes 1x3 translation)
          *  [ 0 | 1 ]      [  0  |     1    ]    (R^T denotes R-transpose)
         */
-        mat4& compute_world_to_camera_matrix() {
-            // transpose 3x3 rotation matrix part
-            // | R^T | 0 |
-            // | ----+-- |
-            // |  0  | 1 |
-            // first compute the rotation matrix
-            mat4 rotation = mat4::rotation(_pitch, _yaw, _roll);
-            // transpose the 3x3 rotation block part fast
-            mat4 rotation_transposed = rotation.fast_3x3_in_place_transpose(rotation);
-            auto & mat = rotation_transposed;
+        static
+        mat4 angleAt(const vertex &position,
+                     const_ref pitch, const_ref yaw, const_ref roll) {
+            mat4 mat;
+            vertex vec;
+            // rotation angle about X-axis (pitch)
+            number sx = microgl::math::sin(pitch);
+            number cx = microgl::math::cos(pitch);
+            // rotation angle about Y-axis (yaw)
+            number sy = microgl::math::sin(yaw);
+            number cy = microgl::math::cos(yaw);
+            // rotation angle about Z-axis (roll)
+            number sz = microgl::math::sin(roll);
+            number cz = microgl::math::cos(roll);
 
-            // compute translation part -R^T * T
-            // | 0 | -R^T x |
-            // | --+------- |
-            // | 0 |   0    |
-            number x = _coords.x;//mat[12];
-            number y = _coords.y;//mat[13];
-            number z = _coords.z;//mat[14];
-            mat[12] = -(mat[0] * x + mat[4] * y + mat[8] * z);
-            mat[13] = -(mat[1] * x + mat[5] * y + mat[9] * z);
-            mat[14] = -(mat[2] * x + mat[6] * y + mat[10]* z);
+            vertex x_axis {cy*cz, sx*sy*cz + cx*sz, -cx*sy*cz + sx*sz};
+            vertex y_axis {-cy*sz, -sx*sy*sz + cx*cz, cx*sy*sz + sx*cz};
+            vertex z_axis {sy, -sx*cy, cx*cy};
 
-            _camera_matrix=mat;
-            return _camera_matrix;
+            // copy it to matrix transposed because it is inverted,
+            // our matrix is column major, therefore inserting at rows
+            // has the effect of inverting for euclidean transforms
+            mat.setRow(0, x_axis);
+            mat.setRow(1, y_axis);
+            mat.setRow(2, z_axis);
+
+            // set inverted translation
+            vertex trans {-(x_axis*position), -(y_axis*position), -(z_axis*position)};
+            mat.setColumn(3, trans);
+
+            return mat;
         }
+
 
         ///////////////////////////////////////////////////////////////////////////////
         // set transform matrix equivalent to gluLookAt()
@@ -103,98 +81,62 @@ namespace microgl {
         // |r2  r6  r10 0|   |0  0  1 -z|   |r2  r6  r10 r2*-x + r6*-y + r10*-z|
         // |0   0   0   1|   |0  0  0  1|   |0   0   0   1                     |
         ///////////////////////////////////////////////////////////////////////////////
-        void lookAt(mat4 & result, const vertex & position, const vertex& target)
+        static
+        mat4 lookAt(const vertex & position, const vertex& target, const vertex& up)
         {
-            // remeber the camera posision & target position
-//            this->position = position;
-//            this->target = target;
+            mat4 result{};
 
-            // if pos and target are same, only translate camera to position without rotation
-            if(position==target) {
-                result.identity();
-                result.setColumn(3, -position);
-                // rotation stuff
-//                matrixRotation.identity();
-//                angle.set(0,0,0);
-//                quaternion.set(1,0,0,0);
-                return;
-            }
+            // 3 axis of rotation matrix for scene
+            vertex z_axis = (position-target).normalize(); // forward
+            vertex x_axis = up.cross(z_axis).normalize(); // left
+            vertex y_axis = z_axis.cross(x_axis); // up
 
-            // 3 axis of matrix for scene
-            vertex left, up, forward;
-
-            // first, compute the forward vector of rotation matrix
-            // NOTE: the direction is reversed (target to camera pos) because of camera transform
-            forward = position - target;
-//            this->distance = forward.length();  // remember the distance
-//             normalize
-//            forward /= this->distance;
-
-            forward.normalize();
-            // compute temporal up vector based on the forward vector
-            // watch out when look up/down at 90 degree
-            // for example, forward vector is on the Y axis
-            number epsilon = number(1)/number(10);
-            if(microgl::math::abs_(forward.x) <= epsilon && fabs(forward.z) <= epsilon) {
-                // forward vector is pointing +Y axis
-                if (forward.y > 0)
-                    up = vertex(0, 0, -1);
-                else // forward vector is pointing -Y axis
-                    up = vertex(0, 0, 1);
-            } else // in general, up vector is straight up
-                up = vertex(0, 1, 0);
-
-            // compute the left vector of rotation matrix
-            left = up.cross(forward).normalize();
-
-            // re-calculate the orthonormal up vector
-            up = forward.cross(left);
-
-            // set inverse rotation matrix: M^-1 = M^T for Euclidean transform
-//            matrixRotation.identity();
-//            matrixRotation.setRow(0, left);
-//            matrixRotation.setRow(1, up);
-//            matrixRotation.setRow(2, forward);
-
-            // copy it to matrix
+            // copy it to matrix transposed because it is inverted
             result.identity();
-            result.setRow(0, left);
-            result.setRow(1, up);
-            result.setRow(2, forward);
+            result.setRow(0, x_axis);
+            result.setRow(1, y_axis);
+            result.setRow(2, z_axis);
 
             // set translation part
-            vertex trans;
-            trans.x = result[0]*-position.x + result[4]*-position.y + result[8]*-position.z;
-            trans.y = result[1]*-position.x + result[5]*-position.y + result[9]*-position.z;
-            trans.z = result[2]*-position.x + result[6]*-position.y + result[10]*-position.z;
+            vertex trans {-(x_axis*position), -(y_axis*position), -(z_axis*position)};
 
             result.setColumn(3, trans);
 
-//            // set Euler angles
-//            angle = matrixToAngle(matrixRotation);
-//
-//            // set quaternion from angle
-//            Vector3 reversedAngle(angle.x, -angle.y, angle.z);
-//            quaternion = Quaternion::getQuaternion(reversedAngle * DEG2RAD * 0.5f); // half angle
-//
-//            //DEBUG
-//            //std::cout << matrixRotation << std::endl;
+            return result;
         }
 
-        //        template <typename number>
         static
-        matrix_4x4<number> perspective(const number &fov_radians, const number & aspect_ratio,
+        matrix_4x4<number> perspective(const number &horizontal_fov_radians,
+                                       const number & screen_width, const number & screen_height,
+                                       const number & near, const number & far) {
+            return perspective(horizontal_fov_radians, screen_width/screen_height, near, far);
+        }
+
+        static
+        matrix_4x4<number> perspective(const number &horizontal_fov_radians,
+                                       const number & aspect_ratio,
                                        const number & near, const number & far) {
             matrix_4x4<number> mat{};
 
-            auto scale = microgl::math::tan(fov_radians/number(2)) * near;
+//            auto tan = number(1) / (microgl::math::tan(horizontal_fov_radians/number(2)));
+//            auto tan2 = tan/aspect_ratio;
+//
+//            // an optimized version
+//            mat(0, 0) = tan2;
+//            mat(1, 1) = tan;
+//            mat(2, 2) = -(far + near) / (far - near);
+//            mat(2, 3) = -(number(2) * far * near) / (far - near);
+//            mat(3, 2) = -number(1);
+//            mat(3, 3) = 0;
+//
+//            return mat;
+
+            auto scale = microgl::math::tan(horizontal_fov_radians/number(2)) * near;
             auto r = aspect_ratio * scale, l = -r;
             auto t = scale, b = -t;
-
-            return perspective(l, r, b, t, near, far);
+            return perspective(l,r,b,t,near,far);
         }
 
-//        template <typename number>
         static
         matrix_4x4<number> perspective(const number &l, const number & r,
                                        const number & b, const number & t,
@@ -202,26 +144,27 @@ namespace microgl {
             matrix_4x4<number> mat{};
 
             // set OpenGL perspective projection matrix
-            mat(0, 0) = 2 * near / (r - l);
-            mat(0, 1) = 0;
-            mat(0, 2) = 0;
-            mat(0, 3) = 0;
-
+            mat(0, 0) = number(2) * near / (r - l);
             mat(1, 0) = 0;
-            mat(1, 1) = 2 * near / (t - b);
-            mat(1, 2) = 0;
-            mat(1, 3) = 0;
-
-            mat(2, 0) = (r + l) / (r - l);
-            mat(2, 1) = (t + b) / (t - b);
-            mat(2, 2) = -(far + near) / (far - near);
-            mat(2, 3) = -1;
-
+            mat(2, 0) = 0;
             mat(3, 0) = 0;
+
+            mat(0, 1) = 0;
+            mat(1, 1) = number(2) * near / (t - b);
+            mat(2, 1) = 0;
             mat(3, 1) = 0;
-            mat(3, 2) = -(2 * far * near) / (far - near);
+
+            mat(0, 2) = (r + l) / (r - l);
+            mat(1, 2) = (t + b) / (t - b);
+            mat(2, 2) = -(far + near) / (far - near);
+            mat(3, 2) = -number(1);
+
+            mat(0, 3) = 0;
+            mat(1, 3) = 0;
+            mat(2, 3) = -(number(2) * far * near) / (far - near);
             mat(3, 3) = 0;
 
+//            return mat;
             return mat;
         }
 
@@ -230,86 +173,35 @@ namespace microgl {
         matrix_4x4<number> orthographic(const number &l, const number & r,
                                        const number & b, const number & t,
                                        const number & near, const number & far) {
+            // map [l,r]->[-1,1], [b,t]->[-1,1], [-near,-far]->[-1,1]
+            // we assume the projection is to be used on right-handed system
+            // observing the negative z axis
             matrix_4x4<number> mat{};
 
-            mat(0, 0) = 2 / (r - l);
+            mat(0, 0) = number(2) / (r - l);
             mat(0, 1) = 0;
             mat(0, 2) = 0;
             mat(0, 3) = 0;
 
             mat(1, 0) = 0;
-            mat(1, 1) = 2 / (t - b);
+            mat(1, 1) = number(2) / (t - b);
             mat(1, 2) = 0;
             mat(1, 3) = 0;
 
             mat(2, 0) = 0;
             mat(2, 1) = 0;
-            mat(2, 2) = -2 / (far - near);
+            mat(2, 2) = -number(2) / (far - near);
             mat(2, 3) = 0;
 
             mat(3, 0) = -(r + l) / (r - l);
             mat(3, 1) = -(t + b) / (t - b);
-            mat(3, 2) = -(far + near) / (far - near);
-            mat(3, 3) = 0;
+            mat(3, 2) = -(far + near) / (far - near); // runs from negative one
+            mat(3, 3) = 1;
 
-            return mat;
+//            return mat;
+            return mat.transpose();
         }
 
-        /*
-        ///////////////////////////////////////////////////////////////////////////////
-// set a orthographic frustum with 6 params similar to glOrtho()
-// (left, right, bottom, top, near, far)
-///////////////////////////////////////////////////////////////////////////////
-        Matrix4 setOrthoFrustum(float l, float r, float b, float t, float n, float f)
-        {
-            Matrix4 mat;
-            mat[0]  =  2 / (r - l);
-            mat[5]  =  2 / (t - b);
-            mat[10] = -2 / (f - n);
-            mat[12] = -(r + l) / (r - l);
-            mat[13] = -(t + b) / (t - b);
-            mat[14] = -(f + n) / (f - n);
-            return mat;
-        }
-
-
-        ///////////////////////////////////////////////////////////////////////////////
-// set a perspective frustum with 6 params similar to glFrustum()
-// (left, right, bottom, top, near, far)
-///////////////////////////////////////////////////////////////////////////////
-        Matrix4 setFrustum(float l, float r, float b, float t, float n, float f)
-        {
-            Matrix4 mat;
-            mat[0]  =  2 * n / (r - l);
-            mat[5]  =  2 * n / (t - b);
-            mat[8]  =  (r + l) / (r - l);
-            mat[9]  =  (t + b) / (t - b);
-            mat[10] = -(f + n) / (f - n);
-            mat[11] = -1;
-            mat[14] = -(2 * f * n) / (f - n);
-            mat[15] =  0;
-            return mat;
-        }
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// set a symmetric perspective frustum with 4 params similar to gluPerspective
-// (vertical field of view, aspect ratio, near, far)
-///////////////////////////////////////////////////////////////////////////////
-        Matrix4 setFrustum(float fovY, float aspectRatio, float front, float back)
-        {
-            float tangent = tanf(fovY/2 * DEG2RAD);   // tangent of half fovY
-            float height = front * tangent;           // half height of near plane
-            float width = height * aspectRatio;       // half width of near plane
-
-            // params: left, right, bottom, top, near, far
-            return setFrustum(-width, width, -height, height, front, back);
-        }
-
-
-
-
-*/
     };
+
 }
