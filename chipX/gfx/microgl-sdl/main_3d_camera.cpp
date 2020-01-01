@@ -63,7 +63,10 @@ void render_template(const arr<number_coords> & vertices) {
     int canvas_height = canvas->height();
     number_coords fov_horizontal = math::deg_to_rad(60);
 
-    mat4 model = mat4::transform({ math::deg_to_rad(z), math::deg_to_rad(z), 0}, {0,0,-300+25}, {25,25,25});
+//    mat4 model = mat4::transform({ math::deg_to_rad(z), math::deg_to_rad(z), 0},
+//                                 {0,0,-300+25}, {25,25,25});
+
+    mat4 model = mat4::scale(10,10,10)*mat4::rotation(math::deg_to_rad(z), {0,1,0});
 //    mat4 view = camera::lookAt({0, 0, 100}, {0,0, 0}, {0,1,0});
     mat4 view = camera::angleAt({0, 0, 100}, math::deg_to_rad(0),
             math::deg_to_rad(0), math::deg_to_rad(0));

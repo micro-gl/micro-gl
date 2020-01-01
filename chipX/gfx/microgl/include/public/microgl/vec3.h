@@ -64,6 +64,12 @@ namespace microgl {
             return *this;
         }
 
+        vec3 normalize() const {
+            vec3 temp{*this};
+            temp.normalize();
+            return temp;
+        }
+
         vec3 cross(const vec3& rhs) const {
             return {y*rhs.z - z*rhs.y, z*rhs.x - x*rhs.z, x*rhs.y - y*rhs.x};
         }

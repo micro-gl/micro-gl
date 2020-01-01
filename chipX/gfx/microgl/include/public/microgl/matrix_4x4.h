@@ -6,40 +6,35 @@
 
 namespace microgl {
 
-    template<typename T>
-    class matrix_4x4 : public matrix<T, 4, 4> {
+    template<typename number>
+    class matrix_4x4 : public matrix<number, 4, 4> {
     private:
         using index = unsigned;
-        using vertex = vec3<T>;
-        using base__ =  matrix<T, 4, 4>;
-        using type_ref = T &;
-        using const_type_ref = const T &;
-        using matrix_ref = matrix_4x4<T> &;
-        using const_matrix_ref = const matrix_4x4<T> &;
+        using vertex = vec3<number>;
+        using base__ =  matrix<number, 4, 4>;
+        using type_ref = number &;
+        using const_type_ref = const number &;
+        using matrix_ref = matrix_4x4<number> &;
+        using const_matrix_ref = const matrix_4x4<number> &;
 
         static const index SX = 0;
         static const index SY = 5;
         static const index SZ = 10;
-        static const index TX = 3;
-        static const index TY = 7;
-        static const index TZ = 11;
+        static const index numberX = 3;
+        static const index numberY = 7;
+        static const index numberZ = 11;
 
     public:
         // in this derived class I overload * operator, this will default in
         // c++ to hiding all previous * overloading, so we have to re-expose it
         using base__::operator*;
 
-//        static
-//        matrix_4x4 identity() {
-//            return matrix_4x4{};
-//        }
-
         static
         matrix_4x4 translate(const_type_ref tx, const_type_ref ty, const_type_ref tz) {
             matrix_4x4 mat{};
-            mat[TX] = tx;
-            mat[TY] = ty;
-            mat[TZ] = tz;
+            mat[numberX] = tx;
+            mat[numberY] = ty;
+            mat[numberZ] = tz;
             return mat;
         }
 
@@ -52,12 +47,30 @@ namespace microgl {
             return mat;
         }
 
+        static
+        matrix_4x4 rotation(const_type_ref angle, const vertex &axis) {
+            matrix_4x4 mat{};
+            const vertex ax = axis.normalize();
+            const number s = microgl::math::sin(angle);
+            const number c = microgl::math::cos(angle);
+            const number c1 = number(1) - c;
+            const number &x = ax.x;
+            const number &y = ax.y;
+            const number &z = ax.z;
+
+            mat.setRow(0, {x * x * c1 + c, x * y * c1 - z * s, x * z * c1 + y * s });
+            mat.setRow(1, {x * y * c1 + z * s, y * y * c1 + c, y * z * c1 - x * s });
+            mat.setRow(2, {x * z * c1 - y * s, y * z * c1 + x * s, z * z * c1 + c });
+
+            return mat;
+        }
+
         ///////////////////////////////////////////////////////////////////////////////
         // convert rotation angles (degree) to 4x4 matrix
-        // NOTE: the angle is for orbit camera, so yaw angle must be reversed before
+        // NOnumberE: the angle is for orbit camera, so yaw angle must be reversed before
         // matrix computation.
         //
-        // The order of rotation is Roll->Yaw->Pitch (Rx*Ry*Rz)
+        // numberhe order of rotation is Roll->Yaw->Pitch (Rx*Ry*Rz)
         // Rx: rotation about X-axis, pitch
         // Ry: rotation about Y-axis, yaw(heading)
         // Rz: rotation about Z-axis, roll
@@ -72,7 +85,7 @@ namespace microgl {
                             const vertex & scale = {1, 1, 1})
         {
             matrix_4x4 result {};
-            T sx, sy, sz, cx, cy, cz;
+            number sx, sy, sz, cx, cy, cz;
             vertex vec;
             // rotation angle about X-axis (pitch)
             sx = microgl::math::sin(rotation.x);
@@ -101,7 +114,7 @@ namespace microgl {
         static
         matrix_ref fast_3x3_in_place_transpose(matrix_ref mat) {
             // very fast 3x3 block in-place transpose of a 4x4 matrix
-            T tmp;
+            number tmp;
             tmp = mat[1];  mat[1] = mat[4];  mat[4] = tmp;
             tmp = mat[2];  mat[2] = mat[8];  mat[8] = tmp;
             tmp = mat[6];  mat[6] = mat[9];  mat[9] = tmp;
@@ -112,7 +125,7 @@ namespace microgl {
             identity();
         };
 
-        matrix_4x4(const std::initializer_list<T> &list) :
+        matrix_4x4(const std::initializer_list<number> &list) :
                             base__(list) {}
 
         matrix_4x4(const_type_ref fill_value) :
@@ -121,8 +134,8 @@ namespace microgl {
         matrix_4x4(const base__ & mat) :
                 base__(mat) {}
 
-        template<typename T2>
-        matrix_4x4(const matrix<T2, 4, 4> & mat) :
+        template<typename number2>
+        matrix_4x4(const matrix<number2, 4, 4> & mat) :
                 base__(mat) {}
 
         virtual ~matrix_4x4() = default;
@@ -135,7 +148,7 @@ namespace microgl {
 
         matrix_ref identity() {
             this->fill(0);
-            T fill_one{1};
+            number fill_one{1};
             fill_diagonal(fill_one);
             return *this;
         }
@@ -167,7 +180,7 @@ namespace microgl {
             // if it is not an affine transform, likely a projective matrix.
             // this is the transform from homogeneous to Cartesian coordinate,
             // thus making also the z division
-            if(w!=T(1) && w!=T(0))
+            if(w!=number(1) && w!=number(0))
                 res=res/w;
 
             return res;
