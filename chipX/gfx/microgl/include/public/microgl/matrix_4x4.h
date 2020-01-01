@@ -67,48 +67,36 @@ namespace microgl {
         // |0 Sx  Cx| |-Sy  0 Cy| | 0   0 1|   |-CxSyCz+SxSz  CxSySz+SxCz  CxCy|
         ///////////////////////////////////////////////////////////////////////////////
         static
-        matrix_4x4 rotation(const T& theta_x, const T& theta_y, const T& theta_z, const vertex & tranlation = {0, 0, 0})
+        matrix_4x4 transform(const vertex & rotation = {0, 0, 0},
+                            const vertex & translation = {0, 0, 0},
+                            const vertex & scale = {1, 1, 1})
         {
             matrix_4x4 result {};
-            T sx, sy, sz, cx, cy, cz, theta;
+            T sx, sy, sz, cx, cy, cz;
             vertex vec;
             // rotation angle about X-axis (pitch)
-            sx = microgl::math::sin(theta_x);
-            cx = microgl::math::cos(theta_x);
-
+            sx = microgl::math::sin(rotation.x);
+            cx = microgl::math::cos(rotation.x);
             // rotation angle about Y-axis (yaw)
-            sy = microgl::math::sin(theta_y);
-            cy = microgl::math::cos(theta_y);
-
+            sy = microgl::math::sin(rotation.y);
+            cy = microgl::math::cos(rotation.y);
             // rotation angle about Z-axis (roll)
-            sz = microgl::math::sin(theta_z);
-            cz = microgl::math::cos(theta_z);
+            sz = microgl::math::sin(rotation.z);
+            cz = microgl::math::cos(rotation.z);
 
             // determine left vector
-            auto & left = vec;
-            left.x = cy*cz;
-            left.y = sx*sy*cz + cx*sz;
-            left.z = -cx*sy*cz + sx*sz;
+            vertex left     {cy*cz*scale.x,     (sx*sy*cz + cx*sz)*scale.y,     (-cx*sy*cz + sx*sz)*scale.z};
+            vertex up       {-cy*sz*scale.x,    (-sx*sy*sz + cx*cz)*scale.y,    (cx*sy*sz + sx*cz)*scale.z};
+            vertex forward  {sy*scale.x,        -sx*cy*scale.y,                 cx*cy*scale.z};
+
             result.setColumn(0, left);
-
-            // determine up vector
-            auto & up = vec;
-            up.x = -cy*sz;
-            up.y = -sx*sy*sz + cx*cz;
-            up.z = cx*sy*sz + sx*cz;
             result.setColumn(1, up);
-
-            // determine forward vector
-            auto & forward = vec;
-            forward.x = sy;
-            forward.y = -sx*cy;
-            forward.z = cx*cy;
             result.setColumn(2, forward);
-
-            result.setColumn(3, tranlation);
+            result.setColumn(3, translation);
 
             return result;
         }
+
 
         static
         matrix_ref fast_3x3_in_place_transpose(matrix_ref mat) {
@@ -168,7 +156,7 @@ namespace microgl {
         }
 
         vertex operator*(const vertex & point) {
-            vec3<T> res;
+            vertex res;
             const auto & m = (*this);
 
             res.x = m[0]*point.x + m[1]*point.y + m[2]*point.z + m[3];
@@ -179,7 +167,7 @@ namespace microgl {
             // if it is not an affine transform, likely a projective matrix.
             // this is the transform from homogeneous to Cartesian coordinate,
             // thus making also the z division
-            if(w!=T(1))
+            if(w!=T(1) && w!=T(0))
                 res=res/w;
 
             return res;

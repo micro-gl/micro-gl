@@ -118,54 +118,41 @@ namespace microgl {
                                        const number & near, const number & far) {
             matrix_4x4<number> mat{};
 
-//            auto tan = number(1) / (microgl::math::tan(horizontal_fov_radians/number(2)));
-//            auto tan2 = tan/aspect_ratio;
-//
-//            // an optimized version
-//            mat(0, 0) = tan2;
-//            mat(1, 1) = tan;
-//            mat(2, 2) = -(far + near) / (far - near);
-//            mat(2, 3) = -(number(2) * far * near) / (far - near);
-//            mat(3, 2) = -number(1);
-//            mat(3, 3) = 0;
-//
-//            return mat;
+            auto tan = number(1) / (microgl::math::tan(horizontal_fov_radians/number(2)));
+            auto tan2 = tan/aspect_ratio;
 
-            auto scale = microgl::math::tan(horizontal_fov_radians/number(2)) * near;
-            auto r = aspect_ratio * scale, l = -r;
-            auto t = scale, b = -t;
-            return perspective(l,r,b,t,near,far);
+            // an optimized version
+            mat(0, 0) = tan2;
+            mat(1, 1) = tan;
+            mat(2, 2) = -(far + near) / (far - near);
+            mat(2, 3) = -(number(2) * far * near) / (far - near);
+            mat(3, 2) = -number(1);
+            mat(3, 3) = 0;
+
+            return mat;
+
+//            auto scale = microgl::math::tan(horizontal_fov_radians/number(2)) * near;
+//            auto r = aspect_ratio * scale, l = -r;
+//            auto t = scale, b = -t;
+//            return perspective(l,r,b,t,near,far);
         }
 
         static
         matrix_4x4<number> perspective(const number &l, const number & r,
                                        const number & b, const number & t,
-                                       const number & near, const number & far) {
-            matrix_4x4<number> mat{};
+                                       const number & n, const number & f) {
+            matrix_4x4<number> m{};
+            number two = number(2);
+            number one = number(1);
+            // set OpenGL like perspective projection matrix columns, we assume, that
+            // points that are projected with this matrix are right handed system.
+            // they are on the negative z-axis, mapping is done to the cube [-1,1]x[-1,1]x[-1,1]
+            m(0,0) = two*n/(r-l); m(0,1) = 0;             m(0,2) = (r+l)/(r-l);  m(0,3) = 0;
+            m(1,0) = 0;           m(1,1) = two*n/(t-b);   m(1,2) = (t+b)/(t-b);  m(1,3) = 0;
+            m(2,0) = 0;           m(2,1) = 0;             m(2,2) = -(f+n)/(f-n); m(2,3) = -(two*f*n)/(f-n);
+            m(3,0) = 0;           m(3,1) = 0;             m(3,2) = -one;         m(3,3) = 0;
 
-            // set OpenGL perspective projection matrix
-            mat(0, 0) = number(2) * near / (r - l);
-            mat(1, 0) = 0;
-            mat(2, 0) = 0;
-            mat(3, 0) = 0;
-
-            mat(0, 1) = 0;
-            mat(1, 1) = number(2) * near / (t - b);
-            mat(2, 1) = 0;
-            mat(3, 1) = 0;
-
-            mat(0, 2) = (r + l) / (r - l);
-            mat(1, 2) = (t + b) / (t - b);
-            mat(2, 2) = -(far + near) / (far - near);
-            mat(3, 2) = -number(1);
-
-            mat(0, 3) = 0;
-            mat(1, 3) = 0;
-            mat(2, 3) = -(number(2) * far * near) / (far - near);
-            mat(3, 3) = 0;
-
-//            return mat;
-            return mat;
+            return m;
         }
 
 //        template <typename number>
@@ -178,25 +165,10 @@ namespace microgl {
             // observing the negative z axis
             matrix_4x4<number> mat{};
 
-            mat(0, 0) = number(2) / (r - l);
-            mat(0, 1) = 0;
-            mat(0, 2) = 0;
-            mat(0, 3) = 0;
-
-            mat(1, 0) = 0;
-            mat(1, 1) = number(2) / (t - b);
-            mat(1, 2) = 0;
-            mat(1, 3) = 0;
-
-            mat(2, 0) = 0;
-            mat(2, 1) = 0;
-            mat(2, 2) = -number(2) / (far - near);
-            mat(2, 3) = 0;
-
-            mat(3, 0) = -(r + l) / (r - l);
-            mat(3, 1) = -(t + b) / (t - b);
-            mat(3, 2) = -(far + near) / (far - near); // runs from negative one
-            mat(3, 3) = 1;
+            mat(0, 0) = number(2) / (r - l); mat(0, 1) = 0;                   mat(0, 2) = 0;                            mat(0, 3) = 0;
+            mat(1, 0) = 0;                   mat(1, 1) = number(2) / (t - b); mat(1, 2) = 0;                            mat(1, 3) = 0;
+            mat(2, 0) = 0;                   mat(2, 1) = 0;                   mat(2, 2) = -number(2) / (far - near);    mat(2, 3) = 0;
+            mat(3, 0) = -(r + l) / (r - l);  mat(3, 1) = -(t + b) / (t - b);  mat(3, 2) = -(far + near) / (far - near); mat(3, 3) = 1;
 
 //            return mat;
             return mat.transpose();

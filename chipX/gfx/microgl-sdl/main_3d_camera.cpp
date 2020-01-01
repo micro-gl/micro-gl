@@ -35,15 +35,15 @@ arr<number> cube() {
 
     return {
             //down
-            {-50, -50, -50}, // left-bottom
-            {-50, -50, 50}, // left-top
-            {50, -50, 50}, // right-top
-            {50, -50, -50}, // right-bottom
+            {-1, -1, -1}, // left-bottom
+            {-1, -1, 1}, // left-top
+            {1, -1, 1}, // right-top
+            {1, -1, -1}, // right-bottom
             //up
-            {-50, 50, -50}, // left-bottom
-            {-50, 50, 50}, // left-top
-            {50, 50, 50}, // right-top
-            {50, 50, -50}, // right-bottom
+            {-1, 1, -1}, // left-bottom
+            {-1, 1, 1}, // left-top
+            {1, 1, 1}, // right-top
+            {1, 1, -1}, // right-bottom
     };
 
 }
@@ -64,26 +64,28 @@ void render_template(const arr<number_coords> & vertices) {
     number_coords fov_horizontal = math::deg_to_rad(60);
 //    number_coords aspect_ratio = microgl::math::deg_to_rad(90);
 
-    mat4 model = mat4::rotation(0, math::deg_to_rad(z), 0, {0,0,300});
+    // model is in z range: [-1, -500]
+    mat4 model = mat4::transform({0, math::deg_to_rad(z), 0}, {0,0,-300+25}, {25,25,25});
 //    mat4 view = camera::lookAt({0, 0, 250}, {0,0, 0}, {0,1,0});
-    mat4 view = camera::angleAt({0, 0, 660}, math::deg_to_rad(0),
+    mat4 view = camera::angleAt({0, 0, 0}, math::deg_to_rad(0),
             math::deg_to_rad(0), math::deg_to_rad(0));
-    mat4 perspective = camera::perspective(fov_horizontal, canvas_width, canvas_height, 1.0, 250.0);
+    mat4 projection = camera::perspective(fov_horizontal, canvas_width, canvas_height, 1, 100);
 //    mat4 perspective = camera::orthographic(-canvas_width, canvas_width, -canvas_height, canvas_height, 1, 100.0);
-    mat4 mvp = perspective * (view * model);
+    mat4 mvp = projection * (view * model);
 
     canvas->clear(WHITE);
 
     for (unsigned ix = 0; ix < vertices.size(); ++ix) {
-        vertex ndc_projected = mvp * vertices[ix];
+        vertex vv = mat4(view * model) * vertices[ix];
+        vertex ndc_projected = projection * vv;//vertices[ix];
         vertex raster;
         // convert to raster space
         raster.x = ((ndc_projected.x + number_coords(1))*canvas_width)/2;
         raster.y = canvas_height - (((ndc_projected.y + number_coords(1))*canvas_height)/2); // invert y for raster space
-        raster.z = (ndc_projected.z);// + number_coords(1))/number_coords(2);
+        raster.z = (ndc_projected.z + number_coords(1))/number_coords(2);
 
         bool inside = (raster.x >= 0) &&  (raster.x < canvas_width) &&
-                (raster.y >= 0) &&  (raster.y < canvas_height);
+                (raster.y >= 0) &&  (raster.y < canvas_height) && (math::abs_(raster.z) <= 1);
 //        if(!inside)
 //            continue;
 
