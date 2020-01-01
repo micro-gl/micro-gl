@@ -62,32 +62,25 @@ void render_template(const arr<number_coords> & vertices) {
     int canvas_width = canvas->width();
     int canvas_height = canvas->height();
     number_coords fov_horizontal = math::deg_to_rad(60);
-//    number_coords aspect_ratio = microgl::math::deg_to_rad(90);
 
-    // model is in z range: [-1, -500]
-    mat4 model = mat4::transform({0, math::deg_to_rad(z), 0}, {0,0,-300+25}, {25,25,25});
-//    mat4 view = camera::lookAt({0, 0, 250}, {0,0, 0}, {0,1,0});
-    mat4 view = camera::angleAt({0, 0, 0}, math::deg_to_rad(0),
+    mat4 model = mat4::transform({ math::deg_to_rad(z), math::deg_to_rad(z), 0}, {0,0,-300+25}, {25,25,25});
+//    mat4 view = camera::lookAt({0, 0, 100}, {0,0, 0}, {0,1,0});
+    mat4 view = camera::angleAt({0, 0, 100}, math::deg_to_rad(0),
             math::deg_to_rad(0), math::deg_to_rad(0));
-    mat4 projection = camera::perspective(fov_horizontal, canvas_width, canvas_height, 1, 100);
-//    mat4 perspective = camera::orthographic(-canvas_width, canvas_width, -canvas_height, canvas_height, 1, 100.0);
-    mat4 mvp = projection * (view * model);
+    mat4 projection = camera::perspective(fov_horizontal, canvas_width, canvas_height, 1, 500);
+//    mat4 projection = camera::orthographic(-canvas_width, canvas_width, -canvas_height, canvas_height, 1, 500.0);
+    mat4 mvp = projection * view * model;
 
     canvas->clear(WHITE);
 
     for (unsigned ix = 0; ix < vertices.size(); ++ix) {
-        vertex vv = mat4(view * model) * vertices[ix];
-        vertex ndc_projected = projection * vv;//vertices[ix];
-        vertex raster;
+        vertex ndc_projected = mvp * vertices[ix];
+        vertex raster = camera::viewport(ndc_projected, canvas_width, canvas_height);
         // convert to raster space
-        raster.x = ((ndc_projected.x + number_coords(1))*canvas_width)/2;
-        raster.y = canvas_height - (((ndc_projected.y + number_coords(1))*canvas_height)/2); // invert y for raster space
-        raster.z = (ndc_projected.z + number_coords(1))/number_coords(2);
-
         bool inside = (raster.x >= 0) &&  (raster.x < canvas_width) &&
                 (raster.y >= 0) &&  (raster.y < canvas_height) && (math::abs_(raster.z) <= 1);
-//        if(!inside)
-//            continue;
+        if(!inside)
+            continue;
 
         std::cout << raster.x << ", " << raster.y << ", " << raster.z << " - " << z <<std::endl;
         auto color = RED;

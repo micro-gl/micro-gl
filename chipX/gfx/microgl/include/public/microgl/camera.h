@@ -14,6 +14,18 @@ namespace microgl {
         using mat4 = matrix_4x4<number> ;
     public:
 
+        static vertex viewport(const vertex &ndc, const_ref width, const_ref height) {
+            // given NDC= Normalized Device Coordinates, then transform them into
+            // raster/canvas/viewport coords. We assume, that NDC coords are [-1,1] range
+            // convert to raster space
+            const_ref one = number(1), two=number(2);
+            vertex result{};
+            result.x = ((ndc.x + one)*width)/two;
+            result.y = height - (((ndc.y + one)*height)/two);
+            result.z = (ndc.z + one)/two;
+            return result;
+        }
+
         /**
          * compute the world to camera matrix by computing
          * compute the inverse of 4x4 Euclidean transformation matrix
@@ -155,23 +167,24 @@ namespace microgl {
             return m;
         }
 
-//        template <typename number>
         static
         matrix_4x4<number> orthographic(const number &l, const number & r,
-                                       const number & b, const number & t,
-                                       const number & near, const number & far) {
-            // map [l,r]->[-1,1], [b,t]->[-1,1], [-near,-far]->[-1,1]
+                                        const number & b, const number & t,
+                                        const number & n, const number & f) {
+            // map [l,r]->[-1,1], [b,t]->[-1,1], [-n,-far]->[-1,1]
             // we assume the projection is to be used on right-handed system
             // observing the negative z axis
-            matrix_4x4<number> mat{};
+            matrix_4x4<number> m{};
+            number two = number(2);
+            number one = number(1);
+            number zero = number(0);
+            // columns
+            m(0, 0) = two/(r-l);    m(0, 1) = 0;            m(0, 2) = 0;            m(0, 3) = -(r+l)/(r-l);
+            m(1, 0) = 0;            m(1, 1) = two/(t-b);    m(1, 2) = 0;            m(1, 3) = -(t+b)/(t-b);
+            m(2, 0) = 0;            m(2, 1) = 0;            m(2, 2) = -two/(f-n);   m(2, 3) = -(f+n)/(f-n);
+            m(3, 0) = 0;            m(3, 1) = 0;            m(3, 2) = 0;            m(3, 3) = one;
 
-            mat(0, 0) = number(2) / (r - l); mat(0, 1) = 0;                   mat(0, 2) = 0;                            mat(0, 3) = 0;
-            mat(1, 0) = 0;                   mat(1, 1) = number(2) / (t - b); mat(1, 2) = 0;                            mat(1, 3) = 0;
-            mat(2, 0) = 0;                   mat(2, 1) = 0;                   mat(2, 2) = -number(2) / (far - near);    mat(2, 3) = 0;
-            mat(3, 0) = -(r + l) / (r - l);  mat(3, 1) = -(t + b) / (t - b);  mat(3, 2) = -(far + near) / (far - near); mat(3, 3) = 1;
-
-//            return mat;
-            return mat.transpose();
+            return m;
         }
 
     };
