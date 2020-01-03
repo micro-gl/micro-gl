@@ -415,7 +415,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                      const index *indices,
                                      const boundary_info * boundary_buffer,
                                      const index size,
-                                     const TrianglesIndices type,
+                                     const enum indices type,
                                      const opacity opacity) {
 
 #define IND(a) indices[(a)]
@@ -423,7 +423,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
     const precision p = 4;
 
     switch (type) {
-        case TrianglesIndices::TRIANGLES:
+        case indices::TRIANGLES:
 
             for (index ix = 0; ix < size; ix+=3) {
 
@@ -436,7 +436,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             }
 
             break;
-        case TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
+        case indices::TRIANGLES_WITH_BOUNDARY:
         {
             index idx_boundary=0;
             for (index ix = 0; ix < size; ix+=3) {
@@ -459,7 +459,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             break;
 
         }
-        case TrianglesIndices::TRIANGLES_FAN:
+        case indices::TRIANGLES_FAN:
 
             for (index ix = 1; ix < size-1; ++ix) {
 
@@ -473,7 +473,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             }
 
             break;
-        case TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY:
+        case indices::TRIANGLES_FAN_WITH_BOUNDARY:
         {
             index idx_boundary=0;
 
@@ -499,7 +499,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
 
             break;
         }
-        case TrianglesIndices::TRIANGLES_STRIP:
+        case indices::TRIANGLES_STRIP:
         {
             bool even = true;
 
@@ -524,7 +524,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
 
             break;
         }
-        case TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY:
+        case indices::TRIANGLES_STRIP_WITH_BOUNDARY:
         {
             bool even = true;
             index idx_boundary = 0;
@@ -572,14 +572,14 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
                                               const vec2<number> *vertices,
                                               const index *indices,
                                               const index size,
-                                              const TrianglesIndices type,
+                                              const enum indices type,
                                               const opacity opacity) {
 
 #define IND(a) indices[(a)]
 
     switch (type) {
-        case TrianglesIndices::TRIANGLES:
-        case TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
+        case indices::TRIANGLES:
+        case indices::TRIANGLES_WITH_BOUNDARY:
 
             for (index ix = 0; ix < size; ix+=3) {
 
@@ -590,8 +590,8 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
             }
 
             break;
-        case TrianglesIndices::TRIANGLES_FAN:
-        case TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY:
+        case indices::TRIANGLES_FAN:
+        case indices::TRIANGLES_FAN_WITH_BOUNDARY:
 
             for (index ix = 1; ix < size-1; ++ix) {
 
@@ -603,8 +603,8 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
 
             break;
 
-        case TrianglesIndices::TRIANGLES_STRIP:
-        case TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY:
+        case indices::TRIANGLES_STRIP:
+        case indices::TRIANGLES_STRIP_WITH_BOUNDARY:
         {
             bool even = true;
 
@@ -1813,7 +1813,7 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
                                    opacity opacity,
                                    polygons::hints hint
                                    ) {
-    TrianglesIndices type;
+    indices type;
     // currently static on the stack
     dynamic_array<index> indices;
     dynamic_array<boundary_info> boundary_buffer;
@@ -1823,8 +1823,8 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
         case hints::CONCAVE:
         case hints::SIMPLE:
         {
-            type = antialias ? triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY :
-                   triangles::TrianglesIndices::TRIANGLES;
+            type = antialias ? triangles::indices::TRIANGLES_WITH_BOUNDARY :
+                   triangles::indices::TRIANGLES;
             tessellation::ear_clipping_triangulation<number>::compute(points,
                                                               size,
                                                               indices,
@@ -1836,8 +1836,8 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
         }
         case hints::CONVEX:
         {
-            type = antialias ? triangles::TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY :
-                   triangles::TrianglesIndices::TRIANGLES_FAN;
+            type = antialias ? triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY :
+                   triangles::indices::TRIANGLES_FAN;
             tessellation::fan_triangulation<number>::compute(points,
                                                      size,
                                                      indices,

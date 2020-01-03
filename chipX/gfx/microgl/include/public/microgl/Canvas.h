@@ -102,7 +102,7 @@ public:
                        const index *indices,
                        const boundary_info * boundary_buffer,
                        index size,
-                       TrianglesIndices type,
+                       enum indices type,
                        opacity opacity);
 
     template<typename BlendMode=blendmode::Normal,
@@ -112,7 +112,7 @@ public:
                                 const vec2<number> *vertices,
                                 const index *indices,
                                 index size,
-                                TrianglesIndices type,
+                                enum indices type,
                                 opacity opacity);
 
 

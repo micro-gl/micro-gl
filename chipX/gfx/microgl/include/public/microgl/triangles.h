@@ -4,7 +4,7 @@
 namespace microgl {
     namespace triangles {
 
-        enum class TrianglesIndices {
+        enum class indices {
             TRIANGLES,
             // every fourth element is a boundary info element
             TRIANGLES_WITH_BOUNDARY,

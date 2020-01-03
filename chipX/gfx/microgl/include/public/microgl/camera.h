@@ -12,16 +12,24 @@ namespace microgl {
         using const_ref = const number &;
         using vertex = vec3<number>;
         using mat4 = matrix_4x4<number> ;
+        using index = unsigned int;
     public:
 
-        static vertex viewport(const vertex &ndc, const_ref width, const_ref height) {
+        static
+        vertex world_to_raster_space(const vertex &world, const mat4 &mvp, index width, index height) {
+            // given world coord, transform it to raster/canvas space
+            return viewport(vertex(mvp*world), width, height);
+        }
+
+        static
+        vertex viewport(const vertex &ndc, index width, index height) {
             // given NDC= Normalized Device Coordinates, then transform them into
             // raster/canvas/viewport coords. We assume, that NDC coords are [-1,1] range
             // convert to raster space
             const_ref one = number(1), two=number(2);
             vertex result{};
             result.x = ((ndc.x + one)*width)/two;
-            result.y = height - (((ndc.y + one)*height)/two);
+            result.y = number(height) - (((ndc.y + one)*number(height))/two);
             result.z = (ndc.z + one)/two;
             return result;
         }

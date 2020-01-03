@@ -20,8 +20,8 @@ namespace tessellation {
                      index size,
                      dynamic_array<index> & indices_buffer_triangulation,
                      dynamic_array<triangles::boundary_info> * boundary_buffer,
-                     const triangles::TrianglesIndices &requested =
-                                triangles::TrianglesIndices::TRIANGLES_FAN
+                     const triangles::indices &requested =
+                                triangles::indices::TRIANGLES_FAN
                         );
 
     };

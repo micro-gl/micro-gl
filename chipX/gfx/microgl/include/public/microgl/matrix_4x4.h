@@ -168,7 +168,7 @@ namespace microgl {
             me[start + 2] = val.z;
         }
 
-        vertex operator*(const vertex & point) {
+        vertex operator*(const vertex & point) const {
             vertex res;
             const auto & m = (*this);
 

@@ -74,7 +74,7 @@ namespace tessellation {
         static int compute(vertex *$pts,
                             index size,
                             dynamic_array<index> & indices_buffer_triangulation,
-                            const microgl::triangles::TrianglesIndices &requested,
+                            const microgl::triangles::indices &requested,
                             dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
                             dynamic_array<hole> * holes,
                             dynamic_array<vertex> * result);
@@ -83,21 +83,21 @@ namespace tessellation {
                             index size,
                             dynamic_array<index> & indices_buffer_triangulation,
                             dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
-                            const microgl::triangles::TrianglesIndices &requested =
-                            microgl::triangles::TrianglesIndices::TRIANGLES
+                            const microgl::triangles::indices &requested =
+                            microgl::triangles::indices::TRIANGLES
         );
 
         static void compute(node_t *list,
                             index size,
                             dynamic_array<index> & indices_buffer_triangulation,
                             dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
-                            const microgl::triangles::TrianglesIndices &requested =
-                            microgl::triangles::TrianglesIndices::TRIANGLES
+                            const microgl::triangles::indices &requested =
+                            microgl::triangles::indices::TRIANGLES
         );
 
         static index required_indices_size(index polygon_size,
-                                           const microgl::triangles::TrianglesIndices &requested =
-                                           microgl::triangles::TrianglesIndices::TRIANGLES);
+                                           const microgl::triangles::indices &requested =
+                                           microgl::triangles::indices::TRIANGLES);
 
     private:
 

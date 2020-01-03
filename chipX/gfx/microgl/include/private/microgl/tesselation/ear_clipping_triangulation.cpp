@@ -366,7 +366,7 @@ namespace tessellation {
     int ear_clipping_triangulation<number>::compute(vertex *$pts,
                                              index size,
                                              dynamic_array<index> & indices_buffer_triangulation,
-                                             const microgl::triangles::TrianglesIndices &requested,
+                                             const microgl::triangles::indices &requested,
                                              dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
                                              dynamic_array<hole> * holes,
                                              dynamic_array<vertex > * result
@@ -438,7 +438,7 @@ namespace tessellation {
                                              index size,
                                              dynamic_array<index> & indices_buffer_triangulation,
                                              dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
-                                             const microgl::triangles::TrianglesIndices &requested) {
+                                             const microgl::triangles::indices &requested) {
         compute(polygon, size, indices_buffer_triangulation, requested, boundary_buffer, nullptr, nullptr);
     }
 
@@ -447,10 +447,10 @@ namespace tessellation {
                                              index size,
                                              dynamic_array<index> & indices_buffer_triangulation,
                                              dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
-                                             const microgl::triangles::TrianglesIndices &requested) {
+                                             const microgl::triangles::indices &requested) {
 
         bool requested_triangles_with_boundary =
-                requested==microgl::triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY;
+                requested==microgl::triangles::indices::TRIANGLES_WITH_BOUNDARY;
         auto &indices = indices_buffer_triangulation;
 
         index ind = 0;
@@ -707,10 +707,10 @@ namespace tessellation {
 
     template <typename number>
     index ear_clipping_triangulation<number>::required_indices_size(const index polygon_size,
-                                                          const microgl::triangles::TrianglesIndices &requested) {
+                                                          const microgl::triangles::indices &requested) {
         switch (requested) {
-            case microgl::triangles::TrianglesIndices::TRIANGLES:
-            case microgl::triangles::TrianglesIndices::TRIANGLES_WITH_BOUNDARY:
+            case microgl::triangles::indices::TRIANGLES:
+            case microgl::triangles::indices::TRIANGLES_WITH_BOUNDARY:
                 return (polygon_size - 2)*3;
             default:
                 return 0;

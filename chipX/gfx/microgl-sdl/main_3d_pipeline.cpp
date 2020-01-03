@@ -6,8 +6,9 @@
 #include <microgl/Canvas.h>
 #include <microgl/matrix_4x4.h>
 #include <microgl/Q.h>
-#include <microgl/camera.h>
+#include <microgl/pipeline.h>
 #include <microgl/dynamic_array.h>
+#include "data/model_3d_tree.h"
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -24,34 +25,14 @@ float t = 0.0f;
 
 void loop();
 void init_sdl(int width, int height);
-//template <typename number_transform, typename number_raster>
-//void render_template();
 
 template <typename number>
 using arr = dynamic_array<vec3<number>>;
 
-template <typename number>
-arr<number> cube() {
-
-    return {
-            //down
-            {-1, -1, -1}, // left-bottom
-            {-1, -1, 1}, // left-top
-            {1, -1, 1}, // right-top
-            {1, -1, -1}, // right-bottom
-            //up
-            {-1, 1, -1}, // left-bottom
-            {-1, 1, 1}, // left-top
-            {1, 1, 1}, // right-top
-            {1, 1, -1}, // right-bottom
-    };
-
-}
-
 float z = 0;
 
 template <typename number_coords>
-void render_template(const arr<number_coords> & vertices) {
+void render_template(const model_3d<number_coords> & object) {
     using vertex = vec3<number_coords>;
     using camera = microgl::camera<number_coords>;
     using mat4 = matrix_4x4<number_coords>;
@@ -61,42 +42,30 @@ void render_template(const arr<number_coords> & vertices) {
 
     int canvas_width = canvas->width();
     int canvas_height = canvas->height();
-    number_coords fov_horizontal = math::deg_to_rad(60);
 
-//    mat4 model = mat4::transform({ math::deg_to_rad(z), math::deg_to_rad(z), 0},
-//                                 {0,0,-300+25}, {25,25,25});
-
-    mat4 model = mat4::scale(10,10,10)*mat4::rotation(math::deg_to_rad(z), {0,1,1});
-//    mat4 view = camera::lookAt({0, 0, 100}, {0,0, 0}, {0,1,0});
-    mat4 view = camera::angleAt({0, 0, 100}, math::deg_to_rad(0),
-            math::deg_to_rad(z), math::deg_to_rad(0));
-    mat4 projection = camera::perspective(fov_horizontal, canvas_width, canvas_height, 1, 500);
-//    mat4 projection = camera::orthographic(-canvas_width, canvas_width, -canvas_height, canvas_height, 1, 500.0);
+    mat4 model = mat4::transform({ 0, math::deg_to_rad(z), math::deg_to_rad(z/2)},
+                                 {0,0,-100}, {1,1,1});
+    mat4 view = camera::lookAt({0, 0, 1}, {0,0, 0}, {0,1,0});
+    mat4 projection = camera::perspective(math::deg_to_rad(60),
+            canvas_width, canvas_height, 1, 500);
     mat4 mvp = projection * view * model;
-
     canvas->clear(WHITE);
-
-    for (unsigned ix = 0; ix < vertices.size(); ++ix) {
-        vertex ndc_projected = mvp * vertices[ix];
-        vertex raster = camera::viewport(ndc_projected, canvas_width, canvas_height);
-        // convert to raster space
-        bool inside = (raster.x >= 0) &&  (raster.x < canvas_width) &&
-                (raster.y >= 0) &&  (raster.y < canvas_height) && (math::abs_(raster.z) <= 1);
-        if(!inside)
-            continue;
-
-//        std::cout << raster.x << ", " << raster.y << ", " << raster.z << " - " << z <<std::endl;
-        auto color = RED;
-        if(ix>=7) color=BLUE;
-        canvas->drawCircle(color, raster.x, raster.y, number_coords(4), 255);
-    }
+    microgl::_3d::pipeline<number_coords, decltype(*canvas)>::render (
+            object.vertices.data(),
+            object.vertices.size(),
+            object.indices.data(),
+            object.indices.size(),
+            mvp,
+            triangles::indices::TRIANGLES,
+            *canvas
+            );
 
 }
 
 void render() {
 
-//    render_template<float>(cube<float>());
-    render_template<Q<10>>(cube<Q<10>>());
+    render_template<float>(tree_3d<float>);
+//    render_template<Q<8>>(tree_3d<Q<8>>);
 }
 
 int main() {

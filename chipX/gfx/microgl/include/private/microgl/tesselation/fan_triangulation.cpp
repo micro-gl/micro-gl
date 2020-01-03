@@ -7,10 +7,10 @@ namespace tessellation {
                                     index size,
                                     dynamic_array<index> & indices_buffer_triangulation,
                                     dynamic_array<triangles::boundary_info> * boundary_buffer,
-                                    const triangles::TrianglesIndices &requested) {
+                                    const triangles::indices &requested) {
 
         bool requested_triangles_with_boundary =
-                requested==triangles::TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY;
+                requested==triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY;
         auto &indices = indices_buffer_triangulation;
 
         for (index ix = 0; ix < size; ++ix) {

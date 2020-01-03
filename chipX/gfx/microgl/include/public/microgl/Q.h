@@ -55,7 +55,11 @@ public:
         this->_value = int_val<<P;
     }
 
-    Q(const int& int_val) {
+    Q(const signed& int_val) {
+        this->_value = int_val<<P;
+    }
+
+    Q(const unsigned & int_val) {
         this->_value = int_val<<P;
     }
 
@@ -65,8 +69,12 @@ public:
                              P);
     }
 
-    Q(const float &float_val) {
-        this->_value = integer(float_val * float(1u<<P));
+    Q(const float &val) {
+        this->_value = integer(val * float(1u<<P));
+    }
+
+    Q(const double &val) {
+        this->_value = integer(val * float(1u<<P));
     }
 
     // with assignments operators
