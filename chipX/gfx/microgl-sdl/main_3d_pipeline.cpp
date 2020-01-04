@@ -43,9 +43,9 @@ void render_template(const model_3d<number_coords> & object) {
     int canvas_width = canvas->width();
     int canvas_height = canvas->height();
 
-    mat4 model = mat4::transform({ 0, math::deg_to_rad(z), math::deg_to_rad(z/2)},
+    mat4 model = mat4::transform({ 0, math::deg_to_rad(z), math::deg_to_rad(0/2)},
                                  {0,0,-100}, {1,1,1});
-    mat4 view = camera::lookAt({0, 0, 1}, {0,0, 0}, {0,1,0});
+    mat4 view = camera::lookAt({0, 0, -z}, {0,0, -z-1}, {0,1,0});
     mat4 projection = camera::perspective(math::deg_to_rad(60),
             canvas_width, canvas_height, 1, 500);
     mat4 mvp = projection * view * model;
@@ -65,7 +65,7 @@ void render_template(const model_3d<number_coords> & object) {
 void render() {
 
     render_template<float>(tree_3d<float>);
-//    render_template<Q<8>>(tree_3d<Q<8>>);
+//    render_template<Q<10>>(tree_3d<Q<10>>);
 }
 
 int main() {

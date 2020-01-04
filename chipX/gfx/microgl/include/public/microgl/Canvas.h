@@ -18,6 +18,7 @@
 #include <microgl/dynamic_array.h>
 #include <microgl/tesselation/ear_clipping_triangulation.h>
 #include <microgl/tesselation/fan_triangulation.h>
+#include <microgl/cohen_sutherland_clipper.h>
 
 using namespace microgl::triangles;
 using namespace microgl::polygons;

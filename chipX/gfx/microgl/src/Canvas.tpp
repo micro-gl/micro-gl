@@ -1568,11 +1568,17 @@ template<typename number>
 void Canvas<P, CODER>::drawLine(const color_f_t &color,
                                 number x0, number y0,
                                 number x1, number y1) {
+    using csc = cohen_sutherland_clipper<number>;
+    auto clip =  csc::compute(x0, y0, x1, y1, number(0), number(0),
+            width(), height());
+    if(!clip.inside)
+        return;
+
     precision p = 4;
-    int x0_ = microgl::math::to_fixed(x0, p);
-    int y0_ = microgl::math::to_fixed(y0, p);
-    int x1_ = microgl::math::to_fixed(x1, p);
-    int y1_ = microgl::math::to_fixed(y1, p);
+    int x0_ = microgl::math::to_fixed(clip.x0, p);
+    int y0_ = microgl::math::to_fixed(clip.y0, p);
+    int x1_ = microgl::math::to_fixed(clip.x1, p);
+    int y1_ = microgl::math::to_fixed(clip.y1, p);
     drawLine(color, x0_, y0_, x1_, y1_, p);
 }
 
@@ -1581,6 +1587,8 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
                                 int x0, int y0,
                                 int x1, int y1,
                                 precision bits) {
+
+
 
     int X0 = x0, Y0 = y0, X1 = x1, Y1=y1;
     color_t color_input{};
