@@ -67,9 +67,9 @@ void render_template(const arr<number_coords> & vertices) {
 //                                 {0,0,-300+25}, {25,25,25});
 
     mat4 model = mat4::scale(10,10,10)*mat4::rotation(math::deg_to_rad(z), {0,1,1});
-//    mat4 view = camera::lookAt({0, 0, 100}, {0,0, 0}, {0,1,0});
-    mat4 view = camera::angleAt({0, 0, 100}, math::deg_to_rad(0),
-            math::deg_to_rad(z), math::deg_to_rad(0));
+    mat4 view = camera::lookAt({0, 0, 200-z}, {0,0, 200-z-1}, {0,1,0});
+//    mat4 view = camera::angleAt({0, 0, 100}, math::deg_to_rad(0),
+//            math::deg_to_rad(z), math::deg_to_rad(0));
     mat4 projection = camera::perspective(fov_horizontal, canvas_width, canvas_height, 1, 500);
 //    mat4 projection = camera::orthographic(-canvas_width, canvas_width, -canvas_height, canvas_height, 1, 500.0);
     mat4 mvp = projection * view * model;
@@ -77,15 +77,17 @@ void render_template(const arr<number_coords> & vertices) {
     canvas->clear(WHITE);
 
     for (unsigned ix = 0; ix < vertices.size(); ++ix) {
+        // convert to ndc space
         vertex ndc_projected = mvp * vertices[ix];
-        vertex raster = camera::viewport(ndc_projected, canvas_width, canvas_height);
         // convert to raster space
+        vertex raster = camera::viewport(ndc_projected, canvas_width, canvas_height);
+        // perform culling
         bool inside = (raster.x >= 0) &&  (raster.x < canvas_width) &&
-                (raster.y >= 0) &&  (raster.y < canvas_height) && (math::abs_(raster.z) <= 1);
+                (raster.y >= 0) &&  (raster.y < canvas_height) && (math::abs_(raster.z) < 1);
         if(!inside)
             continue;
 
-//        std::cout << raster.x << ", " << raster.y << ", " << raster.z << " - " << z <<std::endl;
+        std::cout << raster.x << ", " << raster.y << ", " << raster.z << " - " << z <<std::endl;
         auto color = RED;
         if(ix>=7) color=BLUE;
         canvas->drawCircle(color, raster.x, raster.y, number_coords(4), 255);
@@ -95,8 +97,8 @@ void render_template(const arr<number_coords> & vertices) {
 
 void render() {
 
-//    render_template<float>(cube<float>());
-    render_template<Q<10>>(cube<Q<10>>());
+    render_template<float>(cube<float>());
+//    render_template<Q<14>>(cube<Q<14>>());
 }
 
 int main() {

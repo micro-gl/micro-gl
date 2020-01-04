@@ -7,13 +7,11 @@
 #include <microgl/vec3.h>
 #include <microgl/triangles.h>
 #include <microgl/color.h>
-#include <microgl/canvas.h>
-
 
 namespace microgl {
     namespace _3d {
 
-        template <typename number, class canvas>
+        template <typename number, class canvas_type>
         class pipeline {
             /**
              * this is a simple 3d pipeline sugar interface
@@ -34,7 +32,7 @@ namespace microgl {
                         const index indices_size,
                         const mat4 & mvp,
                         const triangles::indices & type,
-                        canvas & canva) {
+                        canvas_type & canva) {
 
 #define IND(a) indices[(a)]
                 color_f_t color = BLACK;

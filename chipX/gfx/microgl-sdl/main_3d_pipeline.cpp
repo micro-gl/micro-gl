@@ -38,7 +38,7 @@ void render_template(const model_3d<number_coords> & object) {
     using mat4 = matrix_4x4<number_coords>;
     using math = microgl::math;
 
-    z+=0.121;
+    z+=0.1121;
 
     int canvas_width = canvas->width();
     int canvas_height = canvas->height();

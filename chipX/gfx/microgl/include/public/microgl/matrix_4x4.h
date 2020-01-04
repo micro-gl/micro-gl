@@ -179,7 +179,7 @@ namespace microgl {
 
             // if it is not an affine transform, likely a projective matrix.
             // this is the transform from homogeneous to Cartesian coordinate,
-            // thus making also the z division
+            // thus making also the z division. this transforms from clip space to ndc
             if(w!=number(1) && w!=number(0))
                 res=res/w;
 

@@ -24,13 +24,20 @@ namespace microgl {
         static
         vertex viewport(const vertex &ndc, index width, index height) {
             // given NDC= Normalized Device Coordinates, then transform them into
-            // raster/canvas/viewport coords. We assume, that NDC coords are [-1,1] range
+            // raster/canvas/viewport coords. We assume, that NDC coords are [-1,1] range.
+            // z value is mapped to [0,1] range
             // convert to raster space
-            const_ref one = number(1), two=number(2);
+            const_ref zero=number(0), one = number(1), two=number(2);
             vertex result{};
             result.x = ((ndc.x + one)*width)/two;
             result.y = number(height) - (((ndc.y + one)*number(height))/two);
             result.z = (ndc.z + one)/two;
+            // z clamping
+            if(result.z<zero)
+                result.z = zero;
+            if(result.z>one)
+                result.z = one;
+
             return result;
         }
 
