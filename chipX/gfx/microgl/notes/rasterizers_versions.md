@@ -404,3 +404,93 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
     }
 
 ```
+
+#### draw quad older version
+```
+
+template<typename P, typename CODER>
+template <typename BlendMode, typename PorterDuff,
+        typename Sampler,
+        typename P2, typename CODER2>
+void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
+                                const int left, const int top,
+                                const int right, const int bottom,
+                                int u0, int v0,
+                                int u1, int v1,
+                                const precision sub_pixel_precision,
+                                const precision uv_precision,
+                                const opacity opacity) {
+    color_t col_bmp{};
+    P converted{};
+
+    uint8_t DIV_prec = 10;
+    uint8_t DIV_prec_minus_sub_pixel = DIV_prec - sub_pixel_precision;
+    // if you are using half, don't forget to clamp down the road,
+    // but it will take cycles so I don't do it !!!
+    int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
+
+    int bmp_width = bmp.width();
+    int bmp_height = bmp.height();
+    int bmp_w_max = bmp_width - 1;
+    int bmp_h_max = bmp_height - 1;
+
+    int left_ = functions::max((left + max_sub_pixel_precision_value) >> sub_pixel_precision, (int)0);
+    int top_ = functions::max((top + max_sub_pixel_precision_value) >> sub_pixel_precision, ( int)0);
+    int right_ = functions::min((right + max_sub_pixel_precision_value) >> sub_pixel_precision, ( int)width()-1);
+    int bottom_ = functions::min((bottom + max_sub_pixel_precision_value) >> sub_pixel_precision, ( int)height()-1);
+
+//    u0 = 16;//u0+((u1-u0) *(left_-left))/(right-left);
+//    v0 = 0;//v0+((v1-v0) *(top_-top))/(bottom-top);
+//    u1 = 32;//u0+((u1-u0) *(right_-left))/(right-left);
+//    v1 = 32;//v0+((v1-v0) *(bottom_-top))/(bottom-top);
+//
+    int ddu = int_to_fixed_2(((u1-u0)*bmp_width)>>uv_precision, DIV_prec);
+    int ddv = int_to_fixed_2((-(v1-v0)*bmp_height)>>uv_precision, DIV_prec);
+
+    int max_uv = (1<<uv_precision);
+    int u_start = int_to_fixed_2((u0*bmp_w_max)>>uv_precision, DIV_prec_minus_sub_pixel);
+    // this is more stable to step forward than backward
+    int v_start = int_to_fixed_2(((max_uv-v0)*bmp_h_max)>>uv_precision, DIV_prec_minus_sub_pixel);
+    int du = (right_-left_)==0 ? 0 : fixed_div_int(ddu, right-left);
+    int dv = (bottom_-top_)==0 ? 0 : fixed_div_int(ddv, bottom-top);
+    int u = u_start, v = v_start;
+
+    int index;
+
+    index = top_ * _width;
+
+    v = bmp_h_max<<DIV_prec_minus_sub_pixel;
+
+    for (int y = top_; y < bottom_; y++) {
+
+        for (int x = left_; x < right_; x++) {
+            Sampler::sample(bmp, u, v,
+                            DIV_prec_minus_sub_pixel,
+                            col_bmp);
+
+            // compile time branching
+//            if(Sampler::type() != sampler::type::NearestNeighbor)
+//                Sampler::sample(bmp, u, v,
+//                        DIV_prec_minus_sub_pixel, col_bmp);
+//            else {
+//                u_i = fixed_to_int_2(u + f_half, DIV_prec_minus_sub_pixel);
+//                index_bmp = (v_i) + u_i;
+//                // decode the bitmap
+//                bmp.decode(index_bmp, col_bmp);
+//            }
+            //
+
+            // re-encode for a different canvas
+            blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
+
+            u += du;
+        }
+
+        u = u_start;
+        v += dv;
+        index += _width;
+    }
+
+}
+
+```
