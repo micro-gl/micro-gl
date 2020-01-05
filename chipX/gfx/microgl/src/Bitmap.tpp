@@ -3,7 +3,7 @@
 template<typename P, typename CODER>
 template<typename P2, typename CODER2>
 Bitmap<P2, CODER2> * Bitmap<P, CODER>::convertToBitmap() {
-    auto * bmp_2 = new Bitmap<P2, CODER2>(_width, _height, new CODER2());
+    auto * bmp_2 = new Bitmap<P2, CODER2>(_width, _height);
 
     copyToBitmap(*bmp_2);
 
@@ -30,20 +30,19 @@ void Bitmap<P, CODER>::copyToBitmap(Bitmap<P2, CODER2> & bmp) {
 }
 
 template<typename P, typename CODER>
-Bitmap<P, CODER>::Bitmap(P* $pixels, int w, int h, PixelCoder<P, CODER> * $coder) :
-        FrameBuffer<P>($pixels, w * h), _width{w}, _height{h}, _format{$coder->format()}, _coder{$coder} {
+Bitmap<P, CODER>::Bitmap(P* $pixels, int w, int h) :
+        FrameBuffer<P>($pixels, w * h), _width{w}, _height{h} {
 }
 
 template<typename P, typename CODER>
-Bitmap<P, CODER>::Bitmap(int w, int h, PixelCoder<P, CODER> * $coder) :
-                        Bitmap<P, CODER>::Bitmap(new P[w * h], w, h, $coder) {
+Bitmap<P, CODER>::Bitmap(int w, int h) :
+                        Bitmap<P, CODER>::Bitmap(new P[w * h], w, h) {
 
 }
 
 template<typename P, typename CODER>
-Bitmap<P, CODER>::Bitmap(uint8_t *$pixels, int w, int h, PixelCoder<P, CODER> * $coder) :
-                        Bitmap<P, CODER>::Bitmap(reinterpret_cast<P *>($pixels), w, h, $coder) {
-
+Bitmap<P, CODER>::Bitmap(uint8_t *$pixels, int w, int h) :
+                        Bitmap<P, CODER>::Bitmap(reinterpret_cast<P *>($pixels), w, h) {
 }
 
 template<typename P, typename CODER>
@@ -62,10 +61,10 @@ int Bitmap<P, CODER>::height() const {
     return _height;
 }
 
-template<typename P, typename CODER>
-PixelFormat Bitmap<P, CODER>::format() {
-    return _coder->format();
-}
+//template<typename P, typename CODER>
+//PixelFormat Bitmap<P, CODER>::format() {
+//    return _coder->format();
+//}
 
 template<typename P, typename CODER>
 P Bitmap<P, CODER>::pixelAt(int x, int y) const {
@@ -73,7 +72,7 @@ P Bitmap<P, CODER>::pixelAt(int x, int y) const {
 }
 
 template<typename P, typename CODER>
-PixelCoder<P, CODER> *Bitmap<P, CODER>::coder() {
+coder::PixelCoder<P, CODER> &Bitmap<P, CODER>::coder() {
     return _coder;
 }
 
@@ -84,28 +83,28 @@ P Bitmap<P, CODER>::pixelAt(int index) const {
 
 template<typename P, typename CODER>
 void Bitmap<P, CODER>::decode(int x, int y, color_t &output)  const{
-    _coder->decode(pixelAt(x, y), output);
+    _coder.decode(pixelAt(x, y), output);
 }
 
 template<typename P, typename CODER>
 void Bitmap<P, CODER>::decode(int index, color_t &output)  const{
-    _coder->decode(pixelAt(index), output);
+    _coder.decode(pixelAt(index), output);
 }
 
 template<typename P, typename CODER>
 void Bitmap<P, CODER>::decode(int x, int y, color_f_t &output) const {
-    _coder->decode(pixelAt(x, y), output);
+    _coder.decode(pixelAt(x, y), output);
 }
 
 template<typename P, typename CODER>
 void Bitmap<P, CODER>::decode(int index, color_f_t &output) const {
-    _coder->decode(pixelAt(index), output);
+    _coder.decode(pixelAt(index), output);
 }
 
 template<typename P, typename CODER>
 void Bitmap<P, CODER>::writeColor(int index, const color_t &color) {
     P output;
-    _coder->encode(color, output);
+    _coder.encode(color, output);
     this->_data[index] = output;
 }
 
@@ -117,7 +116,7 @@ void Bitmap<P, CODER>::writeColor(int x, int y, const color_t &color) {
 template<typename P, typename CODER>
 void Bitmap<P, CODER>::writeColor(int index, const color_f_t &color) {
     P output;
-    _coder->encode(color, output);
+    _coder.encode(color, output);
     this->_data[index] = output;
 }
 

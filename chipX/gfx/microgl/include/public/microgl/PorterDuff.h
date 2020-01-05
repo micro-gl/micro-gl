@@ -5,7 +5,7 @@
 #include "crpt.h"
 #include <cmath>
 
-using namespace microgl;
+using namespace microgl::color;
 
 namespace porterduff {
 #define MAX_VAL_BITS(a) ((1<<(bits)) - 1)

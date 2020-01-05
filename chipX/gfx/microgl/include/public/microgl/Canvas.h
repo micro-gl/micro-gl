@@ -26,16 +26,27 @@ using namespace microgl::polygons;
 
 template<typename P, typename CODER>
 class Canvas {
-public:
+private:
+    int _width = 0, _height = 0;
+    Bitmap<P, CODER> * _bitmap_canvas = nullptr;
+    bool _flag_antiAlias = true;
+
+    // compositing
+    bool _flag_hasNativeAlphaChannel = false;
+    uint8_t _alpha_bits_for_compositing = 8;
+    unsigned int _max_alpha_value = 255;
+
     using index = unsigned int;
     using precision = unsigned char;
     using opacity = unsigned char;
 
+public:
     explicit Canvas(Bitmap<P, CODER> * $bmp);
-    Canvas(int width, int height, PixelCoder<P, CODER> * $coder);
+    Canvas(int width, int height);
+//    Canvas(int width, int height, PixelCoder<P, CODER> * $coder);
     int width();
     int height();
-    PixelFormat pixelFormat();
+//    PixelFormat pixelFormat();
     unsigned int sizeofPixel();
 
     P* pixels();
@@ -46,7 +57,7 @@ public:
     void getPixelColor(int x, int y, color_f_t & output);
     void getPixelColor(int index, color_f_t & output);
 
-    PixelCoder<P, CODER> * coder();
+    coder::PixelCoder<P, CODER> & coder();
     Bitmap<P, CODER> * bitmapCanvas();
 
     bool hasNativeAlphaChannel();
@@ -55,13 +66,13 @@ public:
 
     void clear(const color_f_t &color);
 
-    // float blenders
-    template<typename BlendMode=blendmode::Normal,
-             typename PorterDuff=porterduff::SourceOverOnOpaque>
-    void blendColor(const color_f_t &val, int x, int y, float opacity=1.0f);
-    template<typename BlendMode=blendmode::Normal,
-             typename PorterDuff=porterduff::SourceOverOnOpaque>
-    void blendColor(const color_f_t &val, int index, float opacity=1.0f);
+//    // float blenders
+//    template<typename BlendMode=blendmode::Normal,
+//             typename PorterDuff=porterduff::SourceOverOnOpaque>
+//    void blendColor(const color_f_t &val, int x, int y, float opacity=1.0f);
+//    template<typename BlendMode=blendmode::Normal,
+//             typename PorterDuff=porterduff::SourceOverOnOpaque>
+//    void blendColor(const color_f_t &val, int index, float opacity=1.0f);
 
     // integer blenders
     template<typename BlendMode=blendmode::Normal,
@@ -282,16 +293,6 @@ public:
                       vec2<number> *points,
                       unsigned int size = 4,
                       bool closed_path = false);
-
-private:
-    int _width = 0, _height = 0;
-    Bitmap<P, CODER> * _bitmap_canvas = nullptr;
-    bool _flag_antiAlias = true;
-
-    // compositing
-    bool _flag_hasNativeAlphaChannel = false;
-    uint8_t _alpha_bits_for_compositing = 8;
-    unsigned int _max_alpha_value = 255;
 
 
 };

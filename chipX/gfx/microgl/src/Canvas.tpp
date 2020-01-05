@@ -13,7 +13,7 @@ Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
                         : _width{$bmp->width()}, _height{$bmp->height()}, _bitmap_canvas($bmp) {
 
 
-    uint8_t alpha_bits = coder()->bits_per_alpha();
+    uint8_t alpha_bits = CODER::alpha_bits();//coder()->bits_per_alpha();
 
     _flag_hasNativeAlphaChannel = alpha_bits!=0;
 
@@ -26,13 +26,13 @@ Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
 }
 
 template<typename P, typename CODER>
-Canvas<P, CODER>::Canvas(int width, int height, PixelCoder<P, CODER> * $coder) :
-            Canvas<P, CODER>(new Bitmap<P, CODER>(width, height, $coder)) {
+Canvas<P, CODER>::Canvas(int width, int height) :
+            Canvas<P, CODER>(new Bitmap<P, CODER>(width, height)) {
 
 }
 
 template<typename P, typename CODER>
-inline PixelCoder<P, CODER> *Canvas<P, CODER>::coder() {
+inline coder::PixelCoder<P, CODER> &Canvas<P, CODER>::coder() {
     return _bitmap_canvas->coder();
 }
 
@@ -41,10 +41,10 @@ inline Bitmap<P, CODER> *Canvas<P, CODER>::bitmapCanvas() {
     return _bitmap_canvas;
 }
 
-template<typename P, typename CODER>
-PixelFormat Canvas<P, CODER>::pixelFormat() {
-    return coder()->format();
-}
+//template<typename P, typename CODER>
+//PixelFormat Canvas<P, CODER>::pixelFormat() {
+//    return coder()->format();
+//}
 
 template<typename P, typename CODER>
 unsigned int Canvas<P, CODER>::sizeofPixel() {
@@ -116,81 +116,81 @@ P *Canvas<P, CODER>::pixels() {
 template<typename P, typename CODER>
 void Canvas<P, CODER>::clear(const color_f_t &color) {
     P output;
-    _bitmap_canvas->coder()->encode(color, output);
+    _bitmap_canvas->coder().encode(color, output);
     _bitmap_canvas->fill(output);
 }
 
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff>
-inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y, float opacity) {
-    blendColor<BlendMode, PorterDuff>(val, y*_width + x, opacity);
-}
+//template<typename P, typename CODER>
+//template<typename BlendMode, typename PorterDuff>
+//inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y, float opacity) {
+//    blendColor<BlendMode, PorterDuff>(val, y*_width + x, opacity);
+//}
 
-
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff>
-inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index, float opacity) {
-    color_f_t result;//=val;
-    P output;
-
-    if(true){
-        color_f_t backdrop, blended;
-        const color_f_t & src = val;
-
-        // get backdrop color
-        getPixelColor(index, backdrop);
-
-        uint8_t alpha_bits = coder()->bits_per_alpha();
-
-        // fix alpha bits depth in case we don't natively
-        // support alpha, this is correct because we want to
-        // support compositing even if the surface is opaque.
-        if(alpha_bits==0) {
-            backdrop.a = 1.0f;
-        }
-
-        // if blend-mode is normal or the backdrop is completely transparent
-        // then we don't need to blend
-        bool skip_blending = BlendMode::type()==blendmode::type::Normal || backdrop.a==0;
-
-        // if we are normal then do nothing
-        if(!skip_blending) { //  or backdrop alpha is zero is also valid
-
-            BlendMode::blend(backdrop, src, blended);
-
-            // if backdrop alpha!= max_alpha let's first composite the blended color, this is
-            // an intermidiate step before Porter-Duff
-            if(backdrop.a < 1.0f) {
-                float comp = 1.0f - backdrop.a;
-                blended.r = (comp * src.r + backdrop.a * blended.r);
-                blended.g = (comp * src.g + backdrop.a * blended.g);
-                blended.b = (comp * src.b + backdrop.a * blended.b);
-            }
-            else {
-                // do nothing if background is opaque (backdrop alpha==max_alpha) then it will equal blended
-            }
-
-        }
-        else {
-            // skipped blending therefore use src color
-            blended.r = src.r;
-            blended.g = src.g;
-            blended.b = src.b;
-        }
-
-        // preserve src alpha before Porter-Duff
-        blended.a = src.a * opacity;
-
-        // finally alpha composite with Porter-Duff equations
-        PorterDuff::composite(backdrop, blended, result);
-
-    } else
-        result = val;
-
-    coder()->encode(result, output);
-
-    drawPixel(output, index);
-}
+//
+//template<typename P, typename CODER>
+//template<typename BlendMode, typename PorterDuff>
+//inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index, float opacity) {
+//    color_f_t result;//=val;
+//    P output;
+//
+//    if(true){
+//        color_f_t backdrop, blended;
+//        const color_f_t & src = val;
+//
+//        // get backdrop color
+//        getPixelColor(index, backdrop);
+//
+//        uint8_t alpha_bits = coder()->bits_per_alpha();
+//
+//        // fix alpha bits depth in case we don't natively
+//        // support alpha, this is correct because we want to
+//        // support compositing even if the surface is opaque.
+//        if(alpha_bits==0) {
+//            backdrop.a = 1.0f;
+//        }
+//
+//        // if blend-mode is normal or the backdrop is completely transparent
+//        // then we don't need to blend
+//        bool skip_blending = BlendMode::type()==blendmode::type::Normal || backdrop.a==0;
+//
+//        // if we are normal then do nothing
+//        if(!skip_blending) { //  or backdrop alpha is zero is also valid
+//
+//            BlendMode::blend(backdrop, src, blended);
+//
+//            // if backdrop alpha!= max_alpha let's first composite the blended color, this is
+//            // an intermidiate step before Porter-Duff
+//            if(backdrop.a < 1.0f) {
+//                float comp = 1.0f - backdrop.a;
+//                blended.r = (comp * src.r + backdrop.a * blended.r);
+//                blended.g = (comp * src.g + backdrop.a * blended.g);
+//                blended.b = (comp * src.b + backdrop.a * blended.b);
+//            }
+//            else {
+//                // do nothing if background is opaque (backdrop alpha==max_alpha) then it will equal blended
+//            }
+//
+//        }
+//        else {
+//            // skipped blending therefore use src color
+//            blended.r = src.r;
+//            blended.g = src.g;
+//            blended.b = src.b;
+//        }
+//
+//        // preserve src alpha before Porter-Duff
+//        blended.a = src.a * opacity;
+//
+//        // finally alpha composite with Porter-Duff equations
+//        PorterDuff::composite(backdrop, blended, result);
+//
+//    } else
+//        result = val;
+//
+//    coder()->encode(result, output);
+//
+//    drawPixel(output, index);
+//}
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
@@ -211,7 +211,7 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity 
         // get backdrop color
         getPixelColor(index, backdrop);
 
-        uint8_t alpha_bits = coder()->bits_per_alpha();
+        uint8_t alpha_bits = coder().alpha_bits();
 
         // fix alpha bits depth in case we don't natively
         // support alpha, this is correct because we want to
@@ -232,9 +232,9 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity 
         if(!skip_blending) { //  or backdrop alpha is zero is also valid
 
             BlendMode::blend(backdrop, src, blended,
-                             coder()->bits_per_red(),
-                             coder()->bits_per_green(),
-                             coder()->bits_per_blue());
+                             coder().red_bits(),
+                             coder().green_bits(),
+                             coder().blue_bits());
 
             // if backdrop alpha!= max_alpha let's first composite the blended color, this is
             // an intermidiate step before Porter-Duff
@@ -273,7 +273,7 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity 
     } else
         result = val;
 
-    coder()->encode(result, output);
+    coder().encode(result, output);
 
     drawPixel(output, index);
 }
@@ -301,7 +301,7 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
                                   const opacity opacity) {
     color_t color_int;
     uint8_t p = sub_pixel_precision;
-    coder()->convert(color, color_int);
+    coder().convert(color, color_int);
 
     int bits_for_antialias_distance, max_blend_distance=0;
     int a, b, c=0;
@@ -674,7 +674,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     }
 
     color_t color_int;
-    coder()->convert(color, color_int);
+    coder().convert(color, color_int);
     bool perform_opacity = opacity < _max_alpha_value;
     // sub_pixel_precision;
     // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
@@ -1426,7 +1426,7 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
                                 const precision sub_pixel_precision,
                                 const opacity opacity) {
     color_t color_int;
-    this->coder()->convert(color, color_int);
+    this->coder().convert(color, color_int);
 
     unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
 
@@ -1667,7 +1667,7 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
     int X0 = x0, Y0 = y0, X1 = x1, Y1=y1;
     color_t color_input{};
 
-    coder()->convert(color, color_input);
+    coder().convert(color, color_input);
 
     unsigned int IntensityBits = 8;
     unsigned int NumLevels = 1 << IntensityBits;
@@ -1939,7 +1939,7 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
 
     // draw triangles batch
     drawTriangles<BlendMode, PorterDuff, antialias>(
-            RED,
+            color::colors::RED,
             points,
             indices.data(),
             boundary_buffer.data(),
@@ -1949,7 +1949,7 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
 
 //    return;
     // draw triangulation
-    drawTrianglesWireframe(BLACK,
+    drawTrianglesWireframe(color::colors::BLACK,
                            points,
                            indices.data(),
                            indices.size(),

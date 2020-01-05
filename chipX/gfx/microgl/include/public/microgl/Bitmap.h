@@ -1,7 +1,3 @@
-//
-// Created by Tomer Shalev on 2019-06-22.
-//
-
 #pragma once
 
 #include "FrameBuffer.h"
@@ -16,9 +12,9 @@ public:
     template <typename P2, typename CODER2>
     void copyToBitmap(Bitmap<P2, CODER2> & bmp);
 
-    Bitmap(int w, int h, PixelCoder<P, CODER> * $coder);
-    Bitmap(P* $pixels, int w, int h, PixelCoder<P, CODER> * $coder);
-    Bitmap(uint8_t* $pixels, int w, int h, PixelCoder<P, CODER> * $coder);
+    Bitmap(int w, int h);
+    Bitmap(P* $pixels, int w, int h);
+    Bitmap(uint8_t* $pixels, int w, int h);
     ~Bitmap();
 
     P pixelAt(int x, int y) const;
@@ -42,13 +38,13 @@ public:
 
     int width() const;
     int height() const;
-    PixelFormat format();
-    PixelCoder<P, CODER> * coder();
+//    PixelFormat format();
+    coder::PixelCoder<P, CODER> & coder();
 
 protected:
     int _width = 0, _height = 0;
-    PixelFormat _format;
-    PixelCoder<P, CODER> * _coder;
+//    PixelFormat _format;
+    coder::PixelCoder<P, CODER> _coder;
 
 };
 

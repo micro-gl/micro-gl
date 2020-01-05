@@ -5,10 +5,11 @@
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/color.h>
-#include <microgl/PixelCoder.h>
+#include <microgl/pixel_coders/RGB888_ARRAY.h>
+#include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/Bitmap.h>
 
-#define TEST_ITERATIONS 100
+#define TEST_ITERATIONS 1
 #define W 640*1
 #define H 480*1
 
@@ -16,8 +17,8 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-typedef Bitmap<uint32_t, RGB888_PACKED_32> Bitmap24bit_Packed32;
-typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
+typedef Bitmap<uint32_t, coder::RGB888_PACKED_32> Bitmap24bit_Packed32;
+typedef Canvas<uint32_t, coder::RGB888_PACKED_32> Canvas24Bit_Packed32;
 
 Canvas24Bit_Packed32 * canvas;
 
@@ -25,7 +26,7 @@ Bitmap24bit_Packed32 * bmp_2;
 Bitmap24bit_Packed32 * bmp_uv;
 
 Resources resources{};
-
+using namespace microgl::color;
 void loop();
 void init_sdl(int width, int height);
 
@@ -33,8 +34,7 @@ static float d = 0;
 
 inline void render() {
 
-    canvas->clear(WHITE);
-
+    canvas->clear(microgl::color::colors::WHITE);
         // 100, aa, bilinear -> 420
         // 100, aa, nearest -> 240
         // 100, no aa, no opacity, nearest -> 125
@@ -46,7 +46,7 @@ inline void render() {
 //                                                                             255,
 //                                                                             true, true, true);
 
-
+//        std::cout << coder::RGB888_PACKED_32::format();
         canvas->drawQuad<blendmode::Normal, porterduff::SourceOverOnOpaque, sampler::Bilinear>(
                 *bmp_2, -300, -300, 300, 300);
 
@@ -106,16 +106,16 @@ void init_sdl(int width, int height) {
     renderer = SDL_CreateRenderer(window, -1, 0);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
 
-    canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
+    canvas = new Canvas24Bit_Packed32(width, height);
 //    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
     auto img_1 = resources.loadImageFromCompressedPath("charsprites.png");
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
 //
-    auto *bmp_1_native = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_1.data, img_1.width, img_1.height, new RGB888_ARRAY());
-    auto *bmp_2_native = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_2.data, img_2.width, img_2.height, new RGB888_ARRAY());
+    auto *bmp_1_native = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
+    auto *bmp_2_native = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
 
-    bmp_uv = bmp_1_native->convertToBitmap<uint32_t, RGB888_PACKED_32>();
-    bmp_2 = bmp_2_native->convertToBitmap<uint32_t, RGB888_PACKED_32>();
+    bmp_uv = bmp_1_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>();
+    bmp_2 = bmp_2_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>();
     resources.init();
 }
 

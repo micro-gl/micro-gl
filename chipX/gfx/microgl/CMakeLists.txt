@@ -42,7 +42,11 @@ set(sources
         include/private/microgl/tesselation/planarize_division.h
         include/private/microgl/tesselation/half_edge.h
         include/public/microgl/Q.h
-        include/public/microgl/math.h include/public/microgl/masks.h include/public/microgl/porter_duff/None.h)
+        include/public/microgl/math.h
+        include/public/microgl/masks.h
+        include/public/microgl/porter_duff/None.h
+        include/public/microgl/pixel_coders/RGB888_ARRAY.h
+        src/PixelCoder.cpp src/color.cpp)
 
 add_library(${PROJECT_NAME} ${sources})
 
