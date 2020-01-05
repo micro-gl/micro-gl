@@ -12,6 +12,7 @@
 #include <microgl/Curves.h>
 #include <microgl/triangles.h>
 #include <microgl/polygons.h>
+#include <microgl/masks.h>
 #include <microgl/math.h>
 #include <microgl/Q.h>
 #include <microgl/tesselation/curve_divider.h>
@@ -65,10 +66,10 @@ public:
     // integer blenders
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>
-    void blendColor(const color_t &val, int x, int y, uint8_t opacity);
+    void blendColor(const color_t &val, int x, int y, opacity opacity);
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>
-    void blendColor(const color_t &val, int index, uint8_t opacity);
+    void blendColor(const color_t &val, int index, opacity opacity);
 
     void drawPixel(const P &val, int x, int y);
     void drawPixel(const P &val, int index);
@@ -224,8 +225,28 @@ public:
     void drawQuad(const Bitmap<P2, CODER2> &bmp,
                   number left, number top,
                   number right, number bottom,
-                  number u0=0.0f, number v0=0.0f,
-                  number u1=1.0f, number v1=1.0f,
+                  number u0=number(0), number v0=number(0),
+                  number u1=number(1), number v1=number(1),
+                  opacity opacity = 255);
+
+    template <typename P2, typename CODER2, typename number,
+            typename Sampler=sampler::NearestNeighbor>
+    void drawMask(const masks::chrome_mode &mode,
+                  const Bitmap<P2, CODER2> &bmp,
+                  number left, number top,
+                  number right, number bottom,
+                  number u0=number(0), number v0=number(0),
+                  number u1=number(1), number v1=number(1),
+                  opacity opacity = 255);
+
+    template <typename P2, typename CODER2, typename Sampler=sampler::NearestNeighbor>
+    void drawMask(const masks::chrome_mode &mode,
+                  const Bitmap<P2, CODER2> &bmp,
+                  int left, int top,
+                  int right, int bottom,
+                  int u0, int v0,
+                  int u1, int v1,
+                  precision sub_pixel_precision, precision uv_precision,
                   opacity opacity = 255);
 
     // polygons
@@ -271,6 +292,7 @@ private:
     bool _flag_hasNativeAlphaChannel = false;
     uint8_t _alpha_bits_for_compositing = 8;
     unsigned int _max_alpha_value = 255;
+
 
 };
 

@@ -8,6 +8,7 @@
 
 using namespace microgl;
 
+
 enum PixelFormat {
     RGBA8888,
     ARGB8888,

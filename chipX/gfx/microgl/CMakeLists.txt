@@ -21,7 +21,6 @@ set(sources
 #        src/Canvas.tpp
         include/public/microgl/Canvas.h
         src/Functions.cpp
-        src/BlendMode.cpp
         src/PorterDuff.cpp
         src/Curves.cpp
 #        src/BentleyOttmannLineIntersection.cpp
@@ -43,7 +42,7 @@ set(sources
         include/private/microgl/tesselation/planarize_division.h
         include/private/microgl/tesselation/half_edge.h
         include/public/microgl/Q.h
-        include/public/microgl/math.h include/public/microgl/masks.h)
+        include/public/microgl/math.h include/public/microgl/masks.h include/public/microgl/porter_duff/None.h)
 
 add_library(${PROJECT_NAME} ${sources})
 

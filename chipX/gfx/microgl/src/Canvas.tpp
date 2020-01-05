@@ -194,13 +194,13 @@ inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index, float 
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
-inline void Canvas<P, CODER>::blendColor(const color_t &val, int x, int y, uint8_t opacity) {
+inline void Canvas<P, CODER>::blendColor(const color_t &val, int x, int y, opacity opacity) {
     blendColor<BlendMode, PorterDuff>(val, y*_width + x, opacity);
 }
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
-inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, uint8_t opacity) {
+inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity opacity) {
     color_t result;//=val;
     P output;
 
@@ -222,7 +222,7 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, uint8_t 
 
         // if blend-mode is normal or the backdrop is completely transparent
         // then we don't need to blend.
-        // the first conditional shouldbe resolved at compile-time therefore it is zero cost !!!
+        // the first conditional should be resolved at compile-time therefore it is zero cost !!!
         // this will help with avoiding the inner conditional of the backdrop alpha, the normal
         // blending itself is zero-cost itself, but after it there is a branching which
         // is unpredictable, therefore avoiding at compile-time is great.
@@ -1486,7 +1486,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
     v0 = v0+((v1-v0) *(top_-top))/(bottom-top);
     u1 = u0+((u1-u0) *(right_-left))/(right-left);
     v1 = v0+((v1-v0) *(bottom_-top))/(bottom-top);
-
+    // round and convert to raster space
     left_   = (max + left_  )>>sub_pixel_precision;
     top_    = (max + top_   )>>sub_pixel_precision;
     right_  = (max + right_ )>>sub_pixel_precision;
@@ -1508,6 +1508,9 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                             pp,
                             col_bmp);
 
+            if(!std::is_same<CODER, CODER2>::value) {
+                return;
+            }
             // re-encode for a different canvas
             blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
 
@@ -1540,7 +1543,98 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
             microgl::math::to_fixed(u0, p_uv), microgl::math::to_fixed(v0, p_uv),
             microgl::math::to_fixed(u1, p_uv), microgl::math::to_fixed(v1, p_uv),
             p_sub, p_uv, opacity
-            );
+    );
+}
+
+template<typename P, typename CODER>
+template <typename P2, typename CODER2, typename number, typename Sampler>
+void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
+                                const Bitmap<P2, CODER2> &bmp,
+                                const number left, const number top,
+                                const number right, const number bottom,
+                                const number u0, const number v0,
+                                const number u1, const number v1,
+                                const opacity opacity) {
+    precision p_sub = 4;
+    precision p_uv = 5;
+    //number zero = number(0), one = number(1);
+
+    drawMask(mode, bmp,
+            microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
+            microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
+            microgl::math::to_fixed(u0, p_uv), microgl::math::to_fixed(v0, p_uv),
+            microgl::math::to_fixed(u1, p_uv), microgl::math::to_fixed(v1, p_uv),
+            p_sub, p_uv, opacity
+    );
+}
+
+template<typename P, typename CODER>
+template <typename P2, typename CODER2, typename Sampler>
+void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
+                                const Bitmap<P2, CODER2> &bmp,
+                                const int left, const int top,
+                                const int right, const int bottom,
+                                int u0, int v0,
+                                int u1, int v1,
+                                const precision sub_pixel_precision,
+                                const precision uv_precision,
+                                const opacity opacity) {
+    color_t col_bmp{};
+
+    int max = (1u<<sub_pixel_precision) - 1;
+    int left_   = functions::max(left, (int)0);
+    int top_    = functions::max(top, ( int)0);
+    int right_  = functions::min(right, (width()-1)<<sub_pixel_precision);
+    int bottom_ = functions::min(bottom, (height()-1)<<sub_pixel_precision);
+
+    u0 = u0+((u1-u0) *(left_-left))/(right-left);
+    v0 = v0+((v1-v0) *(top_-top))/(bottom-top);
+    u1 = u0+((u1-u0) *(right_-left))/(right-left);
+    v1 = v0+((v1-v0) *(bottom_-top))/(bottom-top);
+    // round and convert to raster space
+    left_   = (max + left_  )>>sub_pixel_precision;
+    top_    = (max + top_   )>>sub_pixel_precision;
+    right_  = (max + right_ )>>sub_pixel_precision;
+    bottom_ = (max + bottom_)>>sub_pixel_precision;
+
+    // increase precision to (uv_precision*2)
+    int du = (((u1-u0)*bmp.width())<<uv_precision) / (right_ - left_);
+    int dv = -(((v1-v0)*bmp.height())<<uv_precision) / (bottom_ - top_);
+    int u_start = u0*(bmp.width()-1)<<uv_precision;
+    int u = u_start;
+    int v = -dv*(bottom_ - top_);
+    int index = top_ * _width;
+    const precision pp = uv_precision<<1;
+
+    for (int y = top_; y <= bottom_; y++) {
+
+        for (int x = left_; x <= right_; x++) {
+            Sampler::sample(bmp, u, v,
+                            pp,
+                            col_bmp);
+
+            switch (mode) {
+                case masks::chrome_mode::black_transparent:
+                    break;
+                case masks::chrome_mode::white_transparent:
+                    break;
+                default:
+                case masks::chrome_mode::regular: {
+
+                }
+            }
+
+            // re-encode for a different canvas
+            blendColor<blendmode::Normal, porterduff::DestinationIn>(col_bmp, index + x, opacity);
+
+            u += du;
+        }
+
+        u = u_start;
+        v += dv;
+        index += _width;
+    }
+
 }
 
 template<typename P, typename CODER>
@@ -1862,5 +1956,3 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
                            type,
                            255);
 }
-
-

@@ -284,7 +284,7 @@ namespace porterduff {
         inline static void composite(const color_f_t & b,
                                      const color_f_t & s,
                                      color_f_t &output) {
-            internal_porter_duff(1.0, 1.0 - float(s.a), b, s, output);
+            internal_porter_duff(1.0, 1.0f - float(s.a), b, s, output);
         }
 
     };
