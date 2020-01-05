@@ -226,7 +226,8 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity 
         // this will help with avoiding the inner conditional of the backdrop alpha, the normal
         // blending itself is zero-cost itself, but after it there is a branching which
         // is unpredictable, therefore avoiding at compile-time is great.
-        bool skip_blending = BlendMode::type()==blendmode::type::Normal || backdrop.a==0;
+        //const bool skip_blending = BlendMode::type()==blendmode::type::Normal || backdrop.a==0;
+        const bool skip_blending = microgl::traits::is_same<BlendMode, blendmode::Normal>::value || backdrop.a==0;
 
         // if we are normal then do nothing
         if(!skip_blending) { //  or backdrop alpha is zero is also valid

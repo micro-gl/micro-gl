@@ -7,6 +7,11 @@
 #include <microgl/color.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
+#include <microgl/porter_duff/SourceOverOnOpaque.h>
+#include <microgl/blend_modes/Normal.h>
+#include <microgl/blend_modes/Multiply.h>
+#include <microgl/samplers/NearestNeighbor.h>
+#include <microgl/samplers/Bilinear.h>
 #include <microgl/Bitmap.h>
 
 #define TEST_ITERATIONS 1

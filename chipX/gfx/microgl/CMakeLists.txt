@@ -46,7 +46,7 @@ set(sources
         include/public/microgl/masks.h
         include/public/microgl/porter_duff/None.h
         include/public/microgl/pixel_coders/RGB888_ARRAY.h
-        src/PixelCoder.cpp src/color.cpp)
+        src/PixelCoder.cpp src/color.cpp include/public/microgl/samplers/NearestNeighbor.h include/public/microgl/blend_modes/Normal.h include/public/microgl/micro_gl_traits.h)
 
 add_library(${PROJECT_NAME} ${sources})
 

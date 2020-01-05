@@ -3,25 +3,25 @@
 #include <microgl/PorterDuff.h>
 
 namespace porterduff {
-
-    class None : public PorterDuffBase<None> {
+    class SourceIn : public PorterDuffBase<SourceIn> {
     public:
         inline static const char * type() {
-            return "None";
+            return "SourceIn";
         }
 
         inline static void composite(const color_t & b,
                                      const color_t & s,
                                      color_t &output,
                                      const unsigned int alpha_bits) {
+            unsigned int max_val = MAX_VAL_BITS2(alpha_bits);
 
-            output.r=s.r;output.g=s.g;output.b=s.b;output.a=s.a;
+            internal_porter_duff(b.a, 0, b, s, output, alpha_bits);
         }
 
         inline static void composite(const color_f_t & b,
                                      const color_f_t & s,
                                      color_f_t &output) {
-            output.r=s.r;output.g=s.g;output.b=s.b;output.a=s.a;
+            internal_porter_duff(float(b.a), 0.0, b, s, output);
         }
 
     };

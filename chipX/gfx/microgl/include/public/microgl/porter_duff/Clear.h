@@ -4,10 +4,10 @@
 
 namespace porterduff {
 
-    class None : public PorterDuffBase<None> {
+    class Clear : public PorterDuffBase<Clear> {
     public:
         inline static const char * type() {
-            return "None";
+            return "Clear";
         }
 
         inline static void composite(const color_t & b,
@@ -15,13 +15,13 @@ namespace porterduff {
                                      color_t &output,
                                      const unsigned int alpha_bits) {
 
-            output.r=s.r;output.g=s.g;output.b=s.b;output.a=s.a;
+            internal_porter_duff(0, 0, b, s, output, alpha_bits);
         }
 
         inline static void composite(const color_f_t & b,
                                      const color_f_t & s,
                                      color_f_t &output) {
-            output.r=s.r;output.g=s.g;output.b=s.b;output.a=s.a;
+            internal_porter_duff(0.0, 0.0, b, s, output);
         }
 
     };

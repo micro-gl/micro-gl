@@ -4,24 +4,25 @@
 
 namespace porterduff {
 
-    class None : public PorterDuffBase<None> {
+    class Destination : public PorterDuffBase<Destination> {
     public:
         inline static const char * type() {
-            return "None";
+            return "Destination";
         }
 
         inline static void composite(const color_t & b,
                                      const color_t & s,
                                      color_t &output,
                                      const unsigned int alpha_bits) {
+            unsigned int max_val = MAX_VAL_BITS2(alpha_bits);
 
-            output.r=s.r;output.g=s.g;output.b=s.b;output.a=s.a;
+            internal_porter_duff(0, max_val, b, s, output, alpha_bits);
         }
 
         inline static void composite(const color_f_t & b,
                                      const color_f_t & s,
                                      color_f_t &output) {
-            output.r=s.r;output.g=s.g;output.b=s.b;output.a=s.a;
+            internal_porter_duff(0.0, 1.0, b, s, output);
         }
 
     };
