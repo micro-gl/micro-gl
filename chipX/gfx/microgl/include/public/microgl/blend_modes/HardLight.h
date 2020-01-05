@@ -24,7 +24,7 @@ namespace blendmode {
 
         }
 
-        static inline char* type() {
+        static inline const char* type() {
             return "HardLight";
         }
     };

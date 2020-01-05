@@ -36,7 +36,7 @@ namespace blendmode {
             output.b = blend_LinearBurn(b.b, s.b);
         }
 
-        static inline char* type() {
+        static inline const char* type() {
             return "LinearBurn";
         }
     };

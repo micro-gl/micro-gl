@@ -1814,7 +1814,7 @@ Canvas<P, CODER>::drawLinePath(color_f_t &color,
                                bool closed_path) {
 #define t_f microgl::math::to_fixed
     uint8_t p = 4;
-    int jx = 0;
+    index jx = 0;
 
     for (jx = 0; jx < size; jx++) {
 
@@ -1859,25 +1859,25 @@ void Canvas<P, CODER>::drawBezierPath(color_f_t & color, vec2<number> *points,
             if(ix)
                 drawLine<number>(color, previous.x, previous.y, current.x, current.y);
 
-            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(color_f_t{1.0,0.0,0.0},
+            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(color_f_t{1.0,0.0,0.0,1.0},
                                                                                 current.x, current.y, circle_diameter, 255);
 
             previous = current;
         }
 
-        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(color_f_t{0.0,0.0,1.0},
+        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(color_f_t{0.0,0.0,1.0,1.0},
                                                                             point_anchor[0].x, point_anchor[0].y,
                                                                                     circle_diameter, 255);
 
-        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
+        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0,1.0},
                                                                             point_anchor[1].x, point_anchor[1].y,
                                                                             circle_diameter, 255);
 
-        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
+        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0,1.0},
                                                                             point_anchor[2].x, point_anchor[2].y,
                                                                             circle_diameter, 255);
         if(type==c::Type::Cubic ) {
-            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0},
+            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0,1.0},
                                                                                 point_anchor[3].x, point_anchor[3].y,
                                                                                 circle_diameter, 255);
 

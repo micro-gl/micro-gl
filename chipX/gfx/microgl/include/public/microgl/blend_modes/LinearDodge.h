@@ -28,7 +28,7 @@ namespace blendmode {
             output.b = fmin(b.b + s.b, 1.0f);
         }
 
-        static inline char* type() {
+        static inline const char* type() {
             return "LinearDodge";
         }
     };

@@ -28,7 +28,7 @@ namespace blendmode {
             output.b=std::max(b.b-s.b, 0);
         }
 
-        static inline char* type() {
+        static inline const char* type() {
             return "Subtract";
         }
     };

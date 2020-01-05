@@ -12,15 +12,6 @@ namespace microgl {
 
         struct color_f_t {
             float r, g, b, a;
-
-//        color_f_t& operator*(const float & val)
-//        {
-//            r *= val;
-//            g *= val;
-//            b *= val;
-//            return *this;
-//        }
-
         };
 
         class colors {

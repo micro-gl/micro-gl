@@ -14,39 +14,16 @@ set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g ")
 set(CMAKE_CXX_FLAGS_RELEASE "-fno-exceptions -fstrict-aliasing -O3 -s -fno-rtti -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
 
 set(sources
-#        src/FrameBuffer.tpp
-        include/public/microgl/FrameBuffer.h
-#        src/Bitmap.tpp
         include/public/microgl/Bitmap.h
-#        src/Canvas.tpp
         include/public/microgl/Canvas.h
         src/Functions.cpp
         src/PorterDuff.cpp
+        src/PixelCoder.cpp
+        src/color.cpp
         src/Curves.cpp
-#        src/BentleyOttmannLineIntersection.cpp
-#        src/Rational.cpp
-#        src/Segment.cpp
-#        src/BezierCurveDivider.cpp
-#        include/private/microgl/tesselation/curve_divider.h
-#        src/EarClippingTriangulation.cpp
-#        src/ear_clipping_triangulation.cpp
-#        include/private/microgl/tesselation/fan_triangulation.h
         src/triangles.cpp
-        include/private/microgl/tesselation/path_tessellation.h
-#        include/private/microgl/tesselation/arc_divider.h
-#        src/complex_poly_tess.cpp
-#        src/simple_components_tree.cpp
-#        include/private/microgl/tesselation/simplify_components.h
         src/qsort.cpp
-#        include/private/microgl/tesselation/planarize_division.cpp
-        include/private/microgl/tesselation/planarize_division.h
-        include/private/microgl/tesselation/half_edge.h
-        include/public/microgl/Q.h
-        include/public/microgl/math.h
-        include/public/microgl/masks.h
-        include/public/microgl/porter_duff/None.h
-        include/public/microgl/pixel_coders/RGB888_ARRAY.h
-        src/PixelCoder.cpp src/color.cpp include/public/microgl/samplers/NearestNeighbor.h include/public/microgl/blend_modes/Normal.h include/public/microgl/micro_gl_traits.h)
+        )
 
 add_library(${PROJECT_NAME} ${sources})
 

@@ -28,7 +28,7 @@ namespace blendmode {
             // todo
         }
 
-        static inline char* type() {
+        static inline const char* type() {
             return "Divide";
         }
     };
