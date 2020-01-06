@@ -9,10 +9,15 @@ namespace coder {
     using bits = unsigned char;
 
     channel convert_channel(channel input, bits input_bits, bits output_bits);
+    void convert_color(const color_t &input, color_t &output,
+                       const bits &input_r_bits, const bits &input_g_bits,
+                       const bits &input_b_bits, const bits &input_a_bits,
+                       const bits &output_r_bits, const bits &output_g_bits,
+                       const bits &output_b_bits, const bits &output_a_bits);
     void convert_color(const color_t &input, color_t &output);
     void convert_color(const color_f_t &input, color_t &output,
-                 const bits &r_bits, const bits &g_bits,
-                 const bits &b_bits, const bits &a_bits);
+                 const bits &output_r_bits, const bits &output_g_bits,
+                 const bits &output_b_bits, const bits &output_a_bits);
     void convert_color(const color_t &input, color_f_t &output);
 
     template<typename P, typename IMPL>
@@ -85,6 +90,16 @@ namespace coder {
             P pixel;
             encode(input, pixel);
             decode(pixel, output);
+        }
+
+        template <typename P2, typename CODER2>
+        static
+        void convert(const color_t &input, color_t &output, const PixelCoder<P2, CODER2> & coder2) {
+            // convert input color of my space into a color in coder2 space
+            coder::convert_color(
+                    input, output,
+                    red_bits(), green_bits(), blue_bits(), alpha_bits(),
+                    coder2.red_bits(), coder2.green_bits(), coder2.blue_bits(), coder2.alpha_bits());
         }
 
         inline const char * format() {

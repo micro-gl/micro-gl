@@ -32,7 +32,7 @@ Canvas<P, CODER>::Canvas(int width, int height) :
 }
 
 template<typename P, typename CODER>
-inline coder::PixelCoder<P, CODER> &Canvas<P, CODER>::coder() {
+inline const coder::PixelCoder<P, CODER> &Canvas<P, CODER>::coder() {
     return _bitmap_canvas->coder();
 }
 
@@ -211,13 +211,19 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity 
         // get backdrop color
         getPixelColor(index, backdrop);
 
-        uint8_t alpha_bits = coder().alpha_bits();
+        bits alpha_bits = coder().alpha_bits() | val.a_bits;// || _alpha_bits_for_compositing;
+        if(alpha_bits)
+            blended.a = src.a;
+        else {
+            blended.a = 255;
+            alpha_bits=8;
+        }
 
         // fix alpha bits depth in case we don't natively
         // support alpha, this is correct because we want to
         // support compositing even if the surface is opaque.
         if(!hasNativeAlphaChannel()) {
-            backdrop.a = _max_alpha_value; alpha_bits = _alpha_bits_for_compositing;
+            backdrop.a = _max_alpha_value;// alpha_bits = _alpha_bits_for_compositing;
         }
 
         // if blend-mode is normal or the backdrop is completely transparent
@@ -260,7 +266,7 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity 
         }
 
         // preserve src alpha before Porter-Duff
-        blended.a = src.a;
+        //blended.a = hasNativeAlphaChannel() ? src.a : 255;
 
         // apply opacity
         // I fixed opacity is always 8 bits no matter what the alpha depth of the
@@ -270,7 +276,9 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity 
 
         // finally alpha composite with Porter-Duff equations,
         // this should be zero-cost for None option with compiler optimizations
-        PorterDuff::composite(backdrop, blended, result, alpha_bits);
+        // if we do not own a native alpha channel, then please keep the composited result
+        // with premultiplied alpha.
+        PorterDuff::composite(backdrop, blended, result, alpha_bits, !hasNativeAlphaChannel());
     } else
         result = val;
 
@@ -1528,7 +1536,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
 
 template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff, typename Sampler,
-        typename P2, typename CODER2, typename number>
+        typename number, typename P2, typename CODER2>
 void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                                 const number left, const number top,
                                 const number right, const number bottom,
@@ -1548,7 +1556,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
 }
 
 template<typename P, typename CODER>
-template <typename P2, typename CODER2, typename number, typename Sampler>
+template <typename Sampler, typename number, typename P2, typename CODER2>
 void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
                                 const Bitmap<P2, CODER2> &bmp,
                                 const number left, const number top,
@@ -1560,7 +1568,7 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
     precision p_uv = 5;
     //number zero = number(0), one = number(1);
 
-    drawMask(mode, bmp,
+    drawMask<Sampler>(mode, bmp,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
             microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
             microgl::math::to_fixed(u0, p_uv), microgl::math::to_fixed(v0, p_uv),
@@ -1570,7 +1578,7 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
 }
 
 template<typename P, typename CODER>
-template <typename P2, typename CODER2, typename Sampler>
+template <typename Sampler, typename P2, typename CODER2>
 void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
                                 const Bitmap<P2, CODER2> &bmp,
                                 const int left, const int top,
@@ -1606,7 +1614,8 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
     int v = -dv*(bottom_ - top_);
     int index = top_ * _width;
     const precision pp = uv_precision<<1;
-
+    const bits alpha_bits = this->coder().alpha_bits() | 8;
+    const channel max_alpha_value = (1<<alpha_bits) - 1;
     for (int y = top_; y <= bottom_; y++) {
 
         for (int x = left_; x <= right_; x++) {
@@ -1614,19 +1623,41 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
                             pp,
                             col_bmp);
 
-            switch (mode) {
-                case masks::chrome_mode::black_transparent:
-                    break;
-                case masks::chrome_mode::white_transparent:
-                    break;
-                default:
-                case masks::chrome_mode::regular: {
+            channel a=0;
 
-                }
+            switch (mode) {
+                case masks::chrome_mode::red_channel:
+                    a = coder::convert_channel(col_bmp.r, bmp.coder().red_bits(), alpha_bits);
+                    break;
+                case masks::chrome_mode::red_channel_inverted:
+                    a = max_alpha_value - coder::convert_channel(col_bmp.r, bmp.coder().red_bits(), alpha_bits);
+                    break;
+                case masks::chrome_mode::alpha_channel:
+                    a = coder::convert_channel(col_bmp.a, bmp.coder().alpha_bits(), alpha_bits);
+                    break;
+                case masks::chrome_mode::alpha_channel_inverted:
+                    a = max_alpha_value - coder::convert_channel(col_bmp.a, bmp.coder().alpha_bits(), alpha_bits);
+                    break;
+                case masks::chrome_mode::green_channel:
+                    a = coder::convert_channel(col_bmp.g, bmp.coder().green_bits(), alpha_bits);
+                    break;
+                case masks::chrome_mode::green_channel_inverted:
+                    a = max_alpha_value - coder::convert_channel(col_bmp.g, bmp.coder().green_bits(), alpha_bits);
+                    break;
+                case masks::chrome_mode::blue_channel:
+                    a = coder::convert_channel(col_bmp.b, bmp.coder().blue_bits(), alpha_bits);
+                    break;
+                case masks::chrome_mode::blue_channel_inverted:
+                    a = max_alpha_value - coder::convert_channel(col_bmp.b, bmp.coder().blue_bits(), alpha_bits);
+                    break;
             }
 
+            col_bmp.r=0, col_bmp.g=0, col_bmp.b=0, col_bmp.a=a,
+            col_bmp.r_bits=this->coder().red_bits(), col_bmp.g_bits=this->coder().green_bits(),
+            col_bmp.b_bits=this->coder().blue_bits(), col_bmp.a_bits=alpha_bits;
+
             // re-encode for a different canvas
-            blendColor<blendmode::Normal, porterduff::DestinationIn>(col_bmp, index + x, opacity);
+            blendColor<blendmode::Normal, porterduff::DestinationIn>(col_bmp, index + x, 255);
 
             u += du;
         }

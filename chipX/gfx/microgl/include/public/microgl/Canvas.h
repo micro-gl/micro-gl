@@ -60,7 +60,7 @@ public:
     void getPixelColor(int x, int y, color_f_t & output);
     void getPixelColor(int index, color_f_t & output);
 
-    coder::PixelCoder<P, CODER> & coder();
+    const coder::PixelCoder<P, CODER> & coder();
     Bitmap<P, CODER> * bitmapCanvas();
 
     bool hasNativeAlphaChannel();
@@ -235,7 +235,7 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             typename Sampler=sampler::NearestNeighbor,
-            typename P2, typename CODER2, typename number>
+            typename number, typename P2, typename CODER2>
     void drawQuad(const Bitmap<P2, CODER2> &bmp,
                   number left, number top,
                   number right, number bottom,
@@ -243,8 +243,8 @@ public:
                   number u1=number(1), number v1=number(1),
                   opacity opacity = 255);
 
-    template <typename P2, typename CODER2, typename number,
-            typename Sampler=sampler::NearestNeighbor>
+    template <typename Sampler=sampler::NearestNeighbor, typename number,
+            typename P2, typename CODER2>
     void drawMask(const masks::chrome_mode &mode,
                   const Bitmap<P2, CODER2> &bmp,
                   number left, number top,
@@ -253,7 +253,7 @@ public:
                   number u1=number(1), number v1=number(1),
                   opacity opacity = 255);
 
-    template <typename P2, typename CODER2, typename Sampler=sampler::NearestNeighbor>
+    template <typename Sampler=sampler::NearestNeighbor, typename P2, typename CODER2>
     void drawMask(const masks::chrome_mode &mode,
                   const Bitmap<P2, CODER2> &bmp,
                   int left, int top,

@@ -22,7 +22,7 @@ namespace coder {
             output.r = (input & 0xFF0000) >> 16;
             output.g = (input & 0x00FF00) >> 8;
             output.b = (input & 0x0000FF);
-            output.a = 255;
+//            output.a = 255;
             update_channel_bit(output);
         };
 

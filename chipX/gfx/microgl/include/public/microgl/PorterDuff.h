@@ -34,7 +34,8 @@ namespace porterduff {
         inline static void internal_porter_duff(float Fa, float Fb,
                                                 const color_f_t & b,
                                                 const color_f_t & s,
-                                                color_f_t &output) {
+                                                color_f_t &output,
+                                                bool multiplied_alpha_result=false) {
             float as = s.a;
             float ab = b.a;
 
@@ -52,7 +53,7 @@ namespace porterduff {
                 output.g = (as_Fa * s.g + ab_Fb * b.g);
                 output.b = (as_Fa * s.b + ab_Fb * b.b);
 
-                if(absf_(output.a - 1.0f) > 0.00001) {
+                if(!multiplied_alpha_result && absf_(output.a - 1.0f) > 0.00001) {
                     output.r /= output.a;
                     output.g /= output.a;
                     output.b /= output.a;
@@ -66,53 +67,58 @@ namespace porterduff {
         // according to PDF spec, page 322, if we use source-over
         // result is NOT alpha pre-multiplied color
         inline static void internal_porter_duff(int Fa, int Fb,
-                    const color_t & b,
-                    const color_t & s,
-                    color_t &output,
-                    const unsigned int alpha_bits) {
+                                                const color_t & b,
+                                                const color_t & s,
+                                                color_t &output,
+                                                const unsigned int alpha_bits,
+                                                bool multiplied_alpha_result=false) {
 
             unsigned int as = s.a; // 128
             unsigned int ab = b.a;  // 255
 
-            unsigned int max_alpha_range = (1<<alpha_bits);
-            unsigned int max_alpha_value = max_alpha_range - 1;
-            unsigned int double_alpha_max_range = (1<<(alpha_bits+alpha_bits));
+            const unsigned int alpha_bits_double = alpha_bits<<1;
 
-
-            // these are less than 2^16
+            // these are less than 16 bits
             unsigned int as_Fa = as * Fa; // 128 * 255
             unsigned int ab_Fb = ab * Fb; // 255 * (255 - 128) = 255 * 127
             unsigned int combined = as_Fa + ab_Fb; // 128 * 255 + 255 * 127 // may be 17 bits
+            unsigned int r_channel,g_channel,b_channel;
 
             // cheaper alpha with bit shifting
             output.a = combined >> alpha_bits;
 
-            // unmultiplied-alpha result
+            // this is multiplied alpha channels
+            r_channel = as_Fa * s.r + ab_Fb * b.r;
+            g_channel = as_Fa * s.g + ab_Fb * b.g;
+            b_channel = as_Fa * s.b + ab_Fb * b.b;
 
-            // cheap optimization for opaque backdrops
+            /*
+            // cheap optimization for opaque backdrops, but the branching seems expensive for the compiler
+            const unsigned int double_alpha_max_range = 1u<<(alpha_bits_double);
             if(combined==double_alpha_max_range - (1<<(alpha_bits+1)) + 1) {
-                const unsigned int alpha_bits_double = alpha_bits<<1;
 
-                output.r = (as_Fa * s.r + ab_Fb * b.r) >> (alpha_bits_double); // inner expression is at most 26 bits, so no overflow
-                output.g = (as_Fa * s.g + ab_Fb * b.g) >> (alpha_bits_double);
-                output.b = (as_Fa * s.b + ab_Fb * b.b) >> (alpha_bits_double);
+                output.r = r_channel>>alpha_bits_double;
+                output.g = g_channel>>alpha_bits_double;
+                output.b = b_channel>>alpha_bits_double;
+
                 return;
             }
+             */
 
-            if(combined) {
-                output.r = (as_Fa * s.r + ab_Fb * b.r)/ combined;
-                output.g = (as_Fa * s.g + ab_Fb * b.g)/ combined;
-                output.b = (as_Fa * s.b + ab_Fb * b.b)/ combined;
+            // if desired result should be un multiplied
+            if (!multiplied_alpha_result) {
+                if(combined) {
+                    output.r = r_channel/combined;
+                    output.g = g_channel/combined;
+                    output.b = b_channel/combined;
+                }
+            } else {
+                // keep multiplied result, but of course transform to
+                // the correct bit space
+                output.r = r_channel>>alpha_bits_double;
+                output.g = g_channel>>alpha_bits_double;
+                output.b = b_channel>>alpha_bits_double;
             }
-
-            // multiplied-alpha result
-
-//            if(combined) {
-//                const unsigned int alpha_bits_double = alpha_bits + alpha_bits;
-//                output.r = (as_Fa * s.r + ab_Fb * b.r) >> alpha_bits_double; // maybe ????
-//                output.g = (as_Fa * s.g + ab_Fb * b.g) >> alpha_bits_double;
-//                output.b = (as_Fa * s.b + ab_Fb * b.b) >> alpha_bits_double;
-//            }
 
         }
 

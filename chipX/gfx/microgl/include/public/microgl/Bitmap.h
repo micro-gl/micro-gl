@@ -39,7 +39,7 @@ public:
     int width() const;
     int height() const;
 //    PixelFormat format();
-    coder::PixelCoder<P, CODER> & coder();
+    const coder::PixelCoder<P, CODER> & coder() const;
 
 protected:
     int _width = 0, _height = 0;

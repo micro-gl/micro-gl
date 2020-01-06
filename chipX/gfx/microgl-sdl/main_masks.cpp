@@ -14,7 +14,7 @@
 #include <microgl/samplers/Bilinear.h>
 #include <microgl/Bitmap.h>
 
-#define TEST_ITERATIONS 1
+#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 480*1
 
@@ -27,8 +27,7 @@ typedef Canvas<uint32_t, coder::RGB888_PACKED_32> Canvas24Bit_Packed32;
 
 Canvas24Bit_Packed32 * canvas;
 
-Bitmap24bit_Packed32 * bmp_2;
-Bitmap24bit_Packed32 * bmp_uv;
+Bitmap24bit_Packed32 * bmp_1, *bmp_2, *mask;
 
 Resources resources{};
 using namespace microgl::color;
@@ -52,8 +51,9 @@ inline void render() {
 //                                                                             true, true, true);
 
 //        std::cout << coder::RGB888_PACKED_32::format();
-        canvas->drawQuad<blendmode::Normal, porterduff::SourceOverOnOpaque, sampler::Bilinear>(
-                *bmp_2, -300, -300, 300, 300);
+        canvas->drawQuad<blendmode::Normal, porterduff::SourceOverOnOpaque, sampler::NearestNeighbor>(
+                *bmp_1, -0, -0, 300, 300);
+        canvas->drawMask<sampler::NearestNeighbor>(masks::chrome_mode::red_channel, *mask, 0, 0, 300, 300);
 
 //        canvas->drawQuad<blendmode::Normal, porterduff::None>(RED, 0, 0, W, H, 0, 255);
 //
@@ -115,12 +115,15 @@ void init_sdl(int width, int height) {
 //    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
     auto img_1 = resources.loadImageFromCompressedPath("charsprites.png");
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
+    auto img_3 = resources.loadImageFromCompressedPath("bw.png");
 //
     auto *bmp_1_native = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
     auto *bmp_2_native = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
+    auto *bmp_3_native = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
 
-    bmp_uv = bmp_1_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>();
+    bmp_1 = bmp_1_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>();
     bmp_2 = bmp_2_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>();
+    mask = bmp_3_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>();
     resources.init();
 }
 
