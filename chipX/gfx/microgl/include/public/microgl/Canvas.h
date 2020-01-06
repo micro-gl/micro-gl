@@ -240,9 +240,9 @@ public:
     void drawQuad(const Bitmap<P2, CODER2> &bmp,
                   number left, number top,
                   number right, number bottom,
+                  opacity opacity = 255,
                   number u0=number(0), number v0=number(0),
-                  number u1=number(1), number v1=number(1),
-                  opacity opacity = 255);
+                  number u1=number(1), number v1=number(1));
 
     template <typename Sampler=sampler::NearestNeighbor, typename number,
             typename P2, typename CODER2>

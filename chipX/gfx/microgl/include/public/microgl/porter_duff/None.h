@@ -17,7 +17,8 @@ namespace porterduff {
                                      bool multiplied_alpha_result=false) {
 
             output.r=s.r;output.g=s.g;output.b=s.b;output.a=s.a;
-            if(multiplied_alpha_result) {
+            // also, if alpha=1.0, no need to multiply
+            if((output.a<((1<<alpha_bits) - 1)) && multiplied_alpha_result) {
                 output.r = (output.r*output.a)>>alpha_bits;
                 output.g = (output.g*output.a)>>alpha_bits;
                 output.b = (output.b*output.a)>>alpha_bits;

@@ -1475,9 +1475,9 @@ template <typename BlendMode, typename PorterDuff, typename Sampler,
 void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                                 const number left, const number top,
                                 const number right, const number bottom,
+                                const opacity opacity,
                                 const number u0, const number v0,
-                                const number u1, const number v1,
-                                const opacity opacity) {
+                                const number u1, const number v1) {
     precision p_sub = 4;
     precision p_uv = 5;
 
