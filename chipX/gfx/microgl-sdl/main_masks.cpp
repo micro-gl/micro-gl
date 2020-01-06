@@ -8,6 +8,7 @@
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/porter_duff/SourceOverOnOpaque.h>
+#include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
 #include <microgl/blend_modes/Multiply.h>
 #include <microgl/samplers/NearestNeighbor.h>
@@ -50,10 +51,12 @@ inline void render() {
 //                                                                             255,
 //                                                                             true, true, true);
 
-//        std::cout << coder::RGB888_PACKED_32::format();
-        canvas->drawQuad<blendmode::Normal, porterduff::SourceOverOnOpaque, sampler::NearestNeighbor>(
-                *bmp_1, -0, -0, 300, 300);
-        canvas->drawMask<sampler::NearestNeighbor>(masks::chrome_mode::red_channel, *mask, 0, 0, 300, 300);
+//    canvas->drawQuad<blendmode::Normal, porterduff::None, sampler::NearestNeighbor>(
+//            *bmp_1, -0, -0, 300, 300);
+    canvas->drawQuad<blendmode::Normal, porterduff::None>(
+            color::colors::RED, -0, -0, 300, 300, 120);
+//    canvas->drawMask<sampler::NearestNeighbor>(masks::chrome_mode::red_channel, *mask,
+//            0, 0, 300, 300);
 
 //        canvas->drawQuad<blendmode::Normal, porterduff::None>(RED, 0, 0, W, H, 0, 255);
 //

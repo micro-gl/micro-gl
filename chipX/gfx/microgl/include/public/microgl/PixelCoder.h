@@ -16,8 +16,11 @@ namespace coder {
                        const bits &output_b_bits, const bits &output_a_bits);
     void convert_color(const color_t &input, color_t &output);
     void convert_color(const color_f_t &input, color_t &output,
-                 const bits &output_r_bits, const bits &output_g_bits,
-                 const bits &output_b_bits, const bits &output_a_bits);
+                       const bits &output_r_bits, const bits &output_g_bits,
+                       const bits &output_b_bits, const bits &output_a_bits);
+    void convert_color(const color_t &input, color_f_t &output,
+                       const bits &input_r_bits, const bits &input_g_bits,
+                       const bits &input_b_bits, const bits &input_a_bits);
     void convert_color(const color_t &input, color_f_t &output);
 
     template<typename P, typename IMPL>
@@ -80,16 +83,12 @@ namespace coder {
 
         static
         void convert(const color_f_t &input, color_t &output) {
-            P pixel;
-            encode(input, pixel);
-            decode(pixel, output);
+            convert_color(input, output, red_bits(), green_bits(), blue_bits(), alpha_bits());
         }
 
         static
         void convert(const color_t &input, color_f_t &output) {
-            P pixel;
-            encode(input, pixel);
-            decode(pixel, output);
+            convert_color(input, output, red_bits(), green_bits(), blue_bits(), alpha_bits());
         }
 
         template <typename P2, typename CODER2>

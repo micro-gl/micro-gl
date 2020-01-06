@@ -49,8 +49,14 @@ namespace coder {
         output.a = convert_channel(input.a, input_a_bits, output_a_bits);
     }
 
-//    void convert(const color_t &input, color_f_t &output) {
-//
-//    }
+    void convert_color(const color_t &input, color_f_t &output,
+                       const bits &input_r_bits, const bits &input_g_bits,
+                       const bits &input_b_bits, const bits &input_a_bits) {
+        output.r = float(input.r)/float((1u<<input_r_bits)-1);
+        output.g = float(input.g)/float((1u<<input_g_bits)-1);
+        output.b = float(input.b)/float((1u<<input_b_bits)-1);
+        output.a = float(input.a)/float((1u<<input_a_bits)-1);
+
+    }
 
 }

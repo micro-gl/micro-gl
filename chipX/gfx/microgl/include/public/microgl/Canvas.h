@@ -70,9 +70,9 @@ public:
     void clear(const color_f_t &color);
 
 //    // float blenders
-//    template<typename BlendMode=blendmode::Normal,
-//             typename PorterDuff=porterduff::SourceOverOnOpaque>
-//    void blendColor(const color_f_t &val, int x, int y, float opacity=1.0f);
+    template<typename BlendMode=blendmode::Normal,
+             typename PorterDuff=porterduff::SourceOverOnOpaque>
+    void blendColor(const color_f_t &val, int x, int y, float opacity=1.0f);
 //    template<typename BlendMode=blendmode::Normal,
 //             typename PorterDuff=porterduff::SourceOverOnOpaque>
 //    void blendColor(const color_f_t &val, int index, float opacity=1.0f);
@@ -211,10 +211,11 @@ public:
                   int left, int top,
                   int right, int bottom,
                   precision sub_pixel_precision,
-                  opacity opacity = 255);
+                  opacity opacity);
 
     template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque, typename number>
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename number>
     void drawQuad(const color_f_t &color,
                   number left, number top,
                   number right, number bottom,
@@ -230,7 +231,7 @@ public:
                   int u0, int v0,
                   int u1, int v1,
                   precision sub_pixel_precision, precision uv_precision,
-                  opacity opacity = 255);
+                  opacity opacity);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,

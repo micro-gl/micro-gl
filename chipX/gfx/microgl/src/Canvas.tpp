@@ -120,77 +120,13 @@ void Canvas<P, CODER>::clear(const color_f_t &color) {
     _bitmap_canvas->fill(output);
 }
 
-//template<typename P, typename CODER>
-//template<typename BlendMode, typename PorterDuff>
-//inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y, float opacity) {
-//    blendColor<BlendMode, PorterDuff>(val, y*_width + x, opacity);
-//}
-
-//
-//template<typename P, typename CODER>
-//template<typename BlendMode, typename PorterDuff>
-//inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int index, float opacity) {
-//    color_f_t result;//=val;
-//    P output;
-//
-//    if(true){
-//        color_f_t backdrop, blended;
-//        const color_f_t & src = val;
-//
-//        // get backdrop color
-//        getPixelColor(index, backdrop);
-//
-//        uint8_t alpha_bits = coder()->bits_per_alpha();
-//
-//        // fix alpha bits depth in case we don't natively
-//        // support alpha, this is correct because we want to
-//        // support compositing even if the surface is opaque.
-//        if(alpha_bits==0) {
-//            backdrop.a = 1.0f;
-//        }
-//
-//        // if blend-mode is normal or the backdrop is completely transparent
-//        // then we don't need to blend
-//        bool skip_blending = BlendMode::type()==blendmode::type::Normal || backdrop.a==0;
-//
-//        // if we are normal then do nothing
-//        if(!skip_blending) { //  or backdrop alpha is zero is also valid
-//
-//            BlendMode::blend(backdrop, src, blended);
-//
-//            // if backdrop alpha!= max_alpha let's first composite the blended color, this is
-//            // an intermidiate step before Porter-Duff
-//            if(backdrop.a < 1.0f) {
-//                float comp = 1.0f - backdrop.a;
-//                blended.r = (comp * src.r + backdrop.a * blended.r);
-//                blended.g = (comp * src.g + backdrop.a * blended.g);
-//                blended.b = (comp * src.b + backdrop.a * blended.b);
-//            }
-//            else {
-//                // do nothing if background is opaque (backdrop alpha==max_alpha) then it will equal blended
-//            }
-//
-//        }
-//        else {
-//            // skipped blending therefore use src color
-//            blended.r = src.r;
-//            blended.g = src.g;
-//            blended.b = src.b;
-//        }
-//
-//        // preserve src alpha before Porter-Duff
-//        blended.a = src.a * opacity;
-//
-//        // finally alpha composite with Porter-Duff equations
-//        PorterDuff::composite(backdrop, blended, result);
-//
-//    } else
-//        result = val;
-//
-//    coder()->encode(result, output);
-//
-//    drawPixel(output, index);
-//}
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff>
+inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y, float opacity) {
+    color_t color_int{};
+    coder().convert(val, color_int);
+    blendColor<BlendMode, PorterDuff>(coder().val, y*_width + x, opacity);
+}
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
@@ -1463,7 +1399,7 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
                                 const opacity opacity) {
     uint8_t p = 4;
 
-    drawQuad(color,
+    drawQuad<BlendMode, PorterDuff>(color,
              microgl::math::to_fixed(left, p), microgl::math::to_fixed(top, p),
              microgl::math::to_fixed(right, p), microgl::math::to_fixed(bottom, p),
              p, opacity
@@ -1473,8 +1409,7 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
 
 template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff,
-        typename Sampler,
-        typename P2, typename CODER2>
+        typename Sampler, typename P2, typename CODER2>
 void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                                 const int left, const int top,
                                 const int right, const int bottom,
@@ -1622,7 +1557,6 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
             Sampler::sample(bmp, u, v,
                             pp,
                             col_bmp);
-
             channel a=0;
 
             switch (mode) {
