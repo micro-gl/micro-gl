@@ -35,70 +35,16 @@ using namespace microgl::color;
 void loop();
 void init_sdl(int width, int height);
 
-static float d = 0;
-
 inline void render() {
 
     canvas->clear(microgl::color::colors::WHITE);
-        // 100, aa, bilinear -> 420
-        // 100, aa, nearest -> 240
-        // 100, no aa, no opacity, nearest -> 125
 
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, false, sampler::NearestNeighbor>(*bmp_2,
-//                                                                             0.0f,     0.0f,       0.0f, 1.0f,
-//                                                                             float(W/2),  0.0f,       1.0f, 1.0f,
-//                                                                             float(W/2), float(H/2),   1.0f, 0.0f,
-//                                                                             255,
-//                                                                             true, true, true);
-
-//    canvas->drawQuad<blendmode::Normal, porterduff::None, sampler::NearestNeighbor>(
-//            *bmp_1, -0, -0, 300, 300);
-    canvas->drawQuad<blendmode::Normal, porterduff::None>(
-            color::colors::RED, -0, -0, 300, 300, 120);
-//    canvas->drawMask<sampler::NearestNeighbor>(masks::chrome_mode::red_channel, *mask,
-//            0, 0, 300, 300);
-
-//        canvas->drawQuad<blendmode::Normal, porterduff::None>(RED, 0, 0, W, H, 0, 255);
-//
-        // with O3 i get 28-32 for drawTriangle and 14-16 for drawTriangleFast
-        // with Os i get 52 for drawTriangle and 24-26 for drawTriangleFast
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(RED,
-//                                                                             0,0,
-//                                                                             W, 0,
-//                                                                             W, H,
-//                                                                             255, 0,
-//                                                                             false, false, false);
-
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED,
-//                                                                             0,0,
-//                                                                             W, 0,
-//                                                                             W, H,
-//                                                                             255, 0,
-//                                                                             true, true, true);
-
-//        canvas->drawTriangleFast<blendmode::Normal, porterduff::None, false>(RED,
-//                                                                             0,0,
-//                                                                             22, 0,
-//                                                                             22, 22,
-//                                                                             255, 0,
-//                                                                             true, true, true);
-
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(RED,
-//                                                                             0,0,
-//                                                                             22, 0,
-//                                                                             22, 22,
-//                                                                             255, 0,
-//                                                                             true, true, true);
-
-//        d+=3.1;
-//        int G = 256;
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear>(
-//                *bmp_uv,
-//                0,          0,0.0, 1.0,
-//                G + 100 + d,0,1.0,1.0,
-//                G + 0,           G,1.0,0.0,
-//                0,               G,0.0,0.0,
-//                222);
+    canvas->drawQuad<blendmode::Normal, porterduff::None, sampler::NearestNeighbor>(
+            *bmp_1, -0, -0, 300, 300);
+//    canvas->drawQuad<blendmode::Normal, porterduff::None>(
+//            color::colors::RED, -0, -0, 300, 300, 128);
+    canvas->drawMask<sampler::NearestNeighbor>(masks::chrome_mode::red_channel, *mask,
+            0, 0, 300, 300);
 
 }
 
@@ -115,7 +61,7 @@ void init_sdl(int width, int height) {
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
 
     canvas = new Canvas24Bit_Packed32(width, height);
-//    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
+
     auto img_1 = resources.loadImageFromCompressedPath("charsprites.png");
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
     auto img_3 = resources.loadImageFromCompressedPath("bw.png");
