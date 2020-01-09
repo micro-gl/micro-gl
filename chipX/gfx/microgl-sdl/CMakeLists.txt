@@ -36,7 +36,7 @@ set(SOURCES
 #        main_fan_triangulation.cpp
 #        main_Q_matrix_transforms.cpp
 #        main_3d_camera.cpp
-        main_masks.cpp
+#        main_masks.cpp
 #        main_3d_pipeline.cpp
 #        main_number_systems.cpp
 #        main_aa_bug.cpp
@@ -47,7 +47,7 @@ set(SOURCES
 #         main_ear_clipping.cpp
 #        main_ear_clipping_holes.cpp
 #        main_ear_clipping_deg.cpp
-#        main_complex_to_planar_subdivision.cpp
+        main_complex_to_planar_subdivision.cpp
 #        main_q_sort.cpp
 #        main_avl_tree.cpp
         libs/stb_image/stb_image.cpp

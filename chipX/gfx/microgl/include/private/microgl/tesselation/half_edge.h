@@ -59,6 +59,7 @@ namespace tessellation {
         half_edge_t<number> * edge = nullptr;
         // list of conflicting vertices
         conflict_node_t<number> * conflict_list = nullptr;
+        index index=0;
     };
 
 

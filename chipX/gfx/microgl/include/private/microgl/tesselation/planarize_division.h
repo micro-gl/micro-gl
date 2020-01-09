@@ -1,9 +1,9 @@
 #pragma once
-#define DEBUG_PLANAR true;
+#define DEBUG_PLANAR true
 
 #include <microgl/tesselation/half_edge.h>
 #include <microgl/chunker.h>
-#ifdef DEBUG_PLANAR
+#if DEBUG_PLANAR==true
 #include <stdexcept>
 #endif
 
@@ -69,6 +69,7 @@ namespace tessellation {
 
         struct dynamic_pool {
         private:
+            index t = 1;
             dynamic_array<half_edge_vertex *> _vertices;
             dynamic_array<half_edge *> _edges;
             dynamic_array<half_edge_face *> _faces;
@@ -101,8 +102,13 @@ namespace tessellation {
 
             auto create_face() -> half_edge_face * {
                 auto * v = new half_edge_face();
+                v->index=t++;
                 _faces.push_back(v);
                 return v;
+            }
+
+            auto getFaces() -> dynamic_array<half_edge_face *> & {
+                return _faces;
             }
 
         };
@@ -118,14 +124,6 @@ namespace tessellation {
         enum class point_class_with_trapeze {
             // all of the walls enums are actually strictly inside excluding endpoints, open segments
             strictly_inside, left_wall, right_wall, top_wall, bottom_wall, boundary_vertex, outside, unknown
-//            left_top_vertex,left_bottom_vertex,right_bottom_vertex,right_top_vertex
-        };
-
-        enum class edge_class_with_trapeze {
-            edge_overlaps_left,edge_overlaps_bottom,edge_overlaps_right,edge_overlaps_top,
-            edge_intersects_left,edge_intersects_bottom,edge_intersects_right,edge_intersects_top,
-            edge_b_strictly_inside
-
         };
 
         enum class intersection_status {
@@ -141,6 +139,17 @@ namespace tessellation {
         static
         void compute(const chunker<vertex> & pieces);
 
+        static
+        void compute_DEBUG(const chunker<vertex> &pieces, dynamic_array<vertex> &debug_trapezes);
+
+        static
+        void face_to_trapeze_vertices(half_edge_face * face, dynamic_array<vertex> &vertices) {
+            auto trapeze = infer_trapeze(face);
+            vertices.push_back(trapeze.left_top->origin->coords);
+            vertices.push_back(trapeze.right_top->origin->coords);
+            vertices.push_back(trapeze.right_bottom->origin->coords);
+            vertices.push_back(trapeze.left_bottom->origin->coords);
+        }
 //    private:
 
         static
@@ -205,16 +214,16 @@ namespace tessellation {
         void re_distribute_conflicts_of_split_face(conflict *conflict_list, const half_edge *face_separator);
 
         static
-        void walk_and_update_edges_face(half_edge *edge_start, const half_edge_face *face);
+        void walk_and_update_edges_face(half_edge *edge_start, half_edge_face *face);
 
         static
         void clamp(number &val, number &a, number &b);
 
         static
-        void clamp_vertex(vertex &v, vertex &a, vertex &b);
+        void clamp_vertex(vertex &v, vertex a, vertex b);
 
         static
-        point_class_with_trapeze classify_arbitrary_point_with_trapeze(vertex &point, const trapeze_t &trapeze);
+        point_class_with_trapeze classify_arbitrary_point_with_trapeze(const vertex &point, const trapeze_t &trapeze);
 
         static
         auto
@@ -239,7 +248,8 @@ namespace tessellation {
 
         static
         void handle_co_linear_edge_with_trapeze(const trapeze_t &trapeze, const vertex &a, const vertex &b,
-                                                const point_class_with_trapeze &wall_class, half_edge **result_edge_a,
+                                                const point_class_with_trapeze &wall_class,
+                                                half_edge **result_edge_a,
                                                 half_edge **result_edge_b, dynamic_pool &pool);
 
         static
@@ -247,7 +257,7 @@ namespace tessellation {
         locate_and_classify_point_that_is_already_on_trapeze(vertex &point, const trapeze_t &trapeze);
 
         static half_edge *
-        handle_face_split(const trapeze_t &trapeze, const vertex &a, const vertex &b,
+        handle_face_split(const trapeze_t &trapeze, vertex &a, vertex &b,
                           const point_class_with_trapeze &a_class,
                           const point_class_with_trapeze &b_class, dynamic_pool &dynamic_pool);
 
@@ -258,7 +268,7 @@ namespace tessellation {
         auto locate_face_of_a_b(const half_edge_vertex &a, const vertex &b) -> half_edge *;
 
         static
-        void is_distance_to_line_less_than_epsilon(const vertex &v, const vertex &a, const vertex &b, number epsilon);
+        bool is_distance_to_line_less_than_epsilon(const vertex &v, const vertex &a, const vertex &b, number epsilon);
 
         static
         void remove_edge(half_edge *edge);

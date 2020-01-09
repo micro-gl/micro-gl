@@ -2,8 +2,8 @@
 #include <chrono>
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
-#include <microgl/vec2.h>
 #include <microgl/PixelCoder.h>
+#include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/tesselation/planarize_division.h>
 
 #define TEST_ITERATIONS 1
@@ -13,51 +13,17 @@
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
-//extern template class chunker<microgl::vec2_f>;
 
-typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
+using namespace tessellation;
+using index_t = unsigned int;
+using Canvas24Bit_Packed32 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
 Canvas24Bit_Packed32 * canvas;
 
 void loop();
 void init_sdl(int width, int height);
 
-using namespace tessellation;
-using index_t = unsigned int;
-
 float t = 0;
-
-
-chunker<vec2_f> poly_degenerate_hole() {
-    chunker<vec2_f> A;
-
-    A.push_back_and_cut({
-            {100,100},
-            {300,100},
-            {300,300},
-            {100,300},
-
-            {100,100},
-            {100,200},
-            {200,200},
-
-//            {220,200},
-//            {220,250},
-//            {250,250},
-//            {250,200},
-//            {220,200},
-
-//            {200,200},
-            {200,100},
-//            {100,100},
-//
-//            {100,300},
-
-    });
-
-    return A;
-}
-
 
 dynamic_array<vec2_f> box(float left, float top, float right, float bottom, bool ccw=false) {
     if(!ccw)
@@ -76,342 +42,6 @@ dynamic_array<vec2_f> box(float left, float top, float right, float bottom, bool
     };
 };
 
-chunker<vec2_f> poly_degenerate_multipepoints() {
-    chunker<vec2_f> A;
-
-    A.push_back_and_cut({
-            {100,100},
-            {100,100},
-            {100,100},
-            {100,100},
-
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-            {300,100},
-
-            {300,300},
-            {300,300},
-            {300,300},
-            {300,300},
-
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-            {100,300},
-    });
-
-
-    return A;
-}
-
-chunker<vec2_f> poly_inter_1() {
-    chunker<vec2_f> A;
-
-    A.push_back_and_cut({
-                                {100,100},
-                                {400,400},
-                                {100,400},
-                                {400,100},
-                        });
-
-    return A;
-}
-
-chunker<vec2_f> poly_case_touches_1() {
-    chunker<vec2_f> A;
-
-    A.push_back_and_cut({
-                                {100,100},
-                                {100,400},
-                                {400,400},
-                                {400,100},
-                                {250,250}
-                        });
-
-    A.push_back_and_cut({
-                                {100,100},
-                                {250,250},
-                                {400,100},
-                        });
-//
-//    A.push_back_and_cut({
-//                                {100,100},
-//                                {100,400},
-//                                {250,250},
-//                        });
-//
-//    A.push_back_and_cut({
-//                                {0,0},
-//                                {500,0},
-//                                {500,500},
-//                                {0,500},
-//                        });
-
-    return A;
-}
-
-chunker<vec2_f> poly_tag_merge_test() {
-    chunker<vec2_f> A;
-
-    A.push_back_and_cut(box(0,0,400,400));
-    A.push_back_and_cut(box(20,20,400-20,400-20));
-//    A.push_back_and_cut(box(40,40,400-40,400-40));
-
-    A.push_back_and_cut(box(60,60,400-60,400-60, true));
-    A.push_back_and_cut(box(80,80,400-80,400-80, true));
-//    A.push_back_and_cut(box(100,100,400-100,400-100, true));
-
-    A.push_back_and_cut(box(100,100,400-100,400-100,true));
-
-    return A;
-}
-
-chunker<vec2_f> poly_inter_2() {
-
-    chunker<vec2_f> A;
-
-    A.push_back_and_cut({
-            {0.0,0.0},
-            {50,0},
-            {50,50},
-            {0,50},
-    });
-
-    A.push_back_and_cut({
-        {50+0.0,50+0.0},
-        {50+50,0+50},
-        {50+50,50+50},
-        {0+50,50+50}
-    });
-
-    return A;
-}
-
-chunker<vec2_f> poly_inter_side() {
-    dynamic_array<index_t> locations;
-
-    chunker<vec2_f> A{
-            {0.0,0.0},
-            {400,0},
-            {400,400},
-            {0,400},
-    };
-
-    A.cut_chunk();
-
-    A.push_back_and_cut({
-            {0.0,0.0},
-            {400,0},
-            {400,400},
-//            {0,400},
-    });
-
-    return A;
-}
-
-chunker<vec2_f> poly_inter_nested_3() {
-
-    chunker<vec2_f> A;
-
-    A.push_back_and_cut({
-            {0.0,0.0},
-            {300,0},
-            {300,300},
-            {0,300},
-    });
-
-    A.push_back_and_cut({
-        {0,50 + 0.0},
-        {300 + 50, 0 + 50},
-        {300 + 50, 300 - 50},
-        {0,300 - 50}
-    });
-
-    A.push_back_and_cut({
-        {100+0.0,100+0.0},
-        {300+100,0+100},
-        {300+100,300-100},
-        {0+100,300-100},
-    });
-
-    A.push_back_and_cut({
-            {10,150},
-            {500,150},
-            {500,170},
-            {10,170},
-    });
-
-    return A;
-}
-
-chunker<vec2_f> poly_inter_nested_2() {
-
-    chunker<vec2_f> A;
-
-    A.push_back_and_cut({
-            {0,50.},
-            {250,50},
-            {250,250},
-            {0,250},
-    });
-
-    A.push_back_and_cut({
-            {100,100},
-            {400,100},
-            {400,200},
-            {100,200},
-    });
-
-    A.push_back_and_cut({
-            {10,150},
-            {300,150},
-            {300,170},
-            {10,170},
-    });
-
-    return A;
-}
-
-
-chunker<vec2_f> poly_inter_weird_touch() {
-    chunker<vec2_f> A, B;
-
-    A.push_back_and_cut({
-            {50.0,50.0},
-            {300,50},
-            {300,350},
-            {100,350},
-
-            {100,50},
-    });
-
-    B.push_back_and_cut({
-            {50.0,350.0},
-            {300,350},
-            {300,50},
-            {100,50},
-
-            {100,350},
-    });
-
-    return A;
-}
-
-
-chunker<vec2_f> poly_inter_nested_disjoint() {
-    chunker<vec2_f> A;
-
-    A.push_back_and_cut({
-            {0.0,0.0},
-            {300,0},
-            {300,300},
-            {0,300},
-    });
-
-    A.push_back_and_cut({
-            {50,50.},
-            {50,250},
-            {400,250},
-            {400,50},
-    });
-
-    A.push_back_and_cut({
-            {350,100.},
-            {500,100},
-            {500,150},
-            {350,150},
-    });
-
-    return A;
-}
-
-chunker<vec2_f> poly_inter_deg() {
-    chunker<vec2_f> A;
-
-    A.push_back_and_cut({
-            {400,400},
-            {0,400},
-            {0,0},
-            {400,0},
-
-            {50,350},
-            {100,350},
-            {100,100},
-
-    });
-
-    return A;
-}
-
 chunker<vec2_f> poly_inter_star() {
     chunker<vec2_f> A;
 
@@ -429,121 +59,38 @@ chunker<vec2_f> poly_inter_star() {
 chunker<vec2_f> poly_inter_simple_1() {
     chunker<vec2_f> A;
 
+//    A.push_back_and_cut({
+//                                {20,20},
+//                                {400,20},
+//                                {200,400},
+//                        });
+
     A.push_back_and_cut({
-                                {20,20},
-                                {200,20},
-                                {100,200},
+                                {100,50},
+                                {400,50},
+                                {500,400},
+//                                {120,100},
                         });
 
     return A;
 }
 
-chunker<vec2_f> poly_double() {
-    chunker<vec2_f> A;
-
-//    A.push_back_and_cut(box(0,0,300,300));
-//    A.push_back_and_cut({
-//                                {50,0},
-//                                {300,0},
-//                                {300,300},
-//                        });
-
-//    A.push_back_and_cut({
-//                                {300,300},
-//                                {200,150},
-//                                {150,150},
-//                        });
-//
-
-    A.push_back_and_cut(box(100,0,300,200));
-    A.push_back_and_cut(box(200,0,400,200));
-
-    return A;
-}
-
-chunker<vec2_f> poly_hard_1() {
-
-    chunker<vec2_f> A;
-
-//    A.push_back_and_cut(box(10,10,300,300,false));
-    A.push_back_and_cut(box(10,10,300,300,false));
-    A.push_back_and_cut(box(100,100,500,200,true));
-    A.push_back_and_cut(box(100-40,100-40,500+40,200+40,true));
-
-    return A;
-}
-
-
-chunker<vec2_f> poly_hard_2() {
-
-    chunker<vec2_f> A;
-
-    A.push_back_and_cut(box(10,10,300,300,false));
-    A.push_back_and_cut(box(10,10,300,300,false));
-    A.push_back_and_cut(box(100,100,500,200,true));
-    A.push_back_and_cut(box(100,100,500,200,true));
-//    A.push_back_and_cut(box(100,100,500,200,true));
-
-    return A;
-}
-// todo:: directions of degenrate polygons is incorrect
-
 template <typename T>
-void render_polygon(chunker<T> pieces);
-
-void render() {
-    t+=.05f;
-//    std::cout << t << std::endl;
-
-//    render_polygon(poly_degenerate_hole());
-//
-//    render_polygon(poly_degenerate_multipepoints());
-
-//    render_polygon(poly_inter_1());
-//
-//    render_polygon(poly_inter_weird_touch());
-
-//    render_polygon(poly_inter_nested_3());
-//    render_polygon(poly_inter_nested_disjoint());
-//    render_polygon(poly_inter_nested_2());
-
-//    render_polygon(poly_inter_2());
-
-//    render_polygon(poly_inter_side());
-
-//    render_polygon(poly_inter_deg());
-
-//    render_polygon(poly_double());
-//
-//    render_polygon(poly_inter_star());
-//    render_polygon(poly_inter_nested_3());
-//    render_polygon(poly_inter_star());
-    render_polygon(poly_inter_simple_1());
-//    render_polygon(poly_inter_1());
-//    render_polygon(poly_case_touches_1());
-
-//    render_polygon(poly_tag_merge_test());
-
-}
-
-
-// debug - 354kb, O3 - 64kb, Os - 44kb
-// debug - 340kb, O3 - 60kb, Os - 40kb
-// debug - 332kb, O3 - 56kb, Os - 36kb
-// debug - 323kb, O3 - 56kb, Os - 36kb
-// debug - 328kb, O3 - 56kb, Os - 36kb // templatized simplify_comps
-// debug - 332kb, O3 - 56kb, Os - 36kb // templatized comps_tree
-
-template <typename T>
-void render_polygon(chunker<T> pieces) {
+void render_polygon(chunker<vec2<T>> pieces) {
     using index = unsigned int;
+    using psd = tessellation::planarize_division<T>;
 
-    canvas->clear(WHITE);
-    using psd = tessellation::planarize_division<float>;
+    dynamic_array<vec2<T>> trapezes;
 
-    psd::compute(pieces);
+    canvas->clear(color::colors::WHITE);
 
-//    std::cout<<tree.nodes->index_poly;
+    psd::compute_DEBUG(pieces, trapezes);
+
+    for (index ix = 0; ix < trapezes.size(); ix+=4) {
+//        canvas->drawPolygon(&trapezes[ix], 4, )
+        canvas->drawLinePath(color::colors::BLACK,
+                &trapezes[ix], 4, true);
+    }
 
 //        canvas->drawQuad(RED, 0, 0, 100,100, 0,255);
 //    canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
@@ -556,6 +103,12 @@ void render_polygon(chunker<T> pieces) {
 
 }
 
+void render() {
+    t+=.05f;
+
+//    render_polygon(poly_inter_star());
+    render_polygon(poly_inter_simple_1());
+}
 
 
 int main() {
@@ -572,8 +125,7 @@ void init_sdl(int width, int height) {
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
             SDL_TEXTUREACCESS_STATIC, width, height);
 
-    canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
-
+    canvas = new Canvas24Bit_Packed32(width, height);
 }
 
 int render_test(int N) {
