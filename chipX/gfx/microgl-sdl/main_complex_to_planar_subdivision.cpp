@@ -68,7 +68,7 @@ chunker<vec2_f> poly_inter_simple_1() {
     A.push_back_and_cut({
                                 {100,50},
                                 {400,50},
-                                {500,400},
+                                {401,400},
 //                                {120,100},
                         });
 

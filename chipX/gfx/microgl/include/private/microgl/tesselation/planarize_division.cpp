@@ -66,43 +66,53 @@ namespace tessellation {
         v2->coords = right_bottom;
         v3->coords = {right_bottom.x, left_top.y};
 
-        // note, no need for twin edges
+        // half edges
         auto * edge_0 = pool.get_edge();
         auto * edge_1 = pool.get_edge();
         auto * edge_2 = pool.get_edge();
         auto * edge_3 = pool.get_edge();
+        // twins
+        auto * edge_0_twin = pool.get_edge();
+        auto * edge_1_twin = pool.get_edge();
+        auto * edge_2_twin = pool.get_edge();
+        auto * edge_3_twin = pool.get_edge();
 
         // ccw from left-top vertex
-        edge_0->origin = v0;
-        edge_1->origin = v1;
-        edge_2->origin = v2;
-        edge_3->origin = v3;
+        edge_0->origin = v0; edge_0_twin->origin = v1;
+        edge_1->origin = v1; edge_1_twin->origin = v2;
+        edge_2->origin = v2; edge_2_twin->origin = v3;
+        edge_3->origin = v3; edge_3_twin->origin = v0;
 
-        edge_0->winding = 0;
-        edge_1->winding = 0;
-        edge_2->winding = 0;
-        edge_3->winding = 0;
+        edge_0->winding = edge_0_twin->winding = 0;
+        edge_1->winding = edge_1_twin->winding = 0;
+        edge_2->winding = edge_2_twin->winding = 0;
+        edge_3->winding = edge_3_twin->winding = 0;
 
         v0->edge = edge_0;
         v1->edge = edge_1;
         v2->edge = edge_2;
         v3->edge = edge_3;
 
-        edge_0->next = edge_1;
-        edge_1->next = edge_2;
-        edge_2->next = edge_3;
-        edge_3->next = edge_0;
+        edge_0->next = edge_1; edge_0_twin->next = edge_3_twin;
+        edge_1->next = edge_2; edge_1_twin->next = edge_0_twin;
+        edge_2->next = edge_3; edge_2_twin->next = edge_1_twin;
+        edge_3->next = edge_0; edge_3_twin->next = edge_2_twin;
 
-        edge_0->prev = edge_3;
-        edge_1->prev = edge_0;
-        edge_2->prev = edge_1;
-        edge_3->prev = edge_2;
+        edge_0->prev = edge_3; edge_0_twin->prev = edge_1_twin;
+        edge_1->prev = edge_0; edge_1_twin->prev = edge_2_twin;
+        edge_2->prev = edge_1; edge_2_twin->prev = edge_3_twin;
+        edge_3->prev = edge_2; edge_3_twin->prev = edge_0_twin;
+        // connect twins
+        edge_0->twin = edge_0_twin; edge_0_twin->twin = edge_0;
+        edge_1->twin = edge_1_twin; edge_1_twin->twin = edge_1;
+        edge_2->twin = edge_2_twin; edge_2_twin->twin = edge_2;
+        edge_3->twin = edge_3_twin; edge_3_twin->twin = edge_3;
 
         auto * face = pool.get_face();
-        edge_0->face = face;
-        edge_1->face = face;
-        edge_2->face = face;
-        edge_3->face = face;
+        edge_0->face = face; edge_0_twin->face = nullptr; // nullptr for face is the outside world face marker
+        edge_1->face = face; edge_1_twin->face = nullptr;
+        edge_2->face = face; edge_2_twin->face = nullptr;
+        edge_3->face = face; edge_3_twin->face = nullptr;
 
         // CCW around face, face is always to the left of the walk
         face->edge = edge_0;
@@ -437,12 +447,12 @@ namespace tessellation {
             auto v_coord = compare_y ? v.y : v.x;
             bool on_segment = reverse_direction ? v_coord>coord_1 : v_coord<coord_1;
 
+            // check endpoints first
+            if(v_coord==coord_0)
+                return e_start;
             // there can only be one vertex on the principal axis with the same 1D coord(x or y)
             // v lies on e
             if(on_segment) {
-                // check endpoints first
-                if(v_coord==coord_0)
-                    return e_start;
                 return try_split_edge_at(v, e_start, pool);
             }
             e_start=e_start->next;
@@ -794,6 +804,10 @@ namespace tessellation {
             case point_class_with_trapeze::top_wall:
                 return (b.x<=a.x);
             default: // this might be problematic, we may need to report error
+#if DEBUG_PLANAR==true
+                throw std::runtime_error("is_a_before_or_equal_b_on_same_boundary:: unrecognized boundary");
+#endif
+
                 return false;
         }
 
@@ -1053,7 +1067,7 @@ namespace tessellation {
         edge->twin->prev->next = edge->next;
         edge->next->prev= edge->twin->prev;
         // move face_2's conflict list into face_1
-        auto * conflict_ref = face_1->conflict_list;
+        auto * conflict_ref= face_1->conflict_list;
         // move the pointer to the last conflict of face_1
         while (conflict_ref->next!=nullptr)
             conflict_ref=conflict_ref->next;
@@ -1204,7 +1218,7 @@ namespace tessellation {
         // vertices size is also edges size since these are polygons
         const auto v_size = pieces.unchunked_size();
         // plus 4s for the sake of frame
-        static_pool static_pool(v_size + 4, 4 + v_size*2, 1, v_size);
+        static_pool static_pool(v_size + 4, 4*2 + v_size*2, 1, v_size);
         dynamic_pool dynamic_pool{};
         // create the main frame
         auto * main_face = create_frame(pieces, static_pool);
@@ -1298,7 +1312,7 @@ namespace tessellation {
                               (b_on_boundary_vertex &&
                                (b==trapeze.left_top->origin->coords || b==trapeze.left_bottom->origin->coords));
         if(a_on_wall && b_on_wall) {
-            resulting_wall=a_class;
+            resulting_wall=point_class_with_trapeze::left_wall;
             return true;
         }
 
@@ -1310,7 +1324,7 @@ namespace tessellation {
                                (b_on_boundary_vertex &&
                                 (b==trapeze.right_top->origin->coords || b==trapeze.right_bottom->origin->coords));
         if(a_on_wall && b_on_wall) {
-            resulting_wall=a_class;
+            resulting_wall=point_class_with_trapeze::right_wall;
             return true;
         }
 
@@ -1322,7 +1336,7 @@ namespace tessellation {
                     (b_on_boundary_vertex &&
                      (b==trapeze.right_top->origin->coords || b==trapeze.left_top->origin->coords));
         if(a_on_wall && b_on_wall) {
-            resulting_wall=a_class;
+            resulting_wall=point_class_with_trapeze::top_wall;
             return true;
         }
 
@@ -1334,7 +1348,7 @@ namespace tessellation {
                     (b_on_boundary_vertex &&
                      (b==trapeze.left_bottom->origin->coords || b==trapeze.right_bottom->origin->coords));
         if(a_on_wall && b_on_wall) {
-            resulting_wall=a_class;
+            resulting_wall=point_class_with_trapeze::bottom_wall;
             return true;
         }
 
