@@ -53,6 +53,8 @@ chunker<vec2_f> poly_inter_star() {
                                 {400,450},
                         });
 
+    A.push_back_and_cut(box(50,50,300,300, true));
+
     return A;
 }
 
@@ -71,6 +73,21 @@ chunker<vec2_f> poly_inter_simple_1() {
                                 {500,400},
 //                                {120,100},
                         });
+
+    return A;
+}
+
+chunker<vec2_f> box_1() {
+    chunker<vec2_f> A;
+
+//    A.push_back_and_cut({
+//                                {20,20},
+//                                {400,20},
+//                                {200,400},
+//                        });
+
+    A.push_back_and_cut(box(50,50,300,300));
+    A.push_back_and_cut(box(150,150,200,200));
 
     return A;
 }
@@ -107,6 +124,7 @@ void render() {
     t+=.05f;
 
     render_polygon(poly_inter_star());
+//    render_polygon(box_1());
 //    render_polygon(poly_inter_simple_1());
 }
 

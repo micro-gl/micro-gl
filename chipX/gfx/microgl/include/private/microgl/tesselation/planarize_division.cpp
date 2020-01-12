@@ -844,8 +844,28 @@ namespace tessellation {
         const half_edge *end = iter;
         // we walk in CCW order around the vertex
         do {
+            int cls1= classify_point(b, iter->origin->coords,
+                                     iter->twin->origin->coords);
+            auto* next = iter->twin->next;
+            int cls2= classify_point(b, next->origin->coords,
+                                     next->twin->origin->coords);
+            // is (a,b) inside the cone so right of iter and left of next
+            if(cls1<=0 && cls2>0) {
+                return next;
+            }
+
+            iter=iter->twin->next;
+        } while(iter!=end);
+
+        return iter;
+/*
+        half_edge *iter = a.edge;
+        half_edge *candidate = nullptr;
+        const half_edge *end = iter;
+        // we walk in CCW order around the vertex
+        do {
             int cls= classify_point(b, iter->origin->coords,
-                    iter->twin->origin->coords);
+                                    iter->twin->origin->coords);
             if(cls>=0) { // b is strictly to left of the edge, it is a candidate
                 if(candidate== nullptr)
                     candidate = iter;
@@ -857,48 +877,12 @@ namespace tessellation {
                         candidate= iter;
                 }
             }
-            if(cls<0) { // b is strictly to right of the edge
-                // if we had a candidate, then because we walk CCW, then the last
-                // candidate had to be the best candidate because we transitioned
-                // from left to right classification
-                // this is an early dropout optimization
-                if(candidate)
-                    return candidate;
-                // else do nothing
-            }
 
             iter=iter->twin->next;
         } while(iter!=end);
 
         return candidate;
-
-        /*
-                 half_edge *iter = a.edge;
-        half_edge *candidate = nullptr;
-        const half_edge *end = iter;
-        // we walk in CCW order around the vertex
-        do {
-            int cls= classify_point(b, iter->origin->coords,
-                    iter->twin->origin->coords);
-            if(cls==0) // b is exactly on the edge, bingo
-                return iter;
-            if(cls>0) // b is strictly to left of the edge, it is a candidate
-                candidate= iter;
-            if(cls<0) { // b is strictly to right of the edge
-                // if we had a candidate, then because we walk CCW, then the last
-                // candidate had to be the best candidate because we transitioned
-                // from left to right classification
-                if(candidate)
-                    return candidate;
-                // else do nothing
-            }
-
-            iter=iter->twin->next;
-        } while(iter!=end);
-
-        return candidate;
-
-         */
+*/
     }
 
     template<typename number>
@@ -1161,7 +1145,7 @@ namespace tessellation {
                                    (class_a==point_class_with_trapeze::left_wall ||
                                     class_a==point_class_with_trapeze::right_wall);
 
-            if(candidate_merge&&true)
+            if(candidate_merge&&false)
                 handle_face_merge(a_vertex_edge->origin);
 
             // increment
@@ -1184,8 +1168,7 @@ namespace tessellation {
             class_a = classify_point_conflicting_trapeze(a, trapeze);
             count++;
         }
-
-
+        
     }
 
     template<typename number>
@@ -1231,7 +1214,7 @@ namespace tessellation {
 
         // now start iterations
         for (int ix = 0; ix < v_size; ++ix) {
-//        for (int ix = 0; ix < 4; ++ix) {
+//        for (int ix = 0; ix < 7; ++ix) {
             auto * e = edges_list[ix];
 
             //remove_edge_from_conflict_list(e);
@@ -1381,6 +1364,7 @@ namespace tessellation {
         // this can be injected from outside
         point_class_with_trapeze  cla_b = classify_arbitrary_point_with_trapeze(b, trapeze);
         conflicting_edge_intersection_status result{};
+        result.class_of_interest_point = cla_b;
         // if it is inside or on the boundary, we are done
         if(cla_b!=point_class_with_trapeze::outside) {
             result.point_of_interest = b;
