@@ -1069,10 +1069,14 @@ namespace tessellation {
         // move face_2's conflict list into face_1
         auto * conflict_ref= face_1->conflict_list;
         // move the pointer to the last conflict of face_1
-        while (conflict_ref->next!=nullptr)
-            conflict_ref=conflict_ref->next;
-        // hook the last conflict of face_1 to the first conflict of face_2
-        conflict_ref->next = face_2->conflict_list;
+        if(conflict_ref) {
+            while (conflict_ref->next!=nullptr)
+                conflict_ref=conflict_ref->next;
+            // hook the last conflict of face_1 to the first conflict of face_2
+            conflict_ref->next = face_2->conflict_list;
+        } else {
+            face_1->conflict_list=conflict_ref = face_2->conflict_list;
+        }
         // now update the conflicting edges with the correct face
         while (conflict_ref!=nullptr) {
             conflict_ref->edge->conflict_face=face_1;
@@ -1114,7 +1118,6 @@ namespace tessellation {
                 classify_point_conflicting_trapeze(edge->origin->coords, trapeze);
         a= edge->origin->coords;
         b=edge->twin->origin->coords;
-        half_edge_vertex * merge_vertex_seed_candidate = nullptr;
 
         while(!are_we_done) {
 
@@ -1154,11 +1157,11 @@ namespace tessellation {
             // the new 'a' coord strictly lies in the left/right wall
             // record last split vertex if it was on a vertical wall and not the first vertex
             // and not a co-linear segment on the boundary
-            bool candidate = (count>=1) && !co_linear_with_boundary &&
-                            (class_a==point_class_with_trapeze::left_wall ||
-                             class_a==point_class_with_trapeze::right_wall);
+            bool candidate_merge = (count >= 1) && !co_linear_with_boundary &&
+                                   (class_a==point_class_with_trapeze::left_wall ||
+                                    class_a==point_class_with_trapeze::right_wall);
 
-            if(candidate)
+            if(candidate_merge&&true)
                 handle_face_merge(a_vertex_edge->origin);
 
             // increment
@@ -1179,7 +1182,7 @@ namespace tessellation {
             face = located_face_edge->face;
             trapeze=infer_trapeze(face);
             class_a = classify_point_conflicting_trapeze(a, trapeze);
-            count+=1;
+            count++;
         }
 
 
@@ -1228,6 +1231,7 @@ namespace tessellation {
 
         // now start iterations
         for (int ix = 0; ix < v_size; ++ix) {
+//        for (int ix = 0; ix < 4; ++ix) {
             auto * e = edges_list[ix];
 
             //remove_edge_from_conflict_list(e);
@@ -1486,6 +1490,7 @@ namespace tessellation {
         // overlaps, since overlaps induce parallel classfication, this would have to
         // be resolved outside
         // vectors
+        auto ZERO = number(0), ONE = number(1);
         auto ab = b - a;
         auto cd = d - c;
         auto dem = ab.x * cd.y - ab.y * cd.x;
@@ -1493,32 +1498,43 @@ namespace tessellation {
         // parallel lines
         // todo:: revisit when thinking about fixed points
 //        if (abs(dem) <= 0.0001f)
-        if (dem == 0)
+        if (dem == ZERO)
             return intersection_status::parallel;
         else {
             auto ca = a - c;
-            auto ac = -ca;
-            auto numerator = ca.y * cd.x - ca.x * cd.y;
+//            auto ac = -ca;
+            auto numerator_1 = ca.y * cd.x - ca.x * cd.y;
+            auto numerator_2 = -ab.y*ca.x + ab.x*ca.y;
 
-            if (dem > 0) {
-                if (numerator < 0 || numerator > dem)
+            if (dem > ZERO) {
+                if (numerator_1 < ZERO || numerator_1 > dem ||
+                    numerator_2 < ZERO || numerator_2 > dem)
                     return intersection_status::none;
             } else {
-                if (numerator > 0 || numerator < dem)
+                if (numerator_1 > ZERO || numerator_1 < dem ||
+                    numerator_2 > ZERO || numerator_2 < dem)
                     return intersection_status::none;
             }
 
             // a lies on c--d segment
-            if(numerator==0) {
-                alpha=0;
+            if(numerator_1==ZERO) {
+                alpha=ZERO;
                 intersection = a;
             } // b lies on c--d segment
-            else if(numerator==dem) {
-                alpha=1;
+            else if(numerator_1==dem) {
+                alpha=ONE;
                 intersection = b;
             }
+            else if(numerator_2==ZERO) {
+                alpha=ZERO;
+                intersection = c;
+            } // b lies on c--d segment
+            else if(numerator_2==dem) {
+                alpha=ONE;
+                intersection = d;
+            }
             else { // proper intersection
-                alpha = numerator / dem;
+                alpha = numerator_1 / dem;
 //            alpha1 = (ab.y * ac.x - ab.x * ac.y) / dem;
                 intersection = a + ab * alpha;
             }

@@ -111,12 +111,12 @@ bool Segment::intersect(const Segment &rhs, vec2<Rational> &intersection) const 
 }
 
 bool Segment::intersect(const Segment &rhs, vec2_f & intersection) const {
-    vec2_f s1 = p1 - p0;
-    vec2_f s2 = rhs.p1 - rhs.p0;
-    vec2_f dc = p0 - rhs.p0;
+    vec2_f s1 = p1 - p0; //ab
+    vec2_f s2 = rhs.p1 - rhs.p0; // cd
+    vec2_f dc = p0 - rhs.p0; // ca
 
     float d = -s2.x * s1.y + s1.x * s2.y;
-    float s = (-s1.y * dc.x + s1.x * dc.y) / d;
+    float s = (-s1.y * dc.x + s1.x * dc.y) / d; // (-ab.y*ca.x + ab.x*ca.y)
     float t = ( s2.x * dc.y - s2.y * dc.x) / d;
 
     if (s >= 0 && s <= 1 && t >= 0 && t <= 1)

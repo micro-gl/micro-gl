@@ -68,7 +68,7 @@ chunker<vec2_f> poly_inter_simple_1() {
     A.push_back_and_cut({
                                 {100,50},
                                 {400,50},
-                                {401,400},
+                                {500,400},
 //                                {120,100},
                         });
 
@@ -106,8 +106,8 @@ void render_polygon(chunker<vec2<T>> pieces) {
 void render() {
     t+=.05f;
 
-//    render_polygon(poly_inter_star());
-    render_polygon(poly_inter_simple_1());
+    render_polygon(poly_inter_star());
+//    render_polygon(poly_inter_simple_1());
 }
 
 
