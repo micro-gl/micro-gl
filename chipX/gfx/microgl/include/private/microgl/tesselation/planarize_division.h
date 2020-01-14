@@ -1,5 +1,6 @@
 #pragma once
 #define DEBUG_PLANAR true
+#define APPLY_MERGE true
 
 #include <microgl/tesselation/half_edge.h>
 #include <microgl/chunker.h>
@@ -144,6 +145,8 @@ namespace tessellation {
 
         static
         void face_to_trapeze_vertices(half_edge_face * face, dynamic_array<vertex> &vertices) {
+            if(face->edge== nullptr)
+                return;
             auto trapeze = infer_trapeze(face);
             vertices.push_back(trapeze.left_top->origin->coords);
             vertices.push_back(trapeze.right_top->origin->coords);

@@ -104,7 +104,6 @@ void render_polygon(chunker<vec2<T>> pieces) {
     psd::compute_DEBUG(pieces, trapezes);
 
     for (index ix = 0; ix < trapezes.size(); ix+=4) {
-//        canvas->drawPolygon(&trapezes[ix], 4, )
         canvas->drawLinePath(color::colors::BLACK,
                 &trapezes[ix], 4, true);
     }
