@@ -1,6 +1,6 @@
 #pragma once
 #define DEBUG_PLANAR true
-#define APPLY_MERGE true
+#define APPLY_MERGE false
 
 #include <microgl/tesselation/half_edge.h>
 #include <microgl/chunker.h>
@@ -14,6 +14,8 @@ namespace tessellation {
     template <typename number>
     class planarize_division {
     private:
+#define min__(a, b) ((a)<(b) ? (a) : (b))
+#define max__(a, b) ((a)>(b) ? (a) : (b))
 
     public:
         using vertex = microgl::vec2<number>;
@@ -80,11 +82,11 @@ namespace tessellation {
                 const auto size_v = _vertices.size();
                 const auto size_e = _edges.size();
                 const auto size_f = _faces.size();
-                for (int ix = 0; ix < size_v; ++ix)
+                for (index ix = 0; ix < size_v; ++ix)
                     delete _vertices.data()[ix];
-                for (int ix = 0; ix < size_e; ++ix)
+                for (index ix = 0; ix < size_e; ++ix)
                     delete _edges.data()[ix];
-                for (int ix = 0; ix < size_f; ++ix)
+                for (index ix = 0; ix < size_f; ++ix)
                     delete _faces.data()[ix];
             };
 
@@ -134,7 +136,6 @@ namespace tessellation {
         struct conflicting_edge_intersection_status {
             vertex point_of_interest;
             point_class_with_trapeze class_of_interest_point;
-            bool a_b_lies_on_wall;
         };
 
         static
@@ -220,7 +221,7 @@ namespace tessellation {
         void walk_and_update_edges_face(half_edge *edge_start, half_edge_face *face);
 
         static
-        void clamp(number &val, number &a, number &b);
+        void clamp(number &val, const number &a, const number &b);
 
         static
         void clamp_vertex(vertex &v, vertex a, vertex b);
@@ -278,6 +279,10 @@ namespace tessellation {
 
         static
         void handle_face_merge(const half_edge_vertex *vertex_on_vertical_wall);
+
+        static
+        point_class_with_trapeze
+        round_vertex_to_trapeze(vertex &point, const trapeze_t &trapeze);
     };
 
 

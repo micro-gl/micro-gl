@@ -53,7 +53,44 @@ chunker<vec2_f> poly_inter_star() {
                                 {400,450},
                         });
 
-    A.push_back_and_cut(box(50,50,300,300, true));
+//    A.push_back_and_cut({
+//                                {150, 150},
+//                                {450,150},
+//                                {200,450},
+//                                {300,50},
+//                                {400,450},
+//                        });
+
+//    A.push_back_and_cut(box(50,50,300,300, true));
+//    A.push_back_and_cut(box(50,250,600,300, true));
+//    A.push_back_and_cut(box(50,450,100,500, true));
+
+    return A;
+}
+
+
+chunker<vec2_f> poly_inter_star_2() {
+    chunker<vec2_f> A;
+
+    A.push_back_and_cut({
+                                {150, 150},
+                                {450,150},
+                                {200,450},
+                                {300,50},
+                                {400,450},
+                        });
+
+    A.push_back_and_cut({
+//                                {150, 150},
+//                                {450,150},
+//                                {200,450},
+//                                {300,50},
+//                                {400,450},
+                        });
+
+//    A.push_back_and_cut(box(50,50,300,300, true));
+//    A.push_back_and_cut(box(50,250,600,300, true));
+//    A.push_back_and_cut(box(50,450,100,500, true));
 
     return A;
 }
@@ -70,8 +107,7 @@ chunker<vec2_f> poly_inter_simple_1() {
     A.push_back_and_cut({
                                 {100,50},
                                 {400,50},
-                                {500,400},
-//                                {120,100},
+                                {450,400},
                         });
 
     return A;
@@ -122,7 +158,8 @@ void render_polygon(chunker<vec2<T>> pieces) {
 void render() {
     t+=.05f;
 
-    render_polygon(poly_inter_star());
+//    render_polygon(poly_inter_star());
+    render_polygon(poly_inter_star_2());
 //    render_polygon(box_1());
 //    render_polygon(poly_inter_simple_1());
 }
