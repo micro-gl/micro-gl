@@ -194,9 +194,6 @@ namespace tessellation {
                                       dynamic_pool &pool) -> vertical_face_cut_result;
 
         static
-        point_class_with_trapeze classify_point_conflicting_trapeze(vertex &point, const trapeze_t &trapeze);
-
-        static
         auto try_split_edge_at(const vertex& point, half_edge *edge, dynamic_pool &pool) -> half_edge * ;
 
         static
@@ -232,7 +229,7 @@ namespace tessellation {
         static
         auto
         compute_conflicting_edge_intersection_against_trapeze(const trapeze_t &trapeze,
-                vertex &a, const vertex &b) -> conflicting_edge_intersection_status;
+                vertex &a, const point_class_with_trapeze & a_class, const vertex &b) -> conflicting_edge_intersection_status;
 
         static
         bool is_trapeze_degenerate(const trapeze_t &trapeze);
@@ -283,6 +280,11 @@ namespace tessellation {
         static
         point_class_with_trapeze
         round_vertex_to_trapeze(vertex &point, const trapeze_t &trapeze);
+
+        static
+        point_class_with_trapeze
+        round_edge_to_trapeze(const vertex &a, vertex &b,
+                              const point_class_with_trapeze &class_a, const trapeze_t &trapeze);
     };
 
 
