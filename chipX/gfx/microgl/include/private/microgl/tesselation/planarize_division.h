@@ -1,6 +1,6 @@
 #pragma once
-#define DEBUG_PLANAR true
-#define APPLY_MERGE false
+#define DEBUG_PLANAR false
+#define APPLY_MERGE true
 
 #include <microgl/tesselation/half_edge.h>
 #include <microgl/chunker.h>
@@ -130,12 +130,26 @@ namespace tessellation {
         };
 
         enum class intersection_status {
-            intersect, none, parallel
+            intersect, none, parallel, degenerate_line
         };
 
         struct conflicting_edge_intersection_status {
             vertex point_of_interest;
             point_class_with_trapeze class_of_interest_point;
+        };
+
+        struct vertical_face_cut_result {
+            // true/false if was split into two
+            bool face_was_split = false;
+            // if a vertical split occurs, vertex_a_edge_split_edge is oriented from bottom->top
+            // and has left_trapeze to it's left
+            half_edge * vertex_a_edge_split_edge = nullptr;
+            trapeze_t left_trapeze;
+            trapeze_t right_trapeze;
+        };
+
+        struct location_codes {
+            int left_wall, bottom_wall, right_wall, top_wall;
         };
 
         static
@@ -177,16 +191,6 @@ namespace tessellation {
         static
         auto infer_trapeze(const half_edge_face *face) -> trapeze_t;
 
-        struct vertical_face_cut_result {
-            // true/false if was split into two
-            bool face_was_split = false;
-            // if a vertical split occurs, vertex_a_edge_split_edge is oriented from bottom->top
-            // and has left_trapeze to it's left
-            half_edge * vertex_a_edge_split_edge = nullptr;
-            trapeze_t left_trapeze;
-            trapeze_t right_trapeze;
-        };
-
         static
         auto handle_vertical_face_cut(const trapeze_t &trapeze,
                                       vertex & a,
@@ -222,14 +226,19 @@ namespace tessellation {
 
         static
         void clamp_vertex(vertex &v, vertex a, vertex b);
+        static
+        void clamp_vertex_horizontally(vertex &v, vertex a, vertex b);
 
         static
         point_class_with_trapeze classify_arbitrary_point_with_trapeze(const vertex &point, const trapeze_t &trapeze);
 
         static
+        location_codes compute_location_codes(const vertex &point, const trapeze_t &trapeze);
+
+        static
         auto
         compute_conflicting_edge_intersection_against_trapeze(const trapeze_t &trapeze,
-                vertex &a, const point_class_with_trapeze & a_class, const vertex &b) -> conflicting_edge_intersection_status;
+                vertex &a, vertex b, const point_class_with_trapeze & a_class) -> conflicting_edge_intersection_status;
 
         static
         bool is_trapeze_degenerate(const trapeze_t &trapeze);
@@ -285,6 +294,7 @@ namespace tessellation {
         point_class_with_trapeze
         round_edge_to_trapeze(const vertex &a, vertex &b,
                               const point_class_with_trapeze &class_a, const trapeze_t &trapeze);
+
     };
 
 

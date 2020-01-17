@@ -1777,24 +1777,14 @@ Canvas<P, CODER>::drawLinePath(color_f_t &color,
                                vec2<number> *points,
                                unsigned int size,
                                bool closed_path) {
-#define t_f microgl::math::to_fixed
-    uint8_t p = 4;
     index jx = 0;
-
-    for (jx = 0; jx < size; jx++) {
-
+    for (jx = 0; jx < size; jx++)
         if(jx)
             drawLine(color,
-                     t_f(points[jx-1].x, p), t_f(points[jx-1].y, p),
-                     t_f(points[jx].x, p), t_f(points[jx].y, p),
-                     p);
-
-    }
-
+                     points[jx-1].x, points[jx-1].y,
+                     points[jx].x, points[jx].y);
     if(closed_path)
-        drawLine(color, t_f(points[0].x, p), t_f(points[0].y, p), t_f(points[jx - 1].x, p), t_f(points[jx- 1].y,p), p);
-
-#undef t_f
+        drawLine(color, points[0].x, points[0].y, points[jx - 1].x, points[jx- 1].y);
 }
 
 // todo: drawBezierPath will be removed once the path maker is ready
