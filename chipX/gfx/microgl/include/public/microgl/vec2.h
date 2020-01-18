@@ -54,6 +54,9 @@ namespace microgl {
         bool operator==(const vec2 & rhs) const {
             return this->x==rhs.x && this->y==rhs.y;
         }
+        bool operator!=(const vec2 & rhs) const {
+            return !(*this==rhs);
+        }
 
         vec2 & operator=(const vec2 & a) {
             this->x = a.x; this->y = a.y;

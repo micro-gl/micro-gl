@@ -96,9 +96,9 @@ chunker<vec2_f> poly_inter_star_2() {
                                 {400/10,450/10},
                         });
 
-//    A.push_back_and_cut(box(50,50,300,300, false));
-//    A.push_back_and_cut(box(50,250,600,300, true));
-//    A.push_back_and_cut(box(50,450,100,500, true));
+    A.push_back_and_cut(box(50,50,300,300, false));
+    A.push_back_and_cut(box(50,250,600,300, true));
+    A.push_back_and_cut(box(50,450,100,500, true));
 
     return A;
 }

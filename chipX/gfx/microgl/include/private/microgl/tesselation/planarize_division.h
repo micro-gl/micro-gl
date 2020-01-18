@@ -16,8 +16,8 @@ namespace tessellation {
     private:
 #define min__(a, b) ((a)<(b) ? (a) : (b))
 #define max__(a, b) ((a)>(b) ? (a) : (b))
-
-    public:
+        constexpr static number ZERO= number(0);
+        constexpr static number ONE= number(1);
         using vertex = microgl::vec2<number>;
         using index = unsigned int;
         using half_edge = half_edge_t<number>;
@@ -152,12 +152,14 @@ namespace tessellation {
             int left_wall, bottom_wall, right_wall, top_wall;
         };
 
+    public:
         static
         void compute(const chunker<vertex> & pieces);
 
         static
         void compute_DEBUG(const chunker<vertex> &pieces, dynamic_array<vertex> &debug_trapezes);
 
+    private:
         static
         void face_to_trapeze_vertices(half_edge_face * face, dynamic_array<vertex> &vertices) {
             if(face->edge== nullptr)
@@ -168,7 +170,6 @@ namespace tessellation {
             vertices.push_back(trapeze.right_bottom->origin->coords);
             vertices.push_back(trapeze.left_bottom->origin->coords);
         }
-//    private:
 
         static
         auto create_frame(const chunker<vertex> &pieces, static_pool & pool) -> half_edge_face *;
@@ -228,9 +229,13 @@ namespace tessellation {
         void clamp_vertex(vertex &v, vertex a, vertex b);
         static
         void clamp_vertex_horizontally(vertex &v, vertex a, vertex b);
+        static
+        void clamp_vertex_vertically(vertex &v, vertex a, vertex b);
 
         static
         point_class_with_trapeze classify_arbitrary_point_with_trapeze(const vertex &point, const trapeze_t &trapeze);
+        static
+        point_class_with_trapeze classify_from_location_codes(const location_codes &codes);
 
         static
         location_codes compute_location_codes(const vertex &point, const trapeze_t &trapeze);
@@ -264,7 +269,7 @@ namespace tessellation {
 
         static
         point_class_with_trapeze
-        locate_and_classify_point_that_is_already_on_trapeze(vertex &point, const trapeze_t &trapeze);
+        locate_and_classify_point_that_is_already_on_trapeze(const vertex &point, const trapeze_t &trapeze);
 
         static half_edge *
         handle_face_split(const trapeze_t &trapeze, vertex &a, vertex &b,
