@@ -1,12 +1,4 @@
-
-//#include "../include/public/microgl/Canvas.h"
-
-//#include <microgl/Canvas.h>
-
-
 #include <microgl/tesselation/ear_clipping_triangulation.h>
-#include <microgl/Canvas.h>
-
 
 template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
@@ -146,7 +138,7 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity 
 
         // get backdrop color
         getPixelColor(index, backdrop);
-
+        // we assume that either they are the same or one of them is zero, this is FASTER then comparison
         bits alpha_bits = coder().alpha_bits() | val.a_bits;// || _alpha_bits_for_compositing;
         if(alpha_bits)
             blended.a = src.a;

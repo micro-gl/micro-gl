@@ -1,18 +1,12 @@
-//#include "planarize_division.h"
-
-#include "planarize_division.h"
-
 namespace tessellation {
 
     template<typename number>
     auto planarize_division<number>::create_frame(const chunker<vertex> &pieces,
                                                   static_pool & pool) -> half_edge_face * {
-        // find bbox of all
         const auto pieces_length = pieces.size();
-
         vertex left_top=pieces.raw_data()[0];
         vertex right_bottom=left_top;
-
+        // find bbox of all
         for (index ix = 0; ix < pieces_length; ++ix) {
             auto const piece = pieces[ix];
             const auto piece_size = piece.size;
@@ -26,57 +20,52 @@ namespace tessellation {
                     right_bottom.x = current_vertex.x;
                 if(current_vertex.y>right_bottom.y)
                     right_bottom.y = current_vertex.y;
-
             }
         }
-
+        // extend bbox 10 points
         left_top.x -= number(10);
         left_top.y -= number(10);
         right_bottom.x += number(10);
         right_bottom.y += number(10);
-
+        // vertices
         auto * v0 = pool.get_vertex();
         auto * v1 = pool.get_vertex();
         auto * v2 = pool.get_vertex();
         auto * v3 = pool.get_vertex();
-
+        // coords
         v0->coords = left_top;
         v1->coords = {left_top.x, right_bottom.y};
         v2->coords = right_bottom;
         v3->coords = {right_bottom.x, left_top.y};
-
-        // half edges
+        // half edges of vertices
         auto * edge_0 = pool.get_edge();
         auto * edge_1 = pool.get_edge();
         auto * edge_2 = pool.get_edge();
         auto * edge_3 = pool.get_edge();
-        // twins
+        // twins of edges
         auto * edge_0_twin = pool.get_edge();
         auto * edge_1_twin = pool.get_edge();
         auto * edge_2_twin = pool.get_edge();
         auto * edge_3_twin = pool.get_edge();
-
-        // ccw from left-top vertex
+        // connect edges to vertices, CCW from left-top vertex
         edge_0->origin = v0; edge_0_twin->origin = v1;
         edge_1->origin = v1; edge_1_twin->origin = v2;
         edge_2->origin = v2; edge_2_twin->origin = v3;
         edge_3->origin = v3; edge_3_twin->origin = v0;
-
-        edge_0->winding = edge_0_twin->winding = 0;
-        edge_1->winding = edge_1_twin->winding = 0;
-        edge_2->winding = edge_2_twin->winding = 0;
-        edge_3->winding = edge_3_twin->winding = 0;
-
         v0->edge = edge_0;
         v1->edge = edge_1;
         v2->edge = edge_2;
         v3->edge = edge_3;
-
+        // winding is zero for frame
+        edge_0->winding = edge_0_twin->winding = 0;
+        edge_1->winding = edge_1_twin->winding = 0;
+        edge_2->winding = edge_2_twin->winding = 0;
+        edge_3->winding = edge_3_twin->winding = 0;
+        // connect edges among themselves
         edge_0->next = edge_1; edge_0_twin->next = edge_3_twin;
         edge_1->next = edge_2; edge_1_twin->next = edge_0_twin;
         edge_2->next = edge_3; edge_2_twin->next = edge_1_twin;
         edge_3->next = edge_0; edge_3_twin->next = edge_2_twin;
-
         edge_0->prev = edge_3; edge_0_twin->prev = edge_1_twin;
         edge_1->prev = edge_0; edge_1_twin->prev = edge_2_twin;
         edge_2->prev = edge_1; edge_2_twin->prev = edge_3_twin;
@@ -86,28 +75,25 @@ namespace tessellation {
         edge_1->twin = edge_1_twin; edge_1_twin->twin = edge_1;
         edge_2->twin = edge_2_twin; edge_2_twin->twin = edge_2;
         edge_3->twin = edge_3_twin; edge_3_twin->twin = edge_3;
-
+        // create a face and connect it
         auto * face = pool.get_face();
         edge_0->face = face; edge_0_twin->face = nullptr; // nullptr for face is the outside world face marker
         edge_1->face = face; edge_1_twin->face = nullptr;
         edge_2->face = face; edge_2_twin->face = nullptr;
         edge_3->face = face; edge_3_twin->face = nullptr;
-
         // CCW around face, face is always to the left of the walk
         face->edge = edge_0;
 
         return face;
-        // note: we might find out that edge-face pointer and edge-prev are not required.
     }
 
     template<typename number>
     auto planarize_division<number>::build_edges_and_conflicts(const chunker<vertex> &pieces,
                                                                half_edge_face & main_frame,
                                                                static_pool & pool) -> half_edge ** {
-
+        // given polygons, build their vertices, edges and conflicts
         const auto pieces_length = pieces.size();
         conflict * conflict_first = nullptr;
-        //conflict * conflict_last = nullptr;
         const auto v_size = pieces.unchunked_size();
         auto ** edges_list = new half_edge*[v_size];
         index edges_list_counter = 0;
@@ -148,18 +134,11 @@ namespace tessellation {
                     e_last_twin->twin = edge_last;
                 }
 
-//                if(conflict_last) {
-//                    conflict_last->next = c;
-//                } else {
-//                    conflict_first = c;
-//                }
-
                 if(conflict_first)
                     c->next = conflict_first;
 
                 conflict_first = c;
                 edge_last = e;
-                //conflict_last = c;
             }
 
             // hook the last edge, from last vertex into first vertex
@@ -170,7 +149,6 @@ namespace tessellation {
                 edge_last->twin = e_last_twin;
                 e_last_twin->twin = edge_last;
             }
-
         }
 
         main_frame.conflict_list = conflict_first;
@@ -217,60 +195,46 @@ namespace tessellation {
                                                              const trapeze_t &trapeze) -> point_class_with_trapeze {
         // given that point that should belong to trapeze, BUT may not sit properly or outside because
         // of precision errors, geometrically round it into place
-
-        // boundaries
-        if(point==trapeze.left_top->origin->coords || point==trapeze.left_bottom->origin->coords ||
-           point==trapeze.right_bottom->origin->coords || point==trapeze.right_top->origin->coords)
+        auto codes= compute_location_codes(point, trapeze);
+        // boundary vertices
+        if((codes.left_wall==0 && codes.top_wall==0) || (codes.left_wall==0 && codes.bottom_wall==0) ||
+           (codes.right_wall==0 && codes.top_wall==0) || (codes.right_wall==0 && codes.bottom_wall==0))
             return point_class_with_trapeze::boundary_vertex;
-        // NOTE:: for left/right wall we shouldn't really expect overflow on the x-axis, because x-classification
-        //        is the result of a comparison and it is the most accurate operation, but we still truncate on x-axis.
-        // left wall
-        {
+        { // left wall
             const auto & start = trapeze.left_top->origin->coords;
             const auto & end = trapeze.left_bottom->origin->coords;
-            const bool outside_or_on_wall = point.x<=start.x;
-            if(outside_or_on_wall) {
+            if(codes.left_wall<=0) { // outside or on wall
                 point.x= start.x; // truncate x
                 clamp(point.y, start.y, end.y);
-                if(point==start || point==end)
-                    return point_class_with_trapeze::boundary_vertex;
+                if(point==start || point==end) return point_class_with_trapeze::boundary_vertex;
                 return point_class_with_trapeze::left_wall;
             }
         }
-        // right wall
-        {
+        { // right wall
             const auto & start = trapeze.right_bottom->origin->coords;
             const auto & end = trapeze.right_top->origin->coords;
-            const bool outside_or_on_wall = point.x>=start.x;
-            if(outside_or_on_wall) {
+            if(codes.right_wall<=0) {
                 point.x= start.x; // truncate x
                 clamp(point.y, end.y, start.y);
-                if(point==start || point==end)
-                    return point_class_with_trapeze::boundary_vertex;
+                if(point==start || point==end) return point_class_with_trapeze::boundary_vertex;
                 return point_class_with_trapeze::right_wall;
             }
         }
-        // bottom wall
-        {
+        { // bottom wall
             const auto & start = trapeze.left_bottom->origin->coords;
             const auto & end = trapeze.right_bottom->origin->coords;
-            bool outside_or_on_wall = classify_point(point, start, end)<=0; // right of or on wall
-            if(outside_or_on_wall) {
+            if(codes.bottom_wall<=0) {
                 point.y= evaluate_line_at_x(point.x, start, end);
                 return point_class_with_trapeze::bottom_wall;
             }
-
         }
-        // top wall
-        {
+        { // top wall
             const auto & start = trapeze.right_top->origin->coords;
             const auto & end = trapeze.left_top->origin->coords;
-            bool outside_or_on_wall = classify_point(point, start, end)<=0; // right of or on wall
-            if(outside_or_on_wall) {
+            if(codes.top_wall<=0) {
                 point.y= evaluate_line_at_x(point.x, end, start);
                 return point_class_with_trapeze::top_wall;
             }
-
         }
 
         return point_class_with_trapeze::strictly_inside;
@@ -305,11 +269,11 @@ namespace tessellation {
         // easy test if (b) is in the closure of trapeze
         const auto codes= compute_location_codes(b, trapeze);
         const auto class_b = classify_from_location_codes(codes);
-        if(class_b!=point_class_with_trapeze::outside)
+        if(class_b!=point_class_with_trapeze::outside) // b in closure, we are done
             return class_b;
 
         // if we got here, (b) is outside, now let's round things
-        // if (a) is in interior, we are done since there is nothing to round
+        // if (a) is in interior, we are done since there is nothing to round, because there is intersection.
         if(a_in_interior)
             return point_class_with_trapeze::outside;
 
@@ -318,8 +282,7 @@ namespace tessellation {
         // for each wall, test if vertex (a) is on the wall and that vertex (b) is strictly right of the wall.
         // if so, clamp it along.
 
-        // left wall
-        {
+        { // left wall
             const auto & start= trapeze.left_top->origin->coords;
             const auto & end= trapeze.left_bottom->origin->coords;
             const bool a_on_wall = class_a==point_class_with_trapeze::left_wall ||
@@ -328,13 +291,11 @@ namespace tessellation {
             if(a_on_wall && b_right_of_wall) { // bingo, let's round
                 b.x= start.x;
                 clamp(b.y, start.y, end.y);
-                if(b==start || b==end)
-                    return point_class_with_trapeze::boundary_vertex;
+                if(b==start || b==end) return point_class_with_trapeze::boundary_vertex;
                 return point_class_with_trapeze::left_wall;
             }
         }
-        // right wall
-        {
+        { // right wall
             const auto & start= trapeze.right_bottom->origin->coords;
             const auto & end= trapeze.right_top->origin->coords;
             const bool a_on_wall = class_a==point_class_with_trapeze::right_wall ||
@@ -343,13 +304,11 @@ namespace tessellation {
             if(a_on_wall && b_right_of_wall) { // bingo, let's round
                 b.x= start.x;
                 clamp(b.y, end.y, start.y);
-                if(b==start || b==end)
-                    return point_class_with_trapeze::boundary_vertex;
+                if(b==start || b==end) return point_class_with_trapeze::boundary_vertex;
                 return point_class_with_trapeze::right_wall;
             }
         }
-        // bottom wall
-        {
+        { // bottom wall
             const auto & start= trapeze.left_bottom->origin->coords;
             const auto & end= trapeze.right_bottom->origin->coords;
             const bool a_on_wall = class_a==point_class_with_trapeze::bottom_wall ||
@@ -358,13 +317,11 @@ namespace tessellation {
             if(a_on_wall && b_right_of_wall) { // bingo, let's round
                 clamp(b.x, start.x, end.x);
                 b.y= evaluate_line_at_x(b.x, start, end);
-                if(b==start || b==end)
-                    return point_class_with_trapeze::boundary_vertex;
+                if(b==start || b==end) return point_class_with_trapeze::boundary_vertex;
                 return point_class_with_trapeze::bottom_wall;
             }
         }
-        // top wall
-        {
+        { // top wall
             const auto & start= trapeze.right_top->origin->coords;
             const auto & end= trapeze.left_top->origin->coords;
             const bool a_on_wall = class_a==point_class_with_trapeze::top_wall ||
@@ -373,8 +330,7 @@ namespace tessellation {
             if(a_on_wall && b_right_of_wall) { // bingo, let's round
                 clamp(b.x, end.x, start.x);
                 b.y= evaluate_line_at_x(b.x, end, start);
-                if(b==start || b==end)
-                    return point_class_with_trapeze::boundary_vertex;
+                if(b==start || b==end) return point_class_with_trapeze::boundary_vertex;
                 return point_class_with_trapeze::top_wall;
             }
         }
@@ -392,7 +348,6 @@ namespace tessellation {
         if(point==trapeze.left_bottom->origin->coords) return point_class_with_trapeze::boundary_vertex;
         if(point==trapeze.right_bottom->origin->coords) return point_class_with_trapeze::boundary_vertex;
         if(point==trapeze.right_top->origin->coords) return point_class_with_trapeze::boundary_vertex;
-
         // left wall
         const bool on_left_wall = point.x==trapeze.left_top->origin->coords.x;
         if(on_left_wall) return point_class_with_trapeze::left_wall;
@@ -429,7 +384,7 @@ namespace tessellation {
         if((codes.left_wall==0 && codes.top_wall==0) || (codes.left_wall==0 && codes.bottom_wall==0) ||
            (codes.right_wall==0 && codes.top_wall==0) || (codes.right_wall==0 && codes.bottom_wall==0))
             return point_class_with_trapeze::boundary_vertex;
-
+        // in closure but not on boundary exterme vertices (as these were resolved earlier)
         const bool in_closure = codes.left_wall>=0 && codes.right_wall>=0 && codes.bottom_wall>=0 && codes.top_wall>=0;
         if(in_closure) { // we are in the closure=boundary or interior
             if(codes.left_wall==0) return point_class_with_trapeze::left_wall;
@@ -495,7 +450,6 @@ namespace tessellation {
         e_0->twin = e_t_1;
         e_t_0->twin = e_1;
         e_1->twin = e_t_0;
-
         // make sure point refers to any edge leaving it
         e_1->origin->edge = e_1;
 
@@ -615,7 +569,6 @@ namespace tessellation {
         f1->conflict_list = nullptr;
         f2->conflict_list = nullptr;
         conflict * list_ref = conflict_list;
-
         while(list_ref!= nullptr) {
             auto * current_ref = list_ref;  // record head
             list_ref=list_ref->next;        // advance
@@ -629,7 +582,6 @@ namespace tessellation {
             // pointer from edge to conflicting face
             e->conflict_face=f;
         }
-
     }
 
     template<typename number>
@@ -778,13 +730,13 @@ namespace tessellation {
                                                                         half_edge ** result_edge_b,
                                                                         dynamic_pool& pool) {
         // given that (a) and (b) are on the boundary and edge (a,b) is co-linear with one of the 4 boundaries of the trapeze,
-        // try inserting vertices on that boundary, update windings between them and return the
+        // try inserting vertices on that boundary, update windings along their path/between them and return the
         // corresponding start and end half edges whose start points are (a) and (b)
         auto * edge_vertex_a =
                 try_insert_vertex_on_trapeze_boundary_at(a, trapeze, wall_class, pool);
         auto * edge_vertex_b =
                 try_insert_vertex_on_trapeze_boundary_at(b, trapeze, wall_class, pool);
-
+        // this is a dangerous practice, would be better to return a struct with pointers
         if(result_edge_a) *result_edge_a = edge_vertex_a;
         if(result_edge_b) *result_edge_b = edge_vertex_b;
 
@@ -1432,11 +1384,10 @@ namespace tessellation {
         intersection_status status;
         bool is_bigger_alpha;
 
-        // left-wall
-        {
+        { // left-wall
             const auto &start = trapeze.left_top->origin->coords;
             const auto &end = trapeze.left_bottom->origin->coords;
-            status = segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
+            status = finite_segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
             if(status==intersection_status::intersect) {
                 is_bigger_alpha = alpha>=biggest_alpha;
                 if(is_bigger_alpha) {
@@ -1463,12 +1414,10 @@ namespace tessellation {
             }
 
         }
-
-        // right wall
-        {
+        { // right wall
             const auto &start = trapeze.right_bottom->origin->coords;
             const auto &end = trapeze.right_top->origin->coords;
-            status = segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
+            status = finite_segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
             if(status==intersection_status::intersect) {
                 is_bigger_alpha = alpha>=biggest_alpha;
                 if(is_bigger_alpha) {
@@ -1495,12 +1444,10 @@ namespace tessellation {
             }
 
         }
-
-        // bottom wall
-        {
+        { // bottom wall
             const auto &start = trapeze.left_bottom->origin->coords;
             const auto &end = trapeze.right_bottom->origin->coords;
-            status = segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
+            status = finite_segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
             if(status==intersection_status::intersect) {
                 is_bigger_alpha = alpha>=biggest_alpha;
                 if(is_bigger_alpha) {
@@ -1525,12 +1472,10 @@ namespace tessellation {
             }
 
         }
-
-        // top wall
-        {
+        { // top wall
             const auto &start = trapeze.right_top->origin->coords;
             const auto &end = trapeze.left_top->origin->coords;
-            status = segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
+            status = finite_segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
             if(status==intersection_status::intersect) {
                 is_bigger_alpha = alpha>=biggest_alpha;
                 if(is_bigger_alpha) {
@@ -1559,12 +1504,11 @@ namespace tessellation {
         return result;
     }
 
-
     template<typename number>
-    auto planarize_division<number>::segment_intersection_test(const vertex &a, const vertex &b,
-                                                               const vertex &c, const vertex &d,
-                                                               vertex & intersection,
-                                                               number &alpha, number &alpha1) -> intersection_status{
+    auto planarize_division<number>::finite_segment_intersection_test(const vertex &a, const vertex &b,
+                                                                      const vertex &c, const vertex &d,
+                                                                      vertex & intersection,
+                                                                      number &alpha, number &alpha1) -> intersection_status{
         // this procedure will find proper and improper(touches) intersections, but no
         // overlaps, since overlaps induce parallel classification, this would have to be resolved outside
         if(a==b || c==d)
@@ -1591,26 +1535,22 @@ namespace tessellation {
                     return intersection_status::none;
             }
 
-            // a lies on c--d segment
-            if(numerator_1==ZERO) {
-                alpha=ZERO;
-                intersection = a;
-            } // b lies on c--d segment
-            else if(numerator_1==dem) {
-                alpha=ONE;
-                intersection = b;
+            // avoid division on trivial edge cases
+            if(numerator_1==ZERO) { // a lies on c--d segment
+                alpha=ZERO; intersection = a;
             }
-            else if(numerator_2==ZERO) {
-                alpha=ZERO;
-                intersection = c;
-            } // b lies on c--d segment
-            else if(numerator_2==dem) {
-                alpha=ONE;
-                intersection = d;
+            else if(numerator_1==dem) { // b lies on c--d segment
+                alpha=ONE; intersection = b;
+            }
+            else if(numerator_2==ZERO) { // c lies on a--b segment
+                alpha=ZERO; intersection = c;
+            }
+            else if(numerator_2==dem) { // d lies on a--b segment
+                alpha=ONE; intersection = d;
             }
             else { // proper intersection
                 alpha = numerator_1/dem;
-//            alpha1 = (ab.y * ac.x - ab.x * ac.y) / dem;
+                // alpha1 = numerator_2/dem;
                 intersection = a + ab*alpha;
             }
         }
@@ -1624,9 +1564,9 @@ namespace tessellation {
         // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
         // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
         //    Input:  three points p, a, b
-        //    Return: >0 for P2 left of the line through a and b
-        //            =0 for P2  on the line
-        //            <0 for P2  right of the line
+        //    Return: >0 for P left of the line through a and b
+        //            =0 for P  on the line
+        //            <0 for P  right of the line
         //    See: Algorithm 1 "Area of Triangles and Polygons"
         auto result= (b.x-a.x)*(point.y-a.y)-(point.x-a.x)*(b.y-a.y);
         if(result<ZERO) return 1;

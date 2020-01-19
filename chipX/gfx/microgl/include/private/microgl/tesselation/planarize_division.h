@@ -184,10 +184,10 @@ namespace tessellation {
         int classify_point(const vertex &point, const vertex &a, const vertex &b);
 
         static
-        intersection_status segment_intersection_test(const vertex &a, const vertex &b,
-                                       const vertex &c, const vertex &d,
-                                       vertex &intersection,
-                                       number &alpha, number &alpha1);
+        intersection_status finite_segment_intersection_test(const vertex &a, const vertex &b,
+                                                             const vertex &c, const vertex &d,
+                                                             vertex &intersection,
+                                                             number &alpha, number &alpha1);
 
         static
         auto infer_trapeze(const half_edge_face *face) -> trapeze_t;
@@ -201,8 +201,7 @@ namespace tessellation {
         static
         auto try_split_edge_at(const vertex& point, half_edge *edge, dynamic_pool &pool) -> half_edge * ;
 
-        static
-        half_edge *
+        static half_edge *
         try_insert_vertex_on_trapeze_boundary_at(const vertex &v, const trapeze_t &trapeze,
                                                  point_class_with_trapeze where_boundary, dynamic_pool &pool);
 
@@ -301,7 +300,6 @@ namespace tessellation {
                               const point_class_with_trapeze &class_a, const trapeze_t &trapeze);
 
     };
-
 
 }
 
