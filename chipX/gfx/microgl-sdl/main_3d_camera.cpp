@@ -8,6 +8,7 @@
 #include <microgl/Q.h>
 #include <microgl/camera.h>
 #include <microgl/dynamic_array.h>
+#include <microgl/pixel_coders/RGB888_PACKED_32.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -16,7 +17,7 @@
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
-using Canvas24Bit_Packed32 = Canvas<uint32_t, RGB888_PACKED_32>;
+using Canvas24Bit_Packed32 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
 Canvas24Bit_Packed32 * canvas;
 
@@ -53,6 +54,7 @@ float z = 0;
 template <typename number_coords>
 void render_template(const arr<number_coords> & vertices) {
     using vertex = vec3<number_coords>;
+    using vertex4 = vec4<number_coords>;
     using camera = microgl::camera<number_coords>;
     using mat4 = matrix_4x4<number_coords>;
     using math = microgl::math;
@@ -66,19 +68,18 @@ void render_template(const arr<number_coords> & vertices) {
 //    mat4 model = mat4::transform({ math::deg_to_rad(z), math::deg_to_rad(z), 0},
 //                                 {0,0,-300+25}, {25,25,25});
 
-    mat4 model = mat4::scale(10,10,10)*mat4::rotation(math::deg_to_rad(z), {0,1,1});
-    mat4 view = camera::lookAt({0, 0, 200-z}, {0,0, 200-z-1}, {0,1,0});
-//    mat4 view = camera::angleAt({0, 0, 100}, math::deg_to_rad(0),
-//            math::deg_to_rad(z), math::deg_to_rad(0));
-    mat4 projection = camera::perspective(fov_horizontal, canvas_width, canvas_height, 1, 500);
-//    mat4 projection = camera::orthographic(-canvas_width, canvas_width, -canvas_height, canvas_height, 1, 500.0);
+    mat4 model = mat4::scale(100,100,100)*mat4::rotation(math::deg_to_rad(z), {0,1,1});
+    mat4 view = camera::lookAt({0, 0, 1000}, {0,0, 0}, {0,1,0});
+    mat4 projection = camera::perspective(fov_horizontal, canvas_width, canvas_height, 1, 10000);
+//    mat4 projection = camera::orthographic(-canvas_width, canvas_width, -canvas_height, canvas_height, 1, 10000.0);
     mat4 mvp = projection * view * model;
 
-    canvas->clear(WHITE);
+    canvas->clear(color::colors::WHITE);
 
     for (unsigned ix = 0; ix < vertices.size(); ++ix) {
         // convert to ndc space
-        vertex ndc_projected = mvp * vertices[ix];
+        vertex4 ndc_projected = mvp * vertex4{vertices[ix]};
+        ndc_projected = ndc_projected/ndc_projected.w;
         // convert to raster space
         vertex raster = camera::viewport(ndc_projected, canvas_width, canvas_height);
         // perform culling
@@ -88,8 +89,8 @@ void render_template(const arr<number_coords> & vertices) {
             continue;
 
         std::cout << raster.x << ", " << raster.y << ", " << raster.z << " - " << z <<std::endl;
-        auto color = RED;
-        if(ix>=7) color=BLUE;
+        auto color = color::colors::RED;
+        if(ix>=7) color=color::colors::BLUE;
         canvas->drawCircle(color, raster.x, raster.y, number_coords(4), 255);
     }
 
@@ -112,7 +113,7 @@ void init_sdl(int width, int height) {
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, 0);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
-    canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
+    canvas = new Canvas24Bit_Packed32(width, height);
 }
 
 int render_test(int N) {

@@ -2,7 +2,7 @@
 
 #include <microgl/matrix.h>
 #include <microgl/math.h>
-#include <microgl/vec3.h>
+#include <microgl/vec4.h>
 
 namespace microgl {
 
@@ -10,7 +10,8 @@ namespace microgl {
     class matrix_4x4 : public matrix<number, 4, 4> {
     private:
         using index = unsigned;
-        using vertex = vec3<number>;
+        using vertex3 = vec3<number>;
+        using vertex4 = vec4<number>;
         using base__ =  matrix<number, 4, 4>;
         using type_ref = number &;
         using const_type_ref = const number &;
@@ -48,9 +49,9 @@ namespace microgl {
         }
 
         static
-        matrix_4x4 rotation(const_type_ref angle, const vertex &axis) {
+        matrix_4x4 rotation(const_type_ref angle, const vertex3 &axis) {
             matrix_4x4 mat{};
-            const vertex ax = axis.normalize();
+            const vertex3 ax = axis.normalize();
             const number s = microgl::math::sin(angle);
             const number c = microgl::math::cos(angle);
             const number c1 = number(1) - c;
@@ -80,13 +81,13 @@ namespace microgl {
         // |0 Sx  Cx| |-Sy  0 Cy| | 0   0 1|   |-CxSyCz+SxSz  CxSySz+SxCz  CxCy|
         ///////////////////////////////////////////////////////////////////////////////
         static
-        matrix_4x4 transform(const vertex & rotation = {0, 0, 0},
-                            const vertex & translation = {0, 0, 0},
-                            const vertex & scale = {1, 1, 1})
+        matrix_4x4 transform(const vertex3 & rotation = {0, 0, 0},
+                            const vertex3 & translation = {0, 0, 0},
+                            const vertex3 & scale = {1, 1, 1})
         {
             matrix_4x4 result {};
             number sx, sy, sz, cx, cy, cz;
-            vertex vec;
+            vertex3 vec;
             // rotation angle about X-axis (pitch)
             sx = microgl::math::sin(rotation.x);
             cx = microgl::math::cos(rotation.x);
@@ -98,9 +99,9 @@ namespace microgl {
             cz = microgl::math::cos(rotation.z);
 
             // determine left vector
-            vertex left     {cy*cz*scale.x,     (sx*sy*cz + cx*sz)*scale.y,     (-cx*sy*cz + sx*sz)*scale.z};
-            vertex up       {-cy*sz*scale.x,    (-sx*sy*sz + cx*cz)*scale.y,    (cx*sy*sz + sx*cz)*scale.z};
-            vertex forward  {sy*scale.x,        -sx*cy*scale.y,                 cx*cy*scale.z};
+            vertex3 left     {cy * cz * scale.x, (sx * sy * cz + cx * sz) * scale.y, (-cx * sy * cz + sx * sz) * scale.z};
+            vertex3 up       {-cy * sz * scale.x, (-sx * sy * sz + cx * cz) * scale.y, (cx * sy * sz + sx * cz) * scale.z};
+            vertex3 forward  {sy * scale.x, -sx * cy * scale.y, cx * cy * scale.z};
 
             result.setColumn(0, left);
             result.setColumn(1, up);
@@ -153,14 +154,14 @@ namespace microgl {
             return *this;
         }
 
-        void setColumn(const index column_index, const vertex & val) {
+        void setColumn(const index column_index, const vertex3 & val) {
             auto & me = *this;
             me[column_index] = val.x;
             me[column_index+4] = val.y;
             me[column_index+8] = val.z;
         }
 
-        void setRow(const index row_index, const vertex & val) {
+        void setRow(const index row_index, const vertex3 & val) {
             auto & me = *this;
             const index start = row_index*4;
             me[start + 0] = val.x;
@@ -168,20 +169,20 @@ namespace microgl {
             me[start + 2] = val.z;
         }
 
-        vertex operator*(const vertex & point) const {
-            vertex res;
+        vertex4 operator*(const vertex4 & point) const {
+            vertex4 res;
             const auto & m = (*this);
 
-            res.x = m[0]*point.x + m[1]*point.y + m[2]*point.z + m[3];
-            res.y = m[4]*point.x + m[5]*point.y + m[6]*point.z + m[7];
-            res.z = m[8]*point.x + m[9]*point.y + m[10]*point.z + m[11];
-            auto w = m[12]*point.x + m[13]*point.y + m[14]*point.z + m[15];
+            res.x = m[0]*point.x + m[1]*point.y + m[2]*point.z + m[3]*point.w;
+            res.y = m[4]*point.x + m[5]*point.y + m[6]*point.z + m[7]*point.w;
+            res.z = m[8]*point.x + m[9]*point.y + m[10]*point.z + m[11]*point.w;
+            res.w = m[12]*point.x + m[13]*point.y + m[14]*point.z + m[15]*point.w;
 
             // if it is not an affine transform, likely a projective matrix.
             // this is the transform from homogeneous to Cartesian coordinate,
             // thus making also the z division. this transforms from clip space to ndc
-            if(w!=number(1) && w!=number(0))
-                res=res/w;
+//            if(w!=number(1) && w!=number(0))
+//                res=res/w;
 
             return res;
         }

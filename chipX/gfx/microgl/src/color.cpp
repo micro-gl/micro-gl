@@ -1,5 +1,3 @@
-#pragma once
-
 #include <microgl/color.h>
 
 namespace microgl {

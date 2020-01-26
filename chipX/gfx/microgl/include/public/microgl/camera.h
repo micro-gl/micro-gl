@@ -2,7 +2,7 @@
 
 #include <microgl/matrix_4x4.h>
 #include <microgl/math.h>
-#include <microgl/vec3.h>
+#include <microgl/vec4.h>
 
 
 namespace microgl {
@@ -10,25 +10,21 @@ namespace microgl {
     class camera {
     private:
         using const_ref = const number &;
-        using vertex = vec3<number>;
+        using vertex3 = vec3<number>;
+        using vertex4 = vec4<number>;
         using mat4 = matrix_4x4<number> ;
         using index = unsigned int;
     public:
 
         static
-        vertex world_to_raster_space(const vertex &world, const mat4 &mvp, index width, index height) {
-            // given world coord, transform it to raster/canvas space
-            return viewport(vertex(mvp*world), width, height);
-        }
-
-        static
-        vertex viewport(const vertex &ndc, index width, index height) {
+        vertex3 viewport(const vertex4 &ndc, index width, index height) {
             // given NDC= Normalized Device Coordinates, then transform them into
             // raster/canvas/viewport coords. We assume, that NDC coords are [-1,1] range.
+            // todo:; currently I assume no z clipping has occured
             // z value is mapped to [0,1] range
             // convert to raster space
             const_ref zero=number(0), one = number(1), two=number(2);
-            vertex result{};
+            vertex3 result{};
             result.x = ((ndc.x + one)*width)/two;
             result.y = number(height) - (((ndc.y + one)*number(height))/two);
             result.z = (ndc.z + one)/two;
@@ -64,10 +60,10 @@ namespace microgl {
          *  [ 0 | 1 ]      [  0  |     1    ]    (R^T denotes R-transpose)
         */
         static
-        mat4 angleAt(const vertex &position,
+        mat4 angleAt(const vertex3 &position,
                      const_ref pitch, const_ref yaw, const_ref roll) {
             mat4 mat;
-            vertex vec;
+            vertex3 vec;
             // rotation angle about X-axis (pitch)
             number sx = microgl::math::sin(pitch);
             number cx = microgl::math::cos(pitch);
@@ -78,9 +74,9 @@ namespace microgl {
             number sz = microgl::math::sin(roll);
             number cz = microgl::math::cos(roll);
 
-            vertex x_axis {cy*cz, sx*sy*cz + cx*sz, -cx*sy*cz + sx*sz};
-            vertex y_axis {-cy*sz, -sx*sy*sz + cx*cz, cx*sy*sz + sx*cz};
-            vertex z_axis {sy, -sx*cy, cx*cy};
+            vertex3 x_axis {cy*cz, sx*sy*cz + cx*sz, -cx*sy*cz + sx*sz};
+            vertex3 y_axis {-cy*sz, -sx*sy*sz + cx*cz, cx*sy*sz + sx*cz};
+            vertex3 z_axis {sy, -sx*cy, cx*cy};
 
             // copy it to matrix transposed because it is inverted,
             // our matrix is column major, therefore inserting at rows
@@ -90,7 +86,7 @@ namespace microgl {
             mat.setRow(2, z_axis);
 
             // set inverted translation
-            vertex trans {-(x_axis*position), -(y_axis*position), -(z_axis*position)};
+            vertex3 trans {-(x_axis*position), -(y_axis*position), -(z_axis*position)};
             mat.setColumn(3, trans);
 
             return mat;
@@ -109,14 +105,14 @@ namespace microgl {
         // |0   0   0   1|   |0  0  0  1|   |0   0   0   1                     |
         ///////////////////////////////////////////////////////////////////////////////
         static
-        mat4 lookAt(const vertex & position, const vertex& target, const vertex& up)
+        mat4 lookAt(const vertex3 & position, const vertex3& target, const vertex3& up)
         {
             mat4 result{};
 
             // 3 axis of rotation matrix for scene
-            vertex z_axis = (position-target).normalize(); // forward
-            vertex x_axis = up.cross(z_axis).normalize(); // left
-            vertex y_axis = z_axis.cross(x_axis); // up
+            vertex3 z_axis = (position-target).normalize(); // forward
+            vertex3 x_axis = up.cross(z_axis).normalize(); // left
+            vertex3 y_axis = z_axis.cross(x_axis); // up
 
             // copy it to matrix transposed because it is inverted
             result.identity();
@@ -125,7 +121,7 @@ namespace microgl {
             result.setRow(2, z_axis);
 
             // set translation part
-            vertex trans {-(x_axis*position), -(y_axis*position), -(z_axis*position)};
+            vertex3 trans {-(x_axis*position), -(y_axis*position), -(z_axis*position)};
 
             result.setColumn(3, trans);
 
@@ -158,10 +154,10 @@ namespace microgl {
 
             return mat;
 
-//            auto scale = microgl::math::tan(horizontal_fov_radians/number(2)) * near;
-//            auto r = aspect_ratio * scale, l = -r;
-//            auto t = scale, b = -t;
-//            return perspective(l,r,b,t,near,far);
+            auto scale = microgl::math::tan(horizontal_fov_radians/number(2)) * near;
+            auto r = aspect_ratio * scale, l = -r;
+            auto t = scale, b = -t;
+            return perspective(l,r,b,t,near,far);
         }
 
         static

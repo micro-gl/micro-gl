@@ -1,9 +1,8 @@
 #pragma once
 
 #include <microgl/color.h>
-#include "crpt.h"
+#include <microgl/crpt.h>
 #include <cmath>
-#include<algorithm>
 
 namespace blendmode {
     using namespace microgl::color;

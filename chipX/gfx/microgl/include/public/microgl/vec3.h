@@ -10,11 +10,8 @@ namespace microgl {
         number x, y, z;
 
         vec3() = default;
-        vec3(const number & x, const number & y, const number & z) {
-            this->x = x;
-            this->y = y;
-            this->z = z;
-        }
+        vec3(const number & $x, const number & $y, const number & $z) :
+                x{$x}, y{$y}, z{$z} {}
 
         template<typename F>
         vec3(const vec3<F> & a) {
@@ -54,7 +51,7 @@ namespace microgl {
         }
 
         vec3 & normalize() {
-            auto d = x*x + y*y + z*z;
+            auto d = (x*x) + (y*y) + (z*z);
             if(d==number(0))
                 return *this;
             auto inv_len = number(1) / microgl::math::sqrt(d);

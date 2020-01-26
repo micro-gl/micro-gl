@@ -6,8 +6,10 @@
 #include <microgl/Canvas.h>
 #include <microgl/matrix_4x4.h>
 #include <microgl/Q.h>
+#include <microgl/camera.h>
 #include <microgl/pipeline.h>
 #include <microgl/dynamic_array.h>
+#include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include "data/model_3d_tree.h"
 
 #define TEST_ITERATIONS 1
@@ -17,7 +19,7 @@
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
-using Canvas24Bit_Packed32 = Canvas<uint32_t, RGB888_PACKED_32>;
+using Canvas24Bit_Packed32 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
 Canvas24Bit_Packed32 * canvas;
 
@@ -38,7 +40,7 @@ void render_template(const model_3d<number_coords> & object) {
     using mat4 = matrix_4x4<number_coords>;
     using math = microgl::math;
 
-    z+=0.1121;
+    z+=0.01121;
 
     int canvas_width = canvas->width();
     int canvas_height = canvas->height();
@@ -47,9 +49,10 @@ void render_template(const model_3d<number_coords> & object) {
                                  {0,0,-100}, {1,1,1});
     mat4 view = camera::lookAt({0, 0, -z}, {0,0, -z-1}, {0,1,0});
     mat4 projection = camera::perspective(math::deg_to_rad(60),
-            canvas_width, canvas_height, 1, 500);
+                                          canvas_width, canvas_height, 1, 500);
+//    mat4 projection = camera::perspective(-1,1,-1,1,1,10000);
     mat4 mvp = projection * view * model;
-    canvas->clear(WHITE);
+    canvas->clear(color::colors::WHITE);
     microgl::_3d::pipeline<number_coords, decltype(*canvas)>::render (
             object.vertices.data(),
             object.vertices.size(),
@@ -79,7 +82,7 @@ void init_sdl(int width, int height) {
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, 0);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
-    canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
+    canvas = new Canvas24Bit_Packed32(width, height);
 }
 
 int render_test(int N) {

@@ -13,6 +13,7 @@
 #include <microgl/Bitmap.h>
 #include <microgl/Fixed.h>
 #include <microgl/Sampler.h>
+#include <microgl/shader.h>
 #include <microgl/triangles.h>
 #include <microgl/polygons.h>
 #include <microgl/masks.h>
@@ -26,6 +27,7 @@
 
 using namespace microgl::triangles;
 using namespace microgl::polygons;
+using namespace microgl::shading;
 
 template<typename P, typename CODER>
 class Canvas {
@@ -73,9 +75,6 @@ public:
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>
     void blendColor(const color_f_t &val, int x, int y, float opacity=1.0f);
-//    template<typename BlendMode=blendmode::Normal,
-//             typename PorterDuff=porterduff::SourceOverOnOpaque>
-//    void blendColor(const color_f_t &val, int index, float opacity=1.0f);
 
     // integer blenders
     template<typename BlendMode=blendmode::Normal,
@@ -178,6 +177,16 @@ public:
                       int v1_x, int v1_y, int u1, int v1, int q1,
                       int v2_x, int v2_y, int u2, int v2, int q2,
                       opacity opacity, precision sub_pixel_precision, precision uv_precision,
+                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename impl, typename vertex_attr, typename varying, typename number,
+            //            typename Shader,
+            bool antialias=false, bool perspective_correct=false>
+    void drawTriangleShader(shader_base<impl, vertex_attr, varying, number> &shader,
+            const vertex_attr &v0,const vertex_attr &v1, const vertex_attr &v2,
+                      opacity opacity,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,

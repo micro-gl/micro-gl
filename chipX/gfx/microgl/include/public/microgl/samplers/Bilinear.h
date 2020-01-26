@@ -49,15 +49,18 @@ namespace sampler {
             a.r = (c00.r * (max - tx) + c10.r * tx)>>bits;
             a.g = (c00.g * (max - tx) + c10.g * tx)>>bits;
             a.b = (c00.b * (max - tx) + c10.b * tx)>>bits;
+            a.a = (c00.a * (max - tx) + c10.a * tx)>>bits;
 
             b.r = (c01.r * (max - tx) + c11.r * tx)>>bits;
             b.g = (c01.g * (max - tx) + c11.g * tx)>>bits;
             b.b = (c01.b * (max - tx) + c11.b * tx)>>bits;
+            b.a = (c01.a * (max - tx) + c11.a * tx)>>bits;
 
             output.r = (a.r * (max - ty) + b.r * ty)>>bits;
             output.g = (a.g * (max - ty) + b.g * ty)>>bits;
             output.b = (a.b * (max - ty) + b.b * ty)>>bits;
-            output.a = 255;
+            output.a = (a.a * (max - ty) + b.a * ty)>>bits;
+            //output.a = 255;
 
         }
 

@@ -129,6 +129,10 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int x, int y, opaci
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
 inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity opacity) {
+    // we assume that the color conforms to the same pixel-coder. but we are flexible
+    // for alpha channel. if coder does not have an alpha channel, the color itself may
+    // have non-zero alpha channel, for which we emulate 8-bit alpha processing and also pre
+    // multiply result with alpha
     color_t result;//=val;
     P output;
 
@@ -138,10 +142,10 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity 
 
         // get backdrop color
         getPixelColor(index, backdrop);
-        // we assume that either they are the same or one of them is zero, this is FASTER then comparison
+        // we assume that either they are the same or one of them is zero, this is FASTER then comparison.
+        // if we don't own a native alpha channel, check if the color has a suggestion for alpha channel.
         bits alpha_bits = coder().alpha_bits() | val.a_bits;// || _alpha_bits_for_compositing;
-        if(alpha_bits)
-            blended.a = src.a;
+        if(alpha_bits) blended.a = src.a;
         else {
             blended.a = 255;
             alpha_bits=8;
@@ -1278,6 +1282,281 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
 }
 
+// shaders
+///*
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff,
+        typename impl, typename vertex_attr, typename varying, typename number,
+        bool antialias, bool perspective_correct>
+void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying, number> &shader,
+                                          const vertex_attr &v0,const vertex_attr &v1, const vertex_attr &v2,
+                                          const opacity opacity,
+                                          bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
+
+    const bits sub_pixel_precision = 4;
+#define f microgl::math::to_fixed
+    // compute varying and positions per vertex for interpolation
+    varying varying_v0, varying_v1, varying_v2, interpolated_varying;
+    auto v0_position = shader.vertex(v0, varying_v0);
+    auto v1_position = shader.vertex(v1, varying_v1);
+    auto v2_position = shader.vertex(v2, varying_v2);
+    // here goes clipping on w cube -> clip space
+    // todo:: clip at least on z plane, what about z clamping
+    // divide by w -> NDC space
+    v0_position = v0_position/v0_position.w;
+    v1_position = v1_position/v1_position.w;
+    v2_position = v2_position/v2_position.w;
+    // viewport transform -> raster space
+    const int v0_x= f(v0_position.x, sub_pixel_precision), v0_y= f(v0_position.y, sub_pixel_precision);
+    const int v1_x= f(v1_position.x, sub_pixel_precision), v1_y= f(v1_position.y, sub_pixel_precision);
+    const int v2_x= f(v2_position.x, sub_pixel_precision), v2_y= f(v2_position.y, sub_pixel_precision);
+#undef f
+
+    fixed_signed area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
+    //int bmp_width = bmp.width();
+
+    // sub_pixel_precision;
+    // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
+    bits BITS_UV_COORDS = 0;
+    bits PREC_DIST = 15;
+
+    unsigned int max_sub_pixel_precision_value = (1u<<sub_pixel_precision) - 1;
+
+    // bounding box
+    int minX = (functions::min(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    int minY = (functions::min(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    int maxX = (functions::max(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    int maxY = (functions::max(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+
+    // anti-alias pad for distance calculation
+    bits bits_distance = 0;
+    bits bits_distance_complement = 8;
+    // max distance to consider in canvas space
+    unsigned int max_distance_canvas_space_anti_alias=0;
+    // max distance to consider in scaled space
+    unsigned int max_distance_scaled_space_anti_alias=0;
+
+    bool aa_all_edges = false;
+    if(antialias) {
+        aa_all_edges = aa_first_edge && aa_second_edge && aa_third_edge;
+        bits_distance = 0;
+        bits_distance_complement = 8 - bits_distance;
+        max_distance_canvas_space_anti_alias = 1u << bits_distance;
+        max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias<<PREC_DIST;
+    }
+
+    // fill rules adjustments
+    triangles::top_left_t top_left =
+            triangles::classifyTopLeftEdges(false,
+                                            v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
+
+    int bias_w0 = top_left.first  ? 0 : -1;
+    int bias_w1 = top_left.second ? 0 : -1;
+    int bias_w2 = top_left.third  ? 0 : -1;
+
+    // clipping
+    minX = functions::max(0, minX); minY = functions::max(0, minY);
+    maxX = functions::min(width()-1, maxX); maxY = functions::min(height()-1, maxY);
+
+    // Barycentric coordinates at minX/minY corner
+    vec2_32i p = { minX, minY };
+    vec2_32i p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
+
+//    uint32_t bmp_w_max = bmp.width() - 1, bmp_h_max = bmp.height() - 1;
+
+    // this can produce a 2P bits number if the points form a a perpendicular triangle
+    int area_v1_v2_p = functions::orient2d({v1_x, v1_y}, {v2_x, v2_y}, p_fixed, sub_pixel_precision) + bias_w1,
+            area_v2_v0_p = functions::orient2d({v2_x, v2_y}, {v0_x, v0_y}, p_fixed, sub_pixel_precision) + bias_w2,
+            area_v0_v1_p = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, p_fixed, sub_pixel_precision) + bias_w0;
+
+    bits MAX_PREC = 60;
+    uint8_t LL = MAX_PREC - (sub_pixel_precision + BITS_UV_COORDS);
+    uint64_t ONE = ((uint64_t)1)<<LL;
+    uint64_t one_area = (ONE) / area;
+
+    // PR seems very good for the following calculations
+    // Triangle setup
+    // this needs at least (P+1) bits, since the delta is always <= length
+    int64_t A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
+    int64_t A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
+    int64_t A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
+
+    int64_t w0_row = (area_v0_v1_p);
+    int64_t w1_row = (area_v1_v2_p);
+    int64_t w2_row = (area_v2_v0_p);
+
+    // AA, 2A/L = h, therefore the division produces a P bit number
+    int64_t w0_row_h=0, w1_row_h=0, w2_row_h=0;
+    int64_t A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
+
+    if(antialias) {
+        // lengths of edges, produces a P+1 bits number
+        int64_t length_w0 = functions::length({v0_x, v0_y}, {v1_x, v1_y}, 0);
+        int64_t length_w1 = functions::length({v1_x, v1_y}, {v2_x, v2_y}, 0);
+        int64_t length_w2 = functions::length({v0_x, v0_y}, {v2_x, v2_y}, 0);
+
+        A01_h = ((int64_t)(v0_y - v1_y)<<PREC_DIST)/length_w0, B01_h = ((int64_t)(v1_x - v0_x)<<PREC_DIST)/length_w0;
+        A12_h = ((int64_t)(v1_y - v2_y)<<PREC_DIST)/length_w1, B12_h = ((int64_t)(v2_x - v1_x)<<PREC_DIST)/length_w1;
+        A20_h = ((int64_t)(v2_y - v0_y)<<PREC_DIST)/length_w2, B20_h = ((int64_t)(v0_x - v2_x)<<PREC_DIST)/length_w2;
+
+        w0_row_h = ((int64_t)(area_v0_v1_p)<<PREC_DIST)/length_w0;
+        w1_row_h = ((int64_t)(area_v1_v2_p)<<PREC_DIST)/length_w1;
+        w2_row_h = ((int64_t)(area_v2_v0_p)<<PREC_DIST)/length_w2;
+    }
+
+    int index = p.y * _width;
+
+
+    for (p.y = minY; p.y <= maxY; p.y++) {
+
+        int w0 = w0_row;
+        int w1 = w1_row;
+        int w2 = w2_row;
+
+        int w0_h=0,w1_h=0,w2_h=0;
+
+        if(antialias) {
+            w0_h = w0_row_h;
+            w1_h = w1_row_h;
+            w2_h = w2_row_h;
+        }
+
+        for (p.x = minX; p.x <= maxX; p.x++) {
+
+            if ((w0 | w1 | w2) >= 0) {
+
+//                int u_i, v_i;
+//                uint64_t u_fixed = (((uint64_t)((uint64_t)w0*u2 + (uint64_t)w1*u0 + (uint64_t)w2*u1)));
+//                uint64_t v_fixed = (((uint64_t)((uint64_t)w0*v2 + (uint64_t)w1*v0 + (uint64_t)w2*v1)));
+
+                if(perspective_correct) {
+//                    uint64_t q_fixed =(((uint64_t)((uint64_t)w0*q2 + (uint64_t)w1*q0 + (uint64_t)w2*q1)));
+//                    uint64_t one_over_q = ONE / q_fixed;
+//
+//                    u_i = (u_fixed*bmp_w_max*one_over_q)>>(LL-BITS_UV_COORDS);
+//                    v_i = (v_fixed*bmp_h_max*one_over_q)>>(LL-BITS_UV_COORDS);
+
+                } else {
+//                    auto area_q = Q<10>{area, sub_pixel_precision};
+//                    auto bary_a = Q<10>{w0, sub_pixel_precision} / area_q;
+//                    auto bary_b = Q<10>{w1, sub_pixel_precision};
+//                    auto bary_c = Q<10>{w2, sub_pixel_precision};
+//                    u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS));
+//                    v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
+//                    // coords in :BITS_UV_COORDS space
+//                    u_i = (bmp_w_max*u_fixed)>>(BITS_UV_COORDS);
+//                    v_i = (bmp_h_max*v_fixed)>>(BITS_UV_COORDS);
+                }
+
+                auto bary = vec4<long long>{w0, w1, w2, area};
+                interpolated_varying.interpolate(
+                        varying_v0,
+                        varying_v1,
+                        varying_v2, bary);
+                auto color= shader.fragment(interpolated_varying);
+
+                //u_i = functions::clamp<int>(u_i, 0, bmp_w_max<<BITS_UV_COORDS);
+                //v_i = functions::clamp<int>(v_i, 0, bmp_h_max<<BITS_UV_COORDS);
+
+//                color_t col_bmp;
+//                Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
+
+
+                blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity);
+//                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
+
+            } else if(antialias) {
+                // any of the distances are negative, we are outside.
+                // test if we can anti-alias
+                // take minimum of all meta distances
+
+                int distance = functions::min(w0_h, w1_h, w2_h);
+                int delta = (distance) + max_distance_scaled_space_anti_alias;
+                bool perform_aa = aa_all_edges;
+
+                // test edges
+                if(!perform_aa) {
+                    if(distance==w0_h && aa_first_edge)
+                        perform_aa = true;
+                    else if(distance==w1_h && aa_second_edge)
+                        perform_aa = true;
+                    else perform_aa = distance == w2_h && aa_third_edge;
+                }
+
+                if (perform_aa && delta >= 0) {
+                    // we need to clip uv coords if they overflow dimension of texture so we
+                    // can get the last texel of the boundary
+                    // I don't round since I don't care about it here
+
+//                    uint64_t u_i, v_i;
+//                    uint64_t u_fixed = (((uint64_t)((uint64_t)w0*u2 + (uint64_t)w1*u0 + (uint64_t)w2*u1)));
+//                    uint64_t v_fixed = (((uint64_t)((uint64_t)w0*v2 + (uint64_t)w1*v0 + (uint64_t)w2*v1)));
+
+                    if(perspective_correct) {
+
+//                        uint64_t q_fixed =(((uint64_t)((uint64_t)w0*q2 + (uint64_t)w1*q0 + (uint64_t)w2*q1)));
+//                        uint64_t one_over_q = ONE / q_fixed;
+//
+//                        u_i = uint64_t(u_fixed*bmp_w_max*one_over_q)>>(LL-BITS_UV_COORDS);
+//                        v_i = uint64_t(v_fixed*bmp_h_max*one_over_q)>>(LL-BITS_UV_COORDS);
+
+                    } else {
+
+//                        u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS));
+//                        v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
+//                         coords in :BITS_UV_COORDS space
+//                        u_i = uint64_t(uint64_t(bmp_w_max)*u_fixed)>>(BITS_UV_COORDS);
+//                        v_i = uint64_t(uint64_t(bmp_h_max)*v_fixed)>>(BITS_UV_COORDS);
+                    }
+
+                    // todo:: I have seen the last row of a quadrilateral rendering have the first row
+                    // todo: this is an overflow, that comes from v_i, research why
+//                    u_i = functions::clamp<uint32_t>(u_i, 0, bmp_w_max<<BITS_UV_COORDS);
+//                    v_i = functions::clamp<uint32_t>(v_i, 0, bmp_h_max<<BITS_UV_COORDS);
+
+                    color_t col_bmp;
+//                    Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
+                    // complement and normalize
+                    uint8_t blend = functions::clamp<int>(((uint64_t)(delta << bits_distance_complement))>>PREC_DIST,
+                                                          0, 255);
+
+                    if (opacity < _max_alpha_value)
+                        blend = (blend * opacity) >> 8;
+
+                    blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, blend);
+                }
+
+            }
+
+            w0 += A01;
+            w1 += A12;
+            w2 += A20;
+
+            if(antialias) {
+                w0_h += A01_h;
+                w1_h += A12_h;
+                w2_h += A20_h;
+            }
+
+        }
+
+        w0_row += B01;
+        w1_row += B12;
+        w2_row += B20;
+
+        if(antialias) {
+            w0_row_h += B01_h;
+            w1_row_h += B12_h;
+            w2_row_h += B20_h;
+        }
+
+        index += _width;
+    }
+
+}
+//*/
+
+//
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
         bool antialias, typename Sampler, typename number,
@@ -1633,7 +1912,7 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
     uint32_t IntensityShift, ErrorAdj, ErrorAcc;
     unsigned int ErrorAccTemp, Weighting, WeightingComplementMask;
     int DeltaX, DeltaY, Temp, XDir;//, YDir;
-    unsigned int one = 1u<<bits;
+    int one = 1u<<bits;
     unsigned int round = 0;//one>>1;// -1;
     // Make sure the line runs top to bottom
     if (Y0 > Y1) {
@@ -1646,7 +1925,7 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
     blendColor(color_input, (X0+round)>>bits, (Y0+round)>>bits, maxIntensity);
 
     if ((DeltaX = X1 - X0) >= 0) {
-        XDir = 1u<<bits;
+        XDir = 1<<bits;
     } else {
         XDir = -(1u<<bits);
         DeltaX = -DeltaX; // make DeltaX positive
