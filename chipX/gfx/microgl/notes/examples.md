@@ -8,7 +8,7 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
                                int v0_x, int v0_y, float u0, float v0,
                                int v1_x, int v1_y, float u1, float v1,
                                int v2_x, int v2_y, float u2, float v2,
-                               const uint8_t opacity) {
+                               const uint8_t opacity_t) {
 
     float area = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y});
     int bmp_width = bmp.width();
@@ -113,7 +113,7 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
 
                 color_t col_bmp;
                 bmp.decode(index_bmp, col_bmp);
-                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
+                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity_t);
 
                 // this is faster if we don't use blending
 //                drawPixel(bmp.pixelAt(index_bmp), index + p.x);
@@ -135,8 +135,8 @@ Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
 
                     uint8_t blend = ((long)((delta) << (8 - bits_distance)))>>16;
 
-                    if (opacity < _max_alpha_value) {
-                        blend = (blend * opacity) >> 8;
+                    if (opacity_t < _max_alpha_value) {
+                        blend = (blend * opacity_t) >> 8;
                     }
 
                     color_t col_bmp;
@@ -192,7 +192,7 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
                                int v1_x, int v1_y, float u1, float v1,
                                int v2_x, int v2_y, float u2, float v2,
                                int v3_x, int v3_y, float u3, float v3,
-                               const uint8_t opacity) {
+                               const uint8_t opacity_t) {
 
     float area_1 = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y})/2.0f;
     float area_2 = orient2d({v2_x, v2_y}, {v3_x, v3_y}, {v0_x, v0_y})/2.0f;
@@ -319,7 +319,7 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
 
                 color_t col_bmp;
                 bmp.decode(index_bmp, col_bmp);
-                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
+                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity_t);
 
 //                drawPixel(0xFF, index + p.x);
 
@@ -341,8 +341,8 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
 
                     uint8_t blend = ((long)((delta) << (8 - bits_distance)))>>16;
 
-                    if (opacity < _max_alpha_value) {
-                        blend = (blend * opacity) >> 8;
+                    if (opacity_t < _max_alpha_value) {
+                        blend = (blend * opacity_t) >> 8;
                     }
 
                     color_t col_bmp;
@@ -401,7 +401,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                                int v0_x, int v0_y, float u0, float v0,
                                int v1_x, int v1_y, float u1, float v1,
                                int v2_x, int v2_y, float u2, float v2,
-                               const uint8_t opacity) {
+                               const uint8_t opacity_t) {
     float area = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y});
     int bmp_width = bmp.width();
     // bounding box
@@ -522,7 +522,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
                 color_t col_bmp;
                 bmp.decode(index_bmp, col_bmp);
-                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
+                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity_t);
 
             } else if(antialias) {;// if(false){
                 // any of the distances are negative, we are outside.
@@ -542,8 +542,8 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
                     uint8_t blend = ((long)((delta) << (8 - bits_distance)))>>16;
 
-                    if (opacity < _max_alpha_value) {
-                        blend = (blend * opacity) >> 8;
+                    if (opacity_t < _max_alpha_value) {
+                        blend = (blend * opacity_t) >> 8;
                     }
 
                     color_t col_bmp;
@@ -598,7 +598,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                                const fixed_signed v0_x, const fixed_signed v0_y, float u0, float v0, float q0,
                                const fixed_signed v1_x, const fixed_signed v1_y, float u1, float v1, float q1,
                                const fixed_signed v2_x, const fixed_signed v2_y, float u2, float v2, float q2,
-                               const uint8_t opacity, const uint8_t sub_pixel_precision) {
+                               const uint8_t opacity_t, const uint8_t sub_pixel_precision) {
 
     fixed_signed area = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
     int bmp_width = bmp.width();
@@ -804,7 +804,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
                 color_t col_bmp;
                 bmp.decode(index_bmp, col_bmp);
-                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
+                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity_t);
 
 //                drawPixel(0xFF, index+p.x);
 
@@ -839,8 +839,8 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
                     uint8_t blend = ((long)((delta) << (8 - bits_distance)))>>PR;
 
-                    if (opacity < _max_alpha_value) {
-                        blend = (blend * opacity) >> 8;
+                    if (opacity_t < _max_alpha_value) {
+                        blend = (blend * opacity_t) >> 8;
                     }
 
                     color_t col_bmp;
@@ -903,7 +903,7 @@ template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawCircle(const color_f_t & color,
                                   int centerX, int centerY,
                                   int radius,
-                                  uint8_t opacity) {
+                                  uint8_t opacity_t) {
     color_t color_int;
 
     coder()->convert(color, color_int);
@@ -919,7 +919,7 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
         c = b - a;
     }
 
-    bool apply_opacity = opacity!=255;
+    bool apply_opacity = opacity_t!=255;
     int delta;
 
     int x_min = centerX - radius - max_blend_distance, y_min = centerY - radius - max_blend_distance;
@@ -937,14 +937,14 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
             int distance = signed_distance_circle_raised_quad(x, y, centerX, centerY, radius);
 
             if(distance<=0)
-                blendColor<BlendMode, PorterDuff>(color_int, index + x, opacity);
+                blendColor<BlendMode, PorterDuff>(color_int, index + x, opacity_t);
             else if(antialias && (delta=c-distance)>=0){
 
 //                 scale inner to 8 bit and then convert to integer
                 uint8_t blend = ((delta)<<(8))/c;
 
                 if(apply_opacity)
-                    blend = (blend*opacity)>>8;
+                    blend = (blend*opacity_t)>>8;
 
                 blendColor<BlendMode, PorterDuff>(color_int, index + x, blend);
             }
@@ -1166,7 +1166,7 @@ Canvas<P, CODER>::drawTriangle2(const Bitmap<P2, CODER2> & bmp,
                                const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
                                const fixed_signed v1_x, const fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
                                const fixed_signed v2_x, const fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
-                               const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision) {
+                               const uint8_t opacity_t, const uint8_t sub_pixel_precision, const uint8_t uv_precision) {
 
     fixed_signed area = orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
     int bmp_width = bmp.width();
@@ -1344,7 +1344,7 @@ Canvas<P, CODER>::drawTriangle2(const Bitmap<P2, CODER2> & bmp,
 
                 color_t col_bmp;
                 bmp.decode(index_bmp, col_bmp);
-                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
+                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity_t);
 
 //                drawPixel(0xFF, index+p.x);
 
@@ -1382,8 +1382,8 @@ Canvas<P, CODER>::drawTriangle2(const Bitmap<P2, CODER2> & bmp,
 
                     uint8_t blend = ((long)((delta) << (8 - bits_distance)))>>PR;
 
-                    if (opacity < _max_alpha_value) {
-                        blend = (blend * opacity) >> 8;
+                    if (opacity_t < _max_alpha_value) {
+                        blend = (blend * opacity_t) >> 8;
                     }
 
                     color_t col_bmp;
@@ -1452,7 +1452,7 @@ Canvas<P, CODER>::drawTriangleFast(const Bitmap<P2, CODER2> & bmp,
                                const float v0_x, const float v0_y, float u0, float v0,
                                const float v1_x, const float v1_y, float u1, float v1,
                                const float v2_x, const float v2_y, float u2, float v2,
-                               const uint8_t opacity,
+                               const uint8_t opacity_t,
                                bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
 
     uint8_t prec_pixel = 4;
@@ -1476,7 +1476,7 @@ Canvas<P, CODER>::drawTriangleFast(const Bitmap<P2, CODER2> & bmp,
             v0_x_, v0_y_, u0_, v0_, q_,
             v1_x_, v1_y_, u1_, v1_, q_,
             v2_x_, v2_y_, u2_, v2_, q_,
-            opacity, prec_pixel, prec_uv,
+            opacity_t, prec_pixel, prec_uv,
             aa_first_edge, aa_second_edge, aa_third_edge);
 
 }
@@ -1491,7 +1491,7 @@ Canvas<P, CODER>::drawTriangleFast(const Bitmap<P2, CODER2> & bmp,
                                const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
                                const fixed_signed v1_x, const fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
                                const fixed_signed v2_x, const fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
-                               const uint8_t opacity, const uint8_t sub_pixel_precision, const uint8_t uv_precision,
+                               const uint8_t opacity_t, const uint8_t sub_pixel_precision, const uint8_t uv_precision,
                                bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
 
     fixed_signed area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
@@ -1668,7 +1668,7 @@ Canvas<P, CODER>::drawTriangleFast(const Bitmap<P2, CODER2> & bmp,
                     int w2_ = w2_row_;
 
                     for(int ix = p.x; ix < p.x + block; ix++) {
-//                        blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), opacity);
+//                        blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), opacity_t);
 
                         int u_i, v_i;
                         uint64_t u_fixed = (((uint64_t)((uint64_t)w0_*u2 + (uint64_t)w1_*u0 + (uint64_t)w2_*u1)));
@@ -1697,7 +1697,7 @@ Canvas<P, CODER>::drawTriangleFast(const Bitmap<P2, CODER2> & bmp,
                         //bmp.decode(index_bmp, col_bmp);
                         Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
 
-                        blendColor<BlendMode, PorterDuff>(col_bmp, stride + ix, opacity);
+                        blendColor<BlendMode, PorterDuff>(col_bmp, stride + ix, opacity_t);
 
 
                         w0_ += A01;
@@ -1746,7 +1746,7 @@ Canvas<P, CODER>::drawTriangleFast(const Bitmap<P2, CODER2> & bmp,
                 //bmp.decode(index_bmp, col_bmp);
                 Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
 
-                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
+                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity_t);
 
             } else if(antialias) {
                 // any of the distances are negative, we are outside.
@@ -1801,8 +1801,8 @@ Canvas<P, CODER>::drawTriangleFast(const Bitmap<P2, CODER2> & bmp,
                     uint8_t blend = functions::clamp<int>(((uint64_t)(delta << bits_distance_complement))>>PREC_DIST,
                                                           0, 255);
 
-                    if (opacity < _max_alpha_value)
-                        blend = (blend * opacity) >> 8;
+                    if (opacity_t < _max_alpha_value)
+                        blend = (blend * opacity_t) >> 8;
 
                     blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, blend);
                 }

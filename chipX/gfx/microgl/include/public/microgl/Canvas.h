@@ -43,7 +43,7 @@ private:
 
     using index = unsigned int;
     using precision = unsigned char;
-    using opacity = unsigned char;
+    using opacity_t = unsigned char;
 
 public:
     explicit Canvas(Bitmap<P, CODER> * $bmp);
@@ -79,10 +79,10 @@ public:
     // integer blenders
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>
-    void blendColor(const color_t &val, int x, int y, opacity opacity);
+    void blendColor(const color_t &val, int x, int y, opacity_t opacity);
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>
-    void blendColor(const color_t &val, int index, opacity opacity);
+    void blendColor(const color_t &val, int index, opacity_t opacity);
 
     void drawPixel(const P &val, int x, int y);
     void drawPixel(const P &val, int index);
@@ -98,14 +98,14 @@ public:
     void drawCircle(const color_f_t & color,
                     int centerX, int centerY,
                     int radius, precision sub_pixel_precision,
-                    opacity opacity);
+                    opacity_t opacity);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename number>
     void drawCircle(const color_f_t & color,
                     number centerX, number centerY,
-                    number radius, opacity opacity=255);
+                    number radius, opacity_t opacity=255);
 
     // Triangles
     
@@ -118,7 +118,7 @@ public:
                        const boundary_info * boundary_buffer,
                        index size,
                        enum indices type,
-                       opacity opacity);
+                       opacity_t opacity);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -128,7 +128,7 @@ public:
                                 const index *indices,
                                 index size,
                                 enum indices type,
-                                opacity opacity);
+                                opacity_t opacity);
 
 
     template<typename BlendMode=blendmode::Normal,
@@ -143,14 +143,14 @@ public:
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
     void drawTriangle(const color_f_t & color,
-                          int v0_x, int v0_y,
-                          int v1_x, int v1_y,
-                          int v2_x, int v2_y,
-                          opacity opacity,
-                          precision sub_pixel_precision,
-                          bool aa_first_edge = true,
-                          bool aa_second_edge = true,
-                          bool aa_third_edge = true);
+                      int v0_x, int v0_y,
+                      int v1_x, int v1_y,
+                      int v2_x, int v2_y,
+                      opacity_t opacity,
+                      precision sub_pixel_precision,
+                      bool aa_first_edge = true,
+                      bool aa_second_edge = true,
+                      bool aa_third_edge = true);
 
     // float version
     template<typename BlendMode=blendmode::Normal,
@@ -160,7 +160,7 @@ public:
                       number v0_x, number v0_y,
                       number v1_x, number v1_y,
                       number v2_x, number v2_y,
-                      opacity opacity = 255,
+                      opacity_t opacity = 255,
                       bool aa_first_edge = true,
                       bool aa_second_edge = true,
                       bool aa_third_edge = true);
@@ -176,18 +176,17 @@ public:
                       int v0_x, int v0_y, int u0, int v0, int q0,
                       int v1_x, int v1_y, int u1, int v1, int q1,
                       int v2_x, int v2_y, int u2, int v2, int q2,
-                      opacity opacity, precision sub_pixel_precision, precision uv_precision,
+                      opacity_t opacity, precision sub_pixel_precision, precision uv_precision,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            typename impl, typename vertex_attr, typename varying, typename number,
-            //            typename Shader,
-            bool antialias=false, bool perspective_correct=false>
+            bool antialias=true, bool perspective_correct=false,
+            typename impl, typename vertex_attr, typename varying, typename number>
     void drawTriangleShader(shader_base<impl, vertex_attr, varying, number> &shader,
-            const vertex_attr &v0,const vertex_attr &v1, const vertex_attr &v2,
-                      opacity opacity,
-                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
+                            const vertex_attr &v0, const vertex_attr &v1, const vertex_attr &v2,
+                            opacity_t opacity,
+                            bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -198,7 +197,7 @@ public:
                       number v0_x, number v0_y, number u0, number v0,
                       number v1_x, number v1_y, number u1, number v1,
                       number v2_x, number v2_y, number u2, number v2,
-                      opacity opacity = 255,
+                      opacity_t opacity = 255,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,
@@ -210,7 +209,7 @@ public:
                            number v1_x, number v1_y, number u1, number v1,
                            number v2_x, number v2_y, number u2, number v2,
                            number v3_x, number v3_y, number u3, number v3,
-                           opacity opacity = 255);
+                           opacity_t opacity = 255);
 
     // QUADS
 
@@ -220,7 +219,7 @@ public:
                   int left, int top,
                   int right, int bottom,
                   precision sub_pixel_precision,
-                  opacity opacity);
+                  opacity_t opacity);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -228,7 +227,7 @@ public:
     void drawQuad(const color_f_t &color,
                   number left, number top,
                   number right, number bottom,
-                  opacity opacity = 255);
+                  opacity_t opacity = 255);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -240,7 +239,7 @@ public:
                   int u0, int v0,
                   int u1, int v1,
                   precision sub_pixel_precision, precision uv_precision,
-                  opacity opacity);
+                  opacity_t opacity);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -249,7 +248,7 @@ public:
     void drawQuad(const Bitmap<P2, CODER2> &bmp,
                   number left, number top,
                   number right, number bottom,
-                  opacity opacity = 255,
+                  opacity_t opacity = 255,
                   number u0=number(0), number v0=number(0),
                   number u1=number(1), number v1=number(1));
 
@@ -261,7 +260,7 @@ public:
                   number right, number bottom,
                   number u0=number(0), number v0=number(0),
                   number u1=number(1), number v1=number(1),
-                  opacity opacity = 255);
+                  opacity_t opacity = 255);
 
     template <typename Sampler=sampler::NearestNeighbor, typename P2, typename CODER2>
     void drawMask(const masks::chrome_mode &mode,
@@ -271,7 +270,7 @@ public:
                   int u0, int v0,
                   int u1, int v1,
                   precision sub_pixel_precision, precision uv_precision,
-                  opacity opacity = 255);
+                  opacity_t opacity = 255);
 
     // polygons
 
@@ -280,7 +279,7 @@ public:
             bool antialias=false, typename number=float>
     void drawPolygon(vec2<number> * points,
                      index size,
-                     opacity opacity,
+                     opacity_t opacity,
                      polygons::hints hint = polygons::hints::SIMPLE);
 
     // paths

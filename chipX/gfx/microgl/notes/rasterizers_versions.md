@@ -10,7 +10,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     const fixed_signed v0_x, const fixed_signed v0_y,
                                     const fixed_signed v1_x, const fixed_signed v1_y,
                                     const fixed_signed v2_x, const fixed_signed v2_y,
-                                    const uint8_t opacity,
+                                    const uint8_t opacity_t,
                                     const uint8_t sub_pixel_precision,
                                     bool aa_first_edge,
                                     bool aa_second_edge,
@@ -142,7 +142,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
             if ((w0 | w1 | w2) >= 0) {
 
-                blendColor<BlendMode, PorterDuff>(color_int, (index + p.x), opacity);
+                blendColor<BlendMode, PorterDuff>(color_int, (index + p.x), opacity_t);
 
             } else if(antialias) {;// if(false){
                 // any of the distances are negative, we are outside.
@@ -170,8 +170,8 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                     uint8_t blend = functions::clamp<int>(((int64_t)delta << bits_distance_complement)>>(PR),
                                                           0, 255);
 
-                    if (opacity < _max_alpha_value) {
-                        blend = (blend * opacity) >> 8;
+                    if (opacity_t < _max_alpha_value) {
+                        blend = (blend * opacity_t) >> 8;
                     }
 //                    blend=255;
                     blendColor<BlendMode, PorterDuff>(color_int, (index + p.x), blend);
@@ -225,7 +225,7 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
                                     int v1_x, int v1_y, int u1, int v1,
                                     int v2_x, int v2_y, int u2, int v2,
                                     int v3_x, int v3_y, int u3, int v3,
-                                    const uint8_t opacity, const precision sub_pixel_precision,
+                                    const uint8_t opacity_t, const precision sub_pixel_precision,
                                     const precision uv_precision) {
 
     int q_one = 1<<uv_precision;
@@ -246,7 +246,7 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
             int v1_ = functions::min(v0, v1, v2, v3);
 
             drawQuad<BlendMode, PorterDuff, Sampler>(bmp, left, top, right, bottom, u0_, v0_, u1_, v1_,
-                    sub_pixel_precision, uv_precision, opacity);
+                    sub_pixel_precision, uv_precision, opacity_t);
 
             return;
         }
@@ -257,7 +257,7 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
                                                               v0_x, v0_y, u0, v0, q_one,
                                                               v1_x, v1_y, u1, v1, q_one,
                                                               v2_x, v2_y, u2, v2, q_one,
-                                                              opacity, sub_pixel_precision,
+                                                              opacity_t, sub_pixel_precision,
                                                               uv_precision,
                                                               true, true, false);
 
@@ -265,7 +265,7 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
                                                               v2_x, v2_y, u2, v2, q_one,
                                                               v3_x, v3_y, u3, v3, q_one,
                                                               v0_x, v0_y, u0, v0, q_one,
-                                                              opacity, sub_pixel_precision,
+                                                              opacity_t, sub_pixel_precision,
                                                               uv_precision,
                                                               true, true, false);
 
@@ -335,7 +335,7 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
                                                              v0_x, v0_y, u0_q0, v0_q0, q0,
                                                              v1_x, v1_y, u1_q1, v1_q1, q1,
                                                              v2_x, v2_y, u2_q2, v2_q2, q2,
-                                                             opacity, sub_pixel_precision,
+                                                             opacity_t, sub_pixel_precision,
                                                              uv_precision,
                                                              true, true, false);
 
@@ -343,7 +343,7 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
                                                              v2_x, v2_y, u2_q2, v2_q2, q2,
                                                              v3_x, v3_y, u3_q3, v3_q3, q3,
                                                              v0_x, v0_y, u0_q0, v0_q0, q0,
-                                                             opacity, sub_pixel_precision,
+                                                             opacity_t, sub_pixel_precision,
                                                              uv_precision,
                                                              true, true, false);
 
@@ -419,7 +419,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                                 int u1, int v1,
                                 const precision sub_pixel_precision,
                                 const precision uv_precision,
-                                const opacity opacity) {
+                                const opacity_t opacity_t) {
     color_t col_bmp{};
     P converted{};
 
@@ -481,7 +481,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
             //
 
             // re-encode for a different canvas
-            blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
+            blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity_t);
 
             u += du;
         }

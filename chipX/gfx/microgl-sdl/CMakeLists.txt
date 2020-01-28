@@ -36,9 +36,9 @@ set(SOURCES
 #        main_fan_triangulation.cpp
 #        main_Q_matrix_transforms.cpp
 #        main_masks.cpp
-        main_3d_pipeline.cpp
+#        main_3d_pipeline.cpp
 #        main_3d_camera.cpp
-#        main_shaders_2d.cpp
+        main_shaders_2d.cpp
 #        main_number_systems.cpp
 #        main_aa_bug.cpp
 #        main_aa_bug_2.cpp

@@ -12,7 +12,7 @@ namespace microgl {
 
         template<typename number>
         struct simple_varying {
-            color_t color;
+            color_t color{255,0,0};
 
             void interpolate(const simple_varying &varying_a,
                              const simple_varying &varying_b,
@@ -53,19 +53,19 @@ namespace microgl {
 
         };
 
-
         class color_shader : public shader_base<color_shader, simple_vertex_attributes<float>, simple_varying<float>, float> {
         public:
+            matrix_4x4<float> mat = camera<float>::orthographic(0, 640, 0, 640, 1, 100);
+
             inline gl_position
             vertex(const simple_vertex_attributes<float> &attributes, simple_varying<float> &output) {
                 output.color = attributes.color;
-//                auto mat= camera<float>::orthographic(0, 640, );
-                return vec4<float>{attributes.point};
+                auto result= mat * vec4<float>{attributes.point};
+                return result;
             }
 
             inline color::color_t fragment(const simple_varying<float> &input) {
                 return input.color;
-//                return color::color_t{255, 0, 0, 255};
             }
 
         };

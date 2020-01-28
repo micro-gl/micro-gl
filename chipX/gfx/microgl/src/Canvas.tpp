@@ -122,13 +122,13 @@ inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y, flo
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
-inline void Canvas<P, CODER>::blendColor(const color_t &val, int x, int y, opacity opacity) {
+inline void Canvas<P, CODER>::blendColor(const color_t &val, int x, int y, opacity_t opacity) {
     blendColor<BlendMode, PorterDuff>(val, y*_width + x, opacity);
 }
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
-inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity opacity) {
+inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_t opacity) {
     // we assume that the color conforms to the same pixel-coder. but we are flexible
     // for alpha channel. if coder does not have an alpha channel, the color itself may
     // have non-zero alpha channel, for which we emulate 8-bit alpha processing and also pre
@@ -200,8 +200,8 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity 
         // preserve src alpha before Porter-Duff
         //blended.a = hasNativeAlphaChannel() ? src.a : 255;
 
-        // apply opacity
-        // I fixed opacity is always 8 bits no matter what the alpha depth of the
+        // apply opacity_t
+        // I fixed opacity_t is always 8 bits no matter what the alpha depth of the
         // native canvas
         if(opacity < 255)
             blended.a =  (blended.a * opacity) >> 8;
@@ -239,7 +239,7 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
                                   const int centerY,
                                   const int radius,
                                   const precision sub_pixel_precision,
-                                  const opacity opacity) {
+                                  const opacity_t opacity) {
     color_t color_int;
     uint8_t p = sub_pixel_precision;
     coder().convert(color, color_int);
@@ -311,7 +311,7 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
                                   const number centerX,
                                   const number centerY,
                                   const number radius,
-                                  opacity opacity) {
+                                  opacity_t opacity) {
 
     precision p = 4;
 
@@ -357,7 +357,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                      const boundary_info * boundary_buffer,
                                      const index size,
                                      const enum indices type,
-                                     const opacity opacity) {
+                                     const opacity_t opacity) {
 
 #define IND(a) indices[(a)]
 #define to_fixed microgl::math::to_fixed
@@ -514,7 +514,7 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
                                               const index *indices,
                                               const index size,
                                               const enum indices type,
-                                              const opacity opacity) {
+                                              const opacity_t opacity) {
 
 #define IND(a) indices[(a)]
 
@@ -595,7 +595,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     int v0_x, int v0_y,
                                     int v1_x, int v1_y,
                                     int v2_x, int v2_y,
-                                    const opacity opacity,
+                                    const opacity_t opacity,
                                     const precision sub_pixel_precision,
                                     bool aa_first_edge,
                                     bool aa_second_edge,
@@ -979,7 +979,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     const number v0_x, const number v0_y,
                                     const number v1_x, const number v1_y,
                                     const number v2_x, const number v2_y,
-                                    const opacity opacity,
+                                    const opacity_t opacity,
                                     bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
     precision precision = 4;
     int v0_x_ = microgl::math::to_fixed(v0_x, precision);
@@ -1006,7 +1006,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                                const int v0_x, const int v0_y, int u0, int v0, int q0,
                                const int v1_x, const int v1_y, int u1, int v1, int q1,
                                const int v2_x, const int v2_y, int u2, int v2, int q2,
-                               const opacity opacity, const precision sub_pixel_precision, const precision uv_precision,
+                               const opacity_t opacity, const precision sub_pixel_precision, const precision uv_precision,
                                bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
 
     fixed_signed area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
@@ -1175,31 +1175,31 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                     // can get the last texel of the boundary
                     // I don't round since I don't care about it here
 
-                    uint64_t u_i, v_i;
-                    uint64_t u_fixed = (((uint64_t)((uint64_t)w0*u2 + (uint64_t)w1*u0 + (uint64_t)w2*u1)));
-                    uint64_t v_fixed = (((uint64_t)((uint64_t)w0*v2 + (uint64_t)w1*v0 + (uint64_t)w2*v1)));
+                    int64_t u_i, v_i;
+                    int64_t u_fixed = (((int64_t)((int64_t)w0*u2 + (int64_t)w1*u0 + (int64_t)w2*u1)));
+                    int64_t v_fixed = (((int64_t)((int64_t)w0*v2 + (int64_t)w1*v0 + (int64_t)w2*v1)));
 
                     if(perspective_correct) {
 
-                        uint64_t q_fixed =(((uint64_t)((uint64_t)w0*q2 + (uint64_t)w1*q0 + (uint64_t)w2*q1)));
-                        uint64_t one_over_q = ONE / q_fixed;
+                        int64_t q_fixed =(((int64_t)((int64_t)w0*q2 + (int64_t)w1*q0 + (int64_t)w2*q1)));
+                        int64_t one_over_q = ONE / q_fixed;
 
-                        u_i = uint64_t(u_fixed*bmp_w_max*one_over_q)>>(LL-BITS_UV_COORDS);
-                        v_i = uint64_t(v_fixed*bmp_h_max*one_over_q)>>(LL-BITS_UV_COORDS);
+                        u_i = int64_t(u_fixed*bmp_w_max*one_over_q)>>(LL-BITS_UV_COORDS);
+                        v_i = int64_t(v_fixed*bmp_h_max*one_over_q)>>(LL-BITS_UV_COORDS);
 
                     } else {
 
                         u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS));
                         v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
                         // coords in :BITS_UV_COORDS space
-                        u_i = uint64_t(uint64_t(bmp_w_max)*u_fixed)>>(BITS_UV_COORDS);
-                        v_i = uint64_t(uint64_t(bmp_h_max)*v_fixed)>>(BITS_UV_COORDS);
+                        u_i = int64_t(int64_t(bmp_w_max)*u_fixed)>>(BITS_UV_COORDS);
+                        v_i = int64_t(int64_t(bmp_h_max)*v_fixed)>>(BITS_UV_COORDS);
                     }
 
                     // todo:: I have seen the last row of a quadrilateral rendering have the first row
                     // todo: this is an overflow, that comes from v_i, research why
-                    u_i = functions::clamp<uint32_t>(u_i, 0, bmp_w_max<<BITS_UV_COORDS);
-                    v_i = functions::clamp<uint32_t>(v_i, 0, bmp_h_max<<BITS_UV_COORDS);
+                    u_i = functions::clamp<int64_t>(u_i, 0, bmp_w_max<<BITS_UV_COORDS);
+                    v_i = functions::clamp<int64_t>(v_i, 0, bmp_h_max<<BITS_UV_COORDS);
 
                     color_t col_bmp;
                     Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
@@ -1253,7 +1253,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                                const number v0_x, const number v0_y, number u0, number v0,
                                const number v1_x, const number v1_y, number u1, number v1,
                                const number v2_x, const number v2_y, number u2, number v2,
-                               const opacity opacity,
+                               const opacity_t opacity,
                                bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
 
     precision prec_pixel = 4;
@@ -1283,38 +1283,59 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 }
 
 // shaders
+#include <microgl/camera.h>
 ///*
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff,
-        typename impl, typename vertex_attr, typename varying, typename number,
-        bool antialias, bool perspective_correct>
+template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct,
+        typename impl, typename vertex_attr, typename varying, typename number>
 void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying, number> &shader,
                                           const vertex_attr &v0,const vertex_attr &v1, const vertex_attr &v2,
-                                          const opacity opacity,
+                                          const opacity_t opacity,
                                           bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
 
     const bits sub_pixel_precision = 4;
+    // this is the programmable 3d pipeline
 #define f microgl::math::to_fixed
     // compute varying and positions per vertex for interpolation
     varying varying_v0, varying_v1, varying_v2, interpolated_varying;
-    auto v0_position = shader.vertex(v0, varying_v0);
-    auto v1_position = shader.vertex(v1, varying_v1);
-    auto v2_position = shader.vertex(v2, varying_v2);
+    auto v0_homo_space = shader.vertex(v0, varying_v0);
+    auto v1_homo_space = shader.vertex(v1, varying_v1);
+    auto v2_homo_space = shader.vertex(v2, varying_v2);
     // here goes clipping on w cube -> clip space
     // todo:: clip at least on z plane, what about z clamping
     // divide by w -> NDC space
-    v0_position = v0_position/v0_position.w;
-    v1_position = v1_position/v1_position.w;
-    v2_position = v2_position/v2_position.w;
+    auto v0_ndc = v0_homo_space/v0_homo_space.w;
+    auto v1_ndc = v1_homo_space/v1_homo_space.w;
+    auto v2_ndc = v2_homo_space/v2_homo_space.w;
     // viewport transform -> raster space
-    const int v0_x= f(v0_position.x, sub_pixel_precision), v0_y= f(v0_position.y, sub_pixel_precision);
-    const int v1_x= f(v1_position.x, sub_pixel_precision), v1_y= f(v1_position.y, sub_pixel_precision);
-    const int v2_x= f(v2_position.x, sub_pixel_precision), v2_y= f(v2_position.y, sub_pixel_precision);
+    auto v0_viewport = microgl::camera<number>::viewport(v0_ndc, width(), height());
+    auto v1_viewport = microgl::camera<number>::viewport(v1_ndc, width(), height());
+    auto v2_viewport = microgl::camera<number>::viewport(v2_ndc, width(), height());
+
+    // collect values for interpolation as fixed point integers
+    int v0_x= f(v0_viewport.x, sub_pixel_precision), v0_y= f(v0_viewport.y, sub_pixel_precision);
+    int v1_x= f(v1_viewport.x, sub_pixel_precision), v1_y= f(v1_viewport.y, sub_pixel_precision);
+    int v2_x= f(v2_viewport.x, sub_pixel_precision), v2_y= f(v2_viewport.y, sub_pixel_precision);
+
+    fixed_signed area = functions::orient2d({v0_x, v0_y},
+                                            {v1_x, v1_y}, {v2_x, v2_y},
+                                            sub_pixel_precision);
+
+// discard degenerate triangle
+    if(area==0) return;
+    if(area<0) { // convert CCW to CW triangle
+        functions::swap(v1_x, v2_x);
+        functions::swap(v1_y, v2_y);
+        functions::swap(aa_first_edge, aa_third_edge);
+        area = -area;
+    }
+
 #undef f
 
-    fixed_signed area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
-    //int bmp_width = bmp.width();
-
+    // about AA
+    // we cannot use distance measurements to our benefits. why ?
+    // 1. because we have no idea if we sample from an axis aligned rectangle samplable like bitmap
+    // 2.
     // sub_pixel_precision;
     // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
     bits BITS_UV_COORDS = 0;
@@ -1421,7 +1442,54 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
             w2_h = w2_row_h;
         }
 
-        for (p.x = minX; p.x <= maxX; p.x++) {
+        for (p.x = minX; p.x<=maxX; p.x++) {
+            const bool in_closure = (w0 | w1 | w2)>=0;
+            bool should_sample= in_closure;
+            auto opacity_sample = opacity;
+            auto bary = vec4<long long>{w0, w1, w2, area};
+            if(antialias && !in_closure) {
+                // any of the distances are negative, we are outside.
+                // test if we can anti-alias
+                // take minimum of all meta distances
+
+                int64_t distance = functions::min(w0_h, w1_h, w2_h);
+                int64_t delta = (distance) + max_distance_scaled_space_anti_alias;
+                bool perform_aa = aa_all_edges;
+
+                // test edges
+                if(!perform_aa) {
+                    if(distance==w0_h && aa_first_edge)
+                        perform_aa = true;
+                    else if(distance==w1_h && aa_second_edge)
+                        perform_aa = true;
+                    else perform_aa = distance == w2_h && aa_third_edge;
+                }
+
+                should_sample= perform_aa && delta>=0;
+                if(should_sample) {
+                    opacity_t blend = functions::clamp<int64_t>((((int64_t(delta) << bits_distance_complement))>>PREC_DIST),
+                                                          0, 255);
+
+                    if (opacity < _max_alpha_value)
+                        blend = (blend * opacity) >> 8;
+                    opacity_sample= blend;
+                    // rewrite barycentric coords for AA so it sticks to the edges, seems to work
+                    bary.x= functions::clamp<long long>(bary.x, 0, area);
+                    bary.y= functions::clamp<long long>(bary.y, 0, area);
+                    bary.z= functions::clamp<long long>(bary.z, 0, area);
+                    bary.w= bary.x+bary.y+bary.z;
+                }
+            }
+
+            if(should_sample) {
+                interpolated_varying.interpolate(
+                        varying_v1,
+                        varying_v0,
+                        varying_v2, bary);
+                auto color = shader.fragment(interpolated_varying);
+                blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity_sample);
+            }
+            /*
 
             if ((w0 | w1 | w2) >= 0) {
 
@@ -1450,10 +1518,12 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
 
                 auto bary = vec4<long long>{w0, w1, w2, area};
                 interpolated_varying.interpolate(
-                        varying_v0,
                         varying_v1,
+                        varying_v0,
                         varying_v2, bary);
                 auto color= shader.fragment(interpolated_varying);
+
+                blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity_sample);
 
                 //u_i = functions::clamp<int>(u_i, 0, bmp_w_max<<BITS_UV_COORDS);
                 //v_i = functions::clamp<int>(v_i, 0, bmp_h_max<<BITS_UV_COORDS);
@@ -1462,8 +1532,8 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
 //                Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
 
 
-                blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity);
-//                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
+//                blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity);
+//                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity_t);
 
             } else if(antialias) {
                 // any of the distances are negative, we are outside.
@@ -1527,6 +1597,7 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
                 }
 
             }
+            */
 
             w0 += A01;
             w1 += A12;
@@ -1640,7 +1711,7 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
                                 const int left, const int top,
                                 const int right, const int bottom,
                                 const precision sub_pixel_precision,
-                                const opacity opacity) {
+                                const opacity_t opacity) {
     color_t color_int;
     this->coder().convert(color, color_int);
 
@@ -1667,7 +1738,7 @@ template<typename BlendMode, typename PorterDuff, typename number>
 void Canvas<P, CODER>::drawQuad(const color_f_t & color,
                                 const number left, const number top,
                                 const number right, const number bottom,
-                                const opacity opacity) {
+                                const opacity_t opacity) {
     uint8_t p = 4;
 
     drawQuad<BlendMode, PorterDuff>(color,
@@ -1688,7 +1759,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                                 int u1, int v1,
                                 const precision sub_pixel_precision,
                                 const precision uv_precision,
-                                const opacity opacity) {
+                                const opacity_t opacity) {
     color_t col_bmp{};
 
     int max = (1u<<sub_pixel_precision) - 1;
@@ -1746,7 +1817,7 @@ template <typename BlendMode, typename PorterDuff, typename Sampler,
 void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                                 const number left, const number top,
                                 const number right, const number bottom,
-                                const opacity opacity,
+                                const opacity_t opacity,
                                 const number u0, const number v0,
                                 const number u1, const number v1) {
     precision p_sub = 4;
@@ -1769,7 +1840,7 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
                                 const number right, const number bottom,
                                 const number u0, const number v0,
                                 const number u1, const number v1,
-                                const opacity opacity) {
+                                const opacity_t opacity) {
     precision p_sub = 4;
     precision p_uv = 5;
     //number zero = number(0), one = number(1);
@@ -1793,7 +1864,7 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
                                 int u1, int v1,
                                 const precision sub_pixel_precision,
                                 const precision uv_precision,
-                                const opacity opacity) {
+                                const opacity_t opacity) {
     color_t col_bmp{};
 
     int max = (1u<<sub_pixel_precision) - 1;
@@ -2119,7 +2190,7 @@ template <typename BlendMode,
         bool antialias, typename number>
 void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
                                    Canvas::index size,
-                                   opacity opacity,
+                                   opacity_t opacity,
                                    polygons::hints hint
                                    ) {
     indices type;

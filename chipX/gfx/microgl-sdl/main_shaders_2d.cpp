@@ -31,8 +31,8 @@ void test_shader_1() {
     canvas->clear(color::colors::WHITE);
     simple_vertex_attributes<float> v0, v1, v2;
     v0.point= {10.0,10.0, 0};  v0.color= {255,0,0,255};
-    v1.point= {400.0,10.0, 0}; v1.color= {0,255,0,255};
-    v2.point= {400.0,400.0, 0}; v2.color= {0,0,255,255};
+    v1.point= {400.0,200.0, 0}; v1.color= {0,255,0,255};
+    v2.point= {10.0,400.0, 0}; v2.color= {0,0,255,255};
     canvas->drawTriangleShader(shader, v0, v1, v2,255);
 //    canvas->drawTriangle(color::colors::RED, 10.0,10.0, 400.0,10.0, 400.0,400.0, 255);
 }

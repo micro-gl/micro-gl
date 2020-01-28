@@ -69,13 +69,13 @@ namespace microgl {
                         canvas_type & canva) {
 
 #define IND(a) indices[(a)]
-                color_f_t color = color::colors::BLACK;
+                color::color_f_t color = color::colors::BLACK;
                 const unsigned width = canva.width();
                 const unsigned height = canva.height();
 
                 switch (type) {
-                    case indices::TRIANGLES:
-                    case indices::TRIANGLES_WITH_BOUNDARY:
+                    case triangles::indices::TRIANGLES:
+                    case triangles::indices::TRIANGLES_WITH_BOUNDARY:
 
                         for (index ix = 0; ix < indices_size; ix+=3) {
 

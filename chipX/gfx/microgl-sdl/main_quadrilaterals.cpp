@@ -10,7 +10,10 @@
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/color.h>
-#include <microgl/PixelCoder.h>
+#include <microgl/pixel_coders/RGB888_PACKED_32.h>
+#include <microgl/pixel_coders/RGB888_ARRAY.h>
+#include <microgl/samplers/Bilinear.h>
+#include <microgl/samplers/NearestNeighbor.h>
 #include <microgl/Q.h>
 
 #define TEST_ITERATIONS 1
@@ -21,11 +24,11 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-typedef Bitmap<vec3<uint8_t>, RGB888_ARRAY> Bitmap24bitU8;
-typedef Bitmap<uint32_t, RGB888_PACKED_32> Bitmap24bit_Packed32;
+typedef Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY> Bitmap24bitU8;
+typedef Bitmap<uint32_t, coder::RGB888_PACKED_32> Bitmap24bit_Packed32;
 
-typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
-typedef Canvas<vec3<uint8_t >, RGB888_ARRAY> Canvas24BitU8;
+typedef Canvas<uint32_t, coder::RGB888_PACKED_32> Canvas24Bit_Packed32;
+typedef Canvas<vec3<uint8_t >, coder::RGB888_ARRAY> Canvas24BitU8;
 
 Canvas24Bit_Packed32 * canvas;
 
@@ -49,10 +52,10 @@ inline void render() {
 
     for (int ix = 0; ix < 1; ++ix) {
 
-        canvas->clear(WHITE);
+        canvas->clear(color::colors::WHITE);
 
-//        render_float_quadrilateral();
-        render_Q_quadrilateral();
+        render_float_quadrilateral();
+//        render_Q_quadrilateral();
     }
 
 }
@@ -101,18 +104,18 @@ void init_sdl(int width, int height) {
 //    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
 
 //    canvas = new Canvas16Bit(width, height, PixelFormat::RGB565, new RGB565_PACKED_16());
-    canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
+    canvas = new Canvas24Bit_Packed32(width, height);
 //    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
 
     img_1 = resources.loadImageFromCompressedPath("charsprites.png");
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
 
 //    auto * bmp_1 = new Bitmap<uint32_t , RGB888_PACKED_32>(img_1.data, img_1.width, img_1.height, new RGB888_PACKED_32());
-    bmp_1 = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_1.data, img_1.width, img_1.height, new RGB888_ARRAY());
-    bmp_2 = bmp_1->convertToBitmap<uint32_t , RGB888_PACKED_32>();
+    bmp_1 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
+    bmp_2 = bmp_1->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>();
 
-    bmp_uv_U8 = new Bitmap<vec3<uint8_t>, RGB888_ARRAY>(img_2.data, img_2.width, img_2.height, new RGB888_ARRAY());
-    bmp_uv = bmp_uv_U8->convertToBitmap<uint32_t , RGB888_PACKED_32>();
+    bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
+    bmp_uv = bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>();
 //    bmp_uv = new Bitmap<uint32_t , RGB888_PACKED_32>(img_2.width, img_2.height, new RGB888_PACKED_32());
 
     resources.init();
