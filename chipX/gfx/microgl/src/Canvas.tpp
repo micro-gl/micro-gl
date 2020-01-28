@@ -133,30 +133,33 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
     // for alpha channel. if coder does not have an alpha channel, the color itself may
     // have non-zero alpha channel, for which we emulate 8-bit alpha processing and also pre
     // multiply result with alpha
-    color_t result;//=val;
+    color_t result;
     P output;
-
-    if(true){
+    const bool none_compositing = microgl::traits::is_same<PorterDuff, porterduff::None>::value;
+    const bool skip_blending =microgl::traits::is_same<BlendMode, blendmode::Normal>::value;
+    const bool skip_all= skip_blending && none_compositing && opacity == 255;
+    if(!skip_all){
         color_t backdrop, blended;
         const color_t & src = val;
 
-        // get backdrop color
-        getPixelColor(index, backdrop);
+        // get backdrop color if blending or compositing is required
+        if(!skip_blending || !none_compositing)
+            getPixelColor(index, backdrop);
+
         // we assume that either they are the same or one of them is zero, this is FASTER then comparison.
         // if we don't own a native alpha channel, check if the color has a suggestion for alpha channel.
         bits alpha_bits = coder().alpha_bits() | val.a_bits;// || _alpha_bits_for_compositing;
         if(alpha_bits) blended.a = src.a;
         else {
-            blended.a = 255;
+            blended.a= 255;
             alpha_bits=8;
         }
 
         // fix alpha bits depth in case we don't natively
         // support alpha, this is correct because we want to
         // support compositing even if the surface is opaque.
-        if(!hasNativeAlphaChannel()) {
-            backdrop.a = _max_alpha_value;// alpha_bits = _alpha_bits_for_compositing;
-        }
+        if(!hasNativeAlphaChannel())
+            backdrop.a = _max_alpha_value;
 
         // if blend-mode is normal or the backdrop is completely transparent
         // then we don't need to blend.
@@ -164,11 +167,9 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
         // this will help with avoiding the inner conditional of the backdrop alpha, the normal
         // blending itself is zero-cost itself, but after it there is a branching which
         // is unpredictable, therefore avoiding at compile-time is great.
-        //const bool skip_blending = BlendMode::type()==blendmode::type::Normal || backdrop.a==0;
-        const bool skip_blending = microgl::traits::is_same<BlendMode, blendmode::Normal>::value || backdrop.a==0;
 
         // if we are normal then do nothing
-        if(!skip_blending) { //  or backdrop alpha is zero is also valid
+        if(!skip_blending && backdrop.a!=0) { //  or backdrop alpha is zero is also valid
 
             BlendMode::blend(backdrop, src, blended,
                              coder().red_bits(),
@@ -185,9 +186,6 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
                 blended.g = (comp * src.g + backdrop.a * blended.g) >> alpha_bits;
                 blended.b = (comp * src.b + backdrop.a * blended.b) >> alpha_bits;
             }
-            else {
-                // do nothing if background is opaque (backdrop alpha==max_alpha) then it will equal blended
-            }
 
         }
         else {
@@ -197,19 +195,15 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
             blended.b = src.b;
         }
 
-        // preserve src alpha before Porter-Duff
-        //blended.a = hasNativeAlphaChannel() ? src.a : 255;
-
-        // apply opacity_t
-        // I fixed opacity_t is always 8 bits no matter what the alpha depth of the
-        // native canvas
+        // I fixed opacity is always 8 bits no matter what the alpha depth of the native canvas
         if(opacity < 255)
-            blended.a =  (blended.a * opacity) >> 8;
+            blended.a =  (blended.a * opacity)>>8;
 
         // finally alpha composite with Porter-Duff equations,
         // this should be zero-cost for None option with compiler optimizations
         // if we do not own a native alpha channel, then please keep the composited result
-        // with premultiplied alpha.
+        // with premultiplied alpha, this is why we composite for None option, because it performs
+        // alpha multiplication
         PorterDuff::composite(backdrop, blended, result, alpha_bits, !hasNativeAlphaChannel());
     } else
         result = val;
@@ -1317,9 +1311,7 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
     int v1_x= f(v1_viewport.x, sub_pixel_precision), v1_y= f(v1_viewport.y, sub_pixel_precision);
     int v2_x= f(v2_viewport.x, sub_pixel_precision), v2_y= f(v2_viewport.y, sub_pixel_precision);
 
-    fixed_signed area = functions::orient2d({v0_x, v0_y},
-                                            {v1_x, v1_y}, {v2_x, v2_y},
-                                            sub_pixel_precision);
+    int64_t area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
 
 // discard degenerate triangle
     if(area==0) return;
@@ -1427,13 +1419,10 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
 
     int index = p.y * _width;
 
-
     for (p.y = minY; p.y <= maxY; p.y++) {
-
         int w0 = w0_row;
         int w1 = w1_row;
         int w2 = w2_row;
-
         int w0_h=0,w1_h=0,w2_h=0;
 
         if(antialias) {
@@ -1443,7 +1432,7 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
         }
 
         for (p.x = minX; p.x<=maxX; p.x++) {
-            const bool in_closure = (w0 | w1 | w2)>=0;
+            const bool in_closure= (w0|w1|w2)>=0;
             bool should_sample= in_closure;
             auto opacity_sample = opacity;
             auto bary = vec4<long long>{w0, w1, w2, area};
@@ -1489,6 +1478,7 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
                 auto color = shader.fragment(interpolated_varying);
                 blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity_sample);
             }
+
             /*
 
             if ((w0 | w1 | w2) >= 0) {
@@ -1505,10 +1495,6 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
 //                    v_i = (v_fixed*bmp_h_max*one_over_q)>>(LL-BITS_UV_COORDS);
 
                 } else {
-//                    auto area_q = Q<10>{area, sub_pixel_precision};
-//                    auto bary_a = Q<10>{w0, sub_pixel_precision} / area_q;
-//                    auto bary_b = Q<10>{w1, sub_pixel_precision};
-//                    auto bary_c = Q<10>{w2, sub_pixel_precision};
 //                    u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS));
 //                    v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
 //                    // coords in :BITS_UV_COORDS space

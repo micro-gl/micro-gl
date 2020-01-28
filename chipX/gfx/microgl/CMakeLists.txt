@@ -23,7 +23,7 @@ set(sources
         src/Curves.cpp
         src/triangles.cpp
         src/qsort.cpp
-        include/public/microgl/shader.h)
+        )
 
 add_library(${PROJECT_NAME} ${sources})
 

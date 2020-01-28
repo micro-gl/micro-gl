@@ -4,7 +4,8 @@
 #include <microgl/Canvas.h>
 #include <microgl/PixelCoder.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/shader.h>
+#include <microgl/shaders/color_shader.h>
+#include <microgl/shaders/texture_shader.h>
 
 using namespace microgl::shading;
 #define TEST_ITERATIONS 1
@@ -26,10 +27,23 @@ void init_sdl(int width, int height);
 
 float t = 0;
 
-void test_shader_1() {
-    color_shader shader;
+void test_shader_color_2d_float() {
+    color_shader<float> shader;
+    shader.mat= camera<float>::orthographic(0, W, 0, H, 1, 100);
     canvas->clear(color::colors::WHITE);
-    simple_vertex_attributes<float> v0, v1, v2;
+    color_shader_vertex_attributes<float> v0, v1, v2;
+    v0.point= {10.0,10.0, 0};  v0.color= {255,0,0,255};
+    v1.point= {400.0,200.0, 0}; v1.color= {0,255,0,255};
+    v2.point= {10.0,400.0, 0}; v2.color= {0,0,255,255};
+    canvas->drawTriangleShader(shader, v0, v1, v2,255);
+//    canvas->drawTriangle(color::colors::RED, 10.0,10.0, 400.0,10.0, 400.0,400.0, 255);
+}
+
+void test_shader_texture() {
+    texture_shader<float> shader;
+    shader.mat= camera<float>::orthographic(0, W, 0, H, 1, 100);
+    canvas->clear(color::colors::WHITE);
+    color_shader_vertex_attributes<float> v0, v1, v2;
     v0.point= {10.0,10.0, 0};  v0.color= {255,0,0,255};
     v1.point= {400.0,200.0, 0}; v1.color= {0,255,0,255};
     v2.point= {10.0,400.0, 0}; v2.color= {0,0,255,255};
@@ -38,11 +52,11 @@ void test_shader_1() {
 }
 
 void render() {
-    using index = unsigned int;
-
     canvas->clear(color::colors::WHITE);
 
-    test_shader_1();
+    test_shader_color_2d_float();
+    test_shader_texture();
+
 //        canvas->drawQuad(RED, 0, 0, 100,100, 0,255);
 //    canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
 //            chunk.data,

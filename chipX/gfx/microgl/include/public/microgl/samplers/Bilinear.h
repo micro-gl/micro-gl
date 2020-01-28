@@ -20,14 +20,9 @@ namespace sampler {
             fixed_signed sampleU = u;
             fixed_signed sampleV = v;
 
-//                u_i = (bmp_w_max*u_fixed + mask_)>>(BITS_UV_COORDS<<1);
-//                v_i = (bmp_h_max*v_fixed + mask_)>>(BITS_UV_COORDS<<1);
-
             fixed_signed max = ((1<<bits));
             fixed_signed max_value = max-1;
             fixed_signed mask = ~max_value;
-//                fixed_signed round_sampleU = (bmp_w_max*u_fixed + 0)>>(resolution);
-//                fixed_signed round_sampleV = (bmp_h_max*v_fixed + 0)>>(resolution);
             fixed_signed round_sampleU = (u + 0) & mask;
             fixed_signed round_sampleV = (v + 0) & mask;
             fixed_signed tx = -round_sampleU + sampleU;
@@ -60,8 +55,6 @@ namespace sampler {
             output.g = (a.g * (max - ty) + b.g * ty)>>bits;
             output.b = (a.b * (max - ty) + b.b * ty)>>bits;
             output.a = (a.a * (max - ty) + b.a * ty)>>bits;
-            //output.a = 255;
-
         }
 
     };

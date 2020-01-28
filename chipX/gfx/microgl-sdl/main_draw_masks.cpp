@@ -15,7 +15,7 @@
 #include <microgl/samplers/Bilinear.h>
 #include <microgl/Bitmap.h>
 
-#define TEST_ITERATIONS 100
+#define TEST_ITERATIONS 1
 #define W 640*1
 #define H 480*1
 
@@ -39,10 +39,10 @@ inline void render() {
 
     canvas->clear(microgl::color::colors::WHITE);
 
-    canvas->drawQuad<blendmode::Normal, porterduff::SourceOverOnOpaque, sampler::NearestNeighbor>(
+    canvas->drawQuad<blendmode::Normal, porterduff::None, sampler::NearestNeighbor>(
             *bmp_1, -0, -0, 300, 300,255);
 //    canvas->drawQuad<blendmode::Normal, porterduff::None>(
-//            color::colors::RED, -0, -0, 300, 300, 128);
+//            color::colors::RED, -0, -0, 300, 300, 255);
     canvas->drawMask<sampler::NearestNeighbor>(masks::chrome_mode::red_channel, *mask,
             0, 0, 300, 300);
 

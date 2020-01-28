@@ -6,6 +6,7 @@
 #include <microgl/micro_gl_traits.h>
 #include <microgl/porter_duff/SourceOverOnOpaque.h>
 #include <microgl/porter_duff/DestinationIn.h>
+#include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
 #include <microgl/samplers/NearestNeighbor.h>
 #include <microgl/BlendMode.h>
