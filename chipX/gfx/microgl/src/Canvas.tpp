@@ -1787,7 +1787,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                             col_bmp);
 
             // at compile-time, if colors are not from same coder, then convert
-            // todo:: requires testing
+            // todo:: tested once and seems to work, requires more testing
             if(!microgl::traits::is_same<CODER, CODER2>::value)
                 this->coder().convert(col_bmp, col_bmp, bmp.coder());
 

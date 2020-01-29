@@ -101,6 +101,14 @@ namespace coder {
                     coder2.red_bits(), coder2.green_bits(), coder2.blue_bits(), coder2.alpha_bits());
         }
 
+        template <typename P2, typename CODER2>
+        static
+        void convert(const P &input, P2 &output, const PixelCoder<P2, CODER2> & coder2) {
+            color_t input_decoded{};
+            decode(input, input_decoded);
+            coder2.encode(input_decoded, output);
+        }
+
         inline const char * format() {
             return IMPL::format();
         };
