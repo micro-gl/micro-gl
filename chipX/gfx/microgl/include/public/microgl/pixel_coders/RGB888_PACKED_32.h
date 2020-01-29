@@ -4,11 +4,9 @@
 
 namespace coder {
 
-
     class RGB888_PACKED_32 : public PixelCoder<uint32_t, RGB888_PACKED_32> {
     public:
-        static const channel MAX = (1 << 8) - 1;
-        // include these if you want to enable the float overoading
+        // include these if you want to enable the float overloading
         using PixelCoder::encode;
         using PixelCoder::decode;
 
@@ -22,7 +20,6 @@ namespace coder {
             output.r = (input & 0xFF0000) >> 16;
             output.g = (input & 0x00FF00) >> 8;
             output.b = (input & 0x0000FF);
-//            output.a = 255;
             update_channel_bit(output);
         };
 
@@ -45,7 +42,7 @@ namespace coder {
 
         static
         inline const char * format() {
-            return "RGB888";
+            return "RGB888_PACKED_32";
         }
 
     };

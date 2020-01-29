@@ -4,7 +4,6 @@
 
 namespace coder {
 
-
     class RGBA4444_PACKED_16 : public PixelCoder<uint16_t, RGBA4444_PACKED_16> {
     public:
 

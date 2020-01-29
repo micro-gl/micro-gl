@@ -7,7 +7,6 @@ namespace coder {
 
     class RGB888_ARRAY : public PixelCoder<vec3<uint8_t>, RGB888_ARRAY> {
     public:
-        static const channel MAX = (1 << 8) - 1;
 
         static
         inline void encode(const color_t &input, vec3<uint8_t> &output) {
@@ -38,7 +37,7 @@ namespace coder {
         }
         static
         inline const char* format() {
-            return "RGB888";
+            return "RGB888_ARRAY";
         }
 
     };

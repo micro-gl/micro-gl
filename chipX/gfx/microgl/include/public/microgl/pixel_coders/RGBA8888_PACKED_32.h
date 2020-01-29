@@ -7,7 +7,6 @@ namespace coder {
 
     class RGBA8888_PACKED_32 : public PixelCoder<uint32_t, RGBA8888_PACKED_32> {
     public:
-        static const channel MAX = (1 << 8) - 1;
 
         static
         inline void encode(const color_t &input, uint32_t &output) {

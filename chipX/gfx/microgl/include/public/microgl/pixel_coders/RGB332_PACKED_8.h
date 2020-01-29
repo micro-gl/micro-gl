@@ -4,7 +4,6 @@
 
 namespace coder {
 
-
     class RGB332_PACKED_8 : public PixelCoder<uint8_t, RGB332_PACKED_8> {
     public:
 

@@ -7,7 +7,6 @@ namespace coder {
 
     class RGB555_PACKED_16 : public PixelCoder<uint16_t, RGB555_PACKED_16> {
     public:
-        static const channel MAX = (1 << 8) - 1;
 
         static
         inline void encode(const color_t &input, uint16_t &output) {
@@ -20,7 +19,6 @@ namespace coder {
             output.r = (input & 0b0111110000000000) >> 10;
             output.g = (input & 0b0000001111100000) >> 5;
             output.b = (input & 0b0000000000011111);
-            output.a = 255;
 
             update_channel_bit(output);
         };
