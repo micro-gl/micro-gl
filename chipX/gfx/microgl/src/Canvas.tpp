@@ -1144,6 +1144,9 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                 //bmp.decode(index_bmp, col_bmp);
                 Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
 
+                if(!microgl::traits::is_same<CODER, CODER2>::value)
+                    this->coder().convert(col_bmp, col_bmp, bmp.coder());
+
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
 
             } else if(antialias) {
@@ -1197,6 +1200,9 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
                     color_t col_bmp;
                     Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
+                    if(!microgl::traits::is_same<CODER, CODER2>::value)
+                        this->coder().convert(col_bmp, col_bmp, bmp.coder());
+
                     // complement and normalize
                     uint8_t blend = functions::clamp<int>(((uint64_t)(delta << bits_distance_complement))>>PREC_DIST,
                                                           0, 255);
@@ -1780,9 +1786,11 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                             pp,
                             col_bmp);
 
-            if(!std::is_same<CODER, CODER2>::value) {
-                return;
-            }
+            // at compile-time, if colors are not from same coder, then convert
+            // todo:: requires testing
+            if(!microgl::traits::is_same<CODER, CODER2>::value)
+                this->coder().convert(col_bmp, col_bmp, bmp.coder());
+
             // re-encode for a different canvas
             blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
 

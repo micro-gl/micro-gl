@@ -45,15 +45,15 @@ void render_float_quads() {
     static float d =0;
     float G = 256;
     d+=1.01;
-//    canvas->drawQuad<blendmode::Normal, porterduff::None, sampler::NearestNeighbor>(
-//            *bmp_uv,
-//            0.0, 0.0, 400.0, 400.0);
-//
-    canvas->drawQuad<blendmode::Normal, porterduff::None>(
-            color::colors::RED,
-            0.0, 0.0, 300.0, 300.0,
-            255);
+    canvas->drawQuad<blendmode::Normal, porterduff::None, sampler::NearestNeighbor>(
+            *bmp_uv,
+            0.0, 0.0, 400.0, 400.0);
 
+//    canvas->drawQuad<blendmode::Normal, porterduff::None>(
+//            color::colors::RED,
+//            0.0, 0.0, 300.0, 300.0,
+//            255);
+//
 }
 
 void render_Q_quads() {
