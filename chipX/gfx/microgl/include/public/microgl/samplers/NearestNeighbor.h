@@ -16,7 +16,8 @@ namespace sampler {
                                   const uint8_t bits, color_t & output) {
 
             int h = 0;//(1<<bits) - 1;
-            int index_bmp = (bmp.width()*((v+h)>>bits) + ((u+h)>>bits));
+            int index_bmp = (bmp.width()*((v)>>bits) + ((u)>>bits));
+//            int index_bmp = (bmp.width()*((v*(bmp.height()))>>bits) + ((u*(bmp.width()))>>bits));
 
             bmp.decode(index_bmp, output);
         }

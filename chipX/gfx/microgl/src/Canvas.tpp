@@ -392,7 +392,6 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             }
 
             break;
-
         }
         case indices::TRIANGLES_FAN:
 
@@ -465,7 +464,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
             index idx_boundary = 0;
 
             for (index ix = 0; ix < size-2; ++ix) {
-                // we alternate order inorder to preserve CCW or CW,
+                // we alternate order in order to preserve CCW or CW,
                 // in the future I will add face culling, which will
                 // support only CW or CCW orientation_t at a time.
 
@@ -499,6 +498,39 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
 #undef IND
 #undef to_fixed
 
+}
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct,
+        typename impl, typename vertex_attr, typename varying, typename number>
+void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, number> &shader,
+                                          const vertex_attr *vertex_buffer,
+                                          const index *indices,
+                                          const boundary_info * boundary_buffer,
+                                          const index size,
+                                          const enum indices type,
+                                          const opacity_t opacity) {
+
+#define IND(a) indices[(a)]
+
+    switch (type) {
+        case indices::TRIANGLES:
+
+            for (index ix = 0; ix < size; ix += 3) {
+
+                drawTriangleShader<BlendMode, PorterDuff, antialias>(
+                        shader,
+                        vertex_buffer[IND(ix + 0)],
+                        vertex_buffer[IND(ix + 1)],
+                        vertex_buffer[IND(ix + 2)],
+                        opacity
+                );
+            }
+
+            break;
+    }
+
+#undef IND
 }
 
 template<typename P, typename CODER>
@@ -1284,7 +1316,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
 // shaders
 #include <microgl/camera.h>
-///*
+
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct,
         typename impl, typename vertex_attr, typename varying, typename number>
@@ -1318,8 +1350,7 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
     int v2_x= f(v2_viewport.x, sub_pixel_precision), v2_y= f(v2_viewport.y, sub_pixel_precision);
 
     int64_t area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
-
-// discard degenerate triangle
+    // discard degenerate triangle and re-orient negative triangles if needed
     if(area==0) return;
     if(area<0) { // convert CCW to CW triangle
         functions::swap(v1_x, v2_x);
@@ -1368,25 +1399,19 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
     triangles::top_left_t top_left =
             triangles::classifyTopLeftEdges(false,
                                             v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
-
     int bias_w0 = top_left.first  ? 0 : -1;
     int bias_w1 = top_left.second ? 0 : -1;
     int bias_w2 = top_left.third  ? 0 : -1;
-
     // clipping
     minX = functions::max(0, minX); minY = functions::max(0, minY);
     maxX = functions::min(width()-1, maxX); maxY = functions::min(height()-1, maxY);
-
     // Barycentric coordinates at minX/minY corner
     vec2_32i p = { minX, minY };
     vec2_32i p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
-
-//    uint32_t bmp_w_max = bmp.width() - 1, bmp_h_max = bmp.height() - 1;
-
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     int area_v1_v2_p = functions::orient2d({v1_x, v1_y}, {v2_x, v2_y}, p_fixed, sub_pixel_precision) + bias_w1,
-            area_v2_v0_p = functions::orient2d({v2_x, v2_y}, {v0_x, v0_y}, p_fixed, sub_pixel_precision) + bias_w2,
-            area_v0_v1_p = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, p_fixed, sub_pixel_precision) + bias_w0;
+        area_v2_v0_p = functions::orient2d({v2_x, v2_y}, {v0_x, v0_y}, p_fixed, sub_pixel_precision) + bias_w2,
+        area_v0_v1_p = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, p_fixed, sub_pixel_precision) + bias_w0;
 
     bits MAX_PREC = 60;
     uint8_t LL = MAX_PREC - (sub_pixel_precision + BITS_UV_COORDS);
@@ -1424,7 +1449,6 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
     }
 
     int index = p.y * _width;
-
     for (p.y = minY; p.y <= maxY; p.y++) {
         int w0 = w0_row;
         int w1 = w1_row;
@@ -1446,11 +1470,9 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
                 // any of the distances are negative, we are outside.
                 // test if we can anti-alias
                 // take minimum of all meta distances
-
                 int64_t distance = functions::min(w0_h, w1_h, w2_h);
                 int64_t delta = (distance) + max_distance_scaled_space_anti_alias;
                 bool perform_aa = aa_all_edges;
-
                 // test edges
                 if(!perform_aa) {
                     if(distance==w0_h && aa_first_edge)
@@ -1459,12 +1481,10 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
                         perform_aa = true;
                     else perform_aa = distance == w2_h && aa_third_edge;
                 }
-
                 should_sample= perform_aa && delta>=0;
                 if(should_sample) {
                     opacity_t blend = functions::clamp<int64_t>((((int64_t(delta) << bits_distance_complement))>>PREC_DIST),
                                                           0, 255);
-
                     if (opacity < _max_alpha_value)
                         blend = (blend * opacity) >> 8;
                     opacity_sample= blend;
@@ -1617,9 +1637,7 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
     }
 
 }
-//*/
 
-//
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
         bool antialias, typename Sampler, typename number,
@@ -1742,6 +1760,27 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
 }
 
 template<typename P, typename CODER>
+template <typename BlendMode, typename PorterDuff, typename Sampler,
+        typename number, typename P2, typename CODER2>
+void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
+                                const number left, const number top,
+                                const number right, const number bottom,
+                                const opacity_t opacity,
+                                const number u0, const number v0,
+                                const number u1, const number v1) {
+    precision p_sub = 4;
+    precision p_uv = 5;
+
+    drawQuad<BlendMode, PorterDuff, Sampler>(bmp,
+            microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
+            microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
+            microgl::math::to_fixed(u0, p_uv), microgl::math::to_fixed(v0, p_uv),
+            microgl::math::to_fixed(u1, p_uv), microgl::math::to_fixed(v1, p_uv),
+            p_sub, p_uv, opacity
+    );
+}
+
+template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff,
         typename Sampler, typename P2, typename CODER2>
 void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
@@ -1769,8 +1808,7 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
     top_    = (max + top_   )>>sub_pixel_precision;
     right_  = (max + right_ )>>sub_pixel_precision;
     bottom_ = (max + bottom_)>>sub_pixel_precision;
-
-    // increase precision to (uv_precision*2)
+    // MULTIPLYING with texture dimensions and doubling precision, helps with the z-fighting
     int du = (((u1-u0)*bmp.width())<<uv_precision) / (right_ - left_);
     int dv = -(((v1-v0)*bmp.height())<<uv_precision) / (bottom_ - top_);
     int u_start = u0*(bmp.width()-1)<<uv_precision;
@@ -1780,18 +1818,12 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
     const precision pp = uv_precision<<1;
 
     for (int y = top_; y <= bottom_; y++) {
-
         for (int x = left_; x <= right_; x++) {
-            Sampler::sample(bmp, u, v,
-                            pp,
-                            col_bmp);
-
+            Sampler::sample(bmp, u, v, pp, col_bmp);
             // at compile-time, if colors are not from same coder, then convert
-            // todo:: tested once and seems to work, requires more testing
             if(!microgl::traits::is_same<CODER, CODER2>::value)
                 this->coder().convert(col_bmp, col_bmp, bmp.coder());
 
-            // re-encode for a different canvas
             blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
 
             u += du;
@@ -1802,28 +1834,6 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
         index += _width;
     }
 
-}
-
-
-template<typename P, typename CODER>
-template <typename BlendMode, typename PorterDuff, typename Sampler,
-        typename number, typename P2, typename CODER2>
-void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
-                                const number left, const number top,
-                                const number right, const number bottom,
-                                const opacity_t opacity,
-                                const number u0, const number v0,
-                                const number u1, const number v1) {
-    precision p_sub = 4;
-    precision p_uv = 5;
-
-    drawQuad<BlendMode, PorterDuff, Sampler>(bmp,
-            microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
-            microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
-            microgl::math::to_fixed(u0, p_uv), microgl::math::to_fixed(v0, p_uv),
-            microgl::math::to_fixed(u1, p_uv), microgl::math::to_fixed(v1, p_uv),
-            p_sub, p_uv, opacity
-    );
 }
 
 template<typename P, typename CODER>
@@ -1837,8 +1847,6 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
                                 const opacity_t opacity) {
     precision p_sub = 4;
     precision p_uv = 5;
-    //number zero = number(0), one = number(1);
-
     drawMask<Sampler>(mode, bmp,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
             microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),

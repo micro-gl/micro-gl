@@ -10,8 +10,6 @@ private:
     using const_exact_ref = const Q<P> &;
     using const_signed_ref = const integer &;
     using q_ref = Q &;
-    integer _value = 0;
-//    int _value = 0;
 
     inline
     integer convert_q_value_to_my_space(const_ref q) {
@@ -20,6 +18,7 @@ private:
 
 public:
     static const precision_t precision = P;
+    integer _value = 0;
 
     static inline
     integer convert(long long from_value,
@@ -82,14 +81,6 @@ public:
         this->_value = q.value();
         return *this;
     }
-    // with assignments
-    // this is Q<P>
-    // note:: for assignment with integer we assume, that it is already in P bits space
-    // todo:: see if I am actually using it. this might have unwanted side effects
-//    q_ref operator =(const_signed_ref signed_value) {
-//        this->_value = signed_value;
-//        return *this;
-//    }
     q_ref operator =(const float &float_value) {
         return (*this)=Q{float_value};
     }
@@ -183,13 +174,11 @@ public:
         return temp;
     }
     Q operator *(const_signed_ref i) const {
-        Q temp{*this};
-        temp *= i;
+        Q temp{this->value()*i, P};
         return temp;
     }
     Q operator /(const_signed_ref i) const {
-        Q temp{*this};
-        temp /= i;
+        Q temp{this->value()/i, P};
         return temp;
     }
     Q operator -(const_signed_ref i) const {
@@ -204,23 +193,18 @@ public:
     }
 
     // booleans
-//    template <unsigned P_2>
     bool operator <(const_ref q) const {
         return this->_value<q._value;
     }
-//    template <unsigned P_2>
     bool operator >(const_ref q) const {
         return this->_value>q._value;
     }
-//    template <unsigned P_2>
     bool operator <=(const_ref q) const {
         return this->_value<=q._value;
     }
-//    template <unsigned P_2>
     bool operator >=(const_ref q) const {
         return this->_value>=q._value;
     }
-//    template <unsigned P_2>
     bool operator ==(const_ref q) const {
         return this->_value==q._value;
     }
@@ -268,18 +252,9 @@ public:
     inline integer value() const {
         return _value;
     }
+    // bypass all
+    inline void updateValue(const_signed_ref val) {
+        this->_value=val;
+    }
 
 };
-
-//namespace microgl {
-//    namespace math {
-////        template <>
-////        int to_fixed(const Q<8> & val, unsigned char precision) {
-////            return int(val.toFixed(precision));
-////        }
-//        template<unsigned N>
-//        int ato_fixed(const Q<N> & val, unsigned char precision) {
-//            return int(val.toFixed(precision));
-//        }
-//    }
-//}

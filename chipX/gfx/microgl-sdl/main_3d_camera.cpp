@@ -71,8 +71,8 @@ void render_template(const arr<number_coords> & vertices) {
     mat4 model = mat4::scale(100,100,100)*mat4::rotation(math::deg_to_rad(z), {0,1,1});
     mat4 view = camera::lookAt({0, 0, 1000}, {0,0, 0}, {0,1,0});
 //    mat4 projection = camera::perspective(fov_horizontal, canvas_width, canvas_height, 1, 10000);
-//    mat4 projection = camera::orthographic(-canvas_width/2, canvas_width/2, -canvas_height/2, canvas_height/2, 1, 10000.0);
-    mat4 projection = camera::orthographic(0, canvas_width, 0, canvas_height, 1, 10000.0);
+    mat4 projection = camera::orthographic(-canvas_width/2, canvas_width/2, -canvas_height/2, canvas_height/2, 1, 10000.0);
+//    mat4 projection = camera::orthographic(0, canvas_width, 0, canvas_height, 1, 10000.0);
     mat4 mvp = projection * view * model;
 
     canvas->clear(color::colors::WHITE);

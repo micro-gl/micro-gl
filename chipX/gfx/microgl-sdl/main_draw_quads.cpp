@@ -47,7 +47,7 @@ void render_float_quads() {
     d+=1.01;
     canvas->drawQuad<blendmode::Normal, porterduff::None, sampler::NearestNeighbor>(
             *bmp_uv,
-            0.0, 0.0, 400.0, 400.0);
+            -000.0, 0.0, 400.0, 400.0);
 
 //    canvas->drawQuad<blendmode::Normal, porterduff::None>(
 //            color::colors::RED,

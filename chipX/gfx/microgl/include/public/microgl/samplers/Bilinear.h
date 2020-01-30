@@ -12,25 +12,24 @@ namespace sampler {
 
         template<typename P, typename Coder>
         inline static void sample(const Bitmap<P, Coder> &bmp,
-                                  const fixed_signed u, const fixed_signed v,
+                                  const int u, const int v,
                                   const uint8_t bits, color_t & output) {
 
             const int bmp_w_max = bmp.width() - 1;
             const int bmp_h_max = bmp.height() - 1;
-            fixed_signed sampleU = u;
-            fixed_signed sampleV = v;
-
-            fixed_signed max = ((1<<bits));
-            fixed_signed max_value = max-1;
-            fixed_signed mask = ~max_value;
-            fixed_signed round_sampleU = (u + 0) & mask;
-            fixed_signed round_sampleV = (v + 0) & mask;
-            fixed_signed tx = -round_sampleU + sampleU;
-            fixed_signed ty = -round_sampleV + sampleV;
-            fixed_signed U = (round_sampleU)>>bits;
-            fixed_signed V = (round_sampleV)>>bits;
-            fixed_signed U_plus_one = U >= (bmp_w_max) ? U : U + 1;
-            fixed_signed V_plus_one = V >= bmp_h_max ? V : V+1;
+            int max= 1u<<bits;
+            int max_value = max-1;
+            int mask = ~max_value;
+            int round_sampleU = u & mask;
+            int round_sampleV = v & mask;
+//            int tx = -round_sampleU + u;
+//            int ty = -round_sampleV + v;
+            int tx = u & max_value;
+            int ty = v & max_value;
+            int U = (round_sampleU)>>bits;
+            int V = (round_sampleV)>>bits;
+            int U_plus_one = U>=bmp_w_max ? U : U+1;
+            int V_plus_one = V>=bmp_h_max ? V : V+1;
 
             color_t c00, c10, c01,c11;
             // todo: can optimize indices not to get multiplied

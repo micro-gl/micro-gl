@@ -11,6 +11,7 @@
 #include <microgl/dynamic_array.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include "data/model_3d_tree.h"
+#include "data/model_3d_cube.h"
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -46,8 +47,9 @@ void render_template(const model_3d<number_coords> & object) {
     int canvas_height = canvas->height();
 
     mat4 model = mat4::transform({ 0, math::deg_to_rad(z), math::deg_to_rad(0/2)},
-                                 {0,0,-100}, {1,1,1});
-    mat4 view = camera::lookAt({0, 0, -z}, {0,0, -z-1}, {0,1,0});
+                                 {0,0,-300+z}, {10,10,10});
+//    mat4 view = camera::lookAt({0, 0, -z}, {0,0, -z-1}, {0,1,0});
+    mat4 view = camera::lookAt({0, 0, 100}, {0,0, 0}, {0,1,0});
     mat4 projection = camera::perspective(math::deg_to_rad(60),
                                           canvas_width, canvas_height, 1, 500);
 //    mat4 projection = camera::perspective(-1,1,-1,1,1,10000);
@@ -67,7 +69,8 @@ void render_template(const model_3d<number_coords> & object) {
 
 void render() {
 
-    render_template<float>(tree_3d<float>);
+//    render_template<float>(tree_3d<float>);
+    render_template<float>(cube_3d<float>);
 //    render_template<Q<10>>(tree_3d<Q<10>>);
 }
 

@@ -14,7 +14,7 @@ public:
             this->push_back(*it);
     }
 
-    dynamic_array(const dynamic_array<T> &container) : dynamic_array(container.size()) {
+    explicit dynamic_array(const dynamic_array<T> &container) : dynamic_array(container.size()) {
         for(auto ix = 0; ix < container.size(); ix++)
             this->push_back(container[ix]);
     }

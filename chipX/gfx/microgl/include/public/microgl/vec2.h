@@ -8,17 +8,14 @@ namespace microgl {
 
         number x, y;
 
-        vec2() {
-
-        }
-
+        vec2() = default;
         vec2(const number & x_, const number & y_) {
             x = x_;
             y = y_;
         }
 
         template<typename F>
-        vec2(const vec2<F> & a) {
+        explicit vec2(const vec2<F> & a) {
             this->x = static_cast<number>(a.x);
             this->y = static_cast<number>(a.y);
         }

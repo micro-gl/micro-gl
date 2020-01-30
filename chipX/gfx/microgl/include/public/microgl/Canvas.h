@@ -121,6 +121,17 @@ public:
                        enum indices type,
                        opacity_t opacity);
 
+    template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias, bool perspective_correct,
+            typename impl, typename vertex_attr, typename varying, typename number>
+    void drawTriangles(shader_base<impl, vertex_attr, varying, number> &shader,
+                       const vertex_attr *vertex_buffer,
+                       const index *indices,
+                       const boundary_info * boundary_buffer,
+                       index size,
+                       enum indices type,
+                       opacity_t opacity=255);
+
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename number=float>
@@ -181,7 +192,7 @@ public:
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename PorterDuff=porterduff::None,
             bool antialias=true, bool perspective_correct=false,
             typename impl, typename vertex_attr, typename varying, typename number>
     void drawTriangleShader(shader_base<impl, vertex_attr, varying, number> &shader,

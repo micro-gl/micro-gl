@@ -22,8 +22,7 @@ set(sources
         src/color.cpp
         src/Curves.cpp
         src/triangles.cpp
-        src/qsort.cpp
-        )
+        src/qsort.cpp)
 
 add_library(${PROJECT_NAME} ${sources})
 
