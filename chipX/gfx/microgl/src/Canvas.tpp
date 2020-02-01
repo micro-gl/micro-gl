@@ -518,7 +518,7 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
 
             for (index ix = 0; ix < size; ix += 3) {
 
-                drawTriangleShader<BlendMode, PorterDuff, antialias>(
+                drawTriangleShader<BlendMode, PorterDuff, antialias, perspective_correct>(
                         shader,
                         vertex_buffer[IND(ix + 0)],
                         vertex_buffer[IND(ix + 1)],
@@ -1321,10 +1321,11 @@ template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct,
         typename impl, typename vertex_attr, typename varying, typename number>
 void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying, number> &shader,
-                                          const vertex_attr &v0,const vertex_attr &v1, const vertex_attr &v2,
+                                          vertex_attr v0, vertex_attr v1, vertex_attr v2,
                                           const opacity_t opacity,
                                           bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
 
+    using l64= long long;
     const bits sub_pixel_precision = 4;
     // this is the programmable 3d pipeline
 #define f microgl::math::to_fixed
@@ -1333,9 +1334,15 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
     auto v0_homo_space = shader.vertex(v0, varying_v0);
     auto v1_homo_space = shader.vertex(v1, varying_v1);
     auto v2_homo_space = shader.vertex(v2, varying_v2);
+    if(perspective_correct) {
+//        varying_v0.interpolate(varying_v0, varying_v0, varying_v0, vec4<long long>{1,0,0,v0_homo_space.w});
+//        varying_v1.interpolate(varying_v1, varying_v1, varying_v1, vec4<long long>{0,1,0,v1_homo_space.w});
+//        varying_v2.interpolate(varying_v2, varying_v2, varying_v2, vec4<long long>{0,0,1,v2_homo_space.w});
+    }
     // here goes clipping on w cube -> clip space
     // todo:: clip at least on z plane, what about z clamping
     // divide by w -> NDC space
+    // todo: bail out if w==0
     auto v0_ndc = v0_homo_space/v0_homo_space.w;
     auto v1_ndc = v1_homo_space/v1_homo_space.w;
     auto v2_ndc = v2_homo_space/v2_homo_space.w;
@@ -1343,21 +1350,30 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
     auto v0_viewport = microgl::camera<number>::viewport(v0_ndc, width(), height());
     auto v1_viewport = microgl::camera<number>::viewport(v1_ndc, width(), height());
     auto v2_viewport = microgl::camera<number>::viewport(v2_ndc, width(), height());
-
     // collect values for interpolation as fixed point integers
     int v0_x= f(v0_viewport.x, sub_pixel_precision), v0_y= f(v0_viewport.y, sub_pixel_precision);
     int v1_x= f(v1_viewport.x, sub_pixel_precision), v1_y= f(v1_viewport.y, sub_pixel_precision);
     int v2_x= f(v2_viewport.x, sub_pixel_precision), v2_y= f(v2_viewport.y, sub_pixel_precision);
+    const int z_bits= 18; const l64 one_z= -(l64(1)<<(z_bits<<1)); // negate z because camera is looking negative z axis
+    l64 v0_z= one_z/f(v0_homo_space.w, z_bits), v1_z= one_z/f(v1_homo_space.w, z_bits), v2_z= one_z/f(v2_homo_space.w, z_bits);
 
-    int64_t area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
+    l64 area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
     // discard degenerate triangle and re-orient negative triangles if needed
     if(area==0) return;
     if(area<0) { // convert CCW to CW triangle
+        return;
         functions::swap(v1_x, v2_x);
         functions::swap(v1_y, v2_y);
-        functions::swap(aa_first_edge, aa_third_edge);
         area = -area;
+    } // flip vertically
+    else {
+        functions::swap(varying_v1, varying_v2);
+        functions::swap(v1_z, v2_z);
     }
+
+    // rotate to match edges
+    functions::swap(varying_v0, varying_v1);
+    functions::swap(v0_z, v1_z);
 
 #undef f
 
@@ -1367,25 +1383,23 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
     // 2.
     // sub_pixel_precision;
     // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
-    bits BITS_UV_COORDS = 0;
-    bits PREC_DIST = 15;
 
     unsigned int max_sub_pixel_precision_value = (1u<<sub_pixel_precision) - 1;
 
-    // bounding box
+    // bounding box in raster space
     int minX = (functions::min(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
     int minY = (functions::min(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
     int maxX = (functions::max(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
     int maxY = (functions::max(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
 
-    // anti-alias pad for distance calculation
+    // anti-alias SDF configurations
     bits bits_distance = 0;
     bits bits_distance_complement = 8;
     // max distance to consider in canvas space
     unsigned int max_distance_canvas_space_anti_alias=0;
     // max distance to consider in scaled space
     unsigned int max_distance_scaled_space_anti_alias=0;
-
+    bits PREC_DIST = 15;
     bool aa_all_edges = false;
     if(antialias) {
         aa_all_edges = aa_first_edge && aa_second_edge && aa_third_edge;
@@ -1395,7 +1409,7 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
         max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias<<PREC_DIST;
     }
 
-    // fill rules adjustments
+    // fill rules configurations
     triangles::top_left_t top_left =
             triangles::classifyTopLeftEdges(false,
                                             v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
@@ -1413,14 +1427,7 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
         area_v2_v0_p = functions::orient2d({v2_x, v2_y}, {v0_x, v0_y}, p_fixed, sub_pixel_precision) + bias_w2,
         area_v0_v1_p = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, p_fixed, sub_pixel_precision) + bias_w0;
 
-    bits MAX_PREC = 60;
-    uint8_t LL = MAX_PREC - (sub_pixel_precision + BITS_UV_COORDS);
-    uint64_t ONE = ((uint64_t)1)<<LL;
-    uint64_t one_area = (ONE) / area;
-
-    // PR seems very good for the following calculations
-    // Triangle setup
-    // this needs at least (P+1) bits, since the delta is always <= length
+    // Triangle setup, this needs at least (P+1) bits, since the delta is always <= length
     int64_t A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
     int64_t A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
     int64_t A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
@@ -1465,7 +1472,12 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
             const bool in_closure= (w0|w1|w2)>=0;
             bool should_sample= in_closure;
             auto opacity_sample = opacity;
-            auto bary = vec4<long long>{w0, w1, w2, area};
+            auto bary = vec4<l64>{w0, w1, w2, area};
+            if(perspective_correct) {
+                bary.x=l64(w0)*v0_z, bary.y=l64(w1)*v1_z, bary.z=l64(w2)*v2_z;
+                bary.w= bary.x+bary.y+bary.z;
+            }
+
             if(antialias && !in_closure) {
                 // any of the distances are negative, we are outside.
                 // test if we can anti-alias
@@ -1489,17 +1501,17 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
                         blend = (blend * opacity) >> 8;
                     opacity_sample= blend;
                     // rewrite barycentric coords for AA so it sticks to the edges, seems to work
-                    bary.x= functions::clamp<long long>(bary.x, 0, area);
-                    bary.y= functions::clamp<long long>(bary.y, 0, area);
-                    bary.z= functions::clamp<long long>(bary.z, 0, area);
+                    bary.x= functions::clamp<long long>(bary.x, 0, bary.w);
+                    bary.y= functions::clamp<long long>(bary.y, 0, bary.w);
+                    bary.z= functions::clamp<long long>(bary.z, 0, bary.w);
                     bary.w= bary.x+bary.y+bary.z;
                 }
             }
 
             if(should_sample) {
                 interpolated_varying.interpolate(
-                        varying_v1,
                         varying_v0,
+                        varying_v1,
                         varying_v2, bary);
                 auto color = shader.fragment(interpolated_varying);
                 blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity_sample);

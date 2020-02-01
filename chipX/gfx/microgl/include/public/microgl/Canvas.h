@@ -196,7 +196,7 @@ public:
             bool antialias=true, bool perspective_correct=false,
             typename impl, typename vertex_attr, typename varying, typename number>
     void drawTriangleShader(shader_base<impl, vertex_attr, varying, number> &shader,
-                            const vertex_attr &v0, const vertex_attr &v1, const vertex_attr &v2,
+                            vertex_attr v0, vertex_attr v1, vertex_attr v2,
                             opacity_t opacity,
                             bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 

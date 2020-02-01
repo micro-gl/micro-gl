@@ -15,8 +15,17 @@ namespace microgl {
         using cfr = const float &;
         template <unsigned N>
         using cqr = const Q<N> &;
+
         static int to_fixed(const float &val, unsigned char precision) {
             return int(val*float(1u<<precision));
+        }
+
+        static unsigned to_fixed(const unsigned &val, unsigned char precision) {
+            return (val<<precision);
+        }
+
+        static signed to_fixed(const signed &val, unsigned char precision) {
+            return (val<<precision);
         }
 
         template<unsigned N>

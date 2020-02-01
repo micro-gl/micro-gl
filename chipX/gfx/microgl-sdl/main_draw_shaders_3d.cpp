@@ -51,7 +51,7 @@ void test_shader_color_2d() {
 }
 float z=0.0;
 template <typename number>
-void test_shader_texture_2d(const model_3d<number> & object) {
+void test_shader_texture_3d(const model_3d<number> & object) {
 
     using vertex = vec3<number>;
     using camera = microgl::camera<number>;
@@ -59,20 +59,21 @@ void test_shader_texture_2d(const model_3d<number> & object) {
     using math = microgl::math;
     using vertex_attribute= texture_shader_vertex_attributes<number>;
 
-    z+=0.1121;
+    z+=0.4;
 
     int canvas_width = canvas->width();
     int canvas_height = canvas->height();
 
-    mat4 model = mat4::transform({ 0, math::deg_to_rad(z), math::deg_to_rad(0/2)},
+    mat4 model = mat4::transform({ math::deg_to_rad(z/2), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
                                  {0,0,0}, {100,100,100});
-//    mat4 view = camera::lookAt({0, 0, -z}, {0,0, -z-1}, {0,1,0});
-    mat4 view = camera::lookAt({0, 0, 600}, {0,0, 0}, {0,1,0});
+    mat4 view = camera::lookAt({0, 0, 500}, {0,0, 0}, {0,1,0});
     mat4 projection = camera::perspective(math::deg_to_rad(60),
-                                          canvas_width, canvas_height, 1, 500);
+                                          canvas_width, canvas_height, 1, 1000);
+//    mat4 projection= camera::orthographic(-W/2, W/2, -H/2, H/2, 1, 100);
     mat4 mvp= projection*view*model;
     texture_shader<number, uint32_t, coder::RGB888_PACKED_32, sampler::NearestNeighbor> shader;
-    shader.matrix= mvp;//camera<number>::orthographic(0, W, 0, H, 1, 100);
+//    shader.matrix= camera::orthographic(0, W, 0, H, 1, 100);
+    shader.matrix= mvp;
     shader.texture= bmp_uv;
 
     // model to vertex buffers
@@ -84,11 +85,12 @@ void test_shader_texture_2d(const model_3d<number> & object) {
         vertex_buffer.push_back(v);
     }
 
-    canvas->drawTriangles<blendmode::Normal, porterduff::None, false, false>(
+    canvas->drawTriangles<blendmode::Normal, porterduff::None, false, true>(
             shader,
             vertex_buffer.data(),
             object.indices.data(),
             nullptr,
+//            18,
             object.indices.size(),
             object.type);
 
@@ -110,8 +112,10 @@ void render() {
 
 //    test_shader_color_2d<float>();
 //    test_shader_color_2d<Q<10>>();
-    test_shader_texture_2d<float>(cube_3d<float>);
-//    test_shader_texture_2d<float>();
+//    test_shader_texture_3d<float>(cube_3d<float>);
+//    test_shader_texture_3d<Q<16>>(cube_3d<Q<16>>);
+    test_shader_texture_3d<Q<10>>(cube_3d<Q<10>>);
+//    test_shader_texture_3d<Q<5>>(cube_3d<Q<5>>);
 
 }
 

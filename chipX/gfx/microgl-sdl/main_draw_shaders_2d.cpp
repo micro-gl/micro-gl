@@ -11,7 +11,7 @@
 #include <microgl/shaders/texture_shader.h>
 
 using namespace microgl::shading;
-#define TEST_ITERATIONS 1000
+#define TEST_ITERATIONS 1
 #define W 640*1
 #define H 640*1
 
@@ -44,7 +44,7 @@ void test_shader_color_2d() {
     v1.point= {400.0,200.0, 0}; v1.color= {0,255,0,255};
     v2.point= {10.0,400.0, 0}; v2.color= {0,0,255,255};
 
-    canvas->drawTriangleShader<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255);
+    canvas->drawTriangleShader<blendmode::Normal, porterduff::None, true>(shader, v0, v1, v2, 255);
 //    canvas->drawTriangle(color::colors::RED, 10.0,10.0, 400.0,10.0, 400.0,400.0, 255);
 }
 
@@ -74,10 +74,11 @@ void test_shader_texture_2d() {
 
     texture_shader_vertex_attributes<number> v0, v1, v2;
     v0.point= {10.0,10.0, 0};   v0.uv= {0.0f, 0.0f};
-    v1.point= {400.0,10.0, 0};  v1.uv= {1.0f, 0.0f};
-    v2.point= {400.0,400.0, 0}; v2.uv= {1.0f, 1.0f};
+    v1.point= {400.0,400.0, 0};  v1.uv= {1.0f, 0.0f};
+    v2.point= {100.0,600.0, 0}; v2.uv= {1.0f, 1.0f};
 
-    canvas->drawTriangleShader<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255);
+    canvas->drawTriangleShader<blendmode::Normal, porterduff::None, true>(shader, v0, v1, v2, 255,
+            false, true, false);
 //    canvas->drawTriangle<blendmode::Normal, porterduff::None>(*bmp_uv,
 //            10.0,10.0, 0.0, 0.0,
 //            400.0,10.0, 1.0, 0.0,
@@ -88,11 +89,11 @@ void test_shader_texture_2d() {
 void render() {
     canvas->clear(color::colors::WHITE);
 
-//    test_shader_color_2d<float>();
+    test_shader_color_2d<float>();
 //    test_shader_color_2d<Q<10>>();
 //    test_shader_texture_2d<Q<10>>();
 //    test_shader_texture_2d<float>();
-    test_shader_flat_color_2d<float>();
+//    test_shader_flat_color_2d<float>();
 }
 
 int main() {

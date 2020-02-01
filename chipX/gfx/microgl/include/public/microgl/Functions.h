@@ -55,7 +55,7 @@ namespace microgl {
 
         template <typename T>
         inline void swap(T &a, T &b) {
-            auto temp = a;
+            T temp = a;
             a = b;
             b = temp;
         }
