@@ -1,5 +1,3 @@
-//#include "../include/public/microgl/Bitmap.h"
-
 template<typename P, typename CODER>
 template<typename P2, typename CODER2>
 Bitmap<P2, CODER2> * Bitmap<P, CODER>::convertToBitmap() {
@@ -17,7 +15,6 @@ void Bitmap<P, CODER>::copyToBitmap(Bitmap<P2, CODER2> & bmp) {
     bool size_is_same = bmp.size()==this->size();
     if(!size_is_same)
         return;
-//        throw std::invalid_argument("sizes are not the same !!!");
 
     int size = this->size();
     color_f_t color_bmp_1{};
@@ -60,11 +57,6 @@ template<typename P, typename CODER>
 int Bitmap<P, CODER>::height() const {
     return _height;
 }
-
-//template<typename P, typename CODER>
-//PixelFormat Bitmap<P, CODER>::format() {
-//    return _coder->format();
-//}
 
 template<typename P, typename CODER>
 P Bitmap<P, CODER>::pixelAt(int x, int y) const {

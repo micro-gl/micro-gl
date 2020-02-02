@@ -9,17 +9,13 @@
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
 #include <microgl/samplers/NearestNeighbor.h>
-#include <microgl/BlendMode.h>
-#include <microgl/PixelCoder.h>
 #include <microgl/Bitmap.h>
 #include <microgl/Fixed.h>
-#include <microgl/Sampler.h>
 #include <microgl/shader.h>
 #include <microgl/triangles.h>
 #include <microgl/polygons.h>
 #include <microgl/masks.h>
 #include <microgl/math.h>
-#include <microgl/Q.h>
 #include <microgl/tesselation/curve_divider.h>
 #include <microgl/dynamic_array.h>
 #include <microgl/tesselation/ear_clipping_triangulation.h>
@@ -33,26 +29,22 @@ using namespace microgl::shading;
 template<typename P, typename CODER>
 class Canvas {
 private:
+    using index = unsigned int;
+    using precision = unsigned char;
+    using opacity_t = unsigned char;
+
     int _width = 0, _height = 0;
     Bitmap<P, CODER> * _bitmap_canvas = nullptr;
-    bool _flag_antiAlias = true;
-
     // compositing
     bool _flag_hasNativeAlphaChannel = false;
     uint8_t _alpha_bits_for_compositing = 8;
     unsigned int _max_alpha_value = 255;
 
-    using index = unsigned int;
-    using precision = unsigned char;
-    using opacity_t = unsigned char;
-
 public:
     explicit Canvas(Bitmap<P, CODER> * $bmp);
     Canvas(int width, int height);
-//    Canvas(int width, int height, PixelCoder<P, CODER> * $coder);
-    int width();
-    int height();
-//    PixelFormat pixelFormat();
+    int width() const;
+    int height() const;
     unsigned int sizeofPixel();
 
     P* pixels();
@@ -66,9 +58,7 @@ public:
     const coder::PixelCoder<P, CODER> & coder();
     Bitmap<P, CODER> * bitmapCanvas();
 
-    bool hasNativeAlphaChannel();
-    bool hasAntialiasing();
-    void setAntialiasing(bool value);
+    bool hasNativeAlphaChannel() const;
 
     void clear(const color_f_t &color);
 
@@ -108,7 +98,7 @@ public:
                     number centerX, number centerY,
                     number radius, opacity_t opacity=255);
 
-    // Triangles
+    // Triangle batches
     
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -142,7 +132,7 @@ public:
                                 enum indices type,
                                 opacity_t opacity);
 
-
+    // single triangles, includes shader based and one very fast fixed pipeline for color and textures
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename number=float>
@@ -164,7 +154,6 @@ public:
                       bool aa_second_edge = true,
                       bool aa_third_edge = true);
 
-    // float version
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename number>
@@ -176,8 +165,6 @@ public:
                       bool aa_first_edge = true,
                       bool aa_second_edge = true,
                       bool aa_third_edge = true);
-
-    // main uv
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -195,10 +182,10 @@ public:
             typename PorterDuff=porterduff::None,
             bool antialias=true, bool perspective_correct=false,
             typename impl, typename vertex_attr, typename varying, typename number>
-    void drawTriangleShader(shader_base<impl, vertex_attr, varying, number> &shader,
-                            vertex_attr v0, vertex_attr v1, vertex_attr v2,
-                            opacity_t opacity,
-                            bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
+    void drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
+                      vertex_attr v0, vertex_attr v1, vertex_attr v2,
+                      opacity_t opacity,
+                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -212,6 +199,7 @@ public:
                       opacity_t opacity = 255,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
+    // perspective correct 2d quadrilateral defined by 2d points
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename Sampler=sampler::NearestNeighbor,
@@ -222,9 +210,7 @@ public:
                            number v2_x, number v2_y, number u2, number v2,
                            number v3_x, number v3_y, number u3, number v3,
                            opacity_t opacity = 255);
-
     // QUADS
-
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque>
     void drawQuad(const color_f_t &color,
@@ -263,7 +249,7 @@ public:
                   opacity_t opacity = 255,
                   number u0=number(0), number v0=number(0),
                   number u1=number(1), number v1=number(1));
-
+    // Masks
     template <typename Sampler=sampler::NearestNeighbor, typename number,
             typename P2, typename CODER2>
     void drawMask(const masks::chrome_mode &mode,
@@ -283,9 +269,7 @@ public:
                   int u1, int v1,
                   precision sub_pixel_precision, precision uv_precision,
                   opacity_t opacity = 255);
-
     // polygons
-
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename number=float>
@@ -294,7 +278,7 @@ public:
                      opacity_t opacity,
                      polygons::hints hint = polygons::hints::SIMPLE);
 
-    // paths
+    // Wu lines
     template<typename number>
     void drawLine(const color_f_t & color,
                   number x0, number y0, number x1, number y1);

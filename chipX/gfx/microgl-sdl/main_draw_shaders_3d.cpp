@@ -4,11 +4,9 @@
 #include "src/Resources.h"
 #include <microgl/camera.h>
 #include <microgl/Canvas.h>
-#include <microgl/PixelCoder.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/Bilinear.h>
-#include <microgl/shaders/color_shader.h>
 #include <microgl/shaders/texture_shader.h>
 #include "data/model_3d_cube.h"
 
@@ -36,19 +34,6 @@ float t = 0;
 // bitmap for mapping
 Bitmap<uint32_t, coder::RGB888_PACKED_32> *bmp_uv;
 
-template <typename number>
-void test_shader_color_2d() {
-    color_shader<number> shader;
-    shader.mat= camera<number>::orthographic(0, W, 0, H, 1, 100);
-
-    color_shader_vertex_attributes<number> v0, v1, v2;
-    v0.point= {10.0,10.0, 0};  v0.color= {255,0,0,255};
-    v1.point= {400.0,200.0, 0}; v1.color= {0,255,0,255};
-    v2.point= {10.0,400.0, 0}; v2.color= {0,0,255,255};
-
-    canvas->drawTriangleShader<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255);
-//    canvas->drawTriangle(color::colors::RED, 10.0,10.0, 400.0,10.0, 400.0,400.0, 255);
-}
 float z=0.0;
 template <typename number>
 void test_shader_texture_3d(const model_3d<number> & object) {
@@ -61,18 +46,16 @@ void test_shader_texture_3d(const model_3d<number> & object) {
 
     z+=0.4;
 
-    int canvas_width = canvas->width();
-    int canvas_height = canvas->height();
-
+    // setup mvp matrix
     mat4 model = mat4::transform({ math::deg_to_rad(z/2), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
                                  {0,0,0}, {100,100,100});
     mat4 view = camera::lookAt({0, 0, 500}, {0,0, 0}, {0,1,0});
-    mat4 projection = camera::perspective(math::deg_to_rad(60),
-                                          canvas_width, canvas_height, 1, 1000);
-//    mat4 projection= camera::orthographic(-W/2, W/2, -H/2, H/2, 1, 100);
+    mat4 projection = camera::perspective(math::deg_to_rad(60), canvas->width(), canvas->height(), 1, 1000);
+//    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 100);
     mat4 mvp= projection*view*model;
+
+    // setup shader
     texture_shader<number, uint32_t, coder::RGB888_PACKED_32, sampler::NearestNeighbor> shader;
-//    shader.matrix= camera::orthographic(0, W, 0, H, 1, 100);
     shader.matrix= mvp;
     shader.texture= bmp_uv;
 
@@ -85,26 +68,14 @@ void test_shader_texture_3d(const model_3d<number> & object) {
         vertex_buffer.push_back(v);
     }
 
+    // draw
     canvas->drawTriangles<blendmode::Normal, porterduff::None, false, true>(
             shader,
             vertex_buffer.data(),
             object.indices.data(),
             nullptr,
-//            18,
             object.indices.size(),
             object.type);
-
-//    vertex_attribute v0, v1, v2;
-//    v0.point= {10.0,10.0, 0};   v0.uv= {0.0f, 0.0f};
-//    v1.point= {400.0,10.0, 0};  v1.uv= {1.0f, 0.0f};
-//    v2.point= {400.0,400.0, 0}; v2.uv= {1.0f, 1.0f};
-//
-//    canvas->drawTriangleShader<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255);
-//    canvas->drawTriangle<blendmode::Normal, porterduff::None>(*bmp_uv,
-//            10.0,10.0, 0.0, 0.0,
-//            400.0,10.0, 1.0, 0.0,
-//            400.0,400.0, 1.0, 1.0,
-//            255);
 }
 
 void render() {
@@ -112,9 +83,9 @@ void render() {
 
 //    test_shader_color_2d<float>();
 //    test_shader_color_2d<Q<10>>();
-//    test_shader_texture_3d<float>(cube_3d<float>);
+    test_shader_texture_3d<float>(cube_3d<float>);
 //    test_shader_texture_3d<Q<16>>(cube_3d<Q<16>>);
-    test_shader_texture_3d<Q<10>>(cube_3d<Q<10>>);
+//    test_shader_texture_3d<Q<10>>(cube_3d<Q<10>>);
 //    test_shader_texture_3d<Q<5>>(cube_3d<Q<5>>);
 
 }

@@ -1,4 +1,3 @@
-#include <microgl/tesselation/ear_clipping_triangulation.h>
 
 template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
@@ -33,11 +32,6 @@ inline Bitmap<P, CODER> *Canvas<P, CODER>::bitmapCanvas() {
     return _bitmap_canvas;
 }
 
-//template<typename P, typename CODER>
-//PixelFormat Canvas<P, CODER>::pixelFormat() {
-//    return coder()->format();
-//}
-
 template<typename P, typename CODER>
 unsigned int Canvas<P, CODER>::sizeofPixel() {
     return sizeof(P{});
@@ -56,18 +50,8 @@ P &Canvas<P, CODER>::getPixel(int index) {
 }
 
 template<typename P, typename CODER>
-bool Canvas<P, CODER>::hasNativeAlphaChannel() {
+bool Canvas<P, CODER>::hasNativeAlphaChannel() const {
     return _flag_hasNativeAlphaChannel;
-}
-
-template<typename P, typename CODER>
-bool Canvas<P, CODER>::hasAntialiasing() {
-    return _flag_antiAlias;
-}
-
-template<typename P, typename CODER>
-void Canvas<P, CODER>::setAntialiasing(bool value) {
-    _flag_antiAlias = value;
 }
 
 template<typename P, typename CODER>
@@ -91,12 +75,12 @@ void Canvas<P, CODER>::getPixelColor(int index, color_f_t & output) {
 }
 
 template<typename P, typename CODER>
-int Canvas<P, CODER>::width() {
+int Canvas<P, CODER>::width() const {
     return _width;
 }
 
 template<typename P, typename CODER>
-int Canvas<P, CODER>::height() {
+int Canvas<P, CODER>::height() const {
     return _height;
 }
 
@@ -306,16 +290,12 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
                                   const number centerY,
                                   const number radius,
                                   opacity_t opacity) {
-
     precision p = 4;
-
     drawCircle<BlendMode, PorterDuff, antialias>(color,
                 microgl::math::to_fixed(centerX, p),
                 microgl::math::to_fixed(centerY, p),
                 microgl::math::to_fixed(radius, p),
-                p, opacity
-                );
-
+                p, opacity);
 }
 
 template<typename P, typename CODER>
@@ -352,152 +332,104 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                      const index size,
                                      const enum indices type,
                                      const opacity_t opacity) {
-
 #define IND(a) indices[(a)]
 #define to_fixed microgl::math::to_fixed
     const precision p = 4;
-
     switch (type) {
         case indices::TRIANGLES:
-
             for (index ix = 0; ix < size; ix+=3) {
-
                 drawTriangle<BlendMode, PorterDuff, antialias>(color,
                         to_fixed(vertices[IND(ix + 0)].x, p), to_fixed(vertices[IND(ix + 0)].y, p),
                         to_fixed(vertices[IND(ix + 1)].x, p), to_fixed(vertices[IND(ix + 1)].y, p),
                         to_fixed(vertices[IND(ix + 2)].x, p), to_fixed(vertices[IND(ix + 2)].y, p),
-                        opacity, p
-                );
+                        opacity, p);
             }
-
             break;
         case indices::TRIANGLES_WITH_BOUNDARY:
         {
             index idx_boundary=0;
             for (index ix = 0; ix < size; ix+=3) {
                 boundary_info aa_info = boundary_buffer[idx_boundary++];
-
                 bool aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
                 bool aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
                 bool aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
-
-//                drawTriangle<BlendMode, PorterDuff, antialias>(color,
                 drawTriangle<BlendMode, PorterDuff, antialias>(color,
                            to_fixed(vertices[IND(ix + 0)].x, p), to_fixed(vertices[IND(ix + 0)].y, p),
                            to_fixed(vertices[IND(ix + 1)].x, p), to_fixed(vertices[IND(ix + 1)].y, p),
                            to_fixed(vertices[IND(ix + 2)].x, p), to_fixed(vertices[IND(ix + 2)].y, p),
-                           opacity, p,
-                           aa_first_edge, aa_second_edge, aa_third_edge
-                           );
+                           opacity, p, aa_first_edge, aa_second_edge, aa_third_edge);
             }
-
             break;
         }
         case indices::TRIANGLES_FAN:
-
             for (index ix = 1; ix < size-1; ++ix) {
-
                 drawTriangle<BlendMode, PorterDuff, antialias>(color,
                         to_fixed(vertices[IND(0)].x, p), to_fixed(vertices[IND(0)].y, p),
                         to_fixed(vertices[IND(ix)].x, p), to_fixed(vertices[IND(ix)].y, p),
                         to_fixed(vertices[IND(ix + 1)].x, p), to_fixed(vertices[IND(ix + 1)].y, p),
-                        opacity, p
-                        );
-
+                        opacity, p);
             }
-
             break;
         case indices::TRIANGLES_FAN_WITH_BOUNDARY:
         {
             index idx_boundary=0;
-
             for (index ix = 1; ix < size-1; ++ix) {
                 index first_index = 0;
                 index second_index = ix;
                 index third_index = ix+1;
                 boundary_info aa_info = boundary_buffer[idx_boundary++];
-
                 bool aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
                 bool aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
                 bool aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
-
                 drawTriangle<BlendMode, PorterDuff, antialias>(color,
                         to_fixed(vertices[IND(first_index)].x, p),  to_fixed(vertices[IND(first_index)].y, p),
                         to_fixed(vertices[IND(second_index)].x, p), to_fixed(vertices[IND(second_index)].y, p),
                         to_fixed(vertices[IND(third_index)].x, p),  to_fixed(vertices[IND(third_index)].y, p),
-                        opacity, p,
-                        aa_first_edge, aa_second_edge, aa_third_edge
-                        );
-
+                        opacity, p, aa_first_edge, aa_second_edge, aa_third_edge);
             }
-
             break;
         }
         case indices::TRIANGLES_STRIP:
         {
             bool even = true;
-
             for (index ix = 0; ix < size-2; ++ix) {
                 // we alternate order inorder to preserve CCW or CW,
-                // in the future I will add face culling, which will
-                // support only CW or CCW orientation_t at a time.
-
                 index first_index = even ?  IND(ix + 0) : IND(ix + 2);
                 index second_index = even ? IND(ix + 1) : IND(ix + 1);
                 index third_index = even ?  IND(ix + 2) : IND(ix + 0);
-
                 drawTriangle<BlendMode, PorterDuff, antialias>(color,
                         to_fixed(vertices[first_index].x, p), to_fixed(vertices[first_index].y, p),
                         to_fixed(vertices[second_index].x, p), to_fixed(vertices[second_index].y, p),
                         to_fixed(vertices[third_index].x, p), to_fixed(vertices[third_index].y, p),
-                        opacity, p
-                        );
-
+                        opacity, p);
                 even = !even;
             }
-
             break;
         }
         case indices::TRIANGLES_STRIP_WITH_BOUNDARY:
         {
             bool even = true;
             index idx_boundary = 0;
-
             for (index ix = 0; ix < size-2; ++ix) {
-                // we alternate order in order to preserve CCW or CW,
-                // in the future I will add face culling, which will
-                // support only CW or CCW orientation_t at a time.
-
                 boundary_info aa_info = boundary_buffer[idx_boundary++];
-
                 bool aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
                 bool aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
                 bool aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
-
                 index first_index = even ?  IND(ix + 0) : IND(ix + 2);
                 index second_index = IND(ix + 1);
                 index third_index = even ?  IND(ix + 2) : IND(ix + 0);
-
-//                drawTriangle<BlendMode, PorterDuff, antialias>(color,
                 drawTriangle<BlendMode, PorterDuff, antialias>(color,
                         to_fixed(vertices[first_index].x, p), to_fixed(vertices[first_index].y, p),
                         to_fixed(vertices[second_index].x, p), to_fixed(vertices[second_index].y, p),
                         to_fixed(vertices[third_index].x, p), to_fixed(vertices[third_index].y, p),
-                        opacity, p,
-                        aa_first_edge, aa_second_edge, aa_third_edge
-                        );
-
+                        opacity, p, aa_first_edge, aa_second_edge, aa_third_edge);
                 even = !even;
             }
-
             break;
         }
-
     }
-
 #undef IND
 #undef to_fixed
-
 }
 
 template<typename P, typename CODER>
@@ -510,27 +442,106 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                                           const index size,
                                           const enum indices type,
                                           const opacity_t opacity) {
-
 #define IND(a) indices[(a)]
-
+#define to_fixed microgl::math::to_fixed
     switch (type) {
         case indices::TRIANGLES:
-
-            for (index ix = 0; ix < size; ix += 3) {
-
-                drawTriangleShader<BlendMode, PorterDuff, antialias, perspective_correct>(
+            for (index ix = 0; ix < size; ix+=3) {
+                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct>(
                         shader,
                         vertex_buffer[IND(ix + 0)],
                         vertex_buffer[IND(ix + 1)],
                         vertex_buffer[IND(ix + 2)],
-                        opacity
-                );
+                        opacity);
             }
-
             break;
+        case indices::TRIANGLES_WITH_BOUNDARY:
+        {
+            index idx_boundary=0;
+            for (index ix = 0; ix < size; ix+=3) {
+                boundary_info aa_info = boundary_buffer[idx_boundary++];
+                bool aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
+                bool aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
+                bool aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
+                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct>(
+                        shader,
+                        vertex_buffer[IND(ix + 0)],
+                        vertex_buffer[IND(ix + 1)],
+                        vertex_buffer[IND(ix + 2)],
+                        opacity, aa_first_edge, aa_second_edge, aa_third_edge);
+            }
+            break;
+        }
+        case indices::TRIANGLES_FAN:
+            for (index ix = 1; ix < size-1; ++ix) {
+                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct>(
+                        shader,
+                        vertex_buffer[IND(0)],
+                        vertex_buffer[IND(ix)],
+                        vertex_buffer[IND(ix + 1)],
+                        opacity);
+            }
+            break;
+        case indices::TRIANGLES_FAN_WITH_BOUNDARY:
+        {
+            index idx_boundary=0;
+            for (index ix = 1; ix < size-1; ++ix) {
+                boundary_info aa_info = boundary_buffer[idx_boundary++];
+                const bool aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
+                const bool aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
+                const bool aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
+                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct>(
+                        shader,
+                        vertex_buffer[IND(0)],
+                        vertex_buffer[IND(ix)],
+                        vertex_buffer[IND(ix + 1)],
+                        opacity, aa_first_edge, aa_second_edge, aa_third_edge);
+            }
+            break;
+        }
+        case indices::TRIANGLES_STRIP:
+        {
+            bool even = true;
+            for (index ix = 0; ix < size-2; ++ix) {
+                // we alternate order in order to preserve CCW or CW,
+                index first_index = even ?  IND(ix + 0) : IND(ix + 2);
+                index second_index = even ? IND(ix + 1) : IND(ix + 1);
+                index third_index = even ?  IND(ix + 2) : IND(ix + 0);
+                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct>(
+                        shader,
+                        vertex_buffer[IND(first_index)],
+                        vertex_buffer[IND(second_index)],
+                        vertex_buffer[IND(third_index)],
+                        opacity);
+                even = !even;
+            }
+            break;
+        }
+        case indices::TRIANGLES_STRIP_WITH_BOUNDARY:
+        {
+            bool even = true;
+            index idx_boundary = 0;
+            for (index ix = 0; ix < size-2; ++ix) {
+                boundary_info aa_info = boundary_buffer[idx_boundary++];
+                bool aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
+                bool aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
+                bool aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
+                index first_index = even ?  IND(ix + 0) : IND(ix + 2);
+                index second_index = IND(ix + 1);
+                index third_index = even ?  IND(ix + 2) : IND(ix + 0);
+                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct>(
+                        shader,
+                        vertex_buffer[IND(first_index)],
+                        vertex_buffer[IND(second_index)],
+                        vertex_buffer[IND(third_index)],
+                        opacity, aa_first_edge, aa_second_edge, aa_third_edge);
+                even = !even;
+            }
+            break;
+        }
     }
-
 #undef IND
+#undef to_fixed
 }
 
 template<typename P, typename CODER>
@@ -541,64 +552,47 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
                                               const index size,
                                               const enum indices type,
                                               const opacity_t opacity) {
-
 #define IND(a) indices[(a)]
-
     switch (type) {
         case indices::TRIANGLES:
         case indices::TRIANGLES_WITH_BOUNDARY:
-
             for (index ix = 0; ix < size; ix+=3) {
-
                 drawTriangleWireframe(color,
                                       vertices[IND(ix + 0)],
                                       vertices[IND(ix + 1)],
                                       vertices[IND(ix + 2)]);
             }
-
             break;
         case indices::TRIANGLES_FAN:
         case indices::TRIANGLES_FAN_WITH_BOUNDARY:
-
             for (index ix = 1; ix < size-1; ++ix) {
-
                 drawTriangleWireframe(color,
                                       vertices[IND(0)],
                                       vertices[IND(ix)],
                                       vertices[IND(ix + 1)]);
             }
-
             break;
-
         case indices::TRIANGLES_STRIP:
         case indices::TRIANGLES_STRIP_WITH_BOUNDARY:
         {
             bool even = true;
-
             for (index ix = 0; ix < size-2; ++ix) {
-                // we alternate order inorder to preserve CCW or CW,
-                // in the future I will add face culling, which will
-                // support only CW or CCW orientation_t at a time.
+                // we alternate order in order to preserve CCW or CW,
                 if(even)
                     drawTriangleWireframe(color,
                                           vertices[IND(ix + 0)],
                                           vertices[IND(ix + 1)],
                                           vertices[IND(ix + 2)]);
-
                 else
                     drawTriangleWireframe(color,
                                           vertices[IND(ix + 2)],
                                           vertices[IND(ix + 1)],
                                           vertices[IND(ix + 0)]);
-
                 even = !even;
             }
-
             break;
         }
-
     }
-
 #undef IND
 }
 
@@ -1274,7 +1268,6 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
 }
 
-// todo
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
         bool antialias,
@@ -1314,30 +1307,29 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
 }
 
-// shaders
+// triangles with 3D Shaders - programmable pipeline
 #include <microgl/camera.h>
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct,
         typename impl, typename vertex_attr, typename varying, typename number>
-void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying, number> &shader,
-                                          vertex_attr v0, vertex_attr v1, vertex_attr v2,
-                                          const opacity_t opacity,
-                                          bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-
+void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
+                                    vertex_attr v0, vertex_attr v1, vertex_attr v2,
+                                    const opacity_t opacity,
+                                    bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
     using l64= long long;
     const bits sub_pixel_precision = 4;
     // this is the programmable 3d pipeline
-#define f microgl::math::to_fixed
+    #define f microgl::math::to_fixed
     // compute varying and positions per vertex for interpolation
     varying varying_v0, varying_v1, varying_v2, interpolated_varying;
     auto v0_homo_space = shader.vertex(v0, varying_v0);
     auto v1_homo_space = shader.vertex(v1, varying_v1);
     auto v2_homo_space = shader.vertex(v2, varying_v2);
     if(perspective_correct) {
-//        varying_v0.interpolate(varying_v0, varying_v0, varying_v0, vec4<long long>{1,0,0,v0_homo_space.w});
-//        varying_v1.interpolate(varying_v1, varying_v1, varying_v1, vec4<long long>{0,1,0,v1_homo_space.w});
-//        varying_v2.interpolate(varying_v2, varying_v2, varying_v2, vec4<long long>{0,0,1,v2_homo_space.w});
+    //        varying_v0.interpolate(varying_v0, varying_v0, varying_v0, vec4<long long>{1,0,0,v0_homo_space.w});
+    //        varying_v1.interpolate(varying_v1, varying_v1, varying_v1, vec4<long long>{0,1,0,v1_homo_space.w});
+    //        varying_v2.interpolate(varying_v2, varying_v2, varying_v2, vec4<long long>{0,0,1,v2_homo_space.w});
     }
     // here goes clipping on w cube -> clip space
     // todo:: clip at least on z plane, what about z clamping
@@ -1370,19 +1362,11 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
         functions::swap(varying_v1, varying_v2);
         functions::swap(v1_z, v2_z);
     }
-
     // rotate to match edges
     functions::swap(varying_v0, varying_v1);
     functions::swap(v0_z, v1_z);
 
-#undef f
-
-    // about AA
-    // we cannot use distance measurements to our benefits. why ?
-    // 1. because we have no idea if we sample from an axis aligned rectangle samplable like bitmap
-    // 2.
-    // sub_pixel_precision;
-    // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
+    #undef f
 
     unsigned int max_sub_pixel_precision_value = (1u<<sub_pixel_precision) - 1;
 
@@ -1411,8 +1395,8 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
 
     // fill rules configurations
     triangles::top_left_t top_left =
-            triangles::classifyTopLeftEdges(false,
-                                            v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
+        triangles::classifyTopLeftEdges(false,
+                                        v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
     int bias_w0 = top_left.first  ? 0 : -1;
     int bias_w1 = top_left.second ? 0 : -1;
     int bias_w2 = top_left.third  ? 0 : -1;
@@ -1424,8 +1408,8 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
     vec2_32i p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     int area_v1_v2_p = functions::orient2d({v1_x, v1_y}, {v2_x, v2_y}, p_fixed, sub_pixel_precision) + bias_w1,
-        area_v2_v0_p = functions::orient2d({v2_x, v2_y}, {v0_x, v0_y}, p_fixed, sub_pixel_precision) + bias_w2,
-        area_v0_v1_p = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, p_fixed, sub_pixel_precision) + bias_w0;
+    area_v2_v0_p = functions::orient2d({v2_x, v2_y}, {v0_x, v0_y}, p_fixed, sub_pixel_precision) + bias_w2,
+    area_v0_v1_p = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, p_fixed, sub_pixel_precision) + bias_w0;
 
     // Triangle setup, this needs at least (P+1) bits, since the delta is always <= length
     int64_t A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
@@ -1517,112 +1501,6 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
                 blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity_sample);
             }
 
-            /*
-
-            if ((w0 | w1 | w2) >= 0) {
-
-//                int u_i, v_i;
-//                uint64_t u_fixed = (((uint64_t)((uint64_t)w0*u2 + (uint64_t)w1*u0 + (uint64_t)w2*u1)));
-//                uint64_t v_fixed = (((uint64_t)((uint64_t)w0*v2 + (uint64_t)w1*v0 + (uint64_t)w2*v1)));
-
-                if(perspective_correct) {
-//                    uint64_t q_fixed =(((uint64_t)((uint64_t)w0*q2 + (uint64_t)w1*q0 + (uint64_t)w2*q1)));
-//                    uint64_t one_over_q = ONE / q_fixed;
-//
-//                    u_i = (u_fixed*bmp_w_max*one_over_q)>>(LL-BITS_UV_COORDS);
-//                    v_i = (v_fixed*bmp_h_max*one_over_q)>>(LL-BITS_UV_COORDS);
-
-                } else {
-//                    u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS));
-//                    v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
-//                    // coords in :BITS_UV_COORDS space
-//                    u_i = (bmp_w_max*u_fixed)>>(BITS_UV_COORDS);
-//                    v_i = (bmp_h_max*v_fixed)>>(BITS_UV_COORDS);
-                }
-
-                auto bary = vec4<long long>{w0, w1, w2, area};
-                interpolated_varying.interpolate(
-                        varying_v1,
-                        varying_v0,
-                        varying_v2, bary);
-                auto color= shader.fragment(interpolated_varying);
-
-                blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity_sample);
-
-                //u_i = functions::clamp<int>(u_i, 0, bmp_w_max<<BITS_UV_COORDS);
-                //v_i = functions::clamp<int>(v_i, 0, bmp_h_max<<BITS_UV_COORDS);
-
-//                color_t col_bmp;
-//                Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
-
-
-//                blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity);
-//                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity_t);
-
-            } else if(antialias) {
-                // any of the distances are negative, we are outside.
-                // test if we can anti-alias
-                // take minimum of all meta distances
-
-                int distance = functions::min(w0_h, w1_h, w2_h);
-                int delta = (distance) + max_distance_scaled_space_anti_alias;
-                bool perform_aa = aa_all_edges;
-
-                // test edges
-                if(!perform_aa) {
-                    if(distance==w0_h && aa_first_edge)
-                        perform_aa = true;
-                    else if(distance==w1_h && aa_second_edge)
-                        perform_aa = true;
-                    else perform_aa = distance == w2_h && aa_third_edge;
-                }
-
-                if (perform_aa && delta >= 0) {
-                    // we need to clip uv coords if they overflow dimension of texture so we
-                    // can get the last texel of the boundary
-                    // I don't round since I don't care about it here
-
-//                    uint64_t u_i, v_i;
-//                    uint64_t u_fixed = (((uint64_t)((uint64_t)w0*u2 + (uint64_t)w1*u0 + (uint64_t)w2*u1)));
-//                    uint64_t v_fixed = (((uint64_t)((uint64_t)w0*v2 + (uint64_t)w1*v0 + (uint64_t)w2*v1)));
-
-                    if(perspective_correct) {
-
-//                        uint64_t q_fixed =(((uint64_t)((uint64_t)w0*q2 + (uint64_t)w1*q0 + (uint64_t)w2*q1)));
-//                        uint64_t one_over_q = ONE / q_fixed;
-//
-//                        u_i = uint64_t(u_fixed*bmp_w_max*one_over_q)>>(LL-BITS_UV_COORDS);
-//                        v_i = uint64_t(v_fixed*bmp_h_max*one_over_q)>>(LL-BITS_UV_COORDS);
-
-                    } else {
-
-//                        u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS));
-//                        v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
-//                         coords in :BITS_UV_COORDS space
-//                        u_i = uint64_t(uint64_t(bmp_w_max)*u_fixed)>>(BITS_UV_COORDS);
-//                        v_i = uint64_t(uint64_t(bmp_h_max)*v_fixed)>>(BITS_UV_COORDS);
-                    }
-
-                    // todo:: I have seen the last row of a quadrilateral rendering have the first row
-                    // todo: this is an overflow, that comes from v_i, research why
-//                    u_i = functions::clamp<uint32_t>(u_i, 0, bmp_w_max<<BITS_UV_COORDS);
-//                    v_i = functions::clamp<uint32_t>(v_i, 0, bmp_h_max<<BITS_UV_COORDS);
-
-                    color_t col_bmp;
-//                    Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
-                    // complement and normalize
-                    uint8_t blend = functions::clamp<int>(((uint64_t)(delta << bits_distance_complement))>>PREC_DIST,
-                                                          0, 255);
-
-                    if (opacity < _max_alpha_value)
-                        blend = (blend * opacity) >> 8;
-
-                    blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, blend);
-                }
-
-            }
-            */
-
             w0 += A01;
             w1 += A12;
             w2 += A20;
@@ -1647,7 +1525,6 @@ void Canvas<P, CODER>::drawTriangleShader(shader_base<impl, vertex_attr, varying
 
         index += _width;
     }
-
 }
 
 template<typename P, typename CODER>
@@ -1722,11 +1599,8 @@ Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
           true, true, false);
 
 #undef f
-
 }
-
 // quads
-
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
 void Canvas<P, CODER>::drawQuad(const color_f_t & color,
@@ -1736,23 +1610,18 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
                                 const opacity_t opacity) {
     color_t color_int;
     this->coder().convert(color, color_int);
-
     unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
-
     int left_ = functions::max((left + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)0);
     int top_ = functions::max((top + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)0);
     int right_ = functions::min((right + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)width()-1);
     int bottom_ = functions::min((bottom + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)height()-1);
-
     int index = top_ * _width;
     for (int y = top_; y < bottom_; y++) {
         for (int x = left_; x < right_; x++) {
             blendColor<BlendMode, PorterDuff>(color_int, index + x, opacity);
         }
-
         index += _width;
     }
-
 }
 
 template<typename P, typename CODER>
@@ -1762,13 +1631,11 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
                                 const number right, const number bottom,
                                 const opacity_t opacity) {
     uint8_t p = 4;
-
     drawQuad<BlendMode, PorterDuff>(color,
              microgl::math::to_fixed(left, p), microgl::math::to_fixed(top, p),
              microgl::math::to_fixed(right, p), microgl::math::to_fixed(bottom, p),
              p, opacity
     );
-
 }
 
 template<typename P, typename CODER>
@@ -1782,7 +1649,6 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
                                 const number u1, const number v1) {
     precision p_sub = 4;
     precision p_uv = 5;
-
     drawQuad<BlendMode, PorterDuff, Sampler>(bmp,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
             microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
@@ -1840,12 +1706,10 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
 
             u += du;
         }
-
         u = u_start;
         v += dv;
         index += _width;
     }
-
 }
 
 template<typename P, typename CODER>
@@ -1967,8 +1831,7 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
     using csc = cohen_sutherland_clipper<number>;
     auto clip =  csc::compute(x0, y0, x1, y1, number(0), number(0),
             width(), height());
-    if(!clip.inside)
-        return;
+    if(!clip.inside) return;
 
     precision p = 4;
     int x0_ = microgl::math::to_fixed(clip.x0, p);
@@ -1992,12 +1855,12 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
     coder().convert(color, color_input);
 
     unsigned int IntensityBits = 8;
-    unsigned int NumLevels = 1 << IntensityBits;
+    unsigned int NumLevels = 1u << IntensityBits;
     unsigned int maxIntensity = NumLevels - 1;
     uint32_t IntensityShift, ErrorAdj, ErrorAcc;
     unsigned int ErrorAccTemp, Weighting, WeightingComplementMask;
     int DeltaX, DeltaY, Temp, XDir;//, YDir;
-    int one = 1u<<bits;
+    int one = 1<<bits;
     unsigned int round = 0;//one>>1;// -1;
     // Make sure the line runs top to bottom
     if (Y0 > Y1) {
@@ -2012,7 +1875,7 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
     if ((DeltaX = X1 - X0) >= 0) {
         XDir = 1<<bits;
     } else {
-        XDir = -(1u<<bits);
+        XDir = -(1<<bits);
         DeltaX = -DeltaX; // make DeltaX positive
     }
     DeltaY = Y1 - Y0;
@@ -2213,7 +2076,6 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
     dynamic_array<boundary_info> boundary_buffer;
 
     switch (hint) {
-
         case hints::CONCAVE:
         case hints::SIMPLE:
         {
@@ -2223,9 +2085,7 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
                                                               size,
                                                               indices,
                                                               &boundary_buffer,
-                                                              type
-            );
-
+                                                              type);
             break;
         }
         case hints::CONVEX:
@@ -2236,19 +2096,14 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
                                                      size,
                                                      indices,
                                                      &boundary_buffer,
-                                                     type
-            );
-
+                                                     type);
             break;
         }
         case hints::NON_SIMPLE:
         case hints::SELF_INTERSECTING:
         default:
             return;
-//            throw std::runtime_error("Non-Simple polygons are not supported yet !!!");
-            break;
     }
-
     // draw triangles batch
     drawTriangles<BlendMode, PorterDuff, antialias>(
             color::colors::RED,
@@ -2258,9 +2113,6 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
             indices.size(),
             type,
             opacity);
-
-//    return;
-    // draw triangulation
     drawTrianglesWireframe(color::colors::BLACK,
                            points,
                            indices.data(),

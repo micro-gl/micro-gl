@@ -15,22 +15,27 @@ namespace microgl {
         using cfr = const float &;
         template <unsigned N>
         using cqr = const Q<N> &;
+        using l64= long long;
 
-        static int to_fixed(const float &val, unsigned char precision) {
-            return int(val*float(1u<<precision));
+        static l64 to_fixed(const float &val, unsigned char precision) {
+            return l64(val*float(1u<<precision));
         }
 
-        static unsigned to_fixed(const unsigned &val, unsigned char precision) {
+        static l64 to_fixed(const double &val, unsigned char precision) {
+            return l64(val*double(1u<<precision));
+        }
+
+        static l64 to_fixed(const unsigned &val, unsigned char precision) {
             return (val<<precision);
         }
 
-        static signed to_fixed(const signed &val, unsigned char precision) {
+        static l64 to_fixed(const int &val, unsigned char precision) {
             return (val<<precision);
         }
 
         template<unsigned N>
-        static int to_fixed(const Q<N> & val, unsigned char precision) {
-            return int(val.toFixed(precision));
+        static l64 to_fixed(const Q<N> & val, unsigned char precision) {
+            return l64(val.toFixed(precision));
         }
 
         static float sqrt(const float &val) {
@@ -39,7 +44,7 @@ namespace microgl {
 
         template<unsigned N>
         static Q<N> sqrt(const Q<N> & val) {
-            return Q<N>(int(sqrt_64(val.value())), N>>1);
+            return Q<N>((sqrt_64(val.value())), N>>1);
         }
 
         static float distance(cfr p0_x, cfr p0_y, cfr p1_x, cfr p1_y) {

@@ -19,33 +19,23 @@ public:
 
     P pixelAt(int x, int y) const;
     P pixelAt(int index) const;
-
     // decoders
     void decode(int x, int y, color_t &output) const;
     void decode(int index, color_t &output) const;
     void decode(int x, int y, color_f_t &output) const;
     void decode(int index, color_f_t &output) const;
     // encoders
-//    void encodeColorToPixel(color_t &color, P & output);
-//    void encodeColorToPixel(int index, color_t &output);
-//    void encodeNormalizedColorToPixel(int x, int y, color_f_t &output);
-//    void encodeNormalizedColorToPixel(int index, color_f_t &output);
-
     void writeColor(int index, const color_t & color);
     void writeColor(int x, int y, const color_t & color);
     void writeColor(int index, const color_f_t & color);
     void writeColor(int x, int y, const color_f_t & color);
-
     int width() const;
     int height() const;
-//    PixelFormat format();
     const coder::PixelCoder<P, CODER> & coder() const;
 
 protected:
     int _width = 0, _height = 0;
-//    PixelFormat _format;
     coder::PixelCoder<P, CODER> _coder;
-
 };
 
 #include "../../src/Bitmap.tpp"
