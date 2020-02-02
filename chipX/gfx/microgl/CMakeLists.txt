@@ -14,13 +14,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g ")
 set(CMAKE_CXX_FLAGS_RELEASE "-fno-exceptions -fstrict-aliasing -O3 -s -fno-rtti -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
 
 set(sources
-        include/public/microgl/Bitmap.h
         include/public/microgl/Canvas.h
         src/Functions.cpp
-        src/PorterDuff.cpp
         src/PixelCoder.cpp
         src/color.cpp
-        src/Curves.cpp
         src/triangles.cpp
         src/qsort.cpp)
 
