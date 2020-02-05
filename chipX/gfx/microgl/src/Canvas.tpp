@@ -1309,7 +1309,6 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
 // triangles with 3D Shaders - programmable pipeline
 #include <microgl/camera.h>
-
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct,
         typename impl, typename vertex_attr, typename varying, typename number>
@@ -1326,13 +1325,14 @@ void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, numb
     auto v0_homo_space = shader.vertex(v0, varying_v0);
     auto v1_homo_space = shader.vertex(v1, varying_v1);
     auto v2_homo_space = shader.vertex(v2, varying_v2);
-    if(perspective_correct) {
+    //if(perspective_correct) {
     //        varying_v0.interpolate(varying_v0, varying_v0, varying_v0, vec4<long long>{1,0,0,v0_homo_space.w});
     //        varying_v1.interpolate(varying_v1, varying_v1, varying_v1, vec4<long long>{0,1,0,v1_homo_space.w});
     //        varying_v2.interpolate(varying_v2, varying_v2, varying_v2, vec4<long long>{0,0,1,v2_homo_space.w});
-    }
+    //}
     // here goes clipping on w cube -> clip space
     // todo:: clip at least on z plane, what about z clamping
+//    using shc=
     // divide by w -> NDC space
     // todo: bail out if w==0
     auto v0_ndc = v0_homo_space/v0_homo_space.w;
@@ -1346,8 +1346,10 @@ void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, numb
     int v0_x= f(v0_viewport.x, sub_pixel_precision), v0_y= f(v0_viewport.y, sub_pixel_precision);
     int v1_x= f(v1_viewport.x, sub_pixel_precision), v1_y= f(v1_viewport.y, sub_pixel_precision);
     int v2_x= f(v2_viewport.x, sub_pixel_precision), v2_y= f(v2_viewport.y, sub_pixel_precision);
-    const int z_bits= 18; const l64 one_z= -(l64(1)<<(z_bits<<1)); // negate z because camera is looking negative z axis
-    l64 v0_z= one_z/f(v0_homo_space.w, z_bits), v1_z= one_z/f(v1_homo_space.w, z_bits), v2_z= one_z/f(v2_homo_space.w, z_bits);
+    const int w_bits= 18; const l64 one_w= -(l64(1) << (w_bits << 1)); // negate z because camera is looking negative z axis
+    l64 v0_w= one_w / f(v0_homo_space.w, w_bits), v1_w= one_w / f(v1_homo_space.w, w_bits), v2_w= one_w / f(v2_homo_space.w, w_bits);
+    const int z_bits= 15; const l64 one_z= -(l64(1) << (z_bits << 1)); // negate z because camera is looking negative z axis
+    l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
 
     l64 area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
     // discard degenerate triangle and re-orient negative triangles if needed
@@ -1357,18 +1359,17 @@ void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, numb
         functions::swap(v1_x, v2_x);
         functions::swap(v1_y, v2_y);
         area = -area;
-    } // flip vertically
-    else {
+    } else { // flip vertically
         functions::swap(varying_v1, varying_v2);
-        functions::swap(v1_z, v2_z);
+        functions::swap(v1_w, v2_w);
     }
     // rotate to match edges
     functions::swap(varying_v0, varying_v1);
-    functions::swap(v0_z, v1_z);
+    functions::swap(v0_w, v1_w);
 
     #undef f
 
-    unsigned int max_sub_pixel_precision_value = (1u<<sub_pixel_precision) - 1;
+    int max_sub_pixel_precision_value = (1u<<sub_pixel_precision) - 1;
 
     // bounding box in raster space
     int minX = (functions::min(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
@@ -1457,10 +1458,14 @@ void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, numb
             bool should_sample= in_closure;
             auto opacity_sample = opacity;
             auto bary = vec4<l64>{w0, w1, w2, area};
-            if(perspective_correct) {
-                bary.x=l64(w0)*v0_z, bary.y=l64(w1)*v1_z, bary.z=l64(w2)*v2_z;
+            if(perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
+                bary.x= (l64(w0) * v0_w) >> w_bits, bary.y= (l64(w1) * v1_w) >> w_bits, bary.z= (l64(w2) * v2_w) >> w_bits;
                 bary.w= bary.x+bary.y+bary.z;
             }
+
+//            l64 z= ((v0_z*bary.x) +(v1_z*bary.y) +(v2_z*bary.z))/bary.w;
+//            bool inside= z && z<(1<<z_bits);
+//            if(!inside) continue;
 
             if(antialias && !in_closure) {
                 // any of the distances are negative, we are outside.

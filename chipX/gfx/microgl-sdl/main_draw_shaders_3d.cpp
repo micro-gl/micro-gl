@@ -14,7 +14,7 @@ using namespace microgl::shading;
 #define TEST_ITERATIONS 1
 #define W 640*1
 #define H 640*1
-
+#define TTT 1
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
@@ -44,13 +44,15 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     using math = microgl::math;
     using vertex_attribute= texture_shader_vertex_attributes<number>;
 
-    z+=0.4;
+//    z-=0.0004;
+    z-=0.425;
 
     // setup mvp matrix
     mat4 model = mat4::transform({ math::deg_to_rad(z/2), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
-                                 {0,0,0}, {100,100,100});
-    mat4 view = camera::lookAt({0, 0, 500}, {0,0, 0}, {0,1,0});
-    mat4 projection = camera::perspective(math::deg_to_rad(60), canvas->width(), canvas->height(), 1, 1000);
+                                 {0,0,0}, {10,10,10});
+    mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
+//    mat4 view = camera::angleAt({0, 0, 100}, 0, math::deg_to_rad(z),0);
+    mat4 projection = camera::perspective(math::deg_to_rad(60), canvas->width(), canvas->height(), 1, 500);
 //    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 100);
     mat4 mvp= projection*view*model;
 
@@ -67,7 +69,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
         v.uv= object.uvs[ix];
         vertex_buffer.push_back(v);
     }
-
+//std::cout << z<<std::endl;
     // draw
     canvas->drawTriangles<blendmode::Normal, porterduff::None, false, true>(
             shader,

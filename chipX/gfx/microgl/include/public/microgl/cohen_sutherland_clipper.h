@@ -34,7 +34,6 @@ namespace microgl {
             code out_code_0 = compute_out_code(x0, y0, left, top, right, bottom);
             code out_code_1 = compute_out_code(x1, y1, left, top, right, bottom);
 
-
             while (true) {
                 if (!(out_code_0 | out_code_1)) {
                     // bitwise OR is 0: both points inside window; trivially accept and exit loop

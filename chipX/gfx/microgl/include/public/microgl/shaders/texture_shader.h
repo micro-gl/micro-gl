@@ -49,6 +49,7 @@ namespace microgl {
                 color_t output;
                 Sampler::sampleUnit(*texture, input.uv.x, input.uv.y, microgl::precision::low, output);
                 return output;
+//                return {255,0,0};
             }
 
         };

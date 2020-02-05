@@ -31,17 +31,17 @@ namespace microgl {
             return vec4{this->x + a.x, this->y + a.y,
                         this->z + a.z, this->w + a.w};
         }
-        vec4 operator-(const vec4 & a) const {
-            return *this + (-a);
+        vec4 operator-(const vec4 & val) const {
+            return *this + (-val);
         }
 
-        number operator*(const vec4 & a) {
+        number operator*(const vec4 & a) const {
             return (this->x*a.x + this->y*a.y+this->z*a.z + this->w*a.w);
         }
 
-        vec4<number> operator*(const number & a) const {
-            return vec4<number>{this->x*number(a), this->y*number(a),
-                           this->z*number(a), this->w*number(a)};
+        vec4<number> operator*(const number & val) const {
+            return vec4<number>{this->x*val, this->y*val,
+                           this->z*val, this->w*val};
         }
 
         template<typename F>

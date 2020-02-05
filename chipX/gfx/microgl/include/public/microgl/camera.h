@@ -29,10 +29,10 @@ namespace microgl {
             result.y = number(height) - (((ndc.y + one)*number(height))/two);
             result.z = (ndc.z + one)/two;
             // z clamping
-            if(result.z<zero)
-                result.z = zero;
-            if(result.z>one)
-                result.z = one;
+//            if(result.z<zero)
+//                result.z = zero;
+//            if(result.z>one)
+//                result.z = one;
 
             return result;
         }

@@ -21,6 +21,7 @@
 #include <microgl/tesselation/ear_clipping_triangulation.h>
 #include <microgl/tesselation/fan_triangulation.h>
 #include <microgl/cohen_sutherland_clipper.h>
+#include <microgl/homo_triangle_clipper.h>
 
 using namespace microgl::triangles;
 using namespace microgl::polygons;
@@ -179,15 +180,6 @@ public:
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::None,
-            bool antialias=true, bool perspective_correct=false,
-            typename impl, typename vertex_attr, typename varying, typename number>
-    void drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
-                      vertex_attr v0, vertex_attr v1, vertex_attr v2,
-                      opacity_t opacity,
-                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
-
-    template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false,
             typename Sampler=sampler::NearestNeighbor,
@@ -197,6 +189,15 @@ public:
                       number v1_x, number v1_y, number u1, number v1,
                       number v2_x, number v2_y, number u2, number v2,
                       opacity_t opacity = 255,
+                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::None,
+            bool antialias=true, bool perspective_correct=false,
+            typename impl, typename vertex_attr, typename varying, typename number>
+    void drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
+                      vertex_attr v0, vertex_attr v1, vertex_attr v2,
+                      opacity_t opacity,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     // perspective correct 2d quadrilateral defined by 2d points
