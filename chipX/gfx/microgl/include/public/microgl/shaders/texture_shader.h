@@ -24,7 +24,7 @@ namespace microgl {
         };
 
         template<typename number>
-        struct texture_shader_vertex_attributes {
+        struct texture_shader_vertex_attribute {
             vec3<number> point;
             vec2<number> uv;
         };
@@ -32,14 +32,14 @@ namespace microgl {
         template<typename number, typename P, typename CODER, typename Sampler>
         class texture_shader : public shader_base<
                 texture_shader<number, P, CODER, Sampler>,
-                texture_shader_vertex_attributes<number>,
+                texture_shader_vertex_attribute<number>,
                 texture_shader_varying<number>, number> {
         public:
-            matrix_4x4<number> matrix= camera<number>::orthographic(0, 640, 0, 640, 1, 100);
+            matrix_4x4<number> matrix;
             Bitmap<P, CODER> *texture= nullptr;
 
             inline vec4<number>
-            vertex(const texture_shader_vertex_attributes<number> &attributes, texture_shader_varying<number> &output) {
+            vertex(const texture_shader_vertex_attribute<number> &attributes, texture_shader_varying<number> &output) {
                 output.uv = attributes.uv;
                 return matrix * vec4<number>{attributes.point};
             }

@@ -441,6 +441,7 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                                           const boundary_info * boundary_buffer,
                                           const index size,
                                           const enum indices type,
+                                          const triangles::face_culling & culling,
                                           const opacity_t opacity) {
 #define IND(a) indices[(a)]
 #define to_fixed microgl::math::to_fixed
@@ -452,7 +453,7 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                         vertex_buffer[IND(ix + 0)],
                         vertex_buffer[IND(ix + 1)],
                         vertex_buffer[IND(ix + 2)],
-                        opacity);
+                        opacity, culling);
             }
             break;
         case indices::TRIANGLES_WITH_BOUNDARY:
@@ -468,7 +469,7 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                         vertex_buffer[IND(ix + 0)],
                         vertex_buffer[IND(ix + 1)],
                         vertex_buffer[IND(ix + 2)],
-                        opacity, aa_first_edge, aa_second_edge, aa_third_edge);
+                        opacity, culling, aa_first_edge, aa_second_edge, aa_third_edge);
             }
             break;
         }
@@ -479,7 +480,7 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                         vertex_buffer[IND(0)],
                         vertex_buffer[IND(ix)],
                         vertex_buffer[IND(ix + 1)],
-                        opacity);
+                        opacity, culling);
             }
             break;
         case indices::TRIANGLES_FAN_WITH_BOUNDARY:
@@ -495,7 +496,7 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                         vertex_buffer[IND(0)],
                         vertex_buffer[IND(ix)],
                         vertex_buffer[IND(ix + 1)],
-                        opacity, aa_first_edge, aa_second_edge, aa_third_edge);
+                        opacity, culling, aa_first_edge, aa_second_edge, aa_third_edge);
             }
             break;
         }
@@ -512,7 +513,7 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                         vertex_buffer[IND(first_index)],
                         vertex_buffer[IND(second_index)],
                         vertex_buffer[IND(third_index)],
-                        opacity);
+                        opacity, culling);
                 even = !even;
             }
             break;
@@ -534,7 +535,7 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                         vertex_buffer[IND(first_index)],
                         vertex_buffer[IND(second_index)],
                         vertex_buffer[IND(third_index)],
-                        opacity, aa_first_edge, aa_second_edge, aa_third_edge);
+                        opacity, culling, aa_first_edge, aa_second_edge, aa_third_edge);
                 even = !even;
             }
             break;
@@ -1307,55 +1308,97 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
 }
 
-// triangles with 3D Shaders - programmable pipeline
-#include <microgl/camera.h>
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct,
         typename impl, typename vertex_attr, typename varying, typename number>
 void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
                                     vertex_attr v0, vertex_attr v1, vertex_attr v2,
-                                    const opacity_t opacity,
+                                    const opacity_t opacity, const triangles::face_culling & culling,
                                     bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    using l64= long long;
-    const bits sub_pixel_precision = 4;
-    // this is the programmable 3d pipeline
-    #define f microgl::math::to_fixed
+#define f microgl::math::to_fixed
+    // this and drawTriangle_shader_homo_internal is the programmable 3d pipeline
     // compute varying and positions per vertex for interpolation
-    varying varying_v0, varying_v1, varying_v2, interpolated_varying;
+    varying varying_v0, varying_v1, varying_v2;
+    varying varying_v0_clip, varying_v1_clip, varying_v2_clip;
     auto v0_homo_space = shader.vertex(v0, varying_v0);
     auto v1_homo_space = shader.vertex(v1, varying_v1);
     auto v2_homo_space = shader.vertex(v2, varying_v2);
-    //if(perspective_correct) {
-    //        varying_v0.interpolate(varying_v0, varying_v0, varying_v0, vec4<long long>{1,0,0,v0_homo_space.w});
-    //        varying_v1.interpolate(varying_v1, varying_v1, varying_v1, vec4<long long>{0,1,0,v1_homo_space.w});
-    //        varying_v2.interpolate(varying_v2, varying_v2, varying_v2, vec4<long long>{0,0,1,v2_homo_space.w});
-    //}
-    // here goes clipping on w cube -> clip space
-    // todo:: clip at least on z plane, what about z clamping
-//    using shc=
-    // divide by w -> NDC space
+    // compute clipping in homogeneous 4D space
+    using clipper= microgl::clipping::homo_triangle_clipper<number>;
+    typename clipper::vertices_list result_clipping;
+    const bool outside= !clipper::compute(v0_homo_space, v1_homo_space, v2_homo_space, result_clipping);
+    if(outside) return;
+    const auto triangles= result_clipping.size()-2;
+    for (unsigned ix=0; ix < triangles; ++ix) {
+        const auto & p0= result_clipping[0].point;
+        const auto & p1= result_clipping[ix+1].point;
+        const auto & p2= result_clipping[ix+2].point;
+        const auto & bary_0= result_clipping[0].bary;
+        const auto & bary_1= result_clipping[ix+1].bary;
+        const auto & bary_2= result_clipping[ix+2].bary;
+        // convert bary to 16 bits fixed points
+        constexpr precision p = 16;
+        const vec4<long long> bary_0_fixed= {f(bary_0.x, p), f(bary_0.y, p), f(bary_0.z, p), f(bary_0.w, p)};
+        const vec4<long long> bary_1_fixed= {f(bary_1.x, p), f(bary_1.y, p), f(bary_1.z, p), f(bary_1.w, p)};
+        const vec4<long long> bary_2_fixed= {f(bary_2.x, p), f(bary_2.y, p), f(bary_2.z, p), f(bary_2.w, p)};
+        varying_v0_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_0_fixed);
+        varying_v1_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_1_fixed);
+        varying_v2_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_2_fixed);
+
+        drawTriangle_shader_homo_internal<BlendMode, PorterDuff, antialias, perspective_correct, impl, vertex_attr, varying, number>(
+                shader,
+                p0, p1, p2,
+                varying_v0_clip, varying_v1_clip, varying_v2_clip,
+                opacity, culling, aa_first_edge, aa_second_edge, aa_third_edge);
+    }
+#undef f
+}
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct,
+        typename impl, typename vertex_attr, typename varying, typename number>
+void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
+                                                         const vec4<number> &p0,  const vec4<number> &p1,  const vec4<number> &p2,
+                                                         varying &varying_v0, varying &varying_v1, varying &varying_v2,
+                                                         opacity_t opacity, const triangles::face_culling & culling,
+                                                         bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
+    /*
+     * given triangle coords in a homogeneous coords, a shader, and corresponding interpolated varying
+     * vertex attributes. we pass varying because somewhere in the pipeline we might have clipped things
+     * in homogeneous space and therefore had to update/correct the vertex attributes.
+     */
+    const bits sub_pixel_precision = 4;
+#define f microgl::math::to_fixed
+    varying interpolated_varying;
+    // perspective divide by w -> NDC space
     // todo: bail out if w==0
-    auto v0_ndc = v0_homo_space/v0_homo_space.w;
-    auto v1_ndc = v1_homo_space/v1_homo_space.w;
-    auto v2_ndc = v2_homo_space/v2_homo_space.w;
-    // viewport transform -> raster space
-    auto v0_viewport = microgl::camera<number>::viewport(v0_ndc, width(), height());
-    auto v1_viewport = microgl::camera<number>::viewport(v1_ndc, width(), height());
-    auto v2_viewport = microgl::camera<number>::viewport(v2_ndc, width(), height());
+    const auto v0_ndc = p0/p0.w;
+    const auto v1_ndc = p1/p1.w;
+    const auto v2_ndc = p2/p2.w;
+    // viewport transform: NDC space -> raster space
+    const number w= width();
+    const number h= height();
+    number zero=number(0), one = number(1), two=number(2);
+    vec3<number> v0_viewport = {((v0_ndc.x + one)*w)/two, h - ((v0_ndc.y + one)*h)/two, (v0_ndc.z + one)/two};
+    vec3<number> v1_viewport = {((v1_ndc.x + one)*w)/two, h - ((v1_ndc.y + one)*h)/two, (v1_ndc.z + one)/two};
+    vec3<number> v2_viewport = {((v2_ndc.x + one)*w)/two, h - ((v2_ndc.y + one)*h)/two, (v2_ndc.z + one)/two};
+
     // collect values for interpolation as fixed point integers
     int v0_x= f(v0_viewport.x, sub_pixel_precision), v0_y= f(v0_viewport.y, sub_pixel_precision);
     int v1_x= f(v1_viewport.x, sub_pixel_precision), v1_y= f(v1_viewport.y, sub_pixel_precision);
     int v2_x= f(v2_viewport.x, sub_pixel_precision), v2_y= f(v2_viewport.y, sub_pixel_precision);
-    const int w_bits= 18; const l64 one_w= -(l64(1) << (w_bits << 1)); // negate z because camera is looking negative z axis
-    l64 v0_w= one_w / f(v0_homo_space.w, w_bits), v1_w= one_w / f(v1_homo_space.w, w_bits), v2_w= one_w / f(v2_homo_space.w, w_bits);
-    const int z_bits= 15; const l64 one_z= -(l64(1) << (z_bits << 1)); // negate z because camera is looking negative z axis
-    l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
+    const int w_bits= 18; const l64 one_w= (l64(1) << (w_bits << 1)); // negate z because camera is looking negative z axis
+    l64 v0_w= one_w / f(p0.w, w_bits), v1_w= one_w / f(p1.w, w_bits), v2_w= one_w / f(p2.w, w_bits);
+//    const int z_bits= 15; const l64 one_z= -(l64(1) << (z_bits << 1)); // negate z because camera is looking negative z axis
+//    l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
 
     l64 area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
-    // discard degenerate triangle and re-orient negative triangles if needed
-    if(area==0) return;
-    if(area<0) { // convert CCW to CW triangle
-        return;
+    // infer back-face culling
+    const bool ccw = area<0;
+    if(area==0) return; // discard degenerate triangles
+    if(ccw && culling==triangles::face_culling::ccw) return;
+    if(!ccw && culling==triangles::face_culling::cw) return;
+    if(ccw) { // convert CCW to CW triangle
         functions::swap(v1_x, v2_x);
         functions::swap(v1_y, v2_y);
         area = -area;
@@ -1367,16 +1410,18 @@ void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, numb
     functions::swap(varying_v0, varying_v1);
     functions::swap(v0_w, v1_w);
 
-    #undef f
-
-    int max_sub_pixel_precision_value = (1u<<sub_pixel_precision) - 1;
+#undef f
 
     // bounding box in raster space
-    int minX = (functions::min(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int minY = (functions::min(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int maxX = (functions::max(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int maxY = (functions::max(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-
+    int max_sub_pixel_precision_value = (1u<<sub_pixel_precision) - 1;
+    int minX = (functions::min(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value)>>sub_pixel_precision;
+    int minY = (functions::min(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value)>>sub_pixel_precision;
+    int maxX = (functions::max(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value)>>sub_pixel_precision;
+    int maxY = (functions::max(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value)>>sub_pixel_precision;
+    minX = functions::max(0, minX); minY = functions::max(0, minY);
+    maxX = functions::min(width()-1, maxX); maxY = functions::min(height()-1, maxY);
+    bool outside= maxX<0 || maxY<0 || minX>(width()-1) || minY>(height()-1);
+    if(outside) return; // cull in 2d raster window
     // anti-alias SDF configurations
     bits bits_distance = 0;
     bits bits_distance_complement = 8;
@@ -1396,21 +1441,18 @@ void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, numb
 
     // fill rules configurations
     triangles::top_left_t top_left =
-        triangles::classifyTopLeftEdges(false,
-                                        v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
+            triangles::classifyTopLeftEdges(false,
+                                            v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
     int bias_w0 = top_left.first  ? 0 : -1;
     int bias_w1 = top_left.second ? 0 : -1;
     int bias_w2 = top_left.third  ? 0 : -1;
-    // clipping
-    minX = functions::max(0, minX); minY = functions::max(0, minY);
-    maxX = functions::min(width()-1, maxX); maxY = functions::min(height()-1, maxY);
     // Barycentric coordinates at minX/minY corner
-    vec2_32i p = { minX, minY };
-    vec2_32i p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
+    vec2<int> p = { minX, minY };
+    vec2<int> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
     // this can produce a 2P bits number if the points form a a perpendicular triangle
-    int area_v1_v2_p = functions::orient2d({v1_x, v1_y}, {v2_x, v2_y}, p_fixed, sub_pixel_precision) + bias_w1,
-    area_v2_v0_p = functions::orient2d({v2_x, v2_y}, {v0_x, v0_y}, p_fixed, sub_pixel_precision) + bias_w2,
-    area_v0_v1_p = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, p_fixed, sub_pixel_precision) + bias_w0;
+    const int area_v1_v2_p = functions::orient2d({v1_x, v1_y}, {v2_x, v2_y}, p_fixed, sub_pixel_precision) + bias_w1;
+    const int area_v2_v0_p = functions::orient2d({v2_x, v2_y}, {v0_x, v0_y}, p_fixed, sub_pixel_precision) + bias_w2;
+    const int area_v0_v1_p = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, p_fixed, sub_pixel_precision) + bias_w0;
 
     // Triangle setup, this needs at least (P+1) bits, since the delta is always <= length
     int64_t A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
@@ -1459,8 +1501,9 @@ void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, numb
             auto opacity_sample = opacity;
             auto bary = vec4<l64>{w0, w1, w2, area};
             if(perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
-                bary.x= (l64(w0) * v0_w) >> w_bits, bary.y= (l64(w1) * v1_w) >> w_bits, bary.z= (l64(w2) * v2_w) >> w_bits;
-                bary.w= bary.x+bary.y+bary.z;
+                bary.x= (l64(w0)*v0_w)>>w_bits, bary.y= (l64(w1)*v1_w)>>w_bits, bary.z= (l64(w2)*v2_w)>>w_bits;
+                bary.w=bary.x+bary.y+bary.z;
+                if(bary.w==0) bary.w=1;
             }
 
 //            l64 z= ((v0_z*bary.x) +(v1_z*bary.y) +(v2_z*bary.z))/bary.w;
@@ -1485,7 +1528,7 @@ void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, numb
                 should_sample= perform_aa && delta>=0;
                 if(should_sample) {
                     opacity_t blend = functions::clamp<int64_t>((((int64_t(delta) << bits_distance_complement))>>PREC_DIST),
-                                                          0, 255);
+                                                                0, 255);
                     if (opacity < _max_alpha_value)
                         blend = (blend * opacity) >> 8;
                     opacity_sample= blend;
@@ -1498,6 +1541,8 @@ void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, numb
             }
 
             if(should_sample) {
+                // cast to user's number types vec4<number> casted_bary= bary;, I decided to stick with l64
+                // because other wise this would have wasted bits for Q types although it would have been more elegant.
                 interpolated_varying.interpolate(
                         varying_v0,
                         varying_v1,
@@ -1530,6 +1575,7 @@ void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, numb
 
         index += _width;
     }
+
 }
 
 template<typename P, typename CODER>
@@ -1833,8 +1879,8 @@ template<typename number>
 void Canvas<P, CODER>::drawLine(const color_f_t &color,
                                 number x0, number y0,
                                 number x1, number y1) {
-    using csc = cohen_sutherland_clipper<number>;
-    auto clip =  csc::compute(x0, y0, x1, y1, number(0), number(0),
+    using clipper = microgl::clipping::cohen_sutherland_clipper<number>;
+    auto clip =  clipper::compute(x0, y0, x1, y1, number(0), number(0),
             width(), height());
     if(!clip.inside) return;
 

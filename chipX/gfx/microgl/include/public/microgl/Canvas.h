@@ -17,7 +17,6 @@
 #include <microgl/masks.h>
 #include <microgl/math.h>
 #include <microgl/tesselation/curve_divider.h>
-#include <microgl/dynamic_array.h>
 #include <microgl/tesselation/ear_clipping_triangulation.h>
 #include <microgl/tesselation/fan_triangulation.h>
 #include <microgl/cohen_sutherland_clipper.h>
@@ -33,6 +32,7 @@ private:
     using index = unsigned int;
     using precision = unsigned char;
     using opacity_t = unsigned char;
+    using l64= long long;
 
     int _width = 0, _height = 0;
     Bitmap<P, CODER> * _bitmap_canvas = nullptr;
@@ -121,6 +121,7 @@ public:
                        const boundary_info * boundary_buffer,
                        index size,
                        enum indices type,
+                       const triangles::face_culling & culling= triangles::face_culling::none,
                        opacity_t opacity=255);
 
     template<typename BlendMode=blendmode::Normal,
@@ -197,9 +198,21 @@ public:
             typename impl, typename vertex_attr, typename varying, typename number>
     void drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
                       vertex_attr v0, vertex_attr v1, vertex_attr v2,
-                      opacity_t opacity,
+                      opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
+private:
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::None,
+            bool antialias=true, bool perspective_correct=false,
+            typename impl, typename vertex_attr, typename varying, typename number>
+    void drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
+                                           const vec4<number> &p0, const vec4<number> &p1, const vec4<number> &p2,
+                                           varying &varying_v0, varying &varying_v1, varying &varying_v2,
+                                           opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
+                                           bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
+
+public:
     // perspective correct 2d quadrilateral defined by 2d points
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,

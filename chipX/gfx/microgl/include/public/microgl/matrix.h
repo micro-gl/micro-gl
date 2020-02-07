@@ -135,7 +135,6 @@ namespace microgl {
         };
 
         bool operator==(const_matrix_ref mat) const {
-            bool equals = true;
             for(index ix = 0; ix < size(); ix++) {
                 if(_data[ix]!=mat[ix])
                     return false;

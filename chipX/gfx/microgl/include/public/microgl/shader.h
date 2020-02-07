@@ -15,11 +15,18 @@ namespace microgl {
             using vertex3= vec3<number>;
             using vertex4= vec4<number>;
             using gl_position= vec4<number>;
-            vertex4 _bary;
+            using gl_FragCoord= vec4<number>;
+            gl_FragCoord _frag_coord;
         public:
-            const vertex4 &barycentric() {
-                return _bary;
-            }
+//            const vertex4 &barycentric() {
+//                return _bary;
+//            }
+//
+//            const gl_FragCoord & fragCoord() {
+//                return _frag_coord;
+//            }
+            gl_FragCoord fragCoord;
+            vertex4 _bary;
 
             inline gl_position vertex(const vertex_attr &attributes, varying &output) {
                 return this->derived().vertex(attributes, output);

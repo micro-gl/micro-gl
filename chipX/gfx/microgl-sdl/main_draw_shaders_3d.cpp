@@ -11,7 +11,7 @@
 #include "data/model_3d_cube.h"
 
 using namespace microgl::shading;
-#define TEST_ITERATIONS 1
+#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 640*1
 #define TTT 1
@@ -42,16 +42,16 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     using camera = microgl::camera<number>;
     using mat4 = matrix_4x4<number>;
     using math = microgl::math;
-    using vertex_attribute= texture_shader_vertex_attributes<number>;
+    using vertex_attribute= texture_shader_vertex_attribute<number>;
 
 //    z-=0.0004;
-    z-=0.425;
+    z-=0.0425;
 
     // setup mvp matrix
     mat4 model = mat4::transform({ math::deg_to_rad(z/2), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
                                  {0,0,0}, {10,10,10});
-    mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
-//    mat4 view = camera::angleAt({0, 0, 100}, 0, math::deg_to_rad(z),0);
+//    mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
+    mat4 view = camera::angleAt({0, 0, 50}, 0, math::deg_to_rad(-z),0);
     mat4 projection = camera::perspective(math::deg_to_rad(60), canvas->width(), canvas->height(), 1, 500);
 //    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 100);
     mat4 mvp= projection*view*model;
@@ -77,7 +77,8 @@ void test_shader_texture_3d(const model_3d<number> & object) {
             object.indices.data(),
             nullptr,
             object.indices.size(),
-            object.type);
+            object.type,
+            triangles::face_culling::ccw);
 }
 
 void render() {

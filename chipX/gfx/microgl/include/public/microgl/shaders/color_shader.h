@@ -2,6 +2,7 @@
 #pragma ide diagnostic ignored "HidingNonVirtualFunction"
 
 #include <microgl/shader.h>
+#include <microgl/matrix_4x4.h>
 
 namespace microgl {
     namespace shading {

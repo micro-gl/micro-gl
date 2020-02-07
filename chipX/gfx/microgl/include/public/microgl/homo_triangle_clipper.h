@@ -32,12 +32,11 @@ namespace microgl {
                     return _vertices[index];
                 }
                 typed_vertices_list & operator=(typed_vertices_list && list) noexcept {
+                    clear();
                     const auto size_= list.size();
-                    for (int ix = 0; ix < size_; ++ix) {
-                        clear();
-                        push_back(list.vertices[ix]);
-                        list.clear();
-                    }
+                    for (int ix = 0; ix < size_; ++ix)
+                        push_back(list[ix]);
+                    list.clear();
                     return *this;
                 }
                 void clear() {
@@ -51,7 +50,7 @@ namespace microgl {
             using vertices_list= typed_vertices_list<9>;
 
             static
-            auto compute(vertex4_const_ref $v0, vertex4_const_ref $v1, vertex4_const_ref $v2) -> void {
+            bool compute(vertex4_const_ref $v0, vertex4_const_ref $v1, vertex4_const_ref $v2, vertices_list &out_list) {
                 super_vertex v0, v1, v2;
                 // convert input vertices into our own representation
                 v0.point= $v0; v0.bary= {1,0,0,1};
@@ -77,14 +76,14 @@ namespace microgl {
                     vertex4{ 0,  0, -1, 1}  // far plane,       w-z >= 0
                 };
 
-                vertices_list in_list, out_list;
+                vertices_list in_list;
 
                 /*
                 iterate through the clipping planes. for each clip plane, inList is used as input and outList as output. the two are then
                 swapped before considering the next plane.
                 because the lists' contents are swapped	at the beginning of the main loop, the initial indices are placed in outList.
                 */
-
+                in_list.clear(); out_list.clear();
                 out_list.push_back(v0);
                 out_list.push_back(v1);
                 out_list.push_back(v2);
@@ -161,10 +160,11 @@ namespace microgl {
                 if (out_list.size() < 3) //discard triangle
                     out_list.clear();
 
+                return out_list.size()!=0;
             }
 
+        private:
             inline static number intersectEdgePlane(const number p1DotPlane, number p2DotPlane) {
-
                 /*
                 Precondition : sign(p1DotPlane) != sign(p2DotPlane)
                 Following what have been said about clipping planes in the definition of SHClipper::clipTriangleTask,
@@ -188,9 +188,11 @@ namespace microgl {
                 super_vertex result;
                 result.point= v0.point + (v1.point-v0.point)*t;
                 result.bary= v0.bary + (v1.bary-v0.bary)*t;
+                return result;
             }
 
         };
 
     }
+
 }

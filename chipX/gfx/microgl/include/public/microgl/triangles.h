@@ -30,6 +30,10 @@ namespace microgl {
             cw, ccw
         };
 
+        enum class face_culling {
+            cw, ccw, none
+        };
+
         struct top_left_t {
             bool first = false, second = false, third = false;
         };
