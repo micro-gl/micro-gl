@@ -113,7 +113,7 @@ public:
                        opacity_t opacity);
 
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias, bool perspective_correct,
+            bool antialias, bool perspective_correct, bool depth_buffer_flag=false,
             typename impl, typename vertex_attr, typename varying, typename number>
     void drawTriangles(shader_base<impl, vertex_attr, varying, number> &shader,
                        const vertex_attr *vertex_buffer,
@@ -122,6 +122,7 @@ public:
                        index size,
                        enum indices type,
                        const triangles::face_culling & culling= triangles::face_culling::none,
+                        long long * depth_buffer=nullptr,
                        opacity_t opacity=255);
 
     template<typename BlendMode=blendmode::Normal,
@@ -194,22 +195,24 @@ public:
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::None,
-            bool antialias=true, bool perspective_correct=false,
+            bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
             typename impl, typename vertex_attr, typename varying, typename number>
     void drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
                       vertex_attr v0, vertex_attr v1, vertex_attr v2,
                       opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
+                       long long * depth_buffer=nullptr,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
 private:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::None,
-            bool antialias=true, bool perspective_correct=false,
+            bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
             typename impl, typename vertex_attr, typename varying, typename number>
     void drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
                                            const vec4<number> &p0, const vec4<number> &p1, const vec4<number> &p2,
                                            varying &varying_v0, varying &varying_v1, varying &varying_v2,
                                            opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
+                                            long long * depth_buffer=nullptr,
                                            bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
 public:

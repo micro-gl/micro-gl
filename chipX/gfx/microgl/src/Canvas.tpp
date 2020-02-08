@@ -433,27 +433,28 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
 }
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct,
+template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename impl, typename vertex_attr, typename varying, typename number>
 void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, number> &shader,
-                                          const vertex_attr *vertex_buffer,
-                                          const index *indices,
-                                          const boundary_info * boundary_buffer,
-                                          const index size,
-                                          const enum indices type,
-                                          const triangles::face_culling & culling,
-                                          const opacity_t opacity) {
+                                      const vertex_attr *vertex_buffer,
+                                      const index *indices,
+                                      const boundary_info * boundary_buffer,
+                                      const index size,
+                                      const enum indices type,
+                                      const triangles::face_culling & culling,
+                                      long long * depth_buffer,
+                                     const opacity_t opacity) {
 #define IND(a) indices[(a)]
 #define to_fixed microgl::math::to_fixed
     switch (type) {
         case indices::TRIANGLES:
             for (index ix = 0; ix < size; ix+=3) {
-                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct>(
+                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag>(
                         shader,
                         vertex_buffer[IND(ix + 0)],
                         vertex_buffer[IND(ix + 1)],
                         vertex_buffer[IND(ix + 2)],
-                        opacity, culling);
+                        opacity, culling, depth_buffer);
             }
             break;
         case indices::TRIANGLES_WITH_BOUNDARY:
@@ -464,23 +465,23 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                 bool aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
                 bool aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
                 bool aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
-                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct>(
+                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag>(
                         shader,
                         vertex_buffer[IND(ix + 0)],
                         vertex_buffer[IND(ix + 1)],
                         vertex_buffer[IND(ix + 2)],
-                        opacity, culling, aa_first_edge, aa_second_edge, aa_third_edge);
+                        opacity, culling, depth_buffer, aa_first_edge, aa_second_edge, aa_third_edge);
             }
             break;
         }
         case indices::TRIANGLES_FAN:
             for (index ix = 1; ix < size-1; ++ix) {
-                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct>(
+                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag>(
                         shader,
                         vertex_buffer[IND(0)],
                         vertex_buffer[IND(ix)],
                         vertex_buffer[IND(ix + 1)],
-                        opacity, culling);
+                        opacity, culling, depth_buffer);
             }
             break;
         case indices::TRIANGLES_FAN_WITH_BOUNDARY:
@@ -491,12 +492,12 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                 const bool aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
                 const bool aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
                 const bool aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
-                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct>(
+                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag>(
                         shader,
                         vertex_buffer[IND(0)],
                         vertex_buffer[IND(ix)],
                         vertex_buffer[IND(ix + 1)],
-                        opacity, culling, aa_first_edge, aa_second_edge, aa_third_edge);
+                        opacity, culling, depth_buffer, aa_first_edge, aa_second_edge, aa_third_edge);
             }
             break;
         }
@@ -508,12 +509,12 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                 index first_index = even ?  IND(ix + 0) : IND(ix + 2);
                 index second_index = even ? IND(ix + 1) : IND(ix + 1);
                 index third_index = even ?  IND(ix + 2) : IND(ix + 0);
-                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct>(
+                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag>(
                         shader,
                         vertex_buffer[IND(first_index)],
                         vertex_buffer[IND(second_index)],
                         vertex_buffer[IND(third_index)],
-                        opacity, culling);
+                        opacity, culling, depth_buffer);
                 even = !even;
             }
             break;
@@ -530,12 +531,12 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                 index first_index = even ?  IND(ix + 0) : IND(ix + 2);
                 index second_index = IND(ix + 1);
                 index third_index = even ?  IND(ix + 2) : IND(ix + 0);
-                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct>(
+                drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag>(
                         shader,
                         vertex_buffer[IND(first_index)],
                         vertex_buffer[IND(second_index)],
                         vertex_buffer[IND(third_index)],
-                        opacity, culling, aa_first_edge, aa_second_edge, aa_third_edge);
+                        opacity, culling, depth_buffer, aa_first_edge, aa_second_edge, aa_third_edge);
                 even = !even;
             }
             break;
@@ -1309,11 +1310,12 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 }
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct,
+template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename impl, typename vertex_attr, typename varying, typename number>
 void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
                                     vertex_attr v0, vertex_attr v1, vertex_attr v2,
                                     const opacity_t opacity, const triangles::face_culling & culling,
+                                     long long * depth_buffer,
                                     bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
 #define f microgl::math::to_fixed
     // this and drawTriangle_shader_homo_internal is the programmable 3d pipeline
@@ -1345,22 +1347,23 @@ void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, numb
         varying_v1_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_1_fixed);
         varying_v2_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_2_fixed);
 
-        drawTriangle_shader_homo_internal<BlendMode, PorterDuff, antialias, perspective_correct, impl, vertex_attr, varying, number>(
+        drawTriangle_shader_homo_internal<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag, impl, vertex_attr, varying, number>(
                 shader,
                 p0, p1, p2,
                 varying_v0_clip, varying_v1_clip, varying_v2_clip,
-                opacity, culling, aa_first_edge, aa_second_edge, aa_third_edge);
+                opacity, culling, depth_buffer, aa_first_edge, aa_second_edge, aa_third_edge);
     }
 #undef f
 }
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct,
+template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename impl, typename vertex_attr, typename varying, typename number>
 void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
                                                          const vec4<number> &p0,  const vec4<number> &p1,  const vec4<number> &p2,
                                                          varying &varying_v0, varying &varying_v1, varying &varying_v2,
                                                          opacity_t opacity, const triangles::face_culling & culling,
+                                                          long long * depth_buffer,
                                                          bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
     /*
      * given triangle coords in a homogeneous coords, a shader, and corresponding interpolated varying
@@ -1389,8 +1392,8 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
     int v2_x= f(v2_viewport.x, sub_pixel_precision), v2_y= f(v2_viewport.y, sub_pixel_precision);
     const int w_bits= 18; const l64 one_w= (l64(1) << (w_bits << 1)); // negate z because camera is looking negative z axis
     l64 v0_w= one_w / f(p0.w, w_bits), v1_w= one_w / f(p1.w, w_bits), v2_w= one_w / f(p2.w, w_bits);
-//    const int z_bits= 15; const l64 one_z= -(l64(1) << (z_bits << 1)); // negate z because camera is looking negative z axis
-//    l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
+    const int z_bits= 24; const l64 one_z= (l64(1) << (z_bits)); // negate z because camera is looking negative z axis
+    l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
 
     l64 area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
     // infer back-face culling
@@ -1405,10 +1408,12 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
     } else { // flip vertically
         functions::swap(varying_v1, varying_v2);
         functions::swap(v1_w, v2_w);
+        functions::swap(v1_z, v2_z);
     }
     // rotate to match edges
     functions::swap(varying_v0, varying_v1);
     functions::swap(v0_w, v1_w);
+    functions::swap(v0_z, v1_z);
 
 #undef f
 
@@ -1500,15 +1505,12 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
             bool should_sample= in_closure;
             auto opacity_sample = opacity;
             auto bary = vec4<l64>{w0, w1, w2, area};
-            if(perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
+
+            if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
                 bary.x= (l64(w0)*v0_w)>>w_bits, bary.y= (l64(w1)*v1_w)>>w_bits, bary.z= (l64(w2)*v2_w)>>w_bits;
                 bary.w=bary.x+bary.y+bary.z;
                 if(bary.w==0) bary.w=1;
             }
-
-//            l64 z= ((v0_z*bary.x) +(v1_z*bary.y) +(v2_z*bary.z))/bary.w;
-//            bool inside= z && z<(1<<z_bits);
-//            if(!inside) continue;
 
             if(antialias && !in_closure) {
                 // any of the distances are negative, we are outside.
@@ -1519,10 +1521,8 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
                 bool perform_aa = aa_all_edges;
                 // test edges
                 if(!perform_aa) {
-                    if(distance==w0_h && aa_first_edge)
-                        perform_aa = true;
-                    else if(distance==w1_h && aa_second_edge)
-                        perform_aa = true;
+                    if(distance==w0_h && aa_first_edge) perform_aa = true;
+                    else if(distance==w1_h && aa_second_edge) perform_aa = true;
                     else perform_aa = distance == w2_h && aa_third_edge;
                 }
                 should_sample= perform_aa && delta>=0;
@@ -1532,12 +1532,26 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
                     if (opacity < _max_alpha_value)
                         blend = (blend * opacity) >> 8;
                     opacity_sample= blend;
+
+                    if(perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
+                        bary.x= (l64(w0)*v0_w)>>w_bits, bary.y= (l64(w1)*v1_w)>>w_bits, bary.z= (l64(w2)*v2_w)>>w_bits;
+                        bary.w=bary.x+bary.y+bary.z;
+                        if(bary.w==0) bary.w=1;
+                    }
                     // rewrite barycentric coords for AA so it sticks to the edges, seems to work
                     bary.x= functions::clamp<long long>(bary.x, 0, bary.w);
                     bary.y= functions::clamp<long long>(bary.y, 0, bary.w);
                     bary.z= functions::clamp<long long>(bary.z, 0, bary.w);
                     bary.w= bary.x+bary.y+bary.z;
                 }
+            }
+
+            if(depth_buffer_flag && should_sample) {
+//                l64 z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
+                l64 z= ((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/area;
+//                z_tag= functions::clamp<l64>(z_tag, 0, l64(1)<<44);
+                if(z<0 || z>depth_buffer[index + p.x]) should_sample=false;
+                else depth_buffer[index + p.x]=z;
             }
 
             if(should_sample) {
