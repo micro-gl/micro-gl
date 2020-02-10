@@ -19,6 +19,7 @@
 #include <microgl/tesselation/curve_divider.h>
 #include <microgl/tesselation/ear_clipping_triangulation.h>
 #include <microgl/tesselation/fan_triangulation.h>
+#include <microgl/tesselation/bezier_patch_tesselator.h>
 #include <microgl/cohen_sutherland_clipper.h>
 #include <microgl/homo_triangle_clipper.h>
 
@@ -286,6 +287,16 @@ public:
                   int u1, int v1,
                   precision sub_pixel_precision, precision uv_precision,
                   opacity_t opacity = 255);
+
+    template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename Sampler, bool antialias=false, typename number,
+            typename P2, typename CODER2>
+    void drawBezierPatch(const Bitmap<P2, CODER2> & bmp,
+                         const vec3<number> *mesh,
+                         unsigned U, unsigned V,
+                         unsigned uSamples=20, unsigned vSamples=20,
+                         opacity_t opacity=255);
+
     // polygons
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,

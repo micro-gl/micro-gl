@@ -27,19 +27,19 @@ model_3d<number> cube_3d =
             // bottom wall
             0,1,2,
             2,3,0,
-//            // top wall
+            // top wall
             4,5,6,
             6,7,4,
-//            // far wall
+            // far wall
             8,9,10,
             10,11,8,
-//            // near wall
+            // near wall
             12,13,14,
             14,15,12,
-//            // left wall
+            // left wall
             16,17,18,
             18,19,16,
-//            // right wall
+            // right wall
             20,21,22,
             22,23,20
 

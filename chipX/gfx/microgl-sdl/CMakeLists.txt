@@ -34,7 +34,7 @@ set(SOURCES
 #        main_draw_masks.cpp
 #        main_draw_shaders_2d.cpp
 #        main_draw_shaders_3d.cpp
-        main_draw_z_buffer.cpp
+#        main_draw_z_buffer.cpp
 #        main_canvas_draw_polygon.cpp
 #        main_path_tessellation.cpp
 #        main_arc_divider.cpp
@@ -46,6 +46,7 @@ set(SOURCES
 #        main_aa_bug.cpp
 #        main_aa_bug_2.cpp
 #        main_bentley_ottmann.cpp
+        main_tess_bezier_patch.cpp
 #        main_complex_to_simple_polygon.cpp
 #        main_complex_to_simple_comps_tree.cpp
 #         main_ear_clipping.cpp

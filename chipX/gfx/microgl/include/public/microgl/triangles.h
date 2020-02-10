@@ -46,9 +46,9 @@ namespace microgl {
             bool res;
 
             if (CCW)
-                res = (p1y - p0y) > 0 || (p1y == p0y && (p1x - p0x) <= 0);
+                res = (p1y>p0y) || (p1y==p0y && (p1x<=p0x));
             else
-                res = (p0y - p1y) > 0 || (p1y == p0y && (p0x - p1x) <= 0);
+                res = (p0y>p1y) || (p1y==p0y && (p0x<=p1x));
 
             return res;
         }

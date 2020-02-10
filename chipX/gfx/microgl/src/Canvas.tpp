@@ -627,8 +627,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
             {v1_x, v1_y}, {v2_x, v2_y},
             sub_pixel_precision);
     // discard degenerate triangle
-    if(sign==0)
-        return;
+    if(sign==0) return;
     // convert CCW to CW triangle
     if(sign<0) {
         functions::swap(v1_x, v2_x);
@@ -1025,14 +1024,23 @@ template<typename BlendMode, typename PorterDuff,
         typename P2, typename CODER2>
 void
 Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
-                               const int v0_x, const int v0_y, int u0, int v0, int q0,
-                               const int v1_x, const int v1_y, int u1, int v1, int q1,
-                               const int v2_x, const int v2_y, int u2, int v2, int q2,
+                               int v0_x, int v0_y, int u0, int v0, int q0,
+                               int v1_x, int v1_y, int u1, int v1, int q1,
+                               int v2_x, int v2_y, int u2, int v2, int q2,
                                const opacity_t opacity, const precision sub_pixel_precision, const precision uv_precision,
                                bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
 
     fixed_signed area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
-    //int bmp_width = bmp.width();
+    if(area==0) return;
+    if(area<0) { // convert CCW to CW triangle
+        area=-area;
+        functions::swap(v1_x, v2_x);
+        functions::swap(v1_y, v2_y);
+        functions::swap(u1, u2);
+        functions::swap(v1, v2);
+        functions::swap(q1, q2);
+        functions::swap(aa_first_edge, aa_third_edge);
+    }
 
     // sub_pixel_precision;
     // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
@@ -1067,8 +1075,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
 
     // fill rules adjustments
     triangles::top_left_t top_left =
-            triangles::classifyTopLeftEdges(false,
-                                            v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
+            triangles::classifyTopLeftEdges(false, v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
 
     int bias_w0 = top_left.first  ? 0 : -1;
     int bias_w1 = top_left.second ? 0 : -1;
@@ -1142,9 +1149,7 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
         }
 
         for (p.x = minX; p.x <= maxX; p.x++) {
-
-            if ((w0 | w1 | w2) >= 0) {
-
+            if ((w0|w1|w2)>=0) {
                 int u_i, v_i;
                 uint64_t u_fixed = (((uint64_t)((uint64_t)w0*u2 + (uint64_t)w1*u0 + (uint64_t)w2*u1)));
                 uint64_t v_fixed = (((uint64_t)((uint64_t)w0*v2 + (uint64_t)w1*v0 + (uint64_t)w2*v1)));
@@ -1165,18 +1170,14 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                     v_i = (bmp_h_max*v_fixed)>>(BITS_UV_COORDS);
                 }
 
-                //u_i = functions::clamp<int>(u_i, 0, bmp_w_max<<BITS_UV_COORDS);
-                //v_i = functions::clamp<int>(v_i, 0, bmp_h_max<<BITS_UV_COORDS);
+//                u_i = functions::clamp<int>(u_i, 0, bmp_w_max<<BITS_UV_COORDS);
+//                v_i = functions::clamp<int>(v_i, 0, bmp_h_max<<BITS_UV_COORDS);
 
                 color_t col_bmp;
-                //bmp.decode(index_bmp, col_bmp);
                 Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
-
                 if(!microgl::traits::is_same<CODER, CODER2>::value)
                     this->coder().convert(col_bmp, col_bmp, bmp.coder());
-
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
-
             } else if(antialias) {
                 // any of the distances are negative, we are outside.
                 // test if we can anti-alias
@@ -1283,8 +1284,8 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                                const opacity_t opacity,
                                bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
 
-    precision prec_pixel = 4;
-    precision prec_uv = 5;
+    precision prec_pixel = 8;
+    precision prec_uv = 8;
     int v0_x_ = microgl::math::to_fixed(v0_x, prec_pixel);
     int v0_y_ = microgl::math::to_fixed(v0_y, prec_pixel);
     int v1_x_ = microgl::math::to_fixed(v1_x, prec_pixel);
@@ -1548,7 +1549,8 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
 
             if(depth_buffer_flag && should_sample) {
 //                l64 z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
-                l64 z= ((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/area;
+//                l64 z= ((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/area;
+                l64 z= (long long)(number((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/(area));
 //                z_tag= functions::clamp<l64>(z_tag, 0, l64(1)<<44);
                 if(z<0 || z>depth_buffer[index + p.x]) should_sample=false;
                 else depth_buffer[index + p.x]=z;
@@ -2053,6 +2055,54 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
     blendColor(color_input, (X1+round)>>bits, (Y1+round)>>bits, maxIntensity);
 }
 
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, typename Sampler, bool antialias, typename number,
+        typename P2, typename CODER2>
+void Canvas<P, CODER>::drawBezierPatch(const Bitmap<P2, CODER2> & bmp,
+                                     const vec3<number> *mesh,
+                                     const unsigned U, const unsigned V,
+                                     const unsigned uSamples, const unsigned vSamples,
+                                     const opacity_t opacity) {
+    using tess= microgl::tessellation::bezier_patch_tesselator<number>;
+    dynamic_array<number> vertices_attributes;
+    dynamic_array<index> indices;
+    microgl::triangles::indices indices_type;
+    tess::compute(mesh, U, V, uSamples, vSamples, vertices_attributes, indices, indices_type);
+    const index size = indices.size();
+    const index window_size=5;
+    const index I_X=0, I_Y=1, I_Z=2, I_U=3, I_V=4;
+    if(size==0) return;
+#define IND(a) indices[(a)]
+    bool even = true;
+    for (index ix = 0; ix < size-2; ++ix) {
+        // we alternate order inorder to preserve CCW or CW,
+        index first_index   = (even ? IND(ix + 0) : IND(ix + 2))*window_size;
+        index second_index  = (even ? IND(ix + 1) : IND(ix + 1))*window_size;
+        index third_index   = (even ? IND(ix + 2) : IND(ix + 0))*window_size;
+
+        drawTriangle<BlendMode, PorterDuff, antialias, Sampler>(bmp,
+                                                                vertices_attributes[first_index+I_X],
+                                                                vertices_attributes[first_index+I_Y],
+                                                                vertices_attributes[first_index+I_U],
+                                                                vertices_attributes[first_index+I_V],
+
+                                                                vertices_attributes[second_index+I_X],
+                                                                vertices_attributes[second_index+I_Y],
+                                                                vertices_attributes[second_index+I_U],
+                                                                vertices_attributes[second_index+I_V],
+
+                                                                vertices_attributes[third_index+I_X],
+                                                                vertices_attributes[third_index+I_Y],
+                                                                vertices_attributes[third_index+I_U],
+                                                                vertices_attributes[third_index+I_V],
+                                                                opacity);
+
+        even = !even;
+    }
+#undef IND
+}
+
+
 // todo: drawLinePath will be removed once the path maker is ready
 template<typename P, typename CODER>
 template <typename number>
@@ -2146,7 +2196,7 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
         {
             type = antialias ? triangles::indices::TRIANGLES_WITH_BOUNDARY :
                    triangles::indices::TRIANGLES;
-            tessellation::ear_clipping_triangulation<number>::compute(points,
+            microgl::tessellation::ear_clipping_triangulation<number>::compute(points,
                                                               size,
                                                               indices,
                                                               &boundary_buffer,
@@ -2157,7 +2207,7 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
         {
             type = antialias ? triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY :
                    triangles::indices::TRIANGLES_FAN;
-            tessellation::fan_triangulation<number>::compute(points,
+            microgl::tessellation::fan_triangulation<number>::compute(points,
                                                      size,
                                                      indices,
                                                      &boundary_buffer,

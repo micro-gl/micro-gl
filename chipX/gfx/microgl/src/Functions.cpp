@@ -63,7 +63,7 @@ namespace microgl {
             return ((dp_1 | dp_2 | dp_3)==0);
         }
 
-        int orient2d(const vec2_fixed_signed &a, const vec2_fixed_signed &b, const vec2_fixed_signed &c, uint8_t precision) {
+        long long orient2d(const vec2_fixed_signed &a, const vec2_fixed_signed &b, const vec2_fixed_signed &c, uint8_t precision) {
             return fixed_mul_fixed_2(b.x-a.x, c.y-a.y, precision) -
                    fixed_mul_fixed_2(b.y-a.y, c.x-a.x, precision);
         }

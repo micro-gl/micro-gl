@@ -228,6 +228,9 @@ public:
     explicit operator int() {
         return toInt();
     }
+    explicit operator long long() {
+        return toInt();
+    }
 
     integer toInt() const {
         return this->_value>>P;

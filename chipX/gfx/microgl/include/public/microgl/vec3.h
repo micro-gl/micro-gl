@@ -10,7 +10,7 @@ namespace microgl {
         number x, y, z;
 
         vec3() = default;
-        vec3(const number & $x, const number & $y, const number & $z) :
+        vec3(const number & $x, const number & $y, const number & $z=number(1)) :
                 x{$x}, y{$y}, z{$z} {}
 
         template<typename F>

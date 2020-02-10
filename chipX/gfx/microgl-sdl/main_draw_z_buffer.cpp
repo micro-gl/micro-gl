@@ -50,7 +50,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     // setup mvp matrix
     mat4 model_1 = mat4::transform({ math::deg_to_rad(z/2), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
                                    {-5,0,0}, {10,10,10});
-    mat4 model_2 = mat4::transform({ math::deg_to_rad(z/2), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
+    mat4 model_2 = mat4::transform({ math::deg_to_rad(z/1), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
                                    {5,0,0}, {10,10,10});
 //    mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
     mat4 view = camera::angleAt({0, 0, 50}, 0, math::deg_to_rad(0),0);
@@ -72,7 +72,9 @@ void test_shader_texture_3d(const model_3d<number> & object) {
         v.uv= object.uvs[ix];
         vertex_buffer.push_back(v);
     }
-//std::cout << z<<std::endl;
+    //std::cout << z<<std::endl;
+
+    // init z-buffer
     using ul64=  long long;
     ul64 * z_buffer = new ul64[canvas->width()*canvas->height()]{};
     for (int zx = 0; zx < canvas->width() * canvas->height(); ++zx) {

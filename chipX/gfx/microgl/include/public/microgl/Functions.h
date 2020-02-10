@@ -101,7 +101,7 @@ namespace microgl {
                          const vec2_32i& p2, const vec2_32i& p3);
         typedef vec2<fixed_signed> vec2_fixed_signed;
         // this equals twice the signed triangle area - the parallelogram
-        int orient2d(const vec2_fixed_signed& a, const vec2_fixed_signed& b,
+        long long orient2d(const vec2_fixed_signed& a, const vec2_fixed_signed& b,
                      const vec2_fixed_signed& c, uint8_t precision);
         // this equals twice the signed triangle area - the parallelogram
         int orient2d(const vec2_32i& a, const vec2_32i& b, const vec2_32i& c);
