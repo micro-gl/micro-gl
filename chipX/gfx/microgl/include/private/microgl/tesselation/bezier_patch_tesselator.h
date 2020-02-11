@@ -15,6 +15,11 @@ namespace microgl {
             static const char BI_QUADRATIC = 0;
             static const char BI_CUBIC = 1;
 
+            /**
+             * right now I only support cubic and quadratic patches.
+             * todo: support arbitrary patches
+             *
+             */
             static
             void compute(const vertex3 *meshPoints,
                          const index U, const index V,
@@ -56,8 +61,6 @@ namespace microgl {
                         out_vertices_attributes.push_back(p.z);
                         out_vertices_attributes.push_back(tex_left + u*factor_remap_u);
                         out_vertices_attributes.push_back(tex_bottom + v*factor_remap_v);
-
-//            cout << to_string(p.x) + ", " + to_string(p.y) + ", " + to_string(u) + ", " + to_string(v) << endl;
 
                         // indices
                         if(i < uSamples - 1) {

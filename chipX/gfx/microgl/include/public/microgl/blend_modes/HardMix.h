@@ -2,36 +2,38 @@
 
 #include <microgl/BlendMode.h>
 
-namespace blendmode {
+namespace microgl {
+    namespace blendmode {
 
-    class HardMix : public BlendModeBase<HardMix> {
-    public:
+        class HardMix : public BlendModeBase<HardMix> {
+        public:
 
-        static inline float blend_HardMix(float b, float s) {
-            return (VividLight::blend_VividLight(b,s)<0.5)?0.0:1.0;
-        }
+            static inline float blend_HardMix(float b, float s) {
+                return (VividLight::blend_VividLight(b, s) < 0.5) ? 0.0 : 1.0;
+            }
 
-        static inline void blend(const color_f_t &b,
-                                 const color_f_t &s,
-                                 color_f_t & output) {
+            static inline void blend(const color_f_t &b,
+                                     const color_f_t &s,
+                                     color_f_t &output) {
 
-            output.r=blend_HardMix(b.r,s.r);
-            output.g=blend_HardMix(b.g,s.g);
-            output.b=blend_HardMix(b.b,s.b);
-        }
+                output.r = blend_HardMix(b.r, s.r);
+                output.g = blend_HardMix(b.g, s.g);
+                output.b = blend_HardMix(b.b, s.b);
+            }
 
-        static inline void blend(const color_t &b,
-                                 const color_t &s,
-                                 color_t & output,
-                                 const uint8_t r_bits,
-                                 const uint8_t g_bits,
-                                 const uint8_t b_bits) {
-            // todo
-        }
+            static inline void blend(const color_t &b,
+                                     const color_t &s,
+                                     color_t &output,
+                                     const uint8_t r_bits,
+                                     const uint8_t g_bits,
+                                     const uint8_t b_bits) {
+                // todo
+            }
 
-        static inline const char* type() {
-            return "HardMix";
-        }
-    };
+            static inline const char *type() {
+                return "HardMix";
+            }
+        };
 
+    }
 }

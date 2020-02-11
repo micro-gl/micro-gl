@@ -1176,7 +1176,9 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                 color_t col_bmp;
                 Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
                 if(!microgl::traits::is_same<CODER, CODER2>::value)
-                    this->coder().convert(col_bmp, col_bmp, bmp.coder());
+                    bmp.coder().convert(col_bmp, col_bmp, this->coder());
+                    //this->coder().convert(col_bmp, col_bmp, bmp.coder());
+
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
             } else if(antialias) {
                 // any of the distances are negative, we are outside.
@@ -1230,7 +1232,8 @@ Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
                     color_t col_bmp;
                     Sampler::sample(bmp, u_i, v_i, BITS_UV_COORDS, col_bmp);
                     if(!microgl::traits::is_same<CODER, CODER2>::value)
-                        this->coder().convert(col_bmp, col_bmp, bmp.coder());
+                        bmp.coder().convert(col_bmp, col_bmp, this->coder());
+                        //this->coder().convert(col_bmp, col_bmp, bmp.coder());
 
                     // complement and normalize
                     uint8_t blend = functions::clamp<int>(((uint64_t)(delta << bits_distance_complement))>>PREC_DIST,
@@ -1767,7 +1770,8 @@ void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
             Sampler::sample(bmp, u, v, pp, col_bmp);
             // at compile-time, if colors are not from same coder, then convert
             if(!microgl::traits::is_same<CODER, CODER2>::value)
-                this->coder().convert(col_bmp, col_bmp, bmp.coder());
+                bmp.coder().convert(col_bmp, col_bmp, this->coder());
+                //this->coder().convert(col_bmp, col_bmp, bmp.coder());
 
             blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
 

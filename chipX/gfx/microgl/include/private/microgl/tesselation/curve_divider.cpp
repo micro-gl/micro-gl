@@ -1,5 +1,3 @@
-//#include <microgl/tesselation/curve_divider.h>
-
 namespace microgl {
     namespace tessellation {
         template<typename number>

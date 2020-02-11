@@ -7,17 +7,15 @@
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/Bilinear.h>
 
-using namespace microgl::shading;
 #define TEST_ITERATIONS 1
 #define W 640*1
 #define H 640*1
-#define TTT 1
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 Resources resources{};
 
-using namespace microgl::shading;
+using namespace microgl;
 using index_t = unsigned int;
 using Canvas24Bit_Packed32 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
 

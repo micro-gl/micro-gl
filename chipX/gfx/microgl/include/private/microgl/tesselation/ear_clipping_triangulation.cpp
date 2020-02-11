@@ -1,5 +1,4 @@
 #include <microgl/qsort.h>
-//#include <microgl/tesselation/ear_clipping_triangulation.h>
 
 namespace microgl {
     namespace tessellation {
