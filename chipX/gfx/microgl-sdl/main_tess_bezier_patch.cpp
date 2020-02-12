@@ -30,7 +30,7 @@ Bitmap<uint32_t, coder::RGB888_PACKED_32> *bmp_uv;
 template <typename number>
 void test_bezier(vec3<number>* mesh, unsigned U, unsigned V) {
     canvas->drawBezierPatch<blendmode::Normal, porterduff::None, sampler::Bilinear>(
-            *bmp_uv, mesh, U, V, 50, 50, 255);
+            *bmp_uv, mesh, U, V, 20, 20, 255);
     delete [] mesh;
 }
 

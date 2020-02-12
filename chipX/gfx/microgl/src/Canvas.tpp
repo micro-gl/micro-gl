@@ -1567,6 +1567,7 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
                         varying_v1,
                         varying_v2, bary);
                 auto color = shader.fragment(interpolated_varying);
+                // todo: color conversion is missing
                 blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity_sample);
             }
 
