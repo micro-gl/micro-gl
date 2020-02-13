@@ -10,6 +10,7 @@ namespace microgl {
         using bits = unsigned char;
 
         channel convert_channel(channel input, bits input_bits, bits output_bits);
+        channel convert_channel_correct(channel input, bits input_bits, bits output_bits);
 
         void convert_color(const color_t &input, color_t &output,
                            const bits &input_r_bits, const bits &input_g_bits,
@@ -64,17 +65,14 @@ namespace microgl {
             channel red_bits() {
                 return IMPL::red_bits();
             }
-
             static
             channel green_bits() {
                 return IMPL::green_bits();
             }
-
             static
             channel blue_bits() {
                 return IMPL::blue_bits();
             }
-
             static
             channel alpha_bits() {
                 return IMPL::alpha_bits();

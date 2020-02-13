@@ -12,6 +12,14 @@ namespace microgl {
                 return input << (input_bits - output_bits);
         }
 
+        channel convert_channel_correct(channel input, bits input_bits, bits output_bits) {
+            if (output_bits == input_bits)
+                return input;
+            unsigned int max_input= (1<<input_bits)-1;
+            unsigned int max_output= (1<<output_bits)-1;
+            return ((unsigned int)input*max_output)/max_input;
+        }
+
         void convert_color(const color_t &input, color_t &output) {
             output.r = convert_channel(input.r, input.r_bits, output.r_bits);
             output.g = convert_channel(input.g, input.g_bits, output.g_bits);

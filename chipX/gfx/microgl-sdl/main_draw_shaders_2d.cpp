@@ -5,10 +5,10 @@
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
-#include <microgl/samplers/Bilinear.h>
 #include <microgl/shaders/color_shader.h>
 #include <microgl/shaders/flat_color_shader.h>
 #include <microgl/shaders/texture_shader.h>
+#include <microgl/samplers/texture.h>
 #include <microgl/camera.h>
 
 using namespace microgl::shading;
@@ -23,9 +23,12 @@ Resources resources{};
 
 using namespace microgl::shading;
 using index_t = unsigned int;
-using Canvas24Bit_Packed32 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
-Canvas24Bit_Packed32 * canvas;
+using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::Bilinear>;
+Canvas24 * canvas;
+Texture24 tex_1, tex_2;
 
 void loop();
 void init_sdl(int width, int height);
@@ -113,9 +116,8 @@ void init_sdl(int width, int height) {
             SDL_TEXTUREACCESS_STATIC, width, height);
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
     auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
-    bmp_uv = bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>();
-
-    canvas = new Canvas24Bit_Packed32(width, height);
+    tex_1.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
+    canvas = new Canvas24(width, height);
 }
 
 int render_test(int N) {

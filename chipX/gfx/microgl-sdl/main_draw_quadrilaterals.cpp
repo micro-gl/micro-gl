@@ -1,8 +1,3 @@
-//
-// Created by Tomer Shalev on 2019-06-15.
-// this is a sandbox for playing with microgl lib
-//
-
 #include <iostream>
 #include <chrono>
 #include "src/Resources.h"
@@ -12,8 +7,7 @@
 #include <microgl/color.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
-#include <microgl/samplers/Bilinear.h>
-#include <microgl/samplers/NearestNeighbor.h>
+#include <microgl/samplers/texture.h>
 #include <microgl/Q.h>
 
 #define TEST_ITERATIONS 1
@@ -24,21 +18,13 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-typedef Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY> Bitmap24bitU8;
-typedef Bitmap<uint32_t, coder::RGB888_PACKED_32> Bitmap24bit_Packed32;
-
-typedef Canvas<uint32_t, coder::RGB888_PACKED_32> Canvas24Bit_Packed32;
-typedef Canvas<vec3<uint8_t >, coder::RGB888_ARRAY> Canvas24BitU8;
-
-Canvas24Bit_Packed32 * canvas;
-
-Bitmap24bitU8 * bmp_1;
-Bitmap24bit_Packed32 * bmp_2;
-Bitmap24bitU8 * bmp_uv_U8;
-Bitmap24bit_Packed32 * bmp_uv;
+using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::Bilinear>;
+Canvas24 * canvas;
+Texture24 tex_1, tex_2;
 
 Resources resources{};
-Resources::image_info_t img_1;
 
 void loop();
 void init_sdl(int width, int height);
@@ -47,16 +33,10 @@ void render_float_quadrilateral();
 void render_Q_quadrilateral();
 
 inline void render() {
+    canvas->clear(color::colors::WHITE);
 
-    canvas->setAntialiasing(false);
-
-    for (int ix = 0; ix < 1; ++ix) {
-
-        canvas->clear(color::colors::WHITE);
-
-        render_float_quadrilateral();
+    render_float_quadrilateral();
 //        render_Q_quadrilateral();
-    }
 
 }
 
@@ -64,8 +44,8 @@ void render_float_quadrilateral() {
     static float d =0;
     float G = 256;
     d+=1.01;
-    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear>(
-            *bmp_uv,
+    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+            tex_2,
             0.0f,               0.0f,     0.0f, 1.0f,
             G + 100.0f + d,     0.0f,       1.0f, 1.0f,
             G + 0.0f,                G,         1.0f, 0.0f,
@@ -79,8 +59,8 @@ void render_Q_quadrilateral() {
     float G = 256;
     d +=(1.0f);
 
-    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear, Q<9>>(
-            *bmp_uv,
+    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, Q<9>>(
+            tex_2,
             0.0f,               0.0f,     0.0f, 1.0f,
             G + 100.0f + d,     0.0f,       1.0f, 1.0f,
             G + 0.0f,                G,         1.0f, 0.0f,
@@ -104,34 +84,31 @@ void init_sdl(int width, int height) {
 //    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
 
 //    canvas = new Canvas16Bit(width, height, PixelFormat::RGB565, new RGB565_PACKED_16());
-    canvas = new Canvas24Bit_Packed32(width, height);
+    canvas = new Canvas24(width, height);
 //    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
 
-    img_1 = resources.loadImageFromCompressedPath("charsprites.png");
+    auto img_1 = resources.loadImageFromCompressedPath("charsprites.png");
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
 
-//    auto * bmp_1 = new Bitmap<uint32_t , RGB888_PACKED_32>(img_1.data, img_1.width, img_1.height, new RGB888_PACKED_32());
-    bmp_1 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
-    bmp_2 = bmp_1->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>();
+    auto bmp_1 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
+    auto bmp_2 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
 
-    bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
-    bmp_uv = bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>();
-//    bmp_uv = new Bitmap<uint32_t , RGB888_PACKED_32>(img_2.width, img_2.height, new RGB888_PACKED_32());
-
+    tex_1.updateBitmap(bmp_1->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
+    tex_2.updateBitmap(bmp_2->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
     resources.init();
 }
 
 int render_test(int N) {
     auto ms = std::chrono::milliseconds(1);
+    auto ns = std::chrono::nanoseconds(1);
     auto start = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < N; ++i) {
-        render();
-    }
+    for (int i = 0; i < N; ++i) render();
 
     auto end = std::chrono::high_resolution_clock::now();
+    auto int_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-    return (end-start)/(ms*N);
+    return int_ms.count();
 }
 
 void loop() {

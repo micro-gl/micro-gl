@@ -11,9 +11,8 @@
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
 #include <microgl/blend_modes/Multiply.h>
-#include <microgl/samplers/NearestNeighbor.h>
-#include <microgl/samplers/Bilinear.h>
 #include <microgl/Bitmap.h>
+#include <microgl/samplers/texture.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -23,12 +22,12 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-typedef Bitmap<uint32_t, coder::RGB888_PACKED_32> Bitmap24bit_Packed32;
-typedef Canvas<uint32_t, coder::RGB888_PACKED_32> Canvas24Bit_Packed32;
+using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32>;
 
-Canvas24Bit_Packed32 * canvas;
-
-Bitmap24bit_Packed32 * bmp_1, *bmp_2, *mask;
+Canvas24 * canvas;
+Texture24 tex_mask, tex_1, tex_2;
 
 Resources resources{};
 using namespace microgl::color;
@@ -36,14 +35,12 @@ void loop();
 void init_sdl(int width, int height);
 
 inline void render() {
-
     canvas->clear(microgl::color::colors::WHITE);
-
-    canvas->drawQuad<blendmode::Normal, porterduff::None, sampler::NearestNeighbor>(
-            *bmp_1, -0, -0, 300, 300,255);
+    canvas->drawQuad<blendmode::Normal, porterduff::None>(
+            tex_1, -0, -0, 300, 300,255);
 //    canvas->drawQuad<blendmode::Normal, porterduff::None>(
 //            color::colors::RED, -0, -0, 300, 300, 255);
-    canvas->drawMask<sampler::NearestNeighbor>(masks::chrome_mode::red_channel, *mask,
+    canvas->drawMask(masks::chrome_mode::red_channel, tex_mask,
             0, 0, 300, 300);
 
 }
@@ -60,7 +57,7 @@ void init_sdl(int width, int height) {
     renderer = SDL_CreateRenderer(window, -1, 0);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
 
-    canvas = new Canvas24Bit_Packed32(width, height);
+    canvas = new Canvas24(width, height);
 
     auto img_1 = resources.loadImageFromCompressedPath("charsprites.png");
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
@@ -70,9 +67,9 @@ void init_sdl(int width, int height) {
     auto *bmp_2_native = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     auto *bmp_3_native = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
 
-    bmp_1 = bmp_1_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>();
-    bmp_2 = bmp_2_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>();
-    mask = bmp_3_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>();
+    tex_1.updateBitmap(bmp_1_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>());
+    tex_2.updateBitmap(bmp_2_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>());
+    tex_mask.updateBitmap(bmp_3_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>());
     resources.init();
 }
 

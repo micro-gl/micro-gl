@@ -8,10 +8,10 @@
 #include <microgl/porter_duff/DestinationIn.h>
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
-#include <microgl/samplers/NearestNeighbor.h>
 #include <microgl/Bitmap.h>
 #include <microgl/Fixed.h>
 #include <microgl/shader.h>
+#include <microgl/sampler.h>
 #include <microgl/triangles.h>
 #include <microgl/polygons.h>
 #include <microgl/masks.h>
@@ -173,9 +173,8 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, bool perspective_correct=false,
-            typename Sampler=sampler::NearestNeighbor,
-            typename P2, typename CODER2>
-    void drawTriangle(const Bitmap<P2, CODER2> &bmp,
+            typename S>
+    void drawTriangle(const sampling::sampler<S> &sample,
                       int v0_x, int v0_y, int u0, int v0, int q0,
                       int v1_x, int v1_y, int u1, int v1, int q1,
                       int v2_x, int v2_y, int u2, int v2, int q2,
@@ -185,9 +184,8 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false,
-            typename Sampler=sampler::NearestNeighbor,
-            typename P2, typename CODER2, typename number>
-    void drawTriangle(const Bitmap<P2, CODER2> &bmp,
+            typename S, typename number>
+    void drawTriangle(const sampling::sampler<S> &sample,
                       number v0_x, number v0_y, number u0, number v0,
                       number v1_x, number v1_y, number u1, number v1,
                       number v2_x, number v2_y, number u2, number v2,
@@ -220,9 +218,8 @@ public:
     // perspective correct 2d quadrilateral defined by 2d points
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename Sampler=sampler::NearestNeighbor,
-            typename number, typename P2, typename CODER2>
-    void drawQuadrilateral(const Bitmap<P2, CODER2> &bmp,
+            bool antialias=false, typename number, typename S>
+    void drawQuadrilateral(const sampling::sampler<S> &sampler,
                            number v0_x, number v0_y, number u0, number v0,
                            number v1_x, number v1_y, number u1, number v1,
                            number v2_x, number v2_y, number u2, number v2,
@@ -247,9 +244,29 @@ public:
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            typename Sampler=sampler::NearestNeighbor,
-            typename P2, typename CODER2>
-    void drawQuad(const Bitmap<P2, CODER2> &bmp,
+            typename S>
+    void drawQuad(const sampling::sampler<S> &sampler,
+                  int left, int top,
+                  int right, int bottom,
+                  int u0, int v0,
+                  int u1, int v1,
+                  precision sub_pixel_precision, precision uv_precision,
+                  opacity_t opacity);
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque, typename S, typename number>
+    void drawQuad(const sampling::sampler<S> &sampler,
+                  number left, number top,
+                  number right, number bottom,
+                  opacity_t opacity = 255,
+                  number u0=number(0), number v0=number(0),
+                  number u1=number(1), number v1=number(1));
+
+    /*
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename S>
+    void drawQuad2(const sampling::sampler<S> &sampler,
                   int left, int top,
                   int right, int bottom,
                   int u0, int v0,
@@ -259,28 +276,27 @@ public:
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            typename Sampler=sampler::NearestNeighbor,
-            typename number, typename P2, typename CODER2>
-    void drawQuad(const Bitmap<P2, CODER2> &bmp,
+            typename number, typename S>
+    void drawQuad2(const sampling::sampler<S> &sampler,
                   number left, number top,
                   number right, number bottom,
                   opacity_t opacity = 255,
                   number u0=number(0), number v0=number(0),
                   number u1=number(1), number v1=number(1));
+                  */
     // Masks
-    template <typename Sampler=sampler::NearestNeighbor, typename number,
-            typename P2, typename CODER2>
+    template <typename number, typename S>
     void drawMask(const masks::chrome_mode &mode,
-                  const Bitmap<P2, CODER2> &bmp,
+                  const sampling::sampler<S> &sampler,
                   number left, number top,
                   number right, number bottom,
                   number u0=number(0), number v0=number(0),
                   number u1=number(1), number v1=number(1),
                   opacity_t opacity = 255);
 
-    template <typename Sampler=sampler::NearestNeighbor, typename P2, typename CODER2>
+    template <typename S>
     void drawMask(const masks::chrome_mode &mode,
-                  const Bitmap<P2, CODER2> &bmp,
+                  const sampling::sampler<S> &sampler,
                   int left, int top,
                   int right, int bottom,
                   int u0, int v0,
@@ -289,9 +305,9 @@ public:
                   opacity_t opacity = 255);
 
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::SourceOverOnOpaque,
-            typename Sampler, bool antialias=false, typename number,
-            typename P2, typename CODER2>
-    void drawBezierPatch(const Bitmap<P2, CODER2> & bmp,
+            bool antialias=false, typename number,
+            typename S>
+    void drawBezierPatch(const sampling::sampler<S> &sampler,
                          const vec3<number> *mesh,
                          unsigned U, unsigned V,
                          unsigned uSamples=20, unsigned vSamples=20,
