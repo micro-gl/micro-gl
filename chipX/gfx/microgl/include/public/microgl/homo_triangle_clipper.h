@@ -34,7 +34,7 @@ namespace microgl {
                 typed_vertices_list & operator=(typed_vertices_list && list) noexcept {
                     clear();
                     const auto size_= list.size();
-                    for (int ix = 0; ix < size_; ++ix)
+                    for (unsigned ix = 0; ix < size_; ++ix)
                         push_back(list[ix]);
                     list.clear();
                     return *this;

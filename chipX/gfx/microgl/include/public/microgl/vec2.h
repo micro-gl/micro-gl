@@ -62,10 +62,5 @@ namespace microgl {
 
     };
 
-    //typedef vec2<float> vec2_f;
     typedef vec2<int32_t > vec2_32i;
-
-//    extern template class vec2<float>;
-//    extern template class vec2<int32_t>;
-
 }

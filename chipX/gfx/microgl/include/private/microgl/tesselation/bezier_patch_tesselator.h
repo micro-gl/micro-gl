@@ -55,7 +55,7 @@ namespace microgl {
                             p = evaluateBiCubicSurface(u,v, meshPoints);
                         else return;
 
-                        int idx = i * vSamples + j;
+                        //int idx = i * vSamples + j;
                         out_vertices_attributes.push_back(p.x);
                         out_vertices_attributes.push_back(p.y);
                         out_vertices_attributes.push_back(p.z);

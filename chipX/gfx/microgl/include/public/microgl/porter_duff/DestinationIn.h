@@ -16,8 +16,6 @@ namespace microgl {
                                          color_t &output,
                                          const unsigned int alpha_bits,
                                          bool multiplied_alpha_result = false) {
-                unsigned int max_val = MAX_VAL_BITS2(alpha_bits);
-
                 internal_porter_duff(0, s.a, b, s, output, alpha_bits, multiplied_alpha_result);
             }
 

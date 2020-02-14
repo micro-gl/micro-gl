@@ -46,10 +46,10 @@ namespace microgl {
 
             inline color::color_t
             fragment(const sampler_shader_varying<number> &input) {
-//                color_t output;
-//                sampler->sample(input.uv.x, input.uv.y, microgl::precision::high, output);
-//                return output;
-                return {(unsigned char)(input.uv.x),(unsigned char)(input.uv.y),0};
+                color_t output;
+                sampler->sample(input.uv.x, input.uv.y, microgl::precision::high, output);
+                return output;
+//                return {(unsigned char)(input.uv.x),(unsigned char)(input.uv.y),0};
 //                return {255,0,0};
             }
 

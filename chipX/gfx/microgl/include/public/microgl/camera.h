@@ -188,12 +188,12 @@ namespace microgl {
             matrix_4x4<number> m{};
             number two = number(2);
             number one = number(1);
-            number zero = number(0);
+            number O = number(0);
             // columns
-            m(0, 0) = two/(r-l);    m(0, 1) = 0;            m(0, 2) = 0;            m(0, 3) = -(r+l)/(r-l);
-            m(1, 0) = 0;            m(1, 1) = two/(t-b);    m(1, 2) = 0;            m(1, 3) = -(t+b)/(t-b);
-            m(2, 0) = 0;            m(2, 1) = 0;            m(2, 2) = -two/(f-n);   m(2, 3) = -(f+n)/(f-n);
-            m(3, 0) = 0;            m(3, 1) = 0;            m(3, 2) = 0;            m(3, 3) = one;
+            m(0, 0) = two/(r-l);    m(0, 1) = O;            m(0, 2) = O;            m(0, 3) = -(r+l)/(r-l);
+            m(1, 0) = O;            m(1, 1) = two/(t-b);    m(1, 2) = O;            m(1, 3) = -(t+b)/(t-b);
+            m(2, 0) = O;            m(2, 1) = O;            m(2, 2) = -two/(f-n);   m(2, 3) = -(f+n)/(f-n);
+            m(3, 0) = O;            m(3, 1) = O;            m(3, 2) = O;            m(3, 3) = one;
 
             return m;
         }

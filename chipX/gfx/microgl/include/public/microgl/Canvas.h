@@ -9,7 +9,7 @@
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
 #include <microgl/Bitmap.h>
-#include <microgl/Fixed.h>
+#include <microgl/Fixed.h> // todo: remove deps
 #include <microgl/shader.h>
 #include <microgl/sampler.h>
 #include <microgl/triangles.h>
@@ -79,10 +79,6 @@ public:
 
     void drawPixel(const P &val, int x, int y);
     void drawPixel(const P &val, int index);
-
-    void drawGradient(const color_f_t &startColor,
-                      const color_f_t &endColor,
-                      int left, int top, int w, int h);
 
     // circles
     template<typename BlendMode=blendmode::Normal,
@@ -261,29 +257,6 @@ public:
                   opacity_t opacity = 255,
                   number u0=number(0), number v0=number(0),
                   number u1=number(1), number v1=number(1));
-
-    /*
-    template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
-            typename S>
-    void drawQuad2(const sampling::sampler<S> &sampler,
-                  int left, int top,
-                  int right, int bottom,
-                  int u0, int v0,
-                  int u1, int v1,
-                  precision sub_pixel_precision, precision uv_precision,
-                  opacity_t opacity);
-
-    template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
-            typename number, typename S>
-    void drawQuad2(const sampling::sampler<S> &sampler,
-                  number left, number top,
-                  number right, number bottom,
-                  opacity_t opacity = 255,
-                  number u0=number(0), number v0=number(0),
-                  number u1=number(1), number v1=number(1));
-                  */
     // Masks
     template <typename number, typename S>
     void drawMask(const masks::chrome_mode &mode,

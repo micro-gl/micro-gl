@@ -48,24 +48,28 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 6. investigate solving degenrate cases some day.
 
 #### road-map
-0. ongoing: adapt all algorithms for generic number system
-0. DONE: add < operator for Q types
-0. DONE: adapt bezier divider for generic number types
+- make dra triangles iterator based so I can re-use it's boilerplate
+- poly tesselator continue
+- path maker
+- make pure fixed points draw functions private
+- clean/re-factor to multiple files Functions.h file
+- remove deps on Fixed.h file macros
+- remove deps on vec2_32i
+- after path maker, remove bezier curve and lines painter
+- 3d pipeline, make 3d clipping configurable for planes and even skip
+- add opacity/colors/blend/composite to lines
+- create gradient sampler
+- create fast rounded rectangle with AA, sampler, frame and maybe shadow, this is useful instead of doing all of the vector pipeline
+- fast circles with sampler
+- AA for 3d with stencil buffer and multi-sampling of coverage, should be interesting
+
 0. improve ear_clipper
 1. complex poly tesselator and stroker
-2. masks
-3. bezier patches tesselator
 4. catmaull-rom splines https://www.youtube.com/watch?v=9_aJGUTePYo (super great for music visualisazion)
    c++ example with guide - https://qroph.github.io/2018/07/30/smooth-paths-using-catmull-rom-splines.html
    converting catmull-rom to cubic - https://stackoverflow.com/questions/30748316/catmull-rom-interpolation-on-svg-paths
-5. explore pixels shaders
-6. explore external camera object, that does 3d and projections
-7. explore bugs with the anti aliaser
 8. add clip rectangles
 9. sine function approximation - https://www.youtube.com/watch?v=1xlCVBIF_ig
-10. seperate pixel and uv coords numbers support. suppose we want to use Q numbers but with
-    different precisions for the pixels coords and uv coords
-11. overflow , I have seen the last row of a quadrilateral rendering have the first row, fix the texture mapper on boundary
 
 # 3d
 - https://www.scratchapixel.com/lessons/3d-basic-rendering/rasterization-practical-implementation/projection-stage

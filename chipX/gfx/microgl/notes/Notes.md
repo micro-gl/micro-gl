@@ -94,13 +94,3 @@ https://github.com/pelson/antigrain/blob/master/agg-2.4/src/agg_curves.cpp
 #### explenations
 - every edge list contains sections intersecting points on the edge, sorted
 by their order on the edge, this took me a while to figure out. :()
-
-#### float points
-- integer divisions are slower than float point divisions by an order of 3 from my tests.
-- integers arithmetics are far accurate and float points are not so
-- integers multiplications are a bit faster (5-10%) than float point multiplications
-
-#### release vs debug of Q structs
-- release mode highly optmizes these data structures as opposed to debug mode, so§
-for example if I am doing higly intensive Q struct arithmetics, they will seem slower
-than raw fixed points arithmetics, BUT in release mode they will be optimized the same.

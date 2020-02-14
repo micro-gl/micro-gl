@@ -35,20 +35,17 @@ void init_sdl(int width, int height);
 
 float t = 0;
 
-// bitmap for mapping
-Bitmap<uint32_t, coder::RGB888_PACKED_32> *bmp_uv;
-
 template <typename number>
 void test_shader_color_2d() {
     color_shader<number> shader;
-    shader.mat= camera<number>::orthographic(0, W, 0, H, 1, 100);
+    shader.mat= camera<number>::orthographic(0, W, 0, H, 0, 100);
 
     color_shader_vertex_attributes<number> v0, v1, v2;
     v0.point= {10.0,10.0, 0};  v0.color= {255,0,0,255};
     v1.point= {400.0,200.0, 0}; v1.color= {0,255,0,255};
     v2.point= {10.0,400.0, 0}; v2.color= {0,0,255,255};
 
-    canvas->drawTriangle<blendmode::Normal, porterduff::None, true>(shader, v0, v1, v2, 255);
+    canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255);
 //    canvas->drawTriangle(color::colors::RED, 10.0,10.0, 400.0,10.0, 400.0,400.0, 255);
 }
 
@@ -57,17 +54,16 @@ void test_shader_flat_color_2d() {
     flat_color_shader<number> shader;
     color_t color;
     canvas->coder().convert(color::colors::RED, color);
-    shader.matrix= camera<number>::orthographic(0, W, 0, H, 1, 100);
+    shader.matrix= camera<number>::orthographic(0, W, 0, H, 0, 100);
     shader.color= color;
     flat_color_shader_vertex_attributes<number> v0, v1, v2;
     v0.point= {10.0,10.0, 0};
     v1.point= {500.0,10.0, 0};
     v2.point= {500.0,500.0, 0};
-
+    t+=0.0001;
     canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255);
-    //canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255);
 //    canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(color::colors::RED,
-//            10.0,10.0, 400.0,200.0, 10.0,400.0, 255);
+//            10.0+t,10.0, 500.0+t,10.0, 500.0+t,500.0, 255);
 }
 
 template <typename number>
@@ -81,13 +77,13 @@ void test_shader_texture_2d() {
     v0.point= {10.0,10.0, 0};   v0.uv= {0.0f, 0.0f};
     v1.point= {500.0,10.0, 0};  v1.uv= {1.0f, 0.0f};
     v2.point= {500.0,500.0, 0}; v2.uv= {1.0f, 1.0f};
-
-    canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255);
-    return;
+    t+=0.001f;
+//    canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255);
+//    return;
     canvas->drawTriangle<blendmode::Normal, porterduff::None>(tex_1,
-            10.0,10.0, 0.0, 0.0,
-            500.0,10.0, 1.0, 0.0,
-            500.0,500.0, 1.0, 1.0,
+            10.0+t,10.0, 0.0, 0.0,
+            500.0+t,10.0, 1.0, 0.0,
+            500.0+t,500.0, 1.0, 1.0,
             255);
 }
 
@@ -96,9 +92,12 @@ void render() {
 
 //    test_shader_color_2d<float>();
 //    test_shader_color_2d<Q<10>>();
-    test_shader_texture_2d<Q<10>>();
+
+//    test_shader_texture_2d<Q<10>>();
 //    test_shader_texture_2d<float>();
+
 //    test_shader_flat_color_2d<float>();
+    test_shader_flat_color_2d<Q<10>>();
 }
 
 int main() {
@@ -152,7 +151,7 @@ void loop() {
                 break;
         }
 //
-//        render();
+        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());
