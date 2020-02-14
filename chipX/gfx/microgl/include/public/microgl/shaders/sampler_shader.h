@@ -2,19 +2,19 @@
 #pragma ide diagnostic ignored "HidingNonVirtualFunction"
 
 #include <microgl/shader.h>
-#include <microgl/Bitmap.h>
+#include <microgl/sampler.h>
 #include <microgl/precision.h>
 
 namespace microgl {
     namespace shading {
 
         template<typename number>
-        struct texture_shader_varying {
+        struct sampler_shader_varying {
             vec2<number> uv;
 
-            void interpolate(const texture_shader_varying &varying_a,
-                             const texture_shader_varying &varying_b,
-                             const texture_shader_varying &varying_c,
+            void interpolate(const sampler_shader_varying &varying_a,
+                             const sampler_shader_varying &varying_b,
+                             const sampler_shader_varying &varying_c,
                              const vec4<long long> &bary) {
                 uv.x = (varying_a.uv.x*bary.x + varying_b.uv.x*bary.y + varying_c.uv.x*bary.z)/bary.w;
                 uv.y = (varying_a.uv.y*bary.x + varying_b.uv.y*bary.y + varying_c.uv.y*bary.z)/bary.w;
@@ -24,31 +24,32 @@ namespace microgl {
         };
 
         template<typename number>
-        struct texture_shader_vertex_attribute {
+        struct sampler_shader_vertex_attribute {
             vec3<number> point;
             vec2<number> uv;
         };
 
-        template<typename number, typename P, typename CODER, typename Sampler>
-        class texture_shader : public shader_base<
-                texture_shader<number, P, CODER, Sampler>,
-                texture_shader_vertex_attribute<number>,
-                texture_shader_varying<number>, number> {
+        template<typename number, typename S>
+        class sampler_shader : public shader_base<
+                sampler_shader<number, S>,
+                sampler_shader_vertex_attribute<number>,
+                sampler_shader_varying<number>, number> {
         public:
             matrix_4x4<number> matrix;
-            Bitmap<P, CODER> *texture= nullptr;
+            sampling::sampler<S> *sampler= nullptr;
 
             inline vec4<number>
-            vertex(const texture_shader_vertex_attribute<number> &attributes, texture_shader_varying<number> &output) {
+            vertex(const sampler_shader_vertex_attribute<number> &attributes, sampler_shader_varying<number> &output) {
                 output.uv = attributes.uv;
                 return matrix * vec4<number>{attributes.point};
             }
 
             inline color::color_t
-            fragment(const texture_shader_varying<number> &input) {
-                color_t output;
-                Sampler::sampleUnit(*texture, input.uv.x, input.uv.y, microgl::precision::low, output);
-                return output;
+            fragment(const sampler_shader_varying<number> &input) {
+//                color_t output;
+//                sampler->sample(input.uv.x, input.uv.y, microgl::precision::high, output);
+//                return output;
+                return {(unsigned char)(input.uv.x),(unsigned char)(input.uv.y),0};
 //                return {255,0,0};
             }
 

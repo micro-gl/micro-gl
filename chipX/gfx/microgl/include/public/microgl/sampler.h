@@ -20,10 +20,9 @@ namespace microgl {
             }
 
             template<typename number>
-            inline void sampleUnit(const number &u, const number &v,
-                                      const enum microgl::precision &p,
-                                      color_t &output) {
-                const auto bits = int(p);
+            inline void sample(const number &u, const number &v,
+                               const enum microgl::precision &p, color_t &output) {
+                auto bits = static_cast<precision_t>(p);
                 const int u_fixed = math::to_fixed(u, bits);
                 const int v_fixed = math::to_fixed(v, bits);
                 this->derived().sample(u_fixed, v_fixed, bits, output);

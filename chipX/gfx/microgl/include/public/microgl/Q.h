@@ -222,13 +222,16 @@ public:
     }
 
     // conversion operators
-    explicit operator float() {
+    explicit operator float() const {
         return toFloat();
     }
-    explicit operator int() {
+    explicit operator int() const {
         return toInt();
     }
-    explicit operator long long() {
+    explicit operator long long() const {
+        return toInt();
+    }
+    explicit operator unsigned char() const {
         return toInt();
     }
 

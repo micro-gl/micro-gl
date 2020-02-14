@@ -1153,14 +1153,16 @@ Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
 
                 if(perspective_correct) {
                     uint64_t q_fixed =(((uint64_t)((uint64_t)w0*q2 + (uint64_t)w1*q0 + (uint64_t)w2*q1)));
-                    u_i = ((u_fixed<<BITS_UV_COORDS)/q_fixed);
-                    v_i = ((v_fixed<<BITS_UV_COORDS)/q_fixed);
+                    u_i = (u_fixed<<BITS_UV_COORDS)/q_fixed;
+                    v_i = (v_fixed<<BITS_UV_COORDS)/q_fixed;
                 } else {
-                    u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS));
-                    v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
-                    // coords in :BITS_UV_COORDS space
-                    u_i = (u_fixed)>>(BITS_UV_COORDS);
-                    v_i = (v_fixed)>>(BITS_UV_COORDS);
+//                    u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS));
+//                    v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
+//                    u_i = (u_fixed)>>(BITS_UV_COORDS);
+//                    v_i = (v_fixed)>>(BITS_UV_COORDS);
+
+                    u_i = (u_fixed<<0)/area;
+                    v_i = (v_fixed<<0)/area;
                 }
                 color_t col_bmp;
                 sampler.sample(u_i, v_i, BITS_UV_COORDS, col_bmp);
@@ -1310,7 +1312,7 @@ void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, numb
         const auto & bary_1= result_clipping[ix+1].bary;
         const auto & bary_2= result_clipping[ix+2].bary;
         // convert bary to 16 bits fixed points
-        constexpr precision p = 16;
+        constexpr precision p = 15;
         const vec4<long long> bary_0_fixed= {f(bary_0.x, p), f(bary_0.y, p), f(bary_0.z, p), f(bary_0.w, p)};
         const vec4<long long> bary_1_fixed= {f(bary_1.x, p), f(bary_1.y, p), f(bary_1.z, p), f(bary_1.w, p)};
         const vec4<long long> bary_2_fixed= {f(bary_2.x, p), f(bary_2.y, p), f(bary_2.z, p), f(bary_2.w, p)};
@@ -1477,6 +1479,7 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
             auto opacity_sample = opacity;
             auto bary = vec4<l64>{w0, w1, w2, area};
 
+            /*
             if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
                 bary.x= (l64(w0)*v0_w)>>w_bits, bary.y= (l64(w1)*v1_w)>>w_bits, bary.z= (l64(w2)*v2_w)>>w_bits;
                 bary.w=bary.x+bary.y+bary.z;
@@ -1525,6 +1528,8 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
                 if(z<0 || z>depth_buffer[index + p.x]) should_sample=false;
                 else depth_buffer[index + p.x]=z;
             }
+
+             */
 
             if(should_sample) {
                 // cast to user's number types vec4<number> casted_bary= bary;, I decided to stick with l64

@@ -7,7 +7,7 @@
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/Bilinear.h>
-#include <microgl/shaders/texture_shader.h>
+#include <microgl/shaders/sampler_shader.h>
 #include "data/model_3d_cube.h"
 
 using namespace microgl::shading;

@@ -7,12 +7,12 @@
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/shaders/color_shader.h>
 #include <microgl/shaders/flat_color_shader.h>
-#include <microgl/shaders/texture_shader.h>
+#include <microgl/shaders/sampler_shader.h>
 #include <microgl/samplers/texture.h>
 #include <microgl/camera.h>
 
 using namespace microgl::shading;
-#define TEST_ITERATIONS 1
+#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 640*1
 
@@ -26,7 +26,7 @@ using index_t = unsigned int;
 
 using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::Bilinear>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
 Canvas24 * canvas;
 Texture24 tex_1, tex_2;
 
@@ -73,22 +73,22 @@ void test_shader_flat_color_2d() {
 template <typename number>
 void test_shader_texture_2d() {
 
-    texture_shader<number, uint32_t, coder::RGB888_PACKED_32, sampler::NearestNeighbor> shader;
-    shader.matrix= camera<number>::orthographic(0, W, 0, H, 1, 100);
-    shader.texture= bmp_uv;
+    sampler_shader<number, Texture24> shader;
+    shader.matrix= camera<number>::orthographic(0, W, 0, H, 0, 10);
+    shader.sampler= &tex_1;
 
-    texture_shader_vertex_attributes<number> v0, v1, v2;
+    sampler_shader_vertex_attribute<number> v0{}, v1{}, v2{};
     v0.point= {10.0,10.0, 0};   v0.uv= {0.0f, 0.0f};
     v1.point= {500.0,10.0, 0};  v1.uv= {1.0f, 0.0f};
     v2.point= {500.0,500.0, 0}; v2.uv= {1.0f, 1.0f};
 
-    canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255,
-            false, true, false);
-//    canvas->drawTriangle<blendmode::Normal, porterduff::None>(*bmp_uv,
-//            10.0,10.0, 0.0, 0.0,
-//            500.0,10.0, 1.0, 0.0,
-//            500.0,500.0, 1.0, 1.0,
-//            255);
+    canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255);
+    return;
+    canvas->drawTriangle<blendmode::Normal, porterduff::None>(tex_1,
+            10.0,10.0, 0.0, 0.0,
+            500.0,10.0, 1.0, 0.0,
+            500.0,500.0, 1.0, 1.0,
+            255);
 }
 
 void render() {
@@ -96,8 +96,8 @@ void render() {
 
 //    test_shader_color_2d<float>();
 //    test_shader_color_2d<Q<10>>();
-//    test_shader_texture_2d<Q<10>>();
-    test_shader_texture_2d<float>();
+    test_shader_texture_2d<Q<10>>();
+//    test_shader_texture_2d<float>();
 //    test_shader_flat_color_2d<float>();
 }
 
