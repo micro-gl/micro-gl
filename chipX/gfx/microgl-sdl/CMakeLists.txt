@@ -31,7 +31,7 @@ set(SOURCES
 #        main_speed_optimization.cpp
 #        main_draw_quadrilaterals.cpp
 #        main_draw_masks.cpp
-        main_draw_shaders_2d.cpp
+#        main_draw_shaders_2d.cpp
 #        main_draw_shaders_3d.cpp
 #        main_draw_z_buffer.cpp
 #        main_sampler.cpp
@@ -40,7 +40,7 @@ set(SOURCES
 #        main_arc_divider.cpp
 #        main_fan_triangulation.cpp
 #        main_Q_matrix_transforms.cpp
-#        main_3d_pipeline.cpp
+        main_3d_pipeline.cpp
 #        main_3d_camera.cpp
 #        main_number_systems.cpp
 #        main_aa_bug.cpp

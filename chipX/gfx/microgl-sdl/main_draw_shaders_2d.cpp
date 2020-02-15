@@ -98,6 +98,7 @@ void render() {
 
 //    test_shader_flat_color_2d<float>();
     test_shader_flat_color_2d<Q<10>>();
+
 }
 
 int main() {

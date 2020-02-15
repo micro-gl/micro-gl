@@ -34,6 +34,7 @@ private:
     using precision = unsigned char;
     using opacity_t = unsigned char;
     using l64= long long;
+    using canvas= Canvas<P, CODER>;
 
     int _width = 0, _height = 0;
     Bitmap<P, CODER> * _bitmap_canvas = nullptr;
@@ -97,7 +98,9 @@ public:
                     number radius, opacity_t opacity=255);
 
     // Triangle batches
-    
+    template<typename iterator_callback>
+    void iterate_triangles(const index *indices, const index &size, const enum triangles::indices &type, const iterator_callback &&callback);
+
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename number=float>

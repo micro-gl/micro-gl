@@ -1,11 +1,9 @@
-
 #include <iostream>
 #include <chrono>
 #include <SDL2/SDL.h>
 #include <microgl/color.h>
 #include <microgl/Canvas.h>
 #include <microgl/matrix_4x4.h>
-#include <microgl/Q.h>
 #include <microgl/camera.h>
 #include <microgl/pipeline.h>
 #include <microgl/dynamic_array.h>
@@ -69,8 +67,8 @@ void render_template(const model_3d<number_coords> & object) {
 
 void render() {
 
-//    render_template<float>(tree_3d<float>);
-    render_template<float>(cube_3d<float>);
+    render_template<float>(tree_3d<float>);
+//    render_template<float>(cube_3d<float>);
 //    render_template<Q<10>>(tree_3d<Q<10>>);
 }
 

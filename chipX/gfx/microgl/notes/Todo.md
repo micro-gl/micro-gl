@@ -51,6 +51,7 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - make dra triangles iterator based so I can re-use it's boilerplate
 - poly tesselator continue
 - path maker
+- shader need to retain some fragCoord(x,y,z,1/w) and bounding box, so user can do cool stuff
 - make pure fixed points draw functions private
 - clean/re-factor to multiple files Functions.h file
 - remove deps on Fixed.h file macros
