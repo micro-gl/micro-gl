@@ -194,7 +194,6 @@ namespace microgl {
         int signed_distance_circle_raised_quad(fixed_signed px, fixed_signed py, fixed_signed cx, fixed_signed cy,
                                                fixed_signed r, uint8_t p) {
             fixed_signed dx = (px-cx), dy = py-cy;
-
             return (fixed_mul_fixed_2(dx, dx, p) + fixed_mul_fixed_2(dy, dy, p) - fixed_mul_fixed_2(r, r, p));
         }
 

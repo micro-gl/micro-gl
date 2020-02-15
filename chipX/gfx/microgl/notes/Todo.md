@@ -48,7 +48,8 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 6. investigate solving degenrate cases some day.
 
 #### road-map
-- make dra triangles iterator based so I can re-use it's boilerplate
+- implement a correct and slow float compositing router
+- try re-implementing the block rasterizer optimization for shaders
 - poly tesselator continue
 - path maker
 - shader need to retain some fragCoord(x,y,z,1/w) and bounding box, so user can do cool stuff

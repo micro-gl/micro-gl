@@ -3,16 +3,11 @@
 template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
                         : _width{$bmp->width()}, _height{$bmp->height()}, _bitmap_canvas($bmp) {
-
-
     uint8_t alpha_bits = CODER::alpha_bits();//coder()->bits_per_alpha();
-
     _flag_hasNativeAlphaChannel = alpha_bits!=0;
-
     // fix alpha bits depth in case we don't natively
     // support alpha, this is correct because we want to
     // support compositing even if the surface is opaque.
-
     _alpha_bits_for_compositing = _flag_hasNativeAlphaChannel ? alpha_bits : 8;
     _max_alpha_value = (1<<_alpha_bits_for_compositing) - 1;
 }
@@ -24,12 +19,12 @@ Canvas<P, CODER>::Canvas(int width, int height) :
 }
 
 template<typename P, typename CODER>
-inline const coder::PixelCoder<P, CODER> &Canvas<P, CODER>::coder() {
+inline const coder::PixelCoder<P, CODER> &Canvas<P, CODER>::coder() const {
     return _bitmap_canvas->coder();
 }
 
 template<typename P, typename CODER>
-inline Bitmap<P, CODER> *Canvas<P, CODER>::bitmapCanvas() {
+inline Bitmap<P, CODER> *Canvas<P, CODER>::bitmapCanvas() const {
     return _bitmap_canvas;
 }
 
@@ -39,13 +34,13 @@ unsigned int Canvas<P, CODER>::sizeofPixel() {
 }
 
 template<typename P, typename CODER>
-P &Canvas<P, CODER>::getPixel(int x, int y) {
+P &Canvas<P, CODER>::getPixel(int x, int y)  const {
     // this is not good for high performance loop, cannot be inlined
     return _bitmap_canvas->readAt(y*_width + x);
 }
 
 template<typename P, typename CODER>
-P &Canvas<P, CODER>::getPixel(int index) {
+P &Canvas<P, CODER>::getPixel(int index) const {
     // this is not good for high performance loop, cannot be inlined
     return _bitmap_canvas->readAt(index);
 }
@@ -56,22 +51,22 @@ bool Canvas<P, CODER>::hasNativeAlphaChannel() const {
 }
 
 template<typename P, typename CODER>
-void Canvas<P, CODER>::getPixelColor(int x, int y, color_t & output) {
+void Canvas<P, CODER>::getPixelColor(int x, int y, color_t & output)  const {
     this->_bitmap_canvas->decode(x, y, output);
 }
 
 template<typename P, typename CODER>
-void Canvas<P, CODER>::getPixelColor(int index, color_t & output) {
+void Canvas<P, CODER>::getPixelColor(int index, color_t & output)  const {
     this->_bitmap_canvas->decode(index, output);
 }
 
 template<typename P, typename CODER>
-void Canvas<P, CODER>::getPixelColor(int x, int y, color_f_t & output) {
+void Canvas<P, CODER>::getPixelColor(int x, int y, color_f_t & output)  const {
     this->_bitmap_canvas->decode(x, y, output);
 }
 
 template<typename P, typename CODER>
-void Canvas<P, CODER>::getPixelColor(int index, color_f_t & output) {
+void Canvas<P, CODER>::getPixelColor(int index, color_f_t & output)  const {
     this->_bitmap_canvas->decode(index, output);
 }
 
@@ -86,7 +81,7 @@ int Canvas<P, CODER>::height() const {
 }
 
 template<typename P, typename CODER>
-P *Canvas<P, CODER>::pixels() {
+P *Canvas<P, CODER>::pixels()  const {
     return _bitmap_canvas->data();
 }
 
@@ -200,7 +195,7 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawPixel(const P & val, int x, int y) {
-    int index = (y * width() + x);
+    int index= y*width()+x;
     _bitmap_canvas->writeAt(val, index);
 }
 
@@ -220,7 +215,7 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
                                   const precision sub_pixel_precision,
                                   const opacity_t opacity) {
     color_t color_int;
-    const uint8_t p = sub_pixel_precision;
+    const precision p = sub_pixel_precision;
     coder().convert(color, color_int);
     int bits_for_antialias_distance, max_blend_distance=0;
     int a, b, c=0;
@@ -336,7 +331,7 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                           const bool aa_2d= boundary_buffer!=nullptr;
                           bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
                           if(aa_2d) {
-                              boundary_info aa_info = boundary_buffer[idx];
+                              const boundary_info aa_info = boundary_buffer[idx];
                               aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
                               aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
                               aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
@@ -367,7 +362,7 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                           const bool aa_2d= boundary_buffer!=nullptr;
                           bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
                           if(aa_2d) {
-                              boundary_info aa_info = boundary_buffer[idx];
+                              const boundary_info aa_info = boundary_buffer[idx];
                               aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
                               aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
                               aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
@@ -401,8 +396,7 @@ template<typename BlendMode, typename PorterDuff, bool antialias, typename numbe
 void Canvas<P, CODER>::drawTriangleWireframe(const color_f_t &color,
                                              const vec2<number> &p0,
                                              const vec2<number> &p1,
-                                             const vec2<number> &p2)
-{
+                                             const vec2<number> &p2) {
     drawLine(color, p0.x, p0.y, p1.x, p1.y);
     drawLine(color, p1.x, p1.y, p2.x, p2.y);
     drawLine(color, p2.x, p2.y, p0.x, p0.y);
@@ -419,7 +413,6 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     bool aa_first_edge,
                                     bool aa_second_edge,
                                     bool aa_third_edge) {
-
     fixed_signed sign = functions::orient2d({v0_x, v0_y},
             {v1_x, v1_y}, {v2_x, v2_y},
             sub_pixel_precision);
@@ -431,7 +424,6 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
         functions::swap(v1_y, v2_y);
         functions::swap(aa_first_edge, aa_third_edge);
     }
-
     color_t color_int;
     coder().convert(color, color_int);
     bool perform_opacity = opacity < _max_alpha_value;
@@ -440,7 +432,6 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     uint8_t MAX_BITS_FOR_PROCESSING_PRECISION = 15;
     uint8_t PR = MAX_BITS_FOR_PROCESSING_PRECISION;// - sub_pixel_precision;
     int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
-
     // anti-alias pad for distance calculation
     uint8_t bits_distance = 0;
     uint8_t bits_distance_complement = 8;
@@ -450,34 +441,23 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     bool aa_all_edges=false;
     if(antialias) {
         aa_all_edges = aa_first_edge && aa_second_edge && aa_third_edge;
-
         bits_distance = 0;
         bits_distance_complement = 8 - bits_distance;
         // max distance to consider in canvas space
         int max_distance_canvas_space_anti_alias = 1 << bits_distance;
         max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias << (PR);
-        // we can solve padding analytically with distance=(max_distance_anti_alias/Cos(angle))
-        // but I don't give a fuck about it since I am just using max value of 2
-        // minX-=max_distance_anti_alias*2;minY-=max_distance_anti_alias*2;
-        // maxX+=max_distance_anti_alias*2;maxY+=max_distance_anti_alias*2;
     }
-
-    // bbox
-//    max_sub_pixel_precision_value = 0;
     int minX = (functions::min(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
     int minY = (functions::min(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
     int maxX = (functions::max(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
     int maxY = (functions::max(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-
     // fill rules adjustments
     triangles::top_left_t top_left =
             triangles::classifyTopLeftEdges(false,
                                             v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
-
     int bias_w0 = top_left.first  ? 0 : -1;
     int bias_w1 = top_left.second ? 0 : -1;
     int bias_w2 = top_left.third  ? 0 : -1;
-    //
     const int block = 8;
 //    minX -= block;
 //    minY -= block;
@@ -488,10 +468,8 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 //    minY &= ~(block - 1);
 //    maxX &= ~(block - 1);
 //    maxY &= ~(block - 1);
-
     minX = functions::max(0, minX); minY = functions::max(0, minY);
     maxX = functions::min((width()), maxX); maxY = functions::min((height()), maxY);
-
     // Triangle setup
     int A01 = v0_y - v1_y, B01 = v1_x - v0_x;
     int A12 = v1_y - v2_y, B12 = v2_x - v1_x;
@@ -523,12 +501,10 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     int A01_block_m_1_h=0, B01_block_m_1_h=0, A12_block_m_1_h=0, B12_block_m_1_h=0, A20_block_m_1_h=0, B20_block_m_1_h=0;
     if(antialias) {
         int PP = PR;
-
         // lengths of edges
         unsigned int length_w0 = functions::length({v0_x, v0_y}, {v1_x, v1_y}, 0);
         unsigned int length_w1 = functions::length({v1_x, v1_y}, {v2_x, v2_y}, 0);
         unsigned int length_w2 = functions::length({v0_x, v0_y}, {v2_x, v2_y}, 0);
-
         A01_h = (((int64_t)(v0_y - v1_y))<<(PP))/length_w0, B01_h = (((int64_t)(v1_x - v0_x))<<(PP))/length_w0;
         A12_h = (((int64_t)(v1_y - v2_y))<<(PP))/length_w1, B12_h = (((int64_t)(v2_x - v1_x))<<(PP))/length_w1;
         A20_h = (((int64_t)(v2_y - v0_y))<<(PP))/length_w2, B20_h = (((int64_t)(v0_x - v2_x))<<(PP))/length_w2;
@@ -545,27 +521,20 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
         w1_row_h = (((int64_t)(w1_row))<<(PP))/length_w1;
         w2_row_h = (((int64_t)(w2_row))<<(PP))/length_w2;
     }
-
     // watch out for negative values
     int index = p.y * (_width);
     int w_t_b = _width*block;
-
     for (p.y = minY; p.y <= maxY; p.y+=block) {
-
-        // Barycentric coordinates at start of row
         int w0 = w0_row;
         int w1 = w1_row;
         int w2 = w2_row;
-
         int w0_h=0,w1_h=0,w2_h=0;
         if(antialias) {
             w0_h = w0_row_h;
             w1_h = w1_row_h;
             w2_h = w2_row_h;
         }
-
         for (p.x = minX; p.x <= maxX; p.x+=block) {
-
             // Corners of block
             // test block bbox against each edge
             int top_left_w0 = w0;
@@ -587,33 +556,26 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
             bool w0_in = (top_left_w0 | top_right_w0 | bottom_right_w0 | bottom_left_w0)>=0;
             bool w1_in = (top_left_w1 | top_right_w1 | bottom_right_w1 | bottom_left_w1)>=0;
             bool w2_in = (top_left_w2 | top_right_w2 | bottom_right_w2 | bottom_left_w2)>=0;
-
             bool in = w0_in && w1_in && w2_in;
-
             if (in) {
                 int stride = index;
                 int block_start_x = functions::max(p.x, minX);
                 int block_start_y = functions::max(p.y, minY);
                 int block_end_x = functions::min(p.x + block, maxX);
                 int block_end_y = functions::min(p.y + block, maxY);
-
                 for(int iy = block_start_y; iy <block_end_y; iy++) {
                     for(int ix = block_start_x; ix < block_end_x; ix++)
-                        blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), opacity);
-
+                        blendColor<BlendMode, PorterDuff>(color_int, stride+ix, opacity);
                     stride += _width;
                 }
-
             }
             // we are on the outside or on the boundary
             else {
                 bool w0_out = (top_left_w0 & top_right_w0 & bottom_right_w0 & bottom_left_w0)<0;
                 bool w1_out = (top_left_w1 & top_right_w1 & bottom_right_w1 & bottom_left_w1)<0;
                 bool w2_out = (top_left_w2 & top_right_w2 & bottom_right_w2 & bottom_left_w2)<0;
-
                 bool out = w0_out || w1_out || w2_out;
                 bool boundary = !out;
-
                 // now test if block is also interesting for AA
                 if(antialias && out) {
                     int top_left_w0_h = w0_h;
@@ -631,7 +593,6 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                     int bottom_right_w0_h = bottom_left_w0_h + A01_block_m_1_h;
                     int bottom_right_w1_h = bottom_left_w1_h + A12_block_m_1_h;
                     int bottom_right_w2_h = bottom_left_w2_h + A20_block_m_1_h;
-
                     // distance of block to the edge w0
                     // since we are outside, all of the distances are negative, therefore
                     // taking max function on negatives reveals the closest distance
@@ -641,7 +602,6 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                                      abs(top_right_w1_h), abs(bottom_right_w1_h));
                     int distance_w2 = functions::min(abs(top_left_w2_h), abs(bottom_left_w2_h),
                                                      abs(top_right_w2_h), abs(bottom_right_w2_h));
-
                     // now take the minimum among absolute values of distances
                     int d_aa = functions::min((distance_w0), (distance_w1), (distance_w2));
                     // todo:: one bug I notices, what happens when pixel falls on
@@ -651,55 +611,43 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                         boundary = boundary || delta>=0;
                     }
                 }
-
                 if(boundary) {
                     int stride = index;
-
                     int w0_row_ = w0;
                     int w1_row_ = w1;
                     int w2_row_ = w2;
-
                     int w0_row_h_,w1_row_h_,w2_row_h_;
                     if(antialias) {
                         w0_row_h_ = w0_h;
                         w1_row_h_ = w1_h;
                         w2_row_h_ = w2_h;
                     }
-
                     int block_start_x = functions::max(p.x, minX);
                     int block_start_y = functions::max(p.y, minY);
                     int block_end_x = functions::min(p.x + block, maxX);
                     int block_end_y = functions::min(p.y + block, maxY);
-
                     for (int iy = block_start_y; iy < block_end_y; iy++) {
-
                         int w0_ = w0_row_;
                         int w1_ = w1_row_;
                         int w2_ = w2_row_;
-
                         int w0_h_,w1_h_,w2_h_;
                         if(antialias) {
                             w0_h_ = w0_row_h_;
                             w1_h_ = w1_row_h_;
                             w2_h_ = w2_row_h_;
                         }
-
                         for (int ix = block_start_x; ix < block_end_x; ix++) {
-                            if ((w0_ | w1_ | w2_) >= 0)
+                            if ((w0_|w1_|w2_)>=0)
                                 blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), opacity);
                             else if(antialias) {
                                 // if any of the distances are negative, we are outside.
                                 // test if we can anti-alias
                                 // take minimum of all meta distances
-
                                 // find minimal distance along edges only, this does not take
                                 // into account the junctions
-
                                 int distance = functions::min((w0_h_), (w1_h_), (w2_h_));
                                 int delta = ((distance) + max_distance_scaled_space_anti_alias);
                                 bool perform_aa = aa_all_edges;
-
-
                                 // test edges
                                 if(!perform_aa) {
                                     if((distance==w0_h_) && aa_first_edge)
@@ -708,87 +656,62 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                         perform_aa = true;
                                     else perform_aa = (distance == w2_h_) && aa_third_edge;
                                 }
-
                                 {
                                     bool on_cusp = w0_h_<=0 && w1_h_<=0;
                                     on_cusp |= (w1_h_<=0 && w2_h_<=0);
                                     on_cusp |= (w2_h_<=0 && w0_h_<=0);
                                     perform_aa &= !(on_cusp);
                                 }
-
-                                if (perform_aa && delta>=0) {
-
-                                    // take the complement and rescale
-                                    uint8_t blend = functions::clamp<int>(((int64_t)delta << bits_distance_complement)>>(PR),
+                                if (perform_aa && delta>=0) { // take the complement and rescale
+                                    precision blend = functions::clamp<int>(((int64_t)delta << bits_distance_complement)>>(PR),
                                                                           0, 255);
-
-                                    if (perform_opacity) {
+                                    if (perform_opacity)
                                         blend = (blend * opacity) >> 8;
-                                    }
-
-//                                    blendColor<BlendMode, PorterDuff>({0,0,0}, (stride + ix), 255);
                                     blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), blend);
                                 }
-
                             }
-
                             w0_ += A01;
                             w1_ += A12;
                             w2_ += A20;
-
                             if(antialias) {
                                 w0_h_ += A01_h;
                                 w1_h_ += A12_h;
                                 w2_h_ += A20_h;
                             }
-
                         }
-
                         w0_row_ += B01;
                         w1_row_ += B12;
                         w2_row_ += B20;
-
                         if(antialias) {
                             w0_row_h_ += B01_h;
                             w1_row_h_ += B12_h;
                             w2_row_h_ += B20_h;
                         }
-
                         stride += _width;
-
                     }
-
                 }
-
             }
-
             // One step to the right
             w0 += A01_block;
             w1 += A12_block;
             w2 += A20_block;
-
             if(antialias) {
                 w0_h += A01_block_h;
                 w1_h += A12_block_h;
                 w2_h += A20_block_h;
             }
-
         }
-
         // One row step
         w0_row += B01_block;
         w1_row += B12_block;
         w2_row += B20_block;
-
         if(antialias) {
             w0_row_h += B01_block_h;
             w1_row_h += B12_block_h;
             w2_row_h += B20_block_h;
         }
-
         index += w_t_b;
     }
-
 }
 
 template<typename P, typename CODER>
@@ -799,7 +722,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     const number v2_x, const number v2_y,
                                     const opacity_t opacity,
                                     bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    precision precision = 4;
+    const precision precision = 4;
     int v0_x_ = microgl::math::to_fixed(v0_x, precision);
     int v0_y_ = microgl::math::to_fixed(v0_y, precision);
     int v1_x_ = microgl::math::to_fixed(v1_x, precision);
@@ -838,8 +761,8 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
 
     // sub_pixel_precision;
     // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
-    uint8_t BITS_UV_COORDS = uv_precision;
-    uint8_t PREC_DIST = 15;
+    const precision BITS_UV_COORDS = uv_precision;
+    const precision PREC_DIST = 15;
 
     unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
 
@@ -850,8 +773,8 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     int maxY = (functions::max(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
 
     // anti-alias pad for distance calculation
-    uint8_t bits_distance = 0;
-    uint8_t bits_distance_complement = 8;
+    precision bits_distance = 0;
+    precision bits_distance_complement = 8;
     // max distance to consider in canvas space
     unsigned int max_distance_canvas_space_anti_alias=0;
     // max distance to consider in scaled space
@@ -925,21 +848,16 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     }
 
     int index = p.y * _width;
-
     for (p.y = minY; p.y <= maxY; p.y++) {
-
         int w0 = w0_row;
         int w1 = w1_row;
         int w2 = w2_row;
-
         int w0_h=0,w1_h=0,w2_h=0;
-
         if(antialias) {
             w0_h = w0_row_h;
             w1_h = w1_row_h;
             w2_h = w2_row_h;
         }
-
         for (p.x = minX; p.x <= maxX; p.x++) {
             if ((w0|w1|w2)>=0) {
                 int u_i, v_i;
@@ -955,7 +873,6 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                     v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
                     u_i = (u_fixed)>>(BITS_UV_COORDS);
                     v_i = (v_fixed)>>(BITS_UV_COORDS);
-//
 //                    u_i = u_fixed/area;
 //                    v_i = v_fixed/area;
                 }
@@ -979,7 +896,6 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                         perform_aa = true;
                     else perform_aa = distance == w2_h && aa_third_edge;
                 }
-
                 if (perform_aa && delta >= 0) {
                     // we need to clip uv coords if they overflow dimension of texture so we
                     // can get the last texel of the boundary
@@ -1016,28 +932,23 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
             w0 += A01;
             w1 += A12;
             w2 += A20;
-
             if(antialias) {
                 w0_h += A01_h;
                 w1_h += A12_h;
                 w2_h += A20_h;
             }
-
         }
 
         w0_row += B01;
         w1_row += B12;
         w2_row += B20;
-
         if(antialias) {
             w0_row_h += B01_h;
             w1_row_h += B12_h;
             w2_row_h += B20_h;
         }
-
         index += _width;
     }
-
 }
 
 template<typename P, typename CODER>
@@ -1050,7 +961,7 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> & sampler,
                                    const number v2_x, const number v2_y, number u2, number v2,
                                    const opacity_t opacity,
                                    bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    precision prec_pixel = 8, prec_uv = 8;
+    const precision prec_pixel = 8, prec_uv = 8;
     int v0_x_ = microgl::math::to_fixed(v0_x, prec_pixel);
     int v0_y_ = microgl::math::to_fixed(v0_y, prec_pixel);
     int v1_x_ = microgl::math::to_fixed(v1_x, prec_pixel);
@@ -1133,7 +1044,7 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
      * vertex attributes. we pass varying because somewhere in the pipeline we might have clipped things
      * in homogeneous space and therefore had to update/correct the vertex attributes.
      */
-    const bits sub_pixel_precision = 4;
+    const precision sub_pixel_precision = 4;
 #define f microgl::math::to_fixed
     varying interpolated_varying;
     // perspective divide by w -> NDC space
@@ -1326,7 +1237,6 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
                         varying_v1,
                         varying_v2, bary);
                 auto color = shader.fragment(interpolated_varying);
-                // todo: color conversion is missing
                 blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity_sample);
             }
 
@@ -1366,7 +1276,7 @@ void Canvas<P, CODER>::drawQuadrilateral(const sampling::sampler<S> & sampler,
                                     number v2_x, number v2_y, number u2, number v2,
                                     number v3_x, number v3_y, number u3, number v3,
                                     const uint8_t opacity) {
-    precision uv_p = 15, pixel_p = 4;
+    const precision uv_p = 15, pixel_p = 4;
 #define f microgl::math::to_fixed
     number q0 = 1, q1 = 1, q2 = 1, q3 = 1;
     number one(1), zero(0);
@@ -1424,16 +1334,15 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
                                 const opacity_t opacity) {
     color_t color_int;
     this->coder().convert(color, color_int);
-    unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
+    const unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
     int left_ = functions::max((left + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)0);
     int top_ = functions::max((top + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)0);
     int right_ = functions::min((right + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)width()-1);
     int bottom_ = functions::min((bottom + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)height()-1);
     int index = top_ * _width;
     for (int y = top_; y < bottom_; y++) {
-        for (int x = left_; x < right_; x++) {
+        for (int x = left_; x < right_; x++)
             blendColor<BlendMode, PorterDuff>(color_int, index + x, opacity);
-        }
         index += _width;
     }
 }
@@ -1444,7 +1353,7 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
                                 const number left, const number top,
                                 const number right, const number bottom,
                                 const opacity_t opacity) {
-    uint8_t p = 4;
+    const precision p = 4;
     drawQuad<BlendMode, PorterDuff>(color,
              microgl::math::to_fixed(left, p), microgl::math::to_fixed(top, p),
              microgl::math::to_fixed(right, p), microgl::math::to_fixed(bottom, p),
@@ -1460,7 +1369,7 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                                 const opacity_t opacity,
                                 const number u0, const number v0,
                                 const number u1, const number v1) {
-    precision p_sub = 4, p_uv = 10;
+    const precision p_sub = 4, p_uv = 10;
     drawQuad<BlendMode, PorterDuff, S>(sampler,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
             microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),

@@ -50,19 +50,17 @@ public:
     int height() const;
     unsigned int sizeofPixel();
 
-    P* pixels();
-    P &getPixel(int x, int y);
-    P &getPixel(int index);
-    void getPixelColor(int index, color_t & output);
-    void getPixelColor(int x, int y, color_t & output);
-    void getPixelColor(int x, int y, color_f_t & output);
-    void getPixelColor(int index, color_f_t & output);
+    P* pixels() const;
+    P &getPixel(int x, int y) const ;
+    P &getPixel(int index) const ;
+    void getPixelColor(int index, color_t & output) const;
+    void getPixelColor(int x, int y, color_t & output) const;
+    void getPixelColor(int x, int y, color_f_t & output) const;
+    void getPixelColor(int index, color_f_t & output) const;
 
-    const coder::PixelCoder<P, CODER> & coder();
-    Bitmap<P, CODER> * bitmapCanvas();
-
+    const coder::PixelCoder<P, CODER> & coder() const;
+    Bitmap<P, CODER> * bitmapCanvas() const;
     bool hasNativeAlphaChannel() const;
-
     void clear(const color_f_t &color);
 
 //    // float blenders
