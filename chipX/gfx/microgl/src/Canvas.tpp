@@ -29,12 +29,12 @@ inline Bitmap<P, CODER> *Canvas<P, CODER>::bitmapCanvas() const {
 }
 
 template<typename P, typename CODER>
-unsigned int Canvas<P, CODER>::sizeofPixel() {
+unsigned int Canvas<P, CODER>::sizeofPixel() const {
     return sizeof(P{});
 }
 
 template<typename P, typename CODER>
-P &Canvas<P, CODER>::getPixel(int x, int y)  const {
+P &Canvas<P, CODER>::getPixel(int x, int y) const {
     // this is not good for high performance loop, cannot be inlined
     return _bitmap_canvas->readAt(y*_width + x);
 }
@@ -222,8 +222,8 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
     if(antialias) {
         bits_for_antialias_distance = 1;
         max_blend_distance = (1u << bits_for_antialias_distance)<<(p);
-        a = fixed_mul_fixed_2(radius, radius, p);
-        b = fixed_mul_fixed_2(radius+max_blend_distance, radius+max_blend_distance, p);
+        a = (l64(radius)*radius)>>p;
+        b = (l64(radius+max_blend_distance)*(radius+max_blend_distance))>>p;
         c = b - a;
     }
     bool apply_opacity = opacity!=255;
@@ -234,14 +234,14 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
     // clipping
     x_min = functions::max(0, x_min);
     y_min = functions::max(0, y_min);
-    x_max = functions::min((int)int_to_fixed_2(width()-0, p), x_max);
-    y_max = functions::min((int)int_to_fixed_2(height()-0, p), y_max);
-    int step = functions::max((1<<p)-0, 1);
+    x_max = functions::min(width()<<p, x_max);
+    y_max = functions::min(height()<<p, y_max);
+    int step = 1<<p;
     // Round start position up to next integer multiple
     // (we sample at integer pixel positions, so if our
     // min is not an integer coordinate, that pixel won't
     // be hit)
-    fixed_signed sub_mask = (step-1);
+    int sub_mask = step-1;
     x_min = (x_min + sub_mask) & (~sub_mask);
     y_min = (y_min + sub_mask) & (~sub_mask);
     x_max = (x_max + sub_mask) & (~sub_mask);
@@ -413,7 +413,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     bool aa_first_edge,
                                     bool aa_second_edge,
                                     bool aa_third_edge) {
-    fixed_signed sign = functions::orient2d({v0_x, v0_y},
+    int sign = functions::orient2d({v0_x, v0_y},
             {v1_x, v1_y}, {v2_x, v2_y},
             sub_pixel_precision);
     // discard degenerate triangle
@@ -747,7 +747,7 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                                    int v2_x, int v2_y, int u2, int v2, int q2,
                                    const opacity_t opacity, const precision sub_pixel_precision, const precision uv_precision,
                                    bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    fixed_signed area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
+    int area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
     if(area==0) return;
     if(area<0) { // convert CCW to CW triangle
         area=-area;
@@ -808,7 +808,7 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     vec2_32i p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
 
     // this can produce a 2P bits number if the points form a a perpendicular triangle
-    fixed_signed area_v1_v2_p = functions::orient2d({v1_x, v1_y}, {v2_x, v2_y}, p_fixed, sub_pixel_precision) + bias_w1,
+    int area_v1_v2_p = functions::orient2d({v1_x, v1_y}, {v2_x, v2_y}, p_fixed, sub_pixel_precision) + bias_w1,
             area_v2_v0_p = functions::orient2d({v2_x, v2_y}, {v0_x, v0_y}, p_fixed, sub_pixel_precision) + bias_w2,
             area_v0_v1_p = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, p_fixed, sub_pixel_precision) + bias_w0;
 

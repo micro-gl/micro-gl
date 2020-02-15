@@ -26,6 +26,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
 include_directories("${PROJECT_BINARY_DIR}")
 
 set(SOURCES
+#        main_test_fill_flat.cpp
+        main_draw_circles.cpp
 #        main_clear.cpp
 #        main_curves.cpp
 #        main_speed_optimization.cpp
@@ -40,7 +42,7 @@ set(SOURCES
 #        main_arc_divider.cpp
 #        main_fan_triangulation.cpp
 #        main_Q_matrix_transforms.cpp
-        main_3d_pipeline.cpp
+#        main_3d_pipeline.cpp
 #        main_3d_camera.cpp
 #        main_number_systems.cpp
 #        main_aa_bug.cpp

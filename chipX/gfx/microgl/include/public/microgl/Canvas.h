@@ -48,8 +48,7 @@ public:
     Canvas(int width, int height);
     int width() const;
     int height() const;
-    unsigned int sizeofPixel();
-
+    unsigned int sizeofPixel() const;
     P* pixels() const;
     P &getPixel(int x, int y) const ;
     P &getPixel(int index) const ;
