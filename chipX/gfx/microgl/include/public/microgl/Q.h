@@ -39,7 +39,6 @@ public:
     Q(const_ref q) {
         this->_value = q.value();
     }
-
     // conversion constructor, this reduces many other
     // operators.
     template <unsigned P_2>
@@ -48,7 +47,9 @@ public:
                              P_2,
                              P);
     }
-
+    Q(const_signed_ref q_val, precision_t q_precision) {
+        this->_value = convert(q_val, q_precision, P);
+    }
     // this is Q<0>, so we promote it to Q<P>
     Q(const_signed_ref int_val) {
         this->_value = int_val<<P;
@@ -57,21 +58,12 @@ public:
     Q(const signed& int_val) {
         this->_value = int_val<<P;
     }
-
     Q(const unsigned & int_val) {
         this->_value = int_val<<P;
     }
-
-    Q(const_signed_ref q_val, precision_t q_precision) {
-        this->_value = convert(q_val,
-                             q_precision,
-                             P);
-    }
-
     Q(const float &val) {
         this->_value = integer(val * float(1u<<P));
     }
-
     Q(const double &val) {
         this->_value = integer(val * float(1u<<P));
     }
@@ -84,30 +76,17 @@ public:
     q_ref operator =(const float &float_value) {
         return (*this)=Q{float_value};
     }
-    template <unsigned P_2>
-    q_ref operator *=(const Q<P_2> &q) {
-        long long inter = ((long long)this->_value*q.value());
-        this->_value = inter>>P_2;
-        return *this;
-    }
     q_ref operator *=(const_ref q) {
         long long inter = ((long long)this->_value*q.value());
         this->_value = inter>>P;
         return *this;
     }
-    template <unsigned P_2>
-    q_ref operator /=(const Q<P_2> &q) {
-        long long inter = ((long long)this->_value)<<P_2;
-        this->_value = inter/q.value();
-        return *this;
-    }
     q_ref operator /=(const_ref q) {
-        long long inter = ((long long)this->_value)<<P;
-        this->_value = inter/q.value();
+        this->_value = (_value<<P)/q.value();
         return *this;
     }
     q_ref operator +=(const_ref q) {
-        this->_value += convert_q_value_to_my_space(q);
+        this->_value+=convert_q_value_to_my_space(q);
         return *this;
     }
     q_ref operator -=(const_ref q) {
@@ -117,73 +96,55 @@ public:
 
     // int assignments
     q_ref operator *=(const_signed_ref i) {
-        this->_value *= i;
+        this->_value*=i;
         return *this;
     }
     q_ref operator /=(const_signed_ref i) {
-        this->_value /= i;
+        this->_value/=i;
         return *this;
     }
     q_ref operator +=(const_signed_ref i) {
-        this->_value += i;
+        this->_value+=(i<<P);
         return *this;
     }
     q_ref operator -=(const_signed_ref i) {
-        this->_value -= i;
+        this->_value -= (i<<P);
         return *this;
     }
 
     // intermediate Q
     Q operator +(const_ref q) const {
-        Q temp{*this};
-        temp += q;
-        return temp;
-    }
-    template <unsigned P_2>
-    Q operator *(const Q<P_2> &q) {
-        Q temp{*this};
-        temp *= q;
+        Q temp{*this}; temp+=q;
         return temp;
     }
     Q operator *(const_ref q) const {
-        Q temp{*this};
-        temp *= q;
-        return temp;
-    }
-    template <unsigned P_2>
-    Q operator /(const Q<P_2> &q) {
-        Q temp{*this};
-        temp /= q;
+        Q temp{*this}; temp*=q;
         return temp;
     }
     Q operator /(const_ref q) const {
-        Q temp{*this};
-        temp /= q;
+        Q temp{*this}; temp/=q;
         return temp;
     }
     Q operator -(const_ref q) const {
-        Q temp{*this};
-        temp -= q;
+        Q temp{*this}; temp-=q;
         return temp;
     }
 
     // intermediate int
     Q operator +(const_signed_ref i) const {
-        Q temp{*this};
-        temp += i;
+        Q temp{this->_value + (i<<P), P};
         return temp;
     }
     Q operator *(const_signed_ref i) const {
-        Q temp{this->value()*i, P};
+        Q temp{this->_value*i, P};
         return temp;
     }
     Q operator /(const_signed_ref i) const {
-        Q temp{this->value()/i, P};
+        Q temp{this->_value/i, P};
         return temp;
     }
     Q operator -(const_signed_ref i) const {
-        Q temp{*this};
-        temp -= i;
+        Q temp{this->_value - (i<<P), P};
         return temp;
     }
 
@@ -215,7 +176,7 @@ public:
         return this->_value!=0;
     }
 
-    Q operator % (const_ref q) const {
+    Q operator %(const_ref q) const {
         Q res;
         res._value = this->value()%q.value();
         return res;
@@ -238,23 +199,18 @@ public:
     integer toInt() const {
         return this->_value>>P;
     }
-
     integer toFixed(precision_t precision_value) const {
         return convert(this->_value, P, precision_value);
     }
-
     float toFloat() const {
         return float(this->_value)/float(1u<<P);
     }
-
     integer fraction() const {
         return _value & ((1u<<P) - 1);
     }
-
     integer integral() const {
         return _value & (((1u<<P) - 1)<<P);
     }
-
     inline integer value() const {
         return _value;
     }

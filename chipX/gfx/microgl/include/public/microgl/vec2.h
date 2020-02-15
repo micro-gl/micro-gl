@@ -62,5 +62,4 @@ namespace microgl {
 
     };
 
-    typedef vec2<int32_t > vec2_32i;
 }

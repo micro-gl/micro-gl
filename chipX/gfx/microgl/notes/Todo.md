@@ -48,6 +48,7 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 6. investigate solving degenrate cases some day.
 
 #### road-map
+- configurable custom sin/cos/tan provider
 - implement a correct and slow float compositing router
 - try re-implementing the block rasterizer optimization for shaders
 - poly tesselator continue

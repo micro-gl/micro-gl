@@ -10,6 +10,7 @@ using namespace microgl;
 namespace microgl {
 
     namespace functions {
+        typedef vec2<int32_t > vec2_32i;
 
 #define min_(a, b) ((a)<(b) ? (a) : (b))
 #define max_(a, b) ((a)>(b) ? (a) : (b))

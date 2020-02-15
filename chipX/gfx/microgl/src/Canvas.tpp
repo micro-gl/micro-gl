@@ -236,7 +236,7 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
     y_min = functions::max(0, y_min);
     x_max = functions::min(width()<<p, x_max);
     y_max = functions::min(height()<<p, y_max);
-    int step = 1<<p;
+    const int step = 1<<p;
     // Round start position up to next integer multiple
     // (we sample at integer pixel positions, so if our
     // min is not an integer coordinate, that pixel won't
@@ -249,7 +249,8 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
     for (int y = y_min; y < y_max; y+=step) {
         for (int x = x_min; x < x_max; x+=step) {
             // 16 bit precision fixed point
-            int distance = functions::signed_distance_circle_raised_quad(x, y, centerX, centerY, radius, p);
+            int dx = x-centerX, dy = y-centerY;
+            int distance= ((l64(dx)*dx)>>p) + ((l64(dy)*dy)>>p) - ((l64(radius)*radius)>>p);
             if(distance<=0)
                 blendColor<BlendMode, PorterDuff>(color_int, x>>p, y>>p, opacity);
             else if(antialias && (delta=c-distance)>=0){
@@ -484,14 +485,14 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     int A20_block_m_1 = A20_block - A20, B20_block_m_1 = B20_block - B20;
 
     // Barycentric coordinates at minX/minY corner
-    vec2_32i p_fixed = {  minX<<sub_pixel_precision, minY<<sub_pixel_precision };
-    vec2_32i p = { minX , minY };
+    vec2<int> p_fixed = {  minX<<sub_pixel_precision, minY<<sub_pixel_precision };
+    vec2<int> p = { minX , minY };
 
-    int w0_row = (functions::orient2d(vec2_32i{v0_x, v0_y},vec2_32i{v1_x, v1_y},
+    int w0_row = (functions::orient2d({v0_x, v0_y},{v1_x, v1_y},
                                       p_fixed, sub_pixel_precision) + bias_w0);
-    int w1_row = (functions::orient2d(vec2_32i{v1_x, v1_y}, vec2_32i{v2_x, v2_y},
+    int w1_row = (functions::orient2d({v1_x, v1_y}, {v2_x, v2_y},
                                       p_fixed, sub_pixel_precision) + bias_w1);
-    int w2_row = (functions::orient2d(vec2_32i{v2_x, v2_y}, vec2_32i{v0_x, v0_y},
+    int w2_row = (functions::orient2d({v2_x, v2_y}, {v0_x, v0_y},
                                       p_fixed, sub_pixel_precision) + bias_w2);
 
     // AA, 2A/L = h, therefore the division produces a P bit number
@@ -804,8 +805,8 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     maxX = functions::min(width()-1, maxX); maxY = functions::min(height()-1, maxY);
 
     // Barycentric coordinates at minX/minY corner
-    vec2_32i p = { minX, minY };
-    vec2_32i p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
+    vec2<int> p = { minX, minY };
+    vec2<int> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
 
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     int area_v1_v2_p = functions::orient2d({v1_x, v1_y}, {v2_x, v2_y}, p_fixed, sub_pixel_precision) + bias_w1,
@@ -1160,32 +1161,27 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
         w1_row_h = ((int64_t)(area_v1_v2_p)<<PREC_DIST)/length_w1;
         w2_row_h = ((int64_t)(area_v2_v0_p)<<PREC_DIST)/length_w2;
     }
-
     int index = p.y * _width;
     for (p.y = minY; p.y <= maxY; p.y++) {
         int w0 = w0_row;
         int w1 = w1_row;
         int w2 = w2_row;
         int w0_h=0,w1_h=0,w2_h=0;
-
         if(antialias) {
             w0_h = w0_row_h;
             w1_h = w1_row_h;
             w2_h = w2_row_h;
         }
-
         for (p.x = minX; p.x<=maxX; p.x++) {
             const bool in_closure= (w0|w1|w2)>=0;
             bool should_sample= in_closure;
             auto opacity_sample = opacity;
             auto bary = vec4<l64>{w0, w1, w2, area};
-
             if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
                 bary.x= (l64(w0)*v0_w)>>w_bits, bary.y= (l64(w1)*v1_w)>>w_bits, bary.z= (l64(w2)*v2_w)>>w_bits;
                 bary.w=bary.x+bary.y+bary.z;
                 if(bary.w==0) bary.w=1;
             }
-
             if(antialias && !in_closure) {
                 // any of the distances are negative, we are outside.
                 // test if we can anti-alias
@@ -1219,7 +1215,6 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
                     bary.w= bary.x+bary.y+bary.z;
                 }
             }
-
             if(depth_buffer_flag && should_sample) {
 //                l64 z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
 //                l64 z= ((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/area;
@@ -1228,7 +1223,6 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
                 if(z<0 || z>depth_buffer[index + p.x]) should_sample=false;
                 else depth_buffer[index + p.x]=z;
             }
-
             if(should_sample) {
                 // cast to user's number types vec4<number> casted_bary= bary;, I decided to stick with l64
                 // because other wise this would have wasted bits for Q types although it would have been more elegant.
@@ -1239,29 +1233,23 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
                 auto color = shader.fragment(interpolated_varying);
                 blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity_sample);
             }
-
             w0 += A01;
             w1 += A12;
             w2 += A20;
-
             if(antialias) {
                 w0_h += A01_h;
                 w1_h += A12_h;
                 w2_h += A20_h;
             }
-
         }
-
         w0_row += B01;
         w1_row += B12;
         w2_row += B20;
-
         if(antialias) {
             w0_row_h += B01_h;
             w1_row_h += B12_h;
             w2_row_h += B20_h;
         }
-
         index += _width;
     }
 

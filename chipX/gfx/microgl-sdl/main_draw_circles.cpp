@@ -42,8 +42,11 @@ void render_circle() {
 inline void render() {
     canvas->clear(color::colors::WHITE);
 
-    render_circle<float>();
-//    render_circle<Q<10>>();
+    Q<4> a{0};
+    a=a+1;
+
+//    render_circle<float>();
+    render_circle<Q<10>>();
 
 }
 
