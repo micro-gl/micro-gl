@@ -15,7 +15,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "-fno-exceptions -fstrict-aliasing -O3 -s -fno-rtti 
 
 set(sources
         include/public/microgl/Canvas.h
-        src/Functions.cpp
         src/PixelCoder.cpp
         src/color.cpp
         src/triangles.cpp

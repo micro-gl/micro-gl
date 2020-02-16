@@ -6,16 +6,18 @@
 namespace microgl {
 
     class math {
+    private:
+        using cfr = const float &;
+        template <unsigned N>
+        using cqr = const Q<N> &;
+        using l64= long long;
+
     public:
 #define PI        3.14159265358979323846264338327950288
 #define HALF_PI   1.5707963268
 #define TWO_PI    6.28318530718
 #define min_(a, b) ((a)<(b) ? (a) : (b))
 #define max_(a, b) ((a)>(b) ? (a) : (b))
-        using cfr = const float &;
-        template <unsigned N>
-        using cqr = const Q<N> &;
-        using l64= long long;
 
         static l64 to_fixed(const float &val, unsigned char precision) {
             return l64(val*float(1u<<precision));
@@ -73,7 +75,15 @@ namespace microgl {
         template<unsigned N>
         static Q<N> length(cqr<N> p_x, cqr<N> p_y) {
             return Q<N>(sqrt_64(int64_t (p_x.value())*p_x.value() + int64_t(p_y.value())*p_y.value()), N);
-//            return Q<N>(sqrt_64(p_x.value()*p_x.value() + p_y.value()*p_y.value(), N));
+        }
+
+        static int distance(const int & p0_x, const int & p0_y, const int & p1_x, const int & p1_y) {
+            auto dx= p0_x-p1_x;
+            auto dy= p0_y-p1_y;
+            return length(dx, dy);
+        }
+        static int length(const int &p_x, const int & p_y) {
+            return sqrt_64(l64(p_x)*p_x + l64(p_y)*p_y);
         }
 
         template <typename T>
@@ -101,12 +111,11 @@ namespace microgl {
             return Q<N>(std::sinf(radians_f));
         }
 
-        // todo: this is wrong
         template <unsigned N>
         static
         Q<N> cos(const Q<N> & radians) {
-            const auto half_pi_fixed = unsigned(HALF_PI * float(1u<<radians.precision));
-            return sin(radians + half_pi_fixed);
+            const auto half_pi = Q<N>(HALF_PI);
+            return sin(radians + half_pi);
         }
 
         template <unsigned N>

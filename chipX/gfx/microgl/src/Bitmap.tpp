@@ -64,7 +64,7 @@ P Bitmap<P, CODER>::pixelAt(int x, int y) const {
 }
 
 template<typename P, typename CODER>
-const coder::PixelCoder<P, CODER> &Bitmap<P, CODER>::coder() const {
+const microgl::coder::PixelCoder<P, CODER> &Bitmap<P, CODER>::coder() const {
     return _coder;
 }
 

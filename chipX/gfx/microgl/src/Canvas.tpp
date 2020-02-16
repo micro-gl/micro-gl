@@ -414,9 +414,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     bool aa_first_edge,
                                     bool aa_second_edge,
                                     bool aa_third_edge) {
-    int sign = functions::orient2d({v0_x, v0_y},
-            {v1_x, v1_y}, {v2_x, v2_y},
-            sub_pixel_precision);
+    int sign = functions::orient2d(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
     // discard degenerate triangle
     if(sign==0) return;
     // convert CCW to CW triangle
@@ -485,15 +483,12 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     int A20_block_m_1 = A20_block - A20, B20_block_m_1 = B20_block - B20;
 
     // Barycentric coordinates at minX/minY corner
-    vec2<int> p_fixed = {  minX<<sub_pixel_precision, minY<<sub_pixel_precision };
-    vec2<int> p = { minX , minY };
+    vec2<int> p_fixed = {minX<<sub_pixel_precision, minY<<sub_pixel_precision};
+    vec2<int> p = {minX , minY};
 
-    int w0_row = (functions::orient2d({v0_x, v0_y},{v1_x, v1_y},
-                                      p_fixed, sub_pixel_precision) + bias_w0);
-    int w1_row = (functions::orient2d({v1_x, v1_y}, {v2_x, v2_y},
-                                      p_fixed, sub_pixel_precision) + bias_w1);
-    int w2_row = (functions::orient2d({v2_x, v2_y}, {v0_x, v0_y},
-                                      p_fixed, sub_pixel_precision) + bias_w2);
+    int w0_row = functions::orient2d(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w0;
+    int w1_row = functions::orient2d(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w1;
+    int w2_row = functions::orient2d(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w2;
 
     // AA, 2A/L = h, therefore the division produces a P bit number
     int w0_row_h=0, w1_row_h=0, w2_row_h=0;
@@ -503,9 +498,9 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     if(antialias) {
         int PP = PR;
         // lengths of edges
-        unsigned int length_w0 = functions::length({v0_x, v0_y}, {v1_x, v1_y}, 0);
-        unsigned int length_w1 = functions::length({v1_x, v1_y}, {v2_x, v2_y}, 0);
-        unsigned int length_w2 = functions::length({v0_x, v0_y}, {v2_x, v2_y}, 0);
+        unsigned int length_w0 = microgl::math::distance(v0_x, v0_y, v1_x, v1_y);
+        unsigned int length_w1 = microgl::math::distance(v1_x, v1_y, v2_x, v2_y);
+        unsigned int length_w2 = microgl::math::distance(v0_x, v0_y, v2_x, v2_y);
         A01_h = (((int64_t)(v0_y - v1_y))<<(PP))/length_w0, B01_h = (((int64_t)(v1_x - v0_x))<<(PP))/length_w0;
         A12_h = (((int64_t)(v1_y - v2_y))<<(PP))/length_w1, B12_h = (((int64_t)(v2_x - v1_x))<<(PP))/length_w1;
         A20_h = (((int64_t)(v2_y - v0_y))<<(PP))/length_w2, B20_h = (((int64_t)(v0_x - v2_x))<<(PP))/length_w2;
@@ -748,7 +743,7 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                                    int v2_x, int v2_y, int u2, int v2, int q2,
                                    const opacity_t opacity, const precision sub_pixel_precision, const precision uv_precision,
                                    bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    int area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
+    int area = functions::orient2d(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
     if(area==0) return;
     if(area<0) { // convert CCW to CW triangle
         area=-area;
@@ -809,9 +804,9 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     vec2<int> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
 
     // this can produce a 2P bits number if the points form a a perpendicular triangle
-    int area_v1_v2_p = functions::orient2d({v1_x, v1_y}, {v2_x, v2_y}, p_fixed, sub_pixel_precision) + bias_w1,
-            area_v2_v0_p = functions::orient2d({v2_x, v2_y}, {v0_x, v0_y}, p_fixed, sub_pixel_precision) + bias_w2,
-            area_v0_v1_p = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, p_fixed, sub_pixel_precision) + bias_w0;
+    int w0_row = functions::orient2d(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w0;
+    int w1_row = functions::orient2d(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w1;
+    int w2_row = functions::orient2d(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w2;
 
     uint8_t MAX_PREC = 60;
     uint8_t LL = MAX_PREC - (sub_pixel_precision + BITS_UV_COORDS);
@@ -825,27 +820,23 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     int A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
     int A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
 
-    int w0_row = (area_v0_v1_p);
-    int w1_row = (area_v1_v2_p);
-    int w2_row = (area_v2_v0_p);
-
     // AA, 2A/L = h, therefore the division produces a P bit number
     int w0_row_h=0, w1_row_h=0, w2_row_h=0;
     int A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
 
     if(antialias) {
         // lengths of edges, produces a P+1 bits number
-        unsigned int length_w0 = functions::length({v0_x, v0_y}, {v1_x, v1_y}, 0);
-        unsigned int length_w1 = functions::length({v1_x, v1_y}, {v2_x, v2_y}, 0);
-        unsigned int length_w2 = functions::length({v0_x, v0_y}, {v2_x, v2_y}, 0);
+        unsigned int length_w0 = microgl::math::distance(v0_x, v0_y, v1_x, v1_y);
+        unsigned int length_w1 = microgl::math::distance(v1_x, v1_y, v2_x, v2_y);
+        unsigned int length_w2 = microgl::math::distance(v0_x, v0_y, v2_x, v2_y);
 
         A01_h = ((int64_t)(v0_y - v1_y)<<PREC_DIST)/length_w0, B01_h = ((int64_t)(v1_x - v0_x)<<PREC_DIST)/length_w0;
         A12_h = ((int64_t)(v1_y - v2_y)<<PREC_DIST)/length_w1, B12_h = ((int64_t)(v2_x - v1_x)<<PREC_DIST)/length_w1;
         A20_h = ((int64_t)(v2_y - v0_y)<<PREC_DIST)/length_w2, B20_h = ((int64_t)(v0_x - v2_x)<<PREC_DIST)/length_w2;
 
-        w0_row_h = ((int64_t)(area_v0_v1_p)<<PREC_DIST)/length_w0;
-        w1_row_h = ((int64_t)(area_v1_v2_p)<<PREC_DIST)/length_w1;
-        w2_row_h = ((int64_t)(area_v2_v0_p)<<PREC_DIST)/length_w2;
+        w0_row_h = ((int64_t)(w0_row)<<PREC_DIST)/length_w0;
+        w1_row_h = ((int64_t)(w1_row)<<PREC_DIST)/length_w1;
+        w2_row_h = ((int64_t)(w2_row)<<PREC_DIST)/length_w2;
     }
 
     int index = p.y * _width;
@@ -1070,7 +1061,7 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
     const int z_bits= 24; const l64 one_z= (l64(1) << (z_bits)); // negate z because camera is looking negative z axis
     l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
 
-    l64 area = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, sub_pixel_precision);
+    l64 area = functions::orient2d(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
     // infer back-face culling
     const bool ccw = area<0;
     if(area==0) return; // discard degenerate triangles
@@ -1129,37 +1120,31 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
     // Barycentric coordinates at minX/minY corner
     vec2<int> p = { minX, minY };
     vec2<int> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
-    // this can produce a 2P bits number if the points form a a perpendicular triangle
-    const int area_v1_v2_p = functions::orient2d({v1_x, v1_y}, {v2_x, v2_y}, p_fixed, sub_pixel_precision) + bias_w1;
-    const int area_v2_v0_p = functions::orient2d({v2_x, v2_y}, {v0_x, v0_y}, p_fixed, sub_pixel_precision) + bias_w2;
-    const int area_v0_v1_p = functions::orient2d({v0_x, v0_y}, {v1_x, v1_y}, p_fixed, sub_pixel_precision) + bias_w0;
-
     // Triangle setup, this needs at least (P+1) bits, since the delta is always <= length
     int64_t A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
     int64_t A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
     int64_t A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
 
-    int64_t w0_row = (area_v0_v1_p);
-    int64_t w1_row = (area_v1_v2_p);
-    int64_t w2_row = (area_v2_v0_p);
-
+    int w0_row = functions::orient2d(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w0;
+    int w1_row = functions::orient2d(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w1;
+    int w2_row = functions::orient2d(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w2;
     // AA, 2A/L = h, therefore the division produces a P bit number
     int64_t w0_row_h=0, w1_row_h=0, w2_row_h=0;
     int64_t A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
 
     if(antialias) {
         // lengths of edges, produces a P+1 bits number
-        int64_t length_w0 = functions::length({v0_x, v0_y}, {v1_x, v1_y}, 0);
-        int64_t length_w1 = functions::length({v1_x, v1_y}, {v2_x, v2_y}, 0);
-        int64_t length_w2 = functions::length({v0_x, v0_y}, {v2_x, v2_y}, 0);
+        unsigned int length_w0 = microgl::math::distance(v0_x, v0_y, v1_x, v1_y);
+        unsigned int length_w1 = microgl::math::distance(v1_x, v1_y, v2_x, v2_y);
+        unsigned int length_w2 = microgl::math::distance(v0_x, v0_y, v2_x, v2_y);
 
         A01_h = ((int64_t)(v0_y - v1_y)<<PREC_DIST)/length_w0, B01_h = ((int64_t)(v1_x - v0_x)<<PREC_DIST)/length_w0;
         A12_h = ((int64_t)(v1_y - v2_y)<<PREC_DIST)/length_w1, B12_h = ((int64_t)(v2_x - v1_x)<<PREC_DIST)/length_w1;
         A20_h = ((int64_t)(v2_y - v0_y)<<PREC_DIST)/length_w2, B20_h = ((int64_t)(v0_x - v2_x)<<PREC_DIST)/length_w2;
 
-        w0_row_h = ((int64_t)(area_v0_v1_p)<<PREC_DIST)/length_w0;
-        w1_row_h = ((int64_t)(area_v1_v2_p)<<PREC_DIST)/length_w1;
-        w2_row_h = ((int64_t)(area_v2_v0_p)<<PREC_DIST)/length_w2;
+        w0_row_h = ((int64_t)(w0_row)<<PREC_DIST)/length_w0;
+        w1_row_h = ((int64_t)(w1_row)<<PREC_DIST)/length_w1;
+        w2_row_h = ((int64_t)(w2_row)<<PREC_DIST)/length_w2;
     }
     int index = p.y * _width;
     for (p.y = minY; p.y <= maxY; p.y++) {

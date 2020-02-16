@@ -65,7 +65,7 @@ public:
         this->_value = integer(val * float(1u<<P));
     }
     Q(const double &val) {
-        this->_value = integer(val * float(1u<<P));
+        this->_value = integer(val * double(1u<<P));
     }
 
     // with assignments operators
@@ -86,11 +86,11 @@ public:
         return *this;
     }
     q_ref operator +=(const_ref q) {
-        this->_value+=convert_q_value_to_my_space(q);
+        this->_value+=q.value();
         return *this;
     }
     q_ref operator -=(const_ref q) {
-        this->_value -= convert_q_value_to_my_space(q);
+        this->_value-=q.value();
         return *this;
     }
 
@@ -117,6 +117,10 @@ public:
         Q temp{*this}; temp+=q;
         return temp;
     }
+    Q operator -(const_ref q) const {
+        Q temp{*this}; temp-=q;
+        return temp;
+    }
     Q operator *(const_ref q) const {
         Q temp{*this}; temp*=q;
         return temp;
@@ -125,26 +129,22 @@ public:
         Q temp{*this}; temp/=q;
         return temp;
     }
-    Q operator -(const_ref q) const {
-        Q temp{*this}; temp-=q;
-        return temp;
-    }
 
     // intermediate int
     Q operator +(const_signed_ref i) const {
-        Q temp{this->_value + (i<<P), P};
-        return temp;
-    }
-    Q operator *(const_signed_ref i) const {
-        Q temp{this->_value*i, P};
-        return temp;
-    }
-    Q operator /(const_signed_ref i) const {
-        Q temp{this->_value/i, P};
+        Q temp; temp.updateValue(this->_value+(i<<P));
         return temp;
     }
     Q operator -(const_signed_ref i) const {
-        Q temp{this->_value - (i<<P), P};
+        Q temp; temp.updateValue(this->_value-(i<<P));
+        return temp;
+    }
+    Q operator *(const_signed_ref i) const {
+        Q temp; temp.updateValue(this->_value*i);
+        return temp;
+    }
+    Q operator /(const_signed_ref i) const {
+        Q temp; temp.updateValue(this->_value/i);
         return temp;
     }
 

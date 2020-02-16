@@ -1,7 +1,7 @@
 #pragma once
+#include <cmath>
 
 namespace microgl {
-
     namespace functions {
 
 #define min_(a, b) ((a)<(b) ? (a) : (b))
@@ -14,6 +14,10 @@ namespace microgl {
         template<typename T>
         inline T min(const T &p0, const T &p1) {
             return p0 < p1 ? p0 : p1;
+        }
+        template<>
+        inline float min(const float &p0, const float &p1) {
+            return fmin(p0, p1);
         }
 
         template<typename T>
@@ -29,6 +33,10 @@ namespace microgl {
         template<typename T>
         inline T max(const T &p0, const T &p1) {
             return p0 > p1 ? p0 : p1;
+        }
+        template<>
+        inline float max(const float &p0, const float &p1) {
+            return fmax(p0, p1);
         }
 
         template<typename T>

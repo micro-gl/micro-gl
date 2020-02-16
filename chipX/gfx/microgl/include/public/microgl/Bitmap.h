@@ -31,11 +31,11 @@ public:
     void writeColor(int x, int y, const color_f_t & color);
     int width() const;
     int height() const;
-    const coder::PixelCoder<P, CODER> & coder() const;
+    const microgl::coder::PixelCoder<P, CODER> & coder() const;
 
 protected:
     int _width = 0, _height = 0;
-    coder::PixelCoder<P, CODER> _coder;
+    microgl::coder::PixelCoder<P, CODER> _coder;
 };
 
 #include "../../src/Bitmap.tpp"

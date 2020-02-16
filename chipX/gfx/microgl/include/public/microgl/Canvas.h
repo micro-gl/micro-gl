@@ -2,14 +2,12 @@
 
 #include <microgl/vec2.h>
 #include <microgl/color.h>
-#include <microgl/Functions.h>
 #include <microgl/micro_gl_traits.h>
 #include <microgl/porter_duff/SourceOverOnOpaque.h>
 #include <microgl/porter_duff/DestinationIn.h>
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
 #include <microgl/Bitmap.h>
-#include <microgl/Fixed.h> // todo: remove deps
 #include <microgl/shader.h>
 #include <microgl/sampler.h>
 #include <microgl/triangles.h>
@@ -22,6 +20,10 @@
 #include <microgl/tesselation/bezier_patch_tesselator.h>
 #include <microgl/cohen_sutherland_clipper.h>
 #include <microgl/homo_triangle_clipper.h>
+#include <microgl/functions/minmax.h>
+#include <microgl/functions/clamp.h>
+#include <microgl/functions/swap.h>
+#include <microgl/functions/orient2d.h>
 
 using namespace microgl::triangles;
 using namespace microgl::polygons;

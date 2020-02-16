@@ -53,7 +53,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     mat4 model = mat4::transform({ math::deg_to_rad(z/2), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
                                  {0,0,0}, {10,10,10});
 //    mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
-    mat4 view = camera::angleAt({0, 0, 50}, 0, math::deg_to_rad(-z),0);
+    mat4 view = camera::angleAt({0, 0, 50}, 0, math::deg_to_rad(-0),0);
     mat4 projection = camera::perspective(math::deg_to_rad(60), canvas->width(), canvas->height(), 1, 500);
 //    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 100);
     mat4 mvp= projection*view*model;

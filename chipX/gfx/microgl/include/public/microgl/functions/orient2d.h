@@ -1,21 +1,21 @@
 #pragma once
 
-#include <microgl/vec2.h>
-
 namespace microgl {
     namespace functions {
         using l64=long long;
-        l64 orient2d(const vec2<l64> &a, const vec2<l64> &b, const vec2<l64> &c, unsigned char precision) {
-            return (l64(b.x-a.x)*(c.y-a.y)>>precision) - (l64(b.y-a.y)*(c.x-a.x)>>precision);
-        }
 
-        int orient2d(const vec2<int> &a, const vec2<int> &b, const vec2<int> &c, unsigned char precision) {
-            return (l64(b.x-a.x)*(c.y-a.y)>>precision) - (l64(b.y-a.y)*(c.x-a.x)>>precision);
+        l64 orient2d(const int &a_x, const int &a_y, const int &b_x, const int &b_y,
+                     const int &c_x, const int &c_y, unsigned char precision) {
+            return (l64(b_x-a_x)*(c_y-a_y)>>precision) - (l64(b_y-a_y)*(c_x-a_x)>>precision);
         }
 
         template<typename number>
-        inline number orient2d(const vec2<number> &a, const vec2<number> &b, const vec2<number> &c) {
-            return (b.x-a.x)*(c.y-a.y) - (b.y-a.y)*(c.x-a.x);
+        inline number orient2d(const number &a_x, const number &a_y,
+                               const number &b_x, const number &b_y,
+                               const number &c_x, const number &c_y,
+                               unsigned char precision) {
+            return (b_x-a_x)*(c_y-a_y) - (b_y-a_y)*(c_x-a_x);
         }
+
     }
 }
