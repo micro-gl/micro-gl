@@ -178,12 +178,6 @@ namespace microgl {
             res.z = m[8]*point.x + m[9]*point.y + m[10]*point.z + m[11]*point.w;
             res.w = m[12]*point.x + m[13]*point.y + m[14]*point.z + m[15]*point.w;
 
-            // if it is not an affine transform, likely a projective matrix.
-            // this is the transform from homogeneous to Cartesian coordinate,
-            // thus making also the z division. this transforms from clip space to ndc
-//            if(w!=number(1) && w!=number(0))
-//                res=res/w;
-
             return res;
         }
 

@@ -48,6 +48,7 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 6. investigate solving degenrate cases some day.
 
 #### road-map
+- remove framebuffer from bitmap ?
 - configurable custom sin/cos/tan provider
 - implement a correct and slow float compositing router
 - try re-implementing the block rasterizer optimization for shaders
@@ -55,9 +56,6 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - path maker
 - shader need to retain some fragCoord(x,y,z,1/w) and bounding box, so user can do cool stuff
 - make pure fixed points draw functions private
-- clean/re-factor to multiple files Functions.h file
-- remove deps on Fixed.h file macros
-- remove deps on vec2_32i
 - after path maker, remove bezier curve and lines painter
 - 3d pipeline, make 3d clipping configurable for planes and even skip
 - add opacity/colors/blend/composite to lines
