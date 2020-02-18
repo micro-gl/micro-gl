@@ -7,7 +7,7 @@
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/texture.h>
 
-#define TEST_ITERATIONS 1
+#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 640*1
 SDL_Window * sdl_window;
@@ -27,10 +27,11 @@ Texture24 tex_uv;
 
 void loop();
 void init_sdl(int width, int height);
-
+float t=0;
 template <typename number>
 void test_texture() {
-    canvas->drawQuad<blendmode::Normal, porterduff::None>(tex_uv, 0, 0, 400, 400);
+    t+=0.001;
+    canvas->drawQuad<blendmode::Normal, porterduff::None, Texture24, number>(tex_uv, t, t, 400, 400);
 //    canvas->drawQuad<blendmode::Normal, porterduff::None, sampler::Bilinear>(*bmp_uv, 0, 0, 400, 400);
 //    canvas->drawQuad<blendmode::Normal, porterduff::None>(color::colors::RED, 0, 0, 400, 400);
 }

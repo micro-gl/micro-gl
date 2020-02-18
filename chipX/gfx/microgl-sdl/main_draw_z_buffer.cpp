@@ -6,15 +6,15 @@
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
-#include <microgl/samplers/Bilinear.h>
 #include <microgl/shaders/sampler_shader.h>
+#include <microgl/samplers/texture.h>
 #include "data/model_3d_cube.h"
 
 using namespace microgl::shading;
 #define TEST_ITERATIONS 100
 #define W 640*1
 #define H 640*1
-#define TTT 1
+
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
@@ -22,19 +22,18 @@ Resources resources{};
 
 using namespace microgl::shading;
 using index_t = unsigned int;
-using Canvas24Bit_Packed32 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
-
-Canvas24Bit_Packed32 * canvas;
+using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
+Canvas24 * canvas;
+Texture24 tex_1, tex_2;
 
 void loop();
 void init_sdl(int width, int height);
 
 float t = 0;
-
-// bitmap for mapping
-Bitmap<uint32_t, coder::RGB888_PACKED_32> *bmp_uv;
-
 float z=0.0;
+
 template <typename number>
 void test_shader_texture_3d(const model_3d<number> & object) {
 
@@ -42,7 +41,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     using camera = microgl::camera<number>;
     using mat4 = matrix_4x4<number>;
     using math = microgl::math;
-    using vertex_attribute= texture_shader_vertex_attribute<number>;
+    using vertex_attribute= sampler_shader_vertex_attribute<number>;
 
 //    z-=0.0004;
     z-=0.425;
@@ -55,14 +54,14 @@ void test_shader_texture_3d(const model_3d<number> & object) {
 //    mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
     mat4 view = camera::angleAt({0, 0, 50}, 0, math::deg_to_rad(0),0);
     mat4 projection = camera::perspective(math::deg_to_rad(60), canvas->width(), canvas->height(), 1, 500);
-//    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 100);
+//    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 200);
     mat4 mvp_1= projection*view*model_1;
     mat4 mvp_2= projection*view*model_2;
 
     // setup shader
-    texture_shader<number, uint32_t, coder::RGB888_PACKED_32, sampler::NearestNeighbor> shader;
+    sampler_shader<number, Texture24> shader;
     shader.matrix= mvp_1;
-    shader.texture= bmp_uv;
+    shader.sampler= &tex_1;
 
     // model to vertex buffers
     dynamic_array<vertex_attribute> vertex_buffer{object.vertices.size()};
@@ -135,9 +134,8 @@ void init_sdl(int width, int height) {
             SDL_TEXTUREACCESS_STATIC, width, height);
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
     auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
-    bmp_uv = bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>();
-
-    canvas = new Canvas24Bit_Packed32(width, height);
+    tex_1.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
+    canvas = new Canvas24(width, height);
 }
 
 int render_test(int N) {

@@ -1342,7 +1342,7 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                                 const opacity_t opacity,
                                 const number u0, const number v0,
                                 const number u1, const number v1) {
-    const precision p_sub = 4, p_uv = 10;
+    const precision p_sub = 8, p_uv = 10;
     drawQuad<BlendMode, PorterDuff, S>(sampler,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
             microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),

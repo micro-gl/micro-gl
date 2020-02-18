@@ -34,9 +34,9 @@ set(SOURCES
 #        main_draw_quadrilaterals.cpp
 #        main_draw_masks.cpp
 #        main_draw_shaders_2d.cpp
-        main_draw_shaders_3d.cpp
+#        main_draw_shaders_3d.cpp
 #        main_draw_z_buffer.cpp
-#        main_sampler.cpp
+        main_sampler.cpp
 #        main_canvas_draw_polygon.cpp
 #        main_path_tessellation.cpp
 #        main_arc_divider.cpp
