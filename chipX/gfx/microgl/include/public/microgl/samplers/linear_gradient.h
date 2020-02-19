@@ -6,12 +6,12 @@
 namespace microgl {
     namespace sampling {
 
-        template <unsigned N>
-        class linear_gradient : public sampler<linear_gradient<N>> {
-            using base= sampler<linear_gradient<N>>;
-            const precision p= precision::high;
-            const precision_t p_bits= static_cast<precision_t>(p);
-            const precision_t p_bits_double= p_bits<<1;
+        template <bool horizontal=true, unsigned N=10>
+        class linear_gradient : public sampler<linear_gradient<horizontal, N>> {
+            using base= sampler<linear_gradient<horizontal, N>>;
+            static constexpr precision p= precision::high;
+            static constexpr precision_t p_bits= static_cast<precision_t>(p);
+            static constexpr precision_t p_bits_double= p_bits<<1;
             using l64= long long;
 
             static inline
@@ -52,8 +52,8 @@ namespace microgl {
 
             inline void sample(const int u, const int v,
                                const unsigned bits, color_t &output) const {
-                const auto u_tag= convert(u, bits, p_bits);
-                unsigned pos = 0;
+                const auto u_tag= convert(horizontal ? u : v, bits, p_bits);
+                unsigned pos=0;
                 for (pos = 0; pos<index && u_tag>=_stops[pos].where; ++pos);
                 if(pos==index) {
                     output=_stops[index-1].color;
@@ -66,26 +66,12 @@ namespace microgl {
                 const auto & stop_1= _stops[pos];
                 const auto & l_inverse= _stops[pos].length_inverse;
                 const l64 factor= (u_tag-stop_0.where)*l_inverse;
-                output.r= l64(stop_0.color.r) + (l64(stop_1.color.r-stop_0.color.r)*factor)>>p_bits_double;
-                output.g= l64(stop_0.color.g) + (l64(stop_1.color.g-stop_0.color.g)*factor)>>p_bits_double;
-                output.b= l64(stop_0.color.b) + (l64(stop_1.color.b-stop_0.color.b)*factor)>>p_bits_double;
-                output.a= l64(stop_0.color.a) + (l64(stop_1.color.a-stop_0.color.a)*factor)>>p_bits_double;
+                output.r= l64(stop_0.color.r) + ((l64(stop_1.color.r-stop_0.color.r)*factor)>>p_bits_double);
+                output.g= l64(stop_0.color.g) + ((l64(stop_1.color.g-stop_0.color.g)*factor)>>p_bits_double);
+                output.b= l64(stop_0.color.b) + ((l64(stop_1.color.b-stop_0.color.b)*factor)>>p_bits_double);
+                output.a= l64(stop_0.color.a) + ((l64(stop_1.color.a-stop_0.color.a)*factor)>>p_bits_double);
             }
 
-
-            inline void sample2(const int u, const int v,
-                               const unsigned bits, color_t &output) const {
-                const auto u_tag= convert(u, bits, p_bits);
-                const unsigned pos = 1;
-                const auto & stop_0= _stops[pos-1];
-                const auto & stop_1= _stops[pos];
-                const auto & l_inverse= _stops[pos].length_inverse;
-                const l64 factor= (u_tag-stop_0.where)*l_inverse;
-                output.r= l64(stop_0.color.r) + (l64(stop_1.color.r-stop_0.color.r)*factor)>>p_bits_double;
-                output.g= l64(stop_0.color.g) + (l64(stop_1.color.g-stop_0.color.g)*factor)>>p_bits_double;
-                output.b= l64(stop_0.color.b) + (l64(stop_1.color.b-stop_0.color.b)*factor)>>p_bits_double;
-                output.a= l64(stop_0.color.a) + (l64(stop_1.color.a-stop_0.color.a)*factor)>>p_bits_double;
-            }
 
         private:
 

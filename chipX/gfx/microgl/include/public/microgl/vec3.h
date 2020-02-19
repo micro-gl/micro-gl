@@ -33,6 +33,10 @@ namespace microgl {
             return *this + (-a);
         }
 
+        vec3 operator*(const number & val) const {
+            return vec3{this->x*val, this->y*val, this->z*val};
+        }
+
         number operator*(const vec3 & a) {
             return (this->x*a.x + this->y*a.y+this->z*a.z);
         }

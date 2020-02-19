@@ -252,7 +252,7 @@ public:
                   opacity_t opacity);
 
     template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque, typename S, typename number>
+            typename PorterDuff=porterduff::SourceOverOnOpaque, typename number, typename S>
     void drawQuad(const sampling::sampler<S> &sampler,
                   number left, number top,
                   number right, number bottom,

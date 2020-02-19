@@ -1,10 +1,8 @@
 #include <iostream>
 #include <chrono>
 #include <SDL2/SDL.h>
-#include "src/Resources.h"
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/linear_gradient.h>
 
 #define TEST_ITERATIONS 100
@@ -13,26 +11,30 @@
 SDL_Window * sdl_window;
 SDL_Renderer * sdl_renderer;
 SDL_Texture * sdl_texture;
-Resources resources{};
 
 using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
-using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
 Canvas24 * canvas;
-//Texture24 tex_uv;
-linear_gradient<10> gradient;
+linear_gradient<false> gradient;
 
 void loop();
 void init_sdl(int width, int height);
 float t=0;
+
 template <typename number>
 void test_1() {
-//    t+=0.001;
-    canvas->drawQuad<blendmode::Normal, porterduff::None, linear_gradient<10>, number>(gradient, t, t, 400, 400);
-//    canvas->drawQuad<blendmode::Normal, porterduff::None, sampler::Bilinear>(*bmp_uv, 0, 0, 400, 400);
+//    t+=0.0001;
+    canvas->drawQuad<blendmode::Normal, porterduff::None, number>(gradient, t, t, 400, 400);
+//    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, float>(
+//            gradient,
+//            0.0f,               0.0f,     0.0f, 1.0f,
+//            256 + 100.0f + t,     0.0f,       1.0f, 1.0f,
+//            256 + 0.0f,           256,         1.0f, 0.0f,
+//            0.0f,                 256,         0.0f, 0.0f,
+//            255);
 //    canvas->drawQuad<blendmode::Normal, porterduff::None>(color::colors::RED, 0, 0, 400, 400);
 }
 
@@ -56,11 +58,8 @@ void init_sdl(int width, int height) {
     sdl_renderer = SDL_CreateRenderer(sdl_window, -1, 0);
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STATIC, width, height);
-    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
-    auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
-//    tex_1.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
 
-    gradient.addStop(-0.1f, {255,0,0});
+    gradient.addStop(-0.0f, {255,0,0});
     gradient.addStop(0.3f, {0,255,0});
     gradient.addStop(1.f, {0,0,255});
     canvas = new Canvas24(width, height);
@@ -97,7 +96,7 @@ void loop() {
                     quit = true;
                 break;
         }
-//
+
         render();
 
         SDL_UpdateTexture(sdl_texture, nullptr, canvas->pixels(),

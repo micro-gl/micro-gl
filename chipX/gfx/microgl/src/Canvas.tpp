@@ -1249,7 +1249,7 @@ void Canvas<P, CODER>::drawQuadrilateral(const sampling::sampler<S> & sampler,
                                     number v2_x, number v2_y, number u2, number v2,
                                     number v3_x, number v3_y, number u3, number v3,
                                     const uint8_t opacity) {
-    const precision uv_p = 15, pixel_p = 4;
+    const precision uv_p = 10, pixel_p = 4;
 #define f microgl::math::to_fixed
     number q0 = 1, q1 = 1, q2 = 1, q3 = 1;
     number one(1), zero(0);
@@ -1334,8 +1334,8 @@ void Canvas<P, CODER>::drawQuad(const color_f_t & color,
 }
 
 template<typename P, typename CODER>
-template <typename BlendMode, typename PorterDuff, typename S,
-        typename number>
+template <typename BlendMode, typename PorterDuff,
+        typename number, typename S>
 void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                                 const number left, const number top,
                                 const number right, const number bottom,
@@ -1367,6 +1367,8 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
     int top_    = functions::max(top, ( int)0);
     int right_  = functions::min(right, (width()-1)<<sub_pixel_precision);
     int bottom_ = functions::min(bottom, (height()-1)<<sub_pixel_precision);
+    bool degenerate= left_==right_ || top_==bottom_;
+    if(degenerate) return;
     // intersections
     u0 = u0+((u1-u0) *(left_-left))/(right-left);
     v0 = v0+((v1-v0) *(top_-top))/(bottom-top);
@@ -1377,6 +1379,8 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
     top_    = (max + top_   )>>sub_pixel_precision;
     right_  = (max + right_ )>>sub_pixel_precision;
     bottom_ = (max + bottom_)>>sub_pixel_precision;
+    degenerate= left_==right_ || top_==bottom_;
+    if(degenerate) return;
     // MULTIPLYING with texture dimensions and doubling precision, helps with the z-fighting
     int du = ((u1-u0)<<uv_precision) / (right_ - left_);
     int dv = -((v1-v0)<<uv_precision) / (bottom_ - top_);
