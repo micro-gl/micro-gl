@@ -10,7 +10,7 @@ namespace microgl {
         template<typename IMPL>
         class sampler : public crpt<IMPL> {
         public:
-
+            sampler()= default;
             sampler(bits red_bits,bits green_bits,bits blue_bits,bits alpha_bits) :
                         _red_bits{red_bits}, _green_bits{green_bits}, _blue_bits{blue_bits}, _alpha_bits{alpha_bits} {}
 

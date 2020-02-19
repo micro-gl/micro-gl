@@ -48,6 +48,7 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 6. investigate solving degenrate cases some day.
 
 #### road-map
+- remove bits info from samplers ? currently only use it in masks, but this info can be embeded in color_t
 - remove framebuffer from bitmap ?
 - configurable custom sin/cos/tan provider
 - implement a correct and slow float compositing router

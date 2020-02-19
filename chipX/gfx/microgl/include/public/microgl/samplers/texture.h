@@ -14,19 +14,12 @@ namespace microgl {
         class texture : public sampler<texture<P, CODER, default_sampling>> {
             using base= sampler<texture<P, CODER, default_sampling>>;
         public:
-            texture() : base{8,8,8,8} {};
+            texture() : base{CODER::red_bits(),CODER::green_bits(),CODER::blue_bits(),CODER::alpha_bits()} {};
             explicit texture(Bitmap<P, CODER> * bitmap) :
-                    _bmp{bitmap}, base{bitmap->coder().red_bits(),
-                                       bitmap->coder().green_bits(),
-                                       bitmap->coder().blue_bits(),
-                                       bitmap->coder().alpha_bits()} {};
+                    _bmp{bitmap}, texture() {};
 
             void updateBitmap(Bitmap<P, CODER> * bitmap) {
                 _bmp=bitmap;
-                base::_red_bits=bitmap->coder().red_bits();
-                base::_green_bits=bitmap->coder().green_bits();
-                base::_blue_bits=bitmap->coder().blue_bits();
-                base::_alpha_bits=bitmap->coder().alpha_bits();
             }
 
             inline void sample(const int u, const int v,
