@@ -37,7 +37,8 @@ set(SOURCES
 #        main_draw_shaders_3d.cpp
 #        main_draw_z_buffer.cpp
 #        main_draw_sampler_texture.cpp
-        main_draw_sampler_gradient.cpp
+        main_draw_sampler_gradient_angular.cpp
+#        main_draw_sampler_gradient.cpp
 #        main_draw_sampler_gradient_2_colors_fast.cpp
 #        main_draw_sampler_flat_color.cpp
 #        main_canvas_draw_polygon.cpp
