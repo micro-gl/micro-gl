@@ -44,6 +44,10 @@ namespace microgl {
             return sqrtf(val);
         }
 
+        static l64 sqrt(const l64 &val) {
+            return sqrt_64(val);
+        }
+
         template<unsigned N>
         static Q<N> sqrt(const Q<N> & val) {
             return Q<N>((sqrt_64(val.value())), N>>1);
@@ -83,6 +87,15 @@ namespace microgl {
             return length(dx, dy);
         }
         static int length(const int &p_x, const int & p_y) {
+            return sqrt_64(l64(p_x)*p_x + l64(p_y)*p_y);
+        }
+
+        static int distance(const l64 & p0_x, const l64 & p0_y, const l64 & p1_x, const l64 & p1_y) {
+            auto dx= p0_x-p1_x;
+            auto dy= p0_y-p1_y;
+            return length(dx, dy);
+        }
+        static int length(const l64 &p_x, const l64 & p_y) {
             return sqrt_64(l64(p_x)*p_x + l64(p_y)*p_y);
         }
 

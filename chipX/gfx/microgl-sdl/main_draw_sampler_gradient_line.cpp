@@ -18,7 +18,8 @@ using index_t = unsigned int;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
 Canvas24 * canvas;
-line_linear_gradient<false> gradient;
+//line_linear_gradient<float> gradient{{0,1}, {1, 0}};
+line_linear_gradient<float> gradient{{0,0}, {1, 0}};
 
 void loop();
 void init_sdl(int width, int height);
@@ -27,14 +28,14 @@ float t=0;
 template <typename number>
 void test_1() {
 //    t+=0.0001;
-    canvas->drawQuad<blendmode::Normal, porterduff::None, number>(gradient, t, t, 400, 400);
-//    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, float>(
-//            gradient,
-//            0.0f,               0.0f,     0.0f, 1.0f,
-//            256 + 100.0f + t,     0.0f,       1.0f, 1.0f,
-//            256 + 0.0f,           256,         1.0f, 0.0f,
-//            0.0f,                 256,         0.0f, 0.0f,
-//            255);
+//    canvas->drawQuad<blendmode::Normal, porterduff::None, number>(gradient, t, t, 400, 400);
+    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, float>(
+            gradient,
+            0.0f,               0.0f,     0.0f, 1.0f,
+            256 + 100.0f + t,     0.0f,       1.0f, 1.0f,
+            256 + 0.0f,           256,         1.0f, 0.0f,
+            0.0f,                 256,         0.0f, 0.0f,
+            255);
 //    canvas->drawQuad<blendmode::Normal, porterduff::None>(color::colors::RED, 0, 0, 400, 400);
 }
 
@@ -59,7 +60,7 @@ void init_sdl(int width, int height) {
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STATIC, width, height);
 
-    gradient.addStop(-0.0f, {255,0,0});
+    gradient.addStop(0.0f, {255,0,0});
     gradient.addStop(0.3f, {0,255,0});
     gradient.addStop(1.f, {0,0,255});
     canvas = new Canvas24(width, height);

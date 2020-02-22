@@ -14,30 +14,29 @@ namespace microgl {
             static constexpr precision_t p_bits_double= p_bits<<1;
             using l64= long long;
 
+            struct stop_t {
+                l64 where=0;
+                l64 length_inverse=0;
+                color_t color{};
+            };
+
             static inline
-            l64 convert(l64 from_value,
-                        unsigned from_precision,
-                        unsigned to_precision) {
-                if(from_precision==to_precision)
-                    return from_value;
-                else if(from_precision>to_precision)
-                    return (from_value)>>(from_precision - to_precision);
-                else
-                    return (from_value)<<(to_precision - from_precision);
+            l64 convert(l64 from_value, int from_precision, int to_precision) {
+                const int pp= int(from_precision) - int(to_precision);
+                if(pp==0) return from_value;
+                else if(pp > 0) return from_value>>pp;
+                else return from_value<<(-pp);
             }
 
         public:
-            struct stop_t {
-                l64 where;
-                l64 length_inverse;
-                color_t color;
-            };
 
             linear_gradient() : base{8,8,8,8} {};
 
             template <typename number>
             void addStop(const number & where, const color_t &color) {
-                _stops[index] = {math::to_fixed(where, p_bits), 0, color};
+                auto & stop= _stops[index];
+                stop.where= math::to_fixed(where, p_bits);
+                stop.color= color;
                 if(index>0) {
                     l64 l= _stops[index].where-_stops[index-1].where;
                     l64 l_inverse= (l64(1)<<p_bits_double)/l;
@@ -71,7 +70,6 @@ namespace microgl {
                 output.b= l64(stop_0.color.b) + ((l64(stop_1.color.b-stop_0.color.b)*factor)>>p_bits_double);
                 output.a= l64(stop_0.color.a) + ((l64(stop_1.color.a-stop_0.color.a)*factor)>>p_bits_double);
             }
-
 
         private:
 

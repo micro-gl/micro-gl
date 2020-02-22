@@ -28,11 +28,11 @@ namespace microgl {
             return vec2{this->x + a.x, this->y + a.y};
         }
 
-        number operator*(const vec2 & a) {
+        number operator*(const vec2 & a) const {
             return (this->x*a.x + this->y*a.y);
         }
 
-        vec2 operator*(const number & val) {
+        vec2 operator*(const number & val) const {
             return {this->x*val, this->y*val};
         }
 
