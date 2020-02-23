@@ -8,6 +8,12 @@
 namespace microgl {
     namespace sampling {
 
+        /**
+         * given a line, compute gradient in the [0,1]x[0,1] box.
+         * experiment with line inside the [0,1]x[0,1] box in order to see pronounced results.
+         * @tparam number
+         * @tparam N
+         */
         template <typename number, unsigned N=10>
         class line_linear_gradient : public sampler<line_linear_gradient<number, N>> {
             using base= sampler<line_linear_gradient<number, N>>;
@@ -21,7 +27,11 @@ namespace microgl {
             // ax + by + c = 0
             struct line_t {
                 void updateLine(const point_l64 &p, const point_l64 & n) {
-                    a=n.x, b=n.y, c= -((n*p)); // a,b are in P bits,but c is in 2P bits
+                    // a,b are in P bits,but c is in 2P bits.
+                    // keeping c in 2P space helps reducing bit shifting (therefore faster evaluation)
+                    // in the distance function,
+                    // BUT may cause overflow, so keep tabs on it and the distance function
+                    a=n.x, b=n.y, c= -((n*p));
                     inv_normal_length = (1<<p_bits_double) / microgl::math::sqrt(n.x*n.x + n.y*n.y);
                 }
 
@@ -54,14 +64,18 @@ namespace microgl {
             }
 
             point_l64 _start{}, _end{}, _direction{};
-            l64 _length;
+            l64 _length=0;
             unsigned index= 0;
             stop_t _stops[N];
 
         public:
-
+            line_linear_gradient() : base{8, 8, 8, 8} {}
             line_linear_gradient(const vec2<number> & start, const vec2<number> & end) :
-                    base{8, 8, 8, 8} {
+                    line_linear_gradient() {
+                setNewLine(start, end);
+            };
+
+            void setNewLine(const vec2<number> & start, const vec2<number> & end) {
                 const auto dir= end-start;
                 const auto length= math::length(dir.x, dir.y);
 
@@ -71,7 +85,8 @@ namespace microgl {
                 _direction= {f(dir.x, p_bits), f(dir.y, p_bits)};
                 _length= f(length, p_bits);
 #undef f
-            };
+                reset();
+            }
 
             void addStop(const number & where, const color_t &color) {
                 const l64 where_64= math::to_fixed(where, p_bits);

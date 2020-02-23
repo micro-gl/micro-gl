@@ -48,6 +48,10 @@ namespace microgl {
             return vec2<number>{this->x/(1<<a), this->y/(1<<a)};
         }
 
+        vec2 operator/(const number & val) const {
+            return vec2<number>{this->x/val, this->y/val};
+        }
+
         bool operator==(const vec2 & rhs) const {
             return this->x==rhs.x && this->y==rhs.y;
         }

@@ -7,8 +7,8 @@ namespace microgl {
     namespace sampling {
 
         template <bool horizontal=true, unsigned N=10>
-        class linear_gradient : public sampler<linear_gradient<horizontal, N>> {
-            using base= sampler<linear_gradient<horizontal, N>>;
+        class axis_linear_gradient : public sampler<axis_linear_gradient<horizontal, N>> {
+            using base= sampler<axis_linear_gradient<horizontal, N>>;
             static constexpr precision p= precision::high;
             static constexpr precision_t p_bits= static_cast<precision_t>(p);
             static constexpr precision_t p_bits_double= p_bits<<1;
@@ -30,7 +30,7 @@ namespace microgl {
 
         public:
 
-            linear_gradient() : base{8,8,8,8} {};
+            axis_linear_gradient() : base{8, 8, 8, 8} {};
 
             template <typename number>
             void addStop(const number & where, const color_t &color) {
@@ -64,6 +64,8 @@ namespace microgl {
                 const auto & stop_0= _stops[pos-1];
                 const auto & stop_1= _stops[pos];
                 const auto & l_inverse= _stops[pos].length_inverse;
+                // axis aligned gradients are faster because (u_tag-stop_0.where) is the stop
+                // distance function and involves only subtraction
                 const l64 factor= (u_tag-stop_0.where)*l_inverse;
                 output.r= l64(stop_0.color.r) + ((l64(stop_1.color.r-stop_0.color.r)*factor)>>p_bits_double);
                 output.g= l64(stop_0.color.g) + ((l64(stop_1.color.g-stop_0.color.g)*factor)>>p_bits_double);
