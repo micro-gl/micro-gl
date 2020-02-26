@@ -60,7 +60,6 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - after path maker, remove bezier curve and lines painter
 - 3d pipeline, make 3d clipping configurable for planes and even skip
 - add opacity/colors/blend/composite to lines
-- create angular gradient sampler
 - create radial gradient sampler
 - create fast rounded rectangle with AA, sampler, frame and maybe shadow, this is useful instead of doing all of the vector pipeline
 - fast circles with sampler

@@ -1,7 +1,6 @@
 #pragma once
 #pragma ide diagnostic ignored "HidingNonVirtualFunction"
 
-#include <microgl/math.h>
 #include <microgl/sampler.h>
 #include <microgl/vec2.h>
 
@@ -44,7 +43,7 @@ namespace microgl {
                     return (a*x + b*y + c)<0;
                 }
 
-                l64 inv_normal_length=0;
+                l64 inv_normal_length=0; // 1/ sqrt(a^2 + b^2)
                 l64 a=0, b=0, c=0;
             };
 

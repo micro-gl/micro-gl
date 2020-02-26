@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/samplers/angular_linear_gradient.h>
+#include <microgl/samplers/axial_linear_gradient.h>
 
 #define TEST_ITERATIONS 100
 #define W 640*1
@@ -18,25 +18,16 @@ using index_t = unsigned int;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
 Canvas24 * canvas;
-angular_linear_gradient<float> gradient{45};
+axial_linear_gradient<true> gradient;
 
 void loop();
 void init_sdl(int width, int height);
 float t=0;
 
 template <typename number>
-void test_continous() {
-    t+=0.01;
-    gradient.setAngle(t);
-    gradient.addStop(0.0f, {255,0,0});
-    gradient.addStop(0.5f, {0,255,0});
-    gradient.addStop(1.f, {0,0,255});
-    canvas->drawQuad<blendmode::Normal, porterduff::None, number>(gradient, 0, 0, 400, 400);
-}
-
-template <typename number>
-void test_once() {
-    canvas->drawQuad<blendmode::Normal, porterduff::None, number>(gradient, 0, 0, 400, 400);
+void test_1() {
+//    t+=0.0001;
+    canvas->drawQuad<blendmode::Normal, porterduff::None, number>(gradient, t, t, 400, 400);
 //    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, float>(
 //            gradient,
 //            0.0f,               0.0f,     0.0f, 1.0f,
@@ -50,8 +41,7 @@ void test_once() {
 void render() {
     canvas->clear(color::colors::WHITE);
 
-//    test_continous<float>();
-    test_continous<Q<10>>();
+    test_1<float>();
 
 }
 

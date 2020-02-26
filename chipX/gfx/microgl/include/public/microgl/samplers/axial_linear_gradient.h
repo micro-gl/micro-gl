@@ -7,8 +7,8 @@ namespace microgl {
     namespace sampling {
 
         template <bool horizontal=true, unsigned N=10>
-        class axis_linear_gradient : public sampler<axis_linear_gradient<horizontal, N>> {
-            using base= sampler<axis_linear_gradient<horizontal, N>>;
+        class axial_linear_gradient : public sampler<axial_linear_gradient<horizontal, N>> {
+            using base= sampler<axial_linear_gradient<horizontal, N>>;
             static constexpr precision p= precision::high;
             static constexpr precision_t p_bits= static_cast<precision_t>(p);
             static constexpr precision_t p_bits_double= p_bits<<1;
@@ -30,7 +30,7 @@ namespace microgl {
 
         public:
 
-            axis_linear_gradient() : base{8, 8, 8, 8} {};
+            axial_linear_gradient() : base{8, 8, 8, 8} {};
 
             template <typename number>
             void addStop(const number & where, const color_t &color) {

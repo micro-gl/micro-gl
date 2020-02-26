@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/samplers/axis_linear_gradient.h>
+#include <microgl/samplers/radial_gradient.h>
 
 #define TEST_ITERATIONS 100
 #define W 640*1
@@ -18,7 +18,8 @@ using index_t = unsigned int;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
 Canvas24 * canvas;
-axis_linear_gradient<true> gradient;
+radial_gradient<float> gradient{0.5, 0.5, 0.5};
+//line_linear_gradient<float> gradient{{0,0}, {1, 0}};
 
 void loop();
 void init_sdl(int width, int height);
@@ -60,7 +61,8 @@ void init_sdl(int width, int height) {
                                     SDL_TEXTUREACCESS_STATIC, width, height);
 
     gradient.addStop(0.0f, {255,0,0});
-    gradient.addStop(0.3f, {0,255,0});
+//    gradient.addStop(0.45f, {255,0,0});
+    gradient.addStop(0.50f, {0,255,0});
     gradient.addStop(1.f, {0,0,255});
     canvas = new Canvas24(width, height);
 }
