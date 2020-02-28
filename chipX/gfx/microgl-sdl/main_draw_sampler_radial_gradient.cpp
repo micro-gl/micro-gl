@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/samplers/radial_gradient.h>
+#include <microgl/samplers/fast_radial_gradient.h>
 
 #define TEST_ITERATIONS 100
 #define W 640*1
@@ -18,8 +18,7 @@ using index_t = unsigned int;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
 Canvas24 * canvas;
-radial_gradient<float> gradient{0.5, 0.5, 0.5};
-//line_linear_gradient<float> gradient{{0,0}, {1, 0}};
+fast_radial_gradient<float> gradient{0.5, 0.5, 0.5};
 
 void loop();
 void init_sdl(int width, int height);
@@ -29,7 +28,7 @@ template <typename number>
 void test_1() {
 //    t+=0.0001;
     canvas->drawQuad<blendmode::Normal, porterduff::None, number>(gradient, t, t, 400, 400);
-//    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, float>(
+//    canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false, float>(
 //            gradient,
 //            0.0f,               0.0f,     0.0f, 1.0f,
 //            256 + 100.0f + t,     0.0f,       1.0f, 1.0f,
@@ -61,9 +60,9 @@ void init_sdl(int width, int height) {
                                     SDL_TEXTUREACCESS_STATIC, width, height);
 
     gradient.addStop(0.0f, {255,0,0});
-//    gradient.addStop(0.45f, {255,0,0});
+    gradient.addStop(0.45f, {255,0,0});
     gradient.addStop(0.50f, {0,255,0});
-    gradient.addStop(1.f, {0,0,255});
+    gradient.addStop(1.f, {255,0,255});
     canvas = new Canvas24(width, height);
 }
 
