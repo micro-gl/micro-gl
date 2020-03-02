@@ -99,16 +99,18 @@ public:
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename number, typename S>
-    void drawRoundedQuad(const sampling::sampler<S> & sampler,
+            bool antialias=false, typename number, typename S1, typename S2>
+    void drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
+                         const sampling::sampler<S2> & sampler_stroke,
                          number left, number top,
                          number right, number bottom,
                          number radius, opacity_t opacity=255);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename S>
-    void drawRoundedQuad(const sampling::sampler<S> & sampler,
+            bool antialias=false, typename S1, typename S2>
+    void drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
+                         const sampling::sampler<S2> & sampler_stroke,
                          int left, int top,
                          int right, int bottom,
                          int radius, precision sub_pixel_precision, opacity_t opacity=255);
