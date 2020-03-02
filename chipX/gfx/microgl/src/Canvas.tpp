@@ -291,11 +291,12 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
                                        const sampling::sampler<S2> & sampler_stroke,
                                        number left, number top,
                                        number right, number bottom,
-                                       number radius, Canvas::opacity_t opacity) {
+                                       number radius, number stroke_size,
+                                       Canvas::opacity_t opacity) {
     const precision p = 8;
 #define f(x) microgl::math::to_fixed((x), p)
     drawRoundedQuad<BlendMode, PorterDuff, antialias>(sampler_fill, sampler_stroke, f(left), f(top),f(right), f(bottom),
-                                                      f(radius), p, opacity);
+                                                      f(radius), f(stroke_size), p, opacity);
 #undef f
 }
 
@@ -304,10 +305,11 @@ template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, t
 void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
                                        const sampling::sampler<S2> & sampler_stroke,
                                        int left, int top,
-                                       int right, int bottom, int radius,
+                                       int right, int bottom,
+                                       int radius, int stroke_size,
                                        precision sub_pixel_precision,  Canvas::opacity_t opacity) {
     const precision p = sub_pixel_precision;
-    const int stroke = (1<<p)/1;
+    const int stroke = stroke_size;//(10<<p)/1;
     const int aa_range = (1<<p)/1;
     const int radius_squared=(l64(radius)*(radius))>>p;
     const int stroke_radius = (l64(radius-stroke)*(radius-stroke))>>p;
@@ -316,34 +318,20 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
     const int inner_aa_radius = (l64(radius-stroke-aa_range)*(radius-stroke-aa_range))>>p;
     const int inner_aa_bend = stroke_radius-inner_aa_radius;
     const bool apply_opacity = opacity!=255;
-
-    int max = (1u<<p) - 1;
-    int body_w= right-left - 2*radius;
-    int body_h= bottom-top - 2*radius;
-    int left_=left, top_=top, right_=right, bottom_=bottom;
-    int left_r=left_>>p, top_r=top_>>p, right_r=right_>>p, bottom_r=bottom_>>p;
-    bool degenerate= left_==right_ || top_==bottom_;
+    // dimensions in two spaces, one in raster spacee for optimization
+    const int left_=left, top_=top, right_=right, bottom_=bottom;
+    const int left_r=left_>>p, top_r=top_>>p, right_r=right_>>p, bottom_r=bottom_>>p;
+    bool degenerate= left_r==right_r || top_r==bottom_r;
     if(degenerate) return;
 
     const int step = int(1)<<p;
     const int half = 0;//step>>1;
     int uv_p=24;
-    l64 u0=0, v0=0, u1=1<<uv_p, v1=1<<uv_p;
-    l64 du = ((u1-u0)) / ((right_ - left_)>>p);
-    l64 dv = -((v1-v0)) / ((bottom_ - top_)>>p);
-    l64 u_start = u0;
-    l64 u = u_start;
-    l64 v = -dv*(bottom_ - top_);
-    l64 u_end= (l64(1)<<uv_p), v_end= (l64(1)<<uv_p);
-    const int w_half = (right_-left_)>>1;
-    const int h_half = (bottom_-top_)>>1;
-    // fix them for accuracy
-    const int right_final= left_ + (w_half<<1);
-    const int bottom_final= top_ + (h_half<<1);
+    l64 u0=0, v0=0, u1=1<<uv_p, v1=1<<uv_p, u, v;
+    const l64 u_end= (l64(1)<<uv_p), v_end= (l64(1)<<uv_p);
+    const l64 du = (u1-u0)/(right_r-left_r);
+    const l64 dv = (v1-v0)/(bottom_r-top_r);
     color_t color;
-
-    const int top_radius = -0+top_, bottom_radius= top_ + (radius);
-    const int left_radius = -0+left_, right_radius= left_radius + (radius);
 
 #define g1(x, y, u, v, s, o) \
             if((x)>=0 && (x)<_width && (y)>=0 && (y)<_height) { \
@@ -353,10 +341,11 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
             } \
 
 #define g2(x, y, u, v, s, o) { \
-            g1((x)>>p,                     (y)>>p,                     u,       v,       (s), (o)) \
-            g1((right_final-(x-left_))>>p, (y)>>p,                     u_end-u, v,       (s), (o)) \
-            g1((x)>>p,                     (bottom_final-(y-top_))>>p, u,       v_end-v, (s), (o)) \
-            g1((right_final-(x-left_))>>p, (bottom_final-(y-top_))>>p, u_end-u, v_end-v, (s), (o)) \
+            int x_1=(x)>>p, y_1=y>>p, x_2=(right_-(x-left_))>>p, y_2= (bottom_-(y-top_))>>p; \
+            g1(x_1, y_1, u,       v,       (s), (o)) \
+            g1(x_2, y_1, u_end-u, v,       (s), (o)) \
+            g1(x_1, y_2, u,       v_end-v, (s), (o)) \
+            g1(x_2, y_2, u_end-u, v_end-v, (s), (o)) \
             } \
 
     // this draws the four rounded parts, it could be faster but then it will also be
@@ -366,7 +355,7 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
         for (int x = left_; x < left_+radius; x+=step, u+=du) {
             const bool inside_rounded_part = x<=(left_+radius) && y<=(top_+radius);
             if(inside_rounded_part) {
-                int dx = x- half - right_radius, dy = y- half - bottom_radius;
+                int dx = x- half - (left_+radius), dy = y- half - (top_+radius);
                 const int distance_squared = ((l64(dx) * dx) >> p) + ((l64(dy) * dy) >> p);
                 const bool inside_radius = (distance_squared - radius_squared) <= 0;
                 if (inside_radius) {
@@ -421,7 +410,6 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
             for (int x=ll_r; x<=rr_r; x++, u+=du) {
                 sampler_fill.sample(u, v, uv_p, color);
                 blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
-
                 if(yy<=tt+stroke+0) {
                     sampler_stroke.sample(u, v, uv_p, color);
                     blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);

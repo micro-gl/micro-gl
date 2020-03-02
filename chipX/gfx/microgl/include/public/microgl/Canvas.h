@@ -104,7 +104,8 @@ public:
                          const sampling::sampler<S2> & sampler_stroke,
                          number left, number top,
                          number right, number bottom,
-                         number radius, opacity_t opacity=255);
+                         number radius, number stroke_size,
+                         opacity_t opacity=255);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -113,7 +114,8 @@ public:
                          const sampling::sampler<S2> & sampler_stroke,
                          int left, int top,
                          int right, int bottom,
-                         int radius, precision sub_pixel_precision, opacity_t opacity=255);
+                         int radius, int stroke_size,
+                         precision sub_pixel_precision, opacity_t opacity=255);
 
     // Triangle batches
     template<typename iterator_callback>
