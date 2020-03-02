@@ -216,73 +216,17 @@ inline void Canvas<P, CODER>::drawPixel(const P & val, int index) {
 // fast common graphics shapes like circles and rounded rectangles
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawCircle(const color_f_t & color,
-                                  const int centerX,
-                                  const int centerY,
-                                  const int radius,
-                                  const precision sub_pixel_precision,
-                                  const opacity_t opacity) {
-    color_t color_int;
-    const precision p = sub_pixel_precision;
-    coder().convert(color, color_int);
-    int bits_for_antialias_distance, max_blend_distance=0;
-    const int radius_squared=(l64(radius)*radius)>>p;
-    int c=0;
-    if(antialias) {
-        bits_for_antialias_distance = 1;
-        max_blend_distance = (1u << bits_for_antialias_distance)<<(p);
-        const int b = (l64(radius+max_blend_distance)*(radius+max_blend_distance))>>p;
-        c = b - radius_squared;
-    }
-    bool apply_opacity = opacity!=255;
-    int delta;
-    // bounding box
-    int x_min = centerX - radius - max_blend_distance, y_min = centerY - radius - max_blend_distance;
-    int x_max = centerX + radius + max_blend_distance, y_max = centerY + radius + max_blend_distance;
-    // clipping
-    x_min = functions::max(0, x_min);
-    y_min = functions::max(0, y_min);
-    x_max = functions::min(width()<<p, x_max);
-    y_max = functions::min(height()<<p, y_max);
-    const int step = 1<<p;
-    // Round start position up to next integer multiple
-    // (we sample at integer pixel positions, so if our
-    // min is not an integer coordinate, that pixel won't be hit)
-    int sub_mask = step-1;
-    x_min = (x_min + sub_mask) & (~sub_mask);
-    y_min = (y_min + sub_mask) & (~sub_mask);
-    x_max = (x_max + sub_mask) & (~sub_mask);
-    y_max = (y_max + sub_mask) & (~sub_mask);
-    for (int y = y_min; y < y_max; y+=step) {
-        for (int x = x_min; x < x_max; x+=step) {
-            // 16 bit precision fixed point
-            int dx = x-centerX, dy = y-centerY;
-            int distance= ((l64(dx)*dx)>>p) + ((l64(dy)*dy)>>p) - radius_squared;
-            if(distance<=0)
-                blendColor<BlendMode, PorterDuff>(color_int, x>>p, y>>p, opacity);
-            else if(antialias && (delta=c-distance)>=0){
-                // scale inner to 8 bit and then convert to integer
-                uint8_t blend = ((delta)<<(8))/c;
-                if(apply_opacity) blend = (blend*opacity)>>8;
-                blendColor<BlendMode, PorterDuff>(color_int, (x>>p), y>>p, blend);
-            }
-        }
-    }
-}
-
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
-void Canvas<P, CODER>::drawCircle(const color_f_t & color,
+template<typename BlendMode, typename PorterDuff, bool antialias, typename number, typename S1, typename S2>
+void Canvas<P, CODER>::drawCircle(const sampling::sampler<S1> & sampler_fill,
+                                  const sampling::sampler<S2> & sampler_stroke,
                                   const number centerX,
                                   const number centerY,
-                                  const number radius,
+                                  const number radius, number stroke_size,
                                   opacity_t opacity) {
-    const precision p = 4;
-#define f(x) microgl::math::to_fixed((x), p)
-    drawCircle<BlendMode, PorterDuff, antialias>(color,
-                f(centerX), f(centerY), f(radius), p, opacity);
-#undef f
+    drawRoundedQuad<BlendMode, PorterDuff, antialias, number, S1, S2>(sampler_fill, sampler_stroke,
+                                                      centerX-radius, centerY-radius,
+                                                      centerX+radius, centerY+radius,
+                                                      radius, stroke_size, opacity);
 }
 
 template<typename P, typename CODER>

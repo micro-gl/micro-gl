@@ -13,6 +13,7 @@ namespace microgl {
         template <typename P, typename CODER, texture_sampling default_sampling=texture_sampling::NearestNeighboor>
         class texture : public sampler<texture<P, CODER, default_sampling>> {
             using base= sampler<texture<P, CODER, default_sampling>>;
+            using l64= long long;
         public:
             texture() : base{CODER::red_bits(),CODER::green_bits(),CODER::blue_bits(),CODER::alpha_bits()} {};
             explicit texture(Bitmap<P, CODER> * bitmap) :
@@ -33,32 +34,32 @@ namespace microgl {
 
             inline void sample_nearest_neighboor(const int u, const int v,
                                         const uint8_t bits, color_t &output) const {
-                int x = ((_bmp->width()-0)*u) >> bits;
-                int y = ((_bmp->height()-0)*v) >> bits;
+                int x = (l64(_bmp->width()-0)*u) >> bits;
+                int y = (l64(_bmp->height()-0)*v) >> bits;
                 int index_bmp = y*_bmp->width() + x;
                 _bmp->decode(index_bmp, output);
             }
 
-            inline void sample_bilinear(int u, int v,
+            inline void sample_bilinear(l64 u, l64 v,
                                const uint8_t bits, color_t &output) const {
 
                 const int bmp_w_max = _bmp->width()-1;
                 const int bmp_h_max = _bmp->height()-1;
                 u=u*bmp_w_max;
                 v=v*bmp_h_max;
-                int max = 1u << bits;
-                int max_value = max - 1;
-                int mask = ~max_value;
-                int round_sampleU = u & mask;
-                int round_sampleV = v & mask;
+                l64 max = 1u << bits;
+                l64 max_value = max - 1;
+                l64 mask = ~max_value;
+                l64 round_sampleU = u & mask;
+                l64 round_sampleV = v & mask;
 //            int tx = -round_sampleU + u;
 //            int ty = -round_sampleV + v;
-                int tx = u & max_value;
-                int ty = v & max_value;
-                int U = (round_sampleU) >> bits;
-                int V = (round_sampleV) >> bits;
-                int U_plus_one = U >= bmp_w_max ? U : U + 1;
-                int V_plus_one = V >= bmp_h_max ? V : V + 1;
+                l64 tx = u & max_value;
+                l64 ty = v & max_value;
+                l64 U = (round_sampleU) >> bits;
+                l64 V = (round_sampleV) >> bits;
+                l64 U_plus_one = U >= bmp_w_max ? U : U + 1;
+                l64 V_plus_one = V >= bmp_h_max ? V : V + 1;
 
                 color_t c00, c10, c01, c11;
                 // todo: can optimize indices not to get multiplied

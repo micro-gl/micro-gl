@@ -82,20 +82,14 @@ public:
     void drawPixel(const P &val, int index);
 
     // circles
-    template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false>
-    void drawCircle(const color_f_t & color,
-                    int centerX, int centerY,
-                    int radius, precision sub_pixel_precision,
-                    opacity_t opacity);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename number>
-    void drawCircle(const color_f_t & color,
+            bool antialias=false, typename number, typename S1, typename S2>
+    void drawCircle(const sampling::sampler<S1> & sampler_fill,
+                    const sampling::sampler<S2> & sampler_stroke,
                     number centerX, number centerY,
-                    number radius, opacity_t opacity=255);
+                    number radius, number stroke_size, opacity_t opacity=255);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
