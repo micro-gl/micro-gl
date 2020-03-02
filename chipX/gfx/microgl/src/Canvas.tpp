@@ -350,9 +350,8 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
 
     // this draws the four rounded parts, it could be faster but then it will also be
     // much complex.
-    u=u0; v= v0;
-    for (int y = top_; y < top_+radius; y+=step, v+=dv) {
-        for (int x = left_; x < left_+radius; x+=step, u+=du) {
+    for (int y = top_, v=v0; y < top_+radius; y+=step, v+=dv) {
+        for (int x = left_, u=u0; x < left_+radius; x+=step, u+=du) {
             const bool inside_rounded_part = x<=(left_+radius) && y<=(top_+radius);
             if(inside_rounded_part) {
                 int dx = x- half - (left_+radius), dy = y- half - (top_+radius);
@@ -394,9 +393,9 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
     { // center
         const int ll=left_+radius, tt=top_+radius, rr=right_-radius, bb=bottom_-radius;
         const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
-        int index = tt_r * _width; u=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
         for (int y=tt_r; y<=bb_r; y++, v+=dv, index+=_width) {
-            for (int x=ll_r; x<=rr_r; x++, u+=du) {
+            for (int x=ll_r, u=u_start; x<=rr_r; x++, u+=du) {
                 sampler_fill.sample(u, v, uv_p, color);
                 blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
             }
@@ -405,9 +404,9 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
     { // top
         const int ll=left_+radius, tt=top_, rr=right_-radius, bb=top_+radius;
         const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
-        int index = tt_r * _width; u=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
         for (int y=tt_r, yy=tt; y<bb_r; y++, yy+=step, v+=dv, index+=_width) {
-            for (int x=ll_r; x<=rr_r; x++, u+=du) {
+            for (int x=ll_r, u=u_start; x<=rr_r; x++, u+=du) {
                 sampler_fill.sample(u, v, uv_p, color);
                 blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
                 if(yy<=tt+stroke+0) {
@@ -420,9 +419,9 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
     { // bottom
         const int ll=left_+radius, tt=bottom_-radius+step, rr=right_-radius, bb=bottom_;
         const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
-        int index = tt_r * _width; u=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
         for (int y=tt_r, yy=tt; y<=bb_r; y++, yy+=step, v+=dv, index+=_width) {
-            for (int x=ll_r; x<=rr_r; x++, u+=du) {
+            for (int x=ll_r, u=u_start; x<=rr_r; x++, u+=du) {
                 sampler_fill.sample(u, v, uv_p, color);
                 blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
                 if(yy>=bb-stroke) {
@@ -435,9 +434,9 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
     { // left
         const int ll=left_, tt=top_+radius, rr=ll+radius, bb=bottom_-radius;
         const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
-        int index = tt_r * _width; u=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
         for (int y=tt_r, yy=tt; y<=bb_r; y++, yy+=step, v+=dv, index+=_width) {
-            for (int x=ll_r, xx=ll; x<rr_r; x++, xx+=step, u+=du) {
+            for (int x=ll_r, xx=ll, u=u_start; x<rr_r; x++, xx+=step, u+=du) {
                 sampler_fill.sample(u, v, uv_p, color);
                 blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
                 if(xx<=ll+stroke) {
@@ -450,9 +449,9 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
     { // right
         const int ll=right_-radius+step, tt=top_+radius, rr=right_, bb=bottom_-radius;
         const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
-        int index = tt_r * _width; u=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
         for (int y=tt_r, yy=tt; y<=bb_r; y++, yy+=step, v+=dv, index+=_width) {
-            for (int x=ll_r, xx=ll; x<=rr_r; x++, xx+=step, u+=du) {
+            for (int x=ll_r, xx=ll, u=u_start; x<=rr_r; x++, xx+=step, u+=du) {
                 sampler_fill.sample(u, v, uv_p, color);
                 blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
                 if(xx>=rr-stroke) {
