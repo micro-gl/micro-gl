@@ -33,7 +33,7 @@ template <typename number>
 void test_1() {
 //    t+=0.0001;
     canvas->drawRoundedQuad<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(
-            gradient2Colors, gradient2Colors2, 10, 10, 400, 400, 50, 10);
+            gradient2Colors, gradient2Colors2, 10, 10, 400, 400, 50, 1);
 //    canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false, float>(
 //            gradient,
 //            0.0f,               0.0f,     0.0f, 1.0f
