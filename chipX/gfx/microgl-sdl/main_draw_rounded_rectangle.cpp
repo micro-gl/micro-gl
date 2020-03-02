@@ -20,7 +20,7 @@ using index_t = unsigned int;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
 Canvas24 * canvas;
-fast_radial_gradient<float> gradient{0.5, 0.5, 0.5};
+fast_radial_gradient<float> gradient{0.5, 0.5, 0.75};
 linear_gradient_2_colors<false> gradient2Colors{{255,0,255}, {255,0,0}};
 linear_gradient_2_colors<true> gradient2Colors2{{0,0,255}, {0,0,0}};
 flat_color flatColor{{133,133,133, 255}};
@@ -34,7 +34,7 @@ template <typename number>
 void test_1() {
 //    t+=0.0001;
     canvas->drawRoundedQuad<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(
-            flatColorRed, flatColor, 10, 10, 400, 400, 50, 0);
+            gradient, flatColor, 10, 10, 400, 400, 50, 0);
 //    canvas->drawQuadrilateral<blendmode::Normal, porterduff::None, false, float>(
 //            gradient,
 //            0.0f,               0.0f,     0.0f, 1.0f
