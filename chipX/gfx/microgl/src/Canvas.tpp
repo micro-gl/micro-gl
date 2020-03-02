@@ -1,5 +1,7 @@
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 
+#include <microgl/Canvas.h>
+
 template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
                         : _width{$bmp->width()}, _height{$bmp->height()}, _bitmap_canvas($bmp) {
@@ -87,6 +89,13 @@ P *Canvas<P, CODER>::pixels()  const {
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::clear(const color_f_t &color) {
+    P output;
+    _bitmap_canvas->coder().encode(color, output);
+    _bitmap_canvas->fill(output);
+}
+
+template<typename P, typename CODER>
+void Canvas<P, CODER>::clear(const color_t &color) {
     P output;
     _bitmap_canvas->coder().encode(color, output);
     _bitmap_canvas->fill(output);
@@ -218,13 +227,13 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
     const precision p = sub_pixel_precision;
     coder().convert(color, color_int);
     int bits_for_antialias_distance, max_blend_distance=0;
-    int a, b, c=0;
+    const int radius_squared=(l64(radius)*radius)>>p;
+    int c=0;
     if(antialias) {
         bits_for_antialias_distance = 1;
         max_blend_distance = (1u << bits_for_antialias_distance)<<(p);
-        a = (l64(radius)*radius)>>p;
-        b = (l64(radius+max_blend_distance)*(radius+max_blend_distance))>>p;
-        c = b - a;
+        const int b = (l64(radius+max_blend_distance)*(radius+max_blend_distance))>>p;
+        c = b - radius_squared;
     }
     bool apply_opacity = opacity!=255;
     int delta;
@@ -239,8 +248,7 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
     const int step = 1<<p;
     // Round start position up to next integer multiple
     // (we sample at integer pixel positions, so if our
-    // min is not an integer coordinate, that pixel won't
-    // be hit)
+    // min is not an integer coordinate, that pixel won't be hit)
     int sub_mask = step-1;
     x_min = (x_min + sub_mask) & (~sub_mask);
     y_min = (y_min + sub_mask) & (~sub_mask);
@@ -250,7 +258,7 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
         for (int x = x_min; x < x_max; x+=step) {
             // 16 bit precision fixed point
             int dx = x-centerX, dy = y-centerY;
-            int distance= ((l64(dx)*dx)>>p) + ((l64(dy)*dy)>>p) - ((l64(radius)*radius)>>p);
+            int distance= ((l64(dx)*dx)>>p) + ((l64(dy)*dy)>>p) - radius_squared;
             if(distance<=0)
                 blendColor<BlendMode, PorterDuff>(color_int, x>>p, y>>p, opacity);
             else if(antialias && (delta=c-distance)>=0){
@@ -271,11 +279,258 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
                                   const number radius,
                                   opacity_t opacity) {
     const precision p = 4;
+#define f(x) microgl::math::to_fixed((x), p)
     drawCircle<BlendMode, PorterDuff, antialias>(color,
-                microgl::math::to_fixed(centerX, p),
-                microgl::math::to_fixed(centerY, p),
-                microgl::math::to_fixed(radius, p),
-                p, opacity);
+                f(centerX), f(centerY), f(radius), p, opacity);
+#undef f
+}
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename number, typename S>
+void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S> & sampler,
+                                       number left, number top,
+                                       number right, number bottom,
+                                       number radius, Canvas::opacity_t opacity) {
+    const precision p = 8;
+#define f(x) microgl::math::to_fixed((x), p)
+    drawRoundedQuad<BlendMode, PorterDuff, antialias>(sampler, f(left), f(top),f(right), f(bottom),
+                                                      f(radius), p, opacity);
+#undef f
+}
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename S>
+void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S> & sampler,
+                                       int left, int top,
+                                       int right, int bottom, int radius,
+                                       precision sub_pixel_precision,  Canvas::opacity_t opacity) {
+
+    color_t col_bmp{};
+    const precision p = sub_pixel_precision;
+    const int stroke = (1<<p)/1;
+    const int aa_range = (1<<p)/1;
+    const int radius_squared=(l64(radius)*(radius))>>p;
+    const int stroke_radius = (l64(radius-stroke)*(radius-stroke))>>p;
+    const int outer_aa_radius = (l64(radius+aa_range)*(radius+aa_range))>>p;
+    const int outer_aa_bend = outer_aa_radius-radius_squared;
+    const int inner_aa_radius = (l64(radius-stroke-aa_range)*(radius-stroke-aa_range))>>p;
+    const int inner_aa_bend = stroke_radius-inner_aa_radius;
+    const bool apply_opacity = opacity!=255;
+
+    int max = (1u<<p) - 1;
+    int body_w= right-left - 2*radius;
+    int body_h= bottom-top - 2*radius;
+    int left_   = left;//functions::max(left, (int)0);
+    int top_    = top;//functions::max(top, ( int)0);
+    int right_  = right;//functions::min(right, (width()-1)<<sub_pixel_precision);
+    int bottom_ = bottom;//functions::min(bottom, (height()-1)<<sub_pixel_precision);
+    int left_r   = left_>>p;//functions::max(left, (int)0);
+    int top_r    = top_>>p;//functions::max(top, ( int)0);
+    int right_r  = right_>>p;//functions::min(right, (width()-1)<<sub_pixel_precision);
+    int bottom_r = bottom_>>p;//functions::min(bottom, (height()-1)<<sub_pixel_precision);
+//    bool degenerate= left_==right_ || top_==bottom_;
+//    if(degenerate) return;
+    // intersections
+//    u0 = u0+((u1-u0) *(left_-left))/(right-left);
+//    v0 = v0+((v1-v0) *(top_-top))/(bottom-top);
+//    u1 = u0+((u1-u0) *(right_-left))/(right-left);
+//    v1 = v0+((v1-v0) *(bottom_-top))/(bottom-top);
+    // round and convert to raster space
+//    left_   = (max + left_  )>>p;
+//    top_    = (max + top_   )>>p;
+//    right_  = (max + right_ )>>p;
+//    bottom_ = (max + bottom_)>>p;
+    const int step = int(1)<<p;
+    const int half = 0;//step>>1;
+//    degenerate= left_==right_ || top_==bottom_;
+//    if(degenerate) return;
+    // MULTIPLYING with texture dimensions and doubling precision, helps with the z-fighting
+    int uv_p=24;
+    l64 u0=0, v0=0, u1=1<<uv_p, v1=1<<uv_p;
+    l64 du = ((u1-u0)) / ((right_ - left_)>>p);
+    l64 dv = -((v1-v0)) / ((bottom_ - top_)>>p);
+    l64 u_start = u0;
+    l64 u = u_start;
+    l64 v = -dv*(bottom_ - top_);
+//    const precision pp = uv_precision<<1;
+//    color_t black={255,0,0, 128};
+    color_t black={0,0,0,255};
+    color_t red={255,0,0};
+    const int w_half = (right_-left_)>>1;
+    const int h_half = (bottom_-top_)>>1;
+    // fix them for accuracy
+    const int right_final= left_ + (w_half<<1);
+    const int bottom_final= top_ + (h_half<<1);
+
+    const int top_radius = -0+top_, bottom_radius= top_ + (radius);
+    const int left_radius = -0+left_, right_radius= left_radius + (radius);
+//    if((x)>=0 && (x)<_width && (y)>=0 && (y)<_height)
+//    if((x)>=0 && (x)<_width && (y)>=0 && (y)<_height) \
+//
+#define g1(x, y, c, o) \
+            if((x)>=0 && (x)<_width && (y)>=0 && (y)<_height) \
+                blendColor<BlendMode, PorterDuff>((c), (x), (y), (o)); \
+
+#define g2(x, y, c, o) { \
+            g1((x)>>p,                     (y)>>p,                     (c), (o)) \
+            g1((right_final-(x-left_))>>p, (y)>>p,                     (c), (o)) \
+            g1((x)>>p,                     (bottom_final-(y-top_))>>p, (c), (o)) \
+            g1((right_final-(x-left_))>>p, (bottom_final-(y-top_))>>p, (c), (o)) \
+            } \
+
+    // this draws the four rounded parts, it could be faster but then it will also be
+    // much complex.
+    for (int y = top_; y < top_+radius; y+=step) {
+        for (int x = left_; x < left_+radius; x+=step) {
+
+            const bool inside_rounded_part = x<=(left_+radius) && y<=(top_+radius);
+
+            if(inside_rounded_part) {
+                int dx = x- half - right_radius, dy = y- half - bottom_radius;
+                const int distance_squared = ((l64(dx) * dx) >> p) + ((l64(dy) * dy) >> p);
+                const bool inside_radius = (distance_squared - radius_squared) <= 0;
+                if (inside_radius) {
+                    g2(x, y, red, opacity)
+                    const bool inside_stroke_disk = (distance_squared - stroke_radius) >= 0;
+                    if (inside_stroke_disk) // inside stroke disk
+                    g2(x, y, black, opacity)
+                    else { // outside stroke disk, let's test for aa disk or radius inclusion
+                        const int delta_inner_aa = -inner_aa_radius + distance_squared;
+                        const bool inside_inner_aa_ring = delta_inner_aa >= 0;
+                        if (antialias && inside_inner_aa_ring) {
+                            // scale inner to 8 bit and then convert to integer
+                            uint8_t blend = ((delta_inner_aa) << (8)) / inner_aa_bend;
+                            if (apply_opacity) blend = (blend * opacity) >> 8;
+                            g2(x, y, black, blend);
+                        }
+                    }
+                } else if (antialias) { // we are outside the main radius
+                    const int delta_outer_aa = outer_aa_radius - distance_squared;
+                    const bool inside_outer_aa_ring = delta_outer_aa >= 0;
+                    if (inside_outer_aa_ring) {
+                        // scale inner to 8 bit and then convert to integer
+                        uint8_t blend = ((delta_outer_aa) << (8)) / outer_aa_bend;
+                        if (apply_opacity) blend = (blend * opacity) >> 8;
+                        g2(x, y, black, blend);
+                    }
+                }
+            } else if(false){
+                g2(x, y, red, opacity);
+                if(x>left_+radius) {
+                    if(y>=top_ && y<top_+stroke+step) {
+                        g2(x, y, black, opacity);
+                    }
+                }
+
+                if(x<left_radius+stroke+step) {
+                    g2(x, y, black, opacity);
+                }
+
+            }
+
+        }
+
+    }
+
+#undef g1
+#undef g2
+
+//return;
+#define maX(a, b) functions::max(a, b)
+#define miN(a, b) functions::min(a, b)
+    color_t color;
+    // center
+    {
+        const int ll=left_+radius, tt=top_+radius, rr=right_-radius, bb=bottom_-radius;
+        const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
+        int index = tt_r * _width; u=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        for (int y=tt_r; y<=bb_r; y++, v+=dv) {
+            for (int x=ll_r; x<=rr_r; x++, u+=du) {
+                sampler.sample(u, v, uv_p, color);
+                blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
+            }
+            index+=_width;
+        }
+    }
+
+//    color_t blue = {0,0,255};
+//    color_t blue = {255,0,0};
+
+    // top
+    {
+        const int ll=left_+radius, tt=top_, rr=right_-radius, bb=top_+radius;
+        const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
+        int index = tt_r * _width; u=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        for (int y=tt_r, yy=tt; y<bb_r; y++, yy+=step, v+=dv) {
+            for (int x=ll_r; x<=rr_r; x++, u+=du) {
+                sampler.sample(u, v, uv_p, color);
+                blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
+
+                if(yy<=tt+stroke+0) {
+                    blendColor<BlendMode, PorterDuff>(black, (index+x), opacity);
+                }
+            }
+            index+=_width;
+        }
+    }
+
+    // bottom
+    {
+        const int ll=left_+radius, tt=bottom_-radius+step, rr=right_-radius, bb=bottom_;
+        const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
+        int index = tt_r * _width; u=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        for (int y=tt_r, yy=tt; y<=bb_r; y++, yy+=step, v+=dv) {
+            for (int x=ll_r; x<=rr_r; x++, u+=du) {
+                sampler.sample(u, v, uv_p, color);
+                blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
+
+                if(yy>=bb-stroke) {
+                    blendColor<BlendMode, PorterDuff>(black, (index+x), opacity);
+                }
+            }
+            index+=_width;
+        }
+    }
+
+    // left
+    {
+        const int ll=left_, tt=top_+radius, rr=ll+radius, bb=bottom_-radius;
+        const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
+        int index = tt_r * _width; u=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        for (int y=tt_r, yy=tt; y<=bb_r; y++, yy+=step, v+=dv) {
+            for (int x=ll_r, xx=ll; x<rr_r; x++, xx+=step, u+=du) {
+                sampler.sample(u, v, uv_p, color);
+                blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
+
+                if(xx<=ll+stroke) {
+                    blendColor<BlendMode, PorterDuff>(black, (index+x), opacity);
+                }
+            }
+            index+=_width;
+        }
+    }
+
+    // right
+    {
+        const int ll=right_-radius+step, tt=top_+radius, rr=right_, bb=bottom_-radius;
+        const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
+        int index = tt_r * _width; u=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        for (int y=tt_r, yy=tt; y<=bb_r; y++, yy+=step, v+=dv) {
+            for (int x=ll_r, xx=ll; x<=rr_r; x++, xx+=step, u+=du) {
+                sampler.sample(u, v, uv_p, color);
+                blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
+
+                if(xx>=rr-stroke) {
+                    blendColor<BlendMode, PorterDuff>(black, (index+x), opacity);
+                }
+            }
+            index+=_width;
+        }
+    }
+
+#undef maX
+#undef miN
+
 }
 
 // Triangles
@@ -1824,3 +2079,4 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
                            type,
                            255);
 }
+

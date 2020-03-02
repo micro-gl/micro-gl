@@ -63,6 +63,7 @@ public:
     Bitmap<P, CODER> * bitmapCanvas() const;
     bool hasNativeAlphaChannel() const;
     void clear(const color_f_t &color);
+    void clear(const color_t &color);
 
 //    // float blenders
     template<typename BlendMode=blendmode::Normal,
@@ -95,6 +96,22 @@ public:
     void drawCircle(const color_f_t & color,
                     number centerX, number centerY,
                     number radius, opacity_t opacity=255);
+
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false, typename number, typename S>
+    void drawRoundedQuad(const sampling::sampler<S> & sampler,
+                         number left, number top,
+                         number right, number bottom,
+                         number radius, opacity_t opacity=255);
+
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false, typename S>
+    void drawRoundedQuad(const sampling::sampler<S> & sampler,
+                         int left, int top,
+                         int right, int bottom,
+                         int radius, precision sub_pixel_precision, opacity_t opacity=255);
 
     // Triangle batches
     template<typename iterator_callback>

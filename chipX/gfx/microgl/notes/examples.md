@@ -1949,3 +1949,140 @@ Canvas<P, CODER>::drawTriangleFast(const Bitmap<P2, CODER2> & bmp,
             return q.x*(r.y - p.y) + p.x*(q.y - r.y) + r.x*(p.y - q.y);
         }
 ```
+
+
+```c++
+// rounded rectangle
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias>
+void Canvas<P, CODER>::drawRoundedQuad(const color_f_t &color,
+                                       int left, int top,
+                                       int right, int bottom, int radius,
+                                       precision sub_pixel_precision,  Canvas::opacity_t opacity) {
+
+    color_t col_bmp{};
+    const precision p = sub_pixel_precision;
+    const int stroke = (1<<p)/1;
+    const int aa_range = (1<<p)/1;
+    const int radius_squared=(l64(radius)*(radius))>>p;
+    const int stroke_radius = (l64(radius-stroke)*(radius-stroke))>>p;
+    const int outer_aa_radius = (l64(radius+aa_range)*(radius+aa_range))>>p;
+    const int outer_aa_bend = outer_aa_radius-radius_squared;
+    const int inner_aa_radius = (l64(radius-stroke-aa_range)*(radius-stroke-aa_range))>>p;
+    const int inner_aa_bend = stroke_radius-inner_aa_radius;
+    const bool apply_opacity = opacity!=255;
+
+    int max = (1u<<p) - 1;
+    int left_   = left;//functions::max(left, (int)0);
+    int top_    = top;//functions::max(top, ( int)0);
+    int right_  = right;//functions::min(right, (width()-1)<<sub_pixel_precision);
+    int bottom_ = bottom;//functions::min(bottom, (height()-1)<<sub_pixel_precision);
+//    bool degenerate= left_==right_ || top_==bottom_;
+//    if(degenerate) return;
+    // intersections
+//    u0 = u0+((u1-u0) *(left_-left))/(right-left);
+//    v0 = v0+((v1-v0) *(top_-top))/(bottom-top);
+//    u1 = u0+((u1-u0) *(right_-left))/(right-left);
+//    v1 = v0+((v1-v0) *(bottom_-top))/(bottom-top);
+    // round and convert to raster space
+//    left_   = (max + left_  )>>p;
+//    top_    = (max + top_   )>>p;
+//    right_  = (max + right_ )>>p;
+//    bottom_ = (max + bottom_)>>p;
+    const int step = int(1)<<p;
+    const int half = step>>1;
+//    degenerate= left_==right_ || top_==bottom_;
+//    if(degenerate) return;
+    // MULTIPLYING with texture dimensions and doubling precision, helps with the z-fighting
+//    int du = ((u1-u0)<<uv_precision) / (right_ - left_);
+//    int dv = -((v1-v0)<<uv_precision) / (bottom_ - top_);
+//    int u_start = u0<<uv_precision;
+//    int u = u_start;
+//    int v = -dv*(bottom_ - top_);
+    int index = top_ * _width;
+//    const precision pp = uv_precision<<1;
+    color_t black={255,0,0, 128};
+    color_t red={255,0,0};
+    const int w_half = (right_-left_)>>1;
+    const int h_half = (bottom_-top_)>>1;
+    // fix them for accuracy
+    const int right_final= left_ + (w_half<<1);
+    const int bottom_final= top_ + (h_half<<1);
+
+    const int top_radius = -0+top_, bottom_radius= top_ + (radius);
+    const int left_radius = -0+left_, right_radius= left_radius + (radius);
+//    if((x)>=0 && (x)<_width && (y)>=0 && (y)<_height)
+//    if((x)>=0 && (x)<_width && (y)>=0 && (y)<_height) \
+//
+#define g1(x, y, c, o) \
+            if((x)>=0 && (x)<_width && (y)>=0 && (y)<_height) \
+                blendColor<BlendMode, PorterDuff>((c), (x), (y), (o)); \
+
+#define g2(x, y, c, o) { \
+            g1((x)>>p,                     (y)>>p,                     (c), (o)) \
+            g1((right_final-(x-left_))>>p, (y)>>p,                     (c), (o)) \
+            g1((x)>>p,                     (bottom_final-(y-top_))>>p, (c), (o)) \
+            g1((right_final-(x-left_))>>p, (bottom_final-(y-top_))>>p, (c), (o)) \
+            } \
+
+//     draw top-left
+
+    for (int y = top_; y <= top_+h_half; y+=step) {
+        for (int x = left_; x <= left_+w_half; x+=step) {
+
+            const bool inside_rounded_part = x<=(left_+radius) && y<=(top_+radius);
+
+            if(inside_rounded_part) {
+                int dx = x-0 - right_radius, dy = y-0 - bottom_radius;
+                const int distance_squared = ((l64(dx) * dx) >> p) + ((l64(dy) * dy) >> p);
+                const bool inside_radius = (distance_squared - radius_squared) <= 0;
+                if (inside_radius) {
+                    g2(x, y, red, opacity)
+                    const bool inside_stroke_disk = (distance_squared - stroke_radius) >= 0;
+                    if (inside_stroke_disk) // inside stroke disk
+                    g2(x, y, black, opacity)
+                    else { // outside stroke disk, let's test for aa disk or radius inclusion
+                        const int delta_inner_aa = -inner_aa_radius + distance_squared;
+                        const bool inside_inner_aa_ring = delta_inner_aa >= 0;
+                        if (antialias && inside_inner_aa_ring) {
+                            // scale inner to 8 bit and then convert to integer
+                            uint8_t blend = ((delta_inner_aa) << (8)) / inner_aa_bend;
+                            if (apply_opacity) blend = (blend * opacity) >> 8;
+                            g2(x, y, black, blend);
+                        }
+                    }
+                } else if (antialias) { // we are outside the main radius
+                    const int delta_outer_aa = outer_aa_radius - distance_squared;
+                    const bool inside_outer_aa_ring = delta_outer_aa >= 0;
+                    if (inside_outer_aa_ring) {
+                        // scale inner to 8 bit and then convert to integer
+                        uint8_t blend = ((delta_outer_aa) << (8)) / outer_aa_bend;
+                        if (apply_opacity) blend = (blend * opacity) >> 8;
+                        g2(x, y, black, blend);
+                    }
+                }
+            } else {
+                g2(x, y, red, opacity);
+                if(x>left_+radius) {
+                    if(y>=top_ && y<top_+stroke+step) {
+                        g2(x, y, black, opacity);
+                    }
+                }
+
+                if(x<left_radius+stroke+step) {
+                    g2(x, y, black, opacity);
+                }
+
+            }
+
+        }
+
+    }
+
+
+
+#undef g1
+#undef g2
+}
+
+```

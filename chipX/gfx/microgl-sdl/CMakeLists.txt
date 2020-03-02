@@ -37,7 +37,8 @@ set(SOURCES
 #        main_draw_shaders_3d.cpp
 #        main_draw_z_buffer.cpp
 #        main_draw_sampler_texture.cpp
-        main_draw_sampler_radial_gradient.cpp
+        main_draw_rounded_rectangle.cpp
+#        main_draw_sampler_radial_gradient.cpp
 #        main_draw_sampler_angular_linear_gradient.cpp
 #        main_draw_sampler_line_gradient.cpp
 #        main_draw_sampler_axial_gradient.cpp

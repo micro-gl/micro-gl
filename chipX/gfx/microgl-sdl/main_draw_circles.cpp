@@ -10,7 +10,7 @@
 #include <microgl/samplers/texture.h>
 #include <microgl/Q.h>
 
-#define TEST_ITERATIONS 1
+#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 480*1
 
