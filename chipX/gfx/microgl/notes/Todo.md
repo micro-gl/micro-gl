@@ -63,6 +63,8 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - add 2d sampler for triangles, this way tesselators can draw cool stuff. for this add helper method to create
   UV coords of a mesh relative to it's bounding box
 - AA for 3d with stencil buffer and multi-sampling of coverage, should be interesting
+- inverted texture, some bitmaps need to be inverted, explore this in the texture sampler, see
+  if this can be done for almost free.
 
 0. improve ear_clipper
 1. complex poly tesselator and stroker

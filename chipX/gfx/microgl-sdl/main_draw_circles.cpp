@@ -24,7 +24,8 @@ using index_t = unsigned int;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
 Canvas24 * canvas;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::Bilinear>;
+// samplers
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
 fast_radial_gradient<float> gradient{0.5, 0.5, 0.75};
 linear_gradient_2_colors<false> gradient2Colors{{255,0,255}, {255,0,0}};
 linear_gradient_2_colors<true> gradient2Colors2{{0,0,255}, {0,0,0}};
@@ -40,7 +41,7 @@ template <typename number>
 void test_1() {
 //    t+=0.0001;
     canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(
-            tex_2, flatColor, 200, 200, 200, 10);
+            tex_2, gradient2Colors, 200, 200, 200, 10);
 }
 
 void render() {

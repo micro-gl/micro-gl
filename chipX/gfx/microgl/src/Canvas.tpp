@@ -1412,7 +1412,6 @@ void Canvas<P, CODER>::drawQuadrilateral(const sampling::sampler<S> & sampler,
     number u1_q1 = u1*q1, v1_q1 = v1*q1;
     number u2_q2 = u2*q2, v2_q2 = v2*q2;
     number u3_q3 = u3*q3, v3_q3 = v3*q3;
-
     // perspective correct version
     drawTriangle<BlendMode, PorterDuff, antialias, true, S>(sampler,
           f(v0_x, pixel_p), f(v0_y, pixel_p), f(u0_q0, uv_p), f(v0_q0, uv_p), f(q0, uv_p),
