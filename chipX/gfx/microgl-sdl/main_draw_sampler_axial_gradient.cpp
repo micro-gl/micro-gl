@@ -27,7 +27,7 @@ float t=0;
 template <typename number>
 void test_1() {
 //    t+=0.0001;
-    canvas->drawQuad<blendmode::Normal, porterduff::None, number>(gradient, t, t, 400, 400);
+//    canvas->drawQuad<blendmode::Normal, porterduff::None, number>(gradient, t, t, 400, 400);
 //    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, float>(
 //            gradient,
 //            0.0f,               0.0f,     0.0f, 1.0f,
@@ -35,7 +35,7 @@ void test_1() {
 //            256 + 0.0f,           256,         1.0f, 0.0f,
 //            0.0f,                 256,         0.0f, 0.0f,
 //            255);
-//    canvas->drawQuad<blendmode::Normal, porterduff::None>(color::colors::RED, 0, 0, 400, 400);
+    canvas->drawQuad<blendmode::Normal, porterduff::None>({255,0,0}, 0, 0, 400, 400);
 }
 
 void render() {

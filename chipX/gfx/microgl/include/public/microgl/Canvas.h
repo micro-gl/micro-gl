@@ -20,6 +20,7 @@
 #include <microgl/tesselation/bezier_patch_tesselator.h>
 #include <microgl/cohen_sutherland_clipper.h>
 #include <microgl/homo_triangle_clipper.h>
+#include <microgl/uv_map.h>
 #include <microgl/functions/minmax.h>
 #include <microgl/functions/clamp.h>
 #include <microgl/functions/swap.h>
@@ -112,14 +113,23 @@ public:
                          precision sub_pixel_precision, opacity_t opacity=255);
 
     // Triangle batches
-    template<typename iterator_callback>
-    void iterate_triangles(const index *indices, const index &size, const enum triangles::indices &type, const iterator_callback &&callback);
-
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename number=float>
     void drawTriangles(const color_f_t & color,
                        const vec2<number> *vertices,
+                       const index *indices,
+                       const boundary_info * boundary_buffer,
+                       index size,
+                       enum indices type,
+                       opacity_t opacity);
+
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false, typename number1=float, typename number2=float, typename S>
+    void drawTriangles(const sampling::sampler<S> & sampler,
+                       const vec2<number1> *vertices,
+                       const vec2<number2> *uvs,
                        const index *indices,
                        const boundary_info * boundary_buffer,
                        index size,
@@ -239,18 +249,11 @@ public:
                            number v3_x, number v3_y, number u3, number v3,
                            opacity_t opacity = 255);
     // QUADS
-    template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque>
-    void drawQuad(const color_f_t &color,
-                  int left, int top,
-                  int right, int bottom,
-                  precision sub_pixel_precision,
-                  opacity_t opacity);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             typename number>
-    void drawQuad(const color_f_t &color,
+    void drawQuad(const color_t &color,
                   number left, number top,
                   number right, number bottom,
                   opacity_t opacity = 255);
@@ -306,8 +309,17 @@ public:
     // polygons
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false, typename number=float, typename S>
+    void drawPolygon(const sampling::sampler<S> &sampler,
+                     const vec2<number> * points,
+                     index size,
+                     opacity_t opacity,
+                     polygons::hints hint = polygons::hints::SIMPLE);
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename number=float>
-    void drawPolygon(vec2<number> * points,
+    void drawPolygon2(const vec2<number> * points,
                      index size,
                      opacity_t opacity,
                      polygons::hints hint = polygons::hints::SIMPLE);

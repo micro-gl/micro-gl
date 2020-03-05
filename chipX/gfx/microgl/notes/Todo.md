@@ -60,8 +60,6 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - after path maker, remove bezier curve and lines painter
 - 3d pipeline, make 3d clipping configurable for planes and even skip
 - add opacity/colors/blend/composite to lines
-- add 2d sampler for triangles, this way tesselators can draw cool stuff. for this add helper method to create
-  UV coords of a mesh relative to it's bounding box
 - AA for 3d with stencil buffer and multi-sampling of coverage, should be interesting
 - inverted texture, some bitmaps need to be inverted, explore this in the texture sampler, see
   if this can be done for almost free.

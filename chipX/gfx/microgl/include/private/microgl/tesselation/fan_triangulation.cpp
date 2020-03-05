@@ -3,7 +3,7 @@ namespace microgl {
     namespace tessellation {
 
         template<typename number>
-        void fan_triangulation<number>::compute(vertex *points,
+        void fan_triangulation<number>::compute(const vertex *points,
                                                 index size,
                                                 dynamic_array<index> &indices_buffer_triangulation,
                                                 dynamic_array<triangles::boundary_info> *boundary_buffer,

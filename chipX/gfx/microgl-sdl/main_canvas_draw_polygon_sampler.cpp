@@ -4,6 +4,12 @@
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
+#include <microgl/pixel_coders/RGB888_ARRAY.h>
+#include <microgl/samplers/texture.h>
+#include <microgl/samplers/fast_radial_gradient.h>
+#include <microgl/samplers/linear_gradient_2_colors.h>
+#include <microgl/samplers/flat_color.h>
+#include "src/Resources.h"
 
 #define TEST_ITERATIONS 100
 #define W 640*1
@@ -11,12 +17,21 @@
 
 SDL_Window * window;
 SDL_Renderer * renderer;
-SDL_Texture * texture;
+SDL_Texture * texture_sdl;
 
 using Canvas24Bit_Packed32 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using namespace microgl;
+using namespace microgl::sampling;
+
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
+fast_radial_gradient<float> radial_gradient{0.5, 0.5, 0.75};
+linear_gradient_2_colors<false> gradient2Colors{{255,0,255}, {255,0,0}};
+linear_gradient_2_colors<true> gradient2Colors2{{0,0,255}, {0,0,0}};
+flat_color flatColor{{133,133,133, 255}};
+flat_color flatColorRed{{255,0,0, 255}};
+Texture24 tex_1, tex_2;
 
 Canvas24Bit_Packed32 * canvas;
-
 Resources resources{};
 
 void loop();
@@ -66,9 +81,10 @@ void render_polygon(const dynamic_array<vec2<number>> &polygon) {
     canvas->clear(color::colors::WHITE);
 
     canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+            tex_1,
             polygon.data(),
             polygon.size(),
-            122,
+            255,
             polygons::hints::SIMPLE);
 
 }
@@ -85,11 +101,23 @@ void init_sdl(int width, int height) {
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED,
             SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, 0);
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
+    texture_sdl = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
             SDL_TEXTUREACCESS_STATIC, width, height);
 
-    canvas = new Canvas24Bit_Packed32(width, height);
+    auto img_1 = resources.loadImageFromCompressedPath("charsprites.png");
+    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
 
+    auto bmp_1 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
+    auto bmp_2 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
+
+    tex_1.updateBitmap(bmp_1->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
+    tex_2.updateBitmap(bmp_2->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
+
+    radial_gradient.addStop(0.0f, {255,0,0});
+    radial_gradient.addStop(0.45f, {255,0,0});
+    radial_gradient.addStop(0.50f, {0,255,0});
+    radial_gradient.addStop(1.f, {255,0,255});
+    canvas = new Canvas24Bit_Packed32(width, height);
     resources.init();
 }
 
@@ -128,10 +156,10 @@ void loop() {
 //
         render();
 
-        SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
+        SDL_UpdateTexture(texture_sdl, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());
         SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, texture, nullptr, nullptr);
+        SDL_RenderCopy(renderer, texture_sdl, nullptr, nullptr);
         SDL_RenderPresent(renderer);
     }
 

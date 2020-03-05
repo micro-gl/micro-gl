@@ -10,7 +10,7 @@
 #include <microgl/samplers/texture.h>
 #include <microgl/Q.h>
 
-#define TEST_ITERATIONS 1
+#define TEST_ITERATIONS 10
 #define W 640*1
 #define H 480*1
 
@@ -60,7 +60,7 @@ void render_Q_quadrilateral() {
     d +=(1.0f);
 
     canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, Q<9>>(
-            tex_2,
+            tex_1,
             0.0f,               0.0f,     0.0f, 1.0f,
             G + 100.0f + d,     0.0f,       1.0f, 1.0f,
             G + 0.0f,                G,         1.0f, 0.0f,
@@ -88,7 +88,7 @@ void init_sdl(int width, int height) {
 //    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
 
     auto img_1 = resources.loadImageFromCompressedPath("charsprites.png");
-    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
+    auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
 
     auto bmp_1 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
     auto bmp_2 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);

@@ -17,7 +17,7 @@ namespace microgl {
         public:
 
             static
-            void compute(vertex *points,
+            void compute(const vertex *points,
                          index size,
                          dynamic_array<index> &indices_buffer_triangulation,
                          dynamic_array<triangles::boundary_info> *boundary_buffer,

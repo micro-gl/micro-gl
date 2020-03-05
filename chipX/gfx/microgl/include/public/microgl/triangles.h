@@ -69,13 +69,48 @@ namespace microgl {
         }
 
         using boundary_info = unsigned char;
+        using index = unsigned int;
 
         bool classify_boundary_info(const boundary_info &info,
                                     unsigned int edge_index);
-
         boundary_info create_boundary_info(bool first,
                                            bool second,
                                            bool third);
+
+        template<typename iterator_callback>
+        void iterate_triangles(const index *indices,
+                               const index &size,
+                               const enum triangles::indices &type,
+                               const iterator_callback && callback) {
+#define IND(a) indices[(a)]
+            switch (type) {
+                case indices::TRIANGLES:
+                case indices::TRIANGLES_WITH_BOUNDARY:
+                    for (index ix = 0, idx=0; ix < size; ix+=3,idx++)
+                        callback(idx, IND(ix + 0), IND(ix + 1), IND(ix + 2));
+                    break;
+                case indices::TRIANGLES_FAN:
+                case indices::TRIANGLES_FAN_WITH_BOUNDARY:
+                    for (index ix = 1; ix < size-1; ++ix)
+                        callback(ix-1, IND(0), IND(ix), IND(ix + 1));
+                    break;
+                case indices::TRIANGLES_STRIP:
+                case indices::TRIANGLES_STRIP_WITH_BOUNDARY:
+                {
+                    bool even = true;
+                    for (index ix = 0; ix < size-2; ++ix) {
+                        // we alternate order inorder to preserve CCW or CW,
+                        index first_index = even ?  IND(ix + 0) : IND(ix + 2);
+                        index second_index = IND(ix + 1);
+                        index third_index = even ?  IND(ix + 2) : IND(ix + 0);
+                        callback(ix, first_index, second_index, third_index);
+                        even = !even;
+                    }
+                    break;
+                }
+            }
+#undef IND
+        }
 
     };
 }

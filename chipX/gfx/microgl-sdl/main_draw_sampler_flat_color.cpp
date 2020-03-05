@@ -7,7 +7,7 @@
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/flat_color.h>
 
-#define TEST_ITERATIONS 100
+#define TEST_ITERATIONS 1000
 #define W 640*1
 #define H 640*1
 SDL_Window * sdl_window;

@@ -412,42 +412,6 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
 // Triangles
 
 template<typename P, typename CODER>
-template<typename iterator_callback>
-void Canvas<P, CODER>::iterate_triangles(const index *indices,
-                                         const index &size,
-                                         const enum triangles::indices &type,
-                                         const iterator_callback && callback) {
-#define IND(a) indices[(a)]
-    switch (type) {
-        case indices::TRIANGLES:
-        case indices::TRIANGLES_WITH_BOUNDARY:
-            for (index ix = 0, idx=0; ix < size; ix+=3,idx++)
-                callback(idx, IND(ix + 0), IND(ix + 1), IND(ix + 2));
-            break;
-        case indices::TRIANGLES_FAN:
-        case indices::TRIANGLES_FAN_WITH_BOUNDARY:
-            for (index ix = 1; ix < size-1; ++ix)
-                callback(ix-1, IND(0), IND(ix), IND(ix + 1));
-            break;
-        case indices::TRIANGLES_STRIP:
-        case indices::TRIANGLES_STRIP_WITH_BOUNDARY:
-        {
-            bool even = true;
-            for (index ix = 0; ix < size-2; ++ix) {
-                // we alternate order inorder to preserve CCW or CW,
-                index first_index = even ?  IND(ix + 0) : IND(ix + 2);
-                index second_index = IND(ix + 1);
-                index third_index = even ?  IND(ix + 2) : IND(ix + 0);
-                callback(ix, first_index, second_index, third_index);
-                even = !even;
-            }
-            break;
-        }
-    }
-#undef IND
-}
-
-template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
 void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                      const vec2<number> *vertices,
@@ -456,9 +420,9 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                                      const index size,
                                      const enum indices type,
                                      const opacity_t opacity) {
-#define to_fixed microgl::math::to_fixed
-    const precision p = 4;
-    iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
+#define f microgl::math::to_fixed
+    const precision p = 8;
+    triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
                       [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
                           const bool aa_2d= boundary_buffer!=nullptr;
                           bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
@@ -469,12 +433,47 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
                               aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
                           }
                           drawTriangle<BlendMode, PorterDuff, antialias>(color,
-                                                 to_fixed(vertices[first_index].x, p), to_fixed(vertices[first_index].y, p),
-                                                 to_fixed(vertices[second_index].x, p), to_fixed(vertices[second_index].y, p),
-                                                 to_fixed(vertices[third_index].x, p), to_fixed(vertices[third_index].y, p),
-                                                 opacity, p, aa_first_edge, aa_second_edge, aa_third_edge);
+                                  f(vertices[first_index].x, p), f(vertices[first_index].y, p),
+                                  f(vertices[second_index].x, p), f(vertices[second_index].y, p),
+                                  f(vertices[third_index].x, p), f(vertices[third_index].y, p),
+                                  opacity, p, aa_first_edge, aa_second_edge, aa_third_edge);
                       });
-#undef to_fixed
+#undef f
+}
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
+void Canvas<P, CODER>::drawTriangles(const sampling::sampler<S> &sampler,
+                                     const vec2<number1> *vertices,
+                                     const vec2<number2> *uvs,
+                                     const index *indices,
+                                     const boundary_info * boundary_buffer,
+                                     const index size,
+                                     const enum indices type,
+                                     const opacity_t opacity) {
+#define f microgl::math::to_fixed
+    const precision p = 8;
+    const precision uv_p = 16;
+    const auto zero_uv=vec2<number2>{0,0};
+    triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
+                      [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
+                          const bool aa_2d= boundary_buffer!=nullptr;
+                          bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
+                          if(aa_2d) {
+                              const boundary_info aa_info = boundary_buffer[idx];
+                              aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
+                              aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
+                              aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
+                          }
+                          const auto & v1= vertices[first_index], v2=vertices[second_index], v3=vertices[third_index];
+                          const auto & uv1= uvs?uvs[first_index]:zero_uv, uv2=uvs?uvs[second_index]:zero_uv, uv3=uvs?uvs[third_index]:zero_uv;
+                          drawTriangle<BlendMode, PorterDuff, antialias, false, S>(sampler,
+                                  f(v1.x,p), f(v1.y,p), f(uv1.x, uv_p), f(uv1.y, uv_p), 0,
+                                  f(v2.x,p), f(v2.y,p), f(uv2.x, uv_p), f(uv2.y, uv_p), 0,
+                                  f(v3.x,p), f(v3.y,p), f(uv3.x, uv_p), f(uv3.y, uv_p), 0,
+                                  opacity, p, uv_p, aa_first_edge, aa_second_edge, aa_third_edge);
+                      });
+#undef f
 }
 
 template<typename P, typename CODER>
@@ -489,7 +488,7 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                                      const triangles::face_culling & culling,
                                      long long * depth_buffer,
                                      const opacity_t opacity) {
-    iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
+    triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
                       [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
                           const bool aa_2d= boundary_buffer!=nullptr;
                           bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
@@ -517,7 +516,7 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
                                               const index size,
                                               const enum indices type,
                                               const opacity_t opacity) {
-    iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
+    triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
                       [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
                           drawTriangleWireframe(color, vertices[first_index], vertices[second_index], vertices[third_index]);
                       });
@@ -849,7 +848,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     const number v2_x, const number v2_y,
                                     const opacity_t opacity,
                                     bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    const precision precision = 4;
+    const precision precision = 8;
     int v0_x_ = microgl::math::to_fixed(v0_x, precision);
     int v0_y_ = microgl::math::to_fixed(v0_y, precision);
     int v1_x_ = microgl::math::to_fixed(v1_x, precision);
@@ -889,6 +888,7 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     // sub_pixel_precision;
     // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
     const precision BITS_UV_COORDS = uv_precision;
+    const precision PP = sub_pixel_precision;
     const precision PREC_DIST = 15;
 
     unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
@@ -984,11 +984,11 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
         for (p.x = minX; p.x <= maxX; p.x++) {
             if ((w0|w1|w2)>=0) {
                 int u_i, v_i;
-                uint64_t u_fixed = (((uint64_t)((uint64_t)w0*u2 + (uint64_t)w1*u0 + (uint64_t)w2*u1)));
-                uint64_t v_fixed = (((uint64_t)((uint64_t)w0*v2 + (uint64_t)w1*v0 + (uint64_t)w2*v1)));
+                auto u_fixed = (uint64_t)((((uint64_t)w0*u2)>>PP) + (((uint64_t)w1*u0)>>PP) + (((uint64_t)w2*u1)>>PP));
+                auto v_fixed = (uint64_t)((((uint64_t)w0*v2)>>PP) + (((uint64_t)w1*v0)>>PP) + (((uint64_t)w2*v1)>>PP));
 
                 if(perspective_correct) {
-                    uint64_t q_fixed =(((uint64_t)((uint64_t)w0*q2 + (uint64_t)w1*q0 + (uint64_t)w2*q1)));
+                    auto q_fixed = (uint64_t)((((uint64_t)w0*q2)>>PP) + (((uint64_t)w1*q0)>>PP) + (((uint64_t)w2*q1)>>PP));
                     u_i = (u_fixed<<BITS_UV_COORDS)/q_fixed;
                     v_i = (v_fixed<<BITS_UV_COORDS)/q_fixed;
                 } else {
@@ -1380,7 +1380,7 @@ void Canvas<P, CODER>::drawQuadrilateral(const sampling::sampler<S> & sampler,
                                     number v2_x, number v2_y, number u2, number v2,
                                     number v3_x, number v3_y, number u3, number v3,
                                     const uint8_t opacity) {
-    const precision uv_p = 10, pixel_p = 4;
+    const precision uv_p = 16, pixel_p = 8;
 #define f microgl::math::to_fixed
     number q0 = 1, q1 = 1, q2 = 1, q3 = 1;
     number one(1), zero(0);
@@ -1428,39 +1428,27 @@ void Canvas<P, CODER>::drawQuadrilateral(const sampling::sampler<S> & sampler,
 }
 
 // quads
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff>
-void Canvas<P, CODER>::drawQuad(const color_f_t & color,
-                                const int left, const int top,
-                                const int right, const int bottom,
-                                const precision sub_pixel_precision,
-                                const opacity_t opacity) {
-    color_t color_int;
-    this->coder().convert(color, color_int);
-    const unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
-    int left_ = functions::max((left + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)0);
-    int top_ = functions::max((top + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)0);
-    int right_ = functions::min((right + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)width()-1);
-    int bottom_ = functions::min((bottom + max_sub_pixel_precision_value) >> sub_pixel_precision, (unsigned int)height()-1);
-    int index = top_ * _width;
-    for (int y = top_; y < bottom_; y++) {
-        for (int x = left_; x < right_; x++)
-            blendColor<BlendMode, PorterDuff>(color_int, index + x, opacity);
-        index += _width;
-    }
-}
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, typename number>
-void Canvas<P, CODER>::drawQuad(const color_f_t & color,
+void Canvas<P, CODER>::drawQuad(const color_t & color,
                                 const number left, const number top,
                                 const number right, const number bottom,
                                 const opacity_t opacity) {
+#define f microgl::math::to_fixed
     const precision p = 4;
-    drawQuad<BlendMode, PorterDuff>(color,
-             microgl::math::to_fixed(left, p), microgl::math::to_fixed(top, p),
-             microgl::math::to_fixed(right, p), microgl::math::to_fixed(bottom, p),
-             p, opacity);
+    const unsigned int max_sub_pixel_precision_value = (1<<p) - 1;
+    int left_   = functions::max<l64>((f(left, p) + max_sub_pixel_precision_value) >> p,   0);
+    int top_    = functions::max<l64>((f(top, p) + max_sub_pixel_precision_value) >> p,    0);
+    int right_  = functions::min<l64>((f(right, p) + max_sub_pixel_precision_value) >> p,  width()-1);
+    int bottom_ = functions::min<l64>((f(bottom, p) + max_sub_pixel_precision_value) >> p, height()-1);
+    int index = top_ * _width;
+    for (int y = top_; y < bottom_; y++) {
+        for (int x = left_; x < right_; x++)
+            blendColor<BlendMode, PorterDuff>(color, index + x, opacity);
+        index += _width;
+    }
+#undef f
 }
 
 template<typename P, typename CODER>
@@ -1472,7 +1460,7 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                                 const opacity_t opacity,
                                 const number u0, const number v0,
                                 const number u1, const number v1) {
-    const precision p_sub = 8, p_uv = 10;
+    const precision p_sub = 4, p_uv = 20;
     drawQuad<BlendMode, PorterDuff, S>(sampler,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
             microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
@@ -1500,10 +1488,10 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
     bool degenerate= left_==right_ || top_==bottom_;
     if(degenerate) return;
     // intersections
-    u0 = u0+((u1-u0) *(left_-left))/(right-left);
-    v0 = v0+((v1-v0) *(top_-top))/(bottom-top);
-    u1 = u0+((u1-u0) *(right_-left))/(right-left);
-    v1 = v0+((v1-v0) *(bottom_-top))/(bottom-top);
+    u0 = u0+(l64(u1-u0) *(left_-left))/(right-left);
+    v0 = v0+(l64(v1-v0) *(top_-top))/(bottom-top);
+    u1 = u0+(l64(u1-u0) *(right_-left))/(right-left);
+    v1 = v0+(l64(v1-v0) *(bottom_-top))/(bottom-top);
     // round and convert to raster space
     left_   = (max + left_  )>>sub_pixel_precision;
     top_    = (max + top_   )>>sub_pixel_precision;
@@ -1512,13 +1500,13 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
     degenerate= left_==right_ || top_==bottom_;
     if(degenerate) return;
     // MULTIPLYING with texture dimensions and doubling precision, helps with the z-fighting
-    int du = ((u1-u0)<<uv_precision) / (right_ - left_);
-    int dv = -((v1-v0)<<uv_precision) / (bottom_ - top_);
-    int u_start = u0<<uv_precision;
+    int du = (u1-u0) / (right_ - left_);
+    int dv = -(v1-v0) / (bottom_ - top_);
+    int u_start = u0;
     int u = u_start;
     int v = -dv*(bottom_ - top_);
     int index = top_ * _width;
-    const precision pp = uv_precision<<1;
+    const precision pp = uv_precision;
     for (int y = top_; y <= bottom_; y++) {
         for (int x = left_; x <= right_; x++) {
             sampler.sample(u, v, pp, col_bmp);
@@ -1540,7 +1528,7 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
                                 const number u0, const number v0,
                                 const number u1, const number v1,
                                 const opacity_t opacity) {
-    precision p_sub = 4, p_uv = 8;
+    precision p_sub = 4, p_uv = 20;
     drawMask<S>(mode, sampler,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
             microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
@@ -1568,23 +1556,23 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
     int right_  = functions::min(right, (width()-1)<<sub_pixel_precision);
     int bottom_ = functions::min(bottom, (height()-1)<<sub_pixel_precision);
     // intersections
-    u0 = u0+((u1-u0) *(left_-left))/(right-left);
-    v0 = v0+((v1-v0) *(top_-top))/(bottom-top);
-    u1 = u0+((u1-u0) *(right_-left))/(right-left);
-    v1 = v0+((v1-v0) *(bottom_-top))/(bottom-top);
+    u0 = u0+(l64(u1-u0) *(left_-left))/(right-left);
+    v0 = v0+(l64(v1-v0) *(top_-top))/(bottom-top);
+    u1 = u0+(l64(u1-u0) *(right_-left))/(right-left);
+    v1 = v0+(l64(v1-v0) *(bottom_-top))/(bottom-top);
     // round and convert to raster space
     left_   = (max + left_  )>>sub_pixel_precision;
     top_    = (max + top_   )>>sub_pixel_precision;
     right_  = (max + right_ )>>sub_pixel_precision;
     bottom_ = (max + bottom_)>>sub_pixel_precision;
     // increase precision to (uv_precision*2)
-    int du = ((u1-u0)<<uv_precision) / (right_ - left_);
-    int dv = -((v1-v0)<<uv_precision) / (bottom_ - top_);
-    int u_start = u0<<uv_precision;
+    int du = (u1-u0) / (right_ - left_);
+    int dv = -(v1-v0) / (bottom_ - top_);
+    int u_start = u0;
     int u = u_start;
     int v = -dv*(bottom_ - top_);
     int index = top_ * _width;
-    const precision pp = uv_precision<<1;
+    const precision pp = uv_precision;
     const bits alpha_bits = this->coder().alpha_bits() | 8;
     const channel max_alpha_value = (1<<alpha_bits) - 1;
     for (int y = top_; y <= bottom_; y++) {
@@ -1638,7 +1626,7 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
     using clipper = microgl::clipping::cohen_sutherland_clipper<number>;
     auto clip =  clipper::compute(x0, y0, x1, y1, number(0), number(0), width(), height());
     if(!clip.inside) return;
-    precision p = 4;
+    precision p = 8;
     int x0_ = microgl::math::to_fixed(clip.x0, p);
     int y0_ = microgl::math::to_fixed(clip.y0, p);
     int x1_ = microgl::math::to_fixed(clip.x1, p);
@@ -1898,12 +1886,12 @@ void Canvas<P, CODER>::drawBezierPath(color_f_t & color, vec2<number> *points,
 template<typename P, typename CODER>
 template <typename BlendMode,
         typename PorterDuff,
-        bool antialias, typename number>
-void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
-                                   Canvas::index size,
+        bool antialias, typename number, typename S>
+void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
+                                   const vec2<number> *points,
+                                   index size,
                                    opacity_t opacity,
-                                   polygons::hints hint
-                                   ) {
+                                   polygons::hints hint) {
     indices type;
     // currently static on the stack
     dynamic_array<index> indices;
@@ -1916,10 +1904,10 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
             type = antialias ? triangles::indices::TRIANGLES_WITH_BOUNDARY :
                    triangles::indices::TRIANGLES;
             microgl::tessellation::ear_clipping_triangulation<number>::compute(points,
-                                                              size,
-                                                              indices,
-                                                              &boundary_buffer,
-                                                              type);
+                                                                               size,
+                                                                               indices,
+                                                                               &boundary_buffer,
+                                                                               type);
             break;
         }
         case hints::CONVEX:
@@ -1927,10 +1915,10 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
             type = antialias ? triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY :
                    triangles::indices::TRIANGLES_FAN;
             microgl::tessellation::fan_triangulation<number>::compute(points,
-                                                     size,
-                                                     indices,
-                                                     &boundary_buffer,
-                                                     type);
+                                                                      size,
+                                                                      indices,
+                                                                      &boundary_buffer,
+                                                                      type);
             break;
         }
         case hints::NON_SIMPLE:
@@ -1938,20 +1926,34 @@ void Canvas<P, CODER>::drawPolygon(vec2<number> *points,
         default:
             return;
     }
+
+    const auto * uvs= uv_map<number>::compute(points, size);//, 0.5,0.5,1,1);
     // draw triangles batch
-    drawTriangles<BlendMode, PorterDuff, antialias>(
-            color::colors::RED,
+    drawTriangles<BlendMode, PorterDuff, antialias, number, number, S>(
+            sampler,
             points,
+            uvs,
             indices.data(),
             boundary_buffer.data(),
             indices.size(),
             type,
             opacity);
+
+//    drawTriangles<BlendMode, PorterDuff, antialias>(
+//            color::colors::RED,
+//            points,
+//            indices.data(),
+//            boundary_buffer.data(),
+//            indices.size(),
+//            type,
+//            opacity);
+
     drawTrianglesWireframe(color::colors::BLACK,
                            points,
                            indices.data(),
                            indices.size(),
                            type,
                            255);
-}
 
+    delete [] uvs;
+}
