@@ -81,7 +81,7 @@ void render() {
 
 //    test_1<float>();
 //    test_2<float>();
-    test_3<float>();
+    test_3_aa<float>();
 
 }
 
