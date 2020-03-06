@@ -52,9 +52,9 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     mat4 model_2 = mat4::transform({ math::deg_to_rad(z/1), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
                                    {5,0,0}, {10,10,10});
 //    mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
-    mat4 view = camera::angleAt({0, 0, 50}, 0, math::deg_to_rad(0),0);
-    mat4 projection = camera::perspective(math::deg_to_rad(60), canvas->width(), canvas->height(), 1, 500);
-//    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 200);
+    mat4 view = camera::angleAt({0, 0, 70}, 0, math::deg_to_rad(0),0);
+//    mat4 projection = camera::perspective(math::deg_to_rad(60), canvas->width(), canvas->height(), 1, 500);
+    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 1000);
     mat4 mvp_1= projection*view*model_1;
     mat4 mvp_2= projection*view*model_2;
 
@@ -110,8 +110,6 @@ void test_shader_texture_3d(const model_3d<number> & object) {
 void render() {
     canvas->clear(color::colors::WHITE);
 
-//    test_shader_color_2d<float>();
-//    test_shader_color_2d<Q<10>>();
     test_shader_texture_3d<float>(cube_3d<float>);
 //    test_shader_texture_3d<Q<16>>(cube_3d<Q<16>>);
 //    test_shader_texture_3d<Q<10>>(cube_3d<Q<10>>);

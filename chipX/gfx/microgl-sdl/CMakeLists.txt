@@ -27,16 +27,14 @@ include_directories("${PROJECT_BINARY_DIR}")
 
 set(SOURCES
 #        main_test_fill_flat.cpp
+        main_draw_triangle.cpp
 #        main_draw_circles.cpp
 #        main_draw_rounded_rectangle.cpp
 #        main_clear.cpp
 #        main_curves.cpp
 #        main_speed_optimization.cpp
 #        main_draw_quadrilaterals.cpp
-        main_draw_masks.cpp
-#        main_draw_shaders_2d.cpp
-#        main_draw_shaders_3d.cpp
-#        main_draw_z_buffer.cpp
+#        main_draw_masks.cpp
 #        main_draw_sampler_texture.cpp
 #        main_draw_sampler_radial_gradient.cpp
 #        main_draw_sampler_angular_linear_gradient.cpp
@@ -50,6 +48,9 @@ set(SOURCES
 #        main_arc_divider.cpp
 #        main_fan_triangulation.cpp
 #        main_Q_matrix_transforms.cpp
+#        main_draw_shaders_2d.cpp
+#        main_draw_shaders_3d.cpp
+#        main_draw_z_buffer.cpp
 #        main_3d_pipeline.cpp
 #        main_3d_camera.cpp
 #        main_number_systems.cpp
@@ -66,8 +67,7 @@ set(SOURCES
 #        main_q_sort.cpp
 #        main_avl_tree.cpp
         libs/stb_image/stb_image.cpp
-        src/Resources.cpp
-        data/model_3d_tree.h data/model_3d.h)
+        src/Resources.cpp)
 
 add_executable(${PROJECT_NAME}
                ${SOURCES}

@@ -102,6 +102,7 @@ public:
                          number radius, number stroke_size,
                          opacity_t opacity=255);
 
+private:
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename S1, typename S2>
@@ -111,6 +112,7 @@ public:
                          int right, int bottom,
                          int radius, int stroke_size,
                          precision sub_pixel_precision, opacity_t opacity=255);
+public:
 
     // Triangle batches
     template<typename BlendMode=blendmode::Normal,
@@ -168,6 +170,8 @@ public:
                                const vec2<number> &p1,
                                const vec2<number> &p2);
 
+private:
+
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false>
@@ -181,6 +185,8 @@ public:
                       bool aa_second_edge = true,
                       bool aa_third_edge = true);
 
+public:
+
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename number>
@@ -193,6 +199,7 @@ public:
                       bool aa_second_edge = true,
                       bool aa_third_edge = true);
 
+private:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, bool perspective_correct=false,
@@ -204,10 +211,11 @@ public:
                       opacity_t opacity, precision sub_pixel_precision, precision uv_precision,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
+public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false,
-            typename S, typename number>
+            typename S, typename number=float>
     void drawTriangle(const sampling::sampler<S> &sample,
                       number v0_x, number v0_y, number u0, number v0,
                       number v1_x, number v1_y, number u1, number v1,
@@ -258,6 +266,7 @@ public:
                   number right, number bottom,
                   opacity_t opacity = 255);
 
+private:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             typename S>
@@ -269,6 +278,7 @@ public:
                   precision sub_pixel_precision, precision uv_precision,
                   opacity_t opacity);
 
+public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque, typename number, typename S>
     void drawQuad(const sampling::sampler<S> &sampler,
@@ -287,6 +297,7 @@ public:
                   number u1=number(1), number v1=number(1),
                   opacity_t opacity = 255);
 
+private:
     template <typename S>
     void drawMask(const masks::chrome_mode &mode,
                   const sampling::sampler<S> &sampler,
@@ -297,6 +308,7 @@ public:
                   precision sub_pixel_precision, precision uv_precision,
                   opacity_t opacity = 255);
 
+public:
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename number,
             typename S>
@@ -316,24 +328,18 @@ public:
                      opacity_t opacity,
                      polygons::hints hint = polygons::hints::SIMPLE);
 
-    template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename number=float>
-    void drawPolygon2(const vec2<number> * points,
-                     index size,
-                     opacity_t opacity,
-                     polygons::hints hint = polygons::hints::SIMPLE);
-
     // Wu lines
     template<typename number>
     void drawLine(const color_f_t & color,
                   number x0, number y0, number x1, number y1);
 
+private:
     void drawLine(const color_f_t & color,
                   int x0, int y0,
                   int x1, int y1,
                   uint8_t bits = 0);
 
+public:
     template <typename number>
     void drawBezierPath(color_f_t & color, vec2<number> *points,
                          unsigned int size = 3,

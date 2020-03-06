@@ -43,6 +43,7 @@ inline void render() {
     canvas->drawMask(masks::chrome_mode::red_channel, tex_mask,
             0, 0, 300, 300);
 
+
 }
 
 int main() {

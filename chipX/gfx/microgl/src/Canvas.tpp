@@ -106,7 +106,7 @@ template<typename BlendMode, typename PorterDuff>
 inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y, float opacity) {
     color_t color_int{};
     coder().convert(val, color_int);
-    blendColor<BlendMode, PorterDuff>(coder().val, y*_width + x, opacity);
+    blendColor<BlendMode, PorterDuff>(val, y*_width + x, opacity);
 }
 
 template<typename P, typename CODER>
@@ -940,7 +940,7 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     int w2_row = functions::orient2d(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w2;
 
     uint8_t MAX_PREC = 60;
-    uint8_t LL = MAX_PREC - (sub_pixel_precision + BITS_UV_COORDS);
+    uint8_t LL = 50;//MAX_PREC - (sub_pixel_precision + BITS_UV_COORDS);
     uint64_t ONE = ((uint64_t)1)<<LL;
     uint64_t one_area = (ONE) / area;
 
@@ -992,12 +992,12 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                     u_i = (u_fixed<<BITS_UV_COORDS)/q_fixed;
                     v_i = (v_fixed<<BITS_UV_COORDS)/q_fixed;
                 } else {
-                    u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS));
-                    v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
-                    u_i = (u_fixed)>>(BITS_UV_COORDS);
-                    v_i = (v_fixed)>>(BITS_UV_COORDS);
-//                    u_i = u_fixed/area;
-//                    v_i = v_fixed/area;
+//                    u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS-PP));
+//                    v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS-PP));
+//                    u_i = (u_fixed)>>(BITS_UV_COORDS);
+//                    v_i = (v_fixed)>>(BITS_UV_COORDS);
+                    u_i = ((u_fixed*one_area)>>(LL-PP));
+                    v_i = ((v_fixed*one_area)>>(LL-PP));
                 }
                 color_t col_bmp;
                 sampler.sample(u_i, v_i, BITS_UV_COORDS, col_bmp);
@@ -1024,19 +1024,21 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                     // can get the last texel of the boundary
                     // I don't round since I don't care about it here
                     int64_t u_i, v_i;
-                    int64_t u_fixed = (((int64_t)((int64_t)w0*u2 + (int64_t)w1*u0 + (int64_t)w2*u1)));
-                    int64_t v_fixed = (((int64_t)((int64_t)w0*v2 + (int64_t)w1*v0 + (int64_t)w2*v1)));
+                    int64_t u_fixed = (int64_t)((((int64_t)w0*u2)>>PP) + (((int64_t)w1*u0)>>PP) + (((int64_t)w2*u1)>>PP));
+                    int64_t v_fixed = (int64_t)((((int64_t)w0*v2)>>PP) + (((int64_t)w1*v0)>>PP) + (((int64_t)w2*v1)>>PP));
 
                     if(perspective_correct) {
                         int64_t q_fixed =(((int64_t)((int64_t)w0*q2 + (int64_t)w1*q0 + (int64_t)w2*q1)));
                         u_i = ((u_fixed<<BITS_UV_COORDS)/q_fixed);
                         v_i = ((v_fixed<<BITS_UV_COORDS)/q_fixed);
                     } else {
-                        u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS));
-                        v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
-                        // coords in :BITS_UV_COORDS space
-                        u_i = int64_t(u_fixed)>>(BITS_UV_COORDS);
-                        v_i = int64_t(v_fixed)>>(BITS_UV_COORDS);
+//                        u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS));
+//                        v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
+//                        // coords in :BITS_UV_COORDS space
+//                        u_i = int64_t(u_fixed)>>(BITS_UV_COORDS);
+//                        v_i = int64_t(v_fixed)>>(BITS_UV_COORDS);
+                        u_i = ((u_fixed*one_area)>>(LL-PP));
+                        v_i = ((v_fixed*one_area)>>(LL-PP));
                     }
                     u_i = functions::clamp<int64_t>(u_i, 0, 1ll<<BITS_UV_COORDS);
                     v_i = functions::clamp<int64_t>(v_i, 0, 1ll<<BITS_UV_COORDS);
@@ -1084,7 +1086,7 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> & sampler,
                                    const number v2_x, const number v2_y, number u2, number v2,
                                    const opacity_t opacity,
                                    bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    const precision prec_pixel = 8, prec_uv = 8;
+    const precision prec_pixel = 8, prec_uv = 16;
     int v0_x_ = microgl::math::to_fixed(v0_x, prec_pixel);
     int v0_y_ = microgl::math::to_fixed(v0_y, prec_pixel);
     int v1_x_ = microgl::math::to_fixed(v1_x, prec_pixel);
@@ -1160,7 +1162,7 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
                                                          const vec4<number> &p0,  const vec4<number> &p1,  const vec4<number> &p2,
                                                          varying &varying_v0, varying &varying_v1, varying &varying_v2,
                                                          opacity_t opacity, const triangles::face_culling & culling,
-                                                          long long * depth_buffer,
+                                                         long long * depth_buffer,
                                                          bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
     /*
      * given triangle coords in a homogeneous coords, a shader, and corresponding interpolated varying
@@ -1639,9 +1641,6 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
                                 int x0, int y0,
                                 int x1, int y1,
                                 precision bits) {
-
-
-
     int X0 = x0, Y0 = y0, X1 = x1, Y1=y1;
     color_t color_input{};
 

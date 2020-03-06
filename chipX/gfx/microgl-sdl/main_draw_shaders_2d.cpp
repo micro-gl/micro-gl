@@ -63,7 +63,7 @@ void test_shader_flat_color_2d() {
     t+=0.0001;
     canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255);
 //    canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(color::colors::RED,
-//            10.0+t,10.0, 500.0+t,10.0, 500.0+t,500.0, 255);
+//            10.0+t,10.0+t, 500.0+t,10.0+t, 500.0+t,500.0+t, 255);
 }
 
 template <typename number>
@@ -94,10 +94,10 @@ void render() {
 //    test_shader_color_2d<Q<10>>();
 
 //    test_shader_texture_2d<Q<10>>();
-//    test_shader_texture_2d<float>();
+    test_shader_texture_2d<float>();
 
 //    test_shader_flat_color_2d<float>();
-    test_shader_flat_color_2d<Q<10>>();
+//    test_shader_flat_color_2d<Q<10>>();
 
 }
 

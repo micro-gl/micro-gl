@@ -52,7 +52,7 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - remove framebuffer from bitmap ?
 - configurable custom sin/cos/tan provider
 - implement a correct and slow float compositing router
-- try re-implementing the block rasterizer optimization for shaders
+- try re-implementing the block rasterizer optimization for shaders and samplers
 - poly tesselator continue
 - path maker
 - shader need to retain some fragCoord(x,y,z,1/w) and bounding box, so user can do cool stuff
