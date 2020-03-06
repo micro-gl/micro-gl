@@ -864,16 +864,14 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 }
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff,
-        bool antialias, bool perspective_correct,
-        typename S>
+template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, typename S>
 void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                                    int v0_x, int v0_y, int u0, int v0, int q0,
                                    int v1_x, int v1_y, int u1, int v1, int q1,
                                    int v2_x, int v2_y, int u2, int v2, int q2,
                                    const opacity_t opacity, const precision sub_pixel_precision, const precision uv_precision,
                                    bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    int area = functions::orient2d(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
+    l64 area = functions::orient2d(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
     if(area==0) return;
     if(area<0) { // convert CCW to CW triangle
         area=-area;
@@ -885,19 +883,12 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
         functions::swap(aa_first_edge, aa_third_edge);
     }
 
-    // sub_pixel_precision;
-    // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
-    const precision BITS_UV_COORDS = uv_precision;
-    const precision PP = sub_pixel_precision;
-    const precision PREC_DIST = 15;
-
-    unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
-
+    l64 max_sub_pixel_precision_value = (l64(1)<<sub_pixel_precision) - 1;
     // bounding box
-    int minX = (functions::min(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int minY = (functions::min(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int maxX = (functions::max(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int maxY = (functions::max(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    l64 minX = (functions::min(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    l64 minY = (functions::min(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    l64 maxX = (functions::max(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    l64 maxY = (functions::max(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
 
     // anti-alias pad for distance calculation
     precision bits_distance = 0;
@@ -906,11 +897,11 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     unsigned int max_distance_canvas_space_anti_alias=0;
     // max distance to consider in scaled space
     unsigned int max_distance_scaled_space_anti_alias=0;
+    const precision PREC_DIST = 16;
 
     bool aa_all_edges = false;
     if(antialias) {
         aa_all_edges = aa_first_edge && aa_second_edge && aa_third_edge;
-
         bits_distance = 0;
         bits_distance_complement = 8 - bits_distance;
         max_distance_canvas_space_anti_alias = 1 << bits_distance;
@@ -920,40 +911,34 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     // fill rules adjustments
     triangles::top_left_t top_left =
             triangles::classifyTopLeftEdges(false, v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
-
     int bias_w0 = top_left.first  ? 0 : -1;
     int bias_w1 = top_left.second ? 0 : -1;
     int bias_w2 = top_left.third  ? 0 : -1;
-    //
-
     // clipping
-    minX = functions::max(0, minX); minY = functions::max(0, minY);
-    maxX = functions::min(width()-1, maxX); maxY = functions::min(height()-1, maxY);
-
+    minX = functions::max<l64>(0, minX); minY = functions::max<l64>(0, minY);
+    maxX = functions::min<l64>(width()-1, maxX); maxY = functions::min<l64>(height()-1, maxY);
     // Barycentric coordinates at minX/minY corner
-    vec2<int> p = { minX, minY };
-    vec2<int> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
-
+    vec2<l64> p = { minX, minY };
+    vec2<l64> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
     // this can produce a 2P bits number if the points form a a perpendicular triangle
-    int w0_row = functions::orient2d(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w0;
-    int w1_row = functions::orient2d(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w1;
-    int w2_row = functions::orient2d(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w2;
-
-    uint8_t MAX_PREC = 60;
-    uint8_t LL = 50;//MAX_PREC - (sub_pixel_precision + BITS_UV_COORDS);
+    l64 w0_row = functions::orient2d(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w0;
+    l64 w1_row = functions::orient2d(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w1;
+    l64 w2_row = functions::orient2d(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w2;
+    // sub_pixel_precision;
+    const precision BITS_UV_COORDS = uv_precision;
+    const precision PP = sub_pixel_precision;
+    uint8_t MAX_PREC = 63;
+    uint8_t LL = MAX_PREC - (sub_pixel_precision + BITS_UV_COORDS);
     uint64_t ONE = ((uint64_t)1)<<LL;
     uint64_t one_area = (ONE) / area;
-
-    // PR seems very good for the following calculations
     // Triangle setup
     // this needs at least (P+1) bits, since the delta is always <= length
-    int A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
-    int A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
-    int A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
-
+    l64 A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
+    l64 A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
+    l64 A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
     // AA, 2A/L = h, therefore the division produces a P bit number
-    int w0_row_h=0, w1_row_h=0, w2_row_h=0;
-    int A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
+    l64 w0_row_h=0, w1_row_h=0, w2_row_h=0;
+    l64 A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
 
     if(antialias) {
         // lengths of edges, produces a P+1 bits number
@@ -972,10 +957,10 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
 
     int index = p.y * _width;
     for (p.y = minY; p.y <= maxY; p.y++) {
-        int w0 = w0_row;
-        int w1 = w1_row;
-        int w2 = w2_row;
-        int w0_h=0,w1_h=0,w2_h=0;
+        l64 w0 = w0_row;
+        l64 w1 = w1_row;
+        l64 w2 = w2_row;
+        l64 w0_h=0,w1_h=0,w2_h=0;
         if(antialias) {
             w0_h = w0_row_h;
             w1_h = w1_row_h;
@@ -992,12 +977,13 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                     u_i = (u_fixed<<BITS_UV_COORDS)/q_fixed;
                     v_i = (v_fixed<<BITS_UV_COORDS)/q_fixed;
                 } else {
-//                    u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS-PP));
-//                    v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS-PP));
-//                    u_i = (u_fixed)>>(BITS_UV_COORDS);
-//                    v_i = (v_fixed)>>(BITS_UV_COORDS);
-                    u_i = ((u_fixed*one_area)>>(LL-PP));
-                    v_i = ((v_fixed*one_area)>>(LL-PP));
+                    // stabler rasterizer, that will not overflow fast
+//                    u_i = (u_fixed)/uint64_t(area>>PP);
+//                    v_i = (v_fixed)/uint64_t(area>>PP);
+//                    u_i = functions::clamp<uint64_t>(u_i, 0, 1ll<<BITS_UV_COORDS);
+//                    v_i = functions::clamp<uint64_t>(v_i, 0, 1ll<<BITS_UV_COORDS);
+                    u_i = (u_fixed*one_area)>>(LL-PP);
+                    v_i = (v_fixed*one_area)>>(LL-PP);
                 }
                 color_t col_bmp;
                 sampler.sample(u_i, v_i, BITS_UV_COORDS, col_bmp);
@@ -1006,11 +992,9 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                 // any of the distances are negative, we are outside.
                 // test if we can anti-alias
                 // take minimum of all meta distances
-
                 int distance = functions::min(w0_h, w1_h, w2_h);
                 int delta = (distance) + max_distance_scaled_space_anti_alias;
                 bool perform_aa = aa_all_edges;
-
                 // test edges
                 if(!perform_aa) {
                     if(distance==w0_h && aa_first_edge)
@@ -1023,26 +1007,20 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                     // we need to clip uv coords if they overflow dimension of texture so we
                     // can get the last texel of the boundary
                     // I don't round since I don't care about it here
-                    int64_t u_i, v_i;
-                    int64_t u_fixed = (int64_t)((((int64_t)w0*u2)>>PP) + (((int64_t)w1*u0)>>PP) + (((int64_t)w2*u1)>>PP));
-                    int64_t v_fixed = (int64_t)((((int64_t)w0*v2)>>PP) + (((int64_t)w1*v0)>>PP) + (((int64_t)w2*v1)>>PP));
+                    int u_i, v_i;
+                    auto u_fixed = (int64_t)((((int64_t)w0*u2)>>PP) + (((int64_t)w1*u0)>>PP) + (((int64_t)w2*u1)>>PP));
+                    auto v_fixed = (int64_t)((((int64_t)w0*v2)>>PP) + (((int64_t)w1*v0)>>PP) + (((int64_t)w2*v1)>>PP));
 
                     if(perspective_correct) {
-                        int64_t q_fixed =(((int64_t)((int64_t)w0*q2 + (int64_t)w1*q0 + (int64_t)w2*q1)));
+                        auto q_fixed = (int64_t)((((int64_t)w0*q2)>>PP) + (((int64_t)w1*q0)>>PP) + (((int64_t)w2*q1)>>PP));
                         u_i = ((u_fixed<<BITS_UV_COORDS)/q_fixed);
                         v_i = ((v_fixed<<BITS_UV_COORDS)/q_fixed);
                     } else {
-//                        u_fixed = ((u_fixed*one_area)>>(LL - BITS_UV_COORDS));
-//                        v_fixed = ((v_fixed*one_area)>>(LL - BITS_UV_COORDS));
-//                        // coords in :BITS_UV_COORDS space
-//                        u_i = int64_t(u_fixed)>>(BITS_UV_COORDS);
-//                        v_i = int64_t(v_fixed)>>(BITS_UV_COORDS);
                         u_i = ((u_fixed*one_area)>>(LL-PP));
                         v_i = ((v_fixed*one_area)>>(LL-PP));
                     }
-                    u_i = functions::clamp<int64_t>(u_i, 0, 1ll<<BITS_UV_COORDS);
-                    v_i = functions::clamp<int64_t>(v_i, 0, 1ll<<BITS_UV_COORDS);
-
+                    u_i = functions::clamp<int>(u_i, 0, 1<<BITS_UV_COORDS);
+                    v_i = functions::clamp<int>(v_i, 0, 1<<BITS_UV_COORDS);
                     color_t col_bmp;
                     sampler.sample(u_i, v_i, BITS_UV_COORDS, col_bmp);
                     // complement and normalize
@@ -1051,7 +1029,6 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                     if (opacity < _max_alpha_value) blend = (blend * opacity) >> 8;
                     blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, blend);
                 }
-
             }
 
             w0 += A01;
@@ -1078,34 +1055,24 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
-        bool antialias,
-        typename S, typename number>
+        bool antialias, typename S, typename number1, typename number2>
 void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> & sampler,
-                                   const number v0_x, const number v0_y, number u0, number v0,
-                                   const number v1_x, const number v1_y, number u1, number v1,
-                                   const number v2_x, const number v2_y, number u2, number v2,
+                                   const number1 v0_x, const number1 v0_y, number2 u0, number2 v0,
+                                   const number1 v1_x, const number1 v1_y, number2 u1, number2 v1,
+                                   const number1 v2_x, const number1 v2_y, number2 u2, number2 v2,
                                    const opacity_t opacity,
                                    bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    const precision prec_pixel = 8, prec_uv = 16;
-    int v0_x_ = microgl::math::to_fixed(v0_x, prec_pixel);
-    int v0_y_ = microgl::math::to_fixed(v0_y, prec_pixel);
-    int v1_x_ = microgl::math::to_fixed(v1_x, prec_pixel);
-    int v1_y_ = microgl::math::to_fixed(v1_y, prec_pixel);
-    int v2_x_ = microgl::math::to_fixed(v2_x, prec_pixel);
-    int v2_y_ = microgl::math::to_fixed(v2_y, prec_pixel);
-    int u0_ = microgl::math::to_fixed(u0, prec_uv);
-    int v0_ = microgl::math::to_fixed(v0, prec_uv);
-    int u1_ = microgl::math::to_fixed(u1, prec_uv);
-    int v1_ = microgl::math::to_fixed(v1, prec_uv);
-    int u2_ = microgl::math::to_fixed(u2, prec_uv);
-    int v2_ = microgl::math::to_fixed(v2, prec_uv);
-    int q_ = microgl::math::to_fixed(number(1), prec_uv);
+    const precision prec_pixel = 8, prec_uv = 16; const number2 one= number2(1);
+#define f_pos(v) microgl::math::to_fixed((v), prec_pixel)
+#define f_uv(v) microgl::math::to_fixed((v), prec_uv)
     drawTriangle<BlendMode, PorterDuff, antialias, false, S>(sampler,
-            v0_x_, v0_y_, u0_, v0_, q_,
-            v1_x_, v1_y_, u1_, v1_, q_,
-            v2_x_, v2_y_, u2_, v2_, q_,
+            f_pos(v0_x), f_pos(v0_y), f_uv(u0), f_uv(v0), f_uv(one),
+            f_pos(v1_x), f_pos(v1_y), f_uv(u1), f_uv(v1), f_uv(one),
+            f_pos(v2_x), f_pos(v2_y), f_uv(u2), f_uv(v2), f_uv(one),
             opacity, prec_pixel, prec_uv,
             aa_first_edge, aa_second_edge, aa_third_edge);
+#undef f_pos
+#undef f_uv
 }
 
 template<typename P, typename CODER>
@@ -1375,52 +1342,50 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
-        bool antialias, typename number, typename S>
+        bool antialias, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawQuadrilateral(const sampling::sampler<S> & sampler,
-                                    number v0_x, number v0_y, number u0, number v0,
-                                    number v1_x, number v1_y, number u1, number v1,
-                                    number v2_x, number v2_y, number u2, number v2,
-                                    number v3_x, number v3_y, number u3, number v3,
-                                    const uint8_t opacity) {
+                                         number1 v0_x, number1 v0_y, number2 u0, number2 v0,
+                                         number1 v1_x, number1 v1_y, number2 u1, number2 v1,
+                                         number1 v2_x, number1 v2_y, number2 u2, number2 v2,
+                                         number1 v3_x, number1 v3_y, number2 u3, number2 v3,
+                                        const uint8_t opacity) {
     const precision uv_p = 16, pixel_p = 8;
 #define f microgl::math::to_fixed
-    number q0 = 1, q1 = 1, q2 = 1, q3 = 1;
-    number one(1), zero(0);
-    number p0x = v0_x; number p0y = v0_y;
-    number p1x = v1_x; number p1y = v1_y;
-    number p2x = v2_x; number p2y = v2_y;
-    number p3x = v3_x; number p3y = v3_y;
-    number ax = p2x - p0x;
-    number ay = p2y - p0y;
-    number bx = p3x - p1x;
-    number by = p3y - p1y;
-    number t, s;
-    number cross = ax * by - ay * bx;
-    if (cross != zero) {
-        number cy = p0y - p1y;
-        number cx = p0x - p1x;
-        s = number(ax * cy - ay * cx) / cross;
-        if (s > zero && s < one) {
-            t = number(bx * cy - by * cx) / cross;
-            if (t > zero && t < one) {
-                q0 = one / (one - t);
-                q1 = one / (one - s);
-                q2 = one / t;
-                q3 = one / s;
+    number2 q0 = 1, q1 = 1, q2 = 1, q3 = 1;
+    number1 p0x = v0_x; number1 p0y = v0_y;
+    number1 p1x = v1_x; number1 p1y = v1_y;
+    number1 p2x = v2_x; number1 p2y = v2_y;
+    number1 p3x = v3_x; number1 p3y = v3_y;
+    number1 ax = p2x - p0x;
+    number1 ay = p2y - p0y;
+    number1 bx = p3x - p1x;
+    number1 by = p3y - p1y;
+    number1 t, s;
+    number1 cross = ax * by - ay * bx;
+    if (cross != number1(0)) {
+        number1 cy = p0y - p1y;
+        number1 cx = p0x - p1x;
+        s = (ax * cy - ay * cx) / cross;
+        if (s > number1(0) && s < number1(1)) {
+            t = (bx * cy - by * cx) / cross;
+            if (t > number1(0) && t < number1(1)) { // here casting t, s to number2
+                q0 = number2(1) / (number2(1) - number2(t));
+                q1 = number2(1) / (number2(1) - number2(s));
+                q2 = number2(1) / number2(t);
+                q3 = number2(1) / number2(s);
             }
         }
     }
-    number u0_q0 = u0*q0, v0_q0 = v0*q0;
-    number u1_q1 = u1*q1, v1_q1 = v1*q1;
-    number u2_q2 = u2*q2, v2_q2 = v2*q2;
-    number u3_q3 = u3*q3, v3_q3 = v3*q3;
+    number2 u0_q0 = u0*q0, v0_q0 = v0*q0;
+    number2 u1_q1 = u1*q1, v1_q1 = v1*q1;
+    number2 u2_q2 = u2*q2, v2_q2 = v2*q2;
+    number2 u3_q3 = u3*q3, v3_q3 = v3*q3;
     // perspective correct version
     drawTriangle<BlendMode, PorterDuff, antialias, true, S>(sampler,
           f(v0_x, pixel_p), f(v0_y, pixel_p), f(u0_q0, uv_p), f(v0_q0, uv_p), f(q0, uv_p),
           f(v1_x, pixel_p), f(v1_y, pixel_p), f(u1_q1, uv_p), f(v1_q1, uv_p), f(q1, uv_p),
           f(v2_x, pixel_p), f(v2_y, pixel_p), f(u2_q2, uv_p), f(v2_q2, uv_p), f(q2, uv_p),
           opacity, pixel_p, uv_p, true, true, false);
-
     drawTriangle<BlendMode, PorterDuff, antialias, true, S>(sampler,
           f(v2_x, pixel_p), f(v2_y, pixel_p), f(u2_q2, uv_p), f(v2_q2, uv_p), f(q2, uv_p),
           f(v3_x, pixel_p), f(v3_y, pixel_p), f(u3_q3, uv_p), f(v3_q3, uv_p), f(q3, uv_p),

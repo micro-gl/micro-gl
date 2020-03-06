@@ -35,15 +35,15 @@ void render_Q_quadrilateral();
 inline void render() {
     canvas->clear(color::colors::WHITE);
 
-    render_float_quadrilateral();
-//        render_Q_quadrilateral();
+//    render_float_quadrilateral();
+        render_Q_quadrilateral();
 
 }
 
 void render_float_quadrilateral() {
     static float d =0;
     float G = 256;
-    d+=1.01;
+    d+=0.01;
     canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
             tex_2,
             0.0f,               0.0f,     0.0f, 1.0f,
@@ -59,7 +59,7 @@ void render_Q_quadrilateral() {
     float G = 256;
     d +=(1.0f);
 
-    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, Q<9>>(
+    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, Q<12>>(
             tex_1,
             0.0f,               0.0f,     0.0f, 1.0f,
             G + 100.0f + d,     0.0f,       1.0f, 1.0f,

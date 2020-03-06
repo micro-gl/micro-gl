@@ -27,13 +27,13 @@ include_directories("${PROJECT_BINARY_DIR}")
 
 set(SOURCES
 #        main_test_fill_flat.cpp
-        main_draw_triangle.cpp
+#        main_draw_triangle.cpp
+        main_draw_quadrilaterals.cpp
 #        main_draw_circles.cpp
 #        main_draw_rounded_rectangle.cpp
 #        main_clear.cpp
 #        main_curves.cpp
 #        main_speed_optimization.cpp
-#        main_draw_quadrilaterals.cpp
 #        main_draw_masks.cpp
 #        main_draw_sampler_texture.cpp
 #        main_draw_sampler_radial_gradient.cpp

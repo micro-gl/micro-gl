@@ -214,12 +214,11 @@ private:
 public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false,
-            typename S, typename number=float>
+            bool antialias=false, typename S, typename number1=float, typename number2=float>
     void drawTriangle(const sampling::sampler<S> &sample,
-                      number v0_x, number v0_y, number u0, number v0,
-                      number v1_x, number v1_y, number u1, number v1,
-                      number v2_x, number v2_y, number u2, number v2,
+                      number1 v0_x, number1 v0_y, number2 u0, number2 v0,
+                      number1 v1_x, number1 v1_y, number2 u1, number2 v1,
+                      number1 v2_x, number1 v2_y, number2 u2, number2 v2,
                       opacity_t opacity = 255,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
@@ -249,12 +248,12 @@ public:
     // perspective correct 2d quadrilateral defined by 2d points
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename number, typename S>
+            bool antialias=false, typename number1=float, typename number2=float, typename S>
     void drawQuadrilateral(const sampling::sampler<S> &sampler,
-                           number v0_x, number v0_y, number u0, number v0,
-                           number v1_x, number v1_y, number u1, number v1,
-                           number v2_x, number v2_y, number u2, number v2,
-                           number v3_x, number v3_y, number u3, number v3,
+                           number1 v0_x, number1 v0_y, number2 u0, number2 v0,
+                           number1 v1_x, number1 v1_y, number2 u1, number2 v1,
+                           number1 v2_x, number1 v2_y, number2 u2, number2 v2,
+                           number1 v3_x, number1 v3_y, number2 u3, number2 v3,
                            opacity_t opacity = 255);
     // QUADS
 

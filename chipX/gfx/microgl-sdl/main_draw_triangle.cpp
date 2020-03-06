@@ -68,9 +68,9 @@ void test_3_aa() {
 //    t+=0.01;
 
     canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(tex_1,
-                                                              10.0+100+t,10.0, 0.0, 0.0,
-                                                              500.0+0,10.0, 1.0, 0.0,
-                                                              500.0+0,500.0, 1.0, 1.0,
+                                                              10.0,10.0, 0.0, 0.0,
+                                                              500.0+t,10.0, 1.0, 0.0,
+                                                              500.0+t,500.0, 1.0, 1.0,
                                                               255);
 }
 
