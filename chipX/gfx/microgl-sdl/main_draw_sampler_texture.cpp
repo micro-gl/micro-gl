@@ -31,7 +31,7 @@ float t=0;
 
 template <typename number>
 void test_texture() {
-    t+=0.001;
+//    t+=0.001;
     canvas->drawQuad<blendmode::Normal, porterduff::None, number>(tex_uv, t, t, 400, 400);
 //    canvas->drawQuad<blendmode::Normal, porterduff::None, sampler::Bilinear>(*bmp_uv, 0, 0, 400, 400);
 //    canvas->drawQuad<blendmode::Normal, porterduff::None>(color::colors::RED, 0, 0, 400, 400);

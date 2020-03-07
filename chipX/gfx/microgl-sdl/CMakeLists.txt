@@ -35,7 +35,7 @@ set(SOURCES
 #        main_curves.cpp
 #        main_speed_optimization.cpp
 #        main_draw_masks.cpp
-        main_draw_sampler_texture.cpp
+#        main_draw_sampler_texture.cpp
 #        main_draw_sampler_radial_gradient.cpp
 #        main_draw_sampler_angular_linear_gradient.cpp
 #        main_draw_sampler_line_gradient.cpp
@@ -57,7 +57,7 @@ set(SOURCES
 #        main_aa_bug.cpp
 #        main_aa_bug_2.cpp
 #        main_bentley_ottmann.cpp
-#        main_tess_bezier_patch.cpp
+        main_tess_bezier_patch.cpp
 #        main_complex_to_simple_polygon.cpp
 #        main_complex_to_simple_comps_tree.cpp
 #         main_ear_clipping.cpp

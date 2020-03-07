@@ -292,8 +292,8 @@ public:
                   const sampling::sampler<S> &sampler,
                   number1 left, number1 top,
                   number1 right, number1 bottom,
-                  number2 u0=number2(0), number2 v0=number2(0),
-                  number2 u1=number2(1), number2 v1=number2(1),
+                  number2 u0=number2(0), number2 v0=number2(1),
+                  number2 u1=number2(1), number2 v1=number2(0),
                   opacity_t opacity = 255);
 
 private:
@@ -309,12 +309,14 @@ private:
 
 public:
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename number,
+            bool antialias=false, typename number1, typename number2=number1,
             typename S>
     void drawBezierPatch(const sampling::sampler<S> &sampler,
-                         const vec3<number> *mesh,
-                         unsigned U, unsigned V,
+                         const vec3<number1> *mesh,
+                         unsigned uOrder, unsigned vOrder,
                          unsigned uSamples=20, unsigned vSamples=20,
+                         number2 u0=number2(0), number2 v0=number2(1),
+                         number2 u1=number2(1), number2 v1=number2(0),
                          opacity_t opacity=255);
 
     // polygons

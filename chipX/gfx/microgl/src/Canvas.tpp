@@ -1402,11 +1402,10 @@ void Canvas<P, CODER>::drawQuad(const color_t & color,
     int top_    = functions::max<l64>((f(top, p) + max_sub_pixel_precision_value) >> p,    0);
     int right_  = functions::min<l64>((f(right, p) + max_sub_pixel_precision_value) >> p,  width()-1);
     int bottom_ = functions::min<l64>((f(bottom, p) + max_sub_pixel_precision_value) >> p, height()-1);
-    int index = top_ * _width;
-    for (int y = top_; y < bottom_; y++) {
+    int index = top_*_width;
+    for (int y = top_; y < bottom_; y++, index+=_width) {
         for (int x = left_; x < right_; x++)
             blendColor<BlendMode, PorterDuff>(color, index + x, opacity);
-        index += _width;
     }
 #undef f
 }
@@ -1447,10 +1446,10 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
     bool degenerate= left_==right_ || top_==bottom_;
     if(degenerate) return;
     // intersections
-    const int u0_ = u0+int((l64(u1-u0) *(left_-left))/(right-left));
-    const int v0_ = v0+int((l64(v1-v0) *(top_-top))/(bottom-top));
-    const int u1_ = u0+int((l64(u1-u0) *(right_-left))/(right-left));
-    const int v1_ = v0+int((l64(v1-v0) *(bottom_-top))/(bottom-top));
+    const int u0_ = u0+int((l64(u1-u0)*(left_-left))/(right-left));
+    const int v0_ = v0+int((l64(v1-v0)*(top_-top))/(bottom-top));
+    const int u1_ = u0+int((l64(u1-u0)*(right_-left))/(right-left));
+    const int v1_ = v0+int((l64(v1-v0)*(bottom_-top))/(bottom-top));
     // round and convert to raster space
     left_   = (max + left_  )>>sub_pixel_precision;
     top_    = (max + top_   )>>sub_pixel_precision;
@@ -1458,16 +1457,14 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
     bottom_ = (max + bottom_)>>sub_pixel_precision;
     degenerate= left_==right_ || top_==bottom_;
     if(degenerate) return;
-    // MULTIPLYING with texture dimensions and doubling precision, helps with the z-fighting
-    const int du = (u1_-u0_) / (right_ - left_);
-    const int dv = (v1_-v0_) / (bottom_ - top_);
-    int index = top_ * _width;
-    for (int y=top_, v=v0_; y<=bottom_; y++, v+=dv) {
+    const int du = (u1_-u0_)/(right_ - left_);
+    const int dv = (v1_-v0_)/(bottom_ - top_);
+    int index=top_*_width;
+    for (int y=top_, v=v0_; y<=bottom_; y++, v+=dv, index+=_width) {
         for (int x=left_, u=u0_; x<=right_; x++, u+=du) {
             sampler.sample(u, v, uv_precision, col_bmp);
             blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
         }
-        index += _width;
     }
 }
 
@@ -1508,28 +1505,24 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
     int right_  = functions::min(right, (width()-1)<<sub_pixel_precision);
     int bottom_ = functions::min(bottom, (height()-1)<<sub_pixel_precision);
     // intersections
-    u0 = u0+(l64(u1-u0) *(left_-left))/(right-left);
-    v0 = v0+(l64(v1-v0) *(top_-top))/(bottom-top);
-    u1 = u0+(l64(u1-u0) *(right_-left))/(right-left);
-    v1 = v0+(l64(v1-v0) *(bottom_-top))/(bottom-top);
+    const int u0_ = u0+int((l64(u1-u0) *(left_-left))/(right-left));
+    const int v0_ = v0+int((l64(v1-v0) *(top_-top))/(bottom-top));
+    const int u1_ = u0+int((l64(u1-u0) *(right_-left))/(right-left));
+    const int v1_ = v0+int((l64(v1-v0) *(bottom_-top))/(bottom-top));
     // round and convert to raster space
     left_   = (max + left_  )>>sub_pixel_precision;
     top_    = (max + top_   )>>sub_pixel_precision;
     right_  = (max + right_ )>>sub_pixel_precision;
     bottom_ = (max + bottom_)>>sub_pixel_precision;
     // increase precision to (uv_precision*2)
-    int du = (u1-u0) / (right_ - left_);
-    int dv = -(v1-v0) / (bottom_ - top_);
-    int u_start = u0;
-    int u = u_start;
-    int v = -dv*(bottom_ - top_);
+    const int du = (u1_-u0_) / (right_ - left_);
+    const int dv = (v1_-v0_) / (bottom_ - top_);
     int index = top_ * _width;
-    const precision pp = uv_precision;
     const bits alpha_bits = this->coder().alpha_bits() | 8;
     const channel max_alpha_value = (1<<alpha_bits) - 1;
-    for (int y = top_; y <= bottom_; y++) {
-        for (int x = left_; x <= right_; x++) {
-            sampler.sample(u, v, pp, col_bmp);
+    for (int y=top_, v=v0_; y<=bottom_; y++, v+=dv, index+=_width) {
+        for (int x=left_, u=u0_; x<=right_; x++, u+=du) {
+            sampler.sample(u, v, uv_precision, col_bmp);
             channel a=0;
             switch (mode) {
                 case masks::chrome_mode::red_channel:
@@ -1562,11 +1555,7 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
             col_bmp.b_bits=this->coder().blue_bits(), col_bmp.a_bits=alpha_bits;
             // re-encode for a different canvas
             blendColor<blendmode::Normal, porterduff::DestinationIn>(col_bmp, index + x, opacity);
-            u += du;
         }
-        u = u_start;
-        v += dv;
-        index += _width;
     }
 }
 
@@ -1731,17 +1720,20 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
 }
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias, typename number, typename S>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawBezierPatch(const sampling::sampler<S> & sampler,
-                                     const vec3<number> *mesh,
-                                     const unsigned U, const unsigned V,
-                                     const unsigned uSamples, const unsigned vSamples,
-                                     const opacity_t opacity) {
-    using tess= microgl::tessellation::bezier_patch_tesselator<number>;
-    dynamic_array<number> vertices_attributes;
+                                       const vec3<number1> *mesh,
+                                       const unsigned uOrder, const unsigned vOrder,
+                                       const unsigned uSamples, const unsigned vSamples,
+                                       const number2 u0, const number2 v0,
+                                       const number2 u1, const number2 v1,
+                                       const opacity_t opacity) {
+    using tess= microgl::tessellation::bezier_patch_tesselator<number1, number2>;
+    dynamic_array<number1> vertices_attributes;
     dynamic_array<index> indices;
     microgl::triangles::indices indices_type;
-    tess::compute(mesh, U, V, uSamples, vSamples, vertices_attributes, indices, indices_type);
+    tess::compute(mesh, uOrder, vOrder, uSamples, vSamples, vertices_attributes, indices, indices_type,
+                    u0, v0, u1, v1);
     const index size = indices.size();
     const index window_size=5;
     const index I_X=0, I_Y=1, I_Z=2, I_U=3, I_V=4;

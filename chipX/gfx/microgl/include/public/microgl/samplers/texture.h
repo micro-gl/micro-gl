@@ -35,9 +35,9 @@ namespace microgl {
             inline void sample_nearest_neighboor(const int u, const int v,
                                         const uint8_t bits, color_t &output) const {
                 const int half= 1<<(bits-1);
-                int x = (l64(_bmp->width()-1)*(u)+half) >> bits;
-                int y = (l64(_bmp->height()-1)*(v)+half) >> bits;
-                int index_bmp = y*_bmp->width() + x;
+                const int x = (l64(_bmp->width()-1)*(u)+half) >> bits;
+                const int y = (l64(_bmp->height()-1)*(v)+half) >> bits;
+                const int index_bmp = y*_bmp->width() + x;
                 _bmp->decode(index_bmp, output);
             }
 

@@ -6,10 +6,10 @@
 namespace microgl {
     namespace tessellation {
 
-        template <typename number>
+        template <typename number1, typename number2=number1>
         class bezier_patch_tesselator {
             using index = unsigned int;
-            using vertex3 = vec3<number>;
+            using vertex3 = vec3<number1>;
         public:
 
             static const char BI_QUADRATIC = 0;
@@ -22,31 +22,30 @@ namespace microgl {
              */
             static
             void compute(const vertex3 *meshPoints,
-                         const index U, const index V,
+                         const index uOrder, const index vOrder,
                          const index uSamples, const index vSamples,
-                         dynamic_array<number> &out_vertices_attributes,
+                         dynamic_array<number1> &out_vertices_attributes,
                          dynamic_array<index> &out_indices,
                          triangles::indices & out_indices_type,
-                         number tex_left=number(0), number tex_top=number(0),
-                         number tex_right=number(1), number tex_bottom=number(1)
-            ) {
-                bool supported= U==V && (U==3 || U==4);
+                         number2 tex_left=number2(0), number2 tex_top=number2(1),
+                         number2 tex_right=number2(1), number2 tex_bottom=number2(0)) {
+                bool supported= uOrder == vOrder && (uOrder == 3 || uOrder == 4);
                 if(!supported) return;
-                const char type= U==3 ? BI_QUADRATIC : BI_CUBIC;
+                const char type= uOrder == 3 ? BI_QUADRATIC : BI_CUBIC;
 
-                auto du = number(1)/(uSamples-1);
-                auto dv = number(1)/(vSamples-1);
+                auto du = number2(1) / number2(uSamples - 1);
+                auto dv = number2(1) / number2(vSamples - 1);
 
-                auto factor_remap_u = (tex_right - tex_left);
-                auto factor_remap_v = (tex_top - tex_bottom);
+                number2 factor_remap_u = (tex_right - tex_left);
+                number2 factor_remap_v = (tex_bottom-tex_top);
 
                 // iterates top to bottom and left to right
                 // use the parametric time value 0 to 1
                 for(index i=0; i < uSamples; i++) { // left to right
-                    auto u = number(i) * du;
+                    number2 u = number2(i) * du;
                     for(index j=0; j < vSamples; j++) { // top to bottom
                         // calculate the parametric v value
-                        auto v = number(j) * dv;
+                        number2 v = number2(j) * dv;
                         // calculate the point on the surface
                         vertex3 p;
                         if(type==BI_QUADRATIC)
@@ -60,7 +59,7 @@ namespace microgl {
                         out_vertices_attributes.push_back(p.y);
                         out_vertices_attributes.push_back(p.z);
                         out_vertices_attributes.push_back(tex_left + u*factor_remap_u);
-                        out_vertices_attributes.push_back(tex_bottom + v*factor_remap_v);
+                        out_vertices_attributes.push_back(tex_top + v*factor_remap_v);
 
                         // indices
                         if(i < uSamples - 1) {
@@ -83,19 +82,19 @@ namespace microgl {
             }
 
             static
-            vertex3 evaluateBiCubicSurface(number u, number v, const vertex3 *meshPoints
+            vertex3 evaluateBiCubicSurface(number1 u, number1 v, const vertex3 *meshPoints
 //                                           vertex3 (*meshPoints)[4],
                                            ) {
                 vertex3 temp[4], result;
 
                 // 3rd degree bernstein polynomials coefficients
                 // the t value inverted
-                number t = u;
-                number it = number(1)-t;
-                number b0 = it*it*it;
-                number b1 = number(3)*t*it*it;
-                number b2 = number(3)*t*t*it;
-                number b3 =  t*t*t;
+                number1 t = u;
+                number1 it = number1(1) - t;
+                number1 b0 = it * it * it;
+                number1 b1 = number1(3) * t * it * it;
+                number1 b2 = number1(3) * t * t * it;
+                number1 b3 = t * t * t;
 
                 // first of all we will need to evaluate 4 curves in the u
                 // direction. The points from those will be stored in this
@@ -108,10 +107,10 @@ namespace microgl {
                 }
 
                 t = v;
-                it = number(1)-t;
+                it = number1(1) - t;
                 b0 = it*it*it;
-                b1 = number(3)*t*it*it;
-                b2 = number(3)*t*t*it;
+                b1 = number1(3) * t * it * it;
+                b2 = number1(3) * t * t * it;
                 b3 =  t*t*t;
 
                 // having got 4 points, we can use it as a bezier curve
@@ -125,16 +124,16 @@ namespace microgl {
             };
 
             static
-            vertex3 evaluateBiQuadraticSurface(number u, number v, const vertex3 *meshPoints) {
+            vertex3 evaluateBiQuadraticSurface(number1 u, number1 v, const vertex3 *meshPoints) {
                 vertex3 temp[3], result;
 
                 // 2rd degree bernstein polynomials coefficients
                 // the t value inverted
-                number t = u;
-                number it = number(1)-t;
-                number b0 = it*it;
-                number b1 = number(2)*t*it;
-                number b2 = t*t;
+                number1 t = u;
+                number1 it = number1(1) - t;
+                number1 b0 = it * it;
+                number1 b1 = number1(2) * t * it;
+                number1 b2 = t * t;
 
                 // first of all we will need to evaluate 4 curves in the u
                 // direction. The points from those will be stored in this
@@ -147,9 +146,9 @@ namespace microgl {
                 }
 
                 t = v;
-                it = number(1)-t;
+                it = number1(1) - t;
                 b0 = it*it;
-                b1 = number(2)*t*it;
+                b1 = number1(2) * t * it;
                 b2 = t*t;
 
                 // having got 3 points, we can use it as a bezier curve
