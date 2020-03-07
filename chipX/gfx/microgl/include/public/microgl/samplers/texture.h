@@ -34,15 +34,15 @@ namespace microgl {
 
             inline void sample_nearest_neighboor(const int u, const int v,
                                         const uint8_t bits, color_t &output) const {
-                int x = (l64(_bmp->width()-1)*u) >> bits;
-                int y = (l64(_bmp->height()-1)*v) >> bits;
+                const int half= 1<<(bits-1);
+                int x = (l64(_bmp->width()-1)*(u)+half) >> bits;
+                int y = (l64(_bmp->height()-1)*(v)+half) >> bits;
                 int index_bmp = y*_bmp->width() + x;
                 _bmp->decode(index_bmp, output);
             }
 
             inline void sample_bilinear(l64 u, l64 v,
                                const uint8_t bits, color_t &output) const {
-
                 const int bmp_w_max = _bmp->width()-1;
                 const int bmp_h_max = _bmp->height()-1;
                 u=u*bmp_w_max;

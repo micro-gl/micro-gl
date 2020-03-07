@@ -68,9 +68,9 @@ void test_3_aa() {
 //    t+=0.01;
 
     canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(tex_1,
-                                                              10.0,10.0, 0.0, 0.0,
-                                                              500.0+t,10.0, 1.0, 0.0,
-                                                              500.0+t,500.0, 1.0, 1.0,
+                                                              10.0,10.0, 0.0, 1.0,
+                                                              500.0+t,10.0, 1.0, 1.0,
+                                                              500.0+t,500.0, 1.0, 0.0,
                                                               255);
 }
 
@@ -98,7 +98,7 @@ void init_sdl(int width, int height) {
     sdl_renderer = SDL_CreateRenderer(sdl_window, -1, 0);
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STATIC, width, height);
-    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
+    auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
     auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     tex_1.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
     canvas = new Canvas24(width, height);

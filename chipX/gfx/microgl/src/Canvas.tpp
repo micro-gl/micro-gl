@@ -849,18 +849,12 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     const opacity_t opacity,
                                     bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
     const precision precision = 8;
-    int v0_x_ = microgl::math::to_fixed(v0_x, precision);
-    int v0_y_ = microgl::math::to_fixed(v0_y, precision);
-    int v1_x_ = microgl::math::to_fixed(v1_x, precision);
-    int v1_y_ = microgl::math::to_fixed(v1_y, precision);
-    int v2_x_ = microgl::math::to_fixed(v2_x, precision);
-    int v2_y_ = microgl::math::to_fixed(v2_y, precision);
+#define f_pos(v) microgl::math::to_fixed((v), precision)
     drawTriangle<BlendMode, PorterDuff, antialias>(color,
-            v0_x_, v0_y_,
-            v1_x_, v1_y_,
-            v2_x_, v2_y_,
+            f_pos(v0_x), f_pos(v0_y), f_pos(v1_x), f_pos(v1_y), f_pos(v2_x), f_pos(v2_y),
             opacity, precision,
             aa_first_edge, aa_second_edge, aa_third_edge);
+#undef f_pos
 }
 
 template<typename P, typename CODER>
@@ -921,6 +915,7 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     vec2<l64> p = { minX, minY };
     vec2<l64> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
     // this can produce a 2P bits number if the points form a a perpendicular triangle
+    l64 half= l64(1)<<(sub_pixel_precision-1);
     l64 w0_row = functions::orient2d(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w0;
     l64 w1_row = functions::orient2d(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w1;
     l64 w2_row = functions::orient2d(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w2;
@@ -969,11 +964,11 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
         for (p.x = minX; p.x <= maxX; p.x++) {
             if ((w0|w1|w2)>=0) {
                 int u_i, v_i;
-                auto u_fixed = (uint64_t)((((uint64_t)w0*u2)>>PP) + (((uint64_t)w1*u0)>>PP) + (((uint64_t)w2*u1)>>PP));
-                auto v_fixed = (uint64_t)((((uint64_t)w0*v2)>>PP) + (((uint64_t)w1*v0)>>PP) + (((uint64_t)w2*v1)>>PP));
+                auto u_fixed = (int64_t)((((int64_t)w0*u2)>>PP) + (((int64_t)w1*u0)>>PP) + (((int64_t)w2*u1)>>PP));
+                auto v_fixed = (int64_t)((((int64_t)w0*v2)>>PP) + (((int64_t)w1*v0)>>PP) + (((int64_t)w2*v1)>>PP));
 
                 if(perspective_correct) {
-                    auto q_fixed = (uint64_t)((((uint64_t)w0*q2)>>PP) + (((uint64_t)w1*q0)>>PP) + (((uint64_t)w2*q1)>>PP));
+                    auto q_fixed = (int64_t)((((int64_t)w0*q2)>>PP) + (((int64_t)w1*q0)>>PP) + (((int64_t)w2*q1)>>PP));
                     u_i = (u_fixed<<BITS_UV_COORDS)/q_fixed;
                     v_i = (v_fixed<<BITS_UV_COORDS)/q_fixed;
                 } else {
@@ -1030,7 +1025,6 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                     blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, blend);
                 }
             }
-
             w0 += A01;
             w1 += A12;
             w2 += A20;
@@ -1040,7 +1034,6 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                 w2_h += A20_h;
             }
         }
-
         w0_row += B01;
         w1_row += B12;
         w2_row += B20;
@@ -1419,14 +1412,13 @@ void Canvas<P, CODER>::drawQuad(const color_t & color,
 }
 
 template<typename P, typename CODER>
-template <typename BlendMode, typename PorterDuff,
-        typename number, typename S>
+template <typename BlendMode, typename PorterDuff, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
-                                const number left, const number top,
-                                const number right, const number bottom,
+                                const number1 left, const number1 top,
+                                const number1 right, const number1 bottom,
                                 const opacity_t opacity,
-                                const number u0, const number v0,
-                                const number u1, const number v1) {
+                                const number2 u0, const number2 v0,
+                                const number2 u1, const number2 v1) {
     const precision p_sub = 4, p_uv = 20;
     drawQuad<BlendMode, PorterDuff, S>(sampler,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
@@ -1447,7 +1439,7 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                                 const precision uv_precision,
                                 const opacity_t opacity) {
     color_t col_bmp{};
-    int max = (1u<<sub_pixel_precision) - 1;
+    int max = (1<<sub_pixel_precision) - 1;
     int left_   = functions::max(left, (int)0);
     int top_    = functions::max(top, ( int)0);
     int right_  = functions::min(right, (width()-1)<<sub_pixel_precision);
@@ -1455,10 +1447,10 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
     bool degenerate= left_==right_ || top_==bottom_;
     if(degenerate) return;
     // intersections
-    u0 = u0+(l64(u1-u0) *(left_-left))/(right-left);
-    v0 = v0+(l64(v1-v0) *(top_-top))/(bottom-top);
-    u1 = u0+(l64(u1-u0) *(right_-left))/(right-left);
-    v1 = v0+(l64(v1-v0) *(bottom_-top))/(bottom-top);
+    const int u0_ = u0+int((l64(u1-u0) *(left_-left))/(right-left));
+    const int v0_ = v0+int((l64(v1-v0) *(top_-top))/(bottom-top));
+    const int u1_ = u0+int((l64(u1-u0) *(right_-left))/(right-left));
+    const int v1_ = v0+int((l64(v1-v0) *(bottom_-top))/(bottom-top));
     // round and convert to raster space
     left_   = (max + left_  )>>sub_pixel_precision;
     top_    = (max + top_   )>>sub_pixel_precision;
@@ -1467,33 +1459,26 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
     degenerate= left_==right_ || top_==bottom_;
     if(degenerate) return;
     // MULTIPLYING with texture dimensions and doubling precision, helps with the z-fighting
-    int du = (u1-u0) / (right_ - left_);
-    int dv = -(v1-v0) / (bottom_ - top_);
-    int u_start = u0;
-    int u = u_start;
-    int v = -dv*(bottom_ - top_);
+    const int du = (u1_-u0_) / (right_ - left_);
+    const int dv = (v1_-v0_) / (bottom_ - top_);
     int index = top_ * _width;
-    const precision pp = uv_precision;
-    for (int y = top_; y <= bottom_; y++) {
-        for (int x = left_; x <= right_; x++) {
-            sampler.sample(u, v, pp, col_bmp);
+    for (int y=top_, v=v0_; y<=bottom_; y++, v+=dv) {
+        for (int x=left_, u=u0_; x<=right_; x++, u+=du) {
+            sampler.sample(u, v, uv_precision, col_bmp);
             blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
-            u += du;
         }
-        u = u_start;
-        v += dv;
         index += _width;
     }
 }
 
 template<typename P, typename CODER>
-template <typename number, typename S>
+template <typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
                                 const sampling::sampler<S> & sampler,
-                                const number left, const number top,
-                                const number right, const number bottom,
-                                const number u0, const number v0,
-                                const number u1, const number v1,
+                                const number1 left, const number1 top,
+                                const number1 right, const number1 bottom,
+                                const number2 u0, const number2 v0,
+                                const number2 u1, const number2 v1,
                                 const opacity_t opacity) {
     precision p_sub = 4, p_uv = 20;
     drawMask<S>(mode, sampler,

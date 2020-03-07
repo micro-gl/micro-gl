@@ -279,21 +279,21 @@ private:
 
 public:
     template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque, typename number, typename S>
+            typename PorterDuff=porterduff::SourceOverOnOpaque, typename number1=float, typename number2=number1, typename S>
     void drawQuad(const sampling::sampler<S> &sampler,
-                  number left, number top,
-                  number right, number bottom,
+                  number1 left, number1 top,
+                  number1 right, number1 bottom,
                   opacity_t opacity = 255,
-                  number u0=number(0), number v0=number(0),
-                  number u1=number(1), number v1=number(1));
+                  number2 u0=number2(0), number2 v0=number2(1),
+                  number2 u1=number2(1), number2 v1=number2(0));
     // Masks
-    template <typename number, typename S>
+    template <typename number1, typename number2=number1, typename S>
     void drawMask(const masks::chrome_mode &mode,
                   const sampling::sampler<S> &sampler,
-                  number left, number top,
-                  number right, number bottom,
-                  number u0=number(0), number v0=number(0),
-                  number u1=number(1), number v1=number(1),
+                  number1 left, number1 top,
+                  number1 right, number1 bottom,
+                  number2 u0=number2(0), number2 v0=number2(0),
+                  number2 u1=number2(1), number2 v1=number2(1),
                   opacity_t opacity = 255);
 
 private:
