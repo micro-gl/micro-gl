@@ -67,8 +67,8 @@ dynamic_array<vec2<number>> poly_diamond() {
 
 void render() {
     t+=.05f;
-    render_polygon<float>(poly_hole<float>());
-//    render_polygon<float>(poly_diamond<float>());
+//    render_polygon<float>(poly_hole<float>());
+    render_polygon<float>(poly_diamond<float>());
 }
 
 
@@ -81,7 +81,7 @@ void render_polygon(const dynamic_array<vec2<number>> &polygon) {
     canvas->clear(color::colors::WHITE);
 
     canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-            tex_1,
+            gradient2Colors,
             polygon.data(),
             polygon.size(),
             255,

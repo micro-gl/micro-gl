@@ -423,21 +423,21 @@ void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
 #define f microgl::math::to_fixed
     const precision p = 8;
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
-                      [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
-                          const bool aa_2d= boundary_buffer!=nullptr;
-                          bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
-                          if(aa_2d) {
-                              const boundary_info aa_info = boundary_buffer[idx];
-                              aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
-                              aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
-                              aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
-                          }
-                          drawTriangle<BlendMode, PorterDuff, antialias>(color,
-                                  f(vertices[first_index].x, p), f(vertices[first_index].y, p),
-                                  f(vertices[second_index].x, p), f(vertices[second_index].y, p),
-                                  f(vertices[third_index].x, p), f(vertices[third_index].y, p),
-                                  opacity, p, aa_first_edge, aa_second_edge, aa_third_edge);
-                      });
+          [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
+              const bool aa_2d= boundary_buffer!=nullptr;
+              bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
+              if(aa_2d) {
+                  const boundary_info aa_info = boundary_buffer[idx];
+                  aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
+                  aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
+                  aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
+              }
+              drawTriangle<BlendMode, PorterDuff, antialias>(color,
+                      f(vertices[first_index].x, p), f(vertices[first_index].y, p),
+                      f(vertices[second_index].x, p), f(vertices[second_index].y, p),
+                      f(vertices[third_index].x, p), f(vertices[third_index].y, p),
+                      opacity, p, aa_first_edge, aa_second_edge, aa_third_edge);
+          });
 #undef f
 }
 
@@ -456,23 +456,23 @@ void Canvas<P, CODER>::drawTriangles(const sampling::sampler<S> &sampler,
     const precision uv_p = 16;
     const auto zero_uv=vec2<number2>{0,0};
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
-                      [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
-                          const bool aa_2d= boundary_buffer!=nullptr;
-                          bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
-                          if(aa_2d) {
-                              const boundary_info aa_info = boundary_buffer[idx];
-                              aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
-                              aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
-                              aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
-                          }
-                          const auto & v1= vertices[first_index], v2=vertices[second_index], v3=vertices[third_index];
-                          const auto & uv1= uvs?uvs[first_index]:zero_uv, uv2=uvs?uvs[second_index]:zero_uv, uv3=uvs?uvs[third_index]:zero_uv;
-                          drawTriangle<BlendMode, PorterDuff, antialias, false, S>(sampler,
-                                  f(v1.x,p), f(v1.y,p), f(uv1.x, uv_p), f(uv1.y, uv_p), 0,
-                                  f(v2.x,p), f(v2.y,p), f(uv2.x, uv_p), f(uv2.y, uv_p), 0,
-                                  f(v3.x,p), f(v3.y,p), f(uv3.x, uv_p), f(uv3.y, uv_p), 0,
-                                  opacity, p, uv_p, aa_first_edge, aa_second_edge, aa_third_edge);
-                      });
+          [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
+              const bool aa_2d= boundary_buffer!=nullptr;
+              bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
+              if(aa_2d) {
+                  const boundary_info aa_info = boundary_buffer[idx];
+                  aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
+                  aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
+                  aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
+              }
+              const auto & v1= vertices[first_index], v2=vertices[second_index], v3=vertices[third_index];
+              const auto & uv1= uvs?uvs[first_index]:zero_uv, uv2=uvs?uvs[second_index]:zero_uv, uv3=uvs?uvs[third_index]:zero_uv;
+              drawTriangle<BlendMode, PorterDuff, antialias, false, S>(sampler,
+                      f(v1.x,p), f(v1.y,p), f(uv1.x, uv_p), f(uv1.y, uv_p), 0,
+                      f(v2.x,p), f(v2.y,p), f(uv2.x, uv_p), f(uv2.y, uv_p), 0,
+                      f(v3.x,p), f(v3.y,p), f(uv3.x, uv_p), f(uv3.y, uv_p), 0,
+                      opacity, p, uv_p, aa_first_edge, aa_second_edge, aa_third_edge);
+          });
 #undef f
 }
 
@@ -489,23 +489,23 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                                      long long * depth_buffer,
                                      const opacity_t opacity) {
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
-                      [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
-                          const bool aa_2d= boundary_buffer!=nullptr;
-                          bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
-                          if(aa_2d) {
-                              const boundary_info aa_info = boundary_buffer[idx];
-                              aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
-                              aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
-                              aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
-                          }
-                          drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag>(
-                                  shader,
-                                  vertex_buffer[first_index],
-                                  vertex_buffer[second_index],
-                                  vertex_buffer[third_index],
-                                  opacity, culling, depth_buffer,
-                                  aa_first_edge, aa_second_edge, aa_third_edge);
-                      });
+          [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
+              const bool aa_2d= boundary_buffer!=nullptr;
+              bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
+              if(aa_2d) {
+                  const boundary_info aa_info = boundary_buffer[idx];
+                  aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
+                  aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
+                  aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
+              }
+              drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag>(
+                      shader,
+                      vertex_buffer[first_index],
+                      vertex_buffer[second_index],
+                      vertex_buffer[third_index],
+                      opacity, culling, depth_buffer,
+                      aa_first_edge, aa_second_edge, aa_third_edge);
+          });
 }
 
 template<typename P, typename CODER>
@@ -962,69 +962,46 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
             w2_h = w2_row_h;
         }
         for (p.x = minX; p.x <= maxX; p.x++) {
-            if ((w0|w1|w2)>=0) {
-                int u_i, v_i;
-                auto u_fixed = (int64_t)((((int64_t)w0*u2)>>PP) + (((int64_t)w1*u0)>>PP) + (((int64_t)w2*u1)>>PP));
-                auto v_fixed = (int64_t)((((int64_t)w0*v2)>>PP) + (((int64_t)w1*v0)>>PP) + (((int64_t)w2*v1)>>PP));
+            bool should_sample=false;
+            uint8_t blend=opacity;
+            if((w0|w1|w2)>=0) should_sample=true;
+            else if(antialias) { // cheap AA based on SDF
+                const l64 distance = functions::min(w0_h, w1_h, w2_h);
+                l64 delta = distance+max_distance_scaled_space_anti_alias;
+                bool perform_aa = delta>=0 && (aa_all_edges || ((distance == w0_h) && aa_first_edge) ||
+                                                 ((distance == w1_h) && aa_second_edge) ||
+                                                 ((distance == w2_h) && aa_third_edge));
+                if (perform_aa) {
+                    should_sample = true;
+                    blend = functions::clamp<int>(((uint64_t)(delta << bits_distance_complement))>>PREC_DIST,0, 255);
+                    if (opacity < _max_alpha_value) blend = (blend * opacity) >> 8; // * 257>>16 - blinn method
+                }
+            }
 
+            if(should_sample) {
+                int u_i, v_i;
+                auto u_fixed = ((w0*u2)>>PP) + ((w1*u0)>>PP) + ((w2*u1)>>PP);
+                auto v_fixed = ((w0*v2)>>PP) + ((w1*v0)>>PP) + ((w2*v1)>>PP);
                 if(perspective_correct) {
-                    auto q_fixed = (int64_t)((((int64_t)w0*q2)>>PP) + (((int64_t)w1*q0)>>PP) + (((int64_t)w2*q1)>>PP));
+                    auto q_fixed = ((w0*q2)>>PP) + ((w1*q0)>>PP) + ((w2*q1)>>PP);
                     u_i = (u_fixed<<BITS_UV_COORDS)/q_fixed;
                     v_i = (v_fixed<<BITS_UV_COORDS)/q_fixed;
                 } else {
                     // stabler rasterizer, that will not overflow fast
-//                    u_i = (u_fixed)/uint64_t(area>>PP);
-//                    v_i = (v_fixed)/uint64_t(area>>PP);
-//                    u_i = functions::clamp<uint64_t>(u_i, 0, 1ll<<BITS_UV_COORDS);
-//                    v_i = functions::clamp<uint64_t>(v_i, 0, 1ll<<BITS_UV_COORDS);
+                    //u_i = (u_fixed)/uint64_t(area>>PP);
+                    //v_i = (v_fixed)/uint64_t(area>>PP);
                     u_i = (u_fixed*one_area)>>(LL-PP);
                     v_i = (v_fixed*one_area)>>(LL-PP);
                 }
-                color_t col_bmp;
-                sampler.sample(u_i, v_i, BITS_UV_COORDS, col_bmp);
-                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, opacity);
-            } else if(antialias) {
-                // any of the distances are negative, we are outside.
-                // test if we can anti-alias
-                // take minimum of all meta distances
-                int distance = functions::min(w0_h, w1_h, w2_h);
-                int delta = (distance) + max_distance_scaled_space_anti_alias;
-                bool perform_aa = aa_all_edges;
-                // test edges
-                if(!perform_aa) {
-                    if(distance==w0_h && aa_first_edge)
-                        perform_aa = true;
-                    else if(distance==w1_h && aa_second_edge)
-                        perform_aa = true;
-                    else perform_aa = distance == w2_h && aa_third_edge;
-                }
-                if (perform_aa && delta >= 0) {
-                    // we need to clip uv coords if they overflow dimension of texture so we
-                    // can get the last texel of the boundary
-                    // I don't round since I don't care about it here
-                    int u_i, v_i;
-                    auto u_fixed = (int64_t)((((int64_t)w0*u2)>>PP) + (((int64_t)w1*u0)>>PP) + (((int64_t)w2*u1)>>PP));
-                    auto v_fixed = (int64_t)((((int64_t)w0*v2)>>PP) + (((int64_t)w1*v0)>>PP) + (((int64_t)w2*v1)>>PP));
-
-                    if(perspective_correct) {
-                        auto q_fixed = (int64_t)((((int64_t)w0*q2)>>PP) + (((int64_t)w1*q0)>>PP) + (((int64_t)w2*q1)>>PP));
-                        u_i = ((u_fixed<<BITS_UV_COORDS)/q_fixed);
-                        v_i = ((v_fixed<<BITS_UV_COORDS)/q_fixed);
-                    } else {
-                        u_i = ((u_fixed*one_area)>>(LL-PP));
-                        v_i = ((v_fixed*one_area)>>(LL-PP));
-                    }
+                if(antialias) {
                     u_i = functions::clamp<int>(u_i, 0, 1<<BITS_UV_COORDS);
                     v_i = functions::clamp<int>(v_i, 0, 1<<BITS_UV_COORDS);
-                    color_t col_bmp;
-                    sampler.sample(u_i, v_i, BITS_UV_COORDS, col_bmp);
-                    // complement and normalize
-                    uint8_t blend = functions::clamp<int>(((uint64_t)(delta << bits_distance_complement))>>PREC_DIST,
-                                                          0, 255);
-                    if (opacity < _max_alpha_value) blend = (blend * opacity) >> 8;
-                    blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, blend);
                 }
+                color_t col_bmp;
+                sampler.sample(u_i, v_i, BITS_UV_COORDS, col_bmp);
+                blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, blend);
             }
+
             w0 += A01;
             w1 += A12;
             w2 += A20;
@@ -1330,7 +1307,6 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
         }
         index += _width;
     }
-
 }
 
 template<typename P, typename CODER>
@@ -1557,6 +1533,80 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
             blendColor<blendmode::Normal, porterduff::DestinationIn>(col_bmp, index + x, opacity);
         }
     }
+}
+
+template<typename P, typename CODER>
+template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
+void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
+                                   const vec2<number1> *points,
+                                   index size, opacity_t opacity,
+                                   polygons::hints hint,
+                                   const number2 u0, const number2 v0,
+                                   const number2 u1, const number2 v1, const bool debug) {
+    indices type;
+    dynamic_array<index> indices;
+    dynamic_array<boundary_info> boundary_buffer;
+    switch (hint) {
+        case hints::CONCAVE:
+        case hints::SIMPLE:
+        {
+            type = antialias ? triangles::indices::TRIANGLES_WITH_BOUNDARY :
+                   triangles::indices::TRIANGLES;
+            microgl::tessellation::ear_clipping_triangulation<number1>::compute(points,
+                                                                                size,
+                                                                                indices,
+                                                                                &boundary_buffer,
+                                                                                type);
+            break;
+        }
+        case hints::CONVEX:
+        {
+            type = antialias ? triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY :
+                   triangles::indices::TRIANGLES_FAN;
+            microgl::tessellation::fan_triangulation<number1>::compute(points,
+                                                                       size,
+                                                                       indices,
+                                                                       &boundary_buffer,
+                                                                       type);
+            break;
+        }
+        case hints::NON_SIMPLE:
+        case hints::SELF_INTERSECTING:
+        default:
+            return;
+    }
+
+    const auto * uvs= uv_map<number1, number2>::compute(points, size, u0, v0, u1, v1);
+    // draw triangles batch
+    drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, S>(
+            sampler,
+            points,
+            uvs,
+            indices.data(),
+            boundary_buffer.data(),
+            indices.size(),
+            type,
+            opacity);
+
+//    drawTriangles<BlendMode, PorterDuff, antialias>(
+//            color::colors::RED,
+//            points,
+//            indices.data(),
+//            boundary_buffer.data(),
+//            indices.size(),
+//            type,
+//            opacity);
+
+    if(debug)
+        drawTrianglesWireframe(color::colors::BLACK,
+                               points,
+                               indices.data(),
+                               indices.size(),
+                               type,
+                               255);
+
+    if(uvs)
+        delete [] uvs;
 }
 
 template<typename P, typename CODER>
@@ -1824,77 +1874,3 @@ void Canvas<P, CODER>::drawBezierPath(color_f_t & color, vec2<number> *points,
     }
 }
 
-template<typename P, typename CODER>
-template <typename BlendMode,
-        typename PorterDuff,
-        bool antialias, typename number, typename S>
-void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
-                                   const vec2<number> *points,
-                                   index size,
-                                   opacity_t opacity,
-                                   polygons::hints hint) {
-    indices type;
-    // currently static on the stack
-    dynamic_array<index> indices;
-    dynamic_array<boundary_info> boundary_buffer;
-
-    switch (hint) {
-        case hints::CONCAVE:
-        case hints::SIMPLE:
-        {
-            type = antialias ? triangles::indices::TRIANGLES_WITH_BOUNDARY :
-                   triangles::indices::TRIANGLES;
-            microgl::tessellation::ear_clipping_triangulation<number>::compute(points,
-                                                                               size,
-                                                                               indices,
-                                                                               &boundary_buffer,
-                                                                               type);
-            break;
-        }
-        case hints::CONVEX:
-        {
-            type = antialias ? triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY :
-                   triangles::indices::TRIANGLES_FAN;
-            microgl::tessellation::fan_triangulation<number>::compute(points,
-                                                                      size,
-                                                                      indices,
-                                                                      &boundary_buffer,
-                                                                      type);
-            break;
-        }
-        case hints::NON_SIMPLE:
-        case hints::SELF_INTERSECTING:
-        default:
-            return;
-    }
-
-    const auto * uvs= uv_map<number>::compute(points, size);//, 0.5,0.5,1,1);
-    // draw triangles batch
-    drawTriangles<BlendMode, PorterDuff, antialias, number, number, S>(
-            sampler,
-            points,
-            uvs,
-            indices.data(),
-            boundary_buffer.data(),
-            indices.size(),
-            type,
-            opacity);
-
-//    drawTriangles<BlendMode, PorterDuff, antialias>(
-//            color::colors::RED,
-//            points,
-//            indices.data(),
-//            boundary_buffer.data(),
-//            indices.size(),
-//            type,
-//            opacity);
-
-    drawTrianglesWireframe(color::colors::BLACK,
-                           points,
-                           indices.data(),
-                           indices.size(),
-                           type,
-                           255);
-
-    delete [] uvs;
-}

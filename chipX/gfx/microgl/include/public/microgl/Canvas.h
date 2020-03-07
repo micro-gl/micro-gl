@@ -77,7 +77,7 @@ public:
     void blendColor(const color_t &val, int x, int y, opacity_t opacity);
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>
-    void blendColor(const color_t &val, int index, opacity_t opacity);
+    inline void blendColor(const color_t &val, int index, opacity_t opacity);
 
     void drawPixel(const P &val, int x, int y);
     void drawPixel(const P &val, int index);
@@ -309,8 +309,7 @@ private:
 
 public:
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename number1, typename number2=number1,
-            typename S>
+            bool antialias=false, typename number1, typename number2=number1, typename S>
     void drawBezierPatch(const sampling::sampler<S> &sampler,
                          const vec3<number1> *mesh,
                          unsigned uOrder, unsigned vOrder,
@@ -320,14 +319,14 @@ public:
                          opacity_t opacity=255);
 
     // polygons
-    template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename number=float, typename S>
+    template <typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::SourceOverOnOpaque,
+            bool antialias=false, typename number1=float, typename number2=number1, typename S>
     void drawPolygon(const sampling::sampler<S> &sampler,
-                     const vec2<number> * points,
-                     index size,
-                     opacity_t opacity,
-                     polygons::hints hint = polygons::hints::SIMPLE);
+                     const vec2<number1> * points,
+                     index size, opacity_t opacity,
+                     polygons::hints hint = polygons::hints::SIMPLE,
+                     number2 u0=number2(0), number2 v0=number2(1),
+                     number2 u1=number2(1), number2 v1=number2(0), bool debug=false);
 
     // Wu lines
     template<typename number>
