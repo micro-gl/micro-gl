@@ -61,7 +61,7 @@ void init_sdl(int width, int height) {
                                     SDL_TEXTUREACCESS_STATIC, width, height);
 
     gradient.addStop(0.0f, {255,0,0});
-    gradient.addStop(0.3f, {0,255,0});
+    gradient.addStop(0.5f, {0,255,0});
     gradient.addStop(1.f, {0,0,255});
     canvas = new Canvas24(width, height);
 }

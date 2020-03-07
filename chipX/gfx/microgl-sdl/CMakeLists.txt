@@ -29,10 +29,10 @@ set(SOURCES
 #        main_test_fill_flat.cpp
 #        main_draw_triangle.cpp
 #        main_draw_quadrilaterals.cpp
-#        main_draw_circles.cpp
-        main_draw_polygon_sampler.cpp
+#        main_draw_polygon_sampler.cpp
 #        main_draw_bezier_patch.cpp
 #        main_draw_rounded_rectangle.cpp
+#        main_draw_circles.cpp
 #        main_draw_masks.cpp
 #        main_clear.cpp
 #        main_curves.cpp
@@ -41,7 +41,7 @@ set(SOURCES
 #        main_draw_sampler_radial_gradient.cpp
 #        main_draw_sampler_angular_linear_gradient.cpp
 #        main_draw_sampler_line_gradient.cpp
-#        main_draw_sampler_axial_gradient.cpp
+        main_draw_sampler_axial_gradient.cpp
 #        main_draw_sampler_gradient_2_colors_fast.cpp
 #        main_draw_sampler_flat_color.cpp
 #        main_path_tessellation.cpp

@@ -18,7 +18,7 @@ using index_t = unsigned int;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
 Canvas24 * canvas;
-axial_linear_gradient<true> gradient;
+axial_linear_gradient<45> gradient;
 
 void loop();
 void init_sdl(int width, int height);
@@ -27,7 +27,7 @@ float t=0;
 template <typename number>
 void test_1() {
 //    t+=0.0001;
-//    canvas->drawQuad<blendmode::Normal, porterduff::None, number>(gradient, t, t, 400, 400);
+    canvas->drawQuad<blendmode::Normal, porterduff::None, number>(gradient, t, t, 400, 400);
 //    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, float>(
 //            gradient,
 //            0.0f,               0.0f,     0.0f, 1.0f,
@@ -35,14 +35,13 @@ void test_1() {
 //            256 + 0.0f,           256,         1.0f, 0.0f,
 //            0.0f,                 256,         0.0f, 0.0f,
 //            255);
-    canvas->drawQuad<blendmode::Normal, porterduff::None>({255,0,0}, 0, 0, 400, 400);
+//    canvas->drawQuad<blendmode::Normal, porterduff::None>({255,0,0}, 0, 0, 400, 400);
 }
 
 void render() {
     canvas->clear(color::colors::WHITE);
 
     test_1<float>();
-
 }
 
 int main() {
@@ -60,7 +59,7 @@ void init_sdl(int width, int height) {
                                     SDL_TEXTUREACCESS_STATIC, width, height);
 
     gradient.addStop(0.0f, {255,0,0});
-    gradient.addStop(0.3f, {0,255,0});
+    gradient.addStop(0.5f, {0,255,0});
     gradient.addStop(1.f, {0,0,255});
     canvas = new Canvas24(width, height);
 }

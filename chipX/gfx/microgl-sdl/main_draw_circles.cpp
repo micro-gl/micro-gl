@@ -67,7 +67,8 @@ void init_sdl(int width, int height) {
                                     SDL_TEXTUREACCESS_STATIC, width, height);
 
     auto img_1 = resources.loadImageFromCompressedPath("charsprites.png");
-    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
+//    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
+    auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
 
     auto bmp_1 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
     auto bmp_2 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);

@@ -70,7 +70,6 @@ public:
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>
     void blendColor(const color_f_t &val, int x, int y, float opacity=1.0f);
-
     // integer blenders
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>
@@ -86,21 +85,25 @@ public:
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename number, typename S1, typename S2>
+            bool antialias=false, typename number1, typename number2=number1, typename S1, typename S2>
     void drawCircle(const sampling::sampler<S1> & sampler_fill,
                     const sampling::sampler<S2> & sampler_stroke,
-                    number centerX, number centerY,
-                    number radius, number stroke_size, opacity_t opacity=255);
+                    const number1 &centerX, const number1 &centerY,
+                    const number1 &radius, const number1 &stroke_size, opacity_t opacity=255,
+                    const number2 &u0=number2(0), const number2 &v0=number2(1),
+                    const number2 &u1=number2(1), const number2 &v1=number2(0));
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename number, typename S1, typename S2>
+            bool antialias=false, typename number1, typename number2=number1, typename S1, typename S2>
     void drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
                          const sampling::sampler<S2> & sampler_stroke,
-                         number left, number top,
-                         number right, number bottom,
-                         number radius, number stroke_size,
-                         opacity_t opacity=255);
+                         const number1 &left, const number1 &top,
+                         const number1 &right, const number1 &bottom,
+                         const number1 &radius, const number1 &stroke_size,
+                         opacity_t opacity=255,
+                         const number2 &u0=number2(0), const number2 &v0=number2(1),
+                         const number2 &u1=number2(1), const number2 &v1=number2(0));
 
 private:
     template<typename BlendMode=blendmode::Normal,
@@ -111,7 +114,9 @@ private:
                          int left, int top,
                          int right, int bottom,
                          int radius, int stroke_size,
-                         precision sub_pixel_precision, opacity_t opacity=255);
+                         l64 u0, l64 v0, l64 u1, l64 v1,
+                         precision sub_pixel_precision, precision uv_precision,
+                         opacity_t opacity=255);
 public:
 
     // Triangle batches

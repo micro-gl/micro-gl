@@ -6,9 +6,9 @@
 namespace microgl {
     namespace sampling {
 
-        template <bool horizontal=true, unsigned N=10>
-        class axial_linear_gradient : public sampler<axial_linear_gradient<horizontal, N>> {
-            using base= sampler<axial_linear_gradient<horizontal, N>>;
+        template <unsigned degree=0, unsigned N=10>
+        class axial_linear_gradient : public sampler<axial_linear_gradient<degree, N>> {
+            using base= sampler<axial_linear_gradient<degree, N>>;
             static constexpr precision p= precision::high;
             static constexpr precision_t p_bits= static_cast<precision_t>(p);
             static constexpr precision_t p_bits_double= p_bits<<1;
@@ -51,7 +51,16 @@ namespace microgl {
 
             inline void sample(const int u, const int v,
                                const unsigned bits, color_t &output) const {
-                const auto u_tag= convert(horizontal ? u : v, bits, p_bits);
+                l64 t, h= l64(1)<<(bits-1);
+                if(degree<=0 || degree>315) t=u;
+                else if(degree<=45) t=(u+v-h);
+                else if(degree<=90) t=v;
+                else if(degree<=135) t=(1<<bits)-(u-v+h);
+                else if(degree<=180) t=(1<<bits)-u;
+                else if(degree<=225) t=(1<<bits)-(u+v-h);
+                else if(degree<=270) t=(1<<bits)-v;
+                else if(degree<=315) t=u-v+h;
+                const auto u_tag= convert(t, bits, p_bits);
                 unsigned pos=0;
                 for (pos = 0; pos<index && u_tag>=_stops[pos].where; ++pos);
                 if(pos==index) {

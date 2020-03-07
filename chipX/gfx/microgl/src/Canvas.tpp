@@ -216,32 +216,38 @@ inline void Canvas<P, CODER>::drawPixel(const P & val, int index) {
 // fast common graphics shapes like circles and rounded rectangles
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias, typename number, typename S1, typename S2>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S1, typename S2>
 void Canvas<P, CODER>::drawCircle(const sampling::sampler<S1> & sampler_fill,
                                   const sampling::sampler<S2> & sampler_stroke,
-                                  const number centerX,
-                                  const number centerY,
-                                  const number radius, number stroke_size,
-                                  opacity_t opacity) {
-    drawRoundedQuad<BlendMode, PorterDuff, antialias, number, S1, S2>(sampler_fill, sampler_stroke,
+                                  const number1 &centerX, const number1 &centerY,
+                                  const number1 &radius, const number1 &stroke_size, opacity_t opacity,
+                                  const number2 &u0, const number2 &v0,
+                                  const number2 &u1, const number2 &v1) {
+    drawRoundedQuad<BlendMode, PorterDuff, antialias, number1, number2, S1, S2>(sampler_fill, sampler_stroke,
                                                       centerX-radius, centerY-radius,
-                                                      centerX+radius, centerY+radius,
-                                                      radius, stroke_size, opacity);
+                                                      centerX+radius+0, centerY+radius+0,
+                                                      radius, stroke_size, opacity,
+                                                      u0, v0, u1, v1);
 }
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias, typename number, typename S1, typename S2>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S1, typename S2>
 void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
                                        const sampling::sampler<S2> & sampler_stroke,
-                                       number left, number top,
-                                       number right, number bottom,
-                                       number radius, number stroke_size,
-                                       Canvas::opacity_t opacity) {
-    const precision p = 8;
-#define f(x) microgl::math::to_fixed((x), p)
-    drawRoundedQuad<BlendMode, PorterDuff, antialias>(sampler_fill, sampler_stroke, f(left), f(top),f(right), f(bottom),
-                                                      f(radius), f(stroke_size), p, opacity);
-#undef f
+                                       const number1 & left, const number1 & top,
+                                       const number1 & right, const number1 & bottom,
+                                       const number1 & radius, const number1 & stroke_size,
+                                       Canvas::opacity_t opacity,
+                                       const number2 & u0, const number2 & v0,
+                                       const number2 & u1, const number2 & v1) {
+    const precision p = 0; const precision p_uv = 16;
+#define f_p(x) microgl::math::to_fixed((x), p)
+#define f_uv(x) microgl::math::to_fixed((x), p_uv)
+    drawRoundedQuad<BlendMode, PorterDuff, antialias>(sampler_fill, sampler_stroke, f_p(left), f_p(top),f_p(right), f_p(bottom),
+                                                      f_p(radius), f_p(stroke_size), f_uv(u0), f_uv(v0), f_uv(u1), f_uv(v1),
+                                                      p, p_uv, opacity);
+#undef f_uv
+#undef f_p
 }
 
 template<typename P, typename CODER>
@@ -251,7 +257,10 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
                                        int left, int top,
                                        int right, int bottom,
                                        int radius, int stroke_size,
-                                       precision sub_pixel_precision,  Canvas::opacity_t opacity) {
+                                       l64 u0, l64 v0, l64 u1, l64 v1,
+                                       precision sub_pixel_precision, precision uv_p,
+                                       Canvas::opacity_t opacity) {
+    opacity=255;
     const precision p = sub_pixel_precision;
     const int stroke = stroke_size;//(10<<p)/1;
     const int aa_range = (1<<p)/1;
@@ -267,12 +276,8 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
     const int left_r=left_>>p, top_r=top_>>p, right_r=right_>>p, bottom_r=bottom_>>p;
     bool degenerate= left_r==right_r || top_r==bottom_r;
     if(degenerate) return;
-
     const int step = int(1)<<p;
     const int half = 0;//step>>1;
-    int uv_p=24;
-    l64 u0=0, v0=0, u1=1<<uv_p, v1=1<<uv_p, u, v;
-    const l64 u_end= (l64(1)<<uv_p), v_end= (l64(1)<<uv_p);
     const l64 du = (u1-u0)/(right_r-left_r);
     const l64 dv = (v1-v0)/(bottom_r-top_r);
     color_t color;
@@ -287,9 +292,9 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
 #define g2(x, y, u, v, s, o) { \
             int x_1=(x)>>p, y_1=y>>p, x_2=(right_-(x-left_))>>p, y_2= (bottom_-(y-top_))>>p; \
             g1(x_1, y_1, u,       v,       (s), (o)) \
-            g1(x_2, y_1, u_end-u, v,       (s), (o)) \
-            g1(x_1, y_2, u,       v_end-v, (s), (o)) \
-            g1(x_2, y_2, u_end-u, v_end-v, (s), (o)) \
+            g1(x_2, y_1, u0+(right_r-x_1)*du, v,       (s), (o)) \
+            g1(x_1, y_2, u,       v0+(bottom_r-y_1)*dv, (s), (o)) \
+            g1(x_2, y_2, u0+(right_r-x_1)*du,       v0+(bottom_r-y_1)*dv, (s), (o)) \
             } \
 
     // this draws the four rounded parts, it could be faster but then it will also be
@@ -329,7 +334,7 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
             }
         }
     }
-
+//return;
 #undef g1
 #undef g2
 #define maX(a, b) functions::max(a, b)
@@ -337,7 +342,7 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
     { // center
         const int ll=left_+radius, tt=top_+radius, rr=right_-radius, bb=bottom_-radius;
         const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
-        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); l64 v= v0 + dv*(tt_r-top_r);
         for (int y=tt_r; y<=bb_r; y++, v+=dv, index+=_width) {
             for (int x=ll_r, u=u_start; x<=rr_r; x++, u+=du) {
                 sampler_fill.sample(u, v, uv_p, color);
@@ -348,7 +353,7 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
     { // top
         const int ll=left_+radius, tt=top_, rr=right_-radius, bb=top_+radius;
         const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
-        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); l64 v= v0 + dv*(tt_r-top_r);
         for (int y=tt_r, yy=tt; y<bb_r; y++, yy+=step, v+=dv, index+=_width) {
             for (int x=ll_r, u=u_start; x<=rr_r; x++, u+=du) {
                 sampler_fill.sample(u, v, uv_p, color);
@@ -361,9 +366,9 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
         }
     }
     { // bottom
-        const int ll=left_+radius, tt=bottom_-radius+step, rr=right_-radius, bb=bottom_;
+        const int ll=left_+radius, tt=bottom_-radius+0, rr=right_-radius, bb=bottom_;
         const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
-        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); l64 v= v0 + dv*(tt_r-top_r);
         for (int y=tt_r, yy=tt; y<=bb_r; y++, yy+=step, v+=dv, index+=_width) {
             for (int x=ll_r, u=u_start; x<=rr_r; x++, u+=du) {
                 sampler_fill.sample(u, v, uv_p, color);
@@ -378,7 +383,7 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
     { // left
         const int ll=left_, tt=top_+radius, rr=ll+radius, bb=bottom_-radius;
         const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
-        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); l64 v= v0 + dv*(tt_r-top_r);
         for (int y=tt_r, yy=tt; y<=bb_r; y++, yy+=step, v+=dv, index+=_width) {
             for (int x=ll_r, xx=ll, u=u_start; x<rr_r; x++, xx+=step, u+=du) {
                 sampler_fill.sample(u, v, uv_p, color);
@@ -393,7 +398,7 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
     { // right
         const int ll=right_-radius+step, tt=top_+radius, rr=right_, bb=bottom_-radius;
         const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
-        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); v= v0 + dv*(tt_r-top_r);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); l64 v= v0 + dv*(tt_r-top_r);
         for (int y=tt_r, yy=tt; y<=bb_r; y++, yy+=step, v+=dv, index+=_width) {
             for (int x=ll_r, xx=ll, u=u_start; x<=rr_r; x++, xx+=step, u+=du) {
                 sampler_fill.sample(u, v, uv_p, color);

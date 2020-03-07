@@ -18,7 +18,7 @@ using index_t = unsigned int;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
 Canvas24 * canvas;
-linear_gradient_2_colors<true> gradient{{255,0,0}, {255,0,255}};
+linear_gradient_2_colors<45> gradient{{255,0,0}, {255,0,255}};
 
 void loop();
 void init_sdl(int width, int height);
