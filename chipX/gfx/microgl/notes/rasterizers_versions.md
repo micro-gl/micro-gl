@@ -1,35 +1,33 @@
-### a simple color rasterizer
-a fast rasterizer, includes fill rules, AA and integer iterations, but does not includes
-block mode, which can double the performance for just plotting colors, but is more complicated
-and long to implement. This version is good for reference.
-
-```
+#### fast block rasterizer
+```c++
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
 void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
-                                    const fixed_signed v0_x, const fixed_signed v0_y,
-                                    const fixed_signed v1_x, const fixed_signed v1_y,
-                                    const fixed_signed v2_x, const fixed_signed v2_y,
-                                    const uint8_t opacity_t,
-                                    const uint8_t sub_pixel_precision,
+                                    int v0_x, int v0_y,
+                                    int v1_x, int v1_y,
+                                    int v2_x, int v2_y,
+                                    const opacity_t opacity,
+                                    const precision sub_pixel_precision,
                                     bool aa_first_edge,
                                     bool aa_second_edge,
                                     bool aa_third_edge) {
+    int sign = functions::orient2d(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
+    // discard degenerate triangle
+    if(sign==0) return;
+    // convert CCW to CW triangle
+    if(sign<0) {
+        functions::swap(v1_x, v2_x);
+        functions::swap(v1_y, v2_y);
+        functions::swap(aa_first_edge, aa_third_edge);
+    }
     color_t color_int;
-    coder()->convert(color, color_int);
-
+    coder().convert(color, color_int);
+    bool perform_opacity = opacity < _max_alpha_value;
     // sub_pixel_precision;
     // THIS MAY HAVE TO BE MORE LIKE 15 TO AVOID OVERFLOW
     uint8_t MAX_BITS_FOR_PROCESSING_PRECISION = 15;
     uint8_t PR = MAX_BITS_FOR_PROCESSING_PRECISION;// - sub_pixel_precision;
-    unsigned int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
-
-    // bbox
-    int minX = (functions::min(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int minY = (functions::min(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int maxX = (functions::max(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-    int maxY = (functions::max(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
-
+    int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
     // anti-alias pad for distance calculation
     uint8_t bits_distance = 0;
     uint8_t bits_distance_complement = 8;
@@ -39,458 +37,291 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
     bool aa_all_edges=false;
     if(antialias) {
         aa_all_edges = aa_first_edge && aa_second_edge && aa_third_edge;
-
         bits_distance = 0;
         bits_distance_complement = 8 - bits_distance;
         // max distance to consider in canvas space
         int max_distance_canvas_space_anti_alias = 1 << bits_distance;
         max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias << (PR);
-        // we can solve padding analytically with distance=(max_distance_anti_alias/Cos(angle))
-        // but I don't give a fuck about it since I am just using max value of 2
-        // minX-=max_distance_anti_alias*2;minY-=max_distance_anti_alias*2;
-        // maxX+=max_distance_anti_alias*2;maxY+=max_distance_anti_alias*2;
     }
-
+    int minX = (functions::min(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    int minY = (functions::min(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    int maxX = (functions::max(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value) >> sub_pixel_precision;
+    int maxY = (functions::max(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value) >> sub_pixel_precision;
     // fill rules adjustments
     triangles::top_left_t top_left =
             triangles::classifyTopLeftEdges(false,
                                             v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
-
     int bias_w0 = top_left.first  ? 0 : -1;
     int bias_w1 = top_left.second ? 0 : -1;
     int bias_w2 = top_left.third  ? 0 : -1;
-    //
+    const int block = 4;
+//    minX -= block;
+//    minY -= block;
+//    maxX += block;
+//    maxY += block;
 
+//    minX &= ~(block - 1);
+//    minY &= ~(block - 1);
+//    maxX &= ~(block - 1);
+//    maxY &= ~(block - 1);
     minX = functions::max(0, minX); minY = functions::max(0, minY);
-    maxX = functions::min((width()-1), maxX); maxY = functions::min((height()-1), maxY);
-
+    maxX = functions::min((width()), maxX); maxY = functions::min((height()), maxY);
     // Triangle setup
     int A01 = v0_y - v1_y, B01 = v1_x - v0_x;
     int A12 = v1_y - v2_y, B12 = v2_x - v1_x;
     int A20 = v2_y - v0_y, B20 = v0_x - v2_x;
 
-    // Barycentric coordinates at minX/minY corner
-    vec2_32i p_fixed = {  minX<<sub_pixel_precision, minY<<sub_pixel_precision };
-    vec2_32i p = { minX , minY };
+    int A01_block = A01*block, B01_block = B01*block;
+    int A12_block = A12*block, B12_block = B12*block;
+    int A20_block = A20*block, B20_block = B20*block;
 
-    int w0_row = (functions::orient2d(vec2_32i{v0_x, v0_y},vec2_32i{v1_x, v1_y},
-                                      p_fixed, sub_pixel_precision) + bias_w0);
-    int w1_row = (functions::orient2d(vec2_32i{v1_x, v1_y}, vec2_32i{v2_x, v2_y},
-                                      p_fixed, sub_pixel_precision) + bias_w1);
-    int w2_row = (functions::orient2d(vec2_32i{v2_x, v2_y}, vec2_32i{v0_x, v0_y},
-                                      p_fixed, sub_pixel_precision) + bias_w2);
+    int A01_block_m_1 = A01_block - A01, B01_block_m_1 = B01_block - B01;
+    int A12_block_m_1 = A12_block - A12, B12_block_m_1 = B12_block - B12;
+    int A20_block_m_1 = A20_block - A20, B20_block_m_1 = B20_block - B20;
+
+    // Barycentric coordinates at minX/minY corner
+    vec2<int> p_fixed = {minX<<sub_pixel_precision, minY<<sub_pixel_precision};
+    vec2<int> p = {minX , minY};
+
+    int w0_row = functions::orient2d(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w0;
+    int w1_row = functions::orient2d(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w1;
+    int w2_row = functions::orient2d(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w2;
 
     // AA, 2A/L = h, therefore the division produces a P bit number
     int w0_row_h=0, w1_row_h=0, w2_row_h=0;
     int A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
+    int A01_block_h=0, B01_block_h=0, A12_block_h=0, B12_block_h=0, A20_block_h=0, B20_block_h=0;
+    int A01_block_m_1_h=0, B01_block_m_1_h=0, A12_block_m_1_h=0, B12_block_m_1_h=0, A20_block_m_1_h=0, B20_block_m_1_h=0;
     if(antialias) {
         int PP = PR;
-
         // lengths of edges
-        unsigned int length_w0 = functions::length({v0_x, v0_y}, {v1_x, v1_y}, 0);
-        unsigned int length_w1 = functions::length({v1_x, v1_y}, {v2_x, v2_y}, 0);
-        unsigned int length_w2 = functions::length({v0_x, v0_y}, {v2_x, v2_y}, 0);
-
+        unsigned int length_w0 = microgl::math::distance(v0_x, v0_y, v1_x, v1_y);
+        unsigned int length_w1 = microgl::math::distance(v1_x, v1_y, v2_x, v2_y);
+        unsigned int length_w2 = microgl::math::distance(v0_x, v0_y, v2_x, v2_y);
         A01_h = (((int64_t)(v0_y - v1_y))<<(PP))/length_w0, B01_h = (((int64_t)(v1_x - v0_x))<<(PP))/length_w0;
         A12_h = (((int64_t)(v1_y - v2_y))<<(PP))/length_w1, B12_h = (((int64_t)(v2_x - v1_x))<<(PP))/length_w1;
         A20_h = (((int64_t)(v2_y - v0_y))<<(PP))/length_w2, B20_h = (((int64_t)(v0_x - v2_x))<<(PP))/length_w2;
+
+        A01_block_h = A01_h*block, B01_block_h = B01_h*block;
+        A12_block_h = A12_h*block, B12_block_h = B12_h*block;
+        A20_block_h = A20_h*block, B20_block_h = B20_h*block;
+
+        A01_block_m_1_h = A01_block_h - A01_h, B01_block_m_1_h = B01_block_h - B01_h;
+        A12_block_m_1_h = A12_block_h - A12_h, B12_block_m_1_h = B12_block_h - B12_h;
+        A20_block_m_1_h = A20_block_h - A20_h, B20_block_m_1_h = B20_block_h - B20_h;
 
         w0_row_h = (((int64_t)(w0_row))<<(PP))/length_w0;
         w1_row_h = (((int64_t)(w1_row))<<(PP))/length_w1;
         w2_row_h = (((int64_t)(w2_row))<<(PP))/length_w2;
     }
-
-    /*
-    //
-    // distance to edge is always h= (2*A)/L, where:
-    // h=distance from point to edge
-    // A = triangle area spanned by point and edge area
-    // L = length of the edge
-    // this simple geometric identity can be derived from
-    // area of triangle equation. We are going to interpolate
-    // the quantity h and we would like to evaluate h.
-    // NOTE:: this is a cheap way to calculate anti-alias with
-    // perpendicular distance, this is of course not correct for
-    // points that are "beyond" the edges. The real calculation
-    // has to use distance to points hence a square root function
-    // which is expensive for integer version. This version seems to
-    // work best with minimal artifacts when used with bits_distance=0 or 1.
-    //
-    // we interpolate in scaled precision so watch out. All of the working
-    // calculations are in 15 or 16 bits precision.
-
-     */
-
     // watch out for negative values
     int index = p.y * (_width);
-
-    for (p.y = minY; p.y <= maxY; p.y+=1) {
-
-        // Barycentric coordinates at start of row
+    int w_t_b = _width*block;
+    for (p.y = minY; p.y <= maxY; p.y+=block) {
         int w0 = w0_row;
         int w1 = w1_row;
         int w2 = w2_row;
-
         int w0_h=0,w1_h=0,w2_h=0;
         if(antialias) {
             w0_h = w0_row_h;
             w1_h = w1_row_h;
             w2_h = w2_row_h;
         }
+        for (p.x = minX; p.x <= maxX; p.x+=block) {
+            // Corners of block
+            // test block bbox against each edge
+            int top_left_w0 = w0;
+            int top_left_w1 = w1;
+            int top_left_w2 = w2;
+            // next set of rows for bottom tests
+            int bottom_left_w0 = top_left_w0 + B01_block_m_1;
+            int bottom_left_w1 = top_left_w1 + B12_block_m_1;
+            int bottom_left_w2 = top_left_w2 + B20_block_m_1;
 
-        for (p.x = minX; p.x <= maxX; p.x+=1) {
+            int top_right_w0 = top_left_w0 + A01_block_m_1;
+            int top_right_w1 = top_left_w1 + A12_block_m_1;
+            int top_right_w2 = top_left_w2 + A20_block_m_1;
 
-            if ((w0 | w1 | w2) >= 0) {
+            int bottom_right_w0 = bottom_left_w0 + A01_block_m_1;
+            int bottom_right_w1 = bottom_left_w1 + A12_block_m_1;
+            int bottom_right_w2 = bottom_left_w2 + A20_block_m_1;
 
-                blendColor<BlendMode, PorterDuff>(color_int, (index + p.x), opacity_t);
-
-            } else if(antialias) {;// if(false){
-                // any of the distances are negative, we are outside.
-                // test if we can anti-alias
-                // take minimum of all meta distances
-
-                // find minimal distance along edges only, this does not take
-                // into account the junctions
-                int distance = functions::min(w0_h, w1_h, w2_h);
-                int delta = (distance) + max_distance_scaled_space_anti_alias;
-                bool perform_aa = aa_all_edges;
-
-                // test edges
-                if(!perform_aa) {
-                    if(distance==w0_h && aa_first_edge)
-                        perform_aa = true;
-                    else if(distance==w1_h && aa_second_edge)
-                        perform_aa = true;
-                    else perform_aa = distance == w2_h && aa_third_edge;
+            bool w0_in = (top_left_w0 | top_right_w0 | bottom_right_w0 | bottom_left_w0)>=0;
+            bool w1_in = (top_left_w1 | top_right_w1 | bottom_right_w1 | bottom_left_w1)>=0;
+            bool w2_in = (top_left_w2 | top_right_w2 | bottom_right_w2 | bottom_left_w2)>=0;
+            bool in = w0_in && w1_in && w2_in;
+            if (in) {
+                int stride = index;
+                int block_start_x = functions::max(p.x, minX);
+                int block_start_y = functions::max(p.y, minY);
+                int block_end_x = functions::min(p.x + block, maxX);
+                int block_end_y = functions::min(p.y + block, maxY);
+                for(int iy = block_start_y; iy <block_end_y; iy++) {
+                    for(int ix = block_start_x; ix < block_end_x; ix++)
+                        blendColor<BlendMode, PorterDuff>(color_int, stride+ix, opacity);
+                    stride += _width;
                 }
+            }
+            // we are on the outside or on the boundary
+            else {
+                bool w0_out = (top_left_w0 & top_right_w0 & bottom_right_w0 & bottom_left_w0)<0;
+                bool w1_out = (top_left_w1 & top_right_w1 & bottom_right_w1 & bottom_left_w1)<0;
+                bool w2_out = (top_left_w2 & top_right_w2 & bottom_right_w2 & bottom_left_w2)<0;
+                bool out = w0_out || w1_out || w2_out;
+                bool boundary = !out;
+                // now test if block is also interesting for AA
+                if(antialias && out) {
+                    int top_left_w0_h = w0_h;
+                    int top_left_w1_h = w1_h;
+                    int top_left_w2_h = w2_h;
+                    // next set of rows for bottom tests
+                    int bottom_left_w0_h = top_left_w0_h + B01_block_m_1_h;
+                    int bottom_left_w1_h = top_left_w1_h + B12_block_m_1_h;
+                    int bottom_left_w2_h = top_left_w2_h + B20_block_m_1_h;
 
-                if (perform_aa && delta>=0) {
+                    int top_right_w0_h = top_left_w0_h + A01_block_m_1_h;
+                    int top_right_w1_h = top_left_w1_h + A12_block_m_1_h;
+                    int top_right_w2_h = top_left_w2_h + A20_block_m_1_h;
 
-                    // take the complement and rescale
-                    uint8_t blend = functions::clamp<int>(((int64_t)delta << bits_distance_complement)>>(PR),
-                                                          0, 255);
-
-                    if (opacity_t < _max_alpha_value) {
-                        blend = (blend * opacity_t) >> 8;
+                    int bottom_right_w0_h = bottom_left_w0_h + A01_block_m_1_h;
+                    int bottom_right_w1_h = bottom_left_w1_h + A12_block_m_1_h;
+                    int bottom_right_w2_h = bottom_left_w2_h + A20_block_m_1_h;
+                    // distance of block to the edge w0
+                    // since we are outside, all of the distances are negative, therefore
+                    // taking max function on negatives reveals the closest distance
+                    int distance_w0 = functions::min(abs(top_left_w0_h), abs(bottom_left_w0_h),
+                                                     abs(top_right_w0_h), abs(bottom_right_w0_h));
+                    int distance_w1 = functions::min(abs(top_left_w1_h), abs(bottom_left_w1_h),
+                                                     abs(top_right_w1_h), abs(bottom_right_w1_h));
+                    int distance_w2 = functions::min(abs(top_left_w2_h), abs(bottom_left_w2_h),
+                                                     abs(top_right_w2_h), abs(bottom_right_w2_h));
+                    // now take the minimum among absolute values of distances
+                    int d_aa = functions::min((distance_w0), (distance_w1), (distance_w2));
+                    // todo:: one bug I notices, what happens when pixel falls on
+                    // todo:: a straight line ? this causes artifact !!!
+                    if(true) {
+                        int delta = -d_aa + max_distance_scaled_space_anti_alias;
+                        boundary = boundary || delta>=0;
                     }
-//                    blend=255;
-                    blendColor<BlendMode, PorterDuff>(color_int, (index + p.x), blend);
                 }
-
+                if(boundary) {
+                    int stride = index;
+                    int w0_row_ = w0;
+                    int w1_row_ = w1;
+                    int w2_row_ = w2;
+                    int w0_row_h_,w1_row_h_,w2_row_h_;
+                    if(antialias) {
+                        w0_row_h_ = w0_h;
+                        w1_row_h_ = w1_h;
+                        w2_row_h_ = w2_h;
+                    }
+                    int block_start_x = functions::max(p.x, minX);
+                    int block_start_y = functions::max(p.y, minY);
+                    int block_end_x = functions::min(p.x + block, maxX);
+                    int block_end_y = functions::min(p.y + block, maxY);
+                    for (int iy = block_start_y; iy < block_end_y; iy++) {
+                        int w0_ = w0_row_;
+                        int w1_ = w1_row_;
+                        int w2_ = w2_row_;
+                        int w0_h_,w1_h_,w2_h_;
+                        if(antialias) {
+                            w0_h_ = w0_row_h_;
+                            w1_h_ = w1_row_h_;
+                            w2_h_ = w2_row_h_;
+                        }
+                        for (int ix = block_start_x; ix < block_end_x; ix++) {
+                            if ((w0_|w1_|w2_)>=0)
+                                blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), opacity);
+                            else if(antialias) {
+                                // if any of the distances are negative, we are outside.
+                                // test if we can anti-alias
+                                // take minimum of all meta distances
+                                // find minimal distance along edges only, this does not take
+                                // into account the junctions
+                                int distance = functions::min((w0_h_), (w1_h_), (w2_h_));
+                                int delta = ((distance) + max_distance_scaled_space_anti_alias);
+                                bool perform_aa = aa_all_edges;
+                                // test edges
+                                if(!perform_aa) {
+                                    if((distance==w0_h_) && aa_first_edge)
+                                        perform_aa = true;
+                                    else if((distance==w1_h_) && aa_second_edge)
+                                        perform_aa = true;
+                                    else perform_aa = (distance == w2_h_) && aa_third_edge;
+                                }
+                                {
+                                    bool on_cusp = w0_h_<=0 && w1_h_<=0;
+                                    on_cusp |= (w1_h_<=0 && w2_h_<=0);
+                                    on_cusp |= (w2_h_<=0 && w0_h_<=0);
+                                    perform_aa &= !(on_cusp);
+                                }
+                                if (perform_aa && delta>=0) { // take the complement and rescale
+                                    precision blend = functions::clamp<int>(((int64_t)delta << bits_distance_complement)>>(PR),
+                                                                          0, 255);
+                                    if (perform_opacity)
+                                        blend = (blend * opacity) >> 8;
+                                    blendColor<BlendMode, PorterDuff>(color_int, (stride + ix), blend);
+                                }
+                            }
+                            w0_ += A01;
+                            w1_ += A12;
+                            w2_ += A20;
+                            if(antialias) {
+                                w0_h_ += A01_h;
+                                w1_h_ += A12_h;
+                                w2_h_ += A20_h;
+                            }
+                        }
+                        w0_row_ += B01;
+                        w1_row_ += B12;
+                        w2_row_ += B20;
+                        if(antialias) {
+                            w0_row_h_ += B01_h;
+                            w1_row_h_ += B12_h;
+                            w2_row_h_ += B20_h;
+                        }
+                        stride += _width;
+                    }
+                }
             }
-
             // One step to the right
-            w0 += A01;
-            w1 += A12;
-            w2 += A20;
-
+            w0 += A01_block;
+            w1 += A12_block;
+            w2 += A20_block;
             if(antialias) {
-                w0_h += A01_h;
-                w1_h += A12_h;
-                w2_h += A20_h;
+                w0_h += A01_block_h;
+                w1_h += A12_block_h;
+                w2_h += A20_block_h;
             }
-
         }
-
         // One row step
-        w0_row += B01;
-        w1_row += B12;
-        w2_row += B20;
-
+        w0_row += B01_block;
+        w1_row += B12_block;
+        w2_row += B20_block;
         if(antialias) {
-            w0_row_h += B01_h;
-            w1_row_h += B12_h;
-            w2_row_h += B20_h;
+            w0_row_h += B01_block_h;
+            w1_row_h += B12_block_h;
+            w2_row_h += B20_block_h;
         }
-
-        index += (_width);
+        index += w_t_b;
     }
-
 }
 
-
-```
-
-
-#### quadrilateral computation completely with fixed points
-
-```
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff,
-        bool antialias, typename Sampler,
-        typename P2, typename CODER2>
-void
-Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
-                                    int v0_x, int v0_y, int u0, int v0,
-                                    int v1_x, int v1_y, int u1, int v1,
-                                    int v2_x, int v2_y, int u2, int v2,
-                                    int v3_x, int v3_y, int u3, int v3,
-                                    const uint8_t opacity_t, const precision sub_pixel_precision,
-                                    const precision uv_precision) {
-
-    int q_one = 1<<uv_precision;
-
-//    bool isParallelogram_ = isParallelogram(p0, p1, p2, p3);
-    bool isParallelogram_ = functions::isParallelogram({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, {v3_x, v3_y});
-
-    if(isParallelogram_) {
-
-        if(functions::isAxisAlignedRectangle({v0_x, v0_y}, {v1_x, v1_y}, {v2_x, v2_y}, {v3_x, v3_y})) {
-            int left = functions::min(v0_x, v1_x, v2_x, v3_x);
-            int top = functions::min(v0_y, v1_y, v2_y, v3_y);
-            int right = functions::max(v0_x, v1_x, v2_x, v3_x);
-            int bottom = functions::max(v0_y, v1_y, v2_y, v3_y);
-            int u0_ = functions::min(u0, u1, u2, u3);
-            int v0_ = functions::max(v0, v1, v2, v3);
-            int u1_ = functions::max(0, u1, u2, u3);
-            int v1_ = functions::min(v0, v1, v2, v3);
-
-            drawQuad<BlendMode, PorterDuff, Sampler>(bmp, left, top, right, bottom, u0_, v0_, u1_, v1_,
-                    sub_pixel_precision, uv_precision, opacity_t);
-
-            return;
-        }
-
-        // Note:: this was faster than rasterizing the two triangles
-        // in the same loop for some reason.
-        drawTriangle<BlendMode, PorterDuff, antialias, false, Sampler>(bmp,
-                                                              v0_x, v0_y, u0, v0, q_one,
-                                                              v1_x, v1_y, u1, v1, q_one,
-                                                              v2_x, v2_y, u2, v2, q_one,
-                                                              opacity_t, sub_pixel_precision,
-                                                              uv_precision,
-                                                              true, true, false);
-
-        drawTriangle<BlendMode, PorterDuff, antialias, false, Sampler>(bmp,
-                                                              v2_x, v2_y, u2, v2, q_one,
-                                                              v3_x, v3_y, u3, v3, q_one,
-                                                              v0_x, v0_y, u0, v0, q_one,
-                                                              opacity_t, sub_pixel_precision,
-                                                              uv_precision,
-                                                              true, true, false);
-
-
-    } else {
-
-        uint8_t DIV_prec = (16 - sub_pixel_precision)>>1;
-        int max = (1<<sub_pixel_precision);
-        int q0 = (1<<uv_precision), q1 = (1<<uv_precision), q2 = (1<<uv_precision), q3 = (1<<uv_precision);
-        int p0x = v0_x; int p0y = v0_y;
-        int p1x = v1_x; int p1y = v1_y;
-        int p2x = v2_x; int p2y = v2_y;
-        int p3x = v3_x; int p3y = v3_y;
-
-        int ax = p2x - p0x;
-        int ay = p2y - p0y;
-        int bx = p3x - p1x;
-        int by = p3y - p1y;
-
-        int t, s;
-
-        int cross = fixed_mul_fixed_2(ax, by, sub_pixel_precision) -
-                             fixed_mul_fixed_2(ay, bx, sub_pixel_precision);
-
-        if (cross != 0) {
-            int cy = p0y - p1y;
-            int cx = p0x - p1x;
-
-            int area_1 = fixed_mul_fixed_2(ax, cy, sub_pixel_precision) -
-                                    fixed_mul_fixed_2(ay, cx, sub_pixel_precision);
-
-            s = fixed_div_fixed_2((long long)area_1<<DIV_prec, cross, sub_pixel_precision);
-
-            if (s > 0 && s < ((long long)max<<DIV_prec)) {
-                int area_2 = fixed_mul_fixed_2(bx, cy, sub_pixel_precision) -
-                                        fixed_mul_fixed_2(by, cx, sub_pixel_precision);
-
-                t = fixed_div_fixed_2((long long)area_2<<DIV_prec, cross, sub_pixel_precision);
-
-                if (t > 0 && t < ((long long)max<<DIV_prec)) {
-
-                    q0 = fixed_div_fixed_2((long long)max<<(DIV_prec<<1), (max<<DIV_prec) - t, sub_pixel_precision);
-                    q1 = fixed_div_fixed_2((long long)max<<(DIV_prec<<1), (max<<DIV_prec) - s, sub_pixel_precision);
-                    q2 = fixed_div_fixed_2((long long)max<<(DIV_prec<<1), t, sub_pixel_precision);
-                    q3 = fixed_div_fixed_2((long long)max<<(DIV_prec<<1), s, sub_pixel_precision);
-
-                }
-            }
-        }
-
-        int u0_q0 = fixed_mul_fixed_2(u0, q0, sub_pixel_precision)>>(DIV_prec);
-        int v0_q0 = fixed_mul_fixed_2(v0, q0, sub_pixel_precision)>>(DIV_prec);
-        int u1_q1 = fixed_mul_fixed_2(u1, q1, sub_pixel_precision)>>(DIV_prec);
-        int v1_q1 = fixed_mul_fixed_2(v1, q1, sub_pixel_precision)>>(DIV_prec);
-        int u2_q2 = fixed_mul_fixed_2(u2, q2, sub_pixel_precision)>>(DIV_prec);
-        int v2_q2 = fixed_mul_fixed_2(v2, q2, sub_pixel_precision)>>(DIV_prec);
-        int u3_q3 = fixed_mul_fixed_2(u3, q3, sub_pixel_precision)>>(DIV_prec);
-        int v3_q3 = fixed_mul_fixed_2(v3, q3, sub_pixel_precision)>>(DIV_prec);
-
-        q0 = fixed_convert_fixed(q0, sub_pixel_precision + DIV_prec, uv_precision);
-        q1 = fixed_convert_fixed(q1, sub_pixel_precision + DIV_prec, uv_precision);
-        q2 = fixed_convert_fixed(q2, sub_pixel_precision + DIV_prec, uv_precision);
-        q3 = fixed_convert_fixed(q3, sub_pixel_precision + DIV_prec, uv_precision);
-
-        // perspective correct version
-        drawTriangle<BlendMode, PorterDuff, antialias, true, Sampler>(bmp,
-                                                             v0_x, v0_y, u0_q0, v0_q0, q0,
-                                                             v1_x, v1_y, u1_q1, v1_q1, q1,
-                                                             v2_x, v2_y, u2_q2, v2_q2, q2,
-                                                             opacity_t, sub_pixel_precision,
-                                                             uv_precision,
-                                                             true, true, false);
-
-        drawTriangle<BlendMode, PorterDuff, antialias, true, Sampler>(bmp,
-                                                             v2_x, v2_y, u2_q2, v2_q2, q2,
-                                                             v3_x, v3_y, u3_q3, v3_q3, q3,
-                                                             v0_x, v0_y, u0_q0, v0_q0, q0,
-                                                             opacity_t, sub_pixel_precision,
-                                                             uv_precision,
-                                                             true, true, false);
-
-        /*
-        float q0 = 1, q1 = 1, q2 = 1, q3 = 1;
-
-        float p0x = v0_x; float p0y = v0_y;
-        float p1x = v1_x; float p1y = v1_y;
-        float p2x = v2_x; float p2y = v2_y;
-        float p3x = v3_x; float p3y = v3_y;
-
-        float ax = p2x - p0x;
-        float ay = p2y - p0y;
-        float bx = p3x - p1x;
-        float by = p3y - p1y;
-        float t, s;
-//    float cross = ax * by - ay * bx;
-        float cross = ax * by - ay * bx;
-
-        if (cross != 0) {
-            float cy = p0y - p1y;
-            float cx = p0x - p1x;
-
-            s = float(ax * cy - ay * cx) / cross;
-            if (s > 0 && s < 1) {
-                t = float(bx * cy - by * cx) / cross;
-
-                if (t > 0 && t < 1) {
-
-                    q0 = 1 / (1 - t);
-                    q1 = 1 / (1 - s);
-                    q2 = 1 / t;
-                    q3 = 1 / s;
-
-                }
-            }
-        }
-
-         */
-
-    }
-
-}
-
-```
-
-#### arc_divider: adapting precision for sine vs deifferent input precision of radians
-```
-
-    int compute_sin_fixed(const int radians,
-                          precision_t input_precision,
-                          precision_t output_precision) {
-        auto precision_m = float(1u<<input_precision);
-        auto precision_out = float(1u<<output_precision);
-        float radians_f = float(radians) / precision_m;
-
-        return int(std::sin(radians_f)*precision_out);
-    }
-
-```
-
-#### draw quad older version
-```
-
-template<typename P, typename CODER>
-template <typename BlendMode, typename PorterDuff,
-        typename Sampler,
-        typename P2, typename CODER2>
-void Canvas<P, CODER>::drawQuad(const Bitmap<P2, CODER2> &bmp,
-                                const int left, const int top,
-                                const int right, const int bottom,
-                                int u0, int v0,
-                                int u1, int v1,
-                                const precision sub_pixel_precision,
-                                const precision uv_precision,
-                                const opacity_t opacity_t) {
-    color_t col_bmp{};
-    P converted{};
-
-    uint8_t DIV_prec = 10;
-    uint8_t DIV_prec_minus_sub_pixel = DIV_prec - sub_pixel_precision;
-    // if you are using half, don't forget to clamp down the road,
-    // but it will take cycles so I don't do it !!!
-    int max_sub_pixel_precision_value = (1<<sub_pixel_precision) - 1;
-
-    int bmp_width = bmp.width();
-    int bmp_height = bmp.height();
-    int bmp_w_max = bmp_width - 1;
-    int bmp_h_max = bmp_height - 1;
-
-    int left_ = functions::max((left + max_sub_pixel_precision_value) >> sub_pixel_precision, (int)0);
-    int top_ = functions::max((top + max_sub_pixel_precision_value) >> sub_pixel_precision, ( int)0);
-    int right_ = functions::min((right + max_sub_pixel_precision_value) >> sub_pixel_precision, ( int)width()-1);
-    int bottom_ = functions::min((bottom + max_sub_pixel_precision_value) >> sub_pixel_precision, ( int)height()-1);
-
-//    u0 = 16;//u0+((u1-u0) *(left_-left))/(right-left);
-//    v0 = 0;//v0+((v1-v0) *(top_-top))/(bottom-top);
-//    u1 = 32;//u0+((u1-u0) *(right_-left))/(right-left);
-//    v1 = 32;//v0+((v1-v0) *(bottom_-top))/(bottom-top);
-//
-    int ddu = int_to_fixed_2(((u1-u0)*bmp_width)>>uv_precision, DIV_prec);
-    int ddv = int_to_fixed_2((-(v1-v0)*bmp_height)>>uv_precision, DIV_prec);
-
-    int max_uv = (1<<uv_precision);
-    int u_start = int_to_fixed_2((u0*bmp_w_max)>>uv_precision, DIV_prec_minus_sub_pixel);
-    // this is more stable to step forward than backward
-    int v_start = int_to_fixed_2(((max_uv-v0)*bmp_h_max)>>uv_precision, DIV_prec_minus_sub_pixel);
-    int du = (right_-left_)==0 ? 0 : fixed_div_int(ddu, right-left);
-    int dv = (bottom_-top_)==0 ? 0 : fixed_div_int(ddv, bottom-top);
-    int u = u_start, v = v_start;
-
-    int index;
-
-    index = top_ * _width;
-
-    v = bmp_h_max<<DIV_prec_minus_sub_pixel;
-
-    for (int y = top_; y < bottom_; y++) {
-
-        for (int x = left_; x < right_; x++) {
-            Sampler::sample(bmp, u, v,
-                            DIV_prec_minus_sub_pixel,
-                            col_bmp);
-
-            // compile time branching
-//            if(Sampler::type() != sampler::type::NearestNeighbor)
-//                Sampler::sample(bmp, u, v,
-//                        DIV_prec_minus_sub_pixel, col_bmp);
-//            else {
-//                u_i = fixed_to_int_2(u + f_half, DIV_prec_minus_sub_pixel);
-//                index_bmp = (v_i) + u_i;
-//                // decode the bitmap
-//                bmp.decode(index_bmp, col_bmp);
-//            }
-            //
-
-            // re-encode for a different canvas
-            blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity_t);
-
-            u += du;
-        }
-
-        u = u_start;
-        v += dv;
-        index += _width;
-    }
-
+template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
+void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
+                                    const number v0_x, const number v0_y,
+                                    const number v1_x, const number v1_y,
+                                    const number v2_x, const number v2_y,
+                                    const opacity_t opacity,
+                                    bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
+    const precision precision = 8;
+#define f_pos(v) microgl::math::to_fixed((v), precision)
+    drawTriangle<BlendMode, PorterDuff, antialias>(color,
+            f_pos(v0_x), f_pos(v0_y), f_pos(v1_x), f_pos(v1_y), f_pos(v2_x), f_pos(v2_y),
+            opacity, precision,
+            aa_first_edge, aa_second_edge, aa_third_edge);
+#undef f_pos
 }
 
 ```

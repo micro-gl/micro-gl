@@ -61,8 +61,6 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - 3d pipeline, make 3d clipping configurable for planes and even skip
 - add opacity/colors/blend/composite to lines
 - AA for 3d with stencil buffer and multi-sampling of coverage, should be interesting
-- inverted texture, some bitmaps need to be inverted, explore this in the texture sampler, see
-  if this can be done for almost free.
 
 0. improve ear_clipper
 1. complex poly tesselator and stroker

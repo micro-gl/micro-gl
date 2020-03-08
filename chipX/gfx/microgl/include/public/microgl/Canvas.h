@@ -192,18 +192,6 @@ private:
 
 public:
 
-    template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename number>
-    void drawTriangle(const color_f_t & color,
-                      number v0_x, number v0_y,
-                      number v1_x, number v1_y,
-                      number v2_x, number v2_y,
-                      opacity_t opacity = 255,
-                      bool aa_first_edge = true,
-                      bool aa_second_edge = true,
-                      bool aa_third_edge = true);
-
 private:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
