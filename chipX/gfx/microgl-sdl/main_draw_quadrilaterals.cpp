@@ -29,22 +29,13 @@ Resources resources{};
 void loop();
 void init_sdl(int width, int height);
 
-void render_float_quadrilateral();
-void render_Q_quadrilateral();
-
-inline void render() {
-    canvas->clear(color::colors::WHITE);
-
-    render_float_quadrilateral();
-//    render_Q_quadrilateral();
-
-}
-
-void render_float_quadrilateral() {
+template <typename number>
+void render_quadrilateral() {
     static float d =0;
     float G = 256;
     d+=1.01;
-    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+    canvas->clear(intensity<number>{1, 1, 1, 1});
+    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(
             tex_2,
             0.0f,               0.0f,     0.0f, 1.0f,
             G + 100.0f + d,     0.0f,       1.0f, 1.0f,
@@ -54,19 +45,9 @@ void render_float_quadrilateral() {
 
 }
 
-void render_Q_quadrilateral() {
-    static float d =0;
-    float G = 256;
-    d +=(1.0f);
-
-    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, Q<12>>(
-            tex_1,
-            0.0f,               0.0f,     0.0f, 1.0f,
-            G + 100.0f + d,     0.0f,       1.0f, 1.0f,
-            G + 0.0f,                G,         1.0f, 0.0f,
-            0.0f,                    G,         0.0f, 0.0f,
-            255);
-
+inline void render() {
+    render_quadrilateral<float>();
+//    render_quadrilateral<Q<15>>();
 }
 
 int main() {
@@ -82,6 +63,7 @@ void init_sdl(int width, int height) {
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
     canvas = new Canvas24(width, height);
     auto img_1 = resources.loadImageFromCompressedPath("charsprites.png");
+//    auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
     auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
 
     auto bmp_1 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);

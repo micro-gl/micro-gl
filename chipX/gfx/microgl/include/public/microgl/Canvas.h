@@ -57,19 +57,21 @@ public:
     P &getPixel(int index) const ;
     void getPixelColor(int index, color_t & output) const;
     void getPixelColor(int x, int y, color_t & output) const;
-    void getPixelColor(int x, int y, color_f_t & output) const;
-    void getPixelColor(int index, color_f_t & output) const;
+//    void getPixelColor(int x, int y, color_f_t & output) const;
+//    void getPixelColor(int index, color_f_t & output) const;
 
     const coder::PixelCoder<P, CODER> & coder() const;
     Bitmap<P, CODER> * bitmapCanvas() const;
     bool hasNativeAlphaChannel() const;
-    void clear(const color_f_t &color);
+
+    template <typename number>
+    void clear(const intensity<number> &color);
     void clear(const color_t &color);
 
 //    // float blenders
-    template<typename BlendMode=blendmode::Normal,
-             typename PorterDuff=porterduff::SourceOverOnOpaque>
-    void blendColor(const color_f_t &val, int x, int y, float opacity=1.0f);
+//    template<typename BlendMode=blendmode::Normal,
+//             typename PorterDuff=porterduff::SourceOverOnOpaque>
+//    void blendColor(const color_f_t &val, int x, int y, float opacity=1.0f);
     // integer blenders
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>
@@ -120,16 +122,6 @@ private:
 public:
 
     // Triangle batches
-    template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename number=float>
-    void drawTriangles(const color_f_t & color,
-                       const vec2<number> *vertices,
-                       const index *indices,
-                       const boundary_info * boundary_buffer,
-                       index size,
-                       enum indices type,
-                       opacity_t opacity);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
@@ -159,7 +151,7 @@ public:
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename number=float>
-    void drawTrianglesWireframe(const color_f_t & color,
+    void drawTrianglesWireframe(const color_t & color,
                                 const vec2<number> *vertices,
                                 const index *indices,
                                 index size,
@@ -170,27 +162,10 @@ public:
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
             bool antialias=false, typename number=float>
-    void drawTriangleWireframe(const color_f_t &color,
+    void drawTriangleWireframe(const color_t &color,
                                const vec2<number> &p0,
                                const vec2<number> &p1,
                                const vec2<number> &p2);
-
-private:
-
-    template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false>
-    void drawTriangle(const color_f_t & color,
-                      int v0_x, int v0_y,
-                      int v1_x, int v1_y,
-                      int v2_x, int v2_y,
-                      opacity_t opacity,
-                      precision sub_pixel_precision,
-                      bool aa_first_edge = true,
-                      bool aa_second_edge = true,
-                      bool aa_third_edge = true);
-
-public:
 
 private:
     template <typename BlendMode=blendmode::Normal,
@@ -241,7 +216,7 @@ public:
     // perspective correct 2d quadrilateral defined by 2d points
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::SourceOverOnOpaque,
-            bool antialias=false, typename number1=float, typename number2=float, typename S>
+            bool antialias=false, typename number1=float, typename number2=number1, typename S>
     void drawQuadrilateral(const sampling::sampler<S> &sampler,
                            number1 v0_x, number1 v0_y, number2 u0, number2 v0,
                            number1 v1_x, number1 v1_y, number2 u1, number2 v1,
@@ -320,19 +295,24 @@ public:
                      polygons::hints hint = polygons::hints::SIMPLE,
                      number2 u0=number2(0), number2 v0=number2(1),
                      number2 u1=number2(1), number2 v1=number2(0), bool debug=false);
-
-    // Wu lines
-    template<typename number>
-    void drawLine(const color_f_t & color,
-                  number x0, number y0, number x1, number y1);
-
 private:
-    void drawLine(const color_f_t & color,
-                  int x0, int y0,
-                  int x1, int y1,
-                  uint8_t bits = 0);
+    void drawWuLine(const color_t & color,
+                    int x0, int y0,
+                    int x1, int y1,
+                    uint8_t bits = 0);
 
 public:
+    // Wu lines
+    template<typename number>
+    void drawWuLine(const color_t & color,
+                    number x0, number y0, number x1, number y1);
+
+    template <typename number>
+    void drawWuLinePath(color_t & color,
+                        vec2<number> *points,
+                        unsigned int size = 4,
+                        bool closed_path = false);
+
     template <typename number>
     void drawBezierPath(color_f_t & color, vec2<number> *points,
                          unsigned int size = 3,
@@ -340,12 +320,6 @@ public:
                         = tessellation::curve_divider<number>::Type ::Quadratic,
                          typename tessellation::curve_divider<number>::CurveDivisionAlgorithm algorithm
                          = tessellation::curve_divider<number>::CurveDivisionAlgorithm::Uniform_16);
-// todo: drawLinePath will be removed once the path maker is ready
-    template <typename number>
-    void drawLinePath(color_f_t & color,
-                      vec2<number> *points,
-                      unsigned int size = 4,
-                      bool closed_path = false);
 
 
 };

@@ -62,15 +62,15 @@ void Canvas<P, CODER>::getPixelColor(int index, color_t & output)  const {
     this->_bitmap_canvas->decode(index, output);
 }
 
-template<typename P, typename CODER>
-void Canvas<P, CODER>::getPixelColor(int x, int y, color_f_t & output)  const {
-    this->_bitmap_canvas->decode(x, y, output);
-}
-
-template<typename P, typename CODER>
-void Canvas<P, CODER>::getPixelColor(int index, color_f_t & output)  const {
-    this->_bitmap_canvas->decode(index, output);
-}
+//template<typename P, typename CODER>
+//void Canvas<P, CODER>::getPixelColor(int x, int y, color_f_t & output)  const {
+//    this->_bitmap_canvas->decode(x, y, output);
+//}
+//
+//template<typename P, typename CODER>
+//void Canvas<P, CODER>::getPixelColor(int index, color_f_t & output)  const {
+//    this->_bitmap_canvas->decode(index, output);
+//}
 
 template<typename P, typename CODER>
 int Canvas<P, CODER>::width() const {
@@ -83,12 +83,13 @@ int Canvas<P, CODER>::height() const {
 }
 
 template<typename P, typename CODER>
-P *Canvas<P, CODER>::pixels()  const {
+P * Canvas<P, CODER>::pixels()  const {
     return _bitmap_canvas->data();
 }
 
 template<typename P, typename CODER>
-void Canvas<P, CODER>::clear(const color_f_t &color) {
+template <typename number>
+void Canvas<P, CODER>::clear(const intensity<number> &color) {
     P output;
     _bitmap_canvas->coder().encode(color, output);
     _bitmap_canvas->fill(output);
@@ -101,13 +102,13 @@ void Canvas<P, CODER>::clear(const color_t &color) {
     _bitmap_canvas->fill(output);
 }
 
-template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff>
-inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y, float opacity) {
-    color_t color_int{};
-    coder().convert(val, color_int);
-    blendColor<BlendMode, PorterDuff>(val, y*_width + x, opacity);
-}
+//template<typename P, typename CODER>
+//template<typename BlendMode, typename PorterDuff>
+//inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y, float opacity) {
+//    color_t color_int{};
+//    coder().convert(val, color_int);
+//    blendColor<BlendMode, PorterDuff>(val, y*_width + x, opacity);
+//}
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
@@ -417,36 +418,6 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
 // Triangles
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
-void Canvas<P, CODER>::drawTriangles(const color_f_t &color,
-                                     const vec2<number> *vertices,
-                                     const index *indices,
-                                     const boundary_info * boundary_buffer,
-                                     const index size,
-                                     const enum indices type,
-                                     const opacity_t opacity) {
-#define f microgl::math::to_fixed
-    const precision p = 8;
-    triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
-          [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
-              const bool aa_2d= boundary_buffer!=nullptr;
-              bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
-              if(aa_2d) {
-                  const boundary_info aa_info = boundary_buffer[idx];
-                  aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
-                  aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
-                  aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
-              }
-              drawTriangle<BlendMode, PorterDuff, antialias>(color,
-                      f(vertices[first_index].x, p), f(vertices[first_index].y, p),
-                      f(vertices[second_index].x, p), f(vertices[second_index].y, p),
-                      f(vertices[third_index].x, p), f(vertices[third_index].y, p),
-                      opacity, p, aa_first_edge, aa_second_edge, aa_third_edge);
-          });
-#undef f
-}
-
-template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawTriangles(const sampling::sampler<S> &sampler,
                                      const vec2<number1> *vertices,
@@ -515,27 +486,27 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
-void Canvas<P, CODER>::drawTrianglesWireframe(const color_f_t &color,
+void Canvas<P, CODER>::drawTrianglesWireframe(const color_t &color,
                                               const vec2<number> *vertices,
                                               const index *indices,
                                               const index size,
                                               const enum indices type,
                                               const opacity_t opacity) {
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
-                      [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
-                          drawTriangleWireframe(color, vertices[first_index], vertices[second_index], vertices[third_index]);
-                      });
+              [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
+                  drawTriangleWireframe(color, vertices[first_index], vertices[second_index], vertices[third_index]);
+              });
 }
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
-void Canvas<P, CODER>::drawTriangleWireframe(const color_f_t &color,
+void Canvas<P, CODER>::drawTriangleWireframe(const color_t &color,
                                              const vec2<number> &p0,
                                              const vec2<number> &p1,
                                              const vec2<number> &p2) {
-    drawLine(color, p0.x, p0.y, p1.x, p1.y);
-    drawLine(color, p1.x, p1.y, p2.x, p2.y);
-    drawLine(color, p2.x, p2.y, p0.x, p0.y);
+    drawWuLine(color, p0.x, p0.y, p1.x, p1.y);
+    drawWuLine(color, p1.x, p1.y, p2.x, p2.y);
+    drawWuLine(color, p2.x, p2.y, p0.x, p0.y);
 }
 
 template<typename P, typename CODER>
@@ -1292,9 +1263,9 @@ void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
 
 template<typename P, typename CODER>
 template<typename number>
-void Canvas<P, CODER>::drawLine(const color_f_t &color,
-                                number x0, number y0,
-                                number x1, number y1) {
+void Canvas<P, CODER>::drawWuLine(const color_t &color,
+                                  number x0, number y0,
+                                  number x1, number y1) {
     using clipper = microgl::clipping::cohen_sutherland_clipper<number>;
     auto clip =  clipper::compute(x0, y0, x1, y1, number(0), number(0), width(), height());
     if(!clip.inside) return;
@@ -1303,18 +1274,18 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
     int y0_ = microgl::math::to_fixed(clip.y0, p);
     int x1_ = microgl::math::to_fixed(clip.x1, p);
     int y1_ = microgl::math::to_fixed(clip.y1, p);
-    drawLine(color, x0_, y0_, x1_, y1_, p);
+    drawWuLine(color, x0_, y0_, x1_, y1_, p);
 }
 
 template<typename P, typename CODER>
-void Canvas<P, CODER>::drawLine(const color_f_t &color,
-                                int x0, int y0,
-                                int x1, int y1,
-                                precision bits) {
+void Canvas<P, CODER>::drawWuLine(const color_t &color,
+                                  int x0, int y0,
+                                  int x1, int y1,
+                                  precision bits) {
     int X0 = x0, Y0 = y0, X1 = x1, Y1=y1;
-    color_t color_input{};
+    color_t color_input=color;
 
-    coder().convert(color, color_input);
+//    coder().convert(color, color_input);
 
     unsigned int IntensityBits = 8;
     unsigned int NumLevels = 1u << IntensityBits;
@@ -1451,6 +1422,23 @@ void Canvas<P, CODER>::drawLine(const color_f_t &color,
 }
 
 template<typename P, typename CODER>
+template <typename number>
+void
+Canvas<P, CODER>::drawWuLinePath(color_t &color,
+                                 vec2<number> *points,
+                                 unsigned int size,
+                                 bool closed_path) {
+    index jx = 0;
+    for (jx = 0; jx < size; jx++)
+        if(jx)
+            drawWuLine(color,
+                       points[jx - 1].x, points[jx - 1].y,
+                       points[jx].x, points[jx].y);
+    if(closed_path)
+        drawWuLine(color, points[0].x, points[0].y, points[jx - 1].x, points[jx - 1].y);
+}
+
+template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawBezierPatch(const sampling::sampler<S> & sampler,
                                        const vec3<number1> *mesh,
@@ -1495,24 +1483,6 @@ void Canvas<P, CODER>::drawBezierPatch(const sampling::sampler<S> & sampler,
 #undef IND
 }
 
-// todo: drawLinePath will be removed once the path maker is ready
-template<typename P, typename CODER>
-template <typename number>
-void
-Canvas<P, CODER>::drawLinePath(color_f_t &color,
-                               vec2<number> *points,
-                               unsigned int size,
-                               bool closed_path) {
-    index jx = 0;
-    for (jx = 0; jx < size; jx++)
-        if(jx)
-            drawLine(color,
-                     points[jx-1].x, points[jx-1].y,
-                     points[jx].x, points[jx].y);
-    if(closed_path)
-        drawLine(color, points[0].x, points[0].y, points[jx - 1].x, points[jx- 1].y);
-}
-
 // todo: drawBezierPath will be removed once the path maker is ready
 
 template<typename P, typename CODER>
@@ -1533,7 +1503,7 @@ void Canvas<P, CODER>::drawBezierPath(color_f_t & color, vec2<number> *points,
         c::compute(point_anchor, samples, algorithm, type);
         for (index ix = 0; ix < samples.size(); ++ix) {
             current = samples[ix];
-            if(ix) drawLine<number>(color, previous.x, previous.y, current.x, current.y);
+            if(ix) drawWuLine<number>(color, previous.x, previous.y, current.x, current.y);
             drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(color_f_t{1.0,0.0,0.0,1.0},
                                                                                 current.x, current.y, circle_diameter, 255);
             previous = current;

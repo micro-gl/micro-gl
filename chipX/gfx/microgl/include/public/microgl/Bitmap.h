@@ -22,13 +22,17 @@ public:
     // decoders
     void decode(int x, int y, color_t &output) const;
     void decode(int index, color_t &output) const;
-    void decode(int x, int y, color_f_t &output) const;
-    void decode(int index, color_f_t &output) const;
+    template <typename number>
+    void decode(int x, int y, intensity<number> &output) const;
+    template <typename number>
+    void decode(int index, intensity<number> &output) const;
     // encoders
     void writeColor(int index, const color_t & color);
     void writeColor(int x, int y, const color_t & color);
-    void writeColor(int index, const color_f_t & color);
-    void writeColor(int x, int y, const color_f_t & color);
+    template <typename number>
+    void writeColor(int index, const intensity<number> & color);
+    template <typename number>
+    void writeColor(int x, int y, const intensity<number> & color);
     int width() const;
     int height() const;
     const microgl::coder::PixelCoder<P, CODER> & coder() const;

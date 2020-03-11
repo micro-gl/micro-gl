@@ -28,8 +28,7 @@ include_directories("${PROJECT_BINARY_DIR}")
 set(SOURCES
 #        main_test_fill_flat.cpp
 #        main_draw_triangle.cpp
-        main_draw_fast_triangle.cpp
-#        main_draw_quadrilaterals.cpp
+        main_draw_quadrilaterals.cpp
 #        main_draw_polygon_sampler.cpp
 #        main_draw_bezier_patch.cpp
 #        main_draw_rounded_rectangle.cpp
@@ -60,7 +59,7 @@ set(SOURCES
 #        main_bentley_ottmann.cpp
 #        main_complex_to_simple_polygon.cpp
 #        main_complex_to_simple_comps_tree.cpp
-#         main_ear_clipping.cpp
+#        main_ear_clipping.cpp
 #        main_ear_clipping_holes.cpp
 #        main_ear_clipping_deg.cpp
 #        main_complex_to_planar_subdivision.cpp

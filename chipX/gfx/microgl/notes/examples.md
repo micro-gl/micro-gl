@@ -1014,7 +1014,7 @@ lines
 
 ```
 template<typename P, typename CODER>
-void Canvas<P, CODER>::drawLine(const color_f_t &color, int x0, int y0, int x1, int y1) {
+void Canvas<P, CODER>::drawWuLine(const color_f_t &color, int x0, int y0, int x1, int y1) {
     int X0 = x0, Y0 = y0, X1 = x1, Y1=y1;
     color_t color_input{};
 

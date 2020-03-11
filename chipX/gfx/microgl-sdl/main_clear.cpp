@@ -1,18 +1,12 @@
-
-#include <stdio.h>
 #include <iostream>
 #include <chrono>
-//#include "src/Resources.h"
 #include <SDL2/SDL.h>
-//#include <microgl/FrameBuffer.h>
 #include <microgl/Canvas.h>
-//#include <microgl/vec2.h>
-//#include <microgl/color.h>
-//#include <microgl/PixelCoder.h>
-//#include <microgl/Bitmap.h>
-//#include <microgl/tesselation/BezierCurveDivider.h>
+#include <microgl/color.h>
+#include <microgl/intensity.h>
+#include <microgl/pixel_coders/RGB888_PACKED_32.h>
 
-#define TEST_ITERATIONS 1
+#define TEST_ITERATIONS 1000
 #define W 640*1
 #define H 480*1
 
@@ -20,15 +14,17 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-//Resources resources{};
+using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
+Canvas24 * canvas;
 
 void loop();
 void init_sdl(int width, int height);
 
 inline void render() {
+    intensity<float> aa{1.0f, 0.0f, 0.0f, 1.0f};
 
-//    canvas->setAntialiasing(false);
-//    canvas->clear(WHITE);
+//    canvas->clear(color::colors::WHITE);
+    canvas->clear(intensity<Q<10>>{1.0, 0.50, 0.0,1.0});
 }
 
 
@@ -44,23 +40,17 @@ void init_sdl(int width, int height) {
     renderer = SDL_CreateRenderer(window, -1, 0);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
 
-//    canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
-
-//    resources.init();
+    canvas = new Canvas24(width, height);
 }
 
 int render_test(int N) {
     auto ms = std::chrono::milliseconds(1);
     auto start = std::chrono::high_resolution_clock::now();
-
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < N; ++i)
         render();
-    }
-
     auto end = std::chrono::high_resolution_clock::now();
-
-    return (end-start)/(ms*N);
-}
+    auto int_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    return int_ms.count();}
 
 void loop() {
     bool quit = false;
@@ -68,7 +58,7 @@ void loop() {
 
     // 100 Quads
     int ms = render_test(TEST_ITERATIONS);
-//    cout << ms << endl;
+    std::cout << ms << std::endl;
 
     while (!quit)
     {
@@ -87,7 +77,7 @@ void loop() {
 //
         render();
 
-//        SDL_UpdateTexture(texture, nullptr, canvas->pixels(), canvas->width() * canvas->sizeofPixel());
+        SDL_UpdateTexture(texture, nullptr, canvas->pixels(), canvas->width() * canvas->sizeofPixel());
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, texture, nullptr, nullptr);
         SDL_RenderPresent(renderer);

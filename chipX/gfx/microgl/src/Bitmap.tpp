@@ -2,28 +2,21 @@ template<typename P, typename CODER>
 template<typename P2, typename CODER2>
 Bitmap<P2, CODER2> * Bitmap<P, CODER>::convertToBitmap() {
     auto * bmp_2 = new Bitmap<P2, CODER2>(_width, _height);
-
     copyToBitmap(*bmp_2);
-
     return bmp_2;
 }
 
 template<typename P, typename CODER>
 template<typename P2, typename CODER2>
 void Bitmap<P, CODER>::copyToBitmap(Bitmap<P2, CODER2> & bmp) {
-
-    bool size_is_same = bmp.size()==this->size();
-    if(!size_is_same)
-        return;
-
-    int size = this->size();
-    color_f_t color_bmp_1{};
-
+    if(bmp.size()!=this->size()) return;
+    const int size = this->size();
+    color_t color_bmp_1, color_bmp_2;
     for (int index = 0; index < size; ++index) {
         this->decode(index, color_bmp_1);
-        bmp.writeColor(index, color_bmp_1);
+        coder().convert(color_bmp_1, color_bmp_2, bmp.coder());
+        bmp.writeColor(index, color_bmp_2);
     }
-
 }
 
 template<typename P, typename CODER>
@@ -34,7 +27,6 @@ Bitmap<P, CODER>::Bitmap(P* $pixels, int w, int h) :
 template<typename P, typename CODER>
 Bitmap<P, CODER>::Bitmap(int w, int h) :
                         Bitmap<P, CODER>::Bitmap(new P[w * h], w, h) {
-
 }
 
 template<typename P, typename CODER>
@@ -84,12 +76,14 @@ void Bitmap<P, CODER>::decode(int index, color_t &output)  const{
 }
 
 template<typename P, typename CODER>
-void Bitmap<P, CODER>::decode(int x, int y, color_f_t &output) const {
+template <typename number>
+void Bitmap<P, CODER>::decode(int x, int y, intensity<number> &output) const {
     _coder.decode(pixelAt(x, y), output);
 }
 
 template<typename P, typename CODER>
-void Bitmap<P, CODER>::decode(int index, color_f_t &output) const {
+template <typename number>
+void Bitmap<P, CODER>::decode(int index, intensity<number> &output) const {
     _coder.decode(pixelAt(index), output);
 }
 
@@ -106,14 +100,16 @@ void Bitmap<P, CODER>::writeColor(int x, int y, const color_t &color) {
 }
 
 template<typename P, typename CODER>
-void Bitmap<P, CODER>::writeColor(int index, const color_f_t &color) {
+template <typename number>
+void Bitmap<P, CODER>::writeColor(int index, const intensity<number> &color) {
     P output;
     _coder.encode(color, output);
     this->_data[index] = output;
 }
 
 template<typename P, typename CODER>
-void Bitmap<P, CODER>::writeColor(int x, int y, const color_f_t &color) {
+template <typename number>
+void Bitmap<P, CODER>::writeColor(int x, int y, const intensity<number> &color) {
     writeColor(y*_width + x, color);
 }
 
