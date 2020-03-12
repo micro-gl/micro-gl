@@ -24,22 +24,22 @@ namespace microgl {
                 update_channel_bit(output);
             };
 
-            static
+            static constexpr
             channel red_bits() {
                 return 8;
             }
 
-            static
+            static constexpr
             channel green_bits() {
                 return 8;
             }
 
-            static
+            static constexpr
             channel blue_bits() {
                 return 8;
             }
 
-            static
+            static constexpr
             channel alpha_bits() {
                 return 0;
             }

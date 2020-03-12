@@ -4,18 +4,17 @@
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
-#include <microgl/color.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
+#include <microgl/porter_duff/SourceOver2.h>
 #include <microgl/porter_duff/SourceOverOnOpaque.h>
+#include <microgl/porter_duff/SourceOverOnOpaque2.h>
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
 #include <microgl/blend_modes/Multiply.h>
-#include <microgl/samplers/NearestNeighbor.h>
-#include <microgl/samplers/Bilinear.h>
 #include <microgl/Bitmap.h>
 
-#define TEST_ITERATIONS 100
+#define TEST_ITERATIONS 1000
 #define W 640*1
 #define H 480*1
 
@@ -23,82 +22,25 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-typedef Bitmap<uint32_t, coder::RGB888_PACKED_32> Bitmap24bit_Packed32;
-typedef Canvas<uint32_t, coder::RGB888_PACKED_32> Canvas24Bit_Packed32;
+using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
-Canvas24Bit_Packed32 * canvas;
-
-Bitmap24bit_Packed32 * bmp_1, *bmp_2, *mask;
+Canvas24 * canvas;
+Bitmap24 * bmp_1, *bmp_2, *mask;
 
 Resources resources{};
 using namespace microgl::color;
 void loop();
 void init_sdl(int width, int height);
 
-static float d = 0;
 
 inline void render() {
-
-    canvas->clear(microgl::color::colors::WHITE);
-        // 100, aa, bilinear -> 420
-        // 100, aa, nearest -> 240
-        // 100, no aa, no opacity, nearest -> 125
-
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, false, sampler::NearestNeighbor>(*bmp_2,
-//                                                                             0.0f,     0.0f,       0.0f, 1.0f,
-//                                                                             float(W/2),  0.0f,       1.0f, 1.0f,
-//                                                                             float(W/2), float(H/2),   1.0f, 0.0f,
-//                                                                             255,
-//                                                                             true, true, true);
-
-//    canvas->drawQuad<blendmode::Normal, porterduff::None, sampler::NearestNeighbor>(
-//            *bmp_1, -0, -0, 300, 300);
-    canvas->drawQuad<blendmode::Normal, porterduff::None>(
-            color::colors::RED, -0, -0, 300, 300, 128);
-//    canvas->drawMask<sampler::NearestNeighbor>(masks::chrome_mode::red_channel, *mask,
-//            0, 0, 300, 300);
-
-//        canvas->drawQuad<blendmode::Normal, porterduff::None>(RED, 0, 0, W, H, 0, 255);
-//
-        // with O3 i get 28-32 for drawTriangle and 14-16 for drawTriangleFast
-        // with Os i get 52 for drawTriangle and 24-26 for drawTriangleFast
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(RED,
-//                                                                             0,0,
-//                                                                             W, 0,
-//                                                                             W, H,
-//                                                                             255, 0,
-//                                                                             false, false, false);
-
-//        canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(RED,
-//                                                                             0,0,
-//                                                                             W, 0,
-//                                                                             W, H,
-//                                                                             255, 0,
-//                                                                             true, true, true);
-
-//        canvas->drawTriangleFast<blendmode::Normal, porterduff::None, false>(RED,
-//                                                                             0,0,
-//                                                                             22, 0,
-//                                                                             22, 22,
-//                                                                             255, 0,
-//                                                                             true, true, true);
-
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(RED,
-//                                                                             0,0,
-//                                                                             22, 0,
-//                                                                             22, 22,
-//                                                                             255, 0,
-//                                                                             true, true, true);
-
-//        d+=3.1;
-//        int G = 256;
-//        canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, sampler::Bilinear>(
-//                *bmp_uv,
-//                0,          0,0.0, 1.0,
-//                G + 100 + d,0,1.0,1.0,
-//                G + 0,           G,1.0,0.0,
-//                0,               G,0.0,0.0,
-//                222);
+    canvas->clear({255, 255, 255, 255});
+    canvas->drawQuad<blendmode::Normal, porterduff::SourceOver2<false>>(
+//    canvas->drawQuad<blendmode::Normal, porterduff::SourceOverOnOpaque>(
+            {255,0,0,255},
+            -0, -0, 300, 300,
+            128);
 
 }
 
@@ -114,7 +56,7 @@ void init_sdl(int width, int height) {
     renderer = SDL_CreateRenderer(window, -1, 0);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
 
-    canvas = new Canvas24Bit_Packed32(width, height);
+    canvas = new Canvas24(width, height);
 //    canvas = new Canvas24BitU8(width, height, new RGB888_ARRAY());
     auto img_1 = resources.loadImageFromCompressedPath("charsprites.png");
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
@@ -134,14 +76,10 @@ int render_test(int N) {
     auto ms = std::chrono::milliseconds(1);
     auto ns = std::chrono::nanoseconds(1);
     auto start = std::chrono::high_resolution_clock::now();
-
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < N; ++i)
         render();
-    }
-
     auto end = std::chrono::high_resolution_clock::now();
     auto int_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
     return int_ms.count();
 }
 

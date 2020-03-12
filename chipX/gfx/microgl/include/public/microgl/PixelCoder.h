@@ -98,19 +98,19 @@ namespace microgl {
 //                convert_color(int_color, output);
 //            }
 
-            static
+            static constexpr
             channel red_bits() {
                 return IMPL::red_bits();
             }
-            static
+            static constexpr
             channel green_bits() {
                 return IMPL::green_bits();
             }
-            static
+            static constexpr
             channel blue_bits() {
                 return IMPL::blue_bits();
             }
-            static
+            static constexpr
             channel alpha_bits() {
                 return IMPL::alpha_bits();
             }

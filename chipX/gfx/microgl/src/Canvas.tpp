@@ -5,12 +5,11 @@
 template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(Bitmap<P, CODER> *$bmp)
                         : _width{$bmp->width()}, _height{$bmp->height()}, _bitmap_canvas($bmp) {
-    uint8_t alpha_bits = CODER::alpha_bits();//coder()->bits_per_alpha();
-    _flag_hasNativeAlphaChannel = alpha_bits!=0;
+    _flag_hasNativeAlphaChannel = CODER::alpha_bits()!=0;
     // fix alpha bits depth in case we don't natively
     // support alpha, this is correct because we want to
     // support compositing even if the surface is opaque.
-    _alpha_bits_for_compositing = _flag_hasNativeAlphaChannel ? alpha_bits : 8;
+    _alpha_bits_for_compositing = _flag_hasNativeAlphaChannel ? CODER::alpha_bits() : 8;
     _max_alpha_value = (1<<_alpha_bits_for_compositing) - 1;
 }
 
@@ -62,16 +61,6 @@ void Canvas<P, CODER>::getPixelColor(int index, color_t & output)  const {
     this->_bitmap_canvas->decode(index, output);
 }
 
-//template<typename P, typename CODER>
-//void Canvas<P, CODER>::getPixelColor(int x, int y, color_f_t & output)  const {
-//    this->_bitmap_canvas->decode(x, y, output);
-//}
-//
-//template<typename P, typename CODER>
-//void Canvas<P, CODER>::getPixelColor(int index, color_f_t & output)  const {
-//    this->_bitmap_canvas->decode(index, output);
-//}
-
 template<typename P, typename CODER>
 int Canvas<P, CODER>::width() const {
     return _width;
@@ -101,14 +90,6 @@ void Canvas<P, CODER>::clear(const color_t &color) {
     _bitmap_canvas->coder().encode(color, output);
     _bitmap_canvas->fill(output);
 }
-
-//template<typename P, typename CODER>
-//template<typename BlendMode, typename PorterDuff>
-//inline void Canvas<P, CODER>::blendColor(const color_f_t &val, int x, int y, float opacity) {
-//    color_t color_int{};
-//    coder().convert(val, color_int);
-//    blendColor<BlendMode, PorterDuff>(val, y*_width + x, opacity);
-//}
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
@@ -144,12 +125,13 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
             blended.a= 255;
             alpha_bits=8;
         }
-
+        constexpr bool hasNativeAlphaChannel = CODER::alpha_bits()!=0;
+        constexpr unsigned int max_alpha_value = hasNativeAlphaChannel ? (1 << CODER::alpha_bits()) - 1 : (255);
         // fix alpha bits depth in case we don't natively
         // support alpha, this is correct because we want to
         // support compositing even if the surface is opaque.
-        if(!hasNativeAlphaChannel())
-            backdrop.a = _max_alpha_value;
+        if(!hasNativeAlphaChannel)
+            backdrop.a = max_alpha_value;
 
         // if blend-mode is normal or the backdrop is completely transparent
         // then we don't need to blend.
@@ -168,9 +150,9 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
 
             // if backdrop alpha!= max_alpha let's first composite the blended color, this is
             // an intermidiate step before Porter-Duff
-            if(backdrop.a < _max_alpha_value) {
+            if(backdrop.a < max_alpha_value) {
                 // if((backdrop.a ^ _max_alpha_value)) {
-                int max_alpha = _max_alpha_value;
+                int max_alpha = max_alpha_value;
                 unsigned int comp = max_alpha - backdrop.a;
                 blended.r = (comp * src.r + backdrop.a * blended.r) >> alpha_bits;
                 blended.g = (comp * src.g + backdrop.a * blended.g) >> alpha_bits;
@@ -187,14 +169,17 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
 
         // I fixed opacity is always 8 bits no matter what the alpha depth of the native canvas
         if(opacity < 255)
-            blended.a =  (blended.a * opacity)>>8;
+            blended.a =  (int(blended.a) * int(opacity)*int(257))>>16;
+//            blended.a =  (blended.a * opacity)>>8;
+
+        constexpr bool premultiply_result = !hasNativeAlphaChannel;//CODER::alpha_bits()!=0;
 
         // finally alpha composite with Porter-Duff equations,
         // this should be zero-cost for None option with compiler optimizations
         // if we do not own a native alpha channel, then please keep the composited result
         // with premultiplied alpha, this is why we composite for None option, because it performs
         // alpha multiplication
-        PorterDuff::composite(backdrop, blended, result, alpha_bits, !hasNativeAlphaChannel());
+        PorterDuff::template composite<premultiply_result>(backdrop, blended, result, alpha_bits);
     } else
         result = val;
 

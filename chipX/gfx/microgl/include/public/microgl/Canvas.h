@@ -57,8 +57,6 @@ public:
     P &getPixel(int index) const ;
     void getPixelColor(int index, color_t & output) const;
     void getPixelColor(int x, int y, color_t & output) const;
-//    void getPixelColor(int x, int y, color_f_t & output) const;
-//    void getPixelColor(int index, color_f_t & output) const;
 
     const coder::PixelCoder<P, CODER> & coder() const;
     Bitmap<P, CODER> * bitmapCanvas() const;
@@ -68,10 +66,6 @@ public:
     void clear(const intensity<number> &color);
     void clear(const color_t &color);
 
-//    // float blenders
-//    template<typename BlendMode=blendmode::Normal,
-//             typename PorterDuff=porterduff::SourceOverOnOpaque>
-//    void blendColor(const color_f_t &val, int x, int y, float opacity=1.0f);
     // integer blenders
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::SourceOverOnOpaque>

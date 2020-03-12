@@ -26,9 +26,10 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
 include_directories("${PROJECT_BINARY_DIR}")
 
 set(SOURCES
+        main_compositing.cpp
 #        main_test_fill_flat.cpp
 #        main_draw_triangle.cpp
-        main_draw_quadrilaterals.cpp
+#        main_draw_quadrilaterals.cpp
 #        main_draw_polygon_sampler.cpp
 #        main_draw_bezier_patch.cpp
 #        main_draw_rounded_rectangle.cpp
