@@ -23,26 +23,10 @@ namespace microgl {
                 update_channel_bit(output);
             };
 
-            static
-            channel red_bits() {
-                return 5;
-            }
-
-            static
-            channel green_bits() {
-                return 5;
-            }
-
-            static
-            channel blue_bits() {
-                return 5;
-            }
-
-            static
-            channel alpha_bits() {
-                return 0;
-            }
-
+            static constexpr channel red_bits() { return 5; }
+            static constexpr channel green_bits() { return 5; }
+            static constexpr channel blue_bits() { return 5; }
+            static constexpr channel alpha_bits() { return 0; }
             static
             inline const char *format() {
                 return "RGB555_PACKED_16";

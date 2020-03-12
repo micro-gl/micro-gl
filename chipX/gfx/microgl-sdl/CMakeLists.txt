@@ -26,7 +26,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
 include_directories("${PROJECT_BINARY_DIR}")
 
 set(SOURCES
-        main_compositing.cpp
+#        main_compositing.cpp
 #        main_test_fill_flat.cpp
 #        main_draw_triangle.cpp
 #        main_draw_quadrilaterals.cpp
@@ -34,7 +34,7 @@ set(SOURCES
 #        main_draw_bezier_patch.cpp
 #        main_draw_rounded_rectangle.cpp
 #        main_draw_circles.cpp
-#        main_draw_masks.cpp
+        main_draw_masks.cpp
 #        main_clear.cpp
 #        main_curves.cpp
 #        main_speed_optimization.cpp

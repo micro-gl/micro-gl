@@ -6,9 +6,8 @@
 #include <microgl/vec2.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/porter_duff/SourceOver2.h>
-#include <microgl/porter_duff/SourceOverOnOpaque.h>
-#include <microgl/porter_duff/SourceOverOnOpaque2.h>
+#include <microgl/porter_duff/SourceOver.h>
+#include <microgl/porter_duff/FastSourceOverOnOpaque.h>
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
 #include <microgl/blend_modes/Multiply.h>
@@ -36,11 +35,12 @@ void init_sdl(int width, int height);
 
 inline void render() {
     canvas->clear({255, 255, 255, 255});
-    canvas->drawQuad<blendmode::Normal, porterduff::SourceOver2<false>>(
-//    canvas->drawQuad<blendmode::Normal, porterduff::SourceOverOnOpaque>(
-            {255,0,0,255},
+//    canvas->drawQuad<blendmode::Normal, porterduff::SourceOver<true>>(
+    canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque>(
+//    canvas->drawQuad<blendmode::Normal, porterduff::None<>>(
+            {255,0,0,122},
             -0, -0, 300, 300,
-            128);
+            255);
 
 }
 

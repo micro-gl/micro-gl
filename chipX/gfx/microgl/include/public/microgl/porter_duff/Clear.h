@@ -5,26 +5,21 @@
 namespace microgl {
     namespace porterduff {
 
-        class Clear : public PorterDuffBase<Clear> {
+        template <bool fast=true>
+        class Clear : public PorterDuffBase<Clear<fast>> {
         public:
             inline static const char *type() {
                 return "Clear";
             }
 
+            template <bool multiplied_alpha_result=true, bool use_FPU=true>
             inline static void composite(const color_t &b,
                                          const color_t &s,
                                          color_t &output,
-                                         const unsigned int alpha_bits,
-                                         bool multiplied_alpha_result = false) {
-
-                internal_porter_duff(0, 0, b, s, output, alpha_bits, multiplied_alpha_result);
-            }
-
-            inline static void composite(const color_f_t &b,
-                                         const color_f_t &s,
-                                         color_f_t &output,
-                                         bool multiplied_alpha_result = false) {
-                internal_porter_duff(0.0, 0.0, b, s, output, multiplied_alpha_result);
+                                         const unsigned int alpha_bits) {
+                const unsigned int max_val =(1<<alpha_bits)-1;
+                apply_porter_duff<fast, multiplied_alpha_result, use_FPU>(0, 0,
+                                                                          b, s, output, alpha_bits);
             }
 
         };

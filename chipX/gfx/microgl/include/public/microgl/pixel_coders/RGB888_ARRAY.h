@@ -20,28 +20,11 @@ namespace microgl {
                 update_channel_bit(output);
             };
 
-            static
-            channel red_bits() {
-                return 8;
-            }
-
-            static
-            channel green_bits() {
-                return 8;
-            }
-
-            static
-            channel blue_bits() {
-                return 8;
-            }
-
-            static
-            channel alpha_bits() {
-                return 0;
-            }
-
-            static
-            inline const char *format() {
+            static constexpr channel red_bits() { return 8; }
+            static constexpr channel green_bits() { return 8; }
+            static constexpr channel blue_bits() { return 8; }
+            static constexpr channel alpha_bits() { return 0; }
+            static inline const char *format() {
                 return "RGB888_ARRAY";
             }
 

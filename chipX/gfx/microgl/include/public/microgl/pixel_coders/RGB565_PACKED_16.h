@@ -15,7 +15,6 @@ namespace microgl {
 
             static
             inline void decode(const uint16_t &input, color_t &output) {
-
                 output.r = (input & 0xF800) >> 11;         // rrrrr... ........ -> 000rrrrr
                 output.g = (input & 0x07E0) >> 5;          // .....ggg ggg..... -> 00gggggg
                 output.b = (input & 0x1F);                 // ............bbbbb -> 000bbbbb
@@ -24,26 +23,10 @@ namespace microgl {
                 update_channel_bit(output);
             };
 
-            static
-            channel red_bits() {
-                return 5;
-            }
-
-            static
-            channel green_bits() {
-                return 6;
-            }
-
-            static
-            channel blue_bits() {
-                return 5;
-            }
-
-            static
-            channel alpha_bits() {
-                return 0;
-            }
-
+            static constexpr channel red_bits() { return 5; }
+            static constexpr channel green_bits() { return 6; }
+            static constexpr channel blue_bits() { return 5; }
+            static constexpr channel alpha_bits() { return 0; }
             static
             inline const char *format() {
                 return "RGB565_PACKED_16";

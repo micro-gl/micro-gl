@@ -7,14 +7,14 @@
 #include <microgl/color.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/porter_duff/SourceOverOnOpaque.h>
+#include <microgl/porter_duff/FastSourceOverOnOpaque.h>
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
 #include <microgl/blend_modes/Multiply.h>
 #include <microgl/Bitmap.h>
 #include <microgl/samplers/texture.h>
 
-#define TEST_ITERATIONS 1
+#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 480*1
 
@@ -35,8 +35,8 @@ void loop();
 void init_sdl(int width, int height);
 
 inline void render() {
-    canvas->clear(microgl::color::colors::WHITE);
-    canvas->drawQuad<blendmode::Normal, porterduff::None>(
+    canvas->clear({255,255,255,255});
+    canvas->drawQuad<blendmode::Normal, porterduff::None<>>(
             tex_1, -0, -0, 300, 300,255);
 //    canvas->drawQuad<blendmode::Normal, porterduff::None>(
 //            color::colors::RED, -0, -0, 300, 300, 255);

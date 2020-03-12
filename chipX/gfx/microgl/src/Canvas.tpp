@@ -106,7 +106,7 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
     // multiply result with alpha
     color_t result;
     P output;
-    const bool none_compositing = microgl::traits::is_same<PorterDuff, porterduff::None>::value;
+    const bool none_compositing = microgl::traits::is_same<PorterDuff, porterduff::None<>>::value;
     const bool skip_blending =microgl::traits::is_same<BlendMode, blendmode::Normal>::value;
     const bool skip_all= skip_blending && none_compositing && opacity == 255;
     if(!skip_all){
@@ -1167,7 +1167,7 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
             col_bmp.r_bits=this->coder().red_bits(), col_bmp.g_bits=this->coder().green_bits(),
             col_bmp.b_bits=this->coder().blue_bits(), col_bmp.a_bits=alpha_bits;
             // re-encode for a different canvas
-            blendColor<blendmode::Normal, porterduff::DestinationIn>(col_bmp, index + x, opacity);
+            blendColor<blendmode::Normal, porterduff::DestinationIn<true>>(col_bmp, index + x, opacity);
         }
     }
 }
@@ -1489,23 +1489,23 @@ void Canvas<P, CODER>::drawBezierPath(color_f_t & color, vec2<number> *points,
         for (index ix = 0; ix < samples.size(); ++ix) {
             current = samples[ix];
             if(ix) drawWuLine<number>(color, previous.x, previous.y, current.x, current.y);
-            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(color_f_t{1.0,0.0,0.0,1.0},
-                                                                                current.x, current.y, circle_diameter, 255);
+            drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(color_f_t{1.0, 0.0, 0.0, 1.0},
+                                                                                            current.x, current.y, circle_diameter, 255);
             previous = current;
         }
-        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(color_f_t{0.0,0.0,1.0,1.0},
-                                                                            point_anchor[0].x, point_anchor[0].y,
-                                                                                    circle_diameter, 255);
-        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0,1.0},
-                                                                            point_anchor[1].x, point_anchor[1].y,
-                                                                            circle_diameter, 255);
-        drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0,1.0},
-                                                                            point_anchor[2].x, point_anchor[2].y,
-                                                                            circle_diameter, 255);
-        if(type==c::Type::Cubic ) {
-            drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(color_f_t{0.0,0.0,1.0,1.0},
-                                                                                point_anchor[3].x, point_anchor[3].y,
+        drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(color_f_t{0.0, 0.0, 1.0, 1.0},
+                                                                                        point_anchor[0].x, point_anchor[0].y,
+                                                                                        circle_diameter, 255);
+        drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(color_f_t{0.0, 0.0, 1.0, 1.0},
+                                                                                point_anchor[1].x, point_anchor[1].y,
                                                                                 circle_diameter, 255);
+        drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(color_f_t{0.0, 0.0, 1.0, 1.0},
+                                                                                point_anchor[2].x, point_anchor[2].y,
+                                                                                circle_diameter, 255);
+        if(type==c::Type::Cubic ) {
+            drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(color_f_t{0.0, 0.0, 1.0, 1.0},
+                                                                                    point_anchor[3].x, point_anchor[3].y,
+                                                                                    circle_diameter, 255);
         }
     }
 }

@@ -3,7 +3,7 @@
 #include <microgl/vec2.h>
 #include <microgl/color.h>
 #include <microgl/micro_gl_traits.h>
-#include <microgl/porter_duff/SourceOverOnOpaque.h>
+#include <microgl/porter_duff/FastSourceOverOnOpaque.h>
 #include <microgl/porter_duff/DestinationIn.h>
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
@@ -68,10 +68,10 @@ public:
 
     // integer blenders
     template<typename BlendMode=blendmode::Normal,
-             typename PorterDuff=porterduff::SourceOverOnOpaque>
+             typename PorterDuff=porterduff::FastSourceOverOnOpaque>
     void blendColor(const color_t &val, int x, int y, opacity_t opacity);
     template<typename BlendMode=blendmode::Normal,
-             typename PorterDuff=porterduff::SourceOverOnOpaque>
+             typename PorterDuff=porterduff::FastSourceOverOnOpaque>
     inline void blendColor(const color_t &val, int index, opacity_t opacity);
 
     void drawPixel(const P &val, int x, int y);
@@ -80,7 +80,7 @@ public:
     // circles
 
     template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1, typename number2=number1, typename S1, typename S2>
     void drawCircle(const sampling::sampler<S1> & sampler_fill,
                     const sampling::sampler<S2> & sampler_stroke,
@@ -90,7 +90,7 @@ public:
                     const number2 &u1=number2(1), const number2 &v1=number2(0));
 
     template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1, typename number2=number1, typename S1, typename S2>
     void drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
                          const sampling::sampler<S2> & sampler_stroke,
@@ -103,7 +103,7 @@ public:
 
 private:
     template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename S1, typename S2>
     void drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
                          const sampling::sampler<S2> & sampler_stroke,
@@ -118,7 +118,7 @@ public:
     // Triangle batches
 
     template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=float, typename S>
     void drawTriangles(const sampling::sampler<S> & sampler,
                        const vec2<number1> *vertices,
@@ -129,7 +129,7 @@ public:
                        enum indices type,
                        opacity_t opacity);
 
-    template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::SourceOverOnOpaque,
+    template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias, bool perspective_correct, bool depth_buffer_flag=false,
             typename impl, typename vertex_attr, typename varying, typename number>
     void drawTriangles(shader_base<impl, vertex_attr, varying, number> &shader,
@@ -143,7 +143,7 @@ public:
                        opacity_t opacity=255);
 
     template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number=float>
     void drawTrianglesWireframe(const color_t & color,
                                 const vec2<number> *vertices,
@@ -154,7 +154,7 @@ public:
 
     // single triangles, includes shader based and one very fast fixed pipeline for color and textures
     template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number=float>
     void drawTriangleWireframe(const color_t &color,
                                const vec2<number> &p0,
@@ -163,7 +163,7 @@ public:
 
 private:
     template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool perspective_correct=false,
             typename S>
     void drawTriangle(const sampling::sampler<S> &sample,
@@ -175,7 +175,7 @@ private:
 
 public:
     template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename S, typename number1=float, typename number2=float>
     void drawTriangle(const sampling::sampler<S> &sample,
                       number1 v0_x, number1 v0_y, number2 u0, number2 v0,
@@ -185,7 +185,7 @@ public:
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::None,
+            typename PorterDuff=porterduff::None<>,
             bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
             typename impl, typename vertex_attr, typename varying, typename number>
     void drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
@@ -196,7 +196,7 @@ public:
 
 private:
     template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::None,
+            typename PorterDuff=porterduff::None<>,
             bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
             typename impl, typename vertex_attr, typename varying, typename number>
     void drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
@@ -209,7 +209,7 @@ private:
 public:
     // perspective correct 2d quadrilateral defined by 2d points
     template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=number1, typename S>
     void drawQuadrilateral(const sampling::sampler<S> &sampler,
                            number1 v0_x, number1 v0_y, number2 u0, number2 v0,
@@ -220,7 +220,7 @@ public:
     // QUADS
 
     template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             typename number>
     void drawQuad(const color_t &color,
                   number left, number top,
@@ -229,7 +229,7 @@ public:
 
 private:
     template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             typename S>
     void drawQuad(const sampling::sampler<S> &sampler,
                   int left, int top,
@@ -241,7 +241,7 @@ private:
 
 public:
     template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::SourceOverOnOpaque, typename number1=float, typename number2=number1, typename S>
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque, typename number1=float, typename number2=number1, typename S>
     void drawQuad(const sampling::sampler<S> &sampler,
                   number1 left, number1 top,
                   number1 right, number1 bottom,
@@ -270,7 +270,7 @@ private:
                   opacity_t opacity = 255);
 
 public:
-    template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::SourceOverOnOpaque,
+    template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1, typename number2=number1, typename S>
     void drawBezierPatch(const sampling::sampler<S> &sampler,
                          const vec3<number1> *mesh,
@@ -281,7 +281,7 @@ public:
                          opacity_t opacity=255);
 
     // polygons
-    template <typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::SourceOverOnOpaque,
+    template <typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=number1, typename S>
     void drawPolygon(const sampling::sampler<S> &sampler,
                      const vec2<number1> * points,

@@ -7,10 +7,6 @@ namespace microgl {
 
         class RGB888_PACKED_32 : public PixelCoder<uint32_t, RGB888_PACKED_32> {
         public:
-            // include these if you want to enable the float overloading
-            using PixelCoder::encode;
-            using PixelCoder::decode;
-
             static
             inline void encode(const color_t &input, uint32_t &output) {
                 output = (input.r << 16) + (input.g << 8) + input.b;
@@ -24,28 +20,11 @@ namespace microgl {
                 update_channel_bit(output);
             };
 
-            static constexpr
-            channel red_bits() {
-                return 8;
-            }
-
-            static constexpr
-            channel green_bits() {
-                return 8;
-            }
-
-            static constexpr
-            channel blue_bits() {
-                return 8;
-            }
-
-            static constexpr
-            channel alpha_bits() {
-                return 0;
-            }
-
-            static
-            inline const char *format() {
+            static constexpr channel red_bits() { return 8; }
+            static constexpr channel green_bits() { return 8; }
+            static constexpr channel blue_bits() { return 8; }
+            static constexpr channel alpha_bits() { return 0; }
+            static inline const char *format() {
                 return "RGB888_PACKED_32";
             }
 

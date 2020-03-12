@@ -5,10 +5,10 @@
 namespace microgl {
     namespace porterduff {
 
-        class SourceOverOnOpaque : public PorterDuffBase<SourceOverOnOpaque> {
+        class FastSourceOverOnOpaque : public PorterDuffBase<FastSourceOverOnOpaque> {
         public:
             inline static const char *type() {
-                return "SourceOverOnOpaque";
+                return "FastSourceOverOnOpaque";
             }
 
             template <bool multiplied_alpha_result=true, bool use_FPU=false>
@@ -22,18 +22,9 @@ namespace microgl {
                 const unsigned int max_val = (1<<alpha_bits)-1;
                 const unsigned int comp = max_val - s.a;
 //                unsigned int comp = s.a ^max_val; // flipping bits equals (max_val - s.a)
-
-//                if (comp) {
-                    output.r = (s.a * s.r + comp * b.r) >> alpha_bits;
-                    output.g = (s.a * s.g + comp * b.g) >> alpha_bits;
-                    output.b = (s.a * s.b + comp * b.b) >> alpha_bits;
-
-//                } else {
-//                    output.r = s.r;
-//                    output.g = s.g;
-//                    output.b = s.b;
-//                }
-
+                output.r = (s.a * s.r + comp * b.r) >> alpha_bits;
+                output.g = (s.a * s.g + comp * b.g) >> alpha_bits;
+                output.b = (s.a * s.b + comp * b.b) >> alpha_bits;
                 output.a = max_val;
             }
 
