@@ -5,15 +5,23 @@
 namespace microgl {
     namespace blendmode {
 
-        class Overlay : public BlendModeBase<Overlay> {
+        template <bool fast=true>
+        class Overlay : public BlendModeBase<Overlay<fast>> {
         public:
 
+            template <bool use_FPU=true>
             static inline int blend_Overlay(int b, int s, int bits) {
-                int max = MAX_VAL_BITS(bits);
+                int max = (1<<bits)-1;
 
-                return 2 * b < max ? ((2 * b * s) >> bits) : (max - ((2 * (max - b) * (max - s)) >> bits));
+                if(fast)
+                    return 2 * b < max ? ((2 * b * s) >> bits) : (max - ((2 * (max - b) * (max - s)) >> bits));
+                else if(use_FPU)
+                    return 2 * b < max ? (float(2 * b * s)/max) : (max - (float(2 * (max - b) * (max - s))/max));
+                else
+                    return 2 * b < max ? ((2 * b * s)/max) : (max - ((2 * (max - b) * (max - s))/max));
             }
 
+            template <bool use_FPU=true>
             static inline void blend(const color_t &b,
                                      const color_t &s,
                                      color_t &output,
@@ -21,22 +29,9 @@ namespace microgl {
                                      const uint8_t g_bits,
                                      const uint8_t b_bits) {
 
-                output.r = blend_Overlay(b.r, s.r, r_bits);
-                output.g = blend_Overlay(b.g, s.g, g_bits);
-                output.b = blend_Overlay(b.b, s.b, b_bits);
-            }
-
-            static inline float blend_Overlay(float b, float s) {
-                return b < 0.5 ? (2.0 * b * s) : (1.0 - 2.0 * (1.0 - b) * (1.0 - s));
-            }
-
-            static inline void blend(const color_f_t &b,
-                                     const color_f_t &s,
-                                     color_f_t &output) {
-
-                output.r = blend_Overlay(b.r, s.r);
-                output.g = blend_Overlay(b.g, s.g);
-                output.b = blend_Overlay(b.b, s.b);
+                output.r = blend_Overlay<use_FPU>(b.r, s.r, r_bits);
+                output.g = blend_Overlay<use_FPU>(b.g, s.g, g_bits);
+                output.b = blend_Overlay<use_FPU>(b.b, s.b, b_bits);
             }
 
             static inline const char *type() {

@@ -15,18 +15,9 @@ namespace microgl {
                                      const uint8_t g_bits,
                                      const uint8_t b_bits) {
 
-                output.r = std::min(b.r, s.r);
-                output.g = std::min(b.g, s.g);
-                output.b = std::min(b.b, s.b);
-            }
-
-            static inline void blend(const color_f_t &b,
-                                     const color_f_t &s,
-                                     color_f_t &output) {
-
-                output.r = fmin(b.r, s.r);
-                output.g = fmin(b.g, s.g);
-                output.b = fmin(b.b, s.b);
+                output.r = b.r<s.r ? b.r : s.r;
+                output.g = b.g<s.g ? b.g : s.g;
+                output.b = b.b<s.b ? b.b : s.b;
             }
 
             static inline const char *type() {

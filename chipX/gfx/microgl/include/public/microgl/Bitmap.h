@@ -1,7 +1,7 @@
 #pragma once
 
-#include "FrameBuffer.h"
-#include "PixelCoder.h"
+#include <microgl/FrameBuffer.h>
+#include <microgl/PixelCoder.h>
 
 template <typename P, typename CODER>
 class Bitmap : public FrameBuffer<P> {

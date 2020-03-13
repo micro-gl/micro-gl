@@ -38,7 +38,7 @@ namespace microgl {
         }
 
         /**
-         * compute the world to camera matrix by computing
+         * compute the world to camera VIEW matrix by computing
          * compute the inverse of 4x4 Euclidean transformation matrix
          *
          * Euclidean transformation is translation, rotation, and reflection.
@@ -94,7 +94,7 @@ namespace microgl {
 
 
         ///////////////////////////////////////////////////////////////////////////////
-        // set transform matrix equivalent to gluLookAt()
+        // set transform matrix equivalent to gluLookAt() VIEW MATRIX
         // 1. Mt: Translate scene to camera position inversely, (-x, -y, -z)
         // 2. Mr: Rotate scene inversly so camera looks at the scene
         // 3. Find matrix = Mr * Mt

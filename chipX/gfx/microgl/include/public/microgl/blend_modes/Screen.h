@@ -5,13 +5,21 @@
 namespace microgl {
     namespace blendmode {
 
-        class Screen : public BlendModeBase<Screen> {
-        public:
-            static inline int blend_Screen(int b, int s, int bits) {
-                int max = (1 << bits) - 1;
-
-                return max - (((max - b) * (max - s)) >> bits);
+        template <bool fast=true, bool use_FPU=false>
+        class Screen : public BlendModeBase<Screen<fast, use_FPU>> {
+        private:
+            static inline
+            uint blend_Screen(int b, int s, int bits) {
+                cuint max = (uint(1)<<bits)-1;
+                if(fast)
+                    return max - (((max - b) * (max - s)) >> bits);
+                else if(use_FPU)
+                    return float(max) - (float((max - b) * (max - s)) /float(max));
+                else
+                    return max - (((max - b) * (max - s)) /max);
             }
+
+        public:
 
             static inline void blend(const color_t &b,
                                      const color_t &s,
@@ -23,19 +31,6 @@ namespace microgl {
                 output.r = blend_Screen(b.r, s.r, r_bits);
                 output.g = blend_Screen(b.g, s.g, g_bits);
                 output.b = blend_Screen(b.b, s.b, b_bits);
-            }
-
-            static inline float blend_Screen(float b, float s) {
-                return 1.0 - ((1.0 - b) * (1.0 - s));
-            }
-
-            static inline void blend(const color_f_t &b,
-                                     const color_f_t &s,
-                                     color_f_t &output) {
-
-                output.r = blend_Screen(b.r, s.r);
-                output.g = blend_Screen(b.g, s.g);
-                output.b = blend_Screen(b.b, s.b);
             }
 
             static inline const char *type() {
