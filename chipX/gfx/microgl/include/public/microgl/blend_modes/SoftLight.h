@@ -5,21 +5,19 @@
 namespace microgl {
     namespace blendmode {
 
-        class SoftLight : public BlendModeBase<SoftLight> {
+        template <bool fast =true>
+        class SoftLight : public BlendModeBase<SoftLight<fast>> {
         public:
 
-            static inline float blend_SoftLight(float b, float s) {
-                return (s < 0.5) ? (2.0 * b * s + b * b * (1.0 - 2.0 * s)) : (sqrt(b) * (2.0 * s - 1.0) +
-                                                                              2.0 * b * (1.0 - s));
-            }
+            static inline
+            uint blend_channel(cuint b, cuint s, const bits bits) {
+                cint max= (uint(1)<<bits)-1;
+                cint max_double= max*max;
 
-            static inline void blend(const color_f_t &b,
-                                     const color_f_t &s,
-                                     color_f_t &output) {
-
-                output.r = blend_SoftLight(b.r, s.r);
-                output.g = blend_SoftLight(b.g, s.g);
-                output.b = blend_SoftLight(b.b, s.b);
+                if(fast)
+                    return (((max-2*int(s))*int(b)*int(b))>>(bits<<1)) + (int(2*s*b)>>bits);
+                else
+                    return (((max-2*int(s))*int(b)*int(b))/max_double) + int(2*s*b)/max;
             }
 
             static inline void blend(const color_t &b,
@@ -28,7 +26,9 @@ namespace microgl {
                                      const uint8_t r_bits,
                                      const uint8_t g_bits,
                                      const uint8_t b_bits) {
-
+                output.r = blend_channel(b.r, s.r, r_bits);
+                output.g = blend_channel(b.g, s.g, g_bits);
+                output.b = blend_channel(b.b, s.b, b_bits);
             }
 
             static inline const char *type() {

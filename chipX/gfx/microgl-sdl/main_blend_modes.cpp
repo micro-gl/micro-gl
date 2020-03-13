@@ -18,6 +18,16 @@
 #include <microgl/blend_modes/Lighten.h>
 #include <microgl/blend_modes/Difference.h>
 #include <microgl/blend_modes/Divide.h>
+#include <microgl/blend_modes/ColorBurn.h>
+#include <microgl/blend_modes/ColorDodge.h>
+#include <microgl/blend_modes/Exclusion.h>
+#include <microgl/blend_modes/HardLight.h>
+#include <microgl/blend_modes/VividLight.h>
+#include <microgl/blend_modes/HardMix.h>
+#include <microgl/blend_modes/LinearBurn.h>
+#include <microgl/blend_modes/LinearDodge.h>
+#include <microgl/blend_modes/LinearLight.h>
+#include <microgl/blend_modes/SoftLight.h>
 #include <microgl/Bitmap.h>
 
 #define TEST_ITERATIONS 1000
@@ -42,16 +52,23 @@ void init_sdl(int width, int height);
 
 inline void render() {
     canvas->clear({128, 255, 255, 255});
-//    canvas->drawQuad<blendmode::Multiply<false>, porterduff::FastSourceOverOnOpaque>(
+    canvas->drawQuad<blendmode::Multiply<false>, porterduff::FastSourceOverOnOpaque>(
 //    canvas->drawQuad<blendmode::Normal, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::Overlay<true>, porterduff::None<true>>(
+//    canvas->drawQuad<blendmode::Overlay<false>, porterduff::None<true>>(
 //    canvas->drawQuad<blendmode::PinLight, porterduff::None<true>>(
 //    canvas->drawQuad<blendmode::Screen<true>, porterduff::None<true>>(
 //    canvas->drawQuad<blendmode::Subtract, porterduff::None<true>>(
 //    canvas->drawQuad<blendmode::Darken, porterduff::None<true>>(
 //    canvas->drawQuad<blendmode::Lighten, porterduff::None<true>>(
 //    canvas->drawQuad<blendmode::Difference, porterduff::None<true>>(
-    canvas->drawQuad<blendmode::Divide, porterduff::None<true>>(
+//    canvas->drawQuad<blendmode::Divide, porterduff::None<true>>(
+//    canvas->drawQuad<blendmode::ColorDodge, porterduff::None<true>>(
+//    canvas->drawQuad<blendmode::Exclusion<true>, porterduff::None<true>>(
+//    canvas->drawQuad<blendmode::HardLight<false, false>, porterduff::None<true>>(
+//    canvas->drawQuad<blendmode::VividLight, porterduff::None<true>>(
+//    canvas->drawQuad<blendmode::HardMix, porterduff::None<true>>(
+//    canvas->drawQuad<blendmode::LinearLight, porterduff::None<true>>(
+//    canvas->drawQuad<blendmode::SoftLight<true>, porterduff::None<true>>(
             {223,122,142,255},
             -0, -0, 300, 300,
             255);

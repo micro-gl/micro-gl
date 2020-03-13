@@ -9,6 +9,7 @@ namespace microgl {
         using bits = unsigned char;
         using uint = unsigned int;
         using cuint = const unsigned int;
+        using cint = const int;
 
 #define MAX_VAL_BITS(a) ((1<<(bits)) - 1)
 

@@ -8,8 +8,11 @@ namespace microgl {
         class LinearBurn : public BlendModeBase<LinearBurn> {
         public:
 
-            static inline int blend_LinearBurn(int b, int s, uint8_t bits) {
-                return std::max(b + s - (1 << bits) - 1, 0);
+            static inline
+            uint blend_channel(cuint b, cuint s, const bits bits) {
+                cuint max= (uint(1)<<bits)-1;
+                cuint res= b+s-max;
+                return res<0 ? 0 : res;
             }
 
             static inline void blend(const color_t &b,
@@ -19,22 +22,9 @@ namespace microgl {
                                      const uint8_t g_bits,
                                      const uint8_t b_bits) {
 
-                output.r = blend_LinearBurn(b.r, s.r, r_bits);
-                output.g = blend_LinearBurn(b.g, s.g, g_bits);
-                output.b = blend_LinearBurn(b.b, s.b, b_bits);
-            }
-
-            static inline float blend_LinearBurn(float b, float s) {
-                return fmax(b + s - 1.0, 0.0f);
-            }
-
-            static inline void blend(const color_f_t &b,
-                                     const color_f_t &s,
-                                     color_f_t &output) {
-
-                output.r = blend_LinearBurn(b.r, s.r);
-                output.g = blend_LinearBurn(b.g, s.g);
-                output.b = blend_LinearBurn(b.b, s.b);
+                output.r = blend_channel(b.r, s.r, r_bits);
+                output.g = blend_channel(b.g, s.g, g_bits);
+                output.b = blend_channel(b.b, s.b, b_bits);
             }
 
             static inline const char *type() {

@@ -5,11 +5,10 @@
 namespace microgl {
     namespace blendmode {
 
-        template <bool fast=true>
-        class Multiply : public BlendModeBase<Multiply<fast>> {
+        template <bool fast=true, bool use_FPU=true>
+        class Multiply : public BlendModeBase<Multiply<fast, use_FPU>> {
         public:
 
-            template <bool use_FPU=true>
             static inline void blend(const color_t &b,
                                      const color_t &s,
                                      color_t &output,

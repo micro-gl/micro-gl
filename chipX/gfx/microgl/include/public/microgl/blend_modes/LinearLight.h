@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/BlendMode.h>
+#include <microgl/blend_modes/LinearBurn.h>
 
 namespace microgl {
     namespace blendmode {
@@ -8,19 +8,11 @@ namespace microgl {
         class LinearLight : public BlendModeBase<LinearLight> {
         public:
 
-            static inline float blend_LinearLight(float b, float s) {
-                return (s < 0.5) ? LinearBurn::blend_LinearBurn(b, (2.0 * s)) : LinearBurn::blend_LinearBurn(b, (2.0 *
-                                                                                                                 (s -
-                                                                                                                  0.5)));
-            }
-
-            static inline void blend(const color_f_t &b,
-                                     const color_f_t &s,
-                                     color_f_t &output) {
-
-                output.r = blend_LinearLight(b.r, s.r);
-                output.g = blend_LinearLight(b.g, s.g);
-                output.b = blend_LinearLight(b.b, s.b);
+            static inline
+            uint blend_channel(cuint b, cuint s, const bits bits) {
+                cuint max= (uint(1)<<bits)-1;
+                cuint res= LinearBurn::blend_channel(b, 2*s, bits);
+                return res>max ? max : res;
             }
 
             static inline void blend(const color_t &b,
@@ -29,7 +21,9 @@ namespace microgl {
                                      const uint8_t r_bits,
                                      const uint8_t g_bits,
                                      const uint8_t b_bits) {
-                // todo
+                output.r = blend_channel(b.r, s.r, r_bits);
+                output.g = blend_channel(b.g, s.g, g_bits);
+                output.b = blend_channel(b.b, s.b, b_bits);
             }
 
             static inline const char *type() {

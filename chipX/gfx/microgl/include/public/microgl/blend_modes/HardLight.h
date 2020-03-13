@@ -1,19 +1,13 @@
 #pragma once
 
-#include <microgl/BlendMode.h>
+#include <microgl/blend_modes/Overlay.h>
 
 namespace microgl {
     namespace blendmode {
 
-        class HardLight : public BlendModeBase<HardLight> {
+        template <bool fast=true, bool use_FPU=true>
+        class HardLight : public BlendModeBase<HardLight<fast, use_FPU>> {
         public:
-
-            static inline void blend(const color_f_t &b,
-                                     const color_f_t &s,
-                                     color_f_t &output) {
-
-                Overlay::blend(s, b, output);
-            }
 
             static inline void blend(const color_t &b,
                                      const color_t &s,
@@ -21,8 +15,7 @@ namespace microgl {
                                      const uint8_t r_bits,
                                      const uint8_t g_bits,
                                      const uint8_t b_bits) {
-                Overlay::blend(s, b, output, r_bits, g_bits, b_bits);
-
+                Overlay<fast, use_FPU>::blend(s, b, output, r_bits, g_bits, b_bits);
             }
 
             static inline const char *type() {
