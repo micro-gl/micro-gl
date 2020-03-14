@@ -227,7 +227,7 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
                                        Canvas::opacity_t opacity,
                                        const number2 & u0, const number2 & v0,
                                        const number2 & u1, const number2 & v1) {
-    const precision p = 8; const precision p_uv = 16;
+    const precision p = 8; const precision p_uv = 24;
 #define f_p(x) microgl::math::to_fixed((x), p)
 #define f_uv(x) microgl::math::to_fixed((x), p_uv)
     drawRoundedQuad<BlendMode, PorterDuff, antialias>(sampler_fill, sampler_stroke, f_p(left), f_p(top),f_p(right), f_p(bottom),
@@ -249,22 +249,24 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
                                        Canvas::opacity_t opacity) {
     opacity=255;
     const precision p = sub_pixel_precision;
-    const int stroke = stroke_size;//(10<<p)/1;
-    const int aa_range = (1<<p)/1;
-    const int radius_squared=(l64(radius)*(radius))>>p;
-    const int stroke_radius = (l64(radius-stroke)*(radius-stroke))>>p;
-    const int outer_aa_radius = (l64(radius+aa_range)*(radius+aa_range))>>p;
-    const int outer_aa_bend = outer_aa_radius-radius_squared;
-    const int inner_aa_radius = (l64(radius-stroke-aa_range)*(radius-stroke-aa_range))>>p;
-    const int inner_aa_bend = stroke_radius-inner_aa_radius;
+    const l64 stroke = stroke_size;//(10<<p)/1;
+    const l64 aa_range = (1<<p)/1;
+    const l64 radius_squared=(l64(radius)*(radius))>>p;
+    const l64 stroke_radius = (l64(radius-stroke)*(radius-stroke))>>p;
+    const l64 outer_aa_radius = (l64(radius+aa_range)*(radius+aa_range))>>p;
+    const l64 outer_aa_bend = outer_aa_radius-radius_squared;
+    const l64 inner_aa_radius = (l64(radius-stroke-aa_range)*(radius-stroke-aa_range))>>p;
+    const l64 inner_aa_bend = stroke_radius-inner_aa_radius;
     const bool apply_opacity = opacity!=255;
+    const l64 mask= (1<<sub_pixel_precision)-1;
     // dimensions in two spaces, one in raster spaces for optimization
-    const int left_=left, top_=top, right_=right, bottom_=bottom;
-    const int left_r=left_>>p, top_r=top_>>p, right_r=right_>>p, bottom_r=bottom_>>p;
+    const l64 step = (l64(1)<<p);
+    const l64 half = 0;//step>>1;
+    const l64 left_=(left+step), top_=(top+step), right_=(right-step), bottom_=(bottom-step);
+//    const l64 left_=(left+0), top_=(top+0), right_=(right-0), bottom_=(bottom-0);
+    const l64 left_r=left_>>p, top_r=top_>>p, right_r=right_>>p, bottom_r=bottom_>>p;
     bool degenerate= left_r==right_r || top_r==bottom_r;
     if(degenerate) return;
-    const int step = (int(1)<<p);
-    const int half = 0;//step>>1;
     const l64 du = (u1-u0)/(right_r-left_r);
     const l64 dv = (v1-v0)/(bottom_r-top_r);
     color_t color;
@@ -277,67 +279,54 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
             } \
 
 #define g2(x, y, u, v, s, o) { \
-            int x_1=(x)>>p, y_1=(y)>>p, x_2=(right_-(x-left_))>>p, y_2= (bottom_-(y-top_))>>p; \
+    l64 x_1=(x), y_1=(y), x_2=(right_r-(x_1-left_r)), y_2= (bottom_r-(y_1-top_r)); \
             g1(x_1, y_1, u,       v,       (s), (o)) \
             g1(x_2, y_1, u0+(right_r-x_1)*du, v,       (s), (o)) \
             g1(x_1, y_2, u,       v0+(bottom_r-y_1)*dv, (s), (o)) \
             g1(x_2, y_2, u0+(right_r-x_1)*du,       v0+(bottom_r-y_1)*dv, (s), (o)) \
             } \
 
-
     // this draws the four rounded parts, it could be faster but then it will also be
     // much complex.
-    l64 ax= 51199;//left_+radius;
-    l64 ay= 51199;//top_+radius;
-    l64 sx=left_r<<p, sy=top_r<<p;
-    for (l64 y = sy; y < ay; y+=256) {
-        for (l64 x = sx; x < ax; x+=256) {
-//    for (l64 y = top_, v=v0, yh=top_r; y < top_+radius; y+=step, v+=dv, yh++) {
-//        for (l64 x = left_, u=u0, xh=left_r; x < left_+radius; x+=step, u+=du, xh++) {
-//            const bool inside_rounded_part = x<=(left_+radius) && y<=(top_+radius);
-//            if(inside_rounded_part) {
-//                l64 dx = x- half - (left_+radius), dy = y- half - (top_+radius);
-//                const int distance_squared = ((l64(dx) * dx) >> p) + ((l64(dy) * dy) >> p);
-//                const bool inside_radius = (distance_squared - radius_squared) <= 0;
-                l64 dx = ax-x, dy = ay-y;
-                const l64 distance_squared = (dx * dx) + (dy * dy);
-                const bool inside_radius = float(sqrtf(float(distance_squared))) <= float(radius);
-                if (inside_radius) {
-                    color_t color{255,0,0,255};
-                    blendColor<BlendMode, PorterDuff>(color, x>>p, y>>p, 255);
-
-//                    g2(x, y, u, v, sampler_fill, opacity)
-//                    const bool inside_stroke_disk = (distance_squared - stroke_radius) >= 0;
-//                    if (inside_stroke_disk) // inside stroke disk
-//                        g2(x, y, u, v, sampler_stroke, opacity)
-//                    else { // outside stroke disk, let's test for aa disk or radius inclusion
-//                        const int delta_inner_aa = -inner_aa_radius + distance_squared;
-//                        const bool inside_inner_aa_ring = delta_inner_aa >= 0;
-//                        if (antialias && inside_inner_aa_ring) {
-//                            // scale inner to 8 bit and then convert to integer
-//                            uint8_t blend = ((delta_inner_aa) << (8)) / inner_aa_bend;
-//                            if (apply_opacity) blend = (blend * opacity) >> 8;
-//                            g2(x, y, u, v, sampler_stroke, blend);
-//                        }
-//                    }
-//                } else if (antialias) { // we are outside the main radius
-//                    const int delta_outer_aa = outer_aa_radius - distance_squared;
-//                    const bool inside_outer_aa_ring = delta_outer_aa >= 0;
-//                    if (inside_outer_aa_ring) {
-//                        // scale inner to 8 bit and then convert to integer
-//                        uint8_t blend = ((delta_outer_aa) << (8)) / outer_aa_bend;
-//                        if (apply_opacity) blend = (blend * opacity) >> 8;
-//                        g2(x, y, u, v, sampler_stroke, blend);
-//                    }
-//                }
+    const l64 ax= (left_+radius);
+    const l64 ay= (top_+radius);
+    for (l64 y = (top_)&~mask, v=v0, yh=top_r; yh < ((ay-0)>>p); y+=step, v+=dv, yh++) {
+        for (l64 x = (left_)&~mask, u=u0, xh=left_r; xh < ((ax-0)>>p); x+=step, u+=du, xh++) {
+            l64 dx = x+0- half -  (ax), dy = y+0- half -(ay);
+            const l64 distance_squared = ((l64(dx) * dx) >> p) + ((l64(dy) * dy) >> p);
+            const bool inside_radius = (distance_squared - radius_squared) <= 0;
+            if (inside_radius) {
+                g2(xh, yh, u, v, sampler_fill, opacity)
+                const bool inside_stroke_disk = (distance_squared - stroke_radius) >= 0;
+                if (inside_stroke_disk) // inside stroke disk
+                    g2(xh, yh, u, v, sampler_stroke, opacity)
+                else { // outside stroke disk, let's test for aa disk or radius inclusion
+                    const int delta_inner_aa = -inner_aa_radius + distance_squared;
+                    const bool inside_inner_aa_ring = delta_inner_aa >= 0;
+                    if (antialias && inside_inner_aa_ring) {
+                        // scale inner to 8 bit and then convert to integer
+                        uint8_t blend = ((delta_inner_aa) << (8)) / inner_aa_bend;
+                        if (apply_opacity) blend = (blend * opacity) >> 8;
+                        g2(xh, yh, u, v, sampler_stroke, blend);
+                    }
+                }
+            } else if (antialias) { // we are outside the main radius
+                const int delta_outer_aa = outer_aa_radius - distance_squared;
+                const bool inside_outer_aa_ring = delta_outer_aa >= 0;
+                if (inside_outer_aa_ring) {
+                    // scale inner to 8 bit and then convert to integer
+                    uint8_t blend = ((delta_outer_aa) << (8)) / outer_aa_bend;
+                    if (apply_opacity) blend = (blend * opacity) >> 8;
+                    g2(xh, yh, u, v, sampler_stroke, blend);
+                }
             }
         }
     }
 //return;
 #undef g1
 #undef g2
-#define maX(a, b) functions::max(a, b)
-#define miN(a, b) functions::min(a, b)
+#define maX(a, b) functions::max<l64>(a, b)
+#define miN(a, b) functions::min<l64>(a, b)
     { // center
         const int ll=left_+radius, tt=top_+radius, rr=right_-radius, bb=bottom_-radius;
         const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
@@ -350,14 +339,14 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
         }
     }
     { // top
-        const int ll=left_+radius, tt=top_, rr=right_-radius, bb=top_+radius;
-        const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
+        const l64 ll=(left_+radius), tt=top_, rr=right_-radius+step, bb=top_+radius;
+        const l64 ll_r= maX(0, ll>>p), tt_r= maX(0, (tt)>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
         int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); l64 v= v0 + dv*(tt_r-top_r);
-        for (int y=tt_r, yy=tt; y<bb_r; y++, yy+=step, v+=dv, index+=_width) {
-            for (int x=ll_r, u=u_start; x<=rr_r; x++, u+=du) {
+        for (l64 y=tt_r, yy=tt; y<bb_r; y++, yy+=step, v+=dv, index+=_width) {
+            for (l64 x=ll_r, u=u_start; x<=rr_r; x++, u+=du) {
                 sampler_fill.sample(u, v, uv_p, color);
                 blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
-                if(yy<=tt+stroke+0) {
+                if(yy<=tt+stroke) {
                     sampler_stroke.sample(u, v, uv_p, color);
                     blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
                 }
@@ -365,7 +354,7 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
         }
     }
     { // bottom
-        const int ll=left_+radius, tt=bottom_-radius+0, rr=right_-radius, bb=bottom_;
+        const int ll=left_+radius, tt=bottom_-radius+0, rr=right_-radius+step, bb=bottom_;
         const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
         int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); l64 v= v0 + dv*(tt_r-top_r);
         for (int y=tt_r, yy=tt; y<=bb_r; y++, yy+=step, v+=dv, index+=_width) {
@@ -380,7 +369,7 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
         }
     }
     { // left
-        const int ll=left_, tt=top_+radius, rr=ll+radius, bb=bottom_-radius;
+        const int ll=left_, tt=top_+radius, rr=ll+radius, bb=bottom_-radius+step;
         const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
         int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); l64 v= v0 + dv*(tt_r-top_r);
         for (int y=tt_r, yy=tt; y<=bb_r; y++, yy+=step, v+=dv, index+=_width) {
@@ -395,7 +384,7 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
         }
     }
     { // right
-        const int ll=right_-radius+step, tt=top_+radius, rr=right_, bb=bottom_-radius;
+        const int ll=right_-radius+step, tt=top_+radius, rr=right_, bb=bottom_-radius+step;
         const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
         int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); l64 v= v0 + dv*(tt_r-top_r);
         for (int y=tt_r, yy=tt; y<=bb_r; y++, yy+=step, v+=dv, index+=_width) {

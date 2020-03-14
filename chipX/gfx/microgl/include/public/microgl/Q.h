@@ -209,7 +209,7 @@ public:
         return _value & ((1u<<P) - 1);
     }
     integer integral() const {
-        return _value & (((1u<<P) - 1)<<P);
+        return _value & (~((1u<<P) - 1)); //this is wrong ?
     }
     inline integer value() const {
         return _value;

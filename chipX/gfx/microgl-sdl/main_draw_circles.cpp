@@ -10,7 +10,7 @@
 #include <microgl/samplers/flat_color.h>
 #include "src/Resources.h"
 
-#define TEST_ITERATIONS 1
+#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 640*1
 SDL_Window * sdl_window;
@@ -35,21 +35,33 @@ Texture24 tex_1, tex_2;
 
 void loop();
 void init_sdl(int width, int height);
-float t=0;
+float t=0,t2=0;
 
 template <typename number>
 void test_1() {
-    t+=0.001;
+    t+=0.01;
+    t2+=0.001;
 //    canvas->drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
-    canvas->drawCircle<blendmode::Normal, porterduff::None<>, false, number>(
+////    canvas->drawCircle<blendmode::Normal, porterduff::None<>, false, number>(
+//            tex_2, gradient2Colors,
+//            200+0, 200+0,
+//            50+t, 10, 255
+//            );
+////            150+0, 10, 255
+////            ,t2, 1.0f-t2);
+
+    canvas->drawRoundedQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
+//    canvas->drawCircle<blendmode::Normal, porterduff::None<>, false, number>(
             tex_2, gradient2Colors,
-            200, 200,
-            100+t, 10);
+            50.0f+0, 50.0f+0,
+            50.0f+300.0f+t, 50.0f+300.0f+t, 10.0f+0,10.0f
+    );
+
 }
 
 void render() {
     canvas->clear({255,255,255,255});
-    //test_1<Q<10>>();
+//    test_1<Q<10>>();
     test_1<float>();
 
 }
@@ -71,6 +83,8 @@ void init_sdl(int width, int height) {
     auto img_1 = resources.loadImageFromCompressedPath("charsprites.png");
 //    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
     auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
+//    auto img_2 = resources.loadImageFromCompressedPath("uv_1024.png");
+//    auto img_2 = resources.loadImageFromCompressedPath("pattern1_512.png");
 
     auto bmp_1 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
     auto bmp_2 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);

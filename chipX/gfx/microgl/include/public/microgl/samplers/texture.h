@@ -23,8 +23,9 @@ namespace microgl {
                 _bmp=bitmap;
             }
 
-            inline void sample(const int u, const int v,
-                                      const uint8_t bits, color_t &output) const {
+            inline void sample(const l64 u, const l64 v,
+                               const uint8_t bits,
+                               color_t &output) const {
                 // compile time branching for default sampling
                 if(default_sampling==texture_sampling::NearestNeighboor)
                     sample_nearest_neighboor(u, v, bits, output);
@@ -32,34 +33,35 @@ namespace microgl {
                     sample_bilinear(u, v, bits, output);
             }
 
-            inline void sample_nearest_neighboor(const int u, const int v,
+            inline void sample_nearest_neighboor(const l64 u, const l64 v,
                                         const uint8_t bits, color_t &output) const {
-                const int half= 1<<(bits-1);
-                const int x = (l64(_bmp->width()-1)*(u)+half) >> bits;
-                const int y = (l64(_bmp->height()-1)*(v)+half) >> bits;
+                const l64 half= l64(1)<<(bits-1);
+                const l64 x = (l64(_bmp->width()-1)*(u)+half) >> bits;
+                const l64 y = (l64(_bmp->height()-1)*(v)+half) >> bits;
                 const int index_bmp = y*_bmp->width() + x;
                 _bmp->decode(index_bmp, output);
             }
 
             inline void sample_bilinear(l64 u, l64 v,
                                const uint8_t bits, color_t &output) const {
-                const int bmp_w_max = _bmp->width()-1;
-                const int bmp_h_max = _bmp->height()-1;
+                const l64 bmp_w_max = _bmp->width()-1;
+                const l64 bmp_h_max = _bmp->height()-1;
                 u=u*bmp_w_max;
                 v=v*bmp_h_max;
-                l64 max = 1u << bits;
-                l64 max_value = max - 1;
-                l64 mask = ~max_value;
-                l64 round_sampleU = u & mask;
-                l64 round_sampleV = v & mask;
-//            int tx = -round_sampleU + u;
-//            int ty = -round_sampleV + v;
-                l64 tx = u & max_value;
-                l64 ty = v & max_value;
-                l64 U = (round_sampleU) >> bits;
-                l64 V = (round_sampleV) >> bits;
-                l64 U_plus_one = U >= bmp_w_max ? U : U + 1;
-                l64 V_plus_one = V >= bmp_h_max ? V : V + 1;
+                const l64 max = l64(1) << bits;
+                const l64 max_value = max - 1;
+//                l64 mask = ~max_value;
+//                l64 integral_sampleU = u & mask;
+//                l64 integral_sampleV = v & mask;
+//                l64 tx = -round_sampleU + u;
+//                l64 ty = -round_sampleV + v;
+                // take reminder part
+                const l64 tx = u & max_value;
+                const l64 ty = v & max_value;
+                const l64 U = (u) >> bits;
+                const l64 V = (v) >> bits;
+                const l64 U_plus_one = U >= bmp_w_max ? U : U + 1;
+                const l64 V_plus_one = V >= bmp_h_max ? V : V + 1;
 
                 color_t c00, c10, c01, c11;
                 // todo: can optimize indices not to get multiplied
@@ -70,20 +72,20 @@ namespace microgl {
 
                 color_t a, b, c;
 
-                a.r = (c00.r * (max - tx) + c10.r * tx) >> bits;
-                a.g = (c00.g * (max - tx) + c10.g * tx) >> bits;
-                a.b = (c00.b * (max - tx) + c10.b * tx) >> bits;
-                a.a = (c00.a * (max - tx) + c10.a * tx) >> bits;
+                a.r = (l64(c00.r) * (max - tx) + l64(c10.r) * tx) >> bits;
+                a.g = (l64(c00.g) * (max - tx) + l64(c10.g) * tx) >> bits;
+                a.b = (l64(c00.b) * (max - tx) + l64(c10.b) * tx) >> bits;
+                a.a = (l64(c00.a) * (max - tx) + l64(c10.a) * tx) >> bits;
 
-                b.r = (c01.r * (max - tx) + c11.r * tx) >> bits;
-                b.g = (c01.g * (max - tx) + c11.g * tx) >> bits;
-                b.b = (c01.b * (max - tx) + c11.b * tx) >> bits;
-                b.a = (c01.a * (max - tx) + c11.a * tx) >> bits;
+                b.r = (l64(c01.r) * (max - tx) + l64(c11.r) * tx) >> bits;
+                b.g = (l64(c01.g) * (max - tx) + l64(c11.g) * tx) >> bits;
+                b.b = (l64(c01.b) * (max - tx) + l64(c11.b) * tx) >> bits;
+                b.a = (l64(c01.a) * (max - tx) + l64(c11.a) * tx) >> bits;
 
-                output.r = (a.r * (max - ty) + b.r * ty) >> bits;
-                output.g = (a.g * (max - ty) + b.g * ty) >> bits;
-                output.b = (a.b * (max - ty) + b.b * ty) >> bits;
-                output.a = (a.a * (max - ty) + b.a * ty) >> bits;
+                output.r = (l64(a.r) * (max - ty) + l64(b.r) * ty) >> bits;
+                output.g = (l64(a.g) * (max - ty) + l64(b.g) * ty) >> bits;
+                output.b = (l64(a.b) * (max - ty) + l64(b.b) * ty) >> bits;
+                output.a = (l64(a.a) * (max - ty) + l64(b.a) * ty) >> bits;
             }
 
         private:
