@@ -1,11 +1,11 @@
 #include <iostream>
 #include <chrono>
-#include <vector>
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/Q.h>
-#include <microgl/PixelCoder.h>
+#include <microgl/samplers/flat_color.h>
+#include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/tesselation/path_tessellation.h>
 
 #define TEST_ITERATIONS 1
@@ -16,14 +16,12 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
-
-Canvas24Bit_Packed32 * canvas;
+using Canvas24 = Canvas<uint32_t, microgl::coder::RGB888_PACKED_32>;
+Canvas24 * canvas;
+sampling::flat_color color_red{{255,0,0,255}};
 
 void loop();
 void init_sdl(int width, int height);
-
-using namespace tessellation;
 
 template <typename T>
 void render_path(const dynamic_array<vec2<T>> &path, T stroke_size, bool close_path);
@@ -99,28 +97,27 @@ dynamic_array<vec2<T>> path_tri() {
 
 void render() {
     using q = Q<4>;
-//    render_path(path_2<float>(), 20.0f, true);
+    render_path(path_2<float>(), 20.0f, true);
 //    render_path(path_line<float>(), 15.0f, false);
-    render_path<q>(path_2<q>(), q(10.0f), true);
+//    render_path<q>(path_2<q>(), q(10.0f), true);
 //    render_path<q>(path_3<q>(), q(15.0f), false);
 //    render_path<q>(path_line<q>(), q(15.0f), false);
 
 }
 
-template <typename T>
-void render_path(const dynamic_array<vec2<T>> &path, T stroke_size, bool close_path) {
+template <typename number>
+void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bool close_path) {
     using index = unsigned int;
-    using tri = triangles::TrianglesIndices;
-    using path_tess = tessellation::path_tessellation<T>;
+    using path_tess = microgl::tessellation::path_tessellation<number>;
 
 //    polygon[1].x = 140 + 20 +  t;
 //    polygon[1].y = 140 + 20 -  t;
 
 //    auto type = TrianglesIndices::TRIANGLES_STRIP;
-    auto type = TrianglesIndices::TRIANGLES_STRIP_WITH_BOUNDARY;
+    auto type = triangles::indices ::TRIANGLES_STRIP_WITH_BOUNDARY;
 
     dynamic_array<index> indices;
-    dynamic_array<vec2<T>> vertices;
+    dynamic_array<vec2<number>> vertices;
     dynamic_array<boundary_info> boundary_buffer;
 
     path_tess::compute(
@@ -131,7 +128,6 @@ void render_path(const dynamic_array<vec2<T>> &path, T stroke_size, bool close_p
 //            tessellation::path_gravity::outward,
             path.data(),
             path.size(),
-//            precision,
             indices,
             vertices,
             &boundary_buffer,
@@ -139,10 +135,11 @@ void render_path(const dynamic_array<vec2<T>> &path, T stroke_size, bool close_p
     );
 
     // draw triangles batch
-    canvas->clear(WHITE);
-    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-            RED,
+    canvas->clear({255,255,255,255});
+    canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+            color_red,
             vertices.data(),
+            (vec2<number> *)nullptr,
             indices.data(),
             boundary_buffer.data(),
             indices.size(),
@@ -150,9 +147,10 @@ void render_path(const dynamic_array<vec2<T>> &path, T stroke_size, bool close_p
             120
             );
 
-    return;
+    //return;
     // draw triangulation
-    canvas->drawTrianglesWireframe(BLACK,
+    canvas->drawTrianglesWireframe(
+            {0,0,0,255},
             vertices.data(),
             indices.data(),
             indices.size(),
@@ -176,20 +174,18 @@ void init_sdl(int width, int height) {
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
             SDL_TEXTUREACCESS_STATIC, width, height);
 
-    canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
-
+    canvas = new Canvas24(width, height);
 }
 
 int render_test(int N) {
     auto ms = std::chrono::milliseconds(1);
+    auto ns = std::chrono::nanoseconds(1);
     auto start = std::chrono::high_resolution_clock::now();
-
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < N; ++i)
         render();
-    }
-
     auto end = std::chrono::high_resolution_clock::now();
-    return (end-start)/(ms*N);
+    auto int_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    return int_ms.count();
 }
 
 void loop() {
@@ -198,6 +194,7 @@ void loop() {
 
     // 100 Quads
     int ms = render_test(TEST_ITERATIONS);
+    std::cout<<ms<<std::endl;
 
     while (!quit)
     {
@@ -213,8 +210,7 @@ void loop() {
                     quit = true;
                 break;
         }
-//
-//        render();
+        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());

@@ -1,13 +1,10 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "cert-err58-cpp"
-
 #include <iostream>
 #include <chrono>
 #include <vector>
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
-#include <microgl/vec2.h>
-#include <microgl/PixelCoder.h>
+#include <microgl/samplers/flat_color.h>
+#include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/tesselation/fan_triangulation.h>
 
 #define TEST_ITERATIONS 1
@@ -18,45 +15,43 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
-
-Canvas24Bit_Packed32 * canvas;
+using Canvas24 = Canvas<uint32_t, microgl::coder::RGB888_PACKED_32>;
+Canvas24 * canvas;
+sampling::flat_color color_red{{255,0,0,255}};
 
 void loop();
 void init_sdl(int width, int height);
 
-using namespace tessellation;
-
-template <typename T>
-void render_polygon(std::vector<vec2<T>> polygon);
+template <typename number>
+void render_polygon(const dynamic_array<vec2<number>> & polygon);
 
 float t = 0;
 
-std::vector<vec2_f> poly_diamond() {
-    vec2_f p0 = {100,300};
-    vec2_f p1 = {300, 100};
-    vec2_f p2 = {400, 300};
-    vec2_f p3 = {300, 400};
-
-    return {p0, p1, p2, p3};
+template <typename number>
+dynamic_array<vec2<number>> poly_diamond() {
+    return {
+        {100,300},
+        {300, 100},
+        {400, 300},
+        {300, 400}
+    };
 }
 
 void render() {
 //    t+=.05f;
 //    std::cout << t << std::endl;
-    render_polygon(poly_diamond());
+    render_polygon<float>(poly_diamond<float>());
 }
 
 
-template <typename T>
-void render_polygon(std::vector<vec2<T>> polygon) {
+template <typename number>
+void render_polygon(const dynamic_array<vec2<number>> & polygon) {
     using index = unsigned int;
-    using tri = triangles::TrianglesIndices;
-    using fan = tessellation::fan_triangulation<T>;
+    using fan = tessellation::fan_triangulation<number>;
 
-    canvas->clear(WHITE);
+    canvas->clear({255,255,255,255});
 
-    auto type = TrianglesIndices::TRIANGLES_FAN_WITH_BOUNDARY;
+    auto type = triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY;
 
     dynamic_array<index> indices;
     dynamic_array<boundary_info> boundary_buffer;
@@ -70,9 +65,10 @@ void render_polygon(std::vector<vec2<T>> polygon) {
             );
 
     // draw triangles batch
-    canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-            RED,
+    canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+            color_red,
             polygon.data(),
+            (vec2<number> *)nullptr,
             indices.data(),
             boundary_buffer.data(),
             indices.size(),
@@ -83,7 +79,7 @@ void render_polygon(std::vector<vec2<T>> polygon) {
 
     // draw triangulation
     canvas->drawTrianglesWireframe(
-            BLACK,
+            {0,0,0,255},
             polygon.data(),
             indices.data(),
             indices.size(),
@@ -106,20 +102,18 @@ void init_sdl(int width, int height) {
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
             SDL_TEXTUREACCESS_STATIC, width, height);
 
-    canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
-
+    canvas = new Canvas24(width, height);
 }
 
 int render_test(int N) {
     auto ms = std::chrono::milliseconds(1);
+    auto ns = std::chrono::nanoseconds(1);
     auto start = std::chrono::high_resolution_clock::now();
-
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < N; ++i)
         render();
-    }
-
     auto end = std::chrono::high_resolution_clock::now();
-    return (end-start)/(ms*N);
+    auto int_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    return int_ms.count();
 }
 
 void loop() {
@@ -157,5 +151,3 @@ void loop() {
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
-
-#pragma clang diagnostic pop

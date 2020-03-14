@@ -4,32 +4,36 @@
 #include <microgl/dynamic_array.h>
 #include <microgl/math.h>
 
-namespace tessellation {
+namespace microgl {
 
-    using index = unsigned int;
-    using precision_t = unsigned char;
-    using math = microgl::math;
-    using namespace microgl;
+    namespace tessellation {
 
-    template <typename number>
-    class arc_divider {
-    public:
-        using vertex = vec2<number>;
+        using index = unsigned int;
+        using precision_t = unsigned char;
+        using math = microgl::math;
+        using namespace microgl;
 
-        static void compute(
-                     dynamic_array<vertex> &output,
-                     number radius,
-                     number center_x,
-                     number center_y,
-                     number start_angle_rad,
-                     number end_angle_rad,
-                     int divisions=32,
-                     bool anti_clockwise=false
-                     );
+        template <typename number>
+        class arc_divider {
+        public:
+            using vertex = vec2<number>;
 
-    private:
-    };
+            static void compute(
+                    dynamic_array<vertex> &output,
+                    number radius,
+                    number center_x,
+                    number center_y,
+                    number start_angle_rad,
+                    number end_angle_rad,
+                    int divisions=32,
+                    bool anti_clockwise=false
+            );
 
+        private:
+        };
+
+
+    }
 
 }
 

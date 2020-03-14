@@ -73,7 +73,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     }
 //std::cout << z<<std::endl;
     // draw
-    canvas->drawTriangles<blendmode::Normal, porterduff::None, false, true>(
+    canvas->drawTriangles<blendmode::Normal, porterduff::None<>, false, true>(
             shader,
             vertex_buffer.data(),
             object.indices.data(),
@@ -84,7 +84,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
 }
 
 void render() {
-    canvas->clear(color::colors::WHITE);
+    canvas->clear({255,255,255,255});
 
 //    test_shader_color_2d<float>();
 //    test_shader_color_2d<Q<10>>();

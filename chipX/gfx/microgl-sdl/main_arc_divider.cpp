@@ -1,16 +1,14 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "cert-err58-cpp"
-
 #include <iostream>
 #include <chrono>
 #include "src/Resources.h"
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
-#include <microgl/PixelCoder.h>
+#include <microgl/pixel_coders/RGB888_PACKED_32.h>
+#include <microgl/samplers/flat_color.h>
 #include <microgl/tesselation/arc_divider.h>
 
-#define TEST_ITERATIONS 1
+#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 480*1
 
@@ -18,61 +16,48 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
-
-Canvas24Bit_Packed32 * canvas;
+using Canvas24 = Canvas<uint32_t, microgl::coder::RGB888_PACKED_32>;
+Canvas24 * canvas;
+sampling::flat_color color_red{{255,0,0,255}};
 using uint = unsigned int;
 using math = microgl::math;
-using namespace tessellation;
+using namespace microgl::tessellation;
 
 Resources resources{};
 
 void loop();
 void init_sdl(int width, int height);
+
 template <typename number>
-void render_arc(number start_angle_rad,
-                number end_angle_rad,
-                number center_x, number center_y,
-                number radius, uint divisions_count);
+void render_arc_internal(number start_angle_rad,
+                         number end_angle_rad,
+                         number center_x, number center_y,
+                         number radius, uint divisions_count);
 
-template <unsigned N>
-void render_q_arc();
-void render_float_arc();
+template <typename number>
+void render_arc() {
+    number start_angle_rad = math::deg_to_rad(0.0f);
+    number end_angle_rad = math::deg_to_rad(180.0f);
+    number radius = 100;
+    number center_x = 200, center_y=200;
 
-void render() {
-//    render_float_arc();
-    render_q_arc<8>();
-}
-
-void render_float_arc() {
-    float start_angle_rad = math::deg_to_rad(0.0f);
-    float end_angle_rad = math::deg_to_rad(180.0f);
-    float radius = 100;
-    float center_x = 200, center_y=200;
-
-    render_arc<float>(start_angle_rad, end_angle_rad,
+    render_arc_internal<number>(start_angle_rad, end_angle_rad,
                       center_x, center_y, radius, 32);
 }
 
-template <unsigned N>
-void render_q_arc() {
-    using q = Q<N>;
-    q start_angle_rad = math::deg_to_rad(q(0));
-    q end_angle_rad = math::deg_to_rad(q(360));
-    q radius = 100;
-    q center_x = 200, center_y=200;
-
-    render_arc<q>(start_angle_rad, end_angle_rad,
-                      center_x, center_y, radius, 8);
+void render() {
+//    render_arc<float>();
+    render_arc<Q<12>>();
 }
 
+
 template <typename number>
-void render_arc(number start_angle_rad,
+void render_arc_internal(number start_angle_rad,
                 number end_angle_rad,
                 number center_x, number center_y,
                 number radius, uint divisions_count) {
-    using arc = tessellation::arc_divider<number>;
-    canvas->clear(WHITE);
+    using arc = microgl::tessellation::arc_divider<number>;
+    canvas->clear({255,255,255,255});
 
     dynamic_array<vec2<number>> arc_points;
 
@@ -88,20 +73,19 @@ void render_arc(number start_angle_rad,
             );
 
     for (uint ix = 0; ix < arc_points.size(); ++ix) {
-        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-                color_f_t{0.0,0.0,1.0},
+        canvas->drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+                color_red, color_red,
                 arc_points[ix].x,
                 arc_points[ix].y,
-                number(1),
+                number(3), number(1),
                 120);
     }
 
-    canvas->drawLinePath(
-            BLACK,
+    canvas->drawWuLinePath(
+            {0,0,0,255},
             arc_points.data(),
             arc_points.size(),
-            false
-            );
+            false);
 
 }
 
@@ -120,16 +104,28 @@ void init_sdl(int width, int height) {
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
             SDL_TEXTUREACCESS_STATIC, width, height);
 
-    canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
+    canvas = new Canvas24(width, height);
 
     resources.init();
+}
+
+int render_test(int N) {
+    auto ms = std::chrono::milliseconds(1);
+    auto ns = std::chrono::nanoseconds(1);
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < N; ++i)
+        render();
+    auto end = std::chrono::high_resolution_clock::now();
+    auto int_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    return int_ms.count();
 }
 
 void loop() {
     bool quit = false;
     SDL_Event event;
 
-    render();
+    int ms = render_test(TEST_ITERATIONS);
+    cout << ms << endl;
 
     while (!quit)
     {
@@ -156,5 +152,3 @@ void loop() {
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
-
-#pragma clang diagnostic pop

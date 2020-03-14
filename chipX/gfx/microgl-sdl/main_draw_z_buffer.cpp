@@ -81,7 +81,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     }
 
     // draw model_1
-    canvas->drawTriangles<blendmode::Normal, porterduff::None, false, true, true>(
+    canvas->drawTriangles<blendmode::Normal, porterduff::None<>, false, true, true>(
             shader,
             vertex_buffer.data(),
             object.indices.data(),
@@ -94,7 +94,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
 //    return;
     // draw model_2
     shader.matrix= mvp_2;
-    canvas->drawTriangles<blendmode::Normal, porterduff::None, false, true, true>(
+    canvas->drawTriangles<blendmode::Normal, porterduff::None<>, false, true, true>(
             shader,
             vertex_buffer.data(),
             object.indices.data(),
@@ -108,7 +108,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
 }
 
 void render() {
-    canvas->clear(color::colors::WHITE);
+    canvas->clear({255,255,255,255});
 
     test_shader_texture_3d<float>(cube_3d<float>);
 //    test_shader_texture_3d<Q<16>>(cube_3d<Q<16>>);

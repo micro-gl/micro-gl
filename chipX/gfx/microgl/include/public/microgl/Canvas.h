@@ -117,17 +117,16 @@ public:
 
     // Triangle batches
 
-    template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, typename number1=float, typename number2=float, typename S>
+    template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
+            bool antialias=false, typename number1=float, typename number2=number1, typename S>
     void drawTriangles(const sampling::sampler<S> & sampler,
-                       const vec2<number1> *vertices,
-                       const vec2<number2> *uvs,
-                       const index *indices,
-                       const boundary_info * boundary_buffer,
-                       index size,
-                       enum indices type,
-                       opacity_t opacity);
+                       const vec2<number1> *vertices= nullptr,
+                       const vec2<number2> *uvs=nullptr,
+                       const index *indices= nullptr,
+                       const boundary_info * boundary_buffer= nullptr,
+                       index size=0,
+                       enum indices type=indices::TRIANGLES,
+                       opacity_t opacity=255);
 
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias, bool perspective_correct, bool depth_buffer_flag=false,
@@ -302,7 +301,7 @@ public:
                     number x0, number y0, number x1, number y1);
 
     template <typename number>
-    void drawWuLinePath(color_t & color,
+    void drawWuLinePath(const color_t & color,
                         vec2<number> *points,
                         unsigned int size = 4,
                         bool closed_path = false);

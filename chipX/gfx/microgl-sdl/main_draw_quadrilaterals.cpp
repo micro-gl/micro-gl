@@ -4,11 +4,9 @@
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
-#include <microgl/color.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/texture.h>
-#include <microgl/Q.h>
 
 #define TEST_ITERATIONS 10
 #define W 640*1
@@ -35,7 +33,7 @@ void render_quadrilateral() {
     float G = 256;
     d+=1.01;
     canvas->clear(intensity<number>{1, 1, 1, 1});
-    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(
+    canvas->drawQuadrilateral<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
             tex_2,
             0.0f,               0.0f,     0.0f, 1.0f,
             G + 100.0f + d,     0.0f,       1.0f, 1.0f,

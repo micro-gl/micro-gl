@@ -93,7 +93,6 @@ void loop() {
     bool quit = false;
     SDL_Event event;
 
-    // 100 Quads
     int ms = render_test(TEST_ITERATIONS);
     cout << ms << endl;
 

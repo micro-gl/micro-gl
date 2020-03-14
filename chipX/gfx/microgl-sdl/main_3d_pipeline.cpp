@@ -18,9 +18,9 @@
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
-using Canvas24Bit_Packed32 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using Canvas24 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
-Canvas24Bit_Packed32 * canvas;
+Canvas24 * canvas;
 
 float t = 0.0f;
 
@@ -52,8 +52,9 @@ void render_template(const model_3d<number_coords> & object) {
                                           canvas_width, canvas_height, 1, 500);
 //    mat4 projection = camera::perspective(-1,1,-1,1,1,10000);
     mat4 mvp = projection * view * model;
-    canvas->clear(color::colors::WHITE);
+    canvas->clear({255,255,255,255});
     microgl::_3d::pipeline<number_coords, decltype(*canvas)>::render (
+            {0,0,255,255},
             object.vertices.data(),
             object.vertices.size(),
             object.indices.data(),
@@ -83,7 +84,7 @@ void init_sdl(int width, int height) {
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, 0);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
-    canvas = new Canvas24Bit_Packed32(width, height);
+    canvas = new Canvas24(width, height);
 }
 
 int render_test(int N) {

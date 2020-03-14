@@ -12,7 +12,7 @@ namespace microgl {
                 return "None";
             }
 
-            template <bool multiplied_alpha_result=true, bool use_FPU=true>
+            template <bool multiplied_alpha_result=true>
             inline static void composite(const color_t &b,
                                          const color_t &s,
                                          color_t &output,
@@ -22,16 +22,15 @@ namespace microgl {
                 output.g = s.g;
                 output.b = s.b;
                 output.a = s.a;
-                // also, if alpha=1.0, no need to multiply
-                if (multiplied_alpha_result && (output.a < max_val)) {
+                if (multiplied_alpha_result) {
                     if(fast) {
-                        output.r = (int(output.r) * output.a) >> alpha_bits;
-                        output.g = (int(output.g) * output.a) >> alpha_bits;
-                        output.b = (int(output.b) * output.a) >> alpha_bits;
+                        output.r = (uint(output.r) * output.a) >> alpha_bits;
+                        output.g = (uint(output.g) * output.a) >> alpha_bits;
+                        output.b = (uint(output.b) * output.a) >> alpha_bits;
                     } else {
-                        output.r = (int(output.r) * output.a)/max_val;
-                        output.g = (int(output.g) * output.a)/max_val;
-                        output.b = (int(output.b) * output.a)/max_val;
+                        output.r = (uint(output.r) * output.a)/max_val;
+                        output.g = (uint(output.g) * output.a)/max_val;
+                        output.b = (uint(output.b) * output.a)/max_val;
                     }
 
                 }

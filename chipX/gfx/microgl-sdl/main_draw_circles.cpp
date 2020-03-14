@@ -10,7 +10,7 @@
 #include <microgl/samplers/flat_color.h>
 #include "src/Resources.h"
 
-#define TEST_ITERATIONS 100
+#define TEST_ITERATIONS 1
 #define W 640*1
 #define H 640*1
 SDL_Window * sdl_window;
@@ -39,14 +39,16 @@ float t=0;
 
 template <typename number>
 void test_1() {
-//    t+=0.0001;
-    canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(
-            tex_2, gradient2Colors, 200, 200, 200, 10);
+    t+=0.001;
+//    canvas->drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
+    canvas->drawCircle<blendmode::Normal, porterduff::None<>, false, number>(
+            tex_2, gradient2Colors,
+            200, 200,
+            100+t, 10);
 }
 
 void render() {
-    canvas->clear(color::colors::WHITE);
-
+    canvas->clear({255,255,255,255});
     //test_1<Q<10>>();
     test_1<float>();
 

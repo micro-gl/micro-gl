@@ -45,15 +45,14 @@ void test_shader_color_2d() {
     v1.point= {400.0,200.0, 0}; v1.color= {0,255,0,255};
     v2.point= {10.0,400.0, 0}; v2.color= {0,0,255,255};
 
-    canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255);
+    canvas->drawTriangle<blendmode::Normal, porterduff::None<>, false>(shader, v0, v1, v2, 255);
 //    canvas->drawTriangle(color::colors::RED, 10.0,10.0, 400.0,10.0, 400.0,400.0, 255);
 }
 
 template <typename number>
 void test_shader_flat_color_2d() {
     flat_color_shader<number> shader;
-    color_t color;
-    canvas->coder().convert(color::colors::RED, color);
+    color_t color{255,0,0,255};
     shader.matrix= camera<number>::orthographic(0, W, 0, H, 0, 100);
     shader.color= color;
     flat_color_shader_vertex_attributes<number> v0, v1, v2;
@@ -61,7 +60,7 @@ void test_shader_flat_color_2d() {
     v1.point= {500.0,10.0, 0};
     v2.point= {500.0,500.0, 0};
     t+=0.0001;
-    canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255);
+    canvas->drawTriangle<blendmode::Normal, porterduff::None<>, false>(shader, v0, v1, v2, 255);
 //    canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(color::colors::RED,
 //            10.0+t,10.0+t, 500.0+t,10.0+t, 500.0+t,500.0+t, 255);
 }
@@ -78,9 +77,9 @@ void test_shader_texture_2d() {
     v1.point= {500.0,10.0, 0};  v1.uv= {1.0f, 0.0f};
     v2.point= {500.0,500.0, 0}; v2.uv= {1.0f, 1.0f};
     t+=0.001f;
-//    canvas->drawTriangle<blendmode::Normal, porterduff::None, false>(shader, v0, v1, v2, 255);
-//    return;
-    canvas->drawTriangle<blendmode::Normal, porterduff::None>(tex_1,
+    canvas->drawTriangle<blendmode::Normal, porterduff::None<>, false>(shader, v0, v1, v2, 255);
+    return;
+    canvas->drawTriangle<blendmode::Normal, porterduff::None<>>(tex_1,
             10.0+t,10.0, 0.0, 0.0,
             500.0+t,10.0, 1.0, 0.0,
             500.0+t,500.0, 1.0, 1.0,
@@ -88,13 +87,13 @@ void test_shader_texture_2d() {
 }
 
 void render() {
-    canvas->clear(color::colors::WHITE);
+    canvas->clear({255,255,255,255});
 
-//    test_shader_color_2d<float>();
+    test_shader_color_2d<float>();
 //    test_shader_color_2d<Q<10>>();
 
 //    test_shader_texture_2d<Q<10>>();
-    test_shader_texture_2d<float>();
+//    test_shader_texture_2d<float>();
 
 //    test_shader_flat_color_2d<float>();
 //    test_shader_flat_color_2d<Q<10>>();

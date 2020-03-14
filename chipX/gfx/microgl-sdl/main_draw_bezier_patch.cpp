@@ -29,7 +29,7 @@ void init_sdl(int width, int height);
 
 template <typename number>
 void test_bezier(vec3<number>* mesh, unsigned U, unsigned V) {
-    canvas->drawBezierPatch<blendmode::Normal, porterduff::None>(
+    canvas->drawBezierPatch<blendmode::Normal, porterduff::None<>>(
             tex_uv, mesh, U, V, 20, 20);
     delete [] mesh;
 }
@@ -61,8 +61,7 @@ vec3<number>* bi_cubic_1(){
 }
 
 void render() {
-    canvas->clear(color::colors::WHITE);
-
+    canvas->clear({255,255,255,255});
     test_bezier<float>(bi_cubic_1<float>(), 4, 4);
 //    test_bezier<Q<16>>(bi_cubic_1<Q<16>>(), 4, 4);
 

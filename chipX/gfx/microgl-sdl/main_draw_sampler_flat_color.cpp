@@ -1,10 +1,8 @@
 #include <iostream>
 #include <chrono>
 #include <SDL2/SDL.h>
-#include "src/Resources.h"
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/flat_color.h>
 
 #define TEST_ITERATIONS 1000
@@ -30,12 +28,11 @@ float t=0;
 template <typename number>
 void test_1() {
 //    t+=0.001;
-    canvas->drawQuad<blendmode::Normal, porterduff::None, number>(color_sampler, t, t, 400, 400);
-//    canvas->drawQuad<blendmode::Normal, porterduff::None>(color::colors::RED, 0, 0, 400, 400);
+    canvas->drawQuad<blendmode::Normal, porterduff::None<>, number>(color_sampler, t, t, 400, 400);
 }
 
 void render() {
-    canvas->clear(color::colors::WHITE);
+    canvas->clear({255,255,255,255});
 
     test_1<float>();
 

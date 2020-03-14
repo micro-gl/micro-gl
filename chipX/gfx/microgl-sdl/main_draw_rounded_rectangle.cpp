@@ -33,14 +33,15 @@ float t=0;
 template <typename number>
 void test_1() {
 //    t+=0.0001;
-    canvas->drawRoundedQuad<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number>(
-            gradient2Colors, flatColor, 10, 10, 400, 400, 50, 0);
+    canvas->drawRoundedQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
+            gradient2Colors,
+            flatColor,
+            10, 10, 400, 400,
+            50, 0);
 }
 
 void render() {
     canvas->clear({255, 255, 255, 255});
-//    canvas->clear(color::colors::BLACK);
-
     test_1<float>();
 }
 

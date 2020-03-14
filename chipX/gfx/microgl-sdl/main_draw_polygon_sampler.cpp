@@ -78,9 +78,8 @@ void render_polygon(const dynamic_array<vec2<number>> &polygon) {
 
 //    polygon[1].x = 140 + 20 +  t;
 //    polygon[1].y = 140 + 20 -  t;
-    canvas->clear(color::colors::WHITE);
-
-    canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
+    canvas->clear({255,255,255,255});
+    canvas->drawPolygon<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
             gradient2Colors,
             polygon.data(),
             polygon.size(),

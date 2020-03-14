@@ -31,24 +31,23 @@ void test_continous() {
     gradient.addStop(0.0f, {255,0,0});
     gradient.addStop(0.5f, {0,255,0});
     gradient.addStop(1.f, {0,0,255});
-    canvas->drawQuad<blendmode::Normal, porterduff::None, number>(gradient, 0, 0, 400, 400);
+    canvas->drawQuad<blendmode::Normal, porterduff::None<>, number>(gradient, 0, 0, 400, 400);
 }
 
 template <typename number>
 void test_once() {
-    canvas->drawQuad<blendmode::Normal, porterduff::None, number>(gradient, 0, 0, 400, 400);
-//    canvas->drawQuadrilateral<blendmode::Normal, porterduff::SourceOverOnOpaque, true, float>(
+    canvas->drawQuad<blendmode::Normal, porterduff::None<>, number>(gradient, 0, 0, 400, 400);
+//    canvas->drawQuadrilateral<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, float>(
 //            gradient,
 //            0.0f,               0.0f,     0.0f, 1.0f,
 //            256 + 100.0f + t,     0.0f,       1.0f, 1.0f,
 //            256 + 0.0f,           256,         1.0f, 0.0f,
 //            0.0f,                 256,         0.0f, 0.0f,
 //            255);
-//    canvas->drawQuad<blendmode::Normal, porterduff::None>(color::colors::RED, 0, 0, 400, 400);
 }
 
 void render() {
-    canvas->clear(color::colors::WHITE);
+    canvas->clear({255,255,255,255});
 
     test_once<float>();
 //    test_continous<float>();

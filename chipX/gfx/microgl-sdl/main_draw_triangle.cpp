@@ -34,32 +34,22 @@ float t=0;
 template <typename number>
 void test_1() {
     t+=0.001;
-    canvas->drawTriangle<blendmode::Normal, porterduff::None>(
+    canvas->drawTriangle<blendmode::Normal, porterduff::None<true>>(
             color_sampler,
             10.0f, 10.0f, 0.0f, 0.0f,
             400.0f, 10.0f, 1.0f, 0.0f,
             400.0f, 400.0f, 1.0f, 1.0f,
             255);
-
-    return;
-    canvas->drawTriangle<blendmode::Normal, porterduff::None>(
-            color::colors::RED,
-            10.0f, 10.0f,
-            400.0f, 10.0f,
-            400.0f, 400.0f,
-            255);
-
-//    canvas->drawQuad<blendmode::Normal, porterduff::None>(color::colors::RED, 0, 0, 400, 400);
 }
 
 template <typename number>
 void test_2() {
 //    t+=0.01;
 
-    canvas->drawTriangle<blendmode::Normal, porterduff::None>(tex_1,
-                                                              10.0+t,10.0, 0.0, 0.0,
-                                                              500.0+0,10.0, 1.0, 0.0,
-                                                              500.0+0,500.0, 1.0, 1.0,
+    canvas->drawTriangle<blendmode::Normal, porterduff::None<>>(tex_1,
+                                                              10.0+t,10.0, 0.0, 1.0,
+                                                              500.0+0,10.0, 1.0, 1.0,
+                                                              500.0+0,500.0, 1.0, 0.0,
                                                               255);
 }
 
@@ -67,7 +57,7 @@ template <typename number>
 void test_3_aa() {
 //    t+=0.01;
 
-    canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(tex_1,
+    canvas->drawTriangle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(tex_1,
                                                               10.0,10.0, 0.0, 1.0,
                                                               500.0+t,10.0, 1.0, 1.0,
                                                               500.0+t,500.0, 1.0, 0.0,
@@ -77,11 +67,11 @@ void test_3_aa() {
 
 
 void render() {
-    canvas->clear(color::colors::WHITE);
+    canvas->clear({255,255,255,255});
 
-//    test_1<float>();
+    test_1<float>();
 //    test_2<float>();
-    test_3_aa<float>();
+//    test_3_aa<float>();
 
 }
 

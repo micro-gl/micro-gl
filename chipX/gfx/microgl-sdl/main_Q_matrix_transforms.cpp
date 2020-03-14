@@ -2,8 +2,9 @@
 #include <iostream>
 #include <chrono>
 #include <SDL2/SDL.h>
-#include <microgl/color.h>
 #include <microgl/Canvas.h>
+#include <microgl/pixel_coders/RGB888_PACKED_32.h>
+#include <microgl/samplers/flat_color.h>
 #include <microgl/matrix_3x3.h>
 #include <microgl/Q.h>
 
@@ -14,9 +15,10 @@
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
-using Canvas24Bit_Packed32 = Canvas<uint32_t, RGB888_PACKED_32>;
 
-Canvas24Bit_Packed32 * canvas;
+using Canvas24 = Canvas<uint32_t, microgl::coder::RGB888_PACKED_32>;
+Canvas24 * canvas;
+sampling::flat_color color_red{{255,0,0,255}};
 
 float t = 0.0f;
 
@@ -40,8 +42,8 @@ void render_template() {
     t += 0.001;
     auto t_number_angle = number_transform(t);
     static float sine = 0.0f;
-    sine = microgl::math::sin(t*10);
-    auto number_scale = microgl::math::abs_(number_transform(sine)*2);
+    sine = microgl::math::sin(t*2);
+    auto number_scale = microgl::math::abs_(number_transform(sine)*5);
     if (number_scale < 1.f)
         number_scale=1.f;
 //    number_scale =5.0f;
@@ -66,21 +68,20 @@ void render_template() {
     vertex p2_t = transform * p2;
     vertex p3_t = transform * p3;
 
-    canvas->clear(WHITE);
-    canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number_raster>(
-            RED,
-            p0_t.x, p0_t.y,
-            p1_t.x, p1_t.y,
-            p2_t.x, p2_t.y,
+    canvas->clear({255,255,255,255});
+    canvas->drawTriangle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+            color_red,
+            p0_t.x, p0_t.y, 0, 0,
+            p1_t.x, p1_t.y, 0, 0,
+            p2_t.x, p2_t.y, 0, 0,
             150,
-            true, true, false
-    );
+            true, true, false);
 
-    canvas->drawTriangle<blendmode::Normal, porterduff::SourceOverOnOpaque, true, number_raster>(
-            RED,
-            p2_t.x, p2_t.y,
-            p3_t.x, p3_t.y,
-            p0_t.x, p0_t.y,
+    canvas->drawTriangle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+            color_red,
+            p2_t.x, p2_t.y, 0, 0,
+            p3_t.x, p3_t.y, 0, 0,
+            p0_t.x, p0_t.y, 0, 0,
             150,
             true, true, false
     );
@@ -98,20 +99,18 @@ void init_sdl(int width, int height) {
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, 0);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STATIC, width, height);
-    canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
+    canvas = new Canvas24(width, height);
 }
 
 int render_test(int N) {
     auto ms = std::chrono::milliseconds(1);
+    auto ns = std::chrono::nanoseconds(1);
     auto start = std::chrono::high_resolution_clock::now();
-
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < N; ++i)
         render();
-    }
-
     auto end = std::chrono::high_resolution_clock::now();
-
-    return (end-start)/(ms*N);
+    auto int_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    return int_ms.count();
 }
 
 void loop() {

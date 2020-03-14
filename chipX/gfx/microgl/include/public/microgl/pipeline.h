@@ -60,7 +60,8 @@ namespace microgl {
 
             //            template <>
             static
-            void render(const vertex3 * vertices,
+            void render(const color_t & color,
+                        const vertex3 * vertices,
                         const index vertices_size,
                         const index * indices,
                         const index indices_size,
@@ -69,7 +70,6 @@ namespace microgl {
                         canvas_type & canva) {
 
 #define IND(a) indices[(a)]
-                color::color_f_t color = color::colors::BLACK;
                 const unsigned width = canva.width();
                 const unsigned height = canva.height();
 
