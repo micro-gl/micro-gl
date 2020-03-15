@@ -62,7 +62,7 @@ void render_template(const arr<number_coords> & vertices) {
     using mat4 = matrix_4x4<number_coords>;
     using math = microgl::math;
 
-    z+=0.05;
+    z+=0.005;
     z2+=0.005;
 
     int canvas_width = canvas->width();
@@ -94,10 +94,10 @@ void render_template(const arr<number_coords> & vertices) {
             continue;
 
 //        std::cout << raster.x << ", " << raster.y << ", " << raster.z << " - " << z <<std::endl;
-        canvas->drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(
+        canvas->drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
                 color_red, color_black,
                 raster.x, raster.y,
-                number_coords(4), number_coords(1),
+                number_coords(10), number_coords(1),
                 255);
     }
 

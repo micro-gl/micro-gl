@@ -2144,3 +2144,174 @@ void Canvas<P, CODER>::drawCircleOLD(const color_f_t & color,
     }
 }
 ```
+
+```c++
+
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
+void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
+                                       const sampling::sampler<S2> & sampler_stroke,
+                                       int left, int top,
+                                       int right, int bottom,
+                                       int radius, int stroke_size,
+                                       l64 u0, l64 v0, l64 u1, l64 v1,
+                                       precision sub_pixel_precision, precision uv_p,
+                                       Canvas::opacity_t opacity) {
+    opacity=255;
+    const precision p = sub_pixel_precision;
+    const l64 stroke = stroke_size;//(10<<p)/1;
+    const l64 aa_range = (1<<p)/1;
+    const l64 radius_squared=(l64(radius)*(radius))>>p;
+    const l64 stroke_radius = (l64(radius-stroke)*(radius-stroke))>>p;
+    const l64 outer_aa_radius = (l64(radius+aa_range)*(radius+aa_range))>>p;
+    const l64 outer_aa_bend = outer_aa_radius-radius_squared;
+    const l64 inner_aa_radius = (l64(radius-stroke-aa_range)*(radius-stroke-aa_range))>>p;
+    const l64 inner_aa_bend = stroke_radius-inner_aa_radius;
+    const bool apply_opacity = opacity!=255;
+    const l64 mask= (1<<sub_pixel_precision)-1;
+    // dimensions in two spaces, one in raster spaces for optimization
+    const l64 step = (l64(1)<<p);
+    const l64 half = 0;//step>>1;
+    const l64 left_=(left+step), top_=(top+step), right_=(right-step), bottom_=(bottom-step);
+//    const l64 left_=(left+0), top_=(top+0), right_=(right-0), bottom_=(bottom-0);
+    const l64 left_r=left_>>p, top_r=top_>>p, right_r=right_>>p, bottom_r=bottom_>>p;
+    bool degenerate= left_r==right_r || top_r==bottom_r;
+    if(degenerate) return;
+    const l64 du = (u1-u0)/(right_r-left_r);
+    const l64 dv = (v1-v0)/(bottom_r-top_r);
+    color_t color;
+
+#define g1(x, y, u, v, s, o) \
+            if((x)>=0 && (x)<_width && (y)>=0 && (y)<_height) { \
+                color_t color; \
+                s.sample(u, v, uv_p, color); \
+                blendColor<BlendMode, PorterDuff>((color), (x), (y), (o)); \
+            } \
+
+#define g2(x, y, u, v, s, o) { \
+    l64 x_1=(x), y_1=(y), x_2=(right_r-(x_1-left_r)), y_2= (bottom_r-(y_1-top_r)); \
+            g1(x_1, y_1, u,       v,       (s), (o)) \
+            g1(x_2, y_1, u0+(right_r-x_1)*du, v,       (s), (o)) \
+            g1(x_1, y_2, u,       v0+(bottom_r-y_1)*dv, (s), (o)) \
+            g1(x_2, y_2, u0+(right_r-x_1)*du,       v0+(bottom_r-y_1)*dv, (s), (o)) \
+            } \
+
+    // this draws the four rounded parts, it could be faster but then it will also be
+    // much complex.
+    const l64 ax= (left_+radius);
+    const l64 ay= (top_+radius);
+//    for (l64 y = (top_)&~0, v=v0, yh=top_r; yh < ((ay-0)>>p); y+=step, v+=dv, yh++) {
+//        for (l64 x = (left_)&~0, u=u0, xh=left_r; xh < ((ax-0)>>p); x+=step, u+=du, xh++) {
+    for (l64 y = (top_)&~mask, v=v0, yh=top_r; yh < ((ay-0)>>p); y+=step, v+=dv, yh++) {
+        for (l64 x = (left_)&~mask, u=u0, xh=left_r; xh < ((ax-0)>>p); x+=step, u+=du, xh++) {
+            l64 dx = x+0- half -  (ax), dy = y+0- half -(ay);
+            const l64 distance_squared = ((l64(dx) * dx) >> p) + ((l64(dy) * dy) >> p);
+            const bool inside_radius = (distance_squared - radius_squared) <= 0;
+            if (inside_radius) {
+                g2(xh, yh, u, v, sampler_fill, opacity)
+                const bool inside_stroke_disk = (distance_squared - stroke_radius) >= 0;
+                if (inside_stroke_disk) // inside stroke disk
+                    g2(xh, yh, u, v, sampler_stroke, opacity)
+                else { // outside stroke disk, let's test for aa disk or radius inclusion
+                    const int delta_inner_aa = -inner_aa_radius + distance_squared;
+                    const bool inside_inner_aa_ring = delta_inner_aa >= 0;
+                    if (antialias && inside_inner_aa_ring) {
+                        // scale inner to 8 bit and then convert to integer
+                        uint8_t blend = ((delta_inner_aa) << (8)) / inner_aa_bend;
+                        if (apply_opacity) blend = (blend * opacity) >> 8;
+                        g2(xh, yh, u, v, sampler_stroke, blend);
+                    }
+                }
+            } else if (antialias) { // we are outside the main radius
+                const int delta_outer_aa = outer_aa_radius - distance_squared;
+                const bool inside_outer_aa_ring = delta_outer_aa >= 0;
+                if (inside_outer_aa_ring) {
+                    // scale inner to 8 bit and then convert to integer
+                    uint8_t blend = ((delta_outer_aa) << (8)) / outer_aa_bend;
+                    if (apply_opacity) blend = (blend * opacity) >> 8;
+                    g2(xh, yh, u, v, sampler_stroke, blend);
+                }
+            }
+        }
+    }
+//return;
+#undef g1
+#undef g2
+#define maX(a, b) functions::max<l64>(a, b)
+#define miN(a, b) functions::min<l64>(a, b)
+    { // center
+        const int ll=left_+radius, tt=top_+radius, rr=right_-radius, bb=bottom_-radius;
+        const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); l64 v= v0 + dv*(tt_r-top_r);
+        for (int y=tt_r; y<=bb_r; y++, v+=dv, index+=_width) {
+            for (int x=ll_r, u=u_start; x<=rr_r; x++, u+=du) {
+                sampler_fill.sample(u, v, uv_p, color);
+                blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
+            }
+        }
+    }
+    { // top
+        const l64 ll=(left_+radius), tt=top_, rr=right_-radius+step, bb=top_+radius;
+        const l64 ll_r= maX(0, ll>>p), tt_r= maX(0, (tt)>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); l64 v= v0 + dv*(tt_r-top_r);
+        for (l64 y=tt_r, yy=tt; y<bb_r; y++, yy+=step, v+=dv, index+=_width) {
+            for (l64 x=ll_r, u=u_start; x<=rr_r; x++, u+=du) {
+                sampler_fill.sample(u, v, uv_p, color);
+                blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
+                if(yy<=tt+stroke) {
+                    sampler_stroke.sample(u, v, uv_p, color);
+                    blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
+                }
+            }
+        }
+    }
+    { // bottom
+        const int ll=left_+radius, tt=bottom_-radius+0, rr=right_-radius+step, bb=bottom_;
+        const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); l64 v= v0 + dv*(tt_r-top_r);
+        for (int y=tt_r, yy=tt; y<=bb_r; y++, yy+=step, v+=dv, index+=_width) {
+            for (int x=ll_r, u=u_start; x<=rr_r; x++, u+=du) {
+                sampler_fill.sample(u, v, uv_p, color);
+                blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
+                if(yy>=bb-stroke) {
+                    sampler_stroke.sample(u, v, uv_p, color);
+                    blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
+                }
+            }
+        }
+    }
+    { // left
+        const int ll=left_, tt=top_+radius, rr=ll+radius, bb=bottom_-radius+step;
+        const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); l64 v= v0 + dv*(tt_r-top_r);
+        for (int y=tt_r, yy=tt&~mask; y<=bb_r; y++, yy+=step, v+=dv, index+=_width) {
+            for (int x=ll_r, xx=ll&~mask, u=u_start; x<rr_r; x++, xx+=step, u+=du) {
+                sampler_fill.sample(u, v, uv_p, color);
+                blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
+                if(xx<=ll+stroke) {
+                    sampler_stroke.sample(u, v, uv_p, color);
+                    blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
+                }
+            }
+        }
+    }
+    { // right
+        const int ll=right_-radius, tt=top_+radius, rr=right_, bb=bottom_-radius+step;
+        const int ll_r= maX(0, ll>>p), tt_r= maX(0, tt>>p), rr_r= miN(_width-1, rr>>p), bb_r= miN(_height-1, bb>>p);
+        int index = tt_r * _width; const l64 u_start=u0 + du*(ll_r-left_r); l64 v= v0 + dv*(tt_r-top_r);
+        for (int y=tt_r, yy=tt; y<=bb_r; y++, yy+=step, v+=dv, index+=_width) {
+            for (int x=ll_r, xx=ll, u=u_start; x<=rr_r; x++, xx+=step, u+=du) {
+                sampler_fill.sample(u, v, uv_p, color);
+                blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
+                if(xx>=rr-stroke) {
+                    sampler_stroke.sample(u, v, uv_p, color);
+                    blendColor<BlendMode, PorterDuff>(color, (index+x), opacity);
+                }
+            }
+        }
+    }
+#undef maX
+#undef miN
+}
+
+```

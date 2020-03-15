@@ -25,7 +25,7 @@ using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
 Canvas24 * canvas;
 // samplers
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::Bilinear>;
 fast_radial_gradient<float> gradient{0.5, 0.5, 0.75};
 linear_gradient_2_colors<false> gradient2Colors{{255,0,255}, {255,0,0}};
 linear_gradient_2_colors<true> gradient2Colors2{{0,0,255}, {0,0,0}};
@@ -39,22 +39,19 @@ float t=0,t2=0;
 
 template <typename number>
 void test_1() {
-    t+=0.01;
+    t+=0.001;
     t2+=0.001;
-//    canvas->drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
-////    canvas->drawCircle<blendmode::Normal, porterduff::None<>, false, number>(
-//            tex_2, gradient2Colors,
-//            200+0, 200+0,
-//            50+t, 10, 255
-//            );
-////            150+0, 10, 255
-////            ,t2, 1.0f-t2);
-
+    canvas->drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
+            flatColor, gradient2Colors,
+            200+0, 200+0,
+            50+t, 10, 255
+            );
+    return;
+//t=0.f;
     canvas->drawRoundedQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
-//    canvas->drawCircle<blendmode::Normal, porterduff::None<>, false, number>(
-            tex_2, gradient2Colors,
+            flatColor, gradient2Colors,
             50.0f+0, 50.0f+0,
-            50.0f+300.0f+t, 50.0f+300.0f+t, 10.0f+0,10.0f
+            50.0f+300.0f+t, 50.0f+300.0f+t, 50.f+0,10.0f
     );
 
 }
