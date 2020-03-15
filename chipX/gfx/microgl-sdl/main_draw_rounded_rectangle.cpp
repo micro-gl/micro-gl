@@ -22,7 +22,7 @@ using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
 Canvas24 * canvas;
 fast_radial_gradient<float> gradient{0.5, 0.5, 0.75};
 linear_gradient_2_colors<120> gradient2Colors{{255,0,255}, {255,0,0}};
-linear_gradient_2_colors<true> gradient2Colors2{{0,0,255}, {0,0,0}};
+linear_gradient_2_colors<0> gradient2Colors2{{0,0,255}, {0,0,0}};
 flat_color flatColor{{133,133,133, 255}};
 flat_color flatColorRed{{255,0,0, 255}};
 
@@ -32,12 +32,12 @@ float t=0;
 
 template <typename number>
 void test_1() {
-    t+=0.001;
+    t+=0.01;
     canvas->drawRoundedQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
             gradient2Colors,
             flatColor,
-            10, 10, 400+t, 400,
-            50, 0);
+            10+t, 10+t, 400+t, 400+t,
+            50, 10);
 }
 
 void render() {

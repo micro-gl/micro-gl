@@ -263,28 +263,28 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
     const l64 mask= (1<<sub_pixel_precision)-1;
     // dimensions in two spaces, one in raster spaces for optimization
     const l64 left_=(left+0), top_=(top+0), right_=(right), bottom_=(bottom);
-//    const l64 left_=(left+0), top_=(top+0), right_=(right-0), bottom_=(bottom-0);
     const l64 left_r=left_>>p, top_r=top_>>p, right_r=(right_+aa_range)>>p, bottom_r=(bottom_+aa_range)>>p;
-//    const l64 left_r=left_>>p, top_r=top_>>p, right_r=(right_+0)>>p, bottom_r=(bottom_+0)>>p;
     bool degenerate= left_r==right_r || top_r==bottom_r;
     if(degenerate) return;
     const l64 du = (u1-u0)/(right_r-left_r);
     const l64 dv = (v1-v0)/(bottom_r-top_r);
+    // clipping
+    const l64 left_r_c=functions::max<l64>(0, left_r), top_r_c=functions::max<l64>(0, top_r);
+    const l64 right_r_c=functions::min<l64>(right_r, width()-1), bottom_r_c=functions::min<l64>(height()-1, bottom_r);
+    const l64 dx=left_r_c-left_r, dy=top_r_c-top_r;
     color_t color;
-
-    int index = top_r * _width;
-
-    for (l64 y_r=top_r, yy=top_&~mask, v=v0; y_r<=bottom_r; y_r++, yy+=step, v+=dv, index+=_width) {
-        for (l64 x_r=left_r, xx=left_&~mask, u=u0; x_r<=right_r; x_r++, xx+=step, u+=du) {
+    int index = top_r_c * _width;
+    for (l64 y_r=top_r_c, yy=top_&~mask+dy*step, v=v0+dy*dv; y_r<=bottom_r_c; y_r++, yy+=step, v+=dv, index+=_width) {
+        for (l64 x_r=left_r_c, xx=left_&~mask+dx*step, u=u0+dx*du; x_r<=right_r_c; x_r++, xx+=step, u+=du) {
 
             int blend_fill=opacity, blend_stroke=opacity;
             bool inside_radius;
             bool sample_fill=true, sample_stroke=false;
-            bool in_top_left= xx<=left_+radius && yy<=top_+radius;
-            bool in_bottom_left= xx<=left_+radius && yy>=bottom_-radius;
-            bool in_top_right= xx>=right_-radius && yy<=top_+radius;
-            bool in_bottom_right= xx>=right_-radius && yy>=bottom_-radius;
-            bool in_disks= in_top_left || in_bottom_left || in_top_right || in_bottom_right;
+            const bool in_top_left= xx<=left_+radius && yy<=top_+radius;
+            const bool in_bottom_left= xx<=left_+radius && yy>=bottom_-radius;
+            const bool in_top_right= xx>=right_-radius && yy<=top_+radius;
+            const bool in_bottom_right= xx>=right_-radius && yy>=bottom_-radius;
+            const bool in_disks= in_top_left || in_bottom_left || in_top_right || in_bottom_right;
 
             if(in_disks) {
                 l64 anchor_x=0, anchor_y=0;
@@ -324,17 +324,23 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
                     }
                 }
             } else {
-                if(xx-(left_&~mask)+0<=stroke) sample_stroke=true;
-                else if(xx>((right_-stroke)&~mask)) sample_stroke=true;
-                else if(yy-(top_&~mask)<=stroke) sample_stroke=true;
-                else if(yy>(bottom_&~mask)-stroke) sample_stroke=true;
-                else sample_stroke=false;
-//
-//                if(xx>=((right_-0)&~mask)) sample_fill=false;
-//                if(xx>=((right_-0)&~0)) sample_stroke=false;
-
+                // are we in external AA region ?
+                // few notes:
+                // this is not an accurate AA rounded rectangle, I use tricks to speed things up.
+                // - I need to do AA for the stroke walls, calculate the coverage.
+                //   currently I don't, therefore, there is a step function when rounded rectangle
+                //   moves in sub pixel coords
+                if(xx>right_ || yy>bottom_) {
+                    sample_fill=sample_stroke=false;
+                } else {
+                    if(xx-(left_&~mask)+0<=stroke) sample_stroke=true;
+                    else if(xx>=((right_&~mask) -stroke)) sample_stroke=true;
+                    else if(yy-(top_&~mask)<=stroke) sample_stroke=true;
+                    else if(yy>=(bottom_&~mask)-stroke) sample_stroke=true;
+                    else sample_stroke=false;
+                    sample_fill=true;
+                }
             }
-
             if (sample_fill) {
                 sampler_fill.sample(u, v, uv_p, color);
                 blendColor<BlendMode, PorterDuff>(color, (index+x_r), blend_fill);
@@ -343,11 +349,8 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
                 sampler_stroke.sample(u, v, uv_p, color);
                 blendColor<BlendMode, PorterDuff>(color, (index+x_r), blend_stroke);
             }
-
         }
-
     }
-
 }
 
 
