@@ -325,3 +325,45 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 }
 
 ```
+```c++
+template<typename P, typename CODER>
+template <typename BlendMode, typename PorterDuff, typename S>
+void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
+                                const int left, const int top,
+                                const int right, const int bottom,
+                                int u0, int v0,
+                                int u1, int v1,
+                                const precision sub_pixel_precision,
+                                const precision uv_precision,
+                                const opacity_t opacity) {
+    color_t col_bmp{};
+    int max = (1<<sub_pixel_precision) - 1;
+    int left_   = functions::max(left, (int)0);
+    int top_    = functions::max(top, ( int)0);
+    int right_  = functions::min(right, (width()-1)<<sub_pixel_precision);
+    int bottom_ = functions::min(bottom, (height()-1)<<sub_pixel_precision);
+    bool degenerate= left_==right_ || top_==bottom_;
+    if(degenerate) return;
+    // intersections
+    const int u0_ = u0+int((l64(u1-u0)*(left_-left))/(right-left));
+    const int v0_ = v0+int((l64(v1-v0)*(top_-top))/(bottom-top));
+    const int u1_ = u0+int((l64(u1-u0)*(right_-left))/(right-left));
+    const int v1_ = v0+int((l64(v1-v0)*(bottom_-top))/(bottom-top));
+    // round and convert to raster space
+    left_   = (max + left_  )>>sub_pixel_precision;
+    top_    = (max + top_   )>>sub_pixel_precision;
+    right_  = (max + right_ )>>sub_pixel_precision;
+    bottom_ = (max + bottom_)>>sub_pixel_precision;
+    degenerate= left_==right_ || top_==bottom_;
+    if(degenerate) return;
+    const int du = (u1_-u0_)/(right_ - left_);
+    const int dv = (v1_-v0_)/(bottom_ - top_);
+    int index=top_*_width;
+    for (int y=top_, v=v0_; y<=bottom_; y++, v+=dv, index+=_width) {
+        for (int x=left_, u=u0_; x<=right_; x++, u+=du) {
+            sampler.sample(u, v, uv_precision, col_bmp);
+            blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
+        }
+    }
+}
+```

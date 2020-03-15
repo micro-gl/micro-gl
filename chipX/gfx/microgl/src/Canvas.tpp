@@ -985,7 +985,7 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                                 const opacity_t opacity,
                                 const number2 u0, const number2 v0,
                                 const number2 u1, const number2 v1) {
-    const precision p_sub = 4, p_uv = 20;
+    const precision p_sub = 4, p_uv = 24;
     drawQuad<BlendMode, PorterDuff, S>(sampler,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
             microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
@@ -1005,30 +1005,21 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                                 const precision uv_precision,
                                 const opacity_t opacity) {
     color_t col_bmp{};
-    int max = (1<<sub_pixel_precision) - 1;
-    int left_   = functions::max(left, (int)0);
-    int top_    = functions::max(top, ( int)0);
-    int right_  = functions::min(right, (width()-1)<<sub_pixel_precision);
-    int bottom_ = functions::min(bottom, (height()-1)<<sub_pixel_precision);
-    bool degenerate= left_==right_ || top_==bottom_;
+    const precision p= sub_pixel_precision;
+    const int left_r = left >> p, left_r_c= functions::max<int>(left_r, 0);
+    const int top_r = top >> p, top_r_c= functions::max<int>(top_r, 0);
+    const int right_r = right >> p, right_r_c= functions::min<int>(right_r, width()-1);
+    const int bottom_r = bottom >> p, bottom_r_c= functions::min<int>(bottom_r, height()-1);
+    const bool degenerate= left_r_c == right_r_c || top_r_c == bottom_r_c;
     if(degenerate) return;
-    // intersections
-    const int u0_ = u0+int((l64(u1-u0)*(left_-left))/(right-left));
-    const int v0_ = v0+int((l64(v1-v0)*(top_-top))/(bottom-top));
-    const int u1_ = u0+int((l64(u1-u0)*(right_-left))/(right-left));
-    const int v1_ = v0+int((l64(v1-v0)*(bottom_-top))/(bottom-top));
-    // round and convert to raster space
-    left_   = (max + left_  )>>sub_pixel_precision;
-    top_    = (max + top_   )>>sub_pixel_precision;
-    right_  = (max + right_ )>>sub_pixel_precision;
-    bottom_ = (max + bottom_)>>sub_pixel_precision;
-    degenerate= left_==right_ || top_==bottom_;
-    if(degenerate) return;
-    const int du = (u1_-u0_)/(right_ - left_);
-    const int dv = (v1_-v0_)/(bottom_ - top_);
-    int index=top_*_width;
-    for (int y=top_, v=v0_; y<=bottom_; y++, v+=dv, index+=_width) {
-        for (int x=left_, u=u0_; x<=right_; x++, u+=du) {
+    // calculate original uv deltas, this way we can always accurately predict blocks
+    const int du = (u1-u0)/(right_r - left_r);
+    const int dv = (v1-v0)/(bottom_r - top_r);
+    const int dx= left_r_c-left_r, dy= top_r_c-top_r;
+    const int u_start= u0+dx*du;
+    int index= top_r_c * _width;
+    for (int y=top_r_c, v=v0+dy*dv; y<=bottom_r_c; y++, v+=dv, index+=_width) {
+        for (int x=left_r_c, u=u_start; x<=right_r_c; x++, u+=du) {
             sampler.sample(u, v, uv_precision, col_bmp);
             blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
         }
@@ -1066,29 +1057,23 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
                                 const precision uv_precision,
                                 const opacity_t opacity) {
     color_t col_bmp{};
-    int max = (1u<<sub_pixel_precision) - 1;
-    int left_   = functions::max(left, (int)0);
-    int top_    = functions::max(top, ( int)0);
-    int right_  = functions::min(right, (width()-1)<<sub_pixel_precision);
-    int bottom_ = functions::min(bottom, (height()-1)<<sub_pixel_precision);
-    // intersections
-    const int u0_ = u0+int((l64(u1-u0) *(left_-left))/(right-left));
-    const int v0_ = v0+int((l64(v1-v0) *(top_-top))/(bottom-top));
-    const int u1_ = u0+int((l64(u1-u0) *(right_-left))/(right-left));
-    const int v1_ = v0+int((l64(v1-v0) *(bottom_-top))/(bottom-top));
-    // round and convert to raster space
-    left_   = (max + left_  )>>sub_pixel_precision;
-    top_    = (max + top_   )>>sub_pixel_precision;
-    right_  = (max + right_ )>>sub_pixel_precision;
-    bottom_ = (max + bottom_)>>sub_pixel_precision;
-    // increase precision to (uv_precision*2)
-    const int du = (u1_-u0_) / (right_ - left_);
-    const int dv = (v1_-v0_) / (bottom_ - top_);
-    int index = top_ * _width;
+    const precision p= sub_pixel_precision;
+    const int left_r = left >> p, left_r_c= functions::max<int>(left_r, 0);
+    const int top_r = top >> p, top_r_c= functions::max<int>(top_r, 0);
+    const int right_r = right >> p, right_r_c= functions::min<int>(right_r, width()-1);
+    const int bottom_r = bottom >> p, bottom_r_c= functions::min<int>(bottom_r, height()-1);
+    const bool degenerate= left_r_c == right_r_c || top_r_c == bottom_r_c;
+    if(degenerate) return;
+    // calculate original uv deltas, this way we can always accurately predict blocks
+    const int du = (u1-u0)/(right_r - left_r);
+    const int dv = (v1-v0)/(bottom_r - top_r);
+    const int dx= left_r_c-left_r, dy= top_r_c-top_r;
+    const int u_start= u0+dx*du;
+    int index= top_r_c * _width;
     const bits alpha_bits = this->coder().alpha_bits() | 8;
     const channel max_alpha_value = (1<<alpha_bits) - 1;
-    for (int y=top_, v=v0_; y<=bottom_; y++, v+=dv, index+=_width) {
-        for (int x=left_, u=u0_; x<=right_; x++, u+=du) {
+    for (int y=top_r_c, v=v0+dy*dv; y<=bottom_r_c; y++, v+=dv, index+=_width) {
+        for (int x=left_r_c, u=u_start; x<=right_r_c; x++, u+=du) {
             sampler.sample(u, v, uv_precision, col_bmp);
             channel a=0;
             switch (mode) {
