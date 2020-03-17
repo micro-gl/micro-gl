@@ -218,18 +218,9 @@ public:
                            opacity_t opacity = 255);
     // QUADS
 
-    template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            typename number>
-    void drawQuad(const color_t &color,
-                  number left, number top,
-                  number right, number bottom,
-                  opacity_t opacity = 255);
-
 private:
-    template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            typename S>
+    template <typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
+            bool antialias=false, typename S>
     void drawQuad(const sampling::sampler<S> &sampler,
                   int left, int top,
                   int right, int bottom,
@@ -240,7 +231,8 @@ private:
 
 public:
     template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::FastSourceOverOnOpaque, typename number1=float, typename number2=number1, typename S>
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
+            typename number1=float, typename number2=number1, typename S>
     void drawQuad(const sampling::sampler<S> &sampler,
                   number1 left, number1 top,
                   number1 right, number1 bottom,

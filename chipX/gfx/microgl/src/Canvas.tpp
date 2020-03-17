@@ -957,28 +957,7 @@ void Canvas<P, CODER>::drawQuadrilateral(const sampling::sampler<S> & sampler,
 // quads
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, typename number>
-void Canvas<P, CODER>::drawQuad(const color_t & color,
-                                const number left, const number top,
-                                const number right, const number bottom,
-                                const opacity_t opacity) {
-#define f microgl::math::to_fixed
-    const precision p = 4;
-    const unsigned int max_sub_pixel_precision_value = (1<<p) - 1;
-    int left_   = functions::max<l64>((f(left, p) + max_sub_pixel_precision_value) >> p,   0);
-    int top_    = functions::max<l64>((f(top, p) + max_sub_pixel_precision_value) >> p,    0);
-    int right_  = functions::min<l64>((f(right, p) + max_sub_pixel_precision_value) >> p,  width()-1);
-    int bottom_ = functions::min<l64>((f(bottom, p) + max_sub_pixel_precision_value) >> p, height()-1);
-    int index = top_*_width;
-    for (int y = top_; y < bottom_; y++, index+=_width) {
-        for (int x = left_; x < right_; x++)
-            blendColor<BlendMode, PorterDuff>(color, index + x, opacity);
-    }
-#undef f
-}
-
-template<typename P, typename CODER>
-template <typename BlendMode, typename PorterDuff, typename number1, typename number2, typename S>
+template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                                 const number1 left, const number1 top,
                                 const number1 right, const number1 bottom,
@@ -986,7 +965,7 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                                 const number2 u0, const number2 v0,
                                 const number2 u1, const number2 v1) {
     const precision p_sub = 4, p_uv = 24;
-    drawQuad<BlendMode, PorterDuff, S>(sampler,
+    drawQuad<BlendMode, PorterDuff, antialias, S>(sampler,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
             microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
             microgl::math::to_fixed(u0, p_uv), microgl::math::to_fixed(v0, p_uv),
@@ -994,8 +973,11 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
             p_sub, p_uv, opacity);
 }
 
+#define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
+#define floor_fixed(val, bits) (val>>bits)
+
 template<typename P, typename CODER>
-template <typename BlendMode, typename PorterDuff, typename S>
+template <typename BlendMode, typename PorterDuff, bool antialias, typename S>
 void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                                 const int left, const int top,
                                 const int right, const int bottom,
@@ -1006,24 +988,73 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                                 const opacity_t opacity) {
     color_t col_bmp{};
     const precision p= sub_pixel_precision;
-    const int left_r = left >> p, left_r_c= functions::max<int>(left_r, 0);
-    const int top_r = top >> p, top_r_c= functions::max<int>(top_r, 0);
-    const int right_r = right >> p, right_r_c= functions::min<int>(right_r, width()-1);
-    const int bottom_r = bottom >> p, bottom_r_c= functions::min<int>(bottom_r, height()-1);
+    const int left_r = floor_fixed(left, p), left_r_c= functions::max<int>(left_r, 0);
+    const int top_r = floor_fixed(top, p), top_r_c= functions::max<int>(top_r, 0);
+    const int right_r = ceil_fixed(right, p)-1, right_r_c= functions::min<int>(right_r, width()-1);
+    const int bottom_r = ceil_fixed(bottom, p)-1, bottom_r_c= functions::min<int>(bottom_r, height()-1);
     const bool degenerate= left_r_c == right_r_c || top_r_c == bottom_r_c;
     if(degenerate) return;
+    const bool clipped_left=left_r!=left_r_c, clipped_top=top_r!=top_r_c;
+    const bool clipped_right=right_r!=right_r_c, clipped_bottom=bottom_r!=bottom_r_c;
     // calculate original uv deltas, this way we can always accurately predict blocks
-    const int du = (u1-u0)/(right_r - left_r);
-    const int dv = (v1-v0)/(bottom_r - top_r);
+    const int du = (u1-u0)/(right_r-left_r);
+    const int dv = (v1-v0)/(bottom_r-top_r);
     const int dx= left_r_c-left_r, dy= top_r_c-top_r;
     const int u_start= u0+dx*du;
-    int index= top_r_c * _width;
-    for (int y=top_r_c, v=v0+dy*dv; y<=bottom_r_c; y++, v+=dv, index+=_width) {
-        for (int x=left_r_c, u=u_start; x<=right_r_c; x++, u+=du) {
-            sampler.sample(u, v, uv_precision, col_bmp);
-            blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
+
+    if(antialias) {
+        const int max=1<<p, mask=max-1;
+        const int coverage_left= max-(left&mask), coverage_right=max-(((right_r+1)<<p)-right);
+        const int coverage_top= max-(top&mask), coverage_bottom=max-(((bottom_r+1)<<p)-bottom);
+        const int blend_left_top= (int(opacity)*((coverage_left*coverage_top)>>p))>>p;
+        const int blend_left_bottom= (int(opacity)*((coverage_left*coverage_bottom)>>p))>>p;
+        const int blend_right_top= (int(opacity)*((coverage_right*coverage_top)>>p))>>p;
+        const int blend_right_bottom=(int(opacity)*((coverage_right*coverage_bottom)>>p))>>p;
+        const int blend_left= (int(opacity)*coverage_left)>>p;
+        const int blend_top= (int(opacity)*coverage_top)>>p;
+        const int blend_right= (int(opacity)*coverage_right)>>p;
+        const int blend_bottom= (int(opacity)*coverage_bottom)>>p;
+        int index= (top_r_c) * _width;
+        opacity_t blend=0;
+        for (int y=top_r_c, v=v0+dy*dv; y<=bottom_r_c; y++, v+=dv, index+=_width) {
+            for (int x=left_r_c, u=u_start; x<=right_r_c; x++, u+=du) {
+                blend=opacity;
+                if(x==left_r_c && !clipped_left) {
+                    if(y==top_r_c && !clipped_top)
+                        blend= blend_left_top;
+                    else if(y==bottom_r_c && !clipped_bottom)
+                        blend= blend_left_bottom;
+                    else blend= blend_left;
+                }
+                else if(x==right_r_c && !clipped_right) {
+                    if(y==top_r_c && !clipped_top)
+                        blend= blend_right_top;
+                    else if(y==bottom_r_c && !clipped_bottom)
+                        blend= blend_right_bottom;
+                    else
+                        blend= blend_right;
+                }
+                else if(y==top_r_c && !clipped_top)
+                    blend= blend_top;
+                else if(y==bottom_r_c && !clipped_bottom)
+                    blend= blend_bottom;
+
+                sampler.sample(u, v, uv_precision, col_bmp);
+                blendColor<BlendMode, PorterDuff>(col_bmp, index + x, blend);
+            }
+        }
+
+    }
+    else {
+        int index= top_r_c * _width;
+        for (int y=top_r_c, v=v0+dy*dv; y<=bottom_r_c; y++, v+=dv, index+=_width) {
+            for (int x=left_r_c, u=u_start; x<=right_r_c; x++, u+=du) {
+                sampler.sample(u, v, uv_precision, col_bmp);
+                blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
+            }
         }
     }
+
 }
 
 template<typename P, typename CODER>

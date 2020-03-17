@@ -56,10 +56,10 @@ namespace microgl {
 //                l64 tx = -round_sampleU + u;
 //                l64 ty = -round_sampleV + v;
                 // take reminder part
-                const l64 tx = u & max_value;
-                const l64 ty = v & max_value;
-                const l64 U = (u) >> bits;
-                const l64 V = (v) >> bits;
+                const l64 tx = u & max_value; // reminder u
+                const l64 ty = v & max_value; // reminder v
+                const l64 U = (u) >> bits; // integral u
+                const l64 V = (v) >> bits; // integral v
                 const l64 U_plus_one = U >= bmp_w_max ? U : U + 1;
                 const l64 V_plus_one = V >= bmp_h_max ? V : V + 1;
 
