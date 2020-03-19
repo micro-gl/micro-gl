@@ -21,7 +21,7 @@ using namespace microgl::sampling;
 using index_t = unsigned int;
 using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::Bilinear>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
 
 Canvas24 * canvas;
 Texture24 tex_uv;
@@ -34,9 +34,9 @@ float t=0;
 template <typename number>
 void test_texture() {
 //    t=0.5f;
-//    t+=0.01;//-0.01;
+    t+=0.01;//-0.01;
 //    canvas->drawQuad<blendmode::Normal, porterduff::None<>, number>(tex_uv, t, 10, 400, 400);
-    canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(tex_uv,
+    canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(tex_uv,
             10+t, 10+t, 10+512 +t, 10+512+t,
             255,0,0, 1,1);
 //    canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, number>(tex_uv, 10+t, 10, 10+2, 400);

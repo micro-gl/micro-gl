@@ -973,9 +973,6 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
             p_sub, p_uv, opacity);
 }
 
-#define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
-#define floor_fixed(val, bits) (val>>bits)
-
 template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename S>
 void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
@@ -986,6 +983,8 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                                 const precision sub_pixel_precision,
                                 const precision uv_precision,
                                 const opacity_t opacity) {
+#define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
+#define floor_fixed(val, bits) (val>>bits)
     color_t col_bmp{};
     const precision p= sub_pixel_precision;
     const int left_r = floor_fixed(left, p), left_r_c= functions::max<int>(left_r, 0);
@@ -1001,7 +1000,6 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
     const int dv = (v1-v0)/(bottom_r-top_r);
     const int dx= left_r_c-left_r, dy= top_r_c-top_r;
     const int u_start= u0+dx*du;
-
     if(antialias) {
         const int max=1<<p, mask=max-1;
         const int coverage_left= max-(left&mask), coverage_right=max-(((right_r+1)<<p)-right);
@@ -1043,7 +1041,6 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + x, blend);
             }
         }
-
     }
     else {
         int index= top_r_c * _width;
@@ -1054,7 +1051,8 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
             }
         }
     }
-
+#undef ceil_fixed
+#undef floor_fixed
 }
 
 template<typename P, typename CODER>
