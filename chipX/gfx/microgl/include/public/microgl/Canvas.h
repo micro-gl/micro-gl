@@ -175,13 +175,12 @@ private:
 public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, typename S, typename number1=float, typename number2=float>
+            bool antialias=false, typename number1=float, typename number2=number1, typename S>
     void drawTriangle(const sampling::sampler<S> &sample,
-                      number1 v0_x, number1 v0_y, number2 u0, number2 v0,
-                      number1 v1_x, number1 v1_y, number2 u1, number2 v1,
-                      number1 v2_x, number1 v2_y, number2 u2, number2 v2,
-                      opacity_t opacity = 255,
-                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
+                      const number1 &v0_x, const number1 &v0_y, const number2 &u0, const number2 &v0,
+                      const number1 &v1_x, const number1 &v1_y, const number2 &u1, const number2 &v1,
+                      const number1 &v2_x, const number1 &v2_y, const number2 &u2, const number2 &v2,
+                      opacity_t opacity = 255, bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::None<>,

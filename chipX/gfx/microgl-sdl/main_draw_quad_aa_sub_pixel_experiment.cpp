@@ -32,20 +32,29 @@ void init_sdl(int width, int height);
 float t=0;
 
 template <typename number>
-void test_texture() {
-//    t=0.5f;
-    t+=0.01;//-0.01;
-//    canvas->drawQuad<blendmode::Normal, porterduff::None<>, number>(tex_uv, t, 10, 400, 400);
-    canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(tex_uv,
+void test_quad() {
+//    t+=0.01;//-0.01;
+    canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
+            tex_uv,
             10+t, 10+t, 10+512 +t, 10+512+t,
             255,0,0, 1,1);
-//    canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, number>(tex_uv, 10+t, 10, 10+2, 400);
-//    canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, number>(color_red, t, 10, 400-t, 400);
+}
+
+template <typename number>
+void test_tri() {
+    t+=0.01;//-0.01;
+    canvas->drawTriangle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
+            tex_uv,
+            10, 10, 0, 1,
+            10+512+0.1f, 10, 1, 1,
+            10+512+0.1f, 10+512, 1, 0,
+            255);
 }
 
 void render() {
     canvas->clear({255,255,255,255});
-    test_texture<float>();
+//    test_quad<float>();
+    test_tri<float>();
 
 }
 
@@ -62,7 +71,8 @@ void init_sdl(int width, int height) {
     sdl_renderer = SDL_CreateRenderer(sdl_window, -1, 0);
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STATIC, width, height);
-    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
+//    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
+    auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
     auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
     canvas = new Canvas24(width, height);

@@ -58,6 +58,7 @@ namespace microgl {
                         out_vertices_attributes.push_back(p.x);
                         out_vertices_attributes.push_back(p.y);
                         out_vertices_attributes.push_back(p.z);
+                        // we need to separate this into another buffer, because number1!=number2 always
                         out_vertices_attributes.push_back(tex_left + u*factor_remap_u);
                         out_vertices_attributes.push_back(tex_top + v*factor_remap_v);
 
