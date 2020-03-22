@@ -31,9 +31,10 @@ void init_sdl(int width, int height);
 template <typename number>
 void test_bezier(vec3<number>* mesh, unsigned U, unsigned V) {
 //    canvas->drawBezierPatch<blendmode::Normal, porterduff::None<>>(
+
     canvas->drawBezierPatch<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number, number>(
-            color_grey,
-//            tex_uv,
+//            color_grey,
+            tex_uv,
             mesh, U, V, 50, 50,
             0,1,1,0,
             122);

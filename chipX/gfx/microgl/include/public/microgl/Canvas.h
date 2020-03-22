@@ -37,17 +37,15 @@ private:
     using precision = unsigned char;
     using opacity_t = unsigned char;
     using l64= long long;
+    using pixel_coder= coder::PixelCoder<P, CODER>;
     using canvas= Canvas<P, CODER>;
+    using bitmap= Bitmap<P, CODER>;
 
-    int _width = 0, _height = 0;
-    Bitmap<P, CODER> * _bitmap_canvas = nullptr;
-    // compositing
-    bool _flag_hasNativeAlphaChannel = false;
-    uint8_t _alpha_bits_for_compositing = 8;
-    unsigned int _max_alpha_value = 255;
+    const int _width = 0, _height = 0;
+    bitmap * _bitmap_canvas = nullptr;
 
 public:
-    explicit Canvas(Bitmap<P, CODER> * $bmp);
+    explicit Canvas(bitmap * $bmp);
     Canvas(int width, int height);
     int width() const;
     int height() const;
@@ -58,9 +56,8 @@ public:
     void getPixelColor(int index, color_t & output) const;
     void getPixelColor(int x, int y, color_t & output) const;
 
-    const coder::PixelCoder<P, CODER> & coder() const;
-    Bitmap<P, CODER> * bitmapCanvas() const;
-    bool hasNativeAlphaChannel() const;
+    const pixel_coder & coder() const;
+    bitmap * bitmapCanvas() const;
 
     template <typename number>
     void clear(const intensity<number> &color);

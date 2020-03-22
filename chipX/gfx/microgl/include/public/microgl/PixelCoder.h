@@ -82,21 +82,6 @@ namespace microgl {
                 decode(input, int_color);
                 convert_color(int_color, output, red_bits(), green_bits(), blue_bits(), alpha_bits());
             }
-//
-//            // float colors
-//            static
-//            void encode(const color_f_t &input, P &output) {
-//                color_t int_color{};
-//                convert_color(input, int_color, red_bits(), green_bits(), blue_bits(), alpha_bits());
-//                encode(int_color, output);
-//            }
-//
-//            static
-//            void decode(const P &input, color_f_t &output) {
-//                color_t int_color{};
-//                decode(input, int_color);
-//                convert_color(int_color, output);
-//            }
 
             static constexpr
             channel red_bits() {
@@ -135,16 +120,6 @@ namespace microgl {
                 convert_color(input, output, red_bits(), green_bits(), blue_bits(), alpha_bits());
             }
 
-//            static
-//            void convert(const color_f_t &input, color_t &output) {
-//                convert_color(input, output, red_bits(), green_bits(), blue_bits(), alpha_bits());
-//            }
-//
-//            static
-//            void convert(const color_t &input, color_f_t &output) {
-//                convert_color(input, output, red_bits(), green_bits(), blue_bits(), alpha_bits());
-//            }
-//
             template<typename P2, typename CODER2>
             static
             void convert(const color_t &input, color_t &output, const PixelCoder<P2, CODER2> &coder2) {

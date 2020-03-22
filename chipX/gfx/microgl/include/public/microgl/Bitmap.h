@@ -17,6 +17,21 @@ public:
     Bitmap(uint8_t* $pixels, int w, int h);
     ~Bitmap();
 
+    static
+    constexpr bool hasNativeAlphaChannel() {
+        return CODER::alpha_bits()!=0;
+    }
+
+    static
+    constexpr bool nativeAlphaChannelBits() {
+        return hasNativeAlphaChannel() ? CODER::alpha_bits() : 8;
+    }
+
+    static
+    constexpr int maxNativeAlphaChannelValue() {
+        return (1<<nativeAlphaChannelBits())-1;
+    }
+
     P pixelAt(int x, int y) const;
     P pixelAt(int index) const;
     // decoders
