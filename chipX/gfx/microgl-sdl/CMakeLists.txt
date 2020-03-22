@@ -31,7 +31,7 @@ set(SOURCES
 #        main_draw_triangle.cpp
 #        main_draw_quadrilaterals.cpp
 #        main_draw_polygon_sampler.cpp
-        main_draw_bezier_patch.cpp
+#        main_draw_bezier_patch.cpp
 #        main_draw_rounded_rectangle.cpp
 #        main_draw_circles.cpp
 #        main_draw_masks.cpp
@@ -48,7 +48,7 @@ set(SOURCES
 #        main_arc_divider.cpp
 #        main_fan_triangulation.cpp
 #        main_Q_matrix_transforms.cpp
-#        main_draw_shaders_2d.cpp
+        main_draw_shaders_2d.cpp
 #        main_draw_shaders_3d.cpp
 #        main_draw_z_buffer.cpp
 #        main_3d_pipeline.cpp

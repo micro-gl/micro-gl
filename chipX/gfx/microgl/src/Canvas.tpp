@@ -731,13 +731,18 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
 #undef f
 
     // bounding box in raster space
-    int max_sub_pixel_precision_value = (1u<<sub_pixel_precision) - 1;
-    int minX = (functions::min(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value)>>sub_pixel_precision;
-    int minY = (functions::min(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value)>>sub_pixel_precision;
-    int maxX = (functions::max(v0_x, v1_x, v2_x) + max_sub_pixel_precision_value)>>sub_pixel_precision;
-    int maxY = (functions::max(v0_y, v1_y, v2_y) + max_sub_pixel_precision_value)>>sub_pixel_precision;
-    minX = functions::max(0, minX); minY = functions::max(0, minY);
-    maxX = functions::min(width()-1, maxX); maxY = functions::min(height()-1, maxY);
+#define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
+#define floor_fixed(val, bits) ((val)>>bits)
+    l64 mask = ~((l64(1)<<sub_pixel_precision)-1);
+    l64 minX = floor_fixed(functions::min<l64>(v0_x, v1_x, v2_x)&mask, sub_pixel_precision);
+    l64 minY = floor_fixed(functions::min<l64>(v0_y, v1_y, v2_y)&mask, sub_pixel_precision);
+    l64 maxX = ceil_fixed(functions::max<l64>(v0_x, v1_x, v2_x), sub_pixel_precision);
+    l64 maxY = ceil_fixed(functions::max<l64>(v0_y, v1_y, v2_y), sub_pixel_precision);
+    // clipping
+    minX = functions::max<l64>(0, minX); minY = functions::max<l64>(0, minY);
+    maxX = functions::min<l64>(width()-1, maxX); maxY = functions::min<l64>(height()-1, maxY);
+#undef ceil_fixed
+#undef floor_fixed
     bool outside= maxX<0 || maxY<0 || minX>(width()-1) || minY>(height()-1);
     if(outside) return; // cull in 2d raster window
     constexpr int max_alpha_value= bitmap::maxNativeAlphaChannelValue();
@@ -757,7 +762,6 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
         max_distance_canvas_space_anti_alias = 1u << bits_distance;
         max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias<<PREC_DIST;
     }
-
     // fill rules configurations
     triangles::top_left_t top_left =
             triangles::classifyTopLeftEdges(false,
@@ -766,16 +770,21 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
     int bias_w1 = top_left.second ? 0 : -1;
     int bias_w2 = top_left.third  ? 0 : -1;
     // Barycentric coordinates at minX/minY corner
-    vec2<int> p = { minX, minY };
-    vec2<int> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
+    vec2<l64> p = { minX, minY };
+    vec2<l64> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
+    l64 half= (l64(1)<<(sub_pixel_precision))>>1;
+    p_fixed = p_fixed + vec2<l64> {half, half}; // we sample at the center
+    // this can produce a 2P bits number if the points form a a perpendicular triangle
+    // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
+    // I still need to explain to myself why it works so well :)
+    l64 w0_row = functions::orient2d(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, 0) + bias_w0;
+    l64 w1_row = functions::orient2d(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) + bias_w1;
+    l64 w2_row = functions::orient2d(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) + bias_w2;
+    w0_row = w0_row>>sub_pixel_precision; w1_row = w1_row>>sub_pixel_precision; w2_row = w2_row>>sub_pixel_precision;
     // Triangle setup, this needs at least (P+1) bits, since the delta is always <= length
     int64_t A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
     int64_t A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
     int64_t A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
-
-    int w0_row = functions::orient2d(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w0;
-    int w1_row = functions::orient2d(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w1;
-    int w2_row = functions::orient2d(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w2;
     // AA, 2A/L = h, therefore the division produces a P bit number
     int64_t w0_row_h=0, w1_row_h=0, w2_row_h=0;
     int64_t A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
