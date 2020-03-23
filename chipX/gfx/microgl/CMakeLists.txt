@@ -17,7 +17,8 @@ set(sources
         src/PixelCoder.cpp
         src/color.cpp
         src/triangles.cpp
-        src/qsort.cpp include/public/microgl/rect.h)
+        src/qsort.cpp)
+
 add_library(${PROJECT_NAME} ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 # expose public include directory

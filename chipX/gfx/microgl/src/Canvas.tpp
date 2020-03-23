@@ -476,6 +476,7 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
 //    maxX = functions::min<l64>(width()-1, maxX); maxY = functions::min<l64>(height()-1, maxY);
 #undef ceil_fixed
 #undef floor_fixed
+//bbox.right=319;
     // anti-alias pad for distance calculation
     constexpr int max_alpha_value= bitmap::maxNativeAlphaChannelValue();
     precision bits_distance = 0;

@@ -61,12 +61,14 @@ public:
     void updateCanvasWindow(int left, int top, bitmap * $bmp=nullptr) {
         auto c_w = $bmp ? $bmp->width() : _canvas_rect.width();
         auto c_h = $bmp ? $bmp->height() : _canvas_rect.height();
-        _canvas_rect = {left, top, left + c_w - 1, top + c_h - 1};
+        _canvas_rect = {left, top, left + c_w - 0, top + c_h - 0};
         if($bmp) _bitmap_canvas=$bmp;
     }
 
     rect calculateEffectiveDrawRect() {
-        return _canvas_rect.intersect(_clip_rect);
+        rect r = _canvas_rect.intersect(_clip_rect);
+        r.bottom-=1;r.right-=1;
+        return r;
     }
 
     const rect & clipRect() const {

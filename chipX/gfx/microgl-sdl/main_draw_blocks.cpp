@@ -74,8 +74,9 @@ vec3<number>* bi_cubic_1(){
 
 template <typename number>
 void render_blocks() {
+    bool debug = 0;
     const auto mesh= bi_cubic_1<number>();
-    int block_size = W/2;
+    int block_size = W;//2;//W/13;
     int count_blocks_horizontal = 1+((W-1)/block_size); // with integer ceil rounding
     int count_blocks_vertical = 1+((H-1)/block_size); // with integer ceil rounding
     auto * bitmap = new Bitmap24(block_size, block_size);
@@ -88,18 +89,17 @@ void render_blocks() {
         for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
                 canvas->updateCanvasWindow(ix, iy, bitmap);
                 canvas->clear({255,255,255,255});
-//            if(ix!=0) {
+//            if(ix==0) continue;
                 canvas->drawBezierPatch<blendmode::Normal, porterduff::None<>, false, number, number>(
 //            color_grey,
                         tex_uv,
                         mesh, 4, 4, 2, 2,
                         0,1,1,0,
                         255);
-//            }
 
 //            render_block<number>(mesh, ix, iy, bitmap);
             SDL_Rect rect_source {0, 0, block_size, block_size};
-            SDL_Rect rect_dest {ix, iy, block_size-0, block_size-0};
+            SDL_Rect rect_dest {ix, iy, block_size-debug, block_size-debug};
 //            SDL_Rect rect_dest {ix, iy, block_size-1, block_size-1};
             SDL_UpdateTexture(sdl_texture,
                               &rect_source,

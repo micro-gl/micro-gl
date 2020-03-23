@@ -51,7 +51,7 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - explore avoid blending, and draw pixel directly mechanism
 - experiment with partial rendering blocks
 - remove bits info from samplers ? currently only use it in masks, but this info can be embeded in color_t
-- remove framebuffer from bitmap ?
+- remove framebuffer from bitmap ? or use encapsulation ?
 - configurable custom sin/cos/tan provider
 - poly tesselator continue
 - path maker
@@ -60,6 +60,7 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - 3d pipeline, make 3d clipping configurable for planes and even skip
 - add opacity/colors/blend/composite to lines
 - AA for 3d with stencil buffer and multi-sampling of coverage, should be interesting
+- move logic for dynamic array
 
 0. improve ear_clipper
 1. complex poly tesselator and stroker
