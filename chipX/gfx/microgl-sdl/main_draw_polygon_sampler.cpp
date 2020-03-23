@@ -40,7 +40,7 @@ void init_sdl(int width, int height);
 using namespace tessellation;
 
 template <typename number>
-void render_polygon(const dynamic_array<vec2<number>> &polygon);
+void render_polygon(dynamic_array<vec2<number>> &polygon);
 
 float t = 0;
 
@@ -66,18 +66,19 @@ dynamic_array<vec2<number>> poly_diamond() {
 }
 
 void render() {
-    t+=.05f;
 //    render_polygon<float>(poly_hole<float>());
-    render_polygon<float>(poly_diamond<float>());
+    auto a = poly_diamond<float>();
+    render_polygon<float>(a);
 }
 
 
 template <typename number>
-void render_polygon(const dynamic_array<vec2<number>> &polygon) {
+void render_polygon(dynamic_array<vec2<number>> &polygon) {
     using index = unsigned int;
-
-//    polygon[1].x = 140 + 20 +  t;
-//    polygon[1].y = 140 + 20 -  t;
+    // test sub pixel movement
+//    t+=.0015f;
+//    polygon[3].x = 100 +  t;
+//    polygon[3].y = 300 -  t;
     canvas->clear({255,255,255,255});
     canvas->drawPolygon<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
             gradient2Colors,

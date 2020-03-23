@@ -3,8 +3,9 @@
 #include <microgl/Canvas.h>
 
 template<typename P, typename CODER>
-Canvas<P, CODER>::Canvas(bitmap *$bmp)
-                        : _width{$bmp->width()}, _height{$bmp->height()}, _bitmap_canvas($bmp) {
+Canvas<P, CODER>::Canvas(bitmap *$bmp) : _canvas_rect{0, 0, $bmp->width(), $bmp->height()},
+                                         _clip_rect{0, 0, $bmp->width(), $bmp->height()},
+                                         _bitmap_canvas($bmp) {
 }
 
 template<typename P, typename CODER>
@@ -29,14 +30,14 @@ unsigned int Canvas<P, CODER>::sizeofPixel() const {
 
 template<typename P, typename CODER>
 P &Canvas<P, CODER>::getPixel(int x, int y) const {
-    // this is not good for high performance loop, cannot be inlined
-    return _bitmap_canvas->readAt(y*_width + x);
+    // this is not good for high performance loop
+    return _bitmap_canvas->pixelAt(x, y);
 }
 
 template<typename P, typename CODER>
 P &Canvas<P, CODER>::getPixel(int index) const {
-    // this is not good for high performance loop, cannot be inlined
-    return _bitmap_canvas->readAt(index);
+    // this is better for high performance loop
+    return _bitmap_canvas->pixelAt(index);
 }
 
 template<typename P, typename CODER>
@@ -51,12 +52,12 @@ void Canvas<P, CODER>::getPixelColor(int index, color_t & output)  const {
 
 template<typename P, typename CODER>
 int Canvas<P, CODER>::width() const {
-    return _width;
+    return _canvas_rect.width();
 }
 
 template<typename P, typename CODER>
 int Canvas<P, CODER>::height() const {
-    return _height;
+    return _canvas_rect.height();
 }
 
 template<typename P, typename CODER>
@@ -82,12 +83,15 @@ void Canvas<P, CODER>::clear(const color_t &color) {
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
 inline void Canvas<P, CODER>::blendColor(const color_t &val, int x, int y, opacity_t opacity) {
-    blendColor<BlendMode, PorterDuff>(val, y*_width + x, opacity);
+    blendColor<BlendMode, PorterDuff>(val, y*_canvas_rect.width() + x, opacity);
 }
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
 inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_t opacity) {
+    int pitch= _canvas_rect.width()*_canvas_rect.top + _canvas_rect.left;
+    index -= pitch;
+//    index -=  2320;//_canvas_rect.left;
     // we assume that the color conforms to the same pixel-coder. but we are flexible
     // for alpha channel. if coder does not have an alpha channel, the color itself may
     // have non-zero alpha channel, for which we emulate 8-bit alpha processing and also pre
@@ -261,8 +265,9 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
     const l64 right_r_c=functions::min<l64>(right_r, width()-1), bottom_r_c=functions::min<l64>(height()-1, bottom_r);
     const l64 dx=left_r_c-left_r, dy=top_r_c-top_r;
     color_t color;
-    int index = top_r_c * _width;
-    for (l64 y_r=top_r_c, yy=top_&~mask+dy*step, v=v0+dy*dv; y_r<=bottom_r_c; y_r++, yy+=step, v+=dv, index+=_width) {
+    const int pitch = width();
+    int index = top_r_c * pitch;
+    for (l64 y_r=top_r_c, yy=top_&~mask+dy*step, v=v0+dy*dv; y_r<=bottom_r_c; y_r++, yy+=step, v+=dv, index+=pitch) {
         for (l64 x_r=left_r_c, xx=left_&~mask+dx*step, u=u0+dx*du; x_r<=right_r_c; x_r++, xx+=step, u+=du) {
 
             int blend_fill=opacity, blend_stroke=opacity;
@@ -443,6 +448,8 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                                     int v2_x, int v2_y, int u2, int v2, int q2,
                                     const opacity_t opacity, const precision sub_pixel_precision,
                                     const precision uv_precision, bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
+    auto effectiveRect = calculateEffectiveDrawRect();
+    if(effectiveRect.empty()) return;
     l64 area = functions::orient2d(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
     if(area==0) return;
     if(area<0) { // convert CCW to CW triangle
@@ -457,14 +464,16 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     // bounding box
 #define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
 #define floor_fixed(val, bits) ((val)>>bits)
+    rect bbox;
     l64 mask = ~((l64(1)<<sub_pixel_precision)-1);
-    l64 minX = floor_fixed(functions::min<l64>(v0_x, v1_x, v2_x)&mask, sub_pixel_precision);
-    l64 minY = floor_fixed(functions::min<l64>(v0_y, v1_y, v2_y)&mask, sub_pixel_precision);
-    l64 maxX = ceil_fixed(functions::max<l64>(v0_x, v1_x, v2_x), sub_pixel_precision);
-    l64 maxY = ceil_fixed(functions::max<l64>(v0_y, v1_y, v2_y), sub_pixel_precision);
+    bbox.left = floor_fixed(functions::min<l64>(v0_x, v1_x, v2_x)&mask, sub_pixel_precision);
+    bbox.top = floor_fixed(functions::min<l64>(v0_y, v1_y, v2_y)&mask, sub_pixel_precision);
+    bbox.right = ceil_fixed(functions::max<l64>(v0_x, v1_x, v2_x), sub_pixel_precision);
+    bbox.bottom = ceil_fixed(functions::max<l64>(v0_y, v1_y, v2_y), sub_pixel_precision);
     // clipping
-    minX = functions::max<l64>(0, minX); minY = functions::max<l64>(0, minY);
-    maxX = functions::min<l64>(width()-1, maxX); maxY = functions::min<l64>(height()-1, maxY);
+    bbox = bbox.intersect(effectiveRect);
+//    minX = functions::max<l64>(0, minX); minY = functions::max<l64>(0, minY);
+//    maxX = functions::min<l64>(width()-1, maxX); maxY = functions::min<l64>(height()-1, maxY);
 #undef ceil_fixed
 #undef floor_fixed
     // anti-alias pad for distance calculation
@@ -491,8 +500,8 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     int bias_w1 = top_left.second ? 0 : -(1);
     int bias_w2 = top_left.third  ? 0 : -(1);
     // Barycentric coordinates at minX/minY corner
-    vec2<l64> p = { minX, minY };
-    vec2<l64> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
+    vec2<l64> p = { bbox.left, bbox.top };
+    vec2<l64> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
     l64 half= (l64(1)<<(sub_pixel_precision))>>1;
     p_fixed = p_fixed + vec2<l64> {half, half}; // we sample at the center
     // this can produce a 2P bits number if the points form a a perpendicular triangle
@@ -529,8 +538,9 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
         w1_row_h = (((l64)(w1_row))<<PREC_DIST)/length_w1;
         w2_row_h = (((l64)(w2_row))<<PREC_DIST)/length_w2;
     }
-    int index = p.y * _width;
-    for (p.y = minY; p.y <= maxY; p.y++) {
+    const int pitch= width();
+    int index = p.y * pitch;
+    for (p.y = bbox.top; p.y <= bbox.bottom; p.y++) {
         l64 w0 = w0_row;
         l64 w1 = w1_row;
         l64 w2 = w2_row;
@@ -540,7 +550,7 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
             w1_h = w1_row_h;
             w2_h = w2_row_h;
         }
-        for (p.x = minX; p.x <= maxX; p.x++) {
+        for (p.x = bbox.left; p.x <= bbox.right; p.x++) {
             bool should_sample=false;
             uint8_t blend=opacity;
             if((w0|w1|w2)>=0) should_sample=true;
@@ -598,7 +608,7 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
             w1_row_h += B12_h;
             w2_row_h += B20_h;
         }
-        index += _width;
+        index += pitch;
     }
 }
 
@@ -803,7 +813,8 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
         w1_row_h = ((int64_t)(w1_row)<<PREC_DIST)/length_w1;
         w2_row_h = ((int64_t)(w2_row)<<PREC_DIST)/length_w2;
     }
-    int index = p.y * _width;
+    const int pitch= width();
+    int index = p.y * pitch;
     for (p.y = minY; p.y <= maxY; p.y++) {
         int w0 = w0_row;
         int w1 = w1_row;
@@ -892,7 +903,7 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
             w1_row_h += B12_h;
             w2_row_h += B20_h;
         }
-        index += _width;
+        index += pitch;
     }
 }
 
@@ -996,6 +1007,7 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
     const int dv = (v1-v0)/(bottom_r-top_r);
     const int dx= left_r_c-left_r, dy= top_r_c-top_r;
     const int u_start= u0+dx*du;
+    const int pitch= width();
     if(antialias) {
         const int max=1<<p, mask=max-1;
         const int coverage_left= max-(left&mask), coverage_right=max-(((right_r+1)<<p)-right);
@@ -1008,9 +1020,9 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
         const int blend_top= (int(opacity)*coverage_top)>>p;
         const int blend_right= (int(opacity)*coverage_right)>>p;
         const int blend_bottom= (int(opacity)*coverage_bottom)>>p;
-        int index= (top_r_c) * _width;
+        int index= (top_r_c) * pitch;
         opacity_t blend=0;
-        for (int y=top_r_c, v=v0+dy*dv; y<=bottom_r_c; y++, v+=dv, index+=_width) {
+        for (int y=top_r_c, v=v0+dy*dv; y<=bottom_r_c; y++, v+=dv, index+=pitch) {
             for (int x=left_r_c, u=u_start; x<=right_r_c; x++, u+=du) {
                 blend=opacity;
                 if(x==left_r_c && !clipped_left) {
@@ -1039,8 +1051,8 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
         }
     }
     else {
-        int index= top_r_c * _width;
-        for (int y=top_r_c, v=v0+dy*dv; y<=bottom_r_c; y++, v+=dv, index+=_width) {
+        int index= top_r_c * pitch;
+        for (int y=top_r_c, v=v0+dy*dv; y<=bottom_r_c; y++, v+=dv, index+=pitch) {
             for (int x=left_r_c, u=u_start; x<=right_r_c; x++, u+=du) {
                 sampler.sample(u, v, uv_precision, col_bmp);
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
@@ -1094,10 +1106,11 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
     const int dv = (v1-v0)/(bottom_r - top_r);
     const int dx= left_r_c-left_r, dy= top_r_c-top_r;
     const int u_start= u0+dx*du;
-    int index= top_r_c * _width;
+    const int pitch= width();
+    int index= top_r_c * pitch;
     const bits alpha_bits = this->coder().alpha_bits() | 8;
     const channel max_alpha_value = (1<<alpha_bits) - 1;
-    for (int y=top_r_c, v=v0+dy*dv; y<=bottom_r_c; y++, v+=dv, index+=_width) {
+    for (int y=top_r_c, v=v0+dy*dv; y<=bottom_r_c; y++, v+=dv, index+=pitch) {
         for (int x=left_r_c, u=u_start; x<=right_r_c; x++, u+=du) {
             sampler.sample(u, v, uv_precision, col_bmp);
             channel a=0;
@@ -1478,3 +1491,4 @@ void Canvas<P, CODER>::drawBezierPath(color_f_t & color, vec2<number> *points,
         }
     }
 }
+

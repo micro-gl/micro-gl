@@ -6,8 +6,7 @@ Resources::Resources() {
     stbi_set_flip_vertically_on_load(true);
 };
 
-Resources::~Resources() {
-};
+Resources::~Resources() = default;;
 
 bool Resources::init() {
     return true;

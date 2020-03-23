@@ -50,3 +50,5 @@ or the dedicated FPU takes the penalty), but this means the buffer will be 16 by
 - user will have a flag for integer-inaccurate blending or float-slow-accurate blending through overloading.
 - if user is not happy, he can always implement his own blender and compositing struct, which is a feature of the engine.
 - canvas/samplers/shaders should be written with thoughs for the custom colors space at times by user
+
+- https://gamedev.stackexchange.com/questions/87727/sdl-updatetexture-is-slow

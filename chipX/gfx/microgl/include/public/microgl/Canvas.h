@@ -1,6 +1,7 @@
 #pragma once
 
 #include <microgl/vec2.h>
+#include <microgl/rect.h>
 #include <microgl/color.h>
 #include <microgl/micro_gl_traits.h>
 #include <microgl/porter_duff/FastSourceOverOnOpaque.h>
@@ -32,7 +33,11 @@ using namespace microgl::shading;
 
 template<typename P, typename CODER>
 class Canvas {
+public:
+    using rect = rect_t<int>;
+
 private:
+
     using index = unsigned int;
     using precision = unsigned char;
     using opacity_t = unsigned char;
@@ -41,12 +46,37 @@ private:
     using canvas= Canvas<P, CODER>;
     using bitmap= Bitmap<P, CODER>;
 
-    const int _width = 0, _height = 0;
+    rect _canvas_rect;
+    rect _clip_rect;
     bitmap * _bitmap_canvas = nullptr;
 
 public:
     explicit Canvas(bitmap * $bmp);
     Canvas(int width, int height);
+
+    void updateClipRect(int l, int t, int r, int b) {
+        _clip_rect = {l, t, r, b};
+    }
+
+    void updateCanvasWindow(int left, int top, bitmap * $bmp=nullptr) {
+        auto c_w = $bmp ? $bmp->width() : _canvas_rect.width();
+        auto c_h = $bmp ? $bmp->height() : _canvas_rect.height();
+        _canvas_rect = {left, top, left + c_w - 1, top + c_h - 1};
+        if($bmp) _bitmap_canvas=$bmp;
+    }
+
+    rect calculateEffectiveDrawRect() {
+        return _canvas_rect.intersect(_clip_rect);
+    }
+
+    const rect & clipRect() const {
+        return _clip_rect;
+    }
+
+    const rect & canvasWindowRect() const {
+        return _canvas_rect;
+    }
+
     int width() const;
     int height() const;
     unsigned int sizeofPixel() const;

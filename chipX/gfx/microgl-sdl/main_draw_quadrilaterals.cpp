@@ -8,7 +8,7 @@
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/texture.h>
 
-#define TEST_ITERATIONS 10
+#define TEST_ITERATIONS 1
 #define W 640*1
 #define H 480*1
 
@@ -18,7 +18,7 @@ SDL_Texture * texture;
 
 using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::Bilinear>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
 Canvas24 * canvas;
 Texture24 tex_1, tex_2;
 
@@ -30,10 +30,11 @@ void init_sdl(int width, int height);
 template <typename number>
 void render_quadrilateral() {
     static float d =0;
-    float G = 256;
-    d+=1.01;
+    float G = 400;
+//    d+=1.01;
     canvas->clear(intensity<number>{1, 1, 1, 1});
-    canvas->drawQuadrilateral<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
+//    canvas->drawQuadrilateral<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
+    canvas->drawQuadrilateral<blendmode::Normal, porterduff::None<>, false, number>(
             tex_2,
             0.0f,               0.0f,     0.0f, 1.0f,
             G + 100.0f + d,     0.0f,       1.0f, 1.0f,
