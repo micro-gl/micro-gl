@@ -3,9 +3,9 @@
 #include <microgl/Canvas.h>
 
 template<typename P, typename CODER>
-Canvas<P, CODER>::Canvas(bitmap *$bmp) : _canvas_rect{0, 0, $bmp->width(), $bmp->height()},
-                                         _clip_rect{0, 0, $bmp->width(), $bmp->height()},
-                                         _bitmap_canvas($bmp) {
+Canvas<P, CODER>::Canvas(bitmap *$bmp) : _bitmap_canvas($bmp) {
+    updateCanvasWindow(0, 0, $bmp);
+    updateClipRect(0, 0, $bmp->width(), $bmp->height());
 }
 
 template<typename P, typename CODER>
@@ -47,17 +47,17 @@ void Canvas<P, CODER>::getPixelColor(int x, int y, color_t & output)  const {
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::getPixelColor(int index, color_t & output)  const {
-    this->_bitmap_canvas->decode(index, output);
+    this->_bitmap_canvas->decode(index - _window.index_correction, output);
 }
 
 template<typename P, typename CODER>
 int Canvas<P, CODER>::width() const {
-    return _canvas_rect.width();
+    return _window.canvas_rect.width();
 }
 
 template<typename P, typename CODER>
 int Canvas<P, CODER>::height() const {
-    return _canvas_rect.height();
+    return _window.canvas_rect.height();
 }
 
 template<typename P, typename CODER>
@@ -83,15 +83,15 @@ void Canvas<P, CODER>::clear(const color_t &color) {
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
 inline void Canvas<P, CODER>::blendColor(const color_t &val, int x, int y, opacity_t opacity) {
-    blendColor<BlendMode, PorterDuff>(val, y*_canvas_rect.width() + x, opacity);
+    blendColor<BlendMode, PorterDuff>(val, y*width() + x, opacity);
 }
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff>
 inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_t opacity) {
-    int pitch= _canvas_rect.width()*_canvas_rect.top + _canvas_rect.left;
-    index -= pitch;
-//    index -=  2320;//_canvas_rect.left;
+    // correct index position when window is not at the (0,0) costs one subtraction.
+    // we use it for sampling the backdrop if needed and for writing the output pixel
+    index -= _window.index_correction;
     // we assume that the color conforms to the same pixel-coder. but we are flexible
     // for alpha channel. if coder does not have an alpha channel, the color itself may
     // have non-zero alpha channel, for which we emulate 8-bit alpha processing and also pre
@@ -107,7 +107,8 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
 
         // get backdrop color if blending or compositing is required
         if(!skip_blending || !none_compositing)
-            getPixelColor(index, backdrop);
+            this->_bitmap_canvas->decode(index, backdrop); // not using getPixelColor to avoid extra subtraction
+            //getPixelColor(index, backdrop);
 
         // we assume that either they are the same or one of them is zero, this is FASTER then comparison.
         // if we don't own a native alpha channel, check if the color has a suggestion for alpha channel.
@@ -175,20 +176,19 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
     } else
         result = val;
 
-//    CODER::encode(result, output);
     coder().encode(result, output);
-    drawPixel(output, index);
+    _bitmap_canvas->writeAt(output, index); // not using drawPixel to avoid extra subtraction
+    //drawPixel(output, index);
 }
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawPixel(const P & val, int x, int y) {
-    int index= y*width()+x;
-    _bitmap_canvas->writeAt(val, index);
+    _bitmap_canvas->writeAt(val, y*width()+x);
 }
 
 template<typename P, typename CODER>
 inline void Canvas<P, CODER>::drawPixel(const P & val, int index) {
-    _bitmap_canvas->writeAt(val, index);
+    _bitmap_canvas->writeAt(val, index - _window.index_correction);
 }
 
 // fast common graphics shapes like circles and rounded rectangles

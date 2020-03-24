@@ -24,27 +24,12 @@ using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
 using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
 Texture24 tex_uv;
 Canvas24 * canvas;
-sampling::flat_color color_grey{{0,0,0,255}};
+sampling::flat_color color_grey{{122,122,122,255}};
 void loop();
 void init_sdl(int width, int height);
 
 template <typename number>
 using cubic_mesh = vec3<number> *;
-
-template <typename number>
-vec3<number>* bi_cubic_1();
-
-template <typename number>
-void render_block(const cubic_mesh<number> mesh, int x, int y, Bitmap24 * bitmap) {
-    canvas->updateCanvasWindow(x, y, bitmap);
-    canvas->clear({255,255,255,255});
-    canvas->drawBezierPatch<blendmode::Normal, porterduff::None<>, false, number, number>(
-//            color_grey,
-            tex_uv,
-            mesh, 4, 4, 50, 50,
-            0,1,1,0,
-            255);
-}
 
 template <typename number>
 vec3<number>* bi_cubic_1(){
@@ -74,9 +59,9 @@ vec3<number>* bi_cubic_1(){
 
 template <typename number>
 void render_blocks() {
-    bool debug = 0;
+    bool debug = 1;
     const auto mesh= bi_cubic_1<number>();
-    int block_size = W;//2;//W/13;
+    int block_size = W/1;//2;//W/13;
     int count_blocks_horizontal = 1+((W-1)/block_size); // with integer ceil rounding
     int count_blocks_vertical = 1+((H-1)/block_size); // with integer ceil rounding
     auto * bitmap = new Bitmap24(block_size, block_size);
@@ -87,20 +72,17 @@ void render_blocks() {
     SDL_RenderClear(renderer);
     for (int iy = 0; iy < block_size*count_blocks_vertical; iy+=block_size) {
         for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
-                canvas->updateCanvasWindow(ix, iy, bitmap);
-                canvas->clear({255,255,255,255});
-//            if(ix==0) continue;
-                canvas->drawBezierPatch<blendmode::Normal, porterduff::None<>, false, number, number>(
-//            color_grey,
-                        tex_uv,
-                        mesh, 4, 4, 2, 2,
-                        0,1,1,0,
-                        255);
+            canvas->updateCanvasWindow(ix, iy, bitmap);
+            canvas->clear({255,255,255,255});
+            canvas->drawBezierPatch<blendmode::Normal, porterduff::None<>, false, number, number>(
+//                    color_grey,
+                    tex_uv,
+                    mesh, 4, 4, 20, 20,
+                    0, 1, 1, 0,
+                    255);
 
-//            render_block<number>(mesh, ix, iy, bitmap);
             SDL_Rect rect_source {0, 0, block_size, block_size};
             SDL_Rect rect_dest {ix, iy, block_size-debug, block_size-debug};
-//            SDL_Rect rect_dest {ix, iy, block_size-1, block_size-1};
             SDL_UpdateTexture(sdl_texture,
                               &rect_source,
                               &canvas->pixels()[0],
@@ -131,7 +113,6 @@ void init_sdl(int width, int height) {
     renderer = SDL_CreateRenderer(window, -1, 0);
     sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
             SDL_TEXTUREACCESS_STREAMING, width, height);
-//    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
     auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
     auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
@@ -171,9 +152,6 @@ void loop() {
         }
 //
         render();
-
-//        SDL_RenderClear(renderer);
-//        SDL_RenderCopy(renderer, sdl_texture, nullptr, nullptr);
         SDL_RenderPresent(renderer);
     }
 

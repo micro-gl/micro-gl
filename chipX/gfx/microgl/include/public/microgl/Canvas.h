@@ -35,6 +35,11 @@ template<typename P, typename CODER>
 class Canvas {
 public:
     using rect = rect_t<int>;
+    struct window_t {
+        rect canvas_rect;
+        rect clip_rect;
+        int index_correction;
+    };
 
 private:
 
@@ -46,37 +51,42 @@ private:
     using canvas= Canvas<P, CODER>;
     using bitmap= Bitmap<P, CODER>;
 
-    rect _canvas_rect;
-    rect _clip_rect;
     bitmap * _bitmap_canvas = nullptr;
-
+    window_t _window;
 public:
     explicit Canvas(bitmap * $bmp);
     Canvas(int width, int height);
 
     void updateClipRect(int l, int t, int r, int b) {
-        _clip_rect = {l, t, r, b};
+        _window.clip_rect = {l, t, r, b};
     }
 
     void updateCanvasWindow(int left, int top, bitmap * $bmp=nullptr) {
-        auto c_w = $bmp ? $bmp->width() : _canvas_rect.width();
-        auto c_h = $bmp ? $bmp->height() : _canvas_rect.height();
-        _canvas_rect = {left, top, left + c_w - 0, top + c_h - 0};
+        auto c_w = $bmp ? $bmp->width() : _window.canvas_rect.width();
+        auto c_h = $bmp ? $bmp->height() : _window.canvas_rect.height();
+        _window.canvas_rect = {left, top, left + c_w - 0, top + c_h - 0};
         if($bmp) _bitmap_canvas=$bmp;
+        _window.index_correction= _window.canvas_rect.width()*_window.canvas_rect.top
+                + _window.canvas_rect.left;
     }
 
     rect calculateEffectiveDrawRect() {
-        rect r = _canvas_rect.intersect(_clip_rect);
+        rect r = _window.canvas_rect.intersect(_window.clip_rect);
         r.bottom-=1;r.right-=1;
         return r;
     }
 
     const rect & clipRect() const {
-        return _clip_rect;
+        return _window.clip_rect;
+    }
+
+    inline
+    int indexCorrection() const {
+        return _window.index_correction;
     }
 
     const rect & canvasWindowRect() const {
-        return _canvas_rect;
+        return _window.canvas_rect;
     }
 
     int width() const;
