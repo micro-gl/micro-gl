@@ -992,7 +992,6 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
 
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
-
 #define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
 #define floor_fixed(val, bits) (val>>bits)
     color_t col_bmp{};
@@ -1001,7 +1000,7 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                  ceil_fixed(right, p)-1, ceil_fixed(bottom, p)-1};
     const rect bbox_r_c = bbox_r.intersect(effectiveRect);
     if(bbox_r_c.empty()) return;
-    // calculate uvs with orignal ubclipped deltas, this way we can always accurately predict blocks
+    // calculate uvs with original unclipped deltas, this way we can always accurately predict blocks
     const int du = (u1-u0)/(bbox_r.right-bbox_r.left);
     const int dv = (v1-v0)/(bbox_r.bottom-bbox_r.top);
     const int dx= bbox_r_c.left-bbox_r.left, dy= bbox_r_c.top-bbox_r.top;
@@ -1094,25 +1093,29 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
                                 const precision sub_pixel_precision,
                                 const precision uv_precision,
                                 const opacity_t opacity) {
+    auto effectiveRect = calculateEffectiveDrawRect();
+    if(effectiveRect.empty()) return;
+#define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
+#define floor_fixed(val, bits) (val>>bits)
     color_t col_bmp{};
     const precision p= sub_pixel_precision;
-    const int left_r = left >> p, left_r_c= functions::max<int>(left_r, 0);
-    const int top_r = top >> p, top_r_c= functions::max<int>(top_r, 0);
-    const int right_r = right >> p, right_r_c= functions::min<int>(right_r, width()-1);
-    const int bottom_r = bottom >> p, bottom_r_c= functions::min<int>(bottom_r, height()-1);
-    const bool degenerate= left_r_c == right_r_c || top_r_c == bottom_r_c;
-    if(degenerate) return;
+    const rect bbox_r = {floor_fixed(left, p), floor_fixed(top, p),
+                         ceil_fixed(right, p)-1, ceil_fixed(bottom, p)-1};
+    const rect bbox_r_c = bbox_r.intersect(effectiveRect);
+    if(bbox_r_c.empty()) return;
+#undef ceil_fixed
+#undef floor_fixed
     // calculate original uv deltas, this way we can always accurately predict blocks
-    const int du = (u1-u0)/(right_r - left_r);
-    const int dv = (v1-v0)/(bottom_r - top_r);
-    const int dx= left_r_c-left_r, dy= top_r_c-top_r;
+    const int du = (u1-u0)/(bbox_r.right- bbox_r.left);
+    const int dv = (v1-v0)/(bbox_r.bottom-bbox_r.top);
+    const int dx= bbox_r_c.left-bbox_r.left, dy= bbox_r_c.top-bbox_r.top;
     const int u_start= u0+dx*du;
     const int pitch= width();
-    int index= top_r_c * pitch;
+    int index= bbox_r_c.top * pitch;
     const bits alpha_bits = this->coder().alpha_bits() | 8;
     const channel max_alpha_value = (1<<alpha_bits) - 1;
-    for (int y=top_r_c, v=v0+dy*dv; y<=bottom_r_c; y++, v+=dv, index+=pitch) {
-        for (int x=left_r_c, u=u_start; x<=right_r_c; x++, u+=du) {
+    for (int y=bbox_r_c.top, v=v0+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
+        for (int x=bbox_r_c.left, u=u_start; x<=bbox_r_c.right; x++, u+=du) {
             sampler.sample(u, v, uv_precision, col_bmp);
             channel a=0;
             switch (mode) {
@@ -1492,4 +1495,3 @@ void Canvas<P, CODER>::drawBezierPath(color_f_t & color, vec2<number> *points,
         }
     }
 }
-
