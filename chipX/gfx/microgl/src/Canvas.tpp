@@ -472,8 +472,6 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     bbox.bottom = ceil_fixed(functions::max<l64>(v0_y, v1_y, v2_y), sub_pixel_precision);
     // clipping
     bbox = bbox.intersect(effectiveRect);
-//    minX = functions::max<l64>(0, minX); minY = functions::max<l64>(0, minY);
-//    maxX = functions::min<l64>(width()-1, maxX); maxY = functions::min<l64>(height()-1, maxY);
 #undef ceil_fixed
 #undef floor_fixed
 //bbox.right=319;
@@ -991,28 +989,30 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                                 const precision sub_pixel_precision,
                                 const precision uv_precision,
                                 const opacity_t opacity) {
+
+    auto effectiveRect = calculateEffectiveDrawRect();
+    if(effectiveRect.empty()) return;
+
 #define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
 #define floor_fixed(val, bits) (val>>bits)
     color_t col_bmp{};
     const precision p= sub_pixel_precision;
-    const int left_r = floor_fixed(left, p), left_r_c= functions::max<int>(left_r, 0);
-    const int top_r = floor_fixed(top, p), top_r_c= functions::max<int>(top_r, 0);
-    const int right_r = ceil_fixed(right, p)-1, right_r_c= functions::min<int>(right_r, width()-1);
-    const int bottom_r = ceil_fixed(bottom, p)-1, bottom_r_c= functions::min<int>(bottom_r, height()-1);
-    const bool degenerate= left_r_c == right_r_c || top_r_c == bottom_r_c;
-    if(degenerate) return;
-    const bool clipped_left=left_r!=left_r_c, clipped_top=top_r!=top_r_c;
-    const bool clipped_right=right_r!=right_r_c, clipped_bottom=bottom_r!=bottom_r_c;
-    // calculate original uv deltas, this way we can always accurately predict blocks
-    const int du = (u1-u0)/(right_r-left_r);
-    const int dv = (v1-v0)/(bottom_r-top_r);
-    const int dx= left_r_c-left_r, dy= top_r_c-top_r;
+    const rect bbox_r = {floor_fixed(left, p), floor_fixed(top, p),
+                 ceil_fixed(right, p)-1, ceil_fixed(bottom, p)-1};
+    const rect bbox_r_c = bbox_r.intersect(effectiveRect);
+    if(bbox_r_c.empty()) return;
+    // calculate uvs with orignal ubclipped deltas, this way we can always accurately predict blocks
+    const int du = (u1-u0)/(bbox_r.right-bbox_r.left);
+    const int dv = (v1-v0)/(bbox_r.bottom-bbox_r.top);
+    const int dx= bbox_r_c.left-bbox_r.left, dy= bbox_r_c.top-bbox_r.top;
     const int u_start= u0+dx*du;
     const int pitch= width();
     if(antialias) {
+        const bool clipped_left=bbox_r.left!=bbox_r_c.left, clipped_top=bbox_r.top!=bbox_r_c.top;
+        const bool clipped_right=bbox_r.right!=bbox_r_c.right, clipped_bottom=bbox_r.bottom!=bbox_r_c.bottom;
         const int max=1<<p, mask=max-1;
-        const int coverage_left= max-(left&mask), coverage_right=max-(((right_r+1)<<p)-right);
-        const int coverage_top= max-(top&mask), coverage_bottom=max-(((bottom_r+1)<<p)-bottom);
+        const int coverage_left= max-(left&mask), coverage_right=max-(((bbox_r.right+1)<<p)-right);
+        const int coverage_top= max-(top&mask), coverage_bottom=max-(((bbox_r.bottom+1)<<p)-bottom);
         const int blend_left_top= (int(opacity)*((coverage_left*coverage_top)>>p))>>p;
         const int blend_left_bottom= (int(opacity)*((coverage_left*coverage_bottom)>>p))>>p;
         const int blend_right_top= (int(opacity)*((coverage_right*coverage_top)>>p))>>p;
@@ -1021,29 +1021,29 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
         const int blend_top= (int(opacity)*coverage_top)>>p;
         const int blend_right= (int(opacity)*coverage_right)>>p;
         const int blend_bottom= (int(opacity)*coverage_bottom)>>p;
-        int index= (top_r_c) * pitch;
+        int index= (bbox_r_c.top) * pitch;
         opacity_t blend=0;
-        for (int y=top_r_c, v=v0+dy*dv; y<=bottom_r_c; y++, v+=dv, index+=pitch) {
-            for (int x=left_r_c, u=u_start; x<=right_r_c; x++, u+=du) {
+        for (int y=bbox_r_c.top, v=v0+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
+            for (int x=bbox_r_c.left, u=u_start; x<=bbox_r_c.right; x++, u+=du) {
                 blend=opacity;
-                if(x==left_r_c && !clipped_left) {
-                    if(y==top_r_c && !clipped_top)
+                if(x==bbox_r_c.left && !clipped_left) {
+                    if(y==bbox_r_c.top && !clipped_top)
                         blend= blend_left_top;
-                    else if(y==bottom_r_c && !clipped_bottom)
+                    else if(y==bbox_r_c.bottom && !clipped_bottom)
                         blend= blend_left_bottom;
                     else blend= blend_left;
                 }
-                else if(x==right_r_c && !clipped_right) {
-                    if(y==top_r_c && !clipped_top)
+                else if(x==bbox_r_c.right && !clipped_right) {
+                    if(y==bbox_r_c.top && !clipped_top)
                         blend= blend_right_top;
-                    else if(y==bottom_r_c && !clipped_bottom)
+                    else if(y==bbox_r_c.bottom && !clipped_bottom)
                         blend= blend_right_bottom;
                     else
                         blend= blend_right;
                 }
-                else if(y==top_r_c && !clipped_top)
+                else if(y==bbox_r_c.top && !clipped_top)
                     blend= blend_top;
-                else if(y==bottom_r_c && !clipped_bottom)
+                else if(y==bbox_r_c.bottom && !clipped_bottom)
                     blend= blend_bottom;
 
                 sampler.sample(u, v, uv_precision, col_bmp);
@@ -1052,9 +1052,9 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
         }
     }
     else {
-        int index= top_r_c * pitch;
-        for (int y=top_r_c, v=v0+dy*dv; y<=bottom_r_c; y++, v+=dv, index+=pitch) {
-            for (int x=left_r_c, u=u_start; x<=right_r_c; x++, u+=du) {
+        int index= bbox_r_c.top * pitch;
+        for (int y=bbox_r_c.top, v=v0+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
+            for (int x=bbox_r_c.left, u=u_start; x<=bbox_r_c.right; x++, u+=du) {
                 sampler.sample(u, v, uv_precision, col_bmp);
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
             }

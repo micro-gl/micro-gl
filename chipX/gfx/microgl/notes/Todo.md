@@ -48,6 +48,7 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 6. investigate solving degenrate cases some day.
 
 #### road-map
+- texture sampling with optional compile time clamping, wrap etc..
 - explore avoid blending, and draw pixel directly mechanism
 - experiment with partial rendering blocks
 - remove bits info from samplers ? currently only use it in masks, but this info can be embeded in color_t

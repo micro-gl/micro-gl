@@ -26,7 +26,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
 include_directories("${PROJECT_BINARY_DIR}")
 
 set(SOURCES
-        main_draw_blocks_patch.cpp
+        main_draw_blocks_quads.cpp
+#        main_draw_blocks_patch.cpp
 #        main_compositing.cpp
 #        main_blend_modes.cpp
 #        main_draw_triangle.cpp

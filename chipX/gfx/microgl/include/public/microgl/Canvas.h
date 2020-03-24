@@ -38,7 +38,7 @@ public:
     struct window_t {
         rect canvas_rect;
         rect clip_rect;
-        int index_correction;
+        int index_correction=0;
     };
 
 private:
