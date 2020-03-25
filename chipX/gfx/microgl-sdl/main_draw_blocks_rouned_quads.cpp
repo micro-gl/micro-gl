@@ -8,12 +8,12 @@
 #include <microgl/samplers/texture.h>
 #include <microgl/samplers/flat_color.h>
 
-#define TEST_ITERATIONS 1
+#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 640*1
 SDL_Window * window;
 SDL_Renderer * renderer;
-SDL_Texture * sdl_texture;
+//SDL_Texture * sdl_texture;
 Resources resources{};
 
 using namespace microgl;
@@ -21,47 +21,25 @@ using namespace microgl::sampling;
 using index_t = unsigned int;
 using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::Bilinear>;
 Texture24 tex_uv;
 Canvas24 * canvas;
-sampling::flat_color color_grey{{122,122,122,255}};
+sampling::flat_color color_grey{{0,0,122,255}};
 void loop();
 void init_sdl(int width, int height);
+float t=0;
 
-template <typename number>
-using cubic_mesh = vec3<number> *;
-
-template <typename number>
-vec3<number>* bi_cubic_1(){
-
-    return new vec3<number>[4*4] {
-                {1.0f, 0.0f},
-                {170.66f, 0.0f},
-                {341.333f, 0.0f},
-                {512.0f, 0.0f},
-
-                {1.0f,       170.66f},
-                {293.44f,    162.78f},
-                {746.68f,    144.65f},
-                {512.0f,     170.66f},
-
-                {1.0f,       341.33f},
-                {383.12f,    327.69f},
-                {1042.79f,   296.31f},
-                {512.0f,     341.33f},
-
-                {1.0f,       512.0f},
-                {170.66f,    512.0f},
-                {341.333f,   512.0f},
-                {512.0f,     512.0f}
-    };
-}
+/*
+ * NOTE:
+ * SDL_RenderCopy is very slow and it's performance is for some reason not linear,
+ * so don't mind performance in these blocks examples
+ */
 
 template <typename number>
 void render_blocks() {
+    //t+=0.01;
     bool debug = 1;
-    const auto mesh= bi_cubic_1<number>();
-    int block_size = W/1;//2;//W/13;
+    int block_size = W/2;//W/10;//2;//W/13;
     int count_blocks_horizontal = 1+((W-1)/block_size); // with integer ceil rounding
     int count_blocks_vertical = 1+((H-1)/block_size); // with integer ceil rounding
     auto * bitmap = new Bitmap24(block_size, block_size);
@@ -74,12 +52,10 @@ void render_blocks() {
         for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
             canvas->updateCanvasWindow(ix, iy, bitmap);
             canvas->clear({255,255,255,255});
-            canvas->drawBezierPatch<blendmode::Normal, porterduff::None<>, false, number, number>(
-//                    color_grey,
+            canvas->drawRoundedQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
                     tex_uv,
-                    mesh, 4, 4, 20, 20,
-                    0, 1, 1, 0,
-                    255);
+                    color_grey,
+                    10+t, 10+t, 400+t, 400+t, 10, 1);
 
             SDL_Rect rect_source {0, 0, block_size, block_size};
             SDL_Rect rect_dest {ix, iy, block_size-debug, block_size-debug};
@@ -93,8 +69,6 @@ void render_blocks() {
 
     SDL_RenderPresent(renderer);
     SDL_DestroyTexture(sdl_texture);
-
-    delete[] mesh;
     delete bitmap;
 }
 
@@ -113,9 +87,7 @@ void init_sdl(int width, int height) {
 
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED,
             SDL_WINDOWPOS_UNDEFINED, width, height, 0);
-    renderer = SDL_CreateRenderer(window, -1, 0);
-    sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
-            SDL_TEXTUREACCESS_STREAMING, width, height);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
     auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
@@ -153,10 +125,10 @@ void loop() {
                     quit = true;
                 break;
         }
-//
         render();
     }
 
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
+

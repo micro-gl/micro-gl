@@ -59,6 +59,9 @@ void render_blocks() {
         }
     }
 
+    SDL_RenderPresent(renderer);
+    SDL_DestroyTexture(sdl_texture);
+
     delete bitmap;
 }
 
@@ -127,19 +130,4 @@ void loop() {
 
     SDL_DestroyWindow(window);
     SDL_Quit();
-}
-
-void test() {
-    SDL_Rect rect1 {W/2,H/2, W/2, H/2};
-    SDL_UpdateTexture(sdl_texture,
-                      &rect1,
-                      &canvas->pixels()[320 + 320*canvas->width()],
-                      (canvas->width()) * canvas->sizeofPixel());
-
-    SDL_Rect rect2{ 0, 0, W/2, H/2};
-    SDL_UpdateTexture(sdl_texture,
-                      &rect2,
-                      &canvas->pixels()[0 + 0*canvas->width()],
-                      (canvas->width()) * canvas->sizeofPixel());
-
 }

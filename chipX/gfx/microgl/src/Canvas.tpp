@@ -229,7 +229,6 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
 #undef f_p
 }
 
-
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
 void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
@@ -240,6 +239,8 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
                                        l64 u0, l64 v0, l64 u1, l64 v1,
                                        precision sub_pixel_precision, precision uv_p,
                                        Canvas::opacity_t opacity) {
+    auto effectiveRect = calculateEffectiveDrawRect();
+    if(effectiveRect.empty()) return;
     const precision p = sub_pixel_precision;
     const l64 step = (l64(1)<<p);
     const l64 half = step>>1;
@@ -255,20 +256,17 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
     const l64 mask= (1<<sub_pixel_precision)-1;
     // dimensions in two spaces, one in raster spaces for optimization
     const l64 left_=(left+0), top_=(top+0), right_=(right), bottom_=(bottom);
-    const l64 left_r=left_>>p, top_r=top_>>p, right_r=(right_+aa_range)>>p, bottom_r=(bottom_+aa_range)>>p;
-    bool degenerate= left_r==right_r || top_r==bottom_r;
-    if(degenerate) return;
-    const l64 du = (u1-u0)/(right_r-left_r);
-    const l64 dv = (v1-v0)/(bottom_r-top_r);
-    // clipping
-    const l64 left_r_c=functions::max<l64>(0, left_r), top_r_c=functions::max<l64>(0, top_r);
-    const l64 right_r_c=functions::min<l64>(right_r, width()-1), bottom_r_c=functions::min<l64>(height()-1, bottom_r);
-    const l64 dx=left_r_c-left_r, dy=top_r_c-top_r;
+    const rect bbox_r = {left_>>p, top_>>p,(right_+aa_range)>>p, (bottom_+aa_range)>>p};
+    const rect bbox_r_c = bbox_r.intersect(effectiveRect);
+    if(bbox_r_c.empty()) return;
+    const l64 du = (u1-u0)/(bbox_r.right-bbox_r.left);
+    const l64 dv = (v1-v0)/(bbox_r.bottom-bbox_r.top);
+    const l64 dx=bbox_r_c.left-bbox_r.left, dy=bbox_r_c.top-bbox_r.top;
     color_t color;
     const int pitch = width();
-    int index = top_r_c * pitch;
-    for (l64 y_r=top_r_c, yy=top_&~mask+dy*step, v=v0+dy*dv; y_r<=bottom_r_c; y_r++, yy+=step, v+=dv, index+=pitch) {
-        for (l64 x_r=left_r_c, xx=left_&~mask+dx*step, u=u0+dx*du; x_r<=right_r_c; x_r++, xx+=step, u+=du) {
+    int index = bbox_r_c.top * pitch;
+    for (l64 y_r=bbox_r_c.top, yy=(top_&~mask)+dy*step, v=v0+dy*dv; y_r<=bbox_r_c.bottom; y_r++, yy+=step, v+=dv, index+=pitch) {
+        for (l64 x_r=bbox_r_c.left, xx=(left_&~mask)+dx*step, u=u0+dx*du; x_r<=bbox_r_c.right; x_r++, xx+=step, u+=du) {
 
             int blend_fill=opacity, blend_stroke=opacity;
             bool inside_radius;
@@ -286,8 +284,8 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
                 if(in_top_right) {anchor_x= right_-radius, anchor_y=top_+radius; }
                 if(in_bottom_right) {anchor_x= right_-radius, anchor_y=bottom_-radius; }
 
-                l64 dx = xx - anchor_x, dy = yy - anchor_y;
-                const l64 distance_squared = ((l64(dx) * dx) >> p) + ((l64(dy) * dy) >> p);
+                l64 delta_x = xx - anchor_x, delta_y = yy - anchor_y;
+                const l64 distance_squared = ((l64(delta_x) * delta_x) >> p) + ((l64(delta_y) * delta_y) >> p);
                 sample_fill=inside_radius = (distance_squared - radius_squared) <= 0;
 
                 if (inside_radius) {

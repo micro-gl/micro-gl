@@ -541,3 +541,121 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     }
 }
 ```
+```c++
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
+void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
+                                       const sampling::sampler<S2> & sampler_stroke,
+                                       int left, int top,
+                                       int right, int bottom,
+                                       int radius, int stroke_size,
+                                       l64 u0, l64 v0, l64 u1, l64 v1,
+                                       precision sub_pixel_precision, precision uv_p,
+                                       Canvas::opacity_t opacity) {
+    const precision p = sub_pixel_precision;
+    const l64 step = (l64(1)<<p);
+    const l64 half = step>>1;
+    const l64 stroke = stroke_size-step;//(10<<p)/1;
+    const l64 aa_range = step;// (1<<p)/1;
+    const l64 radius_squared=(l64(radius)*(radius))>>p;
+    const l64 stroke_radius = (l64(radius-(stroke-0))*(radius-(stroke-0)))>>p;
+    const l64 outer_aa_radius = (l64(radius+aa_range)*(radius+aa_range))>>p;
+    const l64 outer_aa_bend = outer_aa_radius-radius_squared;
+    const l64 inner_aa_radius = (l64(radius-(stroke-0)-aa_range)*(radius-(stroke-0)-aa_range))>>p;
+    const l64 inner_aa_bend = stroke_radius-inner_aa_radius;
+    const bool apply_opacity = opacity!=255;
+    const l64 mask= (1<<sub_pixel_precision)-1;
+    // dimensions in two spaces, one in raster spaces for optimization
+    const l64 left_=(left+0), top_=(top+0), right_=(right), bottom_=(bottom);
+    const l64 left_r=left_>>p, top_r=top_>>p, right_r=(right_+aa_range)>>p, bottom_r=(bottom_+aa_range)>>p;
+    bool degenerate= left_r==right_r || top_r==bottom_r;
+    if(degenerate) return;
+    const l64 du = (u1-u0)/(right_r-left_r);
+    const l64 dv = (v1-v0)/(bottom_r-top_r);
+    // clipping
+    const l64 left_r_c=functions::max<l64>(0, left_r), top_r_c=functions::max<l64>(0, top_r);
+    const l64 right_r_c=functions::min<l64>(right_r, width()-1), bottom_r_c=functions::min<l64>(height()-1, bottom_r);
+    const l64 dx=left_r_c-left_r, dy=top_r_c-top_r;
+    color_t color;
+    const int pitch = width();
+    int index = top_r_c * pitch;
+    for (l64 y_r=top_r_c, yy=top_&~mask+dy*step, v=v0+dy*dv; y_r<=bottom_r_c; y_r++, yy+=step, v+=dv, index+=pitch) {
+        for (l64 x_r=left_r_c, xx=left_&~mask+dx*step, u=u0+dx*du; x_r<=right_r_c; x_r++, xx+=step, u+=du) {
+
+            int blend_fill=opacity, blend_stroke=opacity;
+            bool inside_radius;
+            bool sample_fill=true, sample_stroke=false;
+            const bool in_top_left= xx<=left_+radius && yy<=top_+radius;
+            const bool in_bottom_left= xx<=left_+radius && yy>=bottom_-radius;
+            const bool in_top_right= xx>=right_-radius && yy<=top_+radius;
+            const bool in_bottom_right= xx>=right_-radius && yy>=bottom_-radius;
+            const bool in_disks= in_top_left || in_bottom_left || in_top_right || in_bottom_right;
+
+            if(in_disks) {
+                l64 anchor_x=0, anchor_y=0;
+                if(in_top_left) {anchor_x= left_+radius, anchor_y=top_+radius; }
+                if(in_bottom_left) {anchor_x= left_+radius, anchor_y=bottom_-radius; }
+                if(in_top_right) {anchor_x= right_-radius, anchor_y=top_+radius; }
+                if(in_bottom_right) {anchor_x= right_-radius, anchor_y=bottom_-radius; }
+
+                l64 dx = xx - anchor_x, dy = yy - anchor_y;
+                const l64 distance_squared = ((l64(dx) * dx) >> p) + ((l64(dy) * dy) >> p);
+                sample_fill=inside_radius = (distance_squared - radius_squared) <= 0;
+
+                if (inside_radius) {
+                    const bool inside_stroke = (distance_squared - stroke_radius) >= 0;
+                    if (inside_stroke) { // inside stroke disk
+                        blend_stroke = opacity;
+                        sample_stroke=true;
+                    }
+                    else { // outside stroke disk, let's test for aa disk or radius inclusion
+                        const l64 delta_inner_aa = -inner_aa_radius + distance_squared;
+                        const bool inside_inner_aa_ring = delta_inner_aa >= 0;
+                        if (antialias && inside_inner_aa_ring) {
+                            // scale inner to 8 bit and then convert to integer
+                            blend_stroke = ((delta_inner_aa) << (8)) / inner_aa_bend;
+                            if (apply_opacity) blend_stroke = (blend_stroke * opacity) >> 8;
+                            sample_stroke=true;
+                        }
+                    }
+                } else if (antialias) { // we are outside the main radius
+                    const int delta_outer_aa = outer_aa_radius - distance_squared;
+                    const bool inside_outer_aa_ring = delta_outer_aa >= 0;
+                    if (inside_outer_aa_ring) {
+                        // scale inner to 8 bit and then convert to integer
+                        blend_stroke = ((delta_outer_aa) << (8)) / outer_aa_bend;
+                        if (apply_opacity) blend_stroke = (blend_stroke * opacity) >> 8;
+                        sample_stroke=true;
+                    }
+                }
+            } else {
+                // are we in external AA region ?
+                // few notes:
+                // this is not an accurate AA rounded rectangle, I use tricks to speed things up.
+                // - I need to do AA for the stroke walls, calculate the coverage.
+                //   currently I don't, therefore, there is a step function when rounded rectangle
+                //   moves in sub pixel coords
+                if(xx>right_ || yy>bottom_) {
+                    sample_fill=sample_stroke=false;
+                } else {
+                    if(xx-(left_&~mask)+0<=stroke) sample_stroke=true;
+                    else if(xx>=((right_&~mask) -stroke)) sample_stroke=true;
+                    else if(yy-(top_&~mask)<=stroke) sample_stroke=true;
+                    else if(yy>=(bottom_&~mask)-stroke) sample_stroke=true;
+                    else sample_stroke=false;
+                    sample_fill=true;
+                }
+            }
+            if (sample_fill) {
+                sampler_fill.sample(u, v, uv_p, color);
+                blendColor<BlendMode, PorterDuff>(color, (index+x_r), blend_fill);
+            }
+            if (sample_stroke) {
+                sampler_stroke.sample(u, v, uv_p, color);
+                blendColor<BlendMode, PorterDuff>(color, (index+x_r), blend_stroke);
+            }
+        }
+    }
+}
+
+```
