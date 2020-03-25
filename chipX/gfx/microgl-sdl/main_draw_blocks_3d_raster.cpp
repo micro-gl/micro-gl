@@ -2,41 +2,45 @@
 #include <chrono>
 #include <SDL2/SDL.h>
 #include "src/Resources.h"
-#include <microgl/camera.h>
 #include <microgl/Canvas.h>
+#include <microgl/camera.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
-#include <microgl/shaders/sampler_shader.h>
 #include <microgl/samplers/texture.h>
+#include <microgl/samplers/flat_color.h>
+#include <microgl/shaders/sampler_shader.h>
 #include "data/model_3d_cube.h"
 
-using namespace microgl::shading;
 #define TEST_ITERATIONS 100
 #define W 640*1
 #define H 640*1
-
 SDL_Window * window;
 SDL_Renderer * renderer;
-SDL_Texture * texture;
 Resources resources{};
 
-using namespace microgl::shading;
+using namespace microgl;
+using namespace microgl::sampling;
 using index_t = unsigned int;
 using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::Bilinear>;
+Texture24 tex_uv;
 Canvas24 * canvas;
-Texture24 tex_1, tex_2;
-
+sampling::flat_color color_grey{{0,0,122,255}};
 void loop();
 void init_sdl(int width, int height);
+float t=0;
 
-float t = 0;
-float z=0.0;
+/*
+ * NOTE:
+ * SDL_RenderCopy is very slow and it's performance is for some reason not linear,
+ * so don't mind performance in these blocks examples
+ */
+float z=0;
 
 template <typename number>
-void test_shader_texture_3d(const model_3d<number> & object) {
-
+void render_block(int block_x, int block_y,  Bitmap24 *bmp, long long * z_buffer, const model_3d<number> & object) {
+    using l64= long long;
     using vertex = vec3<number>;
     using camera = microgl::camera<number>;
     using mat4 = matrix_4x4<number>;
@@ -61,7 +65,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     // setup shader
     sampler_shader<number, Texture24> shader;
     shader.matrix= mvp_1;
-    shader.sampler= &tex_1;
+    shader.sampler= &tex_uv;
 
     // model to vertex buffers
     dynamic_array<vertex_attribute> vertex_buffer{object.vertices.size()};
@@ -71,19 +75,15 @@ void test_shader_texture_3d(const model_3d<number> & object) {
         v.uv= object.uvs[ix];
         vertex_buffer.push_back(v);
     }
-    //std::cout << z<<std::endl;
 
-    // init z-buffer
-    using ul64=  long long;
-    ul64 * z_buffer = new ul64[canvas->width()*canvas->height()]{};
-    for (int zx = 0; zx < canvas->width() * canvas->height(); ++zx) {
-        z_buffer[zx]=(ul64(1)<<62);
-    }
+    // clear z-buffer
+    for (int zx = 0; zx < canvas->width() * canvas->height(); ++zx)
+        z_buffer[zx]=(l64(1)<<62);
 
+    canvas->updateCanvasWindow(block_x, block_y, bmp);
     // draw model_1
     canvas->drawTriangles<blendmode::Normal, porterduff::None<>, false, true, true>(
-            shader,
-            canvas->width(), canvas->height(),
+            shader, W, H,
             vertex_buffer.data(),
             object.indices.data(),
             nullptr,
@@ -96,8 +96,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     // draw model_2
     shader.matrix= mvp_2;
     canvas->drawTriangles<blendmode::Normal, porterduff::None<>, false, true, true>(
-            shader,
-            canvas->width(), canvas->height(),
+            shader, W, H,
             vertex_buffer.data(),
             object.indices.data(),
             nullptr,
@@ -105,18 +104,51 @@ void test_shader_texture_3d(const model_3d<number> & object) {
             object.type,
             triangles::face_culling::ccw,
             z_buffer);
+}
 
+
+template <typename number>
+void render_blocks() {
+    using ul64=  long long;
+    //t+=0.01;
+    auto model = cube_3d<number>;
+    bool debug = 1;
+    int block_size = W/2;//W/10;//2;//W/13;
+    int count_blocks_horizontal = 1+((W-1)/block_size); // with integer ceil rounding
+    int count_blocks_vertical = 1+((H-1)/block_size); // with integer ceil rounding
+    auto * bitmap = new Bitmap24(block_size, block_size);
+    canvas = new Canvas24(bitmap);
+    auto * z_buffer = new ul64[block_size*block_size]{};
+
+    auto * sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
+                                           SDL_TEXTUREACCESS_STREAMING, block_size, block_size);
+
+    canvas->updateClipRect(0, 0, W, H);
+    SDL_RenderClear(renderer);
+    for (int iy = 0; iy < block_size*count_blocks_vertical; iy+=block_size) {
+        for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
+            canvas->updateCanvasWindow(ix, iy, bitmap);
+            canvas->clear({255,255,255,255});
+            render_block<number>(ix, iy, bitmap, z_buffer, model);
+            SDL_Rect rect_source {0, 0, block_size, block_size};
+            SDL_Rect rect_dest {ix, iy, block_size-debug, block_size-debug};
+            SDL_UpdateTexture(sdl_texture,
+                              &rect_source,
+                              &canvas->pixels()[0],
+                              (canvas->width()) * canvas->sizeofPixel());
+            SDL_RenderCopy(renderer, sdl_texture, &rect_source, &rect_dest);
+        }
+    }
+
+    SDL_RenderPresent(renderer);
+    SDL_DestroyTexture(sdl_texture);
     delete [] z_buffer;
+    delete bitmap;
 }
 
 void render() {
-    canvas->clear({255,255,255,255});
-    canvas->updateClipRect(0,0,W,H);
-    test_shader_texture_3d<float>(cube_3d<float>);
-//    test_shader_texture_3d<Q<16>>(cube_3d<Q<16>>);
-//    test_shader_texture_3d<Q<10>>(cube_3d<Q<10>>);
-//    test_shader_texture_3d<Q<5>>(cube_3d<Q<5>>);
-
+    render_blocks<float>();
+    //render_blocks<Q<16>>();
 }
 
 int main() {
@@ -129,13 +161,10 @@ void init_sdl(int width, int height) {
 
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED,
             SDL_WINDOWPOS_UNDEFINED, width, height, 0);
-    renderer = SDL_CreateRenderer(window, -1, 0);
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
-            SDL_TEXTUREACCESS_STATIC, width, height);
-    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
     auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
-    tex_1.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
-    canvas = new Canvas24(width, height);
+    tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
 }
 
 int render_test(int N) {
@@ -169,16 +198,10 @@ void loop() {
                     quit = true;
                 break;
         }
-//
         render();
-
-        SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
-                canvas->width() * canvas->sizeofPixel());
-        SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, texture, nullptr, nullptr);
-        SDL_RenderPresent(renderer);
     }
 
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
+

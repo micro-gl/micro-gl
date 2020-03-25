@@ -659,3 +659,235 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
 }
 
 ```
+
+```c++
+template<typename P, typename CODER>
+template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
+        typename impl, typename vertex_attr, typename varying, typename number>
+void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
+                                                         const vec4<number> &p0,  const vec4<number> &p1,  const vec4<number> &p2,
+                                                         varying &varying_v0, varying &varying_v1, varying &varying_v2,
+                                                         opacity_t opacity, const triangles::face_culling & culling,
+                                                         long long * depth_buffer,
+                                                         bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
+    /*
+     * given triangle coords in a homogeneous coords, a shader, and corresponding interpolated varying
+     * vertex attributes. we pass varying because somewhere in the pipeline we might have clipped things
+     * in homogeneous space and therefore had to update/correct the vertex attributes.
+     */
+    const precision sub_pixel_precision = 8;
+#define f microgl::math::to_fixed
+    varying interpolated_varying;
+    // perspective divide by w -> NDC space
+    // todo: bail out if w==0
+    const auto v0_ndc = p0/p0.w;
+    const auto v1_ndc = p1/p1.w;
+    const auto v2_ndc = p2/p2.w;
+    // viewport transform: NDC space -> raster space
+    const number w= width();
+    const number h= height();
+    number one = number(1), two=number(2);
+    vec3<number> v0_viewport = {((v0_ndc.x + one)*w)/two, h - ((v0_ndc.y + one)*h)/two, (v0_ndc.z + one)/two};
+    vec3<number> v1_viewport = {((v1_ndc.x + one)*w)/two, h - ((v1_ndc.y + one)*h)/two, (v1_ndc.z + one)/two};
+    vec3<number> v2_viewport = {((v2_ndc.x + one)*w)/two, h - ((v2_ndc.y + one)*h)/two, (v2_ndc.z + one)/two};
+
+    // collect values for interpolation as fixed point integers
+    int v0_x= f(v0_viewport.x, sub_pixel_precision), v0_y= f(v0_viewport.y, sub_pixel_precision);
+    int v1_x= f(v1_viewport.x, sub_pixel_precision), v1_y= f(v1_viewport.y, sub_pixel_precision);
+    int v2_x= f(v2_viewport.x, sub_pixel_precision), v2_y= f(v2_viewport.y, sub_pixel_precision);
+    const int w_bits= 18; const l64 one_w= (l64(1) << (w_bits << 1)); // negate z because camera is looking negative z axis
+    l64 v0_w= one_w / f(p0.w, w_bits), v1_w= one_w / f(p1.w, w_bits), v2_w= one_w / f(p2.w, w_bits);
+    const int z_bits= 24; const l64 one_z= (l64(1) << (z_bits)); // negate z because camera is looking negative z axis
+    l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
+
+    l64 area = functions::orient2d(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
+    // infer back-face culling
+    const bool ccw = area<0;
+    if(area==0) return; // discard degenerate triangles
+    if(ccw && culling==triangles::face_culling::ccw) return;
+    if(!ccw && culling==triangles::face_culling::cw) return;
+    if(ccw) { // convert CCW to CW triangle
+        functions::swap(v1_x, v2_x);
+        functions::swap(v1_y, v2_y);
+        area = -area;
+    } else { // flip vertically
+        functions::swap(varying_v1, varying_v2);
+        functions::swap(v1_w, v2_w);
+        functions::swap(v1_z, v2_z);
+    }
+    // rotate to match edges
+    functions::swap(varying_v0, varying_v1);
+    functions::swap(v0_w, v1_w);
+    functions::swap(v0_z, v1_z);
+
+#undef f
+
+    // bounding box in raster space
+#define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
+#define floor_fixed(val, bits) ((val)>>bits)
+    rect bbox;
+    l64 mask = ~((l64(1)<<sub_pixel_precision)-1);
+    l64 minX = floor_fixed(functions::min<l64>(v0_x, v1_x, v2_x)&mask, sub_pixel_precision);
+    l64 minY = floor_fixed(functions::min<l64>(v0_y, v1_y, v2_y)&mask, sub_pixel_precision);
+    l64 maxX = ceil_fixed(functions::max<l64>(v0_x, v1_x, v2_x), sub_pixel_precision);
+    l64 maxY = ceil_fixed(functions::max<l64>(v0_y, v1_y, v2_y), sub_pixel_precision);
+    // clipping
+    minX = functions::max<l64>(0, minX); minY = functions::max<l64>(0, minY);
+    maxX = functions::min<l64>(width()-1, maxX); maxY = functions::min<l64>(height()-1, maxY);
+#undef ceil_fixed
+#undef floor_fixed
+    bool outside= maxX<0 || maxY<0 || minX>(width()-1) || minY>(height()-1);
+    if(outside) return; // cull in 2d raster window
+    constexpr int max_alpha_value= bitmap::maxNativeAlphaChannelValue();
+    // anti-alias SDF configurations
+    bits bits_distance = 0;
+    bits bits_distance_complement = 8;
+    // max distance to consider in canvas space
+    unsigned int max_distance_canvas_space_anti_alias=0;
+    // max distance to consider in scaled space
+    unsigned int max_distance_scaled_space_anti_alias=0;
+    bits PREC_DIST = 15;
+    bool aa_all_edges = false;
+    if(antialias) {
+        aa_all_edges = aa_first_edge && aa_second_edge && aa_third_edge;
+        bits_distance = 0;
+        bits_distance_complement = 8 - bits_distance;
+        max_distance_canvas_space_anti_alias = 1u << bits_distance;
+        max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias<<PREC_DIST;
+    }
+    // fill rules configurations
+    triangles::top_left_t top_left =
+            triangles::classifyTopLeftEdges(false,
+                                            v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
+    int bias_w0 = top_left.first  ? 0 : -1;
+    int bias_w1 = top_left.second ? 0 : -1;
+    int bias_w2 = top_left.third  ? 0 : -1;
+    // Barycentric coordinates at minX/minY corner
+    vec2<l64> p = { minX, minY };
+    vec2<l64> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
+    l64 half= (l64(1)<<(sub_pixel_precision))>>1;
+    p_fixed = p_fixed + vec2<l64> {half, half}; // we sample at the center
+    // this can produce a 2P bits number if the points form a a perpendicular triangle
+    // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
+    // I still need to explain to myself why it works so well :)
+    l64 w0_row = functions::orient2d(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, 0) + bias_w0;
+    l64 w1_row = functions::orient2d(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) + bias_w1;
+    l64 w2_row = functions::orient2d(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) + bias_w2;
+    w0_row = w0_row>>sub_pixel_precision; w1_row = w1_row>>sub_pixel_precision; w2_row = w2_row>>sub_pixel_precision;
+    // Triangle setup, this needs at least (P+1) bits, since the delta is always <= length
+    int64_t A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
+    int64_t A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
+    int64_t A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
+    // AA, 2A/L = h, therefore the division produces a P bit number
+    int64_t w0_row_h=0, w1_row_h=0, w2_row_h=0;
+    int64_t A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
+
+    if(antialias) {
+        // lengths of edges, produces a P+1 bits number
+        unsigned int length_w0 = microgl::math::distance(v0_x, v0_y, v1_x, v1_y);
+        unsigned int length_w1 = microgl::math::distance(v1_x, v1_y, v2_x, v2_y);
+        unsigned int length_w2 = microgl::math::distance(v0_x, v0_y, v2_x, v2_y);
+
+        A01_h = ((int64_t)(v0_y - v1_y)<<PREC_DIST)/length_w0, B01_h = ((int64_t)(v1_x - v0_x)<<PREC_DIST)/length_w0;
+        A12_h = ((int64_t)(v1_y - v2_y)<<PREC_DIST)/length_w1, B12_h = ((int64_t)(v2_x - v1_x)<<PREC_DIST)/length_w1;
+        A20_h = ((int64_t)(v2_y - v0_y)<<PREC_DIST)/length_w2, B20_h = ((int64_t)(v0_x - v2_x)<<PREC_DIST)/length_w2;
+
+        w0_row_h = ((int64_t)(w0_row)<<PREC_DIST)/length_w0;
+        w1_row_h = ((int64_t)(w1_row)<<PREC_DIST)/length_w1;
+        w2_row_h = ((int64_t)(w2_row)<<PREC_DIST)/length_w2;
+    }
+    const int pitch= width();
+    int index = p.y * pitch;
+    for (p.y = minY; p.y <= maxY; p.y++) {
+        int w0 = w0_row;
+        int w1 = w1_row;
+        int w2 = w2_row;
+        int w0_h=0,w1_h=0,w2_h=0;
+        if(antialias) {
+            w0_h = w0_row_h;
+            w1_h = w1_row_h;
+            w2_h = w2_row_h;
+        }
+        for (p.x = minX; p.x<=maxX; p.x++) {
+            const bool in_closure= (w0|w1|w2)>=0;
+            bool should_sample= in_closure;
+            auto opacity_sample = opacity;
+            auto bary = vec4<l64>{w0, w1, w2, area};
+            if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
+                bary.x= (l64(w0)*v0_w)>>w_bits, bary.y= (l64(w1)*v1_w)>>w_bits, bary.z= (l64(w2)*v2_w)>>w_bits;
+                bary.w=bary.x+bary.y+bary.z;
+                if(bary.w==0) bary.w=1;
+            }
+            if(antialias && !in_closure) {
+                // any of the distances are negative, we are outside.
+                // test if we can anti-alias
+                // take minimum of all meta distances
+                int64_t distance = functions::min(w0_h, w1_h, w2_h);
+                int64_t delta = (distance) + max_distance_scaled_space_anti_alias;
+                bool perform_aa = aa_all_edges;
+                // test edges
+                if(!perform_aa) {
+                    if(distance==w0_h && aa_first_edge) perform_aa = true;
+                    else if(distance==w1_h && aa_second_edge) perform_aa = true;
+                    else perform_aa = distance == w2_h && aa_third_edge;
+                }
+                should_sample= perform_aa && delta>=0;
+                if(should_sample) {
+                    opacity_t blend = functions::clamp<int64_t>((((int64_t(delta) << bits_distance_complement))>>PREC_DIST),
+                                                                0, 255);
+                    if (opacity < max_alpha_value)
+                        blend = (blend * opacity) >> 8;
+                    opacity_sample= blend;
+
+                    if(perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
+                        bary.x= (l64(w0)*v0_w)>>w_bits, bary.y= (l64(w1)*v1_w)>>w_bits, bary.z= (l64(w2)*v2_w)>>w_bits;
+                        bary.w=bary.x+bary.y+bary.z;
+                        if(bary.w==0) bary.w=1;
+                    }
+                    // rewrite barycentric coords for AA so it sticks to the edges, seems to work
+                    bary.x= functions::clamp<long long>(bary.x, 0, bary.w);
+                    bary.y= functions::clamp<long long>(bary.y, 0, bary.w);
+                    bary.z= functions::clamp<long long>(bary.z, 0, bary.w);
+                    bary.w= bary.x+bary.y+bary.z;
+                }
+            }
+            if(depth_buffer_flag && should_sample) {
+//                l64 z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
+//                l64 z= ((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/area;
+                l64 z= (long long)(number((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/(area));
+//                z_tag= functions::clamp<l64>(z_tag, 0, l64(1)<<44);
+                if(z<0 || z>depth_buffer[index + p.x]) should_sample=false;
+                else depth_buffer[index + p.x]=z;
+            }
+            if(should_sample) {
+                // cast to user's number types vec4<number> casted_bary= bary;, I decided to stick with l64
+                // because other wise this would have wasted bits for Q types although it would have been more elegant.
+                interpolated_varying.interpolate(
+                        varying_v0,
+                        varying_v1,
+                        varying_v2, bary);
+                auto color = shader.fragment(interpolated_varying);
+                blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity_sample);
+            }
+            w0 += A01;
+            w1 += A12;
+            w2 += A20;
+            if(antialias) {
+                w0_h += A01_h;
+                w1_h += A12_h;
+                w2_h += A20_h;
+            }
+        }
+        w0_row += B01;
+        w1_row += B12;
+        w2_row += B20;
+        if(antialias) {
+            w0_row_h += B01_h;
+            w1_row_h += B12_h;
+            w2_row_h += B20_h;
+        }
+        index += pitch;
+    }
+}
+
+```

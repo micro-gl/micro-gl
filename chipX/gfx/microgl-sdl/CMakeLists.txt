@@ -26,7 +26,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
 include_directories("${PROJECT_BINARY_DIR}")
 
 set(SOURCES
-        main_draw_blocks_rouned_quads.cpp
+#        main_draw_blocks_3d_raster.cpp
+#        main_draw_blocks_rouned_quads.cpp
 #        main_draw_blocks_masks.cpp
 #        main_draw_blocks_quads.cpp
 #        main_draw_blocks_patch.cpp
@@ -54,7 +55,7 @@ set(SOURCES
 #        main_Q_matrix_transforms.cpp
 #        main_draw_shaders_2d.cpp
 #        main_draw_shaders_3d.cpp
-#        main_draw_z_buffer.cpp
+        main_draw_z_buffer.cpp
 #        main_3d_pipeline.cpp
 #        main_3d_camera.cpp
 #        main_number_systems.cpp

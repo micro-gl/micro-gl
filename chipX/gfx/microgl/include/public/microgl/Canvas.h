@@ -68,6 +68,8 @@ public:
         if($bmp) _bitmap_canvas=$bmp;
         _window.index_correction= _window.canvas_rect.width()*_window.canvas_rect.top
                 + _window.canvas_rect.left;
+        if(_window.clip_rect.empty())
+            _window.clip_rect= _window.canvas_rect;
     }
 
     rect calculateEffectiveDrawRect() {
@@ -171,13 +173,14 @@ public:
             bool antialias, bool perspective_correct, bool depth_buffer_flag=false,
             typename impl, typename vertex_attr, typename varying, typename number>
     void drawTriangles(shader_base<impl, vertex_attr, varying, number> &shader,
+                       int viewport_width, int viewport_height,
                        const vertex_attr *vertex_buffer,
                        const index *indices,
                        const boundary_info * boundary_buffer,
                        index size,
                        enum indices type,
                        const triangles::face_culling & culling= triangles::face_culling::none,
-                        long long * depth_buffer=nullptr,
+                       long long * depth_buffer=nullptr,
                        opacity_t opacity=255);
 
     template<typename BlendMode=blendmode::Normal,
@@ -226,9 +229,10 @@ public:
             bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
             typename impl, typename vertex_attr, typename varying, typename number>
     void drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
+                      int viewport_width, int viewport_height,
                       vertex_attr v0, vertex_attr v1, vertex_attr v2,
                       opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
-                       long long * depth_buffer=nullptr,
+                      long long * depth_buffer=nullptr,
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
 private:
@@ -237,6 +241,7 @@ private:
             bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
             typename impl, typename vertex_attr, typename varying, typename number>
     void drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
+                                           int viewport_width, int viewport_height,
                                            const vec4<number> &p0, const vec4<number> &p1, const vec4<number> &p2,
                                            varying &varying_v0, varying &varying_v1, varying &varying_v2,
                                            opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,

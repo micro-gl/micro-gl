@@ -385,6 +385,7 @@ template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename impl, typename vertex_attr, typename varying, typename number>
 void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, number> &shader,
+                                     int viewport_width, int viewport_height,
                                      const vertex_attr *vertex_buffer,
                                      const index *indices,
                                      const boundary_info * boundary_buffer,
@@ -405,6 +406,7 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
               }
               drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag>(
                       shader,
+                      viewport_width, viewport_height,
                       vertex_buffer[first_index],
                       vertex_buffer[second_index],
                       vertex_buffer[third_index],
@@ -633,6 +635,7 @@ template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename impl, typename vertex_attr, typename varying, typename number>
 void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
+                                    int viewport_width, int viewport_height,
                                     vertex_attr v0, vertex_attr v1, vertex_attr v2,
                                     const opacity_t opacity, const triangles::face_culling & culling,
                                      long long * depth_buffer,
@@ -668,7 +671,7 @@ void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, numb
         varying_v2_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_2_fixed);
 
         drawTriangle_shader_homo_internal<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag, impl, vertex_attr, varying, number>(
-                shader,
+                shader, viewport_width, viewport_height,
                 p0, p1, p2,
                 varying_v0_clip, varying_v1_clip, varying_v2_clip,
                 opacity, culling, depth_buffer, aa_first_edge, aa_second_edge, aa_third_edge);
@@ -680,6 +683,7 @@ template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename impl, typename vertex_attr, typename varying, typename number>
 void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
+                                                         int viewport_width, int viewport_height,
                                                          const vec4<number> &p0,  const vec4<number> &p1,  const vec4<number> &p2,
                                                          varying &varying_v0, varying &varying_v1, varying &varying_v2,
                                                          opacity_t opacity, const triangles::face_culling & culling,
@@ -690,7 +694,9 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
      * vertex attributes. we pass varying because somewhere in the pipeline we might have clipped things
      * in homogeneous space and therefore had to update/correct the vertex attributes.
      */
-    const precision sub_pixel_precision = 4;
+    auto effectiveRect = calculateEffectiveDrawRect();
+    if(effectiveRect.empty()) return;
+    const precision sub_pixel_precision = 8;
 #define f microgl::math::to_fixed
     varying interpolated_varying;
     // perspective divide by w -> NDC space
@@ -699,8 +705,8 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
     const auto v1_ndc = p1/p1.w;
     const auto v2_ndc = p2/p2.w;
     // viewport transform: NDC space -> raster space
-    const number w= width();
-    const number h= height();
+    const number w= viewport_width;
+    const number h= viewport_height;
     number one = number(1), two=number(2);
     vec3<number> v0_viewport = {((v0_ndc.x + one)*w)/two, h - ((v0_ndc.y + one)*h)/two, (v0_ndc.z + one)/two};
     vec3<number> v1_viewport = {((v1_ndc.x + one)*w)/two, h - ((v1_ndc.y + one)*h)/two, (v1_ndc.z + one)/two};
@@ -740,18 +746,16 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
     // bounding box in raster space
 #define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
 #define floor_fixed(val, bits) ((val)>>bits)
+    rect bbox;
     l64 mask = ~((l64(1)<<sub_pixel_precision)-1);
-    l64 minX = floor_fixed(functions::min<l64>(v0_x, v1_x, v2_x)&mask, sub_pixel_precision);
-    l64 minY = floor_fixed(functions::min<l64>(v0_y, v1_y, v2_y)&mask, sub_pixel_precision);
-    l64 maxX = ceil_fixed(functions::max<l64>(v0_x, v1_x, v2_x), sub_pixel_precision);
-    l64 maxY = ceil_fixed(functions::max<l64>(v0_y, v1_y, v2_y), sub_pixel_precision);
-    // clipping
-    minX = functions::max<l64>(0, minX); minY = functions::max<l64>(0, minY);
-    maxX = functions::min<l64>(width()-1, maxX); maxY = functions::min<l64>(height()-1, maxY);
+    bbox.left = floor_fixed(functions::min<l64>(v0_x, v1_x, v2_x)&mask, sub_pixel_precision);
+    bbox.top = floor_fixed(functions::min<l64>(v0_y, v1_y, v2_y)&mask, sub_pixel_precision);
+    bbox.right = ceil_fixed(functions::max<l64>(v0_x, v1_x, v2_x), sub_pixel_precision);
+    bbox.bottom = ceil_fixed(functions::max<l64>(v0_y, v1_y, v2_y), sub_pixel_precision);
+    bbox = bbox.intersect(effectiveRect);
+    if(bbox.empty()) return;
 #undef ceil_fixed
 #undef floor_fixed
-    bool outside= maxX<0 || maxY<0 || minX>(width()-1) || minY>(height()-1);
-    if(outside) return; // cull in 2d raster window
     constexpr int max_alpha_value= bitmap::maxNativeAlphaChannelValue();
     // anti-alias SDF configurations
     bits bits_distance = 0;
@@ -777,8 +781,8 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
     int bias_w1 = top_left.second ? 0 : -1;
     int bias_w2 = top_left.third  ? 0 : -1;
     // Barycentric coordinates at minX/minY corner
-    vec2<l64> p = { minX, minY };
-    vec2<l64> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
+    vec2<l64> p = { bbox.left, bbox.top };
+    vec2<l64> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
     l64 half= (l64(1)<<(sub_pixel_precision))>>1;
     p_fixed = p_fixed + vec2<l64> {half, half}; // we sample at the center
     // this can produce a 2P bits number if the points form a a perpendicular triangle
@@ -812,7 +816,7 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
     }
     const int pitch= width();
     int index = p.y * pitch;
-    for (p.y = minY; p.y <= maxY; p.y++) {
+    for (p.y = bbox.top; p.y <= bbox.bottom; p.y++) {
         int w0 = w0_row;
         int w1 = w1_row;
         int w2 = w2_row;
@@ -822,7 +826,7 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
             w1_h = w1_row_h;
             w2_h = w2_row_h;
         }
-        for (p.x = minX; p.x<=maxX; p.x++) {
+        for (p.x = bbox.left; p.x<=bbox.right; p.x++) {
             const bool in_closure= (w0|w1|w2)>=0;
             bool should_sample= in_closure;
             auto opacity_sample = opacity;
@@ -866,12 +870,12 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
                 }
             }
             if(depth_buffer_flag && should_sample) {
-//                l64 z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
-//                l64 z= ((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/area;
+                //l64 z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
                 l64 z= (long long)(number((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/(area));
-//                z_tag= functions::clamp<l64>(z_tag, 0, l64(1)<<44);
-                if(z<0 || z>depth_buffer[index + p.x]) should_sample=false;
-                else depth_buffer[index + p.x]=z;
+                //z_tag= functions::clamp<l64>(z_tag, 0, l64(1)<<44);
+                const int z_index = index - _window.index_correction + p.x;
+                if(z<0 || z>depth_buffer[z_index]) should_sample=false;
+                else depth_buffer[z_index]=z;
             }
             if(should_sample) {
                 // cast to user's number types vec4<number> casted_bary= bary;, I decided to stick with l64
