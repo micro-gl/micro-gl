@@ -55,8 +55,8 @@ set(SOURCES
 #        main_Q_matrix_transforms.cpp
 #        main_draw_shaders_2d.cpp
 #        main_draw_shaders_3d.cpp
-        main_draw_z_buffer.cpp
-#        main_3d_pipeline.cpp
+#        main_draw_z_buffer.cpp
+        main_3d_pipeline.cpp
 #        main_3d_camera.cpp
 #        main_number_systems.cpp
 #        main_aa_bug.cpp

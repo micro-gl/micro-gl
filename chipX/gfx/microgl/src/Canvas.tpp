@@ -425,7 +425,7 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_t &color,
                                               const opacity_t opacity) {
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
               [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
-                  drawTriangleWireframe(color, vertices[first_index], vertices[second_index], vertices[third_index]);
+                  drawTriangleWireframe(color, vertices[first_index], vertices[second_index], vertices[third_index], opacity);
               });
 }
 
@@ -434,10 +434,11 @@ template<typename BlendMode, typename PorterDuff, bool antialias, typename numbe
 void Canvas<P, CODER>::drawTriangleWireframe(const color_t &color,
                                              const vec2<number> &p0,
                                              const vec2<number> &p1,
-                                             const vec2<number> &p2) {
-    drawWuLine(color, p0.x, p0.y, p1.x, p1.y);
-    drawWuLine(color, p1.x, p1.y, p2.x, p2.y);
-    drawWuLine(color, p2.x, p2.y, p0.x, p0.y);
+                                             const vec2<number> &p2,
+                                             const opacity_t opacity) {
+    drawWuLine(color, p0.x, p0.y, p1.x, p1.y, opacity);
+    drawWuLine(color, p1.x, p1.y, p2.x, p2.y, opacity);
+    drawWuLine(color, p2.x, p2.y, p0.x, p0.y, opacity);
 }
 
 template<typename P, typename CODER>
@@ -1232,29 +1233,29 @@ void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
 template<typename P, typename CODER>
 template<typename number>
 void Canvas<P, CODER>::drawWuLine(const color_t &color,
-                                  number x0, number y0,
-                                  number x1, number y1) {
+                                  const number &x0, const number &y0,
+                                  const number &x1, const number &y1,
+                                  const opacity_t opacity) {
     using clipper = microgl::clipping::cohen_sutherland_clipper<number>;
-    auto clip =  clipper::compute(x0, y0, x1, y1, number(0), number(0), width(), height());
+    auto draw_rect = calculateEffectiveDrawRect();
+    auto clip =  clipper::compute(x0, y0, x1, y1, draw_rect.left, draw_rect.top,
+                                  draw_rect.right, draw_rect.bottom);
     if(!clip.inside) return;
     precision p = 8;
     int x0_ = microgl::math::to_fixed(clip.x0, p);
     int y0_ = microgl::math::to_fixed(clip.y0, p);
     int x1_ = microgl::math::to_fixed(clip.x1, p);
     int y1_ = microgl::math::to_fixed(clip.y1, p);
-    drawWuLine(color, x0_, y0_, x1_, y1_, p);
+    drawWuLine(color, x0_, y0_, x1_, y1_, p, opacity);
 }
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawWuLine(const color_t &color,
-                                  int x0, int y0,
-                                  int x1, int y1,
-                                  precision bits) {
+                                  const int x0, const int y0,
+                                  const int x1, const int y1,
+                                  precision bits, const opacity_t opacity) {
     int X0 = x0, Y0 = y0, X1 = x1, Y1=y1;
     color_t color_input=color;
-
-//    coder().convert(color, color_input);
-
     unsigned int IntensityBits = 8;
     unsigned int NumLevels = 1u << IntensityBits;
     unsigned int maxIntensity = NumLevels - 1;
@@ -1271,7 +1272,7 @@ void Canvas<P, CODER>::drawWuLine(const color_t &color,
 
     // Draw the initial pixel, which is always exactly intersected by
     // the line and so needs no weighting
-    blendColor(color_input, (X0+round)>>bits, (Y0+round)>>bits, maxIntensity);
+    blendColor(color_input, (X0+round)>>bits, (Y0+round)>>bits, opacity);
 
     if ((DeltaX = X1 - X0) >= 0) {
         XDir = 1<<bits;
@@ -1282,108 +1283,76 @@ void Canvas<P, CODER>::drawWuLine(const color_t &color,
     DeltaY = Y1 - Y0;
 
     // Special-case horizontal, vertical, and diagonal lines, which
-    // require no weighting because they go right through the center of
-    // every pixel
-    if ((Y1 - Y0) == 0) {
-        // Horizontal line
+    // require no weighting because they go right through the center of every pixel
+    if ((Y1 - Y0) == 0) { // Horizontal line
         while ((DeltaX-=one) > 0) {
             X0 += XDir;
-            blendColor(color_input, X0>>bits, Y0>>bits, maxIntensity);
-
+            blendColor(color_input, X0>>bits, Y0>>bits, opacity);
         }
         return;
     }
-    if (DeltaX == 0) {
-        // Vertical line
+    if (DeltaX == 0) { // Vertical line
         do {
             Y0+=one;
-            blendColor(color_input, X0>>bits, Y0>>bits, maxIntensity);
+            blendColor(color_input, X0>>bits, Y0>>bits, opacity);
         } while ((DeltaY-=one) > 0);
         return;
     }
-    if (DeltaX == DeltaY) {
-        // Diagonal line
+    if (DeltaX == DeltaY) { // Diagonal line
         do {
             X0 += XDir;
             Y0+=one;
-            blendColor(color_input, X0>>bits, Y0>>bits, maxIntensity);
+            blendColor(color_input, X0>>bits, Y0>>bits, opacity);
         } while ((DeltaY-=one) > 0);
         return;
     }
 
-    // line is not horizontal, diagonal, or vertical
     ErrorAcc = 0; // initialize the line error accumulator to 0
     // # of bits by which to shift ErrorAcc to get intensity level
     IntensityShift = 32 - IntensityBits;
-    // Mask used to flip all bits in an intensity weighting, producing the
-    // result (1 - intensity weighting)
+    // Mask used to flip all bits in an intensity weighting, producing the result (1 - intensity weighting)
+    // The IntensityBits most significant bits of ErrorAcc give us the
+    // intensity weighting for this pixel, and the complement of the
+    // weighting for the paired pixel
     WeightingComplementMask = maxIntensity;
 
-    // Is this an X-major or Y-major line?
     if (DeltaY > DeltaX) {
         // Y-major line; calculate 16-bit fixed-point fractional part of a
         // pixel that X advances each time Y advances 1 pixel, truncating the
         // result so that we won't overrun the endpoint along the X axis
         ErrorAdj = ((unsigned long long) DeltaX << 32) / (unsigned long long) DeltaY;
-        // Draw all pixels other than the first and last
-        while ((DeltaY-=one) > 0) {
-            ErrorAccTemp = ErrorAcc; // remember currrent accumulated error
+        while ((DeltaY-=one) > 0) { // Draw all pixels other than the first and last
+            ErrorAccTemp = ErrorAcc; // remember current accumulated error
             ErrorAcc += ErrorAdj; // calculate error for next pixel
-            if (ErrorAcc <= ErrorAccTemp) {
-                // The error accumulator turned over, so advance the X coord
-                X0 += XDir;
-            }
-            Y0+=one; // Y-major, so always advance Y
-            // The IntensityBits most significant bits of ErrorAcc give us the
-            // intensity weighting for this pixel, and the complement of the
-            // weighting for the paired pixel
+            if (ErrorAcc <= ErrorAccTemp)
+                X0 += XDir; // The error accumulator turned over, so advance the X coord
+            Y0+=one;
             Weighting = ErrorAcc >> IntensityShift;
-
-            unsigned int mix = (Weighting ^ WeightingComplementMask);
-            // this equals Weighting, but I write it like that for clarity for now
-            unsigned int mix_complement = maxIntensity - mix;
-
-            blendColor(color_input, X0>>bits, Y0>>bits, mix);
-            blendColor(color_input, (X0 + XDir)>>bits, Y0>>bits, mix_complement);
+            unsigned int mix = (Weighting ^ WeightingComplementMask); // complement of Weighting
+            blendColor(color_input, X0>>bits, Y0>>bits, (mix*opacity*257)>>16);
+            blendColor(color_input, (X0 + XDir)>>bits, Y0>>bits, (Weighting*opacity*257)>>16);
         }
-
         // Draw the final pixel, which is always exactly intersected by the line
-        // and so needs no weighting
         blendColor(color_input, (X1+round)>>bits, (Y1+round)>>bits, maxIntensity);
         return;
     }
-
     // It's an X-major line; calculate 16-bit fixed-point fractional part of a
     // pixel that Y advances each time X advances 1 pixel, truncating the
     // result to avoid overrunning the endpoint along the X axis
     ErrorAdj = ((unsigned long long) DeltaY << 32) / (unsigned long long) DeltaX;
-
     // Draw all pixels other than the first and last
     while ((DeltaX-=one) > 0) {
         ErrorAccTemp = ErrorAcc; // remember currrent accumulated error
         ErrorAcc += ErrorAdj; // calculate error for next pixel
-        if (ErrorAcc <= ErrorAccTemp) {
-            // The error accumulator turned over, so advance the Y coord
+        if (ErrorAcc <= ErrorAccTemp)
             Y0+=one;
-        }
         X0 += XDir; // X-major, so always advance X
-
-        // The IntensityBits most significant bits of ErrorAcc give us the
-        // intensity weighting for this pixel, and the complement of the
-        // weighting for the paired pixel
         Weighting = (ErrorAcc >> IntensityShift);
-
-        // Tomer notes:
-        // 1. i inverted the order because i do not use palettes like Michael.
-        // 2. we can halve the multiplications, but add more verbosity and unreadable code
-        //
         unsigned int mix = (Weighting ^ WeightingComplementMask);
         unsigned int mix_complement = maxIntensity - mix; // this equals Weighting
-
-        blendColor(color_input, X0>>bits, Y0>>bits, mix);
-        blendColor(color_input, X0>>bits, (Y0 + one)>>bits, mix_complement);
+        blendColor(color_input, X0>>bits, Y0>>bits, (mix*opacity*257)>>16);
+        blendColor(color_input, X0>>bits, (Y0 + one)>>bits, (Weighting*opacity*257)>>16);
     }
-
     // Draw the final pixel, which is always exactly intersected by the line
     // and so needs no weighting
     blendColor(color_input, (X1+round)>>bits, (Y1+round)>>bits, maxIntensity);

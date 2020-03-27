@@ -25,8 +25,8 @@ returning the result in q3 format */
 #define fixed_mul_fixed_3(a,b,q1,q2,q3) (fixed_convert_fixed((a)*(b), (q1)+(q2), q3))
 #define fixed_div_fixed_3(a,b,q1,q2,q3) (fixed_convert_fixed(a, q1, (q2)+(q3))/(b))
 
-#define MASK_FRACTION_FIXED(Q) ((1<<Q) - 1)
-#define MASK_INTEGRAL_BITS (MASK_FRACTION_BITS<<Q_)
+#define MASK_FRACTION_FIXED(q) ((1<<q) - 1)
+#define MASK_INTEGRAL_BITS(q) (~MASK_FRACTION_FIXED(q))
 
 #define fixed_frac_part(a, q) ((a) & (MASK_FRACTION_FIXED(q)))
 #define fixed_int_part(a, q) ((a) & (~MASK_FRACTION_FIXED(q)))

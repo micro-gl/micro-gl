@@ -41,6 +41,7 @@ void render_template(const model_3d<number_coords> & object) {
 
     z+=0.1121;
 
+    canvas->updateClipRect(W/2,50,600,600);
     int canvas_width = canvas->width();
     int canvas_height = canvas->height();
 
@@ -54,14 +55,14 @@ void render_template(const model_3d<number_coords> & object) {
     mat4 mvp = projection * view * model;
     canvas->clear({255,255,255,255});
     microgl::_3d::pipeline<number_coords, decltype(*canvas)>::render (
-            {0,0,255,255},
+            {250,0,255,255},
             object.vertices.data(),
             object.vertices.size(),
             object.indices.data(),
             object.indices.size(),
             mvp,
             triangles::indices::TRIANGLES,
-            *canvas
+            *canvas, 255
             );
 
 }

@@ -67,7 +67,8 @@ namespace microgl {
                         const index indices_size,
                         const mat4 & mvp,
                         const triangles::indices & type,
-                        canvas_type & canva) {
+                        canvas_type & canva,
+                        const uint8_t opacity=255) {
 
 #define IND(a) indices[(a)]
                 const unsigned width = canva.width();
@@ -87,7 +88,7 @@ namespace microgl {
                             vertex2 v2_ = {v2.x, v2.y};
                             vertex2 v3_ = {v3.x, v3.y};
 
-                            canva.drawTriangleWireframe(color, v1_, v2_, v3_);
+                            canva.drawTriangleWireframe(color, v1_, v2_, v3_, opacity);
                         }
 
                         break;

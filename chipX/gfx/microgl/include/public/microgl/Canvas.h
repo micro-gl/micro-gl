@@ -191,7 +191,7 @@ public:
                                 const index *indices,
                                 index size,
                                 enum indices type,
-                                opacity_t opacity);
+                                opacity_t opacity=255);
 
     // single triangles, includes shader based and one very fast fixed pipeline for color and textures
     template<typename BlendMode=blendmode::Normal,
@@ -200,7 +200,8 @@ public:
     void drawTriangleWireframe(const color_t &color,
                                const vec2<number> &p0,
                                const vec2<number> &p1,
-                               const vec2<number> &p2);
+                               const vec2<number> &p2,
+                               opacity_t opacity=255);
 
 private:
     template <typename BlendMode=blendmode::Normal,
@@ -325,15 +326,15 @@ public:
                      number2 u1=number2(1), number2 v1=number2(0), bool debug=false);
 private:
     void drawWuLine(const color_t & color,
-                    int x0, int y0,
-                    int x1, int y1,
-                    uint8_t bits = 0);
+                    int x0, int y0, int x1, int y1,
+                    precision bits = 0, opacity_t opacity=255);
 
 public:
     // Wu lines
     template<typename number>
     void drawWuLine(const color_t & color,
-                    number x0, number y0, number x1, number y1);
+                    const number &x0, const number &y0, const number &x1, const number &y1,
+                    opacity_t opacity=255);
 
     template <typename number>
     void drawWuLinePath(const color_t & color,
