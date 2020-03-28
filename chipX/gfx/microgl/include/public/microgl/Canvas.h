@@ -255,10 +255,10 @@ public:
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=number1, typename S>
     void drawQuadrilateral(const sampling::sampler<S> &sampler,
-                           number1 v0_x, number1 v0_y, number2 u0, number2 v0,
-                           number1 v1_x, number1 v1_y, number2 u1, number2 v1,
-                           number1 v2_x, number1 v2_y, number2 u2, number2 v2,
-                           number1 v3_x, number1 v3_y, number2 u3, number2 v3,
+                           const number1 & v0_x, const number1 & v0_y, const number2 & u0, const number2 & v0,
+                           const number1 & v1_x, const number1 & v1_y, const number2 & u1, const number2 & v1,
+                           const number1 & v2_x, const number1 & v2_y, const number2 & u2, const number2 & v2,
+                           const number1 & v3_x, const number1 & v3_y, const number2 & u3, const number2 & v3,
                            opacity_t opacity = 255);
     // QUADS
 

@@ -913,11 +913,11 @@ template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff,
         bool antialias, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawQuadrilateral(const sampling::sampler<S> & sampler,
-                                         number1 v0_x, number1 v0_y, number2 u0, number2 v0,
-                                         number1 v1_x, number1 v1_y, number2 u1, number2 v1,
-                                         number1 v2_x, number1 v2_y, number2 u2, number2 v2,
-                                         number1 v3_x, number1 v3_y, number2 u3, number2 v3,
-                                        const uint8_t opacity) {
+                                         const number1 &v0_x, const number1 & v0_y, const number2 & u0, const number2 & v0,
+                                         const number1 & v1_x, const number1 & v1_y, const number2 & u1, const number2 & v1,
+                                         const number1 & v2_x, const number1 & v2_y, const number2 & u2, const number2 & v2,
+                                         const number1 & v3_x, const number1 & v3_y, const number2 & u3, const number2 & v3,
+                                         const uint8_t opacity) {
     const precision uv_p = 16, pixel_p = 8;
 #define f microgl::math::to_fixed
     number2 q0 = 1, q1 = 1, q2 = 1, q3 = 1;
@@ -1254,6 +1254,7 @@ void Canvas<P, CODER>::drawWuLine(const color_t &color,
                                   const int x0, const int y0,
                                   const int x1, const int y1,
                                   precision bits, const opacity_t opacity) {
+    // we assume that the line is in the closure (interior+boundary) of the canvas window
     int X0 = x0, Y0 = y0, X1 = x1, Y1=y1;
     color_t color_input=color;
     unsigned int IntensityBits = 8;
@@ -1333,7 +1334,7 @@ void Canvas<P, CODER>::drawWuLine(const color_t &color,
             blendColor(color_input, (X0 + XDir)>>bits, Y0>>bits, (Weighting*opacity*257)>>16);
         }
         // Draw the final pixel, which is always exactly intersected by the line
-        blendColor(color_input, (X1+round)>>bits, (Y1+round)>>bits, maxIntensity);
+        blendColor(color_input, (X1+round)>>bits, (Y1+round)>>bits, opacity);
         return;
     }
     // It's an X-major line; calculate 16-bit fixed-point fractional part of a
@@ -1355,7 +1356,7 @@ void Canvas<P, CODER>::drawWuLine(const color_t &color,
     }
     // Draw the final pixel, which is always exactly intersected by the line
     // and so needs no weighting
-    blendColor(color_input, (X1+round)>>bits, (Y1+round)>>bits, maxIntensity);
+    blendColor(color_input, (X1+round)>>bits, (Y1+round)>>bits, opacity);
 }
 
 template<typename P, typename CODER>
