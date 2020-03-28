@@ -6,13 +6,20 @@
 
 namespace microgl {
     namespace sampling {
-        enum class texture_sampling {
+        enum class texture_filter {
             NearestNeighboor, Bilinear
         };
 
-        template <typename P, typename CODER, texture_sampling default_sampling=texture_sampling::NearestNeighboor>
-        class texture : public sampler<texture<P, CODER, default_sampling>> {
-            using base= sampler<texture<P, CODER, default_sampling>>;
+        enum class texture_wrap {
+            None, Clamp, ClampToBorderColor, Repeat, MirroredRepeat
+        };
+
+        template <typename P, typename CODER,
+                texture_filter filter=texture_filter::NearestNeighboor,
+                texture_wrap wrap_u=texture_wrap::None,
+                texture_wrap wrap_v=texture_wrap::None>
+        class texture : public sampler<texture<P, CODER, filter, wrap_u, wrap_v>> {
+            using base= sampler<texture<P, CODER, filter, wrap_u, wrap_v>>;
             using l64= long long;
         public:
             texture() : base{CODER::red_bits(),CODER::green_bits(),CODER::blue_bits(),CODER::alpha_bits()} {};
@@ -23,14 +30,55 @@ namespace microgl {
                 _bmp=bitmap;
             }
 
+            void updateBorderColor(const color_t & color) {
+                _border_color=color;
+            }
+
+            inline l64 apply_wrap(const l64 t) {
+
+            }
+
             inline void sample(const l64 u, const l64 v,
                                const uint8_t bits,
                                color_t &output) const {
+                l64 u_=u, v_=v;
+                switch(wrap_u) {
+                    case texture_wrap::Clamp : {
+                        l64 one= 1<<bits;
+                        u_=u_<0?0:(u_>one ? one : u_); break;
+                    }
+                    case texture_wrap::ClampToBorderColor : {
+                        if(u<0 || u>(1<<bits)) {
+                            output=_border_color; return;
+                        }
+                    }
+                    case texture_wrap::Repeat : {
+                        u_=u&((1<<bits)-1);
+                        break;
+                    }
+                }
+
+                switch(wrap_v) {
+                    case texture_wrap::Clamp : {
+                        l64 one= 1<<bits;
+                        v_=v<0?0:(v>one ? one : v); break;
+                    }
+                    case texture_wrap::ClampToBorderColor : {
+                        if(v<0 || v>(1<<bits)) {
+                            output=_border_color; return;
+                        }
+                    }
+                    case texture_wrap::Repeat : {
+                        v_=v&((l64(1)<<bits)-1);
+                        break;
+                    }
+                }
+
                 // compile time branching for default sampling
-                if(default_sampling==texture_sampling::NearestNeighboor)
-                    sample_nearest_neighboor(u, v, bits, output);
-                else if(default_sampling==texture_sampling::Bilinear)
-                    sample_bilinear(u, v, bits, output);
+                if(filter==texture_filter::NearestNeighboor)
+                    sample_nearest_neighboor(u_, v_, bits, output);
+                else if(filter==texture_filter::Bilinear)
+                    sample_bilinear(u_, v_, bits, output);
             }
 
             inline void sample_nearest_neighboor(const l64 u, const l64 v,
@@ -89,7 +137,7 @@ namespace microgl {
             }
 
         private:
-
+            color_t _border_color {0,0,0,(1<<CODER::alpha_bits())-1};
             Bitmap<P, CODER> * _bmp= nullptr;
         };
 

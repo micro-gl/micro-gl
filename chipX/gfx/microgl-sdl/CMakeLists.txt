@@ -42,6 +42,7 @@ set(SOURCES
 #        main_draw_masks.cpp
 #        main_clear.cpp
 #        main_draw_quad_aa_sub_pixel_experiment.cpp
+        main_draw_sampler_texture_wrap.cpp
 #        main_draw_sampler_texture.cpp
 #        main_draw_sampler_radial_gradient.cpp
 #        main_draw_sampler_angular_linear_gradient.cpp
@@ -56,7 +57,7 @@ set(SOURCES
 #        main_draw_shaders_2d.cpp
 #        main_draw_shaders_3d.cpp
 #        main_draw_z_buffer.cpp
-        main_3d_pipeline.cpp
+#        main_3d_pipeline.cpp
 #        main_3d_camera.cpp
 #        main_number_systems.cpp
 #        main_aa_bug.cpp
