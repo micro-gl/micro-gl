@@ -48,7 +48,7 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 6. investigate solving degenrate cases some day.
 
 #### road-map
-- texture sampling with optional compile time clamping, wrap etc..
+- investigate mip-mapping (I have all the theory from open gl spec)
 - explore avoid blending, and draw pixel directly mechanism
 - experiment with partial rendering blocks
 - remove bits info from samplers ? currently only use it in masks, but this info can be embeded in color_t
@@ -59,7 +59,6 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - shader need to retain some fragCoord(x,y,z,1/w) and bounding box, so user can do cool stuff
 - after path maker, remove bezier curve and lines painter
 - 3d pipeline, make 3d clipping configurable for planes and even skip
-- add opacity/colors/blend/composite to lines
 - AA for 3d with stencil buffer and multi-sampling of coverage, should be interesting
 - move logic for dynamic array
 
