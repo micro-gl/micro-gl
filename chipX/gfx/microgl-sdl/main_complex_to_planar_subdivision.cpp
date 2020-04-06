@@ -2,7 +2,6 @@
 #include <chrono>
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
-#include <microgl/PixelCoder.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/tesselation/planarize_division.h>
 
@@ -14,18 +13,18 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-using namespace tessellation;
 using index_t = unsigned int;
-using Canvas24Bit_Packed32 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using Canvas24 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
 
-Canvas24Bit_Packed32 * canvas;
+Canvas24 * canvas;
 
 void loop();
 void init_sdl(int width, int height);
 
 float t = 0;
 
-dynamic_array<vec2_f> box(float left, float top, float right, float bottom, bool ccw=false) {
+template <typename number>
+dynamic_array<vec2<number>> box(float left, float top, float right, float bottom, bool ccw=false) {
     if(!ccw)
         return {
                 {left,top},
@@ -42,8 +41,9 @@ dynamic_array<vec2_f> box(float left, float top, float right, float bottom, bool
     };
 };
 
-chunker<vec2_f> poly_inter_star() {
-    chunker<vec2_f> A;
+template <typename number>
+chunker<vec2<number>> poly_inter_star() {
+    chunker<vec2<number>> A;
 
     A.push_back_and_cut({
                                 {150, 150},
@@ -69,8 +69,9 @@ chunker<vec2_f> poly_inter_star() {
 }
 
 
-chunker<vec2_f> poly_inter_star_2() {
-    chunker<vec2_f> A;
+template <typename number>
+chunker<vec2<number>> poly_inter_star_2() {
+    chunker<vec2<number>> A;
 
     A.push_back_and_cut({
                                 {150, 150},
@@ -96,15 +97,36 @@ chunker<vec2_f> poly_inter_star_2() {
                                 {400/10,450/10},
                         });
 
-    A.push_back_and_cut(box(50,50,300,300, false));
-    A.push_back_and_cut(box(50,250,600,300, true));
-    A.push_back_and_cut(box(50,450,100,500, true));
+    A.push_back_and_cut(box<number>(50,50,300,300, false));
+    A.push_back_and_cut(box<number>(50,250,600,300, true));
+    A.push_back_and_cut(box<number>(50,450,100,500, true));
 
     return A;
 }
 
-chunker<vec2_f> poly_inter_simple_1() {
-    chunker<vec2_f> A;
+
+template <typename number>
+chunker<vec2<number>> poly_imp() {
+    chunker<vec2<number>> A;
+
+    A.push_back_and_cut({
+                                {150, 150},
+                                {450,150},
+                                {200,450},
+                                {300,50},
+                                {400,450},
+                        });
+
+//    A.push_back_and_cut(box<number>(50,50,300,300, false));
+//    A.push_back_and_cut(box<number>(50,250,600,300, true));
+//    A.push_back_and_cut(box<number>(50,450,100,500, true));
+
+    return A;
+}
+
+template <typename number>
+chunker<vec2<number>> poly_inter_simple_1() {
+    chunker<vec2<number>> A;
 
 //    A.push_back_and_cut({
 //                                {20,20},
@@ -121,8 +143,9 @@ chunker<vec2_f> poly_inter_simple_1() {
     return A;
 }
 
-chunker<vec2_f> box_1() {
-    chunker<vec2_f> A;
+template <typename number>
+chunker<vec2<number>> box_1() {
+    chunker<vec2<number>> A;
 
 //    A.push_back_and_cut({
 //                                {20,20},
@@ -130,25 +153,25 @@ chunker<vec2_f> box_1() {
 //                                {200,400},
 //                        });
 
-    A.push_back_and_cut(box(50,50,300,300));
-    A.push_back_and_cut(box(150,150,200,200));
+    A.push_back_and_cut(box<number>(50,50,300,300));
+    A.push_back_and_cut(box<number>(150,150,200,200));
 
     return A;
 }
 
-template <typename T>
-void render_polygon(chunker<vec2<T>> pieces) {
+template <typename number>
+void render_polygon(chunker<vec2<number>> pieces) {
     using index = unsigned int;
-    using psd = tessellation::planarize_division<T>;
+    using psd = microgl::tessellation::planarize_division<number>;
 
-    dynamic_array<vec2<T>> trapezes;
+    dynamic_array<vec2<number>> trapezes;
 
-    canvas->clear(color::colors::WHITE);
+    canvas->clear({255, 255, 255, 255});
 
     psd::compute_DEBUG(pieces, trapezes);
 
     for (index ix = 0; ix < trapezes.size(); ix+=4) {
-        canvas->drawLinePath(color::colors::BLACK,
+        canvas->drawWuLinePath({0,0,0,255},
                 &trapezes[ix], 4, true);
     }
 
@@ -167,7 +190,23 @@ void render() {
     t+=.05f;
 
 //    render_polygon(poly_inter_star());
-    render_polygon(poly_inter_star_2());
+//    render_polygon<double>(poly_inter_star_2<double>());
+    render_polygon<float>(poly_inter_star_2<float>());
+//    render_polygon<Q<0>>(poly_inter_star_2<Q<0>>());
+
+//    render_polygon<Q<0>>(poly_imp<Q<0>>());
+//    render_polygon<Q<10>>(poly_imp<Q<10>>());
+
+//    render_polygon<Q<1>>(poly_inter_star_2<Q<1>>());
+//    render_polygon<Q<2>>(poly_inter_star_2<Q<2>>());
+//    render_polygon<Q<3>>(poly_inter_star_2<Q<3>>());
+//    render_polygon<Q<4>>(poly_inter_star_2<Q<4>>());
+//    render_polygon<Q<8>>(poly_inter_star_2<Q<8>>());
+//    render_polygon<Q<12>>(poly_inter_star_2<Q<12>>());
+//    render_polygon<Q<15>>(poly_inter_star_2<Q<15>>());
+//    render_polygon<Q<16>>(poly_inter_star_2<Q<16>>());
+//    render_polygon<Q<17>>(poly_inter_star_2<Q<17>>());
+//    render_polygon<Q<18>>(poly_inter_star_2<Q<18>>());
 //    render_polygon(box_1());
 //    render_polygon(poly_inter_simple_1());
 }
@@ -187,7 +226,7 @@ void init_sdl(int width, int height) {
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
             SDL_TEXTUREACCESS_STATIC, width, height);
 
-    canvas = new Canvas24Bit_Packed32(width, height);
+    canvas = new Canvas24(width, height);
 }
 
 int render_test(int N) {
