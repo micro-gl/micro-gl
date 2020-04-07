@@ -191,8 +191,8 @@ void render() {
 
 //    render_polygon(poly_inter_star());
 //    render_polygon<double>(poly_inter_star_2<double>());
-    render_polygon<float>(poly_inter_star_2<float>());
-//    render_polygon<Q<0>>(poly_inter_star_2<Q<0>>());
+//    render_polygon<float>(poly_inter_star_2<float>());
+    render_polygon<Q<0>>(poly_inter_star_2<Q<0>>());
 
 //    render_polygon<Q<0>>(poly_imp<Q<0>>());
 //    render_polygon<Q<10>>(poly_imp<Q<10>>());

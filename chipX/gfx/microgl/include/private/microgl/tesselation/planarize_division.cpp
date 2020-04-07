@@ -269,25 +269,20 @@ namespace microgl {
                 return point_class_with_trapeze::unknown;
             }
             bool a_in_interior= class_a==point_class_with_trapeze::strictly_inside;
-            bool a_on_boundary= !a_in_interior;
-
             // easy test if (b) is in the closure of trapeze
             const auto codes= compute_location_codes(b, trapeze);
             const auto class_b = classify_from_location_codes(codes);
             if(class_b!=point_class_with_trapeze::outside) // b in closure, we are done
                 return class_b;
-
             // if we got here, (b) is outside, now let's round things
             // if (a) is in interior, we are done since there is nothing to round, because there is intersection.
             if(a_in_interior)
                 return point_class_with_trapeze::outside;
-
             // this might be redundant
             bool a_is_boundary_vertex = class_a==point_class_with_trapeze::boundary_vertex;
             // vertex (a) is on boundary since it is not outside and not in interior, now begin edge rounding if possible.
             // for each wall, test if vertex (a) is on the wall and that vertex (b) is strictly right of the wall.
             // if so, clamp it along.
-
             { // left wall
                 const auto & start= trapeze.left_top->origin->coords;
                 const auto & end= trapeze.left_bottom->origin->coords;
@@ -323,6 +318,7 @@ namespace microgl {
                 if(a_on_wall && b_right_of_wall) { // bingo, let's round
                     clamp(b.x, start.x, end.x);
                     b.y= evaluate_line_at_x(b.x, start, end);
+                    clamp_vertex_vertically(b, start, end);
                     if(b==start || b==end) return point_class_with_trapeze::boundary_vertex;
                     return point_class_with_trapeze::bottom_wall;
                 }
@@ -336,11 +332,11 @@ namespace microgl {
                 if(a_on_wall && b_right_of_wall) { // bingo, let's round
                     clamp(b.x, end.x, start.x);
                     b.y= evaluate_line_at_x(b.x, end, start);
+                    clamp_vertex_vertically(b, start, end);
                     if(b==start || b==end) return point_class_with_trapeze::boundary_vertex;
                     return point_class_with_trapeze::top_wall;
                 }
             }
-
             return point_class_with_trapeze::outside;
         }
 
@@ -460,7 +456,6 @@ namespace microgl {
             e_1->twin = e_t_0;
             // make sure point refers to any edge leaving it
             e_1->origin->edge = e_1;
-
             return e_1;
         }
 
@@ -519,12 +514,6 @@ namespace microgl {
                 const bool on_segment = reverse_direction ? v_coord>coord_1 : v_coord<coord_1;
                 // check endpoints first
                 if(v_coord==coord_0) return e_start;
-//                if(v_coord==coord_0) { // override
-//                    e_start->origin->coords=v;
-//                    return e_start;
-//                }
-//                if(v==e_start->origin->coords)
-//                    return e_start;
                 if(on_segment)
                     return try_split_edge_at(v, e_start, pool);
                 e_start=e_start->next;
@@ -537,9 +526,9 @@ namespace microgl {
         number planarize_division<number>::evaluate_line_at_x(const number x, const vertex &a, const vertex &b) {
             if(x==a.x) return a.y;
             if(x==b.x) return b.y;
-            // can be made better for Q numbers
-            auto slope = (b.y-a.y)/(b.x-a.x);
-//            auto y = a.y + slope*(x-a.x);
+            //auto slope = (b.y-a.y)/(b.x-a.x);
+            //auto y = a.y + slope*(x-a.x);
+            // this gives more accuracy for Q numbers
             auto y = a.y + (((b.y-a.y)*(x-a.x))/(b.x-a.x));
             return y;
         }
@@ -634,11 +623,9 @@ namespace microgl {
                 if(iter->face==face) return iter;
                 iter=iter->twin->next;
             } while(iter!=end);
-
 #if DEBUG_PLANAR==true
             throw std::runtime_error("locate_half_edge_of_face_rooted_at_vertex::not found face !!!");
 #endif
-
             return nullptr;
         }
 
@@ -696,7 +683,6 @@ namespace microgl {
             vertex_b_edge->prev = e;
             e_twin->next = vertex_a_edge;
             vertex_a_edge->prev = e_twin;
-
             // now, we need to update conflicts lists and link some edges to their new faces
             // so, now face will be f1, the face left of e. while e-twin will have f2 as left face
             e->face = face;
@@ -728,10 +714,8 @@ namespace microgl {
             // this is a dangerous practice, would be better to return a struct with pointers
             if(result_edge_a) *result_edge_a = edge_vertex_a;
             if(result_edge_b) *result_edge_b = edge_vertex_b;
-
             const int winding = infer_edge_winding(a, b);
             if(winding==0) return;
-
             auto *start = edge_vertex_a;
             auto *end = edge_vertex_b;
             // sort if needed
@@ -742,7 +726,6 @@ namespace microgl {
                 start->twin->winding=start->winding;
                 start=start->next;
             }
-
         }
 
         template<typename number>
@@ -848,7 +831,6 @@ namespace microgl {
             // 3. infer the correct trapeze where "b" is in and perform roughly the same
             //    operation
             // 4. connect the two points, so they again split a face (in case they are not vertical)
-
             const int winding = infer_edge_winding(a, b);
             // first, in order to avoid robust issues later, we insert the (b) vertex on the trapeze.
             // if (b) is not strictly inside, then it is on the boundary of the trapeze, so let's
@@ -923,12 +905,9 @@ namespace microgl {
             auto * inserted_edge = a_edge;
             bool is_a_b_vertical = a_edge->origin->coords.x==b_edge->origin->coords.x;
             if(!is_a_b_vertical)
-                inserted_edge = insert_edge_between_non_co_linear_vertices(a_edge, b_edge,
-                                                                           dynamic_pool);
-
+                inserted_edge = insert_edge_between_non_co_linear_vertices(a_edge, b_edge, dynamic_pool);
             inserted_edge->winding += winding;
             inserted_edge->twin->winding = inserted_edge->winding; // a_edge->twin is b_edge
-
             *result_edge_a = inserted_edge;
             *result_edge_b = inserted_edge->twin;
             return true;
@@ -967,10 +946,8 @@ namespace microgl {
 
                     candidates[index++]= iter;
                 }
-
                 if(index==2)
                     break;
-
                 iter=iter->twin->next;
             } while(iter!=end);
 
@@ -1011,11 +988,8 @@ namespace microgl {
                         // if it is almost a line, then (v,b) edge eligible for removal
                         remove_edge(candidate_edge);
                     }
-
                 }
-
             }
-
         }
 
         template<typename number>
@@ -1113,13 +1087,16 @@ namespace microgl {
                     // btw, we at-least split vertically into two top and bottom pieces
                     const bool has_inserted_edge= handle_face_split(trapeze, a, b_tag, class_a, class_b_tag,
                                                      &a_vertex_edge, &b_tag_vertex_edge, dynamic_pool);
+                }
 
-                    if(count==0) {
-                        // handle_face_split ,method might change/clamp 'a' vertex. If this is
-                        // the first endpoint, we would like to copy this change to source.
-                        // this should contribute to robustness
-                        edge->origin->coords=a_vertex_edge->origin->coords;
-                    }
+                // a and b' might got rounded on the edges, so let's update
+                a= a_vertex_edge->origin->coords;
+                b_tag= b_tag_vertex_edge->origin->coords;
+                if(count==0) {
+                    // handle_face_split ,method might change/clamp 'a' vertex. If this is
+                    // the first endpoint, we would like to copy this change to source.
+                    // this should contribute to robustness
+                    edge->origin->coords=a_vertex_edge->origin->coords;
                 }
 
                 // now, we need to merge faces if we split a vertical wall, i.e, if
@@ -1133,13 +1110,15 @@ namespace microgl {
                 if(candidate_merge&&(APPLY_MERGE))
                     handle_face_merge(a_vertex_edge->origin);
 
+#if DEBUG_PLANAR==true
+                if(count>=MAX_ITERATIONS)
+                    throw std::runtime_error("insert_edge():: seems like infinite looping !! edge # " + std::to_string(idx));
+#endif
                 // increment
-                // if b'==b we are done
-                are_we_done = b==b_tag || count>=220;
+                // if b'==b we are done, this might be problematic if b' was rounded/clamped
+                are_we_done = b==b_tag || count>=MAX_ITERATIONS;
                 if(are_we_done)
                     break;
-                // todo: if b is the last endpoint of the edge, update it's coordinates with the original
-                // todo: source copy, in case there was a clamping
 
                 // ITERATION STEP, therefore update:
                 // 1. now iterate on the sub-line (b', b), by assigning a=b'
@@ -1173,11 +1152,9 @@ namespace microgl {
             // now start iterations
             for (int ix = 0; ix < v_size; ++ix) {
                 auto * e = edges_list[ix];
-
                 //remove_edge_from_conflict_list(e);
                 insert_edge(e, ix, dynamic_pool);
             }
-
         }
 
         template<typename number>
@@ -1367,28 +1344,17 @@ namespace microgl {
             conflicting_edge_intersection_status result{};
             result.class_of_interest_point = cla_b;
             result.point_of_interest = b;
-            // if vertex (b) is inside or on the boundary, we are done
-            bool b_in_exterior = cla_b==point_class_with_trapeze::outside;
-            bool b_in_interior = cla_b==point_class_with_trapeze::strictly_inside;
-            bool b_in_closure = !b_in_exterior;
-            bool b_in_boundary = !b_in_interior && !b_in_exterior;
+            // if vertex (b) is closure (inside or on the boundary), we are done
+            bool b_in_closure = cla_b!=point_class_with_trapeze::outside;
             if(b_in_closure)
                 return result;
 
             // if we got here, vertex (a) is in the closure and vertex (b) is outside/exterior.
             // the strategy:
-            // - try to round now the edge from interior to a wall boundary is they pass a certain threshold
             // - compute intersections against walls and pick the correct one
-            // first test if we have b cases
-            bool a_is_on_boundary= a_class!=point_class_with_trapeze::strictly_inside;
-
-            // first test if we have a cases
-            // we now know, that b is outside, therefore hunt proper intersections
             vertex intersection_point{};
-            number alpha(0), alpha1(0);
-//            number biggest_alpha=number(0);
+            number alpha(0), alpha1(0); // alphas are not reliable because of the way I compute
             intersection_status status;
-//            bool is_bigger_alpha;
 
             { // left-wall
                 const auto &start = trapeze.left_top->origin->coords;
@@ -1397,33 +1363,14 @@ namespace microgl {
                 if(!a_on_wall) {
                     status = finite_segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
                     if(status==intersection_status::intersect) {
-//                        is_bigger_alpha = alpha>=biggest_alpha;
-//                        if(is_bigger_alpha) {
-//                            biggest_alpha=alpha;
-                            result.class_of_interest_point = point_class_with_trapeze::left_wall;
-                            result.point_of_interest = intersection_point;
-                            result.point_of_interest.x=start.x;
-                            clamp(result.point_of_interest.y, start.y, end.y); // important to clamp for symbolic reasons as well in case of numeric errors.
-                            if(result.point_of_interest==start || result.point_of_interest==end)
-                                result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
-//                        }
+                        result.class_of_interest_point = point_class_with_trapeze::left_wall;
+                        result.point_of_interest = intersection_point;
+                        result.point_of_interest.x=start.x;
+                        clamp(result.point_of_interest.y, start.y, end.y); // important to clamp for symbolic reasons as well in case of numeric errors.
+                        if(result.point_of_interest==start || result.point_of_interest==end)
+                            result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
                     }
-
                 }
-
-//                else if(status==intersection_status::parallel) {
-//                    const bool a_on_wall= a.x==start.x;
-//                    if(a_on_wall) {
-//                        result.class_of_interest_point = point_class_with_trapeze::left_wall;
-//                        result.point_of_interest = b;
-//                        result.point_of_interest.x=start.x;
-//                        clamp(result.point_of_interest.y, start.y, end.y); // important to clamp for symbolic reasons as well in case of numeric errors.
-//                        if(result.point_of_interest==start || result.point_of_interest==end)
-//                            result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
-//                        return result;
-//                    }
-//                }
-
             }
             { // right wall
                 const auto &start = trapeze.right_bottom->origin->coords;
@@ -1432,32 +1379,14 @@ namespace microgl {
                 if(!a_on_wall) {
                     status = finite_segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
                     if(status==intersection_status::intersect) {
-//                        is_bigger_alpha = alpha>=biggest_alpha;
-//                        if(is_bigger_alpha) {
-//                            biggest_alpha = alpha;
-                            result.class_of_interest_point = point_class_with_trapeze::right_wall;
-                            result.point_of_interest = intersection_point;
-                            result.point_of_interest.x = start.x;
-                            clamp(result.point_of_interest.y, end.y, start.y);
-                            if (result.point_of_interest == start || result.point_of_interest == end)
-                                result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
-//                        }
+                        result.class_of_interest_point = point_class_with_trapeze::right_wall;
+                        result.point_of_interest = intersection_point;
+                        result.point_of_interest.x = start.x;
+                        clamp(result.point_of_interest.y, end.y, start.y);
+                        if (result.point_of_interest == start || result.point_of_interest == end)
+                            result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
                     }
                 }
-//                else if(status==intersection_status::parallel) {
-//                    const bool a_on_wall= a.x==start.x;
-//                    if(a_on_wall) {
-//                        result.class_of_interest_point = point_class_with_trapeze::right_wall;
-//                        result.point_of_interest = b;
-//                        result.point_of_interest.x=start.x;
-//                        clamp(result.point_of_interest.y, end.y, start.y);
-//                        if(result.point_of_interest==start || result.point_of_interest==end)
-//                            result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
-//                        return result;
-//                    }
-//
-//                }
-
             }
             { // bottom wall
                 const auto &start = trapeze.left_bottom->origin->coords;
@@ -1466,32 +1395,14 @@ namespace microgl {
                 if(!a_on_wall) {
                     status = finite_segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
                     if(status==intersection_status::intersect) {
-//                        is_bigger_alpha = alpha>=biggest_alpha;
-//                        if(is_bigger_alpha) {
-//                            biggest_alpha=alpha;
-                            result.class_of_interest_point = point_class_with_trapeze::bottom_wall;
-                            result.point_of_interest = intersection_point;
-                            if(result.point_of_interest.x==start.x) result.point_of_interest=start;
-                            else if(result.point_of_interest.x==end.x) result.point_of_interest=end;
-                            if(result.point_of_interest==start || result.point_of_interest==end)
-                                result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
-//                        }
+                        result.class_of_interest_point = point_class_with_trapeze::bottom_wall;
+                        result.point_of_interest = intersection_point;
+                        if(result.point_of_interest.x==start.x) result.point_of_interest=start;
+                        else if(result.point_of_interest.x==end.x) result.point_of_interest=end;
+                        if(result.point_of_interest==start || result.point_of_interest==end)
+                            result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
                     }
-
                 }
-//                else if(status==intersection_status::parallel) {
-//                    const bool a_on_wall= a==start || a==end || a_class==point_class_with_trapeze::bottom_wall;
-//                    if(a_on_wall) {
-//                        result.class_of_interest_point = point_class_with_trapeze::bottom_wall;
-//                        result.point_of_interest = b;
-//                        clamp_vertex_horizontally(result.point_of_interest, start, end);
-//                        if(result.point_of_interest==start || result.point_of_interest==end)
-//                            result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
-//                        return result;
-//                    }
-//
-//                }
-
             }
             { // top wall
                 const auto &start = trapeze.right_top->origin->coords;
@@ -1500,33 +1411,15 @@ namespace microgl {
                 if(!a_on_wall) {
                     status = finite_segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
                     if(status==intersection_status::intersect) {
-//                        is_bigger_alpha = alpha>=biggest_alpha;
-//                        if(is_bigger_alpha) {
-//                            biggest_alpha=alpha;
-                            result.class_of_interest_point = point_class_with_trapeze::top_wall;
-                            result.point_of_interest = intersection_point;
+                        result.class_of_interest_point = point_class_with_trapeze::top_wall;
+                        result.point_of_interest = intersection_point;
                         if(result.point_of_interest.x==start.x) result.point_of_interest=start;
                         else if(result.point_of_interest.x==end.x) result.point_of_interest=end;
                         if(result.point_of_interest==start || result.point_of_interest==end)
                                 result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
-//                        }
-
                     }
                 }
-//                else if(status==intersection_status::parallel) {
-//                    const bool a_on_wall= a==start || a==end || a_class==point_class_with_trapeze::top_wall;
-//                    if(a_on_wall) {
-//                        result.class_of_interest_point = point_class_with_trapeze::top_wall;
-//                        result.point_of_interest = b;
-//                        clamp_vertex_horizontally(result.point_of_interest, start, end);
-//                        if(result.point_of_interest==start || result.point_of_interest==end)
-//                            result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
-//                        return result;
-//                    }
-//                }
-
             }
-
             return result;
         }
 

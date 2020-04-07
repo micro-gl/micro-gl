@@ -1,5 +1,6 @@
 #pragma once
 #define DEBUG_PLANAR true
+#define MAX_ITERATIONS 200
 #define APPLY_MERGE true
 
 #include <microgl/tesselation/half_edge.h>
@@ -18,8 +19,6 @@ namespace microgl {
         private:
 #define min__(a, b) ((a)<(b) ? (a) : (b))
 #define max__(a, b) ((a)>(b) ? (a) : (b))
-//            static number ZERO;//= number(0);
-//            static number ONE;//= number(1);
             using vertex = microgl::vec2<number>;
             using index = unsigned int;
             using half_edge = half_edge_t<number>;
@@ -177,7 +176,8 @@ namespace microgl {
             auto create_frame(const chunker<vertex> &pieces, static_pool & pool) -> half_edge_face *;
 
             static
-            auto build_edges_and_conflicts(const chunker<vertex> &pieces, half_edge_face & main_frame, static_pool & pool) -> half_edge** ;
+            auto build_edges_and_conflicts(const chunker<vertex> &pieces, half_edge_face & main_frame,
+                    static_pool & pool) -> half_edge** ;
 
             static
             void insert_edge(half_edge *edge, index idx, dynamic_pool &pool);
@@ -212,7 +212,8 @@ namespace microgl {
 
             static
             auto
-            insert_edge_between_non_co_linear_vertices(half_edge *vertex_a_edge, half_edge *vertex_b_edge, dynamic_pool &dynamic_pool) -> half_edge *;
+            insert_edge_between_non_co_linear_vertices(half_edge *vertex_a_edge, half_edge *vertex_b_edge,
+                    dynamic_pool &dynamic_pool) -> half_edge *;
 
             static
             auto classify_conflict_against_two_faces(const half_edge *face_separator, const half_edge *edge)->half_edge_face *;
@@ -244,7 +245,8 @@ namespace microgl {
             static
             auto
             compute_conflicting_edge_intersection_against_trapeze(const trapeze_t &trapeze,
-                                                                  vertex &a, vertex b, const point_class_with_trapeze & a_class) -> conflicting_edge_intersection_status;
+                                                                  vertex &a, vertex b, const point_class_with_trapeze & a_class)
+                                                                  -> conflicting_edge_intersection_status;
 
             static
             bool is_trapeze_degenerate(const trapeze_t &trapeze);
