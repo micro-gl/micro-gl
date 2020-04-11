@@ -93,45 +93,6 @@ chunker<vec2<number>> poly_inter_star_2() {
     return A;
 }
 
-
-template <typename number>
-chunker<vec2<number>> poly_imp() {
-    chunker<vec2<number>> A;
-
-    A.push_back_and_cut({
-                                {150, 150},
-                                {450,150},
-                                {200,450},
-                                {300,50},
-                                {400,450},
-                        });
-
-//    A.push_back_and_cut(box<number>(50,50,300,300, false));
-//    A.push_back_and_cut(box<number>(50,250,600,300, true));
-//    A.push_back_and_cut(box<number>(50,450,100,500, true));
-
-    return A;
-}
-
-template <typename number>
-chunker<vec2<number>> poly_inter_simple_1() {
-    chunker<vec2<number>> A;
-
-//    A.push_back_and_cut({
-//                                {20,20},
-//                                {400,20},
-//                                {200,400},
-//                        });
-
-    A.push_back_and_cut({
-                                {100,50},
-                                {400,50},
-                                {450,400},
-                        });
-
-    return A;
-}
-
 template <typename number>
 chunker<vec2<number>> box_1() {
     chunker<vec2<number>> A;
@@ -204,8 +165,8 @@ void render() {
 //    render_polygon<float>(poly_inter_star_2<float>());
 //    render_polygon<Q<0>>(poly_inter_star_2<Q<0>>());
 
-//    render_polygon<Q<0>>(poly_imp<Q<0>>());
-//    render_polygon<Q<10>>(poly_imp<Q<10>>());
+//    render_polygon<Q<0>>(poly_inter_star<Q<0>>());
+//    render_polygon<Q<10>>(poly_inter_star<Q<10>>());
 
 //    render_polygon<Q<1>>(poly_inter_star_2<Q<1>>());
 //    render_polygon<Q<2>>(poly_inter_star_2<Q<2>>());
