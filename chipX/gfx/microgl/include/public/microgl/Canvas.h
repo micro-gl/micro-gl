@@ -159,7 +159,7 @@ public:
     // Triangle batches
 
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, typename number1=float, typename number2=number1, typename S>
+            bool antialias=false, typename number1=float, typename number2=float, typename S>
     void drawTriangles(const sampling::sampler<S> & sampler,
                        const vec2<number1> *vertices= nullptr,
                        const vec2<number2> *uvs=nullptr,

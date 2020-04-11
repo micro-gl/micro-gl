@@ -1,5 +1,5 @@
 #pragma once
-#define DEBUG_PLANAR true
+#define DEBUG_PLANAR false
 #define MAX_ITERATIONS 200
 #define APPLY_MERGE true
 
@@ -13,6 +13,10 @@ namespace microgl {
 
     namespace tessellation {
 #define abs(a) ((a)<0 ? -(a) : (a))
+
+        enum class fill_rule {
+            non_zero, even_odd
+        };
 
         template <typename number>
         class planarize_division {
@@ -34,7 +38,6 @@ namespace microgl {
                 conflict * _conflicts = nullptr;
                 index _curr_v = 0;
                 index _curr_e = 0;
-                index _curr_f = 0;
                 index _curr_c = 0;
 
             public:
@@ -44,29 +47,23 @@ namespace microgl {
                 half_edge * get_edge() {
                     return &_edges[_curr_e++];
                 }
-                half_edge_face * get_face() {
-                    return &_faces[_curr_f++];
-                }
                 conflict * get_conflict_node() {
                     return &_conflicts[_curr_c++];
                 }
 
-                static_pool(const int v, const int e, const int f, const int c) {
+                static_pool(const int v, const int e, const int c) {
                     _vertices = new half_edge_vertex[v];
                     _edges = new half_edge[e];
-                    _faces = new half_edge_face[f];
                     _conflicts = new conflict[c];
                 }
 
                 ~static_pool() {
                     delete [] _vertices;
                     delete [] _edges;
-                    delete [] _faces;
                     delete [] _conflicts;
 
                     _vertices = nullptr;
                     _edges = nullptr;
-                    _faces = nullptr;
                     _conflicts = nullptr;
                 }
             };
@@ -158,7 +155,13 @@ namespace microgl {
             void compute(const chunker<vertex> & pieces);
 
             static
-            void compute_DEBUG(const chunker<vertex> &pieces, dynamic_array<vertex> &debug_trapezes);
+            void compute_DEBUG(const chunker<vertex> &pieces,
+                               const fill_rule &rule,
+                               dynamic_array<vertex> &output_vertices,
+                               dynamic_array<index> &output_indices,
+                               dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
+                               triangles::indices & output_indices_type,
+                               dynamic_array<vertex> &debug_trapezes);
 
         private:
             static
@@ -173,7 +176,7 @@ namespace microgl {
             }
 
             static
-            auto create_frame(const chunker<vertex> &pieces, static_pool & pool) -> half_edge_face *;
+            auto create_frame(const chunker<vertex> &pieces, static_pool & static_pool, dynamic_pool & dynamic_pool) -> half_edge_face *;
 
             static
             auto build_edges_and_conflicts(const chunker<vertex> &pieces, half_edge_face & main_frame,
@@ -306,6 +309,11 @@ namespace microgl {
             round_edge_to_trapeze(const vertex &a, vertex &b,
                                   const point_class_with_trapeze &class_a, const trapeze_t &trapeze);
 
+            static
+            int compute_face_windings(half_edge_face *face);
+
+            static
+            bool infer_fill(int winding, const fill_rule &rule);
         };
 
     }

@@ -4,6 +4,7 @@
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/tesselation/planarize_division.h>
+#include <microgl/samplers/flat_color.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -52,18 +53,6 @@ chunker<vec2<number>> poly_inter_star() {
                                 {300,50},
                                 {400,450},
                         });
-
-//    A.push_back_and_cut({
-//                                {150, 150},
-//                                {450,150},
-//                                {200,450},
-//                                {300,50},
-//                                {400,450},
-//                        });
-
-//    A.push_back_and_cut(box(50,50,300,300, true));
-//    A.push_back_and_cut(box(50,250,600,300, true));
-//    A.push_back_and_cut(box(50,450,100,500, true));
 
     return A;
 }
@@ -154,45 +143,66 @@ chunker<vec2<number>> box_1() {
 //                        });
 
     A.push_back_and_cut(box<number>(50,50,300,300));
-    A.push_back_and_cut(box<number>(150,150,200,200));
+//    A.push_back_and_cut(box<number>(150,150,200,200));
 
     return A;
 }
+
+
+sampling::flat_color color_red {{255,0,255,255}};
 
 template <typename number>
 void render_polygon(chunker<vec2<number>> pieces) {
     using index = unsigned int;
     using psd = microgl::tessellation::planarize_division<number>;
 
-    dynamic_array<vec2<number>> trapezes;
-
     canvas->clear({255, 255, 255, 255});
 
-    psd::compute_DEBUG(pieces, trapezes);
+//    psd::compute_DEBUG(pieces, trapezes);
+    dynamic_array<vec2<number>> trapezes;
+    dynamic_array<vec2<number>> vertices;
+    dynamic_array<index> indices;
+    dynamic_array<triangles::boundary_info> boundary;
+    triangles::indices type;
+    psd::compute_DEBUG(pieces, tessellation::fill_rule::even_odd, vertices, indices, &boundary, type, trapezes);
+
+    canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+            color_red,
+            vertices.data(),
+            (vec2<number> *)nullptr,
+            indices.data(),
+            boundary.data(),
+            indices.size(),
+            type,
+            50);
+
+//        return;
+
+    canvas->drawTrianglesWireframe({0,0,0,255},
+            vertices.data(),
+            indices.data(),
+            indices.size(),
+            type,
+            40);
 
     for (index ix = 0; ix < trapezes.size(); ix+=4) {
         canvas->drawWuLinePath({0,0,0,255},
                 &trapezes[ix], 4, true);
     }
 
-//        canvas->drawQuad(RED, 0, 0, 100,100, 0,255);
-//    canvas->drawPolygon<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-//            chunk.data,
-//            chunk.size,
-//            120,
-//            polygons::hints::SIMPLE
-//    );
-
-
 }
 
 void render() {
     t+=.05f;
 
+//    render_polygon<float>(box_1<float>());
+//    render_polygon<float>(poly_inter_star<float>());
+    render_polygon<float>(poly_inter_star_2<float>());
+
 //    render_polygon(poly_inter_star());
 //    render_polygon<double>(poly_inter_star_2<double>());
 //    render_polygon<float>(poly_inter_star_2<float>());
-    render_polygon<Q<0>>(poly_inter_star_2<Q<0>>());
+//    render_polygon<Q<0>>(poly_inter_star_2<Q<0>>());
 
 //    render_polygon<Q<0>>(poly_imp<Q<0>>());
 //    render_polygon<Q<10>>(poly_imp<Q<10>>());
@@ -232,14 +242,13 @@ void init_sdl(int width, int height) {
 int render_test(int N) {
     auto ms = std::chrono::milliseconds(1);
     auto start = std::chrono::high_resolution_clock::now();
-
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i < N; ++i)
         render();
-    }
-
     auto end = std::chrono::high_resolution_clock::now();
-    return (end-start)/(ms*N);
+    auto int_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    return int_ms.count();
 }
+
 
 void loop() {
     bool quit = false;

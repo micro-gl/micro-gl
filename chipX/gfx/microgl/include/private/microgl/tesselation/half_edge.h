@@ -61,6 +61,11 @@ namespace microgl {
             // list of conflicting vertices
             conflict_node_t<number> * conflict_list = nullptr;
             int index=0;
+            int winding=0;
+            bool computed_winding=false;
+            bool isValid() { //when deleted for example
+                return edge!=nullptr;
+            }
         };
 
 

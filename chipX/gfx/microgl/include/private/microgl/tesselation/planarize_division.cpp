@@ -4,7 +4,7 @@ namespace microgl {
 
         template<typename number>
         auto planarize_division<number>::create_frame(const chunker<vertex> &pieces,
-                                                      static_pool & pool) -> half_edge_face * {
+                                                      static_pool & static_pool, dynamic_pool & dynamic_pool) -> half_edge_face * {
             const auto pieces_length = pieces.size();
             vertex left_top=pieces.raw_data()[0];
             vertex right_bottom=left_top;
@@ -30,25 +30,25 @@ namespace microgl {
             right_bottom.x += number(10);
             right_bottom.y += number(10);
             // vertices
-            auto * v0 = pool.get_vertex();
-            auto * v1 = pool.get_vertex();
-            auto * v2 = pool.get_vertex();
-            auto * v3 = pool.get_vertex();
+            auto * v0 = static_pool.get_vertex();
+            auto * v1 = static_pool.get_vertex();
+            auto * v2 = static_pool.get_vertex();
+            auto * v3 = static_pool.get_vertex();
             // coords
             v0->coords = left_top;
             v1->coords = {left_top.x, right_bottom.y};
             v2->coords = right_bottom;
             v3->coords = {right_bottom.x, left_top.y};
             // half edges of vertices
-            auto * edge_0 = pool.get_edge();
-            auto * edge_1 = pool.get_edge();
-            auto * edge_2 = pool.get_edge();
-            auto * edge_3 = pool.get_edge();
+            auto * edge_0 = static_pool.get_edge();
+            auto * edge_1 = static_pool.get_edge();
+            auto * edge_2 = static_pool.get_edge();
+            auto * edge_3 = static_pool.get_edge();
             // twins of edges
-            auto * edge_0_twin = pool.get_edge();
-            auto * edge_1_twin = pool.get_edge();
-            auto * edge_2_twin = pool.get_edge();
-            auto * edge_3_twin = pool.get_edge();
+            auto * edge_0_twin = static_pool.get_edge();
+            auto * edge_1_twin = static_pool.get_edge();
+            auto * edge_2_twin = static_pool.get_edge();
+            auto * edge_3_twin = static_pool.get_edge();
             // connect edges to vertices, CCW from left-top vertex
             edge_0->origin = v0; edge_0_twin->origin = v1;
             edge_1->origin = v1; edge_1_twin->origin = v2;
@@ -78,14 +78,13 @@ namespace microgl {
             edge_2->twin = edge_2_twin; edge_2_twin->twin = edge_2;
             edge_3->twin = edge_3_twin; edge_3_twin->twin = edge_3;
             // create a face and connect it
-            auto * face = pool.get_face();
+            auto * face = dynamic_pool.create_face();
             edge_0->face = face; edge_0_twin->face = nullptr; // nullptr for face is the outside world face marker
             edge_1->face = face; edge_1_twin->face = nullptr;
             edge_2->face = face; edge_2_twin->face = nullptr;
             edge_3->face = face; edge_3_twin->face = nullptr;
             // CCW around face, face is always to the left of the walk
             face->edge = edge_0;
-
             return face;
         }
 
@@ -166,7 +165,6 @@ namespace microgl {
 #endif
                 return {};
             }
-
             auto * e = face->edge;
             const auto * e_end = face->edge;
             trapeze_t trapeze;
@@ -189,9 +187,7 @@ namespace microgl {
                         trapeze.right_top = e;
                 }
                 e=e->next;
-
             } while(e!=e_end);
-
             return trapeze;
         }
 
@@ -518,7 +514,6 @@ namespace microgl {
                     return try_split_edge_at(v, e_start, pool);
                 e_start=e_start->next;
             } while(e_start!=e_end_ref);
-
             return nullptr;
         }
 
@@ -897,11 +892,11 @@ namespace microgl {
             // a_edge/b_edge both are half edges rooted at a/b respectively and such that both belong to same face
             auto * a_edge = locate_half_edge_of_face_rooted_at_vertex(a_cut_result.vertex_a_edge_split_edge->origin, face);
             auto * b_edge = locate_half_edge_of_face_rooted_at_vertex(b_cut_result.vertex_a_edge_split_edge->origin, face);
-            bool no_split = a_edge==b_edge; // can happen due to numeric errors
-//            if(no_split) {
-//                *result_edge_a = *result_edge_b = a_edge;
-//                return false;
-//            }
+#if DEBUG_PLANAR==true
+            if(a_edge==b_edge)
+                throw std::runtime_error("handle_face_split()::a_edge==b_edge, weird !!!");
+#endif
+
             auto * inserted_edge = a_edge;
             bool is_a_b_vertical = a_edge->origin->coords.x==b_edge->origin->coords.x;
             if(!is_a_b_vertical)
@@ -1159,15 +1154,20 @@ namespace microgl {
 
         template<typename number>
         void planarize_division<number>::compute_DEBUG(const chunker<vertex> &pieces,
+                                                       const fill_rule &rule,
+                                                       dynamic_array<vertex> &output_vertices,
+                                                       dynamic_array<index> &output_indices,
+                                                       dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
+                                                       triangles::indices & output_indices_type,
                                                        dynamic_array<vertex> &debug_trapezes) {
 
             // vertices size is also edges size since these are polygons
             const auto v_size = pieces.unchunked_size();
             // plus 4s for the sake of frame
-            static_pool static_pool(v_size + 4, 4*2 + v_size*2, 1, v_size);
+            static_pool static_pool(v_size + 4, 4*2 + v_size*2, v_size);
             dynamic_pool dynamic_pool{};
             // create the main frame
-            auto * main_face = create_frame(pieces, static_pool);
+            auto * main_face = create_frame(pieces, static_pool, dynamic_pool);
             // create edges and conflict lists
             auto ** edges_list = build_edges_and_conflicts(pieces, *main_face, static_pool);
             // todo: here create a random permutation of edges
@@ -1176,22 +1176,87 @@ namespace microgl {
             for (int ix = 0; ix < v_size; ++ix) {
 //            for (int ix = 0; ix < 3; ++ix) {
                 auto * e = edges_list[ix];
-
                 //remove_edge_from_conflict_list(e);
                 insert_edge(e, ix, dynamic_pool);
             }
 
-            // collect trapezes so far
-            face_to_trapeze_vertices(main_face, debug_trapezes);
             auto &faces = dynamic_pool.getFaces();
+            // compute windings of faces
+            for (index ix = 0; ix < faces.size(); ++ix)
+                compute_face_windings(faces[ix]);
+
+            const index indices_offset = output_vertices.size();
+            // tessellate
+            index indices_acc=0;
+            output_indices_type = triangles::indices::TRIANGLES;
+            for (index ix = 0; ix < faces.size(); ++ix) {
+                const half_edge_face * face = faces[ix];
+                if(!infer_fill(face->winding, rule))
+                    continue;
+                // I can memoize trapezes from compute_face_windings, but it will cost more memory
+                trapeze_t trapeze= infer_trapeze(face);
+                const auto center = (trapeze.left_top->origin->coords + trapeze.right_top->origin->coords +
+                        trapeze.left_bottom->origin->coords + trapeze.right_bottom->origin->coords)/4;
+                const auto *start = face->edge;
+                auto *iter = start;
+                do { // triangulate the convex piece, we insert a vertex because this will create better/accurate triangles
+                    output_vertices.push_back(center);
+                    output_vertices.push_back(iter->origin->coords);
+                    output_vertices.push_back(iter->next->origin->coords);
+                    output_indices.push_back(indices_offset + indices_acc++);
+                    output_indices.push_back(indices_offset + indices_acc++);
+                    output_indices.push_back(indices_offset + indices_acc++);
+                    if(boundary_buffer) {
+                        triangles::boundary_info aa_info = triangles::create_boundary_info(false,
+                                        !infer_fill(iter->twin->face->winding, rule), false);
+                        boundary_buffer->push_back(aa_info);
+                    }
+                    iter=iter->next;
+                } while(iter!=start);
+            }
+
+            // collect trapezes so far
+//            face_to_trapeze_vertices(main_face, debug_trapezes);
             int count_active_faces= 0;
             for (index ix = 0; ix < faces.size(); ++ix) {
-                if(faces[ix]->edge!= nullptr)
+                if(faces[ix]->isValid())
                     count_active_faces++;
+//                if(ix!=5) continue;
                 face_to_trapeze_vertices(faces[ix], debug_trapezes);
             }
 
             std::cout<< "# active faces: " << count_active_faces <<std::endl;
+        }
+
+        template<typename number>
+        bool planarize_division<number>::infer_fill(int winding, const fill_rule & rule) {
+            switch (rule) {
+                case fill_rule::non_zero:
+                    return abs(winding);
+                    break;
+                case fill_rule::even_odd:
+                    return abs(winding)%2==1;
+                    break;
+            }
+        }
+
+        template<typename number>
+        int planarize_division<number>::compute_face_windings(half_edge_face * face) {
+            // given that we have an unordered graph of planar subdivision and that we have
+            // already have computed windings for edges, it is enough to pick any point in the face
+            // to compute the winding via a ray that spans infinitely until we are outside.
+            // in a trapeze is equivalent. we will pick always the right-bottom point of the trapeze
+            // and use it to infer the next penetrated trapeze and then pick again the right-bottom point.
+            // this way, the path always walks right or up or down
+            // while this is not exactly a linear ray, it should work because we have a planar subdivision
+            if(face==nullptr || !face->isValid()) return 0;
+            if(face->computed_winding) return face->winding; // memoized
+            trapeze_t trapeze= infer_trapeze(face);
+            const auto * point_edge = trapeze.right_bottom;
+            // note this might blow up the stack
+            face->winding = point_edge->winding + compute_face_windings(point_edge->twin->face);
+            face->computed_winding=true; // might be redundant, but I am not taking a chance yet
+            return face->winding;
         }
 
         template<typename number>
@@ -1233,8 +1298,8 @@ namespace microgl {
         template<typename number>
         int planarize_division<number>::infer_edge_winding(const vertex & a, const vertex & b) {
             // infer winding of edge (a,b)
-            if(b.y<a.y) return 1; // rising/ascending edge
-            if(b.y>a.y) return -1; // descending edge
+            if(b.y<a.y || (b.y==a.y && b.x<a.x)) return 1; // rising/ascending edge
+            else if(b.y>a.y || (b.y==a.y && b.x>a.x)) return -1; // descending edge
             return 0;
         }
 

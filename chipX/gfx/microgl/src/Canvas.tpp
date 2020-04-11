@@ -477,7 +477,7 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
 #undef floor_fixed
 //bbox.right=319;
     // anti-alias pad for distance calculation
-    constexpr int max_alpha_value= bitmap::maxNativeAlphaChannelValue();
+    constexpr int max_opacity_value= 255;//bitmap::maxNativeAlphaChannelValue();
     precision bits_distance = 0;
     precision bits_distance_complement = 8;
     // max distance to consider in canvas space
@@ -563,7 +563,7 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                 if (perform_aa) {
                     should_sample = true;
                     blend = functions::clamp<int>(((uint64_t)(delta << bits_distance_complement))>>PREC_DIST,0, 255);
-                    if (opacity < max_alpha_value) blend = (blend * opacity) >> 8; // * 257>>16 - blinn method
+                    if (opacity < max_opacity_value) blend = (blend * opacity) >> 8; // * 257>>16 - blinn method
                 }
             }
 
@@ -757,7 +757,7 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
     if(bbox.empty()) return;
 #undef ceil_fixed
 #undef floor_fixed
-    constexpr int max_alpha_value= bitmap::maxNativeAlphaChannelValue();
+    constexpr int max_opacity_value= 255;//bitmap::maxNativeAlphaChannelValue();
     // anti-alias SDF configurations
     bits bits_distance = 0;
     bits bits_distance_complement = 8;
@@ -854,7 +854,7 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
                 if(should_sample) {
                     opacity_t blend = functions::clamp<int64_t>((((int64_t(delta) << bits_distance_complement))>>PREC_DIST),
                                                                 0, 255);
-                    if (opacity < max_alpha_value)
+                    if (opacity < max_opacity_value)
                         blend = (blend * opacity) >> 8;
                     opacity_sample= blend;
 

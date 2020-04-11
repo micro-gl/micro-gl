@@ -48,6 +48,7 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 6. investigate solving degenrate cases some day.
 
 #### road-map
+- make indices buffers optional. if no indices buffer is given, then the identity map is used
 - investigate mip-mapping (I have all the theory from open gl spec)
 - explore avoid blending, and draw pixel directly mechanism
 - experiment with partial rendering blocks
@@ -60,7 +61,7 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - after path maker, remove bezier curve and lines painter
 - 3d pipeline, make 3d clipping configurable for planes and even skip
 - AA for 3d with stencil buffer and multi-sampling of coverage, should be interesting
-- move logic for dynamic array
+- move and equality logic for dynamic array
 
 0. improve ear_clipper
 1. complex poly tesselator and stroker
