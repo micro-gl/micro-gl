@@ -30,11 +30,13 @@ namespace microgl {
                 if(pt.x > max_x) max_x=pt.x;
                 if(pt.y > max_y) max_y=pt.y;
             }
-            const number2 f_w = (u1-u0)/number2(max_x-min_x);
-            const number2 f_h = (v1-v0)/number2(max_y-min_y);
+            //const number2 f_w = (u1-u0)/number2(max_x-min_x);
+            //const number2 f_h = (v1-v0)/number2(max_y-min_y);
             for (unsigned ix = 0; ix < size; ++ix) {
                 const auto & pt = points[ix];
-                map[ix]={u0+number2(pt.x-min_x)*f_w, v0+number2(pt.y-min_y)*f_h};
+                number2 u = u0+(number2(pt.x-min_x)*(u1-u0))/number2(max_x-min_x);
+                number2 v = v0+(number2(pt.y-min_y)*(v1-v0))/number2(max_y-min_y);
+                map[ix]={u, v};
             }
 
             return map;

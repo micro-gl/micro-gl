@@ -23,7 +23,7 @@ using Canvas24Bit_Packed32 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
 using namespace microgl;
 using namespace microgl::sampling;
 
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_filter::NearestNeighboor>;
 fast_radial_gradient<float> radial_gradient{0.5, 0.5, 0.75};
 linear_gradient_2_colors<false> gradient2Colors{{255,0,255}, {255,0,0}};
 linear_gradient_2_colors<true> gradient2Colors2{{0,0,255}, {0,0,0}};
@@ -81,6 +81,7 @@ void render_polygon(dynamic_array<vec2<number>> &polygon) {
 //    polygon[3].y = 300 -  t;
     canvas->clear({255,255,255,255});
     canvas->drawPolygon<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+//            tex_2,
             gradient2Colors,
             polygon.data(),
             polygon.size(),
@@ -88,7 +89,6 @@ void render_polygon(dynamic_array<vec2<number>> &polygon) {
             polygons::hints::SIMPLE);
 
 }
-
 
 int main() {
     init_sdl(W, H);

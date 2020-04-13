@@ -202,13 +202,13 @@ namespace microgl {
         template<typename number>
         void curve_divider<number>::compute(const vertex *points,
                                             output &output,
-                                            curve_divider::CurveDivisionAlgorithm algorithm,
-                                            curve_divider::Type $type) {
+                                            CurveDivisionAlgorithm algorithm,
+                                            CurveType $type) {
             switch ($type) {
-                case Type::Quadratic:
+                case CurveType::Quadratic:
                     sub_divide_quadratic_bezier(points, output, algorithm);
                     break;
-                case Type::Cubic:
+                case CurveType::Cubic:
                     sub_divide_cubic_bezier(points, output, algorithm);
                     break;
             }
@@ -217,7 +217,7 @@ namespace microgl {
         template<typename number>
         void curve_divider<number>::sub_divide_cubic_bezier(const vertex *points,
                                                             output &output,
-                                                            curve_divider::CurveDivisionAlgorithm algorithm) {
+                                                            CurveDivisionAlgorithm algorithm) {
 
             switch (algorithm) {
                 case CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small:
@@ -230,13 +230,13 @@ namespace microgl {
                     adaptive_sub_divide_cubic_bezier(points, 10, output);
                     break;
                 case CurveDivisionAlgorithm::Uniform_16:
-                    uniform_sub_divide_bezier_curve(points, 16, output, Type::Cubic);
+                    uniform_sub_divide_bezier_curve(points, 16, output, CurveType::Cubic);
                     break;
                 case CurveDivisionAlgorithm::Uniform_32:
-                    uniform_sub_divide_bezier_curve(points, 32, output, Type::Cubic);
+                    uniform_sub_divide_bezier_curve(points, 32, output, CurveType::Cubic);
                     break;
                 case CurveDivisionAlgorithm::Uniform_64:
-                    uniform_sub_divide_bezier_curve(points, 64, output, Type::Cubic);
+                    uniform_sub_divide_bezier_curve(points, 64, output, CurveType::Cubic);
                     break;
             }
 
@@ -246,7 +246,7 @@ namespace microgl {
         void
         curve_divider<number>::sub_divide_quadratic_bezier(const vertex *points,
                                                            output &output,
-                                                           curve_divider::CurveDivisionAlgorithm algorithm) {
+                                                           CurveDivisionAlgorithm algorithm) {
 
             switch (algorithm) {
                 case CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small:
@@ -259,13 +259,13 @@ namespace microgl {
                     adaptive_sub_divide_quadratic_bezier(points, 10, output);
                     break;
                 case CurveDivisionAlgorithm::Uniform_16:
-                    uniform_sub_divide_bezier_curve(points, 16, output, Type::Quadratic);
+                    uniform_sub_divide_bezier_curve(points, 16, output, CurveType::Quadratic);
                     break;
                 case CurveDivisionAlgorithm::Uniform_32:
-                    uniform_sub_divide_bezier_curve(points, 32, output, Type::Quadratic);
+                    uniform_sub_divide_bezier_curve(points, 32, output, CurveType::Quadratic);
                     break;
                 case CurveDivisionAlgorithm::Uniform_64:
-                    uniform_sub_divide_bezier_curve(points, 64, output, Type::Quadratic);
+                    uniform_sub_divide_bezier_curve(points, 64, output, CurveType::Quadratic);
                     break;
             }
 
@@ -275,7 +275,7 @@ namespace microgl {
         void curve_divider<number>::uniform_sub_divide_bezier_curve(const vertex *points,
                                                                     index segments,
                                                                     output &output,
-                                                                    const Type type) {
+                                                                    const CurveType type) {
 
             // this procedure was way more optimized for fixed point math
             // but decided, that to do a more generic thing. The cost is really small.
@@ -284,7 +284,7 @@ namespace microgl {
             vertex current;
             const number step = number(1) / number(int(segments));
             number accumulator = 0;
-            bool is_quadratic = type == Type::Quadratic;
+            bool is_quadratic = type == CurveType::Quadratic;
 
             for (index i = 0; i <= segments; ++i) {
                 if (is_quadratic)

@@ -77,6 +77,11 @@ namespace microgl {
                                            bool second,
                                            bool third);
 
+        template <typename number>
+        void bbox_of_triangles() {
+
+        }
+
         template<typename iterator_callback>
         void iterate_triangles(const index *indices,
                                const index &size,

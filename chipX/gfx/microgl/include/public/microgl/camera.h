@@ -86,7 +86,7 @@ namespace microgl {
             mat.setRow(2, z_axis);
 
             // set inverted translation
-            vertex3 trans {-(x_axis*position), -(y_axis*position), -(z_axis*position)};
+            vertex3 trans {-x_axis.dot(position), -y_axis.dot(position), -z_axis.dot(position)};
             mat.setColumn(3, trans);
 
             return mat;
@@ -121,7 +121,7 @@ namespace microgl {
             result.setRow(2, z_axis);
 
             // set translation part
-            vertex3 trans {-(x_axis*position), -(y_axis*position), -(z_axis*position)};
+            vertex3 trans {-x_axis.dot(position), -y_axis.dot(position), -z_axis.dot(position)};
 
             result.setColumn(3, trans);
 

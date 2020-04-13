@@ -37,7 +37,11 @@ namespace microgl {
             return vec3{this->x*val, this->y*val, this->z*val};
         }
 
-        number operator*(const vec3 & a) const {
+        vec3 operator*(const vec3 & a) const {
+            return (this->x*a.x, this->y*a.y, this->z*a.z);
+        }
+
+        number dot(const vec3 & a) const {
             return (this->x*a.x + this->y*a.y+this->z*a.z);
         }
 

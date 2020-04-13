@@ -355,11 +355,22 @@ void Canvas<P, CODER>::drawTriangles(const sampling::sampler<S> &sampler,
                                      const boundary_info * boundary_buffer,
                                      const index size,
                                      const enum indices type,
-                                     const opacity_t opacity) {
+                                     const opacity_t opacity,
+                                     const number2 &u0, const number2 &v0,
+                                     const number2 &u1, const number2 &v1) {
 #define f microgl::math::to_fixed
     const precision p = 8;
     const precision uv_p = 16;
-    const auto zero_uv=vec2<number2>{0,0};
+    vec2<number1> min, max;
+    if(!uvs) { // if we don't have per-vertex uv, then let's compute
+        min.x=max.x=vertices[0].x;
+        min.y=max.y=vertices[0].y;
+        for (unsigned ix = 0; ix < size; ++ix) { // compute bounding box
+            const auto & pt = indices ? vertices[indices[ix]] : vertices[ix];
+            if(pt.x<min.x) min.x=pt.x; if(pt.y < min.y) min.y=pt.y;
+            if(pt.x>max.x) max.x=pt.x; if(pt.y > max.y) max.y=pt.y;
+        }
+    }
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
           [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
               const bool aa_2d= boundary_buffer!=nullptr;
@@ -370,12 +381,16 @@ void Canvas<P, CODER>::drawTriangles(const sampling::sampler<S> &sampler,
                   aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
                   aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
               }
-              const auto & v1= vertices[first_index], v2=vertices[second_index], v3=vertices[third_index];
-              const auto & uv1= uvs?uvs[first_index]:zero_uv, uv2=uvs?uvs[second_index]:zero_uv, uv3=uvs?uvs[third_index]:zero_uv;
+              const auto & p1= vertices[first_index], p2=vertices[second_index], p3=vertices[third_index];
+              vec2<number2> uv_s{u0,v0}, uv_e{u1,v1}, uv_d{u1-u0,v1-v0};
+              auto uv1= uvs?uvs[first_index] : vec2<number2>(p1-min)/vec2<number2>(max-min);
+              auto uv2= uvs?uvs[second_index] : vec2<number2>(p2-min)/vec2<number2>(max-min);
+              auto uv3= uvs?uvs[third_index] : vec2<number2>(p3-min)/vec2<number2>(max-min);
+              uv1= uv_s+uv1*uv_d, uv2= uv_s+uv2*uv_d, uv3= uv_s+uv3*uv_d;
               drawTriangle<BlendMode, PorterDuff, antialias, false, S>(sampler,
-                      f(v1.x,p), f(v1.y,p), f(uv1.x, uv_p), f(uv1.y, uv_p), 0,
-                      f(v2.x,p), f(v2.y,p), f(uv2.x, uv_p), f(uv2.y, uv_p), 0,
-                      f(v3.x,p), f(v3.y,p), f(uv3.x, uv_p), f(uv3.y, uv_p), 0,
+                      f(p1.x,p), f(p1.y,p), f(uv1.x, uv_p), f(uv1.y, uv_p), 0,
+                      f(p2.x,p), f(p2.y,p), f(uv2.x, uv_p), f(uv2.y, uv_p), 0,
+                      f(p3.x,p), f(p3.y,p), f(uv3.x, uv_p), f(uv3.y, uv_p), 0,
                       opacity, p, uv_p, aa_first_edge, aa_second_edge, aa_third_edge);
           });
 #undef f
@@ -1163,7 +1178,8 @@ void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
                                    index size, opacity_t opacity,
                                    polygons::hints hint,
                                    const number2 u0, const number2 v0,
-                                   const number2 u1, const number2 v1, const bool debug) {
+                                   const number2 u1, const number2 v1,
+                                   const bool debug) {
     indices type;
     dynamic_array<index> indices;
     dynamic_array<boundary_info> boundary_buffer;
@@ -1197,7 +1213,7 @@ void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
             return;
     }
 
-    const vec2<number2> * uvs= uv_map<number1, number2>::compute(points, size, u0, v0, u1, v1);
+    const vec2<number2> * uvs= nullptr;//uv_map<number1, number2>::compute(points, size, u0, v0, u1, v1);
     // draw triangles batch
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, S>(
             sampler,
@@ -1207,7 +1223,8 @@ void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
             boundary_buffer.data(),
             indices.size(),
             type,
-            opacity);
+            opacity,
+            0,1,1,0);
 
 //    drawTriangles<BlendMode, PorterDuff, antialias>(
 //            color::colors::RED,
@@ -1432,13 +1449,13 @@ template<typename P, typename CODER>
 template<typename number>
 void Canvas<P, CODER>::drawBezierPath(color_f_t & color, vec2<number> *points,
                                                unsigned int size,
-                                               typename tessellation::curve_divider<number>::Type type,
+                                               typename tessellation::curve_divider<number>::CurveType type,
                                                typename tessellation::curve_divider<number>::CurveDivisionAlgorithm algorithm) {
     using vertex = vec2<number>;
     dynamic_array<vertex> samples;
     vertex previous, current;
     using c = tessellation::curve_divider<number>;
-    index pitch = type==c::Type::Quadratic ? 2 : 3;
+    index pitch = type==c::CurveType::Quadratic ? 2 : 3;
     number circle_diameter = 5;
     for (index jx = 0; jx < size-pitch; jx+=pitch) {
         auto * point_anchor = &points[jx];
@@ -1460,7 +1477,7 @@ void Canvas<P, CODER>::drawBezierPath(color_f_t & color, vec2<number> *points,
         drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(color_f_t{0.0, 0.0, 1.0, 1.0},
                                                                                 point_anchor[2].x, point_anchor[2].y,
                                                                                 circle_diameter, 255);
-        if(type==c::Type::Cubic ) {
+        if(type==c::CurveType::Cubic ) {
             drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(color_f_t{0.0, 0.0, 1.0, 1.0},
                                                                                     point_anchor[3].x, point_anchor[3].y,
                                                                                     circle_diameter, 255);

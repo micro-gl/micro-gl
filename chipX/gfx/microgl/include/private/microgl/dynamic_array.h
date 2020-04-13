@@ -45,10 +45,17 @@ public:
         this->clear();
         for(index ix = 0; ix < container.size(); ix++)
             this->push_back(container[ix]);
-
         return (*this);
     }
 
+    dynamic_array<T> & operator=(dynamic_array<T> &&container) noexcept {
+        if(_data)
+            delete [] _data;
+        _data = container._data;
+        container._data=nullptr;
+        container.clear();
+        return (*this);
+    }
 
     T& operator[](index i)  {
         return _data[i];

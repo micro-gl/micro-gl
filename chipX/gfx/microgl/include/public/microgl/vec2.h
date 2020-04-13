@@ -28,7 +28,11 @@ namespace microgl {
             return vec2{this->x + a.x, this->y + a.y};
         }
 
-        number operator*(const vec2 & a) const {
+        vec2 operator*(const vec2 & a) const {
+            return {this->x*a.x, this->y*a.y};
+        }
+
+        number dot(const vec2 & a) const {
             return (this->x*a.x + this->y*a.y);
         }
 
@@ -50,6 +54,10 @@ namespace microgl {
 
         vec2 operator/(const number & val) const {
             return vec2<number>{this->x/val, this->y/val};
+        }
+
+        vec2 operator/(const vec2 & val) const {
+            return vec2<number>{this->x/val.x, this->y/val.y};
         }
 
         bool operator==(const vec2 & rhs) const {

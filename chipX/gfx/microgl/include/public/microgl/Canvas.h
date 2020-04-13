@@ -167,7 +167,9 @@ public:
                        const boundary_info * boundary_buffer= nullptr,
                        index size=0,
                        enum indices type=indices::TRIANGLES,
-                       opacity_t opacity=255);
+                       opacity_t opacity=255,
+                       const number2 &u0=number2(0), const number2 &v0=number2(1),
+                       const number2 &u1=number2(1), const number2 &v1=number2(0));
 
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias, bool perspective_correct, bool depth_buffer_flag=false,
@@ -345,8 +347,8 @@ public:
     template <typename number>
     void drawBezierPath(color_f_t & color, vec2<number> *points,
                          unsigned int size = 3,
-                        typename tessellation::curve_divider<number>::Type type
-                        = tessellation::curve_divider<number>::Type ::Quadratic,
+                        typename tessellation::curve_divider<number>::CurveType type
+                        = tessellation::curve_divider<number>::CurveType ::Quadratic,
                          typename tessellation::curve_divider<number>::CurveDivisionAlgorithm algorithm
                          = tessellation::curve_divider<number>::CurveDivisionAlgorithm::Uniform_16);
 

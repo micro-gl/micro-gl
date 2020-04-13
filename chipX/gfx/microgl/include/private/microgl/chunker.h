@@ -45,12 +45,36 @@ public:
         _locations.push_back(0);
     }
 
+    chunk back() {
+        index idx = size()==0 ? 0 : size()-1;
+        return chunk_for(idx);
+    }
+
+    chunk current() {
+        return chunk_for(size());
+    }
+
+    chunk front() {
+        return chunk_for(0);
+    }
+
     void cut_chunk() {
         _locations.push_back(_data.size());
     }
 
     void push_back(const T & v) {
         _data.push_back(v);
+    }
+
+    void push_back(const chunker & $chunker) {
+        cut_chunk();
+        for (int ix = 0; ix < $chunker.size(); ++ix) {
+            const auto chunk = $chunker[ix];
+            for (int jx = 0; jx < chunk.size; ++jx) {
+                push_back(chunk.data[jx]);
+            }
+            cut_chunk();
+        }
     }
 
     void push_back(const_dynamic_array_ref container) {
@@ -88,26 +112,29 @@ public:
     chunker_ref operator=(const_chunker_ref chunker) {
         _data = chunker._data;
         _locations = chunker._locations;
+        return (*this);
+    }
 
+    chunker_ref operator=(chunker<T> && chunker) {
+        _data = std::move(chunker._data);
+        _locations = std::move(chunker._locations);
         return (*this);
     }
 
     chunk chunk_for(index i) {
         index idx_start = _locations[i];
-        index size = _locations[i+1] - idx_start;
+        index idx_end = (i+1)<=size() ? _locations[i+1] : _data.size();
+        index size = idx_end - idx_start;
         type_pointer pointer = &(_data[idx_start]);
-
         return {pointer, size};
-//        return {pointer, size, idx_start};
     }
 
     chunk chunk_for(index i) const {
         index idx_start = _locations[i];
-        index size = _locations[i+1] - idx_start;
+        index idx_end = (i+1)<=size() ? _locations[i+1] : _data.size();
+        index size = idx_end - idx_start;
         const_type_pointer pointer = &(_data[idx_start]);
-
         return {pointer, size};
-//        return {pointer, size, idx_start};
     }
 
     chunk operator[](index i) {
@@ -119,6 +146,9 @@ public:
     }
 
     void clear() {
+        _locations.clear();
+        _data.clear();
+        _locations.push_back(0);
     }
 
     bool empty() const {

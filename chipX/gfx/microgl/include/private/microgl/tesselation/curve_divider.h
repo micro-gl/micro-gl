@@ -8,6 +8,25 @@ using namespace microgl;
 namespace microgl {
     namespace tessellation {
 
+        enum class CurveType {
+            Quadratic, Cubic
+        };
+
+        enum class CurveDivisionAlgorithm {
+            // highest quality for adaptive based on distance to real curve
+                    Adaptive_tolerance_distance_Small,
+            // medium quality for adaptive based on distance to real curve
+                    Adaptive_tolerance_distance_Medium,
+            // low quality for adaptive based on distance to real curve
+                    Adaptive_tolerance_distance_Large,
+            // highest quality for uniform subdivision
+                    Uniform_64,
+            // medium quality for uniform subdivision
+                    Uniform_32,
+            // low quality for uniform subdivision
+                    Uniform_16,
+        };
+
         template<typename number>
         class curve_divider {
         public:
@@ -16,37 +35,18 @@ namespace microgl {
             using index = unsigned int;
 //        static number HALF = number(1)/number(2);
 
-            enum class Type {
-                Quadratic, Cubic
-            };
-
-            enum class CurveDivisionAlgorithm {
-                // highest quality for adaptive based on distance to real curve
-                        Adaptive_tolerance_distance_Small,
-                // medium quality for adaptive based on distance to real curve
-                        Adaptive_tolerance_distance_Medium,
-                // low quality for adaptive based on distance to real curve
-                        Adaptive_tolerance_distance_Large,
-                // highest quality for uniform subdivision
-                        Uniform_64,
-                // medium quality for uniform subdivision
-                        Uniform_32,
-                // low quality for uniform subdivision
-                        Uniform_16,
-            };
-
             explicit curve_divider() = default;
 
             static void compute(const vertex *points,
                                 output &output,
                                 CurveDivisionAlgorithm algorithm,
-                                Type $type);
+                                CurveType $type);
 
         private:
 
             static void sub_divide_cubic_bezier(const vertex *points,
                                                 output &output,
-                                                curve_divider::CurveDivisionAlgorithm algorithm);
+                                                CurveDivisionAlgorithm algorithm);
 
             static void sub_divide_quadratic_bezier(const vertex *points,
                                                     output &output,
@@ -56,7 +56,7 @@ namespace microgl {
             static void uniform_sub_divide_bezier_curve(const vertex *points,
                                                         index segments,
                                                         output &output,
-                                                        Type type);
+                                                        CurveType type);
 
             static void adaptive_sub_divide_cubic_bezier_internal(const vertex *points,
                                                                   number tolerance_distance_pixels,

@@ -108,7 +108,7 @@ namespace microgl {
                     */
                     for (unsigned kx=0; kx<vertex_count; kx++) {
                         // dot product plane with point, this gives classification
-                        const number product = plane * in_list[kx].point;
+                        const number product = plane.dot(in_list[kx].point);
                         const bool inside = product>=number{0};
                         plane_vertices_product[kx] = product;
                         plane_vertices_classifications[kx] = inside;

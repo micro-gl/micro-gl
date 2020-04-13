@@ -35,7 +35,11 @@ namespace microgl {
             return *this + (-val);
         }
 
-        number operator*(const vec4 & a) const {
+        vec4 operator*(const vec4 & a) const {
+            return (this->x*a.x, this->y*a.y, this->z*a.z, this->w*a.w);
+        }
+
+        number dot(const vec4 & a) const {
             return (this->x*a.x + this->y*a.y+this->z*a.z + this->w*a.w);
         }
 

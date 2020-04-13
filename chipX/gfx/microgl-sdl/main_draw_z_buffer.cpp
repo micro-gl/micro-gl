@@ -24,7 +24,7 @@ using namespace microgl::shading;
 using index_t = unsigned int;
 using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_filter::NearestNeighboor>;
 Canvas24 * canvas;
 Texture24 tex_1, tex_2;
 

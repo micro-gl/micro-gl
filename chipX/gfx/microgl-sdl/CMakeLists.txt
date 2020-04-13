@@ -68,7 +68,8 @@ set(SOURCES
 #        main_ear_clipping.cpp
 #        main_ear_clipping_holes.cpp
 #        main_ear_clipping_deg.cpp
-        main_complex_to_planar_subdivision.cpp
+#        main_complex_to_planar_subdivision.cpp
+        main_path.cpp
 #        main_q_sort.cpp
 #        main_avl_tree.cpp
         libs/stb_image/stb_image.cpp
