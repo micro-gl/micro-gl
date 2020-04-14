@@ -158,10 +158,10 @@ namespace microgl {
             void compute_DEBUG(const chunker<vertex> &pieces,
                                const fill_rule &rule,
                                dynamic_array<vertex> &output_vertices,
-                               dynamic_array<index> &output_indices,
-                               dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
                                triangles::indices & output_indices_type,
-                               dynamic_array<vertex> &debug_trapezes);
+                               dynamic_array<index> *output_indices= nullptr,
+                               dynamic_array<microgl::triangles::boundary_info> *boundary_buffer= nullptr,
+                               dynamic_array<vertex> *debug_trapezes= nullptr);
 
         private:
             static

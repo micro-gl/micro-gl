@@ -126,7 +126,7 @@ void render_polygon(chunker<vec2<number>> pieces) {
     dynamic_array<index> indices;
     dynamic_array<triangles::boundary_info> boundary;
     triangles::indices type;
-    psd::compute_DEBUG(pieces, tessellation::fill_rule::even_odd, vertices, indices, &boundary, type, trapezes);
+    psd::compute_DEBUG(pieces, tessellation::fill_rule::even_odd, vertices, type, &indices, &boundary, &trapezes);
 
     canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
             color_red,

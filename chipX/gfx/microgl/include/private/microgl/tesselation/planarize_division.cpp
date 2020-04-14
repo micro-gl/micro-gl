@@ -1156,10 +1156,10 @@ namespace microgl {
         void planarize_division<number>::compute_DEBUG(const chunker<vertex> &pieces,
                                                        const fill_rule &rule,
                                                        dynamic_array<vertex> &output_vertices,
-                                                       dynamic_array<index> &output_indices,
-                                                       dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
                                                        triangles::indices & output_indices_type,
-                                                       dynamic_array<vertex> &debug_trapezes) {
+                                                       dynamic_array<index> *output_indices,
+                                                       dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
+                                                       dynamic_array<vertex> *debug_trapezes) {
 
             // vertices size is also edges size since these are polygons
             const auto v_size = pieces.unchunked_size();
@@ -1188,7 +1188,8 @@ namespace microgl {
             const index indices_offset = output_vertices.size();
             // tessellate
             index indices_acc=0;
-            output_indices_type = triangles::indices::TRIANGLES;
+            output_indices_type = boundary_buffer ? triangles::indices::TRIANGLES_WITH_BOUNDARY :
+                                  triangles::indices::TRIANGLES;
             for (index ix = 0; ix < faces.size(); ++ix) {
                 const half_edge_face * face = faces[ix];
                 if(!infer_fill(face->winding, rule))
@@ -1203,9 +1204,11 @@ namespace microgl {
                     output_vertices.push_back(center);
                     output_vertices.push_back(iter->origin->coords);
                     output_vertices.push_back(iter->next->origin->coords);
-                    output_indices.push_back(indices_offset + indices_acc++);
-                    output_indices.push_back(indices_offset + indices_acc++);
-                    output_indices.push_back(indices_offset + indices_acc++);
+                    if(output_indices) {
+                        output_indices->push_back(indices_offset + indices_acc++);
+                        output_indices->push_back(indices_offset + indices_acc++);
+                        output_indices->push_back(indices_offset + indices_acc++);
+                    }
                     if(boundary_buffer) {
                         triangles::boundary_info aa_info = triangles::create_boundary_info(false,
                                         !infer_fill(iter->twin->face->winding, rule), false);
@@ -1216,16 +1219,16 @@ namespace microgl {
             }
 
             // collect trapezes so far
-//            face_to_trapeze_vertices(main_face, debug_trapezes);
-            int count_active_faces= 0;
-            for (index ix = 0; ix < faces.size(); ++ix) {
-                if(faces[ix]->isValid())
-                    count_active_faces++;
-//                if(ix!=5) continue;
-                face_to_trapeze_vertices(faces[ix], debug_trapezes);
-            }
 
-            std::cout<< "# active faces: " << count_active_faces <<std::endl;
+            if(debug_trapezes) {
+                int count_active_faces= 0;
+                for (index ix = 0; ix < faces.size(); ++ix) {
+                    if(faces[ix]->isValid())
+                        count_active_faces++;
+                    face_to_trapeze_vertices(faces[ix], *debug_trapezes);
+                }
+                //std::cout<< "# active faces: " << count_active_faces <<std::endl;
+            }
         }
 
         template<typename number>

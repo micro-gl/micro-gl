@@ -5,15 +5,16 @@ namespace microgl {
 
         enum class hints {
             // non self intersecting polygon, can be convex or concave
-                    SIMPLE,
+            SIMPLE,
             // convex polygon
-                    CONVEX,
+            CONVEX,
             // concave polygon
-                    CONCAVE,
+            CONCAVE,
             // self intersecting polygon
-                    NON_SIMPLE,
-                    COMPLEX,
-                    SELF_INTERSECTING,
+            NON_SIMPLE,
+            COMPLEX,
+            MULTIPLE_POLYGONS,
+            SELF_INTERSECTING,
         };
 
     }
