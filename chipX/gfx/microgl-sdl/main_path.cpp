@@ -126,7 +126,8 @@ void render_polygon(chunker<vec2<number>> pieces) {
     dynamic_array<index> indices;
     dynamic_array<triangles::boundary_info> boundary;
     triangles::indices type;
-    psd::compute_DEBUG(pieces, tessellation::fill_rule::even_odd, vertices, type, indices, &boundary, &trapezes);
+    psd::compute(pieces, tessellation::fill_rule::even_odd, tessellation::tess_quality::fine,
+            vertices, type, indices, &boundary, &trapezes);
 
     canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
             color_red,
@@ -138,7 +139,7 @@ void render_polygon(chunker<vec2<number>> pieces) {
             type,
             50);
 
-        return;
+//        return;
 
     canvas->drawTrianglesWireframe({0,0,0,255},
             vertices.data(),
@@ -158,8 +159,8 @@ void render() {
     t+=.05f;
 
 //    render_polygon<float>(box_1<float>());
-//    render_polygon<float>(poly_inter_star<float>());
-    render_polygon<float>(poly_inter_star_2<float>());
+    render_polygon<float>(poly_inter_star<float>());
+//    render_polygon<float>(poly_inter_star_2<float>());
 
 //    render_polygon(poly_inter_star());
 //    render_polygon<double>(poly_inter_star_2<double>());

@@ -18,6 +18,20 @@ namespace microgl {
             non_zero, even_odd
         };
 
+        enum class tess_quality {
+            // the fastest algorithm, but nay produce zero area triangles on the
+            // boundary. might be a problem if you are using SDF based AA
+            fine,
+            // a bit slower and might be susceptible for other issues, but produces
+            // triangles out of each trapeze in a way similar to ear clipping, this
+            // fights zero area triangles on the boundary, so you can use SDF AA
+            better,
+            // fast algorithm, that produces eye pleasing reaults, but uses around
+            // x2 memory for indices because it adds a center vertex in a trapeze and
+            // therefore adds two more triangles per trapeze on average
+            prettier_with_extra_vertices
+        };
+
         template <typename number>
         class planarize_division {
         private:
@@ -156,16 +170,14 @@ namespace microgl {
 
         public:
             static
-            void compute(const chunker<vertex> & pieces);
-
-            static
-            void compute_DEBUG(const chunker<vertex> &pieces,
-                               const fill_rule &rule,
-                               dynamic_array<vertex> &output_vertices,
-                               triangles::indices & output_indices_type,
-                               dynamic_array<index> &output_indices,
-                               dynamic_array<microgl::triangles::boundary_info> *boundary_buffer= nullptr,
-                               dynamic_array<vertex> *debug_trapezes= nullptr);
+            void compute(const chunker<vertex> &pieces,
+                       const fill_rule &rule,
+                       const tess_quality &quality,
+                       dynamic_array<vertex> &output_vertices,
+                       triangles::indices & output_indices_type,
+                       dynamic_array<index> &output_indices,
+                       dynamic_array<microgl::triangles::boundary_info> *boundary_buffer= nullptr,
+                       dynamic_array<vertex> *debug_trapezes= nullptr);
 
         private:
             static
@@ -178,6 +190,14 @@ namespace microgl {
                 vertices.push_back(trapeze.right_bottom->origin->coords);
                 vertices.push_back(trapeze.left_bottom->origin->coords);
             }
+
+            static void
+            tessellate(half_edge_face **faces, index size, const fill_rule &rule,
+                    tess_quality quality, dynamic_array<vertex> &output_vertices,
+                    triangles::indices & output_indices_type,
+                    dynamic_array<index> &output_indices,
+                    dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
+                    dynamic_array<vertex> *debug_trapezes);
 
             static
             auto create_frame(const chunker<vertex> &pieces, static_pool & static_pool, dynamic_pool & dynamic_pool) -> half_edge_face *;

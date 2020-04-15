@@ -1127,164 +1127,181 @@ namespace microgl {
                 class_a = locate_and_classify_point_that_is_already_on_trapeze(a, trapeze);
                 count++;
             }
-
         }
 
         template<typename number>
-        void planarize_division<number>::compute(const chunker<vertex> &pieces) {
+        void planarize_division<number>::compute(const chunker<vertex> &pieces,
+                                                 const fill_rule &rule,
+                                                 const tess_quality &quality,
+                                                 dynamic_array<vertex> &output_vertices,
+                                                 triangles::indices & output_indices_type,
+                                                 dynamic_array<index> &output_indices,
+                                                 dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
+                                                 dynamic_array<vertex> *debug_trapezes) {
 
             // vertices size is also edges size since these are polygons
             const auto v_size = pieces.unchunked_size();
             // plus 4s for the sake of frame
-            static_pool static_pool(v_size + 4, 4 + v_size*2, 1, v_size);
+            static_pool static_pool(v_size + 4, 4 * 2 + v_size * 2, v_size);
             dynamic_pool dynamic_pool{};
             // create the main frame
-            auto * main_face = create_frame(pieces, static_pool);
+            auto *main_face = create_frame(pieces, static_pool, dynamic_pool);
             // create edges and conflict lists
-            auto ** edges_list = build_edges_and_conflicts(pieces, *main_face, static_pool);
-            // todo: here create a random permutation of edges
-
-            // now start iterations
-            for (int ix = 0; ix < v_size; ++ix) {
-                auto * e = edges_list[ix];
-                //remove_edge_from_conflict_list(e);
-                insert_edge(e, ix, dynamic_pool);
-            }
-        }
-
-        template<typename number>
-        void planarize_division<number>::compute_DEBUG(const chunker<vertex> &pieces,
-                                                       const fill_rule &rule,
-                                                       dynamic_array<vertex> &output_vertices,
-                                                       triangles::indices & output_indices_type,
-                                                       dynamic_array<index> &output_indices,
-                                                       dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
-                                                       dynamic_array<vertex> *debug_trapezes) {
-
-            // vertices size is also edges size since these are polygons
-            const auto v_size = pieces.unchunked_size();
-            // plus 4s for the sake of frame
-            static_pool static_pool(v_size + 4, 4*2 + v_size*2, v_size);
-            dynamic_pool dynamic_pool{};
-            // create the main frame
-            auto * main_face = create_frame(pieces, static_pool, dynamic_pool);
-            // create edges and conflict lists
-            auto ** edges_list = build_edges_and_conflicts(pieces, *main_face, static_pool);
+            auto **edges_list = build_edges_and_conflicts(pieces, *main_face, static_pool);
             // todo: here create a random permutation of edges
 
             // now start iterations
             for (int ix = 0; ix < v_size; ++ix) {
 //            for (int ix = 0; ix < 3; ++ix) {
-                auto * e = edges_list[ix];
+                auto *e = edges_list[ix];
                 //remove_edge_from_conflict_list(e);
                 insert_edge(e, ix, dynamic_pool);
             }
 
-            auto &faces = dynamic_pool.getFaces();
+            tessellate(dynamic_pool.getFaces().data(),
+                       dynamic_pool.getFaces().size(),
+                       rule, quality, output_vertices, output_indices_type,
+                       output_indices, boundary_buffer, debug_trapezes);
+        }
+
+        template<typename number>
+        void planarize_division<number>::tessellate(half_edge_face **faces,
+                                                       index size,
+                                                       const fill_rule &rule,
+                                                       tess_quality quality,
+                                                       dynamic_array<vertex> &output_vertices,
+                                                       triangles::indices & output_indices_type,
+                                                       dynamic_array<index> &output_indices,
+                                                       dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
+                                                       dynamic_array<vertex> *debug_trapezes) {
+            quality=tess_quality::fine;
             // compute windings of faces
-            for (index ix = 0; ix < faces.size(); ++ix)
+            for (index ix = 0; ix < size; ++ix)
                 compute_face_windings(faces[ix]);
 
-            // tessellate 699
             const bool requested_boundary_info=boundary_buffer!=nullptr;
             index visible_trapezes_count=0;
             output_indices_type = boundary_buffer ? triangles::indices::TRIANGLES_WITH_BOUNDARY :
                                   triangles::indices::TRIANGLES;
-            bool beautiful_tess=false;
-            for (index ix = 0; ix < faces.size(); ++ix) {
+            for (index ix = 0; ix < size; ++ix) {
                 const half_edge_face * face = faces[ix];
                 if(!infer_fill(face->winding, rule))
                     continue;
-//                if(ix!=6) continue;
 //                if(ix!=14) continue;
                 visible_trapezes_count++;
-                // I can memoize trapezes from compute_face_windings, but it will cost more memory
                 trapeze_t trapeze= infer_trapeze(face);
-
-                if(!beautiful_tess) {
-                    point_class_with_trapeze mutual_wall;
-                    auto *root= trapeze.left_top;
-                    auto *iter=root;
+                { // add all of the vertices and record their index
+                    auto *iter=face->edge;
                     do { // insert new vertices only
                         if(iter->origin->tess_index==-1)
                             iter->origin->tess_index=output_vertices.push_back(iter->origin->coords);
                         iter->origin->internal_tess_clipped=false;
                         iter=iter->next;
-                    } while (iter!=root);
-                    auto *a_edge= root->next;
-                    auto *b_edge= root->prev;
-#define loc(v) locate_and_classify_point_that_is_already_on_trapeze((v), trapeze)
-                    point_class_with_trapeze cls_root=loc(root->origin->coords), cls_a=loc(a_edge->origin->coords),
-                                        cls_b=loc(b_edge->origin->coords);
-                    while(a_edge!=b_edge) {
-                        // check if RAB triangle is empty on the boundary
-                        bool a_b=do_a_b_lies_on_same_trapeze_wall(trapeze, a_edge->origin->coords,
-                                b_edge->origin->coords, cls_a, cls_b, mutual_wall);
-                        bool isEmpty=(a_b && a_edge->next==b_edge) || (!a_b);
-                        if(isEmpty) { // clip an ear
-                            root->origin->internal_tess_clipped=true;
-                            output_indices.push_back(root->origin->tess_index);
-                            output_indices.push_back(a_edge->origin->tess_index);
-                            output_indices.push_back(b_edge->origin->tess_index);
-                            if(requested_boundary_info) {
-                                bool root_a= root->next==a_edge &&
-                                        do_a_b_lies_on_same_trapeze_wall(trapeze, root->origin->coords, a_edge->origin->coords,
-                                                cls_root, cls_a, mutual_wall);
-                                bool b_root=b_edge->next==root &&
-                                        do_a_b_lies_on_same_trapeze_wall(trapeze, b_edge->origin->coords, root->origin->coords,
-                                                cls_b, cls_root, mutual_wall);
-                                root_a=root_a ? !infer_fill(root->twin->face->winding, rule) : root_a;
-                                a_b=(a_b) ? !infer_fill(a_edge->twin->face->winding, rule) : a_b;
-                                b_root=b_root ? !infer_fill(b_edge->twin->face->winding, rule) : b_root;
-                                boundary_buffer->push_back(triangles::create_boundary_info(root_a, a_b, b_root));
-                            }
-                        }
-                        // b->r (if not clipped), r->a, a->(next available vertex)
-                        if(!isEmpty) {
-                            b_edge=root; cls_b=cls_root;
-                        }
-                        root=a_edge;cls_root=cls_a;
-                        do {
-                            a_edge=a_edge->next;
-                        } while(a_edge!=b_edge && a_edge->origin->internal_tess_clipped);
-                        cls_a=loc(a_edge->origin->coords);
-                    }
-#undef loc
+                    } while (iter!=face->edge);
                 }
 
-                if(beautiful_tess) {
-                    const auto center = (trapeze.left_top->origin->coords + trapeze.right_top->origin->coords +
-                                         trapeze.left_bottom->origin->coords + trapeze.right_bottom->origin->coords)/4;
-                    int center_index= output_vertices.push_back(center);
-                    const auto *start = face->edge;
-                    auto *iter = start;
-                    do { // triangulate the convex piece, we insert a vertex because this will create better/accurate triangles
-                        auto & second= iter->origin;
-                        auto & third= iter->next->origin;
-                        if(second->tess_index==-1)
-                            second->tess_index=output_vertices.push_back(second->coords);
-                        if(third->tess_index==-1)
-                            third->tess_index=output_vertices.push_back(third->coords);
-                        output_indices.push_back(center_index);
-                        output_indices.push_back(second->tess_index);
-                        output_indices.push_back(third->tess_index);
-                        if(requested_boundary_info) {
-                            triangles::boundary_info aa_info =
-                                    triangles::create_boundary_info(false,
-                                            !infer_fill(iter->twin->face->winding, rule), false);
-                            boundary_buffer->push_back(aa_info);
+                switch (quality) {
+
+                    case tess_quality::fine:
+                    {
+                        const auto *start= trapeze.left_top;
+                        auto *iter= start->next;
+                        do { // triangulate the convex piece, we insert a vertex because this will create better/accurate triangles
+                            auto *second = iter;
+                            auto *third= second->next;
+                            output_indices.push_back(start->origin->tess_index);
+                            output_indices.push_back(second->origin->tess_index);
+                            output_indices.push_back(third->origin->tess_index);
+                            if(requested_boundary_info) {
+                                triangles::boundary_info aa_info =
+                                        triangles::create_boundary_info(
+                                                second->prev==start ? !infer_fill(start->twin->face->winding, rule) : false,
+                                                !infer_fill(second->twin->face->winding, rule),
+                                                third->next==start ? !infer_fill(third->twin->face->winding, rule) : false
+                                                );
+                                boundary_buffer->push_back(aa_info);
+                            }
+                            iter=iter->next;
+                        } while(iter->next!=start);
+
+                    }
+                        break;
+                    case tess_quality::better:
+                    {
+                        point_class_with_trapeze mutual_wall;
+                        auto *root= trapeze.left_top;
+                        auto *a_edge= root->next;
+                        auto *b_edge= root->prev;
+#define loc(v) locate_and_classify_point_that_is_already_on_trapeze((v), trapeze)
+                        point_class_with_trapeze cls_root=loc(root->origin->coords),
+                                            cls_a=loc(a_edge->origin->coords), cls_b=loc(b_edge->origin->coords);
+                        while(a_edge!=b_edge) {
+                            // check if RAB triangle is empty on the boundary
+                            bool a_b=do_a_b_lies_on_same_trapeze_wall(trapeze, a_edge->origin->coords,
+                                                                      b_edge->origin->coords, cls_a, cls_b, mutual_wall);
+                            bool isEmpty=(a_b && a_edge->next==b_edge) || (!a_b);
+                            if(isEmpty) { // clip an ear
+                                root->origin->internal_tess_clipped=true;
+                                output_indices.push_back(root->origin->tess_index);
+                                output_indices.push_back(a_edge->origin->tess_index);
+                                output_indices.push_back(b_edge->origin->tess_index);
+                                if(requested_boundary_info) {
+                                    bool root_a= root->next==a_edge &&
+                                                 do_a_b_lies_on_same_trapeze_wall(trapeze, root->origin->coords,
+                                                         a_edge->origin->coords, cls_root, cls_a, mutual_wall);
+                                    bool b_root=b_edge->next==root &&
+                                                do_a_b_lies_on_same_trapeze_wall(trapeze, b_edge->origin->coords,
+                                                        root->origin->coords, cls_b, cls_root, mutual_wall);
+                                    root_a=root_a ? !infer_fill(root->twin->face->winding, rule) : root_a;
+                                    a_b=(a_b) ? !infer_fill(a_edge->twin->face->winding, rule) : a_b;
+                                    b_root=b_root ? !infer_fill(b_edge->twin->face->winding, rule) : b_root;
+                                    boundary_buffer->push_back(triangles::create_boundary_info(root_a, a_b, b_root));
+                                }
+                            }
+                            // b->r (if not clipped), r->a, a->(next available vertex)
+                            if(!isEmpty) {
+                                b_edge=root; cls_b=cls_root;
+                            }
+                            root=a_edge;cls_root=cls_a;
+                            do {
+                                a_edge=a_edge->next;
+                            } while(a_edge!=b_edge && a_edge->origin->internal_tess_clipped);
+                            cls_a=loc(a_edge->origin->coords);
                         }
-                        iter=iter->next;
-                    } while(iter!=start);
+#undef loc
+                    }
+                    break;
+                    case tess_quality::prettier_with_extra_vertices:
+                    {
+                        const auto center = (trapeze.left_top->origin->coords + trapeze.right_top->origin->coords +
+                                             trapeze.left_bottom->origin->coords + trapeze.right_bottom->origin->coords)/4;
+                        int center_index= output_vertices.push_back(center);
+                        const auto *start = face->edge;
+                        auto *iter = start;
+                        do { // triangulate the convex piece, we insert a vertex because this will create better/accurate triangles
+                            auto & second= iter->origin;
+                            auto & third= iter->next->origin;
+                            output_indices.push_back(center_index);
+                            output_indices.push_back(second->tess_index);
+                            output_indices.push_back(third->tess_index);
+                            if(requested_boundary_info) {
+                                triangles::boundary_info aa_info =
+                                        triangles::create_boundary_info(false,
+                                                !infer_fill(iter->twin->face->winding, rule), false);
+                                boundary_buffer->push_back(aa_info);
+                            }
+                            iter=iter->next;
+                        } while(iter!=start);
+
+                    }
+                        break;
                 }
 
             }
 
-            // collect trapezes so far
-
-            if(debug_trapezes) {
+            if(debug_trapezes) { // collect trapezes so far for debug
                 int count_active_faces= 0;
-                for (index ix = 0; ix < faces.size(); ++ix) {
+                for (index ix = 0; ix < size; ++ix) {
                     if(faces[ix]->isValid())
                         count_active_faces++;
                     face_to_trapeze_vertices(faces[ix], *debug_trapezes);
