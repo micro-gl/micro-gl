@@ -42,7 +42,10 @@ namespace microgl {
             half_edge_t<number> * edge = nullptr;
 //        // pointer to the conflicting face, valid for regular vertices
 //        half_edge_face_t<number> *conflict_face = nullptr;
-            point_type type = point_type::unknown;
+//            point_type type = point_type::unknown;
+            // used to locate inside the output vertices buffer
+            int tess_index=-1;
+            bool internal_tess_clipped=false;
         };
 
         template <typename number>

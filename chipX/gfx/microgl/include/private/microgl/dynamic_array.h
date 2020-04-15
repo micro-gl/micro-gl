@@ -91,11 +91,11 @@ public:
         _data = _new;
     }
 
-    void push_back(const T & v)  {
+    int push_back(const T & v)  {
         if(int(_current)>int(_cap-1))
             alloc_(true);
-
         _data[_current++] = v;
+        return _current-1;
     }
 
     void push_back(const_dynamic_array_ref container)  {

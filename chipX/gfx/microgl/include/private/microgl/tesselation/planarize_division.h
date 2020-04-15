@@ -120,6 +120,10 @@ namespace microgl {
                 half_edge *left_bottom=nullptr;
                 half_edge *right_bottom=nullptr;
                 half_edge *right_top=nullptr;
+                bool isSimple() {
+                    return left_top->next==left_bottom && left_bottom->next==right_bottom &&
+                           right_bottom->next==right_top && right_top->next==left_top;
+                }
             };
 
             enum class point_class_with_trapeze {
@@ -159,7 +163,7 @@ namespace microgl {
                                const fill_rule &rule,
                                dynamic_array<vertex> &output_vertices,
                                triangles::indices & output_indices_type,
-                               dynamic_array<index> *output_indices= nullptr,
+                               dynamic_array<index> &output_indices,
                                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer= nullptr,
                                dynamic_array<vertex> *debug_trapezes= nullptr);
 
