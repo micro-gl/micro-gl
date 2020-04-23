@@ -107,6 +107,12 @@ namespace microgl {
                 auto const piece = pieces[ix];
                 const auto piece_size = piece.size;
                 for (index jx = 0; jx < piece_size; ++jx) {
+                    // if last point equals first point. let's skip because
+                    // we will connect them so there is no need to add zero length edge
+                    if(jx==piece_size-1) {
+                        if(piece.data[jx]==edge_first->origin->coords)
+                            continue;
+                    }
                     // v, e, c
                     auto * v = pool.get_vertex();
                     auto * e = pool.get_edge();
@@ -1174,7 +1180,6 @@ namespace microgl {
                                                        dynamic_array<index> &output_indices,
                                                        dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
                                                        dynamic_array<vertex> *debug_trapezes) {
-            quality=tess_quality::fine;
             // compute windings of faces
             for (index ix = 0; ix < size; ++ix)
                 compute_face_windings(faces[ix]);

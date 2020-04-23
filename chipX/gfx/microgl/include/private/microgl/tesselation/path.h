@@ -1,10 +1,9 @@
 #pragma once
 
-#include <microgl/vec2.h>
 #include <microgl/triangles.h>
-#include <microgl/chunker.h>
 #include <microgl/tesselation/curve_divider.h>
 #include <microgl/tesselation/arc_divider.h>
+#include <microgl/tesselation/stroke_tessellation.h>
 #include <microgl/tesselation/planarize_division.h>
 
 namespace microgl {
@@ -163,10 +162,15 @@ namespace microgl {
             }
 
             auto config(CurveDivisionAlgorithm bezier_curve_divider, unsigned arc_divisions_count,
-                    polygons::hints polygon_hint) -> path & {
+                        polygons::hints polygon_hint) -> path & {
                 _bezier_curve_divider=bezier_curve_divider;
                 _arc_divisions_count=arc_divisions_count;
                 _polygon_hint=polygon_hint;
+                return *this;
+            }
+
+            auto cacheBuffers(bool cache) -> path & {
+                _cache=cache;
                 return *this;
             }
 
@@ -180,7 +184,7 @@ namespace microgl {
                 dynamic_array<vertex> output_vertices;
                 dynamic_array<index> output_indices;
                 dynamic_array<triangles::boundary_info> output_boundary;
-                triangles::indices output_type;
+                triangles::indices output_indices_type;
                 void clear() {
                     DEBUG_output_trapezes.clear();
                     output_vertices.clear();
@@ -189,18 +193,37 @@ namespace microgl {
                 }
             };
 
-            buffers & tessellateFill(const fill_rule &rule) {
+            buffers & tessellateFill(const fill_rule &rule, tess_quality quality=tess_quality::better) {
                 _tess_fill.clear();
-                planarize_division<number>::compute_DEBUG(
-                        _paths_vertices, rule, _tess_fill.output_type,
-                        &_tess_fill.output_indices, &_tess_fill.output_boundary,
-                        nullptr
-                        );
+                planarize_division<number>::compute(
+                        _paths_vertices, rule, quality,
+                        _tess_fill.output_vertices,
+                        _tess_fill.output_indices_type,
+                        _tess_fill.output_indices,
+                        &_tess_fill.output_boundary,
+                        nullptr);
                 return _tess_fill;
+            }
+
+            buffers & tessellateStroke(const number & stroke_size) {
+                _tess_stroke.clear();
+                unsigned paths=_paths_vertices.size();
+                for (unsigned ix = 0; ix < paths; ++ix) {
+                    auto chunk = _paths_vertices[ix];
+                    stroke_tessellation<number>::compute(
+                            stroke_size, false, stroke_gravity::inward,
+                            chunk.data, chunk.size,
+                            _tess_stroke.output_vertices,
+                            _tess_stroke.output_indices,
+                            _tess_stroke.output_indices_type,
+                            &_tess_stroke.output_boundary);
+                }
+                return _tess_stroke;
             }
 
         private:
             buffers _tess_fill;
+            buffers _tess_stroke;
 
         };
 

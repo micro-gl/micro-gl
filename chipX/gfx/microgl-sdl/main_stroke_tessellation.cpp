@@ -6,7 +6,7 @@
 #include <microgl/Q.h>
 #include <microgl/samplers/flat_color.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/tesselation/path_tessellation.h>
+#include <microgl/tesselation/stroke_tessellation.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -63,7 +63,8 @@ dynamic_array<vec2<T>> path_2() {
     vec2<T> p2 = {400, 100};
     vec2<T> p3 = {400, 300};
 
-    return {p0,p1,p2, p3};
+//    return {p0,p1,p2, p3, {50,50}};
+    return {p0,p1,p2, p3};//, {250,320}};
     return {p0, p1, p2, p3};
 }
 
@@ -90,14 +91,16 @@ template <typename T>
 dynamic_array<vec2<T>> path_tri() {
     vec2<T> p0 = {100, 100};
     vec2<T> p1 = {300, 100};
-    vec2<T> p2 = {200, 300};
+    vec2<T> p2 = {50, 30};
 
     return {p0, p1, p2};
+//    return {p0, p1};
 }
 
 void render() {
     using q = Q<4>;
-    render_path(path_2<float>(), 20.0f, true);
+    render_path(path_tri<float>(), 50.0f, false);
+//    render_path(path_2<float>(), 20.0f, false);
 //    render_path(path_line<float>(), 15.0f, false);
 //    render_path<q>(path_2<q>(), q(10.0f), true);
 //    render_path<q>(path_3<q>(), q(15.0f), false);
@@ -108,7 +111,7 @@ void render() {
 template <typename number>
 void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bool close_path) {
     using index = unsigned int;
-    using path_tess = microgl::tessellation::path_tessellation<number>;
+    using stroke_tess = microgl::tessellation::stroke_tessellation<number>;
 
 //    polygon[1].x = 140 + 20 +  t;
 //    polygon[1].y = 140 + 20 -  t;
@@ -120,19 +123,18 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
     dynamic_array<vec2<number>> vertices;
     dynamic_array<boundary_info> boundary_buffer;
 
-    path_tess::compute(
+    stroke_tess::compute(
             stroke_size,
             close_path,
-            tessellation::path_gravity::center,
-//            tessellation::path_gravity::inward,
-//            tessellation::path_gravity::outward,
+            tessellation::stroke_gravity::center,
+//            tessellation::stroke_gravity::inward,
+//            tessellation::stroke_gravity::outward,
             path.data(),
             path.size(),
-            indices,
             vertices,
-            &boundary_buffer,
-            type
-    );
+            indices,
+            type,
+            &boundary_buffer);
 
     // draw triangles batch
     canvas->clear({255,255,255,255});

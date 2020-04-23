@@ -1,4 +1,4 @@
-#include <microgl/tesselation/path_tessellation.h>
+#include <microgl/tesselation/stroke_tessellation.h>
 #include <microgl/vec2.h>
 
 namespace tessellation {

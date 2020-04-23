@@ -61,7 +61,7 @@ public:
         return _data[i];
     }
 
-    const T& operator[](index i) const  {
+    const T& operator[](index i) const {
         return _data[i];
     }
 
