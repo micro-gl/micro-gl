@@ -138,7 +138,7 @@ namespace microgl {
                 mag= mag<0 ? -mag : mag;
             }
             const number length= microgl::math::length(pre_normal_join.x, pre_normal_join.y);
-            const vertex direction=(pre_normal_join*mag)/microgl::math::length(pre_normal_join.x, pre_normal_join.y);
+            const vertex direction=(pre_normal_join*mag)/length;
             result.a = b + direction;
             result.b = result.a + vertex{direction.y, -direction.x};
             return result;
@@ -228,7 +228,6 @@ namespace microgl {
                 // line join
                 bool skip_join= res.has_right && res.has_left; // straight line
 //                line_join = stroke_line_join::round;
-                number miter_threshold = miter_limit*stroke_size;
                 if(!skip_join) {
 //                if(false&&!skip_join) {
                     // now walk to hinge
@@ -240,61 +239,8 @@ namespace microgl {
                     output_indices.push_back(hinge_index);
                     output_indices.push_back(first_index);
                     output_indices.push_back(hinge_index);
-
-                    switch (line_join) {
-                        case stroke_line_join::none:
-                            output_indices.push_back(hinge_index);
-                            break;
-                        case stroke_line_join::miter:
-                        case stroke_line_join::miter_clip:
-                        {
-                            // 1. find the clipping point
-                            // 2. find the clipping line
-                            // 3.
-                            const edge clip_ray=
-                                    compute_distanced_tangent_at_joint(points[ix-1],
-                                            points[ix], points[ix+1], res.has_right ? miter_threshold : -miter_threshold);
-                            edge a_ray=res.has_right ? edge{current.left, current.top} :
-                                    edge{current.bottom, current.right};
-                            edge b_ray=res.has_right ? edge{next.top, next.left} :
-                                    edge{next.right, next.bottom};
-                            vertex intersection{};
-                            number alpha;
-                            // clip rays against the clip ray, so miter will avoid overflows
-                            rays_intersect(a_ray.a, a_ray.b, clip_ray.a, clip_ray.b, a_ray.b);
-                            rays_intersect(b_ray.a, b_ray.b, clip_ray.a, clip_ray.b, b_ray.b);
-                            // now compute intersection
-                            auto status=
-                                    finite_segment_intersection_test(a_ray.a, a_ray.b, b_ray.a, b_ray.b,
-                                            intersection, alpha, alpha);
-                            if(status==intersection_status::intersect) {
-                                // found intersection inside the half clip space
-                                output_indices.push_back(output_vertices.push_back(intersection));
-                                output_indices.push_back(hinge_index);
-                            } else if(line_join==stroke_line_join::miter_clip) {
-                                // no found intersection inside the half clip space, so we use
-                                // the two clipped points calculated
-                                output_indices.push_back(output_vertices.push_back(a_ray.b));
-                                output_indices.push_back(hinge_index);
-                                output_indices.push_back(output_vertices.push_back(b_ray.b));
-                                output_indices.push_back(hinge_index);
-                            }
-
-                            break;
-                        }
-                        case stroke_line_join::round:
-                        {
-                            const vertex from= res.has_right ? current.top : current.right;
-                            const vertex to= res.has_right ? next.left : next.bottom;
-                            compute_arc(from, points[ix], to,
-                                    res.has_right ? stroke_size : -stroke_size,100,
-                                    hinge_index, output_vertices, output_indices, boundary_buffer);
-                            break;
-                        }
-                        case stroke_line_join::bevel:
-                            // bevel, add no point in between
-                            break;
-                    }
+                    apply_line_join(line_join, res.has_right, current, next, first_index, hinge_index, last_index,
+                            stroke_size, miter_limit, output_vertices, output_indices, boundary_buffer);
                     // close the join and reinforce
                     output_indices.push_back(last_index);
                     output_indices.push_back(hinge_index);
@@ -318,6 +264,81 @@ namespace microgl {
                 apply_cap(cap, false, points[size-1], current.top_index, current.right_index,
                       stroke_size, output_vertices, output_indices, boundary_buffer);
 
+        }
+
+        template<typename number>
+        void stroke_tessellation<number>::apply_line_join(
+                const stroke_line_join &line_join,
+                const bool has_right,
+                const poly_4 & current,
+                const poly_4 & next,
+                const index & first_index,
+                const index & join_index,
+                const index & last_index,
+                const number &stroke_size,
+                const number &miter_limit,
+                dynamic_array<vertex> &output_vertices,
+                dynamic_array<index> &output_indices,
+                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer) {
+            // insert vertices strictly between the start and last vertex of the join
+            const auto first_vertex = output_vertices[first_index];
+            const auto join_vertex = output_vertices[join_index];
+            const auto last_vertex = output_vertices[last_index];
+            number miter_threshold = miter_limit*stroke_size;
+
+            switch (line_join) {
+                case stroke_line_join::none:
+                    output_indices.push_back(join_index);
+                    break;
+                case stroke_line_join::miter:
+                case stroke_line_join::miter_clip:
+                {
+                    // 1. find the clipping point
+                    // 2. find the clipping line
+                    // 3.
+                    const edge clip_ray=
+                            compute_distanced_tangent_at_joint(first_vertex, join_vertex, last_vertex,
+                                                               has_right ? miter_threshold : -miter_threshold);
+                    edge a_ray=has_right ? edge{current.left, current.top} :
+                               edge{current.bottom, current.right};
+                    edge b_ray=has_right ? edge{next.top, next.left} :
+                               edge{next.right, next.bottom};
+                    vertex intersection{};
+                    number alpha;
+                    // clip rays against the clip ray, so miter will avoid overflows
+                    rays_intersect(a_ray.a, a_ray.b, clip_ray.a, clip_ray.b, a_ray.b);
+                    rays_intersect(b_ray.a, b_ray.b, clip_ray.a, clip_ray.b, b_ray.b);
+                    // now compute intersection
+                    auto status=
+                            finite_segment_intersection_test(a_ray.a, a_ray.b, b_ray.a, b_ray.b,
+                                                             intersection, alpha, alpha);
+                    if(status==intersection_status::intersect) {
+                        // found intersection inside the half clip space
+                        output_indices.push_back(output_vertices.push_back(intersection));
+                        output_indices.push_back(join_index);
+                    } else if(line_join==stroke_line_join::miter_clip) {
+                        // no found intersection inside the half clip space, so we use
+                        // the two clipped points calculated
+                        output_indices.push_back(output_vertices.push_back(a_ray.b));
+                        output_indices.push_back(join_index);
+                        output_indices.push_back(output_vertices.push_back(b_ray.b));
+                        output_indices.push_back(join_index);
+                    } else {
+                        // else regular miter falls back to bevel (no vertices) if no intersection
+                    }
+                    break;
+                }
+                case stroke_line_join::round:
+                {
+                    compute_arc(first_vertex, join_vertex, last_vertex,
+                                has_right ? stroke_size : -stroke_size, 100,
+                                join_index, output_vertices, output_indices, boundary_buffer);
+                    break;
+                }
+                case stroke_line_join::bevel:
+                    // bevel, add no point in between
+                    break;
+            }
         }
 
         template<typename number>

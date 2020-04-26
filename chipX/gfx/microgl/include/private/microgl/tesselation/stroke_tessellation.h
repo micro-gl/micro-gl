@@ -26,7 +26,7 @@ namespace microgl {
             using vertex = vec2<number>;
             using index = unsigned int;
             using precision = unsigned char;
-
+        private:
             struct edge {
                 vertex a, b;
             };
@@ -43,8 +43,9 @@ namespace microgl {
                 bool has_left=false, has_right=false;
             };
 
+        public:
             static
-            void compute(number stroke_size,
+            void compute(number stroke_width,
                          bool closePath,
                          stroke_cap cap,
                          stroke_line_join line_join,
@@ -74,13 +75,8 @@ namespace microgl {
                                              number &alpha, number &alpha1) -> intersection_status;
 
             static
-            bool rays_intersect(
-                    const vertex &a,
-                    const vertex &b,
-                    const vertex &c,
-                    const vertex &d,
-                    vertex &intersection
-            );
+            bool rays_intersect(const vertex &a, const vertex &b,
+                    const vertex &c, const vertex &d, vertex &intersection);
 
             static
             void comp_parallel_ray(const vertex &pt0,
@@ -91,21 +87,10 @@ namespace microgl {
             );
 
             static
-            void merge_intersection(
-                    const vertex &a,
-                    const vertex &b,
-                    const vertex &c,
-                    const vertex &d,
-                    vertex &merge_out
-            );
-
-
-            static
             auto resolve_left_right_walls_intersections(const poly_4 &a, const poly_4 &b) -> poly_inter_result;
 
             static
             int classify_point(const vertex &point, const vertex &a, const vertex &b);
-
 
             static edge
             compute_distanced_tangent_at_joint(const vertex &a, const vertex &b, const vertex &c, number mag);
@@ -117,7 +102,6 @@ namespace microgl {
                              dynamic_array<vertex> &output_vertices, dynamic_array<index> &output_indices,
                              dynamic_array<microgl::triangles::boundary_info> *boundary_buffer);
 
-
             static void
             apply_cap(const stroke_cap &cap,
                         bool is_start, const vertex &root,
@@ -125,6 +109,15 @@ namespace microgl {
                       const number &radius, dynamic_array<vertex> &output_vertices,
                       dynamic_array<index> &output_indices,
                       dynamic_array<microgl::triangles::boundary_info> *boundary_buffer);
+
+            static
+            void apply_line_join(const stroke_line_join &line_join, bool has_right,
+                                 const poly_4 &current, const poly_4 &next,
+                                 const index &first_index, const index &join_index, const index &last_index,
+                                 const number &stroke_size, const number &miter_limit,
+                                 dynamic_array<vertex> &output_vertices,
+                                 dynamic_array<index> &output_indices,
+                                 dynamic_array<microgl::triangles::boundary_info> *boundary_buffer);
         };
 
 

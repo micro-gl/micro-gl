@@ -99,9 +99,21 @@ dynamic_array<vec2<T>> path_tri() {
 //    return {p0, p1};
 }
 
+template <typename T>
+dynamic_array<vec2<T>> path_rect() {
+    vec2<T> p0 = {100, 200};
+    vec2<T> p1 = {100, 100};
+    vec2<T> p2 = {200, 100};
+    vec2<T> p3 = {200, 200};
+
+    return {p0, p1, p2, p3};
+//    return {p0, p1};
+}
+
 void render() {
     using q = Q<4>;
-    render_path(path_tri<float>(), 50.0f, false);
+    render_path(path_rect<float>(), 50.0f, false);
+//    render_path(path_tri<float>(), 50.0f, false);
 //    render_path(path_2<float>(), 20.0f, false);
 //    render_path(path_line<float>(), 15.0f, false);
 //    render_path<q>(path_2<q>(), q(10.0f), true);
@@ -129,7 +141,8 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
             stroke_size,
             close_path,
             tessellation::stroke_cap::round,
-            tessellation::stroke_line_join::bevel,
+//            tessellation::stroke_line_join::round,
+            tessellation::stroke_line_join::miter_clip,
             tessellation::stroke_gravity::center,
 //            tessellation::stroke_gravity::inward,
 //            tessellation::stroke_gravity::outward,
@@ -154,7 +167,7 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
             120
             );
 
-    return;
+//    return;
     // draw triangulation
     canvas->drawTrianglesWireframe(
             {0,0,0,255},

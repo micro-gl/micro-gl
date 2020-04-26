@@ -94,3 +94,8 @@ https://github.com/pelson/antigrain/blob/master/agg-2.4/src/agg_curves.cpp
 #### explenations
 - every edge list contains sections intersecting points on the edge, sorted
 by their order on the edge, this took me a while to figure out. :()
+
+#### elliptic
+- https://math.stackexchange.com/questions/758743/find-the-point-on-an-ellipse-by-angle
+- https://math.stackexchange.com/questions/326349/problem-with-drawing-ellipse-with-code/326429#326429
+- https://math.stackexchange.com/questions/426150/what-is-the-general-equation-of-the-ellipse-that-is-not-in-the-origin-and-rotate

@@ -1223,7 +1223,7 @@ void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
             indices.size(),
             type,
             opacity,
-            0,1,1,0);
+            u0, v0, u1, v1);
 
 //    drawTriangles<BlendMode, PorterDuff, antialias>(
 //            color::colors::RED,
