@@ -1,12 +1,12 @@
 
-#include "stroke_tessellation.h"
+//#include "stroke_tessellation.h"
 
 namespace microgl {
 
     namespace tessellation {
 
         template<typename number>
-        bool stroke_tessellation<number>::non_parallel_rays_intersect(
+        bool stroke_tessellation<number>::rays_intersect(
                 const vertex &a,
                 const vertex &b,
                 const vertex &c,
@@ -18,42 +18,12 @@ namespace microgl {
             vertex s1 = b - a;
             vertex s2 = d - c;
             vertex dc = a - c;
-
             // we reduce the precision with multiplications to avoid extreme overflow
             number det = -(s2.x * s1.y) + (s1.x * s2.y);
             number s = -(s1.y * dc.x) + (s1.x * dc.y);
             number t = (s2.x * dc.y) - (s2.y * dc.x);
-
-            if (det) {
-                // try this later
-                // we mix 64 bit precision to avoid overflow
-//            number dir_x = s1.x*(t/det);
-//            number dir_y = s1.y*(t/det);
-                number dir_x = (s1.x * t) / det;
-                number dir_y = (s1.y * t) / det;
-
-                vertex dir{dir_x, dir_y};
-                intersection = a + dir;
-
-                return true;
-            }
-
-            return false;
-        }
-
-        template<typename number>
-        void stroke_tessellation<number>::merge_intersection(
-                const vertex &a,
-                const vertex &b,
-                const vertex &c,
-                const vertex &d,
-                vertex &merge_out
-        ) {
-            bool co_linear = !non_parallel_rays_intersect(
-                    a, b, c, d,
-                    merge_out);
-            if (co_linear)
-                merge_out = b;
+            if (det!=0) intersection = a + (s1*t)/det;
+            return det!=0;
         }
 
         template<typename number>
@@ -107,7 +77,6 @@ namespace microgl {
                     intersection = a + (ab*numerator_1)/dem;
                 }
             }
-
             return intersection_status::intersect;
         }
 
@@ -119,16 +88,12 @@ namespace microgl {
                 vertex &pt_out_1,
                 number stroke) {
             vertex vec = pt1 - pt0;
-            vertex normal = {-vec.y, vec.x};
-//        number length = microgl::math::sqrt((normal.x*normal.x) + (normal.y*normal.y));
+            vertex normal = {vec.y, -vec.x};
             number length = microgl::math::length(normal.x, normal.y);
-            number dir_x = (normal.x * stroke) / length;
-            number dir_y = (normal.y * stroke) / length;
-            vertex dir{dir_x, dir_y};
-            pt_out_0 = pt0 - dir;
-            pt_out_1 = pt1 - dir;
+            vertex dir = (normal*stroke)/length;
+            pt_out_0 = pt0 + dir;
+            pt_out_1 = pt1 + dir;
         }
-
 
         template<typename number>
         auto stroke_tessellation<number>::build_quadrilateral(const stroke_tessellation::vertex &a,
@@ -139,6 +104,43 @@ namespace microgl {
             vertex dir=a-result.left;
             result.right=b+dir;
             result.bottom=a+dir;
+            return result;
+        }
+
+        template <typename number>
+        inline int
+        stroke_tessellation<number>::classify_point(const vertex & point, const vertex &a, const vertex & b) {
+            // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
+            // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
+            //    Input:  three points p, a, b
+            //    Return: >0 for P left of the line through a and b
+            //            =0 for P  on the line
+            //            <0 for P  right of the line
+            //    See: Algorithm 1 "Area of Triangles and Polygons"
+            auto result= (b.x-a.x)*(point.y-a.y)-(point.x-a.x)*(b.y-a.y);
+            if(result<0) return 1;
+            else if(result>0) return -1;
+            else return 0;
+        }
+
+        template<typename number>
+        auto stroke_tessellation<number>::compute_distanced_tangent_at_joint(
+                const vertex &a, const vertex &b, const vertex &c, number mag
+        ) -> edge {
+            edge result;
+            vertex tangent1 = b-a, tangent2 = c-b;
+            vertex normal1 = {tangent1.y, -tangent1.x}, normal2 = {tangent2.y, -tangent2.x};
+            normal1 = normal1/microgl::math::length(normal1.x, normal1.y);
+            normal2 = normal2/microgl::math::length(normal2.x, normal2.y);
+            vertex pre_normal_join= normal1+normal2;
+            if(pre_normal_join==vertex{0,0}) {
+                pre_normal_join=b-a;
+                mag= mag<0 ? -mag : mag;
+            }
+            const number length= microgl::math::length(pre_normal_join.x, pre_normal_join.y);
+            const vertex direction=(pre_normal_join*mag)/microgl::math::length(pre_normal_join.x, pre_normal_join.y);
+            result.a = b + direction;
+            result.b = result.a + vertex{direction.y, -direction.x};
             return result;
         }
 
@@ -174,68 +176,217 @@ namespace microgl {
             return result;
         }
 
-
-
-
         template<typename number>
         void stroke_tessellation<number>::compute(
-                number stroke_size,
+                number stroke_width,
                 bool closePath,
+                stroke_cap cap,
+                stroke_line_join line_join,
                 const stroke_gravity gravity,
                 const vertex *points,
                 const index size,
                 dynamic_array<vertex> &output_vertices,
                 dynamic_array<index> &output_indices,
                 microgl::triangles::indices &output_indices_type,
-                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer)
+                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
+                number miter_limit)
                 {
 
             bool with_boundary =boundary_buffer!= nullptr;
             index idx=output_vertices.size();
             output_indices_type=triangles::indices::TRIANGLES_STRIP;
-            stroke_size = max_(number(1), stroke_size / number(2));
+            number stroke_size = max_(number(1), stroke_width / number(2));
             poly_4 current, next;
             current = build_quadrilateral(points[0], points[1], stroke_size);
-            output_vertices.push_back(current.left);
-            output_vertices.push_back(current.bottom);
-            output_indices.push_back(idx++);
-            output_indices.push_back(idx++);
+            current.left_index= output_vertices.push_back(current.left);
+            current.bottom_index= output_vertices.push_back(current.bottom);
+            if(!closePath)
+                apply_cap(cap, false, points[0], current.bottom_index, current.left_index,
+                        stroke_size, output_vertices, output_indices, boundary_buffer);
+            output_indices.push_back(current.left_index);
+            output_indices.push_back(current.bottom_index);
             for (index ix = 1; ix < size - 1; ++ix) {
                 next = build_quadrilateral(points[ix], points[ix+1], stroke_size);
                 auto res= resolve_left_right_walls_intersections(current, next);
                 // left wall intersection or last point on current left wall
-                output_vertices.push_back(res.has_left ? res.left : current.top);
-                output_indices.push_back(idx++);
+                if(res.has_left) {
+                    res.left_index= output_vertices.push_back(res.left);
+                } else {
+                    current.top_index =output_vertices.push_back(current.top);
+                    next.left_index =output_vertices.push_back(next.left);
+                }
+                if(res.has_right) {
+                    res.right_index= output_vertices.push_back(res.right);
+                } else {
+                    current.right_index =output_vertices.push_back(current.right);
+                    next.bottom_index =output_vertices.push_back(next.bottom);
+                }
+
+                output_indices.push_back(res.has_left ? res.left_index : current.top_index);
                 // right wall intersection or first point on current right wall
-                output_vertices.push_back(res.has_right ? res.right : current.right);
-                output_indices.push_back(idx++);
-                // now walk to hinge
-                vertex hinge = (current.top+current.right)/2; //also equals current and next top intersections
-                index hinge_index = output_vertices.push_back(hinge);
-                output_indices.push_back(idx++);
-                output_indices.push_back(hinge_index); // reinforce hinge and degenarate
-                if(hinge_index!=idx-1) return;
-                // add join HERE
-                //
-                output_indices.push_back(hinge_index); // reinforce hinge and degenarate
+                output_indices.push_back(res.has_right ? res.right_index : current.right_index);
+                // line join
+                bool skip_join= res.has_right && res.has_left; // straight line
+//                line_join = stroke_line_join::round;
+                number miter_threshold = miter_limit*stroke_size;
+                if(!skip_join) {
+//                if(false&&!skip_join) {
+                    // now walk to hinge
+                    const vertex hinge= points[ix];//(current.top+current.right)/2;
+                    index hinge_index = output_vertices.push_back(hinge);
+                    index first_index= res.has_right ? current.top_index : current.right_index;
+                    index last_index= res.has_right ? next.left_index : next.bottom_index;
+                    output_indices.push_back(hinge_index);
+                    output_indices.push_back(hinge_index);
+                    output_indices.push_back(first_index);
+                    output_indices.push_back(hinge_index);
+
+                    switch (line_join) {
+                        case stroke_line_join::none:
+                            output_indices.push_back(hinge_index);
+                            break;
+                        case stroke_line_join::miter:
+                        case stroke_line_join::miter_clip:
+                        {
+                            // 1. find the clipping point
+                            // 2. find the clipping line
+                            // 3.
+                            const edge clip_ray=
+                                    compute_distanced_tangent_at_joint(points[ix-1],
+                                            points[ix], points[ix+1], res.has_right ? miter_threshold : -miter_threshold);
+                            edge a_ray=res.has_right ? edge{current.left, current.top} :
+                                    edge{current.bottom, current.right};
+                            edge b_ray=res.has_right ? edge{next.top, next.left} :
+                                    edge{next.right, next.bottom};
+                            vertex intersection{};
+                            number alpha;
+                            // clip rays against the clip ray, so miter will avoid overflows
+                            rays_intersect(a_ray.a, a_ray.b, clip_ray.a, clip_ray.b, a_ray.b);
+                            rays_intersect(b_ray.a, b_ray.b, clip_ray.a, clip_ray.b, b_ray.b);
+                            // now compute intersection
+                            auto status=
+                                    finite_segment_intersection_test(a_ray.a, a_ray.b, b_ray.a, b_ray.b,
+                                            intersection, alpha, alpha);
+                            if(status==intersection_status::intersect) {
+                                // found intersection inside the half clip space
+                                output_indices.push_back(output_vertices.push_back(intersection));
+                                output_indices.push_back(hinge_index);
+                            } else if(line_join==stroke_line_join::miter_clip) {
+                                // no found intersection inside the half clip space, so we use
+                                // the two clipped points calculated
+                                output_indices.push_back(output_vertices.push_back(a_ray.b));
+                                output_indices.push_back(hinge_index);
+                                output_indices.push_back(output_vertices.push_back(b_ray.b));
+                                output_indices.push_back(hinge_index);
+                            }
+
+                            break;
+                        }
+                        case stroke_line_join::round:
+                        {
+                            const vertex from= res.has_right ? current.top : current.right;
+                            const vertex to= res.has_right ? next.left : next.bottom;
+                            compute_arc(from, points[ix], to,
+                                    res.has_right ? stroke_size : -stroke_size,100,
+                                    hinge_index, output_vertices, output_indices, boundary_buffer);
+                            break;
+                        }
+                        case stroke_line_join::bevel:
+                            // bevel, add no point in between
+                            break;
+                    }
+                    // close the join and reinforce
+                    output_indices.push_back(last_index);
+                    output_indices.push_back(hinge_index);
+                    output_indices.push_back(hinge_index);
+                }
                 // second quad
                 // left wall intersection or last point on current left wall
-                output_vertices.push_back(res.has_left ? res.left : next.left);
-                output_indices.push_back(idx++);
+                output_indices.push_back(res.has_left ? res.left_index : next.left_index);
                 // right wall intersection or first point on current right wall
-                output_vertices.push_back(res.has_right ? res.right : next.bottom);
-                output_indices.push_back(idx++);
-
+                output_indices.push_back(res.has_right ? res.right_index : next.bottom_index);
                 current=next;
             }
 
-            output_vertices.push_back(current.top);
-            output_vertices.push_back(current.right);
-            output_indices.push_back(idx++);
-            output_indices.push_back(idx++);
+            // close the last segment
+            current.top_index= output_vertices.push_back(current.top);
+            current.right_index= output_vertices.push_back(current.right);
+            output_indices.push_back(current.top_index);
+            output_indices.push_back(current.right_index);
+            output_indices.push_back(current.right_index);
+            if(!closePath)
+                apply_cap(cap, false, points[size-1], current.top_index, current.right_index,
+                      stroke_size, output_vertices, output_indices, boundary_buffer);
 
         }
 
+        template<typename number>
+        void stroke_tessellation<number>::apply_cap(
+                const stroke_cap &cap,
+                const bool is_start,
+                const vertex &root,
+                const index & a_index,
+                const index & b_index,
+                const number &radius,
+                dynamic_array<vertex> &output_vertices,
+                dynamic_array<index> &output_indices,
+                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer) {
+            const auto a= output_vertices[a_index];
+            const auto b= output_vertices[b_index];
+
+            switch (cap) {
+                case stroke_cap::butt:
+                    // do nothing
+                    break;
+                case stroke_cap::round:
+                {
+                    const index root_index= output_vertices.push_back(root);
+                    output_indices.push_back(a_index);
+                    output_indices.push_back(root_index);
+                    compute_arc(a, root, b,
+                                radius, 100,
+                                root_index, output_vertices, output_indices, boundary_buffer);
+                    output_indices.push_back(b_index);
+                    output_indices.push_back(root_index);
+//                    output_indices.push_back(a_index); // close it
+                    break;
+                }
+                case stroke_cap::square:
+                {
+                    const auto dir=b-a;
+                    const auto n=vertex{dir.y, -dir.x};
+                    const auto dir2 = (n*radius)/microgl::math::length(n.x, n.y);
+                    output_indices.push_back(output_vertices.push_back(a+dir2));
+                    output_indices.push_back(output_vertices.push_back(a+dir2));
+                    output_indices.push_back(output_vertices.push_back(b+dir2));
+                    output_indices.push_back(a_index);
+                    output_indices.push_back(b_index);
+                    break;
+                }
+            }
+        }
+
+        template<typename number>
+        void stroke_tessellation<number>::compute_arc(
+                const vertex &from, const vertex &root, const vertex &to,
+                const number &radius,
+                const number &max_distance_squared,
+                const index & root_index,
+                dynamic_array<vertex> &output_vertices,
+                dynamic_array<index> &output_indices,
+                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer) {
+            // this procedure will generate points on a half circle adaptively
+            const auto dir= to-from;
+            bool done= (dir.x*dir.x + dir.y*dir.y)<max_distance_squared;
+            if(done) return;
+            const auto e= compute_distanced_tangent_at_joint(from, root, to, radius);
+            compute_arc(from, root, e.a, radius, max_distance_squared, root_index,
+                        output_vertices, output_indices, boundary_buffer);
+            output_indices.push_back(output_vertices.push_back(e.a));
+            output_indices.push_back(root_index);
+            compute_arc(e.a, root, to, radius, max_distance_squared, root_index,
+                        output_vertices, output_indices, boundary_buffer);
+        }
 
     }
 

@@ -90,10 +90,12 @@ dynamic_array<vec2<T>> path_line() {
 template <typename T>
 dynamic_array<vec2<T>> path_tri() {
     vec2<T> p0 = {100, 100};
-    vec2<T> p1 = {300, 100};
-    vec2<T> p2 = {50, 30};
+    vec2<T> p1 = {200, 100};
+    vec2<T> p2 = {200, 200};
+//    vec2<T> p3 = {220, 100};
+    vec2<T> p3 = {300, 200};
 
-    return {p0, p1, p2};
+    return {p0, p1, p2, p3};
 //    return {p0, p1};
 }
 
@@ -126,6 +128,8 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
     stroke_tess::compute(
             stroke_size,
             close_path,
+            tessellation::stroke_cap::round,
+            tessellation::stroke_line_join::bevel,
             tessellation::stroke_gravity::center,
 //            tessellation::stroke_gravity::inward,
 //            tessellation::stroke_gravity::outward,
@@ -134,11 +138,12 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
             vertices,
             indices,
             type,
-            &boundary_buffer);
+            &boundary_buffer,
+            4);
 
     // draw triangles batch
     canvas->clear({255,255,255,255});
-    canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+    canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(
             color_red,
             vertices.data(),
             (vec2<number> *)nullptr,
@@ -149,7 +154,7 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
             120
             );
 
-    //return;
+    return;
     // draw triangulation
     canvas->drawTrianglesWireframe(
             {0,0,0,255},
@@ -212,7 +217,7 @@ void loop() {
                     quit = true;
                 break;
         }
-        render();
+//        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());

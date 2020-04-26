@@ -8,6 +8,14 @@
 namespace microgl {
     namespace tessellation {
 
+        enum class stroke_cap {
+            butt, round, square
+        };
+
+        enum class stroke_line_join {
+            none, miter, miter_clip, round, bevel
+        };
+
         enum class stroke_gravity {
             center, inward, outward
         };
@@ -19,26 +27,35 @@ namespace microgl {
             using index = unsigned int;
             using precision = unsigned char;
 
+            struct edge {
+                vertex a, b;
+            };
+
             struct poly_4 {
                 // clock wise around the bone
                 vertex left, top, right, bottom;
+                int left_index=-1, top_index=-1, right_index=-1, bottom_index=-1;
             };
 
             struct poly_inter_result {
                 vertex left, right;
+                int left_index=-1, right_index=-1;
                 bool has_left=false, has_right=false;
             };
 
             static
             void compute(number stroke_size,
                          bool closePath,
+                         stroke_cap cap,
+                         stroke_line_join line_join,
                          stroke_gravity gravity,
                          const vertex *points,
                          index size,
                          dynamic_array<vertex> &output_vertices,
                          dynamic_array<index> &output_indices,
                          triangles::indices &output_indices_type,
-                         dynamic_array<triangles::boundary_info> *boundary_buffer= nullptr);
+                         dynamic_array<triangles::boundary_info> *boundary_buffer= nullptr,
+                         number miter_limit=number(4));
 
         private:
 
@@ -57,7 +74,7 @@ namespace microgl {
                                              number &alpha, number &alpha1) -> intersection_status;
 
             static
-            bool non_parallel_rays_intersect(
+            bool rays_intersect(
                     const vertex &a,
                     const vertex &b,
                     const vertex &c,
@@ -85,6 +102,29 @@ namespace microgl {
 
             static
             auto resolve_left_right_walls_intersections(const poly_4 &a, const poly_4 &b) -> poly_inter_result;
+
+            static
+            int classify_point(const vertex &point, const vertex &a, const vertex &b);
+
+
+            static edge
+            compute_distanced_tangent_at_joint(const vertex &a, const vertex &b, const vertex &c, number mag);
+
+            static
+            void compute_arc(const vertex &from, const vertex &root, const vertex &to,
+                             const number &radius, const number &max_distance_squared,
+                             const index & root_index,
+                             dynamic_array<vertex> &output_vertices, dynamic_array<index> &output_indices,
+                             dynamic_array<microgl::triangles::boundary_info> *boundary_buffer);
+
+
+            static void
+            apply_cap(const stroke_cap &cap,
+                        bool is_start, const vertex &root,
+                        const index &a_index, const index &b_index,
+                      const number &radius, dynamic_array<vertex> &output_vertices,
+                      dynamic_array<index> &output_indices,
+                      dynamic_array<microgl::triangles::boundary_info> *boundary_buffer);
         };
 
 
