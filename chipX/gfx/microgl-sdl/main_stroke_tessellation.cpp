@@ -102,17 +102,19 @@ dynamic_array<vec2<T>> path_tri() {
 template <typename T>
 dynamic_array<vec2<T>> path_rect() {
     vec2<T> p0 = {100, 200};
-    vec2<T> p1 = {100, 100};
+    vec2<T> p1 = {80, 30};
     vec2<T> p2 = {200, 100};
-    vec2<T> p3 = {200, 200};
+    vec2<T> p3 = {50, 50};
 
     return {p0, p1, p2, p3};
 //    return {p0, p1};
 }
 
 void render() {
-    using q = Q<4>;
-    render_path(path_rect<float>(), 50.0f, false);
+//    using q = Q<8>;
+    using q = float;
+//    render_path(path_rect<float>(), 20.0f, false);
+    render_path<q>(path_rect<q>(), 20.0f, true);
 //    render_path(path_tri<float>(), 50.0f, false);
 //    render_path(path_2<float>(), 20.0f, false);
 //    render_path(path_line<float>(), 15.0f, false);
@@ -141,8 +143,10 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
             stroke_size,
             close_path,
             tessellation::stroke_cap::round,
-//            tessellation::stroke_line_join::round,
-            tessellation::stroke_line_join::miter_clip,
+            tessellation::stroke_line_join::round,
+//            tessellation::stroke_line_join::bevel,
+//            tessellation::stroke_line_join::miter_clip,
+//            tessellation::stroke_line_join::miter,
             tessellation::stroke_gravity::center,
 //            tessellation::stroke_gravity::inward,
 //            tessellation::stroke_gravity::outward,
@@ -152,7 +156,7 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
             indices,
             type,
             &boundary_buffer,
-            4);
+            2);
 
     // draw triangles batch
     canvas->clear({255,255,255,255});

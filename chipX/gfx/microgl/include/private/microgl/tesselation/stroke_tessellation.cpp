@@ -193,7 +193,6 @@ namespace microgl {
                 {
 
             bool with_boundary =boundary_buffer!= nullptr;
-            index idx=output_vertices.size();
             output_indices_type=triangles::indices::TRIANGLES_STRIP;
             number stroke_size = max_(number(1), stroke_width / number(2));
             poly_4 current, next;
@@ -205,10 +204,12 @@ namespace microgl {
                         stroke_size, output_vertices, output_indices, boundary_buffer);
             output_indices.push_back(current.left_index);
             output_indices.push_back(current.bottom_index);
-            for (index ix = 1; ix < size - 1; ++ix) {
-                next = build_quadrilateral(points[ix], points[ix+1], stroke_size);
+            // if the path should close we cyclically extend to the second segment.
+            const index segments= closePath ? size+1 : size-1;
+            for (index ix = 1; ix < segments; ++ix) {
+                next = build_quadrilateral(points[ix%size], points[(ix+1)%size], stroke_size);
                 auto res= resolve_left_right_walls_intersections(current, next);
-                // left wall intersection or last point on current left wall
+                // use relevant vertices and store indices
                 if(res.has_left) {
                     res.left_index= output_vertices.push_back(res.left);
                 } else {
@@ -231,20 +232,31 @@ namespace microgl {
                 if(!skip_join) {
 //                if(false&&!skip_join) {
                     // now walk to hinge
-                    const vertex hinge= points[ix];//(current.top+current.right)/2;
-                    index hinge_index = output_vertices.push_back(hinge);
+                    const vertex join_vertex= points[ix%size];
+                    index join_index = output_vertices.push_back(join_vertex);
+                    // todo: first and last index might not be correct for when I force no intersections,
+                    // todo: in this case I should work it out (should be easy)
                     index first_index= res.has_right ? current.top_index : current.right_index;
                     index last_index= res.has_right ? next.left_index : next.bottom_index;
-                    output_indices.push_back(hinge_index);
-                    output_indices.push_back(hinge_index);
+                    /////
+                    bool cls= classify_point(next.left, current.top, join_vertex)>=0;
+                    if(cls) {
+                        first_index= current.top_index; last_index=next.left_index;
+                    } else {
+                        first_index= next.bottom_index; last_index=current.right_index;
+                    }
+                    /////
+
+                    output_indices.push_back(join_index);
+                    output_indices.push_back(join_index);
                     output_indices.push_back(first_index);
-                    output_indices.push_back(hinge_index);
-                    apply_line_join(line_join, res.has_right, current, next, first_index, hinge_index, last_index,
-                            stroke_size, miter_limit, output_vertices, output_indices, boundary_buffer);
+                    output_indices.push_back(join_index);
+                    apply_line_join(line_join, res.has_right, current, next, first_index, join_index, last_index,
+                                    stroke_size, miter_limit, output_vertices, output_indices, boundary_buffer);
                     // close the join and reinforce
                     output_indices.push_back(last_index);
-                    output_indices.push_back(hinge_index);
-                    output_indices.push_back(hinge_index);
+                    output_indices.push_back(join_index);
+                    output_indices.push_back(join_index);
                 }
                 // second quad
                 // left wall intersection or last point on current left wall
@@ -255,15 +267,23 @@ namespace microgl {
             }
 
             // close the last segment
-            current.top_index= output_vertices.push_back(current.top);
-            current.right_index= output_vertices.push_back(current.right);
-            output_indices.push_back(current.top_index);
-            output_indices.push_back(current.right_index);
-            output_indices.push_back(current.right_index);
-            if(!closePath)
+            if(!closePath) {
+                current.top_index= output_vertices.push_back(current.top);
+                current.right_index= output_vertices.push_back(current.right);
+                output_indices.push_back(current.top_index);
+                output_indices.push_back(current.right_index);
+                output_indices.push_back(current.right_index);
                 apply_cap(cap, false, points[size-1], current.top_index, current.right_index,
-                      stroke_size, output_vertices, output_indices, boundary_buffer);
+                          stroke_size, output_vertices, output_indices, boundary_buffer);
+            }
 
+            if(closePath) {
+                // close path requires some special things, like adjusting the first segment
+                // some indices from the last segment
+                const auto count= output_indices.size();
+                output_indices[0]=output_indices[count-2];
+                output_indices[1]=output_indices[count-1];
+            }
         }
 
         template<typename number>
@@ -298,11 +318,16 @@ namespace microgl {
                     // 3.
                     const edge clip_ray=
                             compute_distanced_tangent_at_joint(first_vertex, join_vertex, last_vertex,
-                                                               has_right ? miter_threshold : -miter_threshold);
+                                                               miter_threshold);
+//                                                               has_right ? miter_threshold : -miter_threshold);
                     edge a_ray=has_right ? edge{current.left, current.top} :
                                edge{current.bottom, current.right};
                     edge b_ray=has_right ? edge{next.top, next.left} :
                                edge{next.right, next.bottom};
+                    /////
+                    a_ray = {first_vertex, first_vertex+(join_vertex-first_vertex).ortho()};
+                    b_ray = {last_vertex, last_vertex+(join_vertex-last_vertex).ortho()};
+                    /////
                     vertex intersection{};
                     number alpha;
                     // clip rays against the clip ray, so miter will avoid overflows
@@ -331,7 +356,8 @@ namespace microgl {
                 case stroke_line_join::round:
                 {
                     compute_arc(first_vertex, join_vertex, last_vertex,
-                                has_right ? stroke_size : -stroke_size, 100,
+                                stroke_size, 100/4,
+//                                has_right ? stroke_size : -stroke_size, 100,
                                 join_index, output_vertices, output_indices, boundary_buffer);
                     break;
                 }
@@ -398,9 +424,11 @@ namespace microgl {
                 dynamic_array<microgl::triangles::boundary_info> *boundary_buffer) {
             // this procedure will generate points on a half circle adaptively
             const auto dir= to-from;
-            bool done= (dir.x*dir.x + dir.y*dir.y)<max_distance_squared;
+            bool done= (dir.x*dir.x + dir.y*dir.y)<=max_distance_squared;
             if(done) return;
             const auto e= compute_distanced_tangent_at_joint(from, root, to, radius);
+            bool not_in_cone_precision_issues= classify_point(e.a, root, from)>=0 || classify_point(e.a, root, to)<=0;
+            if(not_in_cone_precision_issues) return; // in case, the bisecting point was not in cone
             compute_arc(from, root, e.a, radius, max_distance_squared, root_index,
                         output_vertices, output_indices, boundary_buffer);
             output_indices.push_back(output_vertices.push_back(e.a));

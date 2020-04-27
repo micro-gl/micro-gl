@@ -36,6 +36,10 @@ namespace microgl {
             return (this->x*a.x + this->y*a.y);
         }
 
+        vec2 ortho() const {
+            return {this->y, -this->x};
+        }
+
         vec2 operator*(const number & val) const {
             return {this->x*val, this->y*val};
         }
