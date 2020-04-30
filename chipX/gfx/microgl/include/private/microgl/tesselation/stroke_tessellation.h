@@ -111,13 +111,12 @@ namespace microgl {
                       dynamic_array<microgl::triangles::boundary_info> *boundary_buffer);
 
             static
-            void apply_line_join(const stroke_line_join &line_join, bool has_right,
-                                 const poly_4 &current, const poly_4 &next,
+            void apply_line_join(const stroke_line_join &line_join,
                                  const index &first_index, const index &join_index, const index &last_index,
-                                 const number &stroke_size, const number &miter_limit,
+                                 const number &join_radius, const number &miter_limit,
                                  dynamic_array<vertex> &output_vertices,
                                  dynamic_array<index> &output_indices,
-                                 dynamic_array<microgl::triangles::boundary_info> *boundary_buffer);
+                                 dynamic_array<microgl::triangles::boundary_info> *boundary_buffer= nullptr);
         };
 
 

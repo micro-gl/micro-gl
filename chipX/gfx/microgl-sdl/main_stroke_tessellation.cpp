@@ -102,7 +102,7 @@ dynamic_array<vec2<T>> path_tri() {
 template <typename T>
 dynamic_array<vec2<T>> path_rect() {
     vec2<T> p0 = {100, 200};
-    vec2<T> p1 = {80, 30};
+    vec2<T> p1 = {420, 100};
     vec2<T> p2 = {200, 100};
     vec2<T> p3 = {50, 50};
 
@@ -114,7 +114,7 @@ void render() {
 //    using q = Q<8>;
     using q = float;
 //    render_path(path_rect<float>(), 20.0f, false);
-    render_path<q>(path_rect<q>(), 20.0f, true);
+    render_path<q>(path_rect<q>(), 40.0f, false);
 //    render_path(path_tri<float>(), 50.0f, false);
 //    render_path(path_2<float>(), 20.0f, false);
 //    render_path(path_line<float>(), 15.0f, false);
@@ -142,11 +142,14 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
     stroke_tess::compute(
             stroke_size,
             close_path,
+//            tessellation::stroke_cap::butt,
+//            tessellation::stroke_cap::square,
             tessellation::stroke_cap::round,
             tessellation::stroke_line_join::round,
 //            tessellation::stroke_line_join::bevel,
 //            tessellation::stroke_line_join::miter_clip,
 //            tessellation::stroke_line_join::miter,
+//            tessellation::stroke_line_join::none,
             tessellation::stroke_gravity::center,
 //            tessellation::stroke_gravity::inward,
 //            tessellation::stroke_gravity::outward,
@@ -156,11 +159,11 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
             indices,
             type,
             &boundary_buffer,
-            2);
+            12);
 
     // draw triangles batch
     canvas->clear({255,255,255,255});
-    canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(
+    canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
             color_red,
             vertices.data(),
             (vec2<number> *)nullptr,
@@ -168,10 +171,10 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
             boundary_buffer.data(),
             indices.size(),
             type,
-            120
+            127
             );
 
-//    return;
+    return;
     // draw triangulation
     canvas->drawTrianglesWireframe(
             {0,0,0,255},

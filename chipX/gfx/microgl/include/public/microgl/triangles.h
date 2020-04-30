@@ -92,12 +92,12 @@ namespace microgl {
                 case indices::TRIANGLES:
                 case indices::TRIANGLES_WITH_BOUNDARY:
                     for (index ix = 0, idx=0; ix < size; ix+=3,idx++)
-                        callback(idx, IND(ix + 0), IND(ix + 1), IND(ix + 2));
+                        callback(idx, IND(ix + 0), IND(ix + 1), IND(ix + 2), 0, 1, 2);
                     break;
                 case indices::TRIANGLES_FAN:
                 case indices::TRIANGLES_FAN_WITH_BOUNDARY:
                     for (index ix = 1; ix < size-1; ++ix)
-                        callback(ix-1, IND(0), IND(ix), IND(ix + 1));
+                        callback(ix-1, IND(0), IND(ix), IND(ix + 1), 0, 1, 2);
                     break;
                 case indices::TRIANGLES_STRIP:
                 case indices::TRIANGLES_STRIP_WITH_BOUNDARY:
@@ -108,7 +108,7 @@ namespace microgl {
                         index first_index = even ?  IND(ix + 0) : IND(ix + 2);
                         index second_index = IND(ix + 1);
                         index third_index = even ?  IND(ix + 2) : IND(ix + 0);
-                        callback(ix, first_index, second_index, third_index);
+                        callback(ix, first_index, second_index, third_index, even?0:1, even?1:0, 2);
                         even = !even;
                     }
                     break;

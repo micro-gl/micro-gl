@@ -372,14 +372,15 @@ void Canvas<P, CODER>::drawTriangles(const sampling::sampler<S> &sampler,
         }
     }
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
-          [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
+          [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
+              const index &edge_0_id, const index &edge_1_id, const index &edge_2_id) {
               const bool aa_2d= boundary_buffer!=nullptr;
               bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
               if(aa_2d) {
                   const boundary_info aa_info = boundary_buffer[idx];
-                  aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
-                  aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
-                  aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
+                  aa_first_edge = triangles::classify_boundary_info(aa_info, edge_0_id);
+                  aa_second_edge = triangles::classify_boundary_info(aa_info, edge_1_id);
+                  aa_third_edge = triangles::classify_boundary_info(aa_info, edge_2_id);
               }
               const auto & p1= vertices[first_index], p2=vertices[second_index], p3=vertices[third_index];
               vec2<number2> uv_s{u0,v0}, uv_e{u1,v1}, uv_d{u1-u0,v1-v0};
@@ -410,14 +411,15 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                                      long long * depth_buffer,
                                      const opacity_t opacity) {
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
-          [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
+          [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
+              const index &edge_0_id, const index &edge_1_id, const index &edge_2_id) {
               const bool aa_2d= boundary_buffer!=nullptr;
               bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
               if(aa_2d) {
                   const boundary_info aa_info = boundary_buffer[idx];
-                  aa_first_edge = triangles::classify_boundary_info(aa_info, 0);
-                  aa_second_edge = triangles::classify_boundary_info(aa_info, 1);
-                  aa_third_edge = triangles::classify_boundary_info(aa_info, 2);
+                  aa_first_edge = triangles::classify_boundary_info(aa_info, edge_0_id);
+                  aa_second_edge = triangles::classify_boundary_info(aa_info, edge_1_id);
+                  aa_third_edge = triangles::classify_boundary_info(aa_info, edge_2_id);
               }
               drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag>(
                       shader,
@@ -439,7 +441,8 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_t &color,
                                               const enum indices type,
                                               const opacity_t opacity) {
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
-              [&](const index &idx, const index &first_index, const index &second_index, const index &third_index) {
+              [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
+                  const index &edge_0_id, const index &edge_1_id, const index &edge_2_id) {
                   drawTriangleWireframe(color, vertices[first_index], vertices[second_index], vertices[third_index], opacity);
               });
 }
