@@ -142,9 +142,9 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
     stroke_tess::compute(
             stroke_size,
             close_path,
-//            tessellation::stroke_cap::butt,
+            tessellation::stroke_cap::butt,
 //            tessellation::stroke_cap::square,
-            tessellation::stroke_cap::round,
+//            tessellation::stroke_cap::round,
             tessellation::stroke_line_join::round,
 //            tessellation::stroke_line_join::bevel,
 //            tessellation::stroke_line_join::miter_clip,
@@ -159,7 +159,7 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
             indices,
             type,
             &boundary_buffer,
-            12);
+            2);
 
     // draw triangles batch
     canvas->clear({255,255,255,255});

@@ -192,6 +192,8 @@ namespace microgl {
             boundary_buffer->push_back(triangles::create_boundary_info(false, false, false))
 #define b2 if(boundary_buffer && output_indices.size()>=3) \
             boundary_buffer->push_back(triangles::create_boundary_info(false, false, true))
+#define reinforce if(output_indices.size())  { \
+            output_indices.push_back(output_indices.back()); b1; }
 
             const auto indices_offset= output_indices.size();
             output_indices_type=triangles::indices::TRIANGLES_STRIP;
@@ -200,11 +202,14 @@ namespace microgl {
             current = build_quadrilateral(points[0], points[1], stroke_size);
             current.left_index= output_vertices.push_back(current.left);
             current.bottom_index= output_vertices.push_back(current.bottom);
+            reinforce; // reinforce last index, for degenerate transitioning
+
             if(!closePath)
                 apply_cap(cap, false, points[0], current.bottom_index, current.left_index,
                         stroke_size, output_vertices, output_indices, boundary_buffer);
             output_indices.push_back(current.left_index); b1;
             output_indices.push_back(current.bottom_index); b1;
+            index b_first_edge_idx= boundary_buffer && boundary_buffer->size() ? boundary_buffer->size()-1 : 0;
             // if the path should close we cyclically extend to the second segment.
             const index segments= closePath ? size+1 : size-1;
             for (index ix = 1; ix < segments; ++ix) {
@@ -229,31 +234,20 @@ namespace microgl {
                 output_indices.push_back(res.has_right ? res.right_index : current.right_index); b2;
                 // line join
                 bool skip_join= res.has_right && res.has_left; // straight line
-//                line_join = stroke_line_join::round;
                 if(!skip_join) {
-//                if(false&&!skip_join) {
                     // now walk to hinge
                     const vertex join_vertex= points[ix%size];
                     index join_index = output_vertices.push_back(join_vertex);
-                    // todo: first and last index might not be correct for when I force no intersections,
-                    // todo: in this case I should work it out (should be easy)
-                    index first_index= res.has_right ? current.top_index : current.right_index;
-                    index last_index= res.has_right ? next.left_index : next.bottom_index;
-                    /////
                     bool cls= classify_point(next.left, current.top, join_vertex)>=0;
-                    if(cls) {
-                        first_index= current.top_index; last_index=next.left_index;
-                    } else {
-                        first_index= next.bottom_index; last_index=current.right_index;
-                    }
-                    /////
+                    index first_index= cls ? current.top_index : next.bottom_index;
+                    index last_index= cls ? next.left_index : current.right_index;
 
                     output_indices.push_back(join_index); b1;
                     output_indices.push_back(join_index); b1;
                     output_indices.push_back(first_index); b1;
                     output_indices.push_back(join_index); b1;
-                    apply_line_join(line_join, first_index, join_index, last_index,
-                                    stroke_size, miter_limit, output_vertices, output_indices, boundary_buffer);
+                    apply_line_join(line_join, first_index, join_index, last_index, stroke_size,
+                            miter_limit, output_vertices, output_indices, boundary_buffer);
                     // close the join and reinforce
                     output_indices.push_back(last_index);b2;
                     output_indices.push_back(join_index);b1;
@@ -272,10 +266,14 @@ namespace microgl {
                 current.top_index= output_vertices.push_back(current.top);
                 current.right_index= output_vertices.push_back(current.right);
                 output_indices.push_back(current.top_index); b2;
-                output_indices.push_back(current.right_index); b2;
+                output_indices.push_back(current.right_index); b2; index b_idx=boundary_buffer ? boundary_buffer->size()-1 : 0;
                 output_indices.push_back(current.right_index); b1;
                 apply_cap(cap, false, points[size-1], current.top_index, current.right_index,
                           stroke_size, output_vertices, output_indices, boundary_buffer);
+                if(cap==stroke_cap::butt && boundary_buffer) {
+                    (*boundary_buffer)[b_idx] = triangles::create_boundary_info(false, true, true);
+                    (*boundary_buffer)[b_first_edge_idx] = triangles::create_boundary_info(true, false, true);
+                }
             }
 
             if(closePath) {
@@ -286,6 +284,7 @@ namespace microgl {
                 output_indices[indices_offset+1]=output_indices[count-1];
             }
 
+#undef reinforce
 #undef b1
 #undef b2
         }
@@ -394,6 +393,7 @@ namespace microgl {
                 case stroke_cap::round:
                 {
                     const index root_index= output_vertices.push_back(root);
+                    output_indices.push_back(a_index); b1;
                     output_indices.push_back(a_index); b1;
                     output_indices.push_back(root_index); b1;
                     compute_arc(a, root, b, radius, 100/4,
