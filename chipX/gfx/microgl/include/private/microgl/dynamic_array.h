@@ -21,7 +21,6 @@ public:
 
     explicit dynamic_array(index capacity = 0) {
         _cap = capacity;
-
         if(_cap > 0)
             _data = new T[_cap];
     }

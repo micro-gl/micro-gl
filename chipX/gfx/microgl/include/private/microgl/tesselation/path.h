@@ -30,11 +30,10 @@ namespace microgl {
             }
             vertex & lastPointOfCurrentSubPath() {
                 auto current_path = _paths_vertices.current();
-                return current_path.data[current_path.size-1];
+                return current_path.data[current_path.size-1]; // todo: size may be 0
             }
             int sizeOfCurrentSubPath() {
                 return _paths_vertices.current().size;
-
             }
             vertex & firstPointOfLastSubPath() {
                 auto current_path = _paths_vertices.back();
@@ -73,11 +72,12 @@ namespace microgl {
             }
 
             auto addPath(const path & $path) -> path & {
-                _paths_vertices.push_back($path);
+                _paths_vertices.push_back($path._paths_vertices);
                 return *this;
             }
 
             auto closePath() -> path & {
+                if(sizeOfCurrentSubPath()==0) return;
                 // move the pen to the first vertex of the sub-path and
                 auto current_path = _paths_vertices.current();
                 const vertex first_point = firstPointOfCurrentSubPath();
@@ -91,7 +91,9 @@ namespace microgl {
             }
 
             auto lineTo(const vertex & point) -> path & {
-                _paths_vertices.push_back(point);
+                auto current_path = _paths_vertices.current();
+                bool avoid = current_path.size && current_path.data[current_path.size-1]==point;
+                if(!avoid) _paths_vertices.push_back(point);
                 return *this;
             }
             auto lineTo(const number & x, const number & y) -> path & {
@@ -99,7 +101,7 @@ namespace microgl {
             }
 
             auto moveTo(const vertex & point) -> path & {
-                _paths_vertices.cut_chunk();
+                _paths_vertices.cut_chunk_if_current_not_empty();
                 _paths_vertices.push_back(point);
                 return *this;
             }

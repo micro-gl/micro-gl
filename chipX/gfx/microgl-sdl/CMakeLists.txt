@@ -50,9 +50,6 @@ set(SOURCES
 #        main_draw_sampler_axial_gradient.cpp
 #        main_draw_sampler_gradient_2_colors_fast.cpp
 #        main_draw_sampler_flat_color.cpp
-        main_stroke_tessellation.cpp
-#        main_arc_divider.cpp
-#        main_fan_triangulation.cpp
 #        main_Q_matrix_transforms.cpp
 #        main_draw_shaders_2d.cpp
 #        main_draw_shaders_3d.cpp
@@ -69,7 +66,10 @@ set(SOURCES
 #        main_ear_clipping_holes.cpp
 #        main_ear_clipping_deg.cpp
 #        main_complex_to_planar_subdivision.cpp
-#        main_path.cpp
+#        main_stroke_tessellation.cpp
+#        main_arc_divider.cpp
+#        main_fan_triangulation.cpp
+        main_path.cpp
 #        main_q_sort.cpp
 #        main_avl_tree.cpp
         libs/stb_image/stb_image.cpp

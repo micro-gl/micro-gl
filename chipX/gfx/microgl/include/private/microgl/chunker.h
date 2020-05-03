@@ -51,7 +51,7 @@ public:
     }
 
     chunk current() {
-        return chunk_for(size());
+        return chunk_for(size()-1);
     }
 
     chunk front() {
@@ -59,6 +59,11 @@ public:
     }
 
     void cut_chunk() {
+        _locations.push_back(_data.size());
+    }
+
+    void cut_chunk_if_current_not_empty() {
+        if(current().size==0) return;
         _locations.push_back(_data.size());
     }
 
@@ -123,7 +128,7 @@ public:
 
     chunk chunk_for(index i) {
         index idx_start = _locations[i];
-        index idx_end = (i+1)<=size() ? _locations[i+1] : _data.size();
+        index idx_end = (i+1)<size() ? _locations[i+1] : _data.size();
         index size = idx_end - idx_start;
         type_pointer pointer = &(_data[idx_start]);
         return {pointer, size};
@@ -131,7 +136,7 @@ public:
 
     chunk chunk_for(index i) const {
         index idx_start = _locations[i];
-        index idx_end = (i+1)<=size() ? _locations[i+1] : _data.size();
+        index idx_end = (i+1)<size() ? _locations[i+1] : _data.size();
         index size = idx_end - idx_start;
         const_type_pointer pointer = &(_data[idx_start]);
         return {pointer, size};
@@ -156,7 +161,7 @@ public:
     }
 
     index size() const {
-        return _locations.size() - 1;
+        return _locations.size();// - 1;
     }
 
     index unchunked_size() const {

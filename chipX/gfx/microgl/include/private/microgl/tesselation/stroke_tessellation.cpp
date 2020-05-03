@@ -84,7 +84,7 @@ namespace microgl {
                 vertex &pt_out_0,
                 vertex &pt_out_1,
                 number stroke) {
-            vertex vec = pt1 - pt0;
+            vertex vec = pt1==pt0 ? vertex{1,0} : pt1 - pt0;
             vertex normal = {vec.y, -vec.x};
             number length = microgl::math::length(normal.x, normal.y);
             vertex dir = (normal*stroke)/length;
@@ -195,25 +195,32 @@ namespace microgl {
 #define reinforce if(output_indices.size())  { \
             output_indices.push_back(output_indices.back()); b1; }
 
+
             const auto indices_offset= output_indices.size();
             output_indices_type=triangles::indices::TRIANGLES_STRIP;
             number stroke_size = max_(number(1), stroke_width / number(2));
+            index start_index=0; // find the first non-degenerate index
+            while((start_index+1<size) && points[start_index]==points[start_index+1]) {
+                start_index++;
+            }
             poly_4 current, next;
-            current = build_quadrilateral(points[0], points[1], stroke_size);
+            current = build_quadrilateral(points[start_index], points[start_index+1], stroke_size);
             current.left_index= output_vertices.push_back(current.left);
             current.bottom_index= output_vertices.push_back(current.bottom);
             reinforce; // reinforce last index, for degenerate transitioning
 
             if(!closePath)
-                apply_cap(cap, false, points[0], current.bottom_index, current.left_index,
+                apply_cap(cap, false, points[start_index], current.bottom_index, current.left_index,
                         stroke_size, output_vertices, output_indices, boundary_buffer);
             output_indices.push_back(current.left_index); b1;
             output_indices.push_back(current.bottom_index); b1;
             index b_first_edge_idx= boundary_buffer && boundary_buffer->size() ? boundary_buffer->size()-1 : 0;
             // if the path should close we cyclically extend to the second segment.
             const index segments= closePath ? size+1 : size-1;
-            for (index ix = 1; ix < segments; ++ix) {
-                next = build_quadrilateral(points[ix%size], points[(ix+1)%size], stroke_size);
+            for (index ix = start_index+1; ix < segments; ++ix) {
+                const vertex start= points[ix%size], end= points[(ix+1)%size];
+                if(start==end) continue; // skip degenerate segments
+                next = build_quadrilateral(start, end, stroke_size);
                 auto res= resolve_left_right_walls_intersections(current, next);
                 // use relevant vertices and store indices
                 if(res.has_left) {
@@ -236,7 +243,7 @@ namespace microgl {
                 bool skip_join= res.has_right && res.has_left; // straight line
                 if(!skip_join) {
                     // now walk to hinge
-                    const vertex join_vertex= points[ix%size];
+                    const vertex join_vertex= start;
                     index join_index = output_vertices.push_back(join_vertex);
                     bool cls= classify_point(next.left, current.top, join_vertex)>=0;
                     index first_index= cls ? current.top_index : next.bottom_index;

@@ -12,6 +12,7 @@ namespace microgl {
             for (index ix = 0; ix < pieces_length; ++ix) {
                 auto const piece = pieces[ix];
                 const auto piece_size = piece.size;
+                if(piece_size<=1) continue;
                 for (index jx = 0; jx < piece_size; ++jx) {
                     const auto & current_vertex = piece.data[jx];
                     if(current_vertex.x<left_top.x)
@@ -109,6 +110,10 @@ namespace microgl {
                 for (index jx = 0; jx < piece_size; ++jx) {
                     // if last point equals first point. let's skip because
                     // we will connect them so there is no need to add zero length edge
+                    if(jx>1) {
+                        if(piece.data[jx]==edge_last->origin->coords)
+                            continue;
+                    }
                     if(jx==piece_size-1) {
                         if(piece.data[jx]==edge_first->origin->coords)
                             continue;
@@ -1211,7 +1216,7 @@ namespace microgl {
                     {
                         const auto *start= trapeze.left_top;
                         auto *iter= start->next;
-                        do { // triangulate the convex piece, we insert a vertex because this will create better/accurate triangles
+                        do {
                             auto *second = iter;
                             auto *third= second->next;
                             output_indices.push_back(start->origin->tess_index);
