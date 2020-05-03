@@ -81,11 +81,9 @@ namespace microgl {
                 // move the pen to the first vertex of the sub-path and
                 auto current_path = _paths_vertices.current();
                 const vertex first_point = firstPointOfCurrentSubPath();
-                const vertex last_point = lastPointOfCurrentSubPath();
-                if(first_point==last_point) return;
+                // if two last points equal the first one, it is a close path signal
                 _paths_vertices.push_back(first_point);
-//                _paths_vertices.cut_chunk();
-                // start a new sub path ?
+                _paths_vertices.push_back(first_point);
                 moveTo(first_point);
                 return *this;
             }
@@ -177,7 +175,6 @@ namespace microgl {
             }
 
             void build() {
-                _paths_vertices.cut_chunk();
                 _created=true;
             }
 
@@ -195,7 +192,8 @@ namespace microgl {
                 }
             };
 
-            buffers & tessellateFill(const fill_rule &rule, tess_quality quality=tess_quality::better) {
+            buffers & tessellateFill(const fill_rule &rule,
+                    tess_quality quality=tess_quality::better) {
                 _tess_fill.clear();
                 planarize_division<number>::compute(
                         _paths_vertices, rule, quality,
@@ -207,13 +205,15 @@ namespace microgl {
                 return _tess_fill;
             }
 
-            buffers & tessellateStroke(const number & stroke_size) {
+            buffers & tessellateStroke(const number & stroke_width, ) {
                 _tess_stroke.clear();
                 unsigned paths=_paths_vertices.size();
                 for (unsigned ix = 0; ix < paths; ++ix) {
                     auto chunk = _paths_vertices[ix];
+                    bool isClosing = chunk.size>=3 && chunk.data[0]==chunk.data[chunk.size-1]
+                                                      && chunk.data[1]==chunk.data[chunk.size-2];
                     stroke_tessellation<number>::compute(
-                            stroke_size, false, stroke_gravity::inward,
+                            stroke_width, isClosing, stroke_gravity::inward,
                             chunk.data, chunk.size,
                             _tess_stroke.output_vertices,
                             _tess_stroke.output_indices,

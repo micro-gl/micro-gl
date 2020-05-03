@@ -97,25 +97,26 @@ namespace microgl {
             const auto pieces_length = pieces.size();
             conflict * conflict_first = nullptr;
             const auto v_size = pieces.unchunked_size();
-            auto ** edges_list = new half_edge*[v_size];
+            auto ** edges_list = new half_edge*[v_size]{nullptr};
             index edges_list_counter = 0;
 
             // build edges and twins, do not make next/prev connections
             for (index ix = 0; ix < pieces_length; ++ix) {
                 half_edge * edge_first = nullptr;
                 half_edge * edge_last = nullptr;
-
                 auto const piece = pieces[ix];
                 const auto piece_size = piece.size;
-                for (index jx = 0; jx < piece_size; ++jx) {
+                if(piece_size<=1) continue;
+                index last_index= piece_size-1;
+                // in case, last vertex is same as first, it is better to remove na connect at the end
+                while(last_index>0 && piece.data[last_index]==piece.data[0]) {
+                    last_index--;
+                }
+                for (index jx = 0; jx<=last_index; ++jx) {
                     // if last point equals first point. let's skip because
                     // we will connect them so there is no need to add zero length edge
                     if(jx>1) {
                         if(piece.data[jx]==edge_last->origin->coords)
-                            continue;
-                    }
-                    if(jx==piece_size-1) {
-                        if(piece.data[jx]==edge_first->origin->coords)
                             continue;
                     }
                     // v, e, c
@@ -1163,9 +1164,8 @@ namespace microgl {
 
             // now start iterations
             for (int ix = 0; ix < v_size; ++ix) {
-//            for (int ix = 0; ix < 3; ++ix) {
                 auto *e = edges_list[ix];
-                //remove_edge_from_conflict_list(e);
+                if(e== nullptr) continue;
                 insert_edge(e, ix, dynamic_pool);
             }
 
