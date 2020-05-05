@@ -17,7 +17,7 @@ namespace microgl {
             vertex dc = a - c;
             // we reduce the precision with multiplications to avoid extreme overflow
             number det = -(s2.x * s1.y) + (s1.x * s2.y);
-            number s = -(s1.y * dc.x) + (s1.x * dc.y);
+            //number s = -(s1.y * dc.x) + (s1.x * dc.y);
             number t = (s2.x * dc.y) - (s2.y * dc.x);
             if (det!=0) intersection = a + (s1*t)/det;
             return det!=0;
@@ -25,9 +25,9 @@ namespace microgl {
 
         template<typename number>
         auto stroke_tessellation<number>::finite_segment_intersection_test(const vertex &a, const vertex &b,
-                                                                          const vertex &c, const vertex &d,
-                                                                          vertex & intersection,
-                                                                          number &alpha, number &alpha1) -> intersection_status{
+                                                                           const vertex &c, const vertex &d,
+                                                                           vertex & intersection,
+                                                                           number &alpha, number &alpha1) -> intersection_status{
             // this procedure will find proper and improper(touches) intersections, but no
             // overlaps, since overlaps induce parallel classification, this would have to be resolved outside
             if(a==b || c==d)
@@ -149,7 +149,7 @@ namespace microgl {
             number alpha;
             // test left walls
             auto status= finite_segment_intersection_test(a.left, a.top, b.left, b.top,
-                            result_inter, alpha, alpha);
+                                                          result_inter, alpha, alpha);
             if(status==intersection_status::parallel) {
                 if(a.top==b.left) {
                     result.left= a.top;
@@ -165,7 +165,7 @@ namespace microgl {
             }
             // right walls
             status= finite_segment_intersection_test(a.right, a.bottom, b.right, b.bottom,
-                                                          result_inter, alpha, alpha);
+                                                     result_inter, alpha, alpha);
             if (status==intersection_status::intersect) {
                 result.right= result_inter;
                 result.has_right=true;
@@ -173,29 +173,48 @@ namespace microgl {
             return result;
         }
 
+        void b1_(dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
+                const dynamic_array<index> &output_indices){
+            if(boundary_buffer && output_indices.size()>=3)
+                boundary_buffer->push_back(triangles::create_boundary_info(false, false, false));
+        }
+        void b2_(dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
+                const dynamic_array<index> &output_indices){
+            if(boundary_buffer && output_indices.size()>=3)
+                boundary_buffer->push_back(triangles::create_boundary_info(false, false, true));
+        }
+        void b3_(dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
+                const dynamic_array<index> &output_indices){
+            if(boundary_buffer && output_indices.size()>=3)
+                boundary_buffer->push_back(triangles::create_boundary_info(true, false, true));
+        }
+        void reinforce_(dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
+                       dynamic_array<index> &output_indices){
+            if(output_indices.size()) {
+                output_indices.push_back(output_indices.back()); b1_(boundary_buffer, output_indices);
+            }
+        }
+
         template<typename number>
         void stroke_tessellation<number>::compute(
-                number stroke_width,
-                bool closePath,
-                stroke_cap cap,
-                stroke_line_join line_join,
-                const stroke_gravity gravity,
+                const number &stroke_width,
+                const bool closePath,
+                const stroke_cap &cap,
+                const stroke_line_join &line_join,
+                const stroke_gravity &gravity,
+                const number &miter_limit,
                 const vertex *points,
                 const index size,
                 dynamic_array<vertex> &output_vertices,
                 dynamic_array<index> &output_indices,
                 microgl::triangles::indices &output_indices_type,
-                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
-                number miter_limit)
-                {
-#define b1 if(boundary_buffer && output_indices.size()>=3) \
-            boundary_buffer->push_back(triangles::create_boundary_info(false, false, false))
-#define b2 if(boundary_buffer && output_indices.size()>=3) \
-            boundary_buffer->push_back(triangles::create_boundary_info(false, false, true))
-#define reinforce if(output_indices.size())  { \
-            output_indices.push_back(output_indices.back()); b1; }
-
-
+                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer)
+        {
+#define b1 b1_(boundary_buffer, output_indices)
+#define b2 b2_(boundary_buffer, output_indices)
+#define reinforce reinforce_(boundary_buffer, output_indices)
+            reinforce; // reinforce last index, for degenerate transitioning
+            if(size==0) return;
             const auto indices_offset= output_indices.size();
             output_indices_type=triangles::indices::TRIANGLES_STRIP;
             number stroke_size = max_(number(1), stroke_width / number(2));
@@ -204,14 +223,15 @@ namespace microgl {
                 start_index++;
             }
             poly_4 current, next;
-            current = build_quadrilateral(points[start_index], points[start_index+1], stroke_size);
+            current = build_quadrilateral(points[start_index], points[(start_index+1)%size], stroke_size);
             current.left_index= output_vertices.push_back(current.left);
             current.bottom_index= output_vertices.push_back(current.bottom);
-            reinforce; // reinforce last index, for degenerate transitioning
 
             if(!closePath)
                 apply_cap(cap, false, points[start_index], current.bottom_index, current.left_index,
-                        stroke_size, output_vertices, output_indices, boundary_buffer);
+                          stroke_size, output_vertices, output_indices, boundary_buffer);
+            // reinforce again
+            index first_left_index = output_indices.push_back(current.left_index); b1;
             output_indices.push_back(current.left_index); b1;
             output_indices.push_back(current.bottom_index); b1;
             index b_first_edge_idx= boundary_buffer && boundary_buffer->size() ? boundary_buffer->size()-1 : 0;
@@ -254,7 +274,7 @@ namespace microgl {
                     output_indices.push_back(first_index); b1;
                     output_indices.push_back(join_index); b1;
                     apply_line_join(line_join, first_index, join_index, last_index, stroke_size,
-                            miter_limit, output_vertices, output_indices, boundary_buffer);
+                                    miter_limit, output_vertices, output_indices, boundary_buffer);
                     // close the join and reinforce
                     output_indices.push_back(last_index);b2;
                     output_indices.push_back(join_index);b1;
@@ -287,8 +307,9 @@ namespace microgl {
                 // close path requires some special things, like adjusting the first segment
                 // some indices from the last segment
                 const auto count= output_indices.size();
-                output_indices[indices_offset+0]=output_indices[count-2];
-                output_indices[indices_offset+1]=output_indices[count-1];
+                output_indices[first_left_index+0]=output_indices[count-2];
+                output_indices[first_left_index+1]=output_indices[count-2];
+                output_indices[first_left_index+2]=output_indices[count-1];
             }
 
 #undef reinforce
@@ -308,10 +329,9 @@ namespace microgl {
                 dynamic_array<index> &output_indices,
                 dynamic_array<microgl::triangles::boundary_info> *boundary_buffer) {
             // insert vertices strictly between the start and last vertex of the join
-#define b1 if(boundary_buffer && output_indices.size()>=3) \
-            boundary_buffer->push_back(triangles::create_boundary_info(false, false, false))
-#define b2 if(boundary_buffer && output_indices.size()>=3) \
-            boundary_buffer->push_back(triangles::create_boundary_info(false, false, true))
+#define b1 b1_(boundary_buffer, output_indices)
+#define b2 b2_(boundary_buffer, output_indices)
+
             const auto first_vertex = output_vertices[first_index];
             const auto join_vertex = output_vertices[join_index];
             const auto last_vertex = output_vertices[last_index];
@@ -385,12 +405,10 @@ namespace microgl {
                 dynamic_array<index> &output_indices,
                 dynamic_array<microgl::triangles::boundary_info> *boundary_buffer) {
             // create a cap to the left of edge (a, b)
-#define b1 if(boundary_buffer && output_indices.size()>=3) \
-            boundary_buffer->push_back(triangles::create_boundary_info(false, false, false))
-#define b2 if(boundary_buffer && output_indices.size()>=3) \
-            boundary_buffer->push_back(triangles::create_boundary_info(false, false, true))
-#define b3 if(boundary_buffer && output_indices.size()>=3) \
-            boundary_buffer->push_back(triangles::create_boundary_info(true, false, true))
+#define b1 b1_(boundary_buffer, output_indices)
+#define b2 b2_(boundary_buffer, output_indices)
+#define b3 b3_(boundary_buffer, output_indices)
+
             const auto a= output_vertices[a_index];
             const auto b= output_vertices[b_index];
             switch (cap) {
@@ -449,11 +467,9 @@ namespace microgl {
             compute_arc(from, root, e.a, radius, max_distance_squared, root_index,
                         output_vertices, output_indices, boundary_buffer);
             output_indices.push_back(output_vertices.push_back(e.a));
+            b2_(boundary_buffer, output_indices);
             output_indices.push_back(root_index);
-            if(boundary_buffer) {
-                boundary_buffer->push_back(triangles::create_boundary_info(false, false, true));
-                boundary_buffer->push_back(triangles::create_boundary_info(false, false, false));
-            }
+            b1_(boundary_buffer, output_indices);
             compute_arc(e.a, root, to, radius, max_distance_squared, root_index,
                         output_vertices, output_indices, boundary_buffer);
         }

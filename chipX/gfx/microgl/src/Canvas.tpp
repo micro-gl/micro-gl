@@ -1250,6 +1250,81 @@ void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
 }
 
 template<typename P, typename CODER>
+template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
+void Canvas<P, CODER>::drawPathStroke(const sampling::sampler<S> &sampler,
+                                      tessellation::path<number1> & path,
+                                      const number1 & stroke_width,
+                                      const tessellation::stroke_cap &cap,
+                                      const tessellation::stroke_line_join &line_join,
+                                      const int miter_limit,
+                                      opacity_t opacity,
+                                      const number2 u0, const number2 v0,
+                                      const number2 u1, const number2 v1,
+                                      const bool debug) {
+    const auto & buffers= path.tessellateStroke(stroke_width, cap, line_join, miter_limit);
+    drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, S>(
+            sampler,
+            buffers.output_vertices.data(),
+            static_cast<vec2<number2> *>(nullptr),
+            buffers.output_indices.data(),
+            buffers.output_boundary.data(),
+            buffers.output_indices.size(),
+            buffers.output_indices_type,
+            opacity,
+            u0, v0, u1, v1
+    );
+
+
+    if(debug)
+        drawTrianglesWireframe({0,0,0,255},
+                               buffers.output_vertices.data(),
+                               buffers.output_indices.data(),
+                               buffers.output_indices.size(),
+                               buffers.output_indices_type,
+                               255);
+
+}
+
+template<typename P, typename CODER>
+template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
+void Canvas<P, CODER>::drawPathFill(const sampling::sampler<S> &sampler,
+                                    tessellation::path<number1> & path,
+                                    const tessellation::fill_rule &rule,
+                                    const tessellation::tess_quality &quality,
+                                    opacity_t opacity,
+                                    const number2 u0, const number2 v0,
+                                    const number2 u1, const number2 v1,
+                                    const bool debug) {
+    const auto & buffers= path.tessellateFill(rule, quality);
+    drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, S>(
+            sampler,
+            buffers.output_vertices.data(),
+            static_cast<vec2<number2> *>(nullptr),
+            buffers.output_indices.data(),
+            buffers.output_boundary.data(),
+            buffers.output_indices.size(),
+            buffers.output_indices_type,
+            opacity,
+            u0, v0, u1, v1
+    );
+
+    if(debug) {
+        drawTrianglesWireframe({0,0,0,255},
+                               buffers.output_vertices.data(),
+                               buffers.output_indices.data(),
+                               buffers.output_indices.size(),
+                               buffers.output_indices_type,
+                               40);
+
+        for (index ix = 0; ix < buffers.DEBUG_output_trapezes.size(); ix+=4) {
+            drawWuLinePath<number1>({0,0,0,255}, &buffers.DEBUG_output_trapezes[ix], 4, true);
+        }
+
+    }
+
+}
+
+template<typename P, typename CODER>
 template<typename number>
 void Canvas<P, CODER>::drawWuLine(const color_t &color,
                                   const number &x0, const number &y0,
@@ -1382,7 +1457,7 @@ template<typename P, typename CODER>
 template <typename number>
 void
 Canvas<P, CODER>::drawWuLinePath(const color_t &color,
-                                 vec2<number> *points,
+                                 const vec2<number> *points,
                                  unsigned int size,
                                  bool closed_path) {
     index jx = 0;

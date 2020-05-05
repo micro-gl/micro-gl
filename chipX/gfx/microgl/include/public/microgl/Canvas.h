@@ -15,13 +15,12 @@
 #include <microgl/polygons.h>
 #include <microgl/masks.h>
 #include <microgl/math.h>
-#include <microgl/tesselation/curve_divider.h>
+#include <microgl/tesselation/path.h>
 #include <microgl/tesselation/ear_clipping_triangulation.h>
 #include <microgl/tesselation/fan_triangulation.h>
 #include <microgl/tesselation/bezier_patch_tesselator.h>
 #include <microgl/cohen_sutherland_clipper.h>
 #include <microgl/homo_triangle_clipper.h>
-#include <microgl/uv_map.h>
 #include <microgl/functions/minmax.h>
 #include <microgl/functions/clamp.h>
 #include <microgl/functions/swap.h>
@@ -340,7 +339,7 @@ public:
 
     template <typename number>
     void drawWuLinePath(const color_t & color,
-                        vec2<number> *points,
+                        const vec2<number> *points,
                         unsigned int size = 4,
                         bool closed_path = false);
 
@@ -353,6 +352,26 @@ public:
                          = tessellation::curve_divider<number>::CurveDivisionAlgorithm::Uniform_16);
 
 
+    template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
+            bool antialias=false, typename number1=float, typename number2=float, typename S>
+    void drawPathStroke(const sampling::sampler<S> &sampler,
+                        tessellation::path<number1> &path,
+                        const number1 &stroke_width=number1(1),
+                        const tessellation::stroke_cap &cap=tessellation::stroke_cap::butt,
+                        const tessellation::stroke_line_join &line_join=tessellation::stroke_line_join::bevel,
+                        int miter_limit=4, opacity_t opacity=255,
+                        number2 u0=number2(0), number2 v0=number2(1),
+                        number2 u1=number2(1), number2 v1=number2(0), bool debug=false);
+
+    template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
+            bool antialias=false, typename number1=float, typename number2=float, typename S>
+    void drawPathFill(const sampling::sampler<S> &sampler,
+                      tessellation::path<number1> &path,
+                      const tessellation::fill_rule &rule=tessellation::fill_rule::non_zero,
+                      const tessellation::tess_quality &quality=tessellation::tess_quality::better,
+                      opacity_t opacity=255,
+                      number2 u0=number2(0), number2 v0=number2(1),
+                      number2 u1=number2(1), number2 v1=number2(0), bool debug=false);
 };
 
 #include "../../src/Canvas.tpp"

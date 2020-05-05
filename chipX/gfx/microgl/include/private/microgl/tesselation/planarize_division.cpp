@@ -1163,7 +1163,7 @@ namespace microgl {
             // todo: here create a random permutation of edges
 
             // now start iterations
-            for (int ix = 0; ix < v_size; ++ix) {
+            for (index ix = 0; ix < v_size; ++ix) {
                 auto *e = edges_list[ix];
                 if(e== nullptr) continue;
                 insert_edge(e, ix, dynamic_pool);

@@ -24,7 +24,7 @@ void loop();
 void init_sdl(int width, int height);
 
 template <typename T>
-void render_path(const dynamic_array<vec2<T>> &path, T stroke_size, bool close_path);
+void render_path(const dynamic_array<vec2<T>> &path, T stroke_width, bool close_path);
 
 float t = 0;
 int M = 5;
@@ -107,7 +107,7 @@ dynamic_array<vec2<T>> path_rect() {
     vec2<T> p3 = {50, 50};
 
     return {p0, p1, p2, p3};
-//    return {p0, p1};
+//    return {p0};
 }
 
 template <typename T>
@@ -126,8 +126,8 @@ void render() {
 //    using q = Q<8>;
     using q = float;
 //    render_path(path_rect<float>(), 20.0f, false);
-//    render_path<q>(path_rect<q>(), 40.0f, false);
-    render_path<q>(path_rect2<q>(), 40.0f, true);
+    render_path<q>(path_rect<q>(), 40.0f, false);
+//    render_path<q>(path_rect2<q>(), 40.0f, true);
 //    render_path(path_tri<float>(), 50.0f, false);
 //    render_path(path_2<float>(), 20.0f, false);
 //    render_path(path_line<float>(), 15.0f, false);
@@ -138,7 +138,7 @@ void render() {
 }
 
 template <typename number>
-void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bool close_path) {
+void render_path(const dynamic_array<vec2<number>> &path, number stroke_width, bool close_path) {
     using index = unsigned int;
     using stroke_tess = microgl::tessellation::stroke_tessellation<number>;
 
@@ -153,7 +153,7 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
     dynamic_array<boundary_info> boundary_buffer;
 
     stroke_tess::compute(
-            stroke_size,
+            stroke_width,
             close_path,
             tessellation::stroke_cap::butt,
 //            tessellation::stroke_cap::square,
@@ -166,13 +166,14 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_size, bo
             tessellation::stroke_gravity::center,
 //            tessellation::stroke_gravity::inward,
 //            tessellation::stroke_gravity::outward,
+            2,
             path.data(),
             path.size(),
             vertices,
             indices,
             type,
-            &boundary_buffer,
-            2);
+//            nullptr);
+            &boundary_buffer);
 
     // draw triangles batch
     canvas->clear({255,255,255,255});

@@ -51,6 +51,8 @@ public:
         if(_data)
             delete [] _data;
         _data = container._data;
+        _current = container._current;
+        _cap = container._cap;
         container._data=nullptr;
         container.clear();
         return (*this);

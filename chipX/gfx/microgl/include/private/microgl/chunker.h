@@ -45,12 +45,7 @@ public:
         _locations.push_back(0);
     }
 
-    chunk back() {
-        index idx = size()==0 ? 0 : size()-1;
-        return chunk_for(idx);
-    }
-
-    chunk current() {
+    chunk back() const {
         return chunk_for(size()-1);
     }
 
@@ -63,7 +58,7 @@ public:
     }
 
     void cut_chunk_if_current_not_empty() {
-        if(current().size==0) return;
+        if(back().size==0) return;
         _locations.push_back(_data.size());
     }
 
@@ -72,13 +67,13 @@ public:
     }
 
     void push_back(const chunker & $chunker) {
-        cut_chunk();
+        cut_chunk_if_current_not_empty();
         for (int ix = 0; ix < $chunker.size(); ++ix) {
             const auto chunk = $chunker[ix];
             for (int jx = 0; jx < chunk.size; ++jx) {
                 push_back(chunk.data[jx]);
             }
-            cut_chunk();
+            cut_chunk_if_current_not_empty();
         }
     }
 

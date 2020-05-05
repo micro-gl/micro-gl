@@ -45,18 +45,18 @@ namespace microgl {
 
         public:
             static
-            void compute(number stroke_width,
+            void compute(const number &stroke_width,
                          bool closePath,
-                         stroke_cap cap,
-                         stroke_line_join line_join,
-                         stroke_gravity gravity,
+                         const stroke_cap &cap,
+                         const stroke_line_join &line_join,
+                         const stroke_gravity &gravity,
+                         const number &miter_limit,
                          const vertex *points,
                          index size,
                          dynamic_array<vertex> &output_vertices,
                          dynamic_array<index> &output_indices,
                          triangles::indices &output_indices_type,
-                         dynamic_array<triangles::boundary_info> *boundary_buffer= nullptr,
-                         number miter_limit=number(4));
+                         dynamic_array<triangles::boundary_info> *boundary_buffer= nullptr);
 
         private:
 
@@ -117,6 +117,7 @@ namespace microgl {
                                  dynamic_array<vertex> &output_vertices,
                                  dynamic_array<index> &output_indices,
                                  dynamic_array<microgl::triangles::boundary_info> *boundary_buffer= nullptr);
+
         };
 
 
