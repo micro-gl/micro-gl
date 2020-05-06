@@ -58,6 +58,20 @@ namespace microgl {
                          triangles::indices &output_indices_type,
                          dynamic_array<triangles::boundary_info> *boundary_buffer= nullptr);
 
+            static
+            void compute_ONE(const number &stroke_width,
+                         bool closePath,
+                         const stroke_cap &cap,
+                         const stroke_line_join &line_join,
+                         const stroke_gravity &gravity,
+                         const number &miter_limit,
+                         const vertex *points,
+                         index size,
+                         dynamic_array<vertex> &output_vertices,
+                         dynamic_array<index> &output_indices,
+                         triangles::indices &output_indices_type,
+                         dynamic_array<triangles::boundary_info> *boundary_buffer= nullptr);
+
         private:
 
             enum class intersection_status {

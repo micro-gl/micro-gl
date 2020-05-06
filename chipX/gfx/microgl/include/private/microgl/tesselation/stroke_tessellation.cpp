@@ -194,9 +194,122 @@ namespace microgl {
                 output_indices.push_back(output_indices.back()); b1_(boundary_buffer, output_indices);
             }
         }
-
+#define abs_(x) ((x<0)?(-x):(x))
+#define min_(a,b) ((a<b)?(a):(b))
         template<typename number>
         void stroke_tessellation<number>::compute(
+                const number &stroke_width,
+                 bool closePath,
+                const stroke_cap &cap,
+                const stroke_line_join &line_join,
+                const stroke_gravity &gravity,
+                const number &miter_limit,
+                const vertex *points,
+                const index size,
+                dynamic_array<vertex> &output_vertices,
+                dynamic_array<index> &output_indices,
+                microgl::triangles::indices &output_indices_type,
+                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer)
+        {
+            closePath=false;
+            int dash_array[2] = {200,10};
+            int dash_arr_length=2; int offset=-50;
+            int sum_dashes=0;
+            for (index ix = 0; ix < dash_arr_length; ++ix)
+                sum_dashes+=dash_array[ix];
+            offset=offset<0 ? (sum_dashes-(abs_(offset)%sum_dashes)) : offset%sum_dashes;
+            int dash_index=0,  current_seg=0;
+            // total length up to current segment
+            number total_length=0;//, start_pos=0, end_pos=start_pos+10;
+            index start_seg, end_seg;
+            const index segments_count= closePath ? size+0 : size-1;
+            index path_length=0;
+            // calculate path length
+            for (index ix = 0; ix < segments_count; ++ix) {
+                const auto vec= points[(ix+1)%size]-points[ix%size];
+                path_length+=microgl::math::length(vec.x, vec.y);
+                if(ix==0) total_length=path_length;
+            }
+
+            dynamic_array<vertex> points_segments;
+            number dash_length=dash_array[0];
+            number position=offset;//dash_length;
+
+            // calculate first index
+            if(!closePath) {
+                // calculate the prefix
+                int partial_sum=0;
+                for (index ix = 0; ix < dash_arr_length; ++ix) {
+                    partial_sum+=dash_array[ix];
+                    if(partial_sum>=offset) {
+                        dash_index=ix; break;
+                    }
+                }
+                dash_length= min_(partial_sum-offset, path_length);
+                position=0;
+            } else {
+                // make it cyclic
+                path_length+=offset-dash_array[dash_arr_length-1];
+            }
+
+            while (position<path_length) {
+                points_segments.clear();
+                const bool stroke=(dash_index%2)==0;
+
+                if(stroke) {
+                    while(position>total_length) {
+                        current_seg++;
+                        // end pos is overflowing, let's walk more
+                        const auto seg_start_vertex= points[current_seg%size];
+                        const auto seg_end_vertex= points[(current_seg+1)%size];
+                        const auto segment_length=microgl::math::distance(seg_start_vertex.x, seg_start_vertex.y,
+                                                                          seg_end_vertex.x, seg_end_vertex.y);
+//                        current_seg++;
+                        total_length+=segment_length;
+                    }
+                    start_seg=current_seg;
+                    // compute start-point
+                    vertex seg_vec= (points[(current_seg+1)%size]- points[(current_seg)%size]);
+                    number seg_len=microgl::math::length(seg_vec.x, seg_vec.y);
+                    const auto start_point = points[(current_seg)%size] +
+                            (seg_vec*(position-(total_length-seg_len)))/seg_len;
+                    points_segments.push_back(start_point);
+
+                    while(position+dash_length>total_length) {
+                        // end pos is overflowing, let's walk more
+                        current_seg++;
+                        const auto seg_start_vertex= points[current_seg%size];
+                        const auto seg_end_vertex= points[(current_seg+1)%size];
+                        const auto segment_length=microgl::math::distance(seg_start_vertex.x, seg_start_vertex.y,
+                                                                          seg_end_vertex.x, seg_end_vertex.y);
+                        total_length+=segment_length;
+                        points_segments.push_back(seg_start_vertex);
+                    }
+                    seg_vec= (points[(current_seg+1)%size]- points[(current_seg)%size]);
+                    seg_len=microgl::math::length(seg_vec.x, seg_vec.y);
+                    const auto end_point = points[(current_seg)%size] +
+                            (seg_vec*(position+dash_length-(total_length-seg_len)))/seg_len;
+                    end_seg=current_seg;
+                    points_segments.push_back(end_point);
+                    compute_ONE(stroke_width, false, cap,line_join, gravity, miter_limit,
+                            points_segments.data(), points_segments.size(),
+                            output_vertices, output_indices, output_indices_type, boundary_buffer);
+                    // send for tess
+//                    return;
+                }
+
+                // find new position markers
+                position+=dash_length;
+                dash_index=(dash_index+1)%dash_arr_length;
+                dash_length= min_(dash_array[dash_index], path_length-position);
+
+//                if(position>200) return;
+            }
+
+        }
+
+        template<typename number>
+        void stroke_tessellation<number>::compute_ONE(
                 const number &stroke_width,
                 const bool closePath,
                 const stroke_cap &cap,

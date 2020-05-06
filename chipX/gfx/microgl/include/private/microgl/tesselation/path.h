@@ -267,8 +267,8 @@ namespace microgl {
                                 _tess_stroke.output_vertices,
                                 _tess_stroke.output_indices,
                                 _tess_stroke.output_indices_type,
-                                nullptr);
-//                                &_tess_stroke.output_boundary);
+//                                nullptr);
+                                &_tess_stroke.output_boundary);
                     }
                 }
                 return _tess_stroke;
