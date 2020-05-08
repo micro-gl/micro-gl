@@ -124,7 +124,8 @@ dynamic_array<vec2<T>> path_rect2() {
 void render() {
 //    using q = Q<8>;
     using q = float;
-    render_path(path_rect<float>(), 1.0f, false);
+    render_path(path_rect<float>(), 25.0f, false);
+//    render_path(path_rect<float>(), 5.0f, true);
 //    render_path<q>(path_rect2<q>(), 20.0f, false);
 //    render_path<q>(path_rect2<q>(), 40.0f, true);
 //    render_path(path_tri<float>(), 50.0f, false);
@@ -141,6 +142,7 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_width, b
     using index = unsigned int;
     using stroke_tess = microgl::tessellation::stroke_tessellation<number>;
 
+    t+=0.0125f;
 //    polygon[1].x = 140 + 20 +  t;
 //    polygon[1].y = 140 + 20 -  t;
 
@@ -151,7 +153,7 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_width, b
     dynamic_array<vec2<number>> vertices;
     dynamic_array<boundary_info> boundary_buffer;
 
-    stroke_tess::compute(
+    stroke_tess::compute_with_dashes(
             stroke_width,
             close_path,
             tessellation::stroke_cap::butt,
@@ -162,10 +164,10 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_width, b
             tessellation::stroke_line_join::miter_clip,
 //            tessellation::stroke_line_join::miter,
 //            tessellation::stroke_line_join::none,
-            tessellation::stroke_gravity::center,
-//            tessellation::stroke_gravity::inward,
-//            tessellation::stroke_gravity::outward,
             8,
+            {50, 20}, 0,
+//            {50, 20}, t,
+//            {0, 0}, 0,
             path.data(),
             path.size(),
             vertices,
@@ -184,7 +186,7 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_width, b
             boundary_buffer.data(),
             indices.size(),
             type,
-            122
+            255
             );
 
     return;
@@ -250,7 +252,7 @@ void loop() {
                     quit = true;
                 break;
         }
-//        render();
+        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());

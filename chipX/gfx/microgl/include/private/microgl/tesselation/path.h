@@ -257,13 +257,13 @@ namespace microgl {
                         if(chunk.size==0) continue;
                         bool isClosing = chunk.size >= 3 && chunk.data[0] == chunk.data[chunk.size - 1]
                                          && chunk.data[0] == chunk.data[chunk.size - 2];
-                        stroke_tessellation<number>::compute(
+                        stroke_tessellation<number>::compute_with_dashes(
                                 stroke_width,
                                 isClosing,
                                 cap, line_join,
                                 stroke_gravity::inward,
                                 miter_limit,
-                                chunk.data, chunk.size-0,
+                                chunk.data, chunk.size - 0,
                                 _tess_stroke.output_vertices,
                                 _tess_stroke.output_indices,
                                 _tess_stroke.output_indices_type,
