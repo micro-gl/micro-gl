@@ -213,7 +213,7 @@ namespace microgl {
                 dynamic_array<microgl::triangles::boundary_info> *boundary_buffer)
         {
             int offset=stroke_dash_offset, sum_dashes=0;
-            int dash_arr_length=stroke_dash_array.size()*2;
+            index dash_arr_length=stroke_dash_array.size()*2;
             int dash_array[dash_arr_length];
             { // copy to an even array
                 int ix=0;

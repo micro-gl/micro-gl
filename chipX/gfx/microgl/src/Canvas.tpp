@@ -1273,10 +1273,7 @@ void Canvas<P, CODER>::drawPathStroke(const sampling::sampler<S> &sampler,
             buffers.output_indices.size(),
             buffers.output_indices_type,
             opacity,
-            u0, v0, u1, v1
-    );
-
-
+            u0, v0, u1, v1);
     if(debug)
         drawTrianglesWireframe({0,0,0,255},
                                buffers.output_vertices.data(),
@@ -1284,7 +1281,6 @@ void Canvas<P, CODER>::drawPathStroke(const sampling::sampler<S> &sampler,
                                buffers.output_indices.size(),
                                buffers.output_indices_type,
                                255);
-
 }
 
 template<typename P, typename CODER>
@@ -1307,9 +1303,7 @@ void Canvas<P, CODER>::drawPathFill(const sampling::sampler<S> &sampler,
             buffers.output_indices.size(),
             buffers.output_indices_type,
             opacity,
-            u0, v0, u1, v1
-    );
-
+            u0, v0, u1, v1);
     if(debug) {
         drawTrianglesWireframe({0,0,0,255},
                                buffers.output_vertices.data(),
@@ -1317,13 +1311,10 @@ void Canvas<P, CODER>::drawPathFill(const sampling::sampler<S> &sampler,
                                buffers.output_indices.size(),
                                buffers.output_indices_type,
                                40);
-
         for (index ix = 0; ix < buffers.DEBUG_output_trapezes.size(); ix+=4) {
             drawWuLinePath<number1>({0,0,0,255}, &buffers.DEBUG_output_trapezes[ix], 4, true);
         }
-
     }
-
 }
 
 template<typename P, typename CODER>

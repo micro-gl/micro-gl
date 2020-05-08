@@ -151,12 +151,18 @@ public:
         _locations.push_back(0);
     }
 
+    void drain() {
+        _locations.drain();
+        _data.drain();
+        _locations.push_back(0);
+    }
+
     bool empty() const {
         return size()==0;
     }
 
     index size() const {
-        return _locations.size();// - 1;
+        return _locations.size();
     }
 
     index unchunked_size() const {

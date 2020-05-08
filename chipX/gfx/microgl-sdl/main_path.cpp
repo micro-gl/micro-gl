@@ -164,7 +164,7 @@ void render_path(path<number> path) {
             color_red,
             path,
             tessellation::fill_rule::even_odd
-            );
+    );
 
 //    return;
     canvas->drawPathStroke<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
@@ -244,7 +244,7 @@ void loop() {
                 break;
         }
 //
-//        render();
+        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());

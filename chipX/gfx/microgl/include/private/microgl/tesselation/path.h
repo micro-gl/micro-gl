@@ -19,9 +19,6 @@ namespace microgl {
             using vertex = vec2<number>;
             chunker<vertex> _paths_vertices;
             bool _invalid=true;
-            CurveDivisionAlgorithm _bezier_curve_divider=CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium;
-            unsigned _arc_divisions_count=32;
-            polygons::hints _polygon_hint=polygons::hints::COMPLEX;
 
             const vertex & firstPointOfCurrentSubPath() const {
                 auto current_path = _paths_vertices.back();
@@ -88,14 +85,12 @@ namespace microgl {
             auto closePath() -> path & {
                 if(sizeOfCurrentSubPath()==0) return *this;
                 // move the pen to the first vertex of the sub-path and
-                auto current_path = _paths_vertices.back();
                 const vertex &first_point = firstPointOfCurrentSubPath();
                 // if two last points equal the first one, it is a close path signal
                 _paths_vertices.push_back(first_point);
                 _paths_vertices.push_back(first_point);
                 _paths_vertices.cut_chunk_if_current_not_empty();
                 invalidate();
-//                moveTo(first_point);
                 return *this;
             }
 
@@ -134,32 +129,39 @@ namespace microgl {
                 return moveTo({x, y});
             }
 
-            auto cubicBezierCurveTo(const vertex &cp1, const vertex &cp2, const vertex &last) -> path & {
+            auto cubicBezierCurveTo(const vertex &cp1, const vertex &cp2, const vertex &last,
+                                    CurveDivisionAlgorithm bezier_curve_divider=
+                                            CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium) -> path & {
                 vertex bezier[4] = {lastPointOfCurrentSubPath(), cp1, cp2, last};
                 dynamic_array<vertex> output{32};
-                curve_divider<number>::compute(bezier, output, _bezier_curve_divider, CurveType::Cubic);
+                curve_divider<number>::compute(bezier, output, bezier_curve_divider, CurveType::Cubic);
                 _paths_vertices.push_back(output);
                 invalidate();
                 return *this;
             }
             auto cubicBezierCurveTo(const number & cp1x, const number & cp1y,
                                     const number & cp2x, const number & cp2y,
-                                    const number & lastX, const number & lastY) -> path & {
-                return cubicBezierCurveTo({cp1x, cp1y}, {cp2x, cp2y}, {lastX, lastY});
+                                    const number & lastX, const number & lastY,
+                                    CurveDivisionAlgorithm bezier_curve_divider=
+                                            CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium) -> path & {
+                return cubicBezierCurveTo({cp1x, cp1y}, {cp2x, cp2y}, {lastX, lastY}, bezier_curve_divider);
             }
 
-            auto quadraticCurveTo(const vertex &cp, const vertex &last) -> path & {
+            auto quadraticCurveTo(const vertex &cp, const vertex &last,
+                    CurveDivisionAlgorithm bezier_curve_divider=CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium)
+                    -> path & {
                 vertex bezier[3] = {lastPointOfCurrentSubPath(), cp, last};
                 dynamic_array<vertex> output{32};
-                curve_divider<number>::compute(bezier, output,
-                        _bezier_curve_divider, CurveType::Quadratic);
+                curve_divider<number>::compute(bezier, output, bezier_curve_divider, CurveType::Quadratic);
                 _paths_vertices.push_back(output);
                 invalidate();
                 return *this;
             }
             auto quadraticCurveTo(const number & cpx, const number & cpy,
-                                  const number & lastX, const number & lastY) -> path & {
-                return quadraticCurveTo({cpx, cpy}, {lastX, lastY});
+                                  const number & lastX, const number & lastY,
+                                  CurveDivisionAlgorithm bezier_curve_divider=
+                                          CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium) -> path & {
+                return quadraticCurveTo({cpx, cpy}, {lastX, lastY}, bezier_curve_divider);
             }
 
             auto rect(const vertex &leftTop, const number &width,
@@ -183,27 +185,18 @@ namespace microgl {
 
             auto arc(const vertex &point, const number &radius,
                      const number &startAngle, const number &endAngle,
-                     bool anti_clockwise) -> path & {
+                     bool anti_clockwise, unsigned divisions_count=16) -> path & {
                 dynamic_array<vertex> output{32};
                 arc_divider<number>::compute(output, radius, point.x, point.y,
-                        startAngle, endAngle, _arc_divisions_count, anti_clockwise);
+                        startAngle, endAngle, divisions_count, anti_clockwise);
                 _paths_vertices.push_back(output);
                 invalidate();
                 return *this;
             }
             auto arc(const number &x, const number &y, const number &radius,
                      const number &startAngle, const number &endAngle,
-                     bool anti_clockwise) -> path & {
-                return arc({x, y}, radius, startAngle, endAngle, anti_clockwise);
-            }
-
-            auto config(CurveDivisionAlgorithm bezier_curve_divider, unsigned arc_divisions_count,
-                        polygons::hints polygon_hint) -> path & {
-                _bezier_curve_divider=bezier_curve_divider;
-                _arc_divisions_count=arc_divisions_count;
-                _polygon_hint=polygon_hint;
-                invalidate();
-                return *this;
+                     bool anti_clockwise, unsigned divisions_count=16) -> path & {
+                return arc({x, y}, radius, startAngle, endAngle, anti_clockwise, divisions_count);
             }
 
             auto invalidate() -> path & {
@@ -217,6 +210,26 @@ namespace microgl {
                 dynamic_array<index> output_indices;
                 dynamic_array<triangles::boundary_info> output_boundary;
                 triangles::indices output_indices_type;
+                explicit buffers()= default;
+                buffers(buffers && val) noexcept {
+                    move(val); output_indices_type=triangles::indices::TRIANGLES_STRIP;
+                }
+                buffers &operator=(buffers && val) noexcept {
+                    move(val); return *this;
+                }
+                buffers &move(buffers && val) {
+                    DEBUG_output_trapezes=std::move(val.DEBUG_output_trapezes);
+                    output_vertices=std::move(val.output_vertices);
+                    output_indices=std::move(val.output_indices);
+                    output_boundary=std::move(val.output_boundary);
+                    output_indices_type=val.output_indices_type;
+                }
+                void drain() {
+                    DEBUG_output_trapezes.drain();
+                    output_vertices.drain();
+                    output_indices.drain();
+                    output_boundary.drain();
+                }
                 void clear() {
                     DEBUG_output_trapezes.clear();
                     output_vertices.clear();
@@ -225,10 +238,53 @@ namespace microgl {
                 }
             };
 
+        private:
+            struct fill_cache_info {
+                fill_rule rule; tess_quality quality;
+                bool operator==(const fill_cache_info &val) {
+                    bool a= rule==val.rule &&
+                            quality==val.quality;
+                    return a;
+                }
+            };
+
+            struct stroke_cache_info {
+                number stroke_width;stroke_cap cap;
+                stroke_line_join line_join; int miter_limit;
+                std::initializer_list<int> stroke_dash_array;
+                int stroke_dash_offset;
+                bool operator==(const stroke_cache_info &val) {
+                    bool a= stroke_width==val.stroke_width &&
+                            cap==val.cap &&
+                            line_join==val.line_join &&
+                            miter_limit==val.miter_limit &&
+                            stroke_dash_offset==val.stroke_dash_offset;
+                    bool b=stroke_dash_array.size()==val.stroke_dash_array.size();
+                    if(b) {
+                        auto *iter_a=stroke_dash_array.begin();
+                        auto *iter_b=val.stroke_dash_array.begin();
+                        while (iter_a!=stroke_dash_array.end()) {
+                            if(*iter_a!=*iter_b) {
+                                b=false; break;
+                            }
+                            iter_a++; iter_b++;
+                        }
+                    }
+                    return a && b;
+                }
+            };
+
+            stroke_cache_info _latest_stroke_cache_info;
+            fill_cache_info _latest_fill_cache_info;
+
+        public:
             buffers & tessellateFill(const fill_rule &rule=fill_rule::non_zero,
                                      const tess_quality &quality=tess_quality::better) {
-                const bool was_computed=_tess_fill.output_vertices.size()!=0;
+                fill_cache_info info{rule, quality};
+                const bool was_computed=(info==_latest_fill_cache_info) &&
+                        _tess_fill.output_vertices.size()!=0;
                 if(_invalid || !was_computed) {
+                    _latest_fill_cache_info=info;
                     _invalid=false;
                     _tess_fill.clear();
                     planarize_division<number>::compute(
@@ -249,9 +305,13 @@ namespace microgl {
                                        const int miter_limit=4,
                                        const std::initializer_list<int> & stroke_dash_array={},
                                        int stroke_dash_offset=0) {
-                const bool was_computed=_tess_stroke.output_vertices.size()!=0;
+                stroke_cache_info info{stroke_width, cap, line_join, miter_limit,
+                                       stroke_dash_array, stroke_dash_offset};
+                const bool was_computed=(info==_latest_stroke_cache_info) &&
+                        _tess_stroke.output_vertices.size()!=0;
                 if(_invalid || !was_computed) {
                     _invalid=false;
+                    _latest_stroke_cache_info=info;
                     _tess_stroke.clear();
                     unsigned paths = _paths_vertices.size();
                     for (unsigned ix = 0; ix < paths; ++ix) {
@@ -274,6 +334,13 @@ namespace microgl {
                     }
                 }
                 return _tess_stroke;
+            }
+
+            void drainBuffers() {
+                _paths_vertices.drain();
+                _tess_fill.drain();
+                _tess_stroke.drain();
+                _invalid=true;
             }
 
         private:

@@ -26,10 +26,11 @@ public:
     }
 
     ~dynamic_array() {
-        delete [] _data;
-        _data = nullptr;
-        _cap = 0;
-        _current = 0;
+        drain();
+//        delete [] _data;
+//        _data = nullptr;
+//        _cap = 0;
+//        _current = 0;
     }
 
     T* data()  {
@@ -129,6 +130,13 @@ public:
     }
 
     void clear()  {
+        _current = 0;
+    }
+
+    void drain()  {
+        delete [] _data;
+        _data = nullptr;
+        _cap = 0;
         _current = 0;
     }
 
