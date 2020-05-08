@@ -246,7 +246,9 @@ namespace microgl {
             buffers & tessellateStroke(const number & stroke_width=number(1),
                                        const stroke_cap &cap=stroke_cap::butt,
                                        const stroke_line_join &line_join=stroke_line_join::bevel,
-                                       const int miter_limit=4) {
+                                       const int miter_limit=4,
+                                       const std::initializer_list<int> & stroke_dash_array={},
+                                       int stroke_dash_offset=0) {
                 const bool was_computed=_tess_stroke.output_vertices.size()!=0;
                 if(_invalid || !was_computed) {
                     _invalid=false;
@@ -261,8 +263,8 @@ namespace microgl {
                                 stroke_width,
                                 isClosing,
                                 cap, line_join,
-                                stroke_gravity::inward,
                                 miter_limit,
+                                stroke_dash_array, stroke_dash_offset,
                                 chunk.data, chunk.size - 0,
                                 _tess_stroke.output_vertices,
                                 _tess_stroke.output_indices,

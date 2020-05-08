@@ -155,7 +155,7 @@ path<number> path_rects() {
 }
 
 sampling::flat_color color_red {{255,0,255,255}};
-sampling::flat_color color_green {{0,255,0,255}};
+sampling::flat_color color_green {{22,22,22,255}};
 
 template <typename number>
 void render_path(path<number> path) {
@@ -170,7 +170,7 @@ void render_path(path<number> path) {
     canvas->drawPathStroke<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
             color_green,
             path,
-            number{10},
+            number{1},
             tessellation::stroke_cap::butt,
 //            tessellation::stroke_cap::round,
 //            tessellation::stroke_cap::square,
@@ -178,8 +178,8 @@ void render_path(path<number> path) {
 //            tessellation::stroke_line_join::miter,
 //            tessellation::stroke_line_join::miter_clip,
 //            tessellation::stroke_line_join::round,
-            4,
-            80
+            4, {20,10}, 0,
+            255
     );
 }
 

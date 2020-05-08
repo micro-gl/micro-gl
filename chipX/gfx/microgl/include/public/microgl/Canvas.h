@@ -359,7 +359,9 @@ public:
                         const number1 &stroke_width=number1(1),
                         const tessellation::stroke_cap &cap=tessellation::stroke_cap::butt,
                         const tessellation::stroke_line_join &line_join=tessellation::stroke_line_join::bevel,
-                        int miter_limit=4, opacity_t opacity=255,
+                        int miter_limit=4,
+                        const std::initializer_list<int> & stroke_dash_array={},
+                        int stroke_dash_offset=0, opacity_t opacity=255,
                         number2 u0=number2(0), number2 v0=number2(1),
                         number2 u1=number2(1), number2 v1=number2(0), bool debug=false);
 

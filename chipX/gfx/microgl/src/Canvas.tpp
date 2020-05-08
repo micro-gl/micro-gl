@@ -1257,11 +1257,13 @@ void Canvas<P, CODER>::drawPathStroke(const sampling::sampler<S> &sampler,
                                       const tessellation::stroke_cap &cap,
                                       const tessellation::stroke_line_join &line_join,
                                       const int miter_limit,
+                                      const std::initializer_list<int> & stroke_dash_array,
+                                      int stroke_dash_offset,
                                       opacity_t opacity,
                                       const number2 u0, const number2 v0,
                                       const number2 u1, const number2 v1,
                                       const bool debug) {
-    const auto & buffers= path.tessellateStroke(stroke_width, cap, line_join, miter_limit);
+    const auto & buffers= path.tessellateStroke(stroke_width, cap, line_join, miter_limit, stroke_dash_array, stroke_dash_offset);
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, S>(
             sampler,
             buffers.output_vertices.data(),
