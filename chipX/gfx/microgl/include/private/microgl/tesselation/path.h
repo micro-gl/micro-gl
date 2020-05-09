@@ -2,7 +2,7 @@
 
 #include <microgl/triangles.h>
 #include <microgl/tesselation/curve_divider.h>
-#include <microgl/tesselation/arc_divider.h>
+#include <microgl/tesselation/elliptic_arc_divider.h>
 #include <microgl/tesselation/stroke_tessellation.h>
 #include <microgl/tesselation/planarize_division.h>
 
@@ -185,17 +185,33 @@ namespace microgl {
             auto arc(const vertex &point, const number &radius,
                      const number &startAngle, const number &endAngle,
                      bool anti_clockwise, unsigned divisions_count=16) -> path & {
-                dynamic_array<vertex> output{32};
-                arc_divider<number>::compute(output, radius, point.x, point.y,
-                        startAngle, endAngle, divisions_count, anti_clockwise);
-                _paths_vertices.push_back(output);
-                invalidate();
+                dynamic_array<vertex> output{divisions_count};
+                elliptic_arc_divider<number>::compute(output, point.x, point.y,
+                                                      radius, radius, 0, startAngle, endAngle,
+                                                      divisions_count, anti_clockwise);
+                _paths_vertices.push_back(output); invalidate();
                 return *this;
             }
             auto arc(const number &x, const number &y, const number &radius,
                      const number &startAngle, const number &endAngle,
                      bool anti_clockwise, unsigned divisions_count=16) -> path & {
                 return arc({x, y}, radius, startAngle, endAngle, anti_clockwise, divisions_count);
+            }
+
+            auto ellipse(const vertex &point, const number &radius_x, const number &radius_y,
+                     const number & rotation, const number &startAngle, const number &endAngle,
+                     bool anti_clockwise, unsigned divisions_count=16) -> path & {
+                dynamic_array<vertex> output{divisions_count};
+                elliptic_arc_divider<number>::compute(output, point.x, point.y, radius_x, radius_y,
+                        rotation, startAngle, endAngle, divisions_count, anti_clockwise);
+                _paths_vertices.push_back(output); invalidate();
+                return *this;
+            }
+            auto ellipse(const number &x, const number &y, const number &radius_x, const number &radius_y,
+                         const number & rotation, const number &startAngle, const number &endAngle,
+                         bool anti_clockwise, unsigned divisions_count=16) -> path & {
+                return ellipse({x, y}, radius_x, radius_y, rotation, startAngle, endAngle, anti_clockwise,
+                        divisions_count);
             }
 
             auto invalidate() -> path & {
