@@ -40,25 +40,15 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - std::sort must be replaced with c qsort
 
 #### svg:
-1. create hole puncher
-2. create path maker
-3. templatize arc_divider, path_tess, simplifier.
-4. deal with holes AA bridge
 5. use ear clipper from J. Orourke book
-6. investigate solving degenrate cases some day.
 
 #### road-map
-- make indices buffers optional. if no indices buffer is given, then the identity map is used
 - investigate mip-mapping (I have all the theory from open gl spec)
 - explore avoid blending, and draw pixel directly mechanism
-- experiment with partial rendering blocks
 - remove bits info from samplers ? currently only use it in masks, but this info can be embeded in color_t
 - remove framebuffer from bitmap ? or use encapsulation ?
 - configurable custom sin/cos/tan provider
-- poly tesselator continue
-- path maker
 - shader need to retain some fragCoord(x,y,z,1/w) and bounding box, so user can do cool stuff
-- after path maker, remove bezier curve and lines painter
 - 3d pipeline, make 3d clipping configurable for planes and even skip
 - AA for 3d with stencil buffer and multi-sampling of coverage, should be interesting
 - move and equality logic for dynamic array

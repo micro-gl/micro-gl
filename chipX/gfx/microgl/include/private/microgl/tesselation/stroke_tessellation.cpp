@@ -194,8 +194,9 @@ namespace microgl {
                 output_indices.push_back(output_indices.back()); b1_(boundary_buffer, output_indices);
             }
         }
-#define abs_(x) ((x<0)?(-x):(x))
-#define min_(a,b) ((a<b)?(a):(b))
+#define abs__(x) ((x<0)?(-x):(x))
+#define min__(a,b) ((a<b)?(a):(b))
+#define max__(a, b) ((a)>(b) ? (a) : (b))
         template<typename number>
         void stroke_tessellation<number>::compute_with_dashes(
                 const number &stroke_width,
@@ -233,7 +234,7 @@ namespace microgl {
                 return;
             }
 
-            offset=offset<0 ? (sum_dashes-(abs_(offset)%sum_dashes)) : offset%sum_dashes;
+            offset=offset<0 ? (sum_dashes-(abs__(offset)%sum_dashes)) : offset%sum_dashes;
             int dash_index=0,  current_seg=0;
             // total length up to current segment
             number total_length=0, path_length=0;
@@ -258,7 +259,7 @@ namespace microgl {
                         dash_index=ix; break;
                     }
                 }
-                dash_length= min_(partial_sum-offset, path_length);
+                dash_length= min__(partial_sum-offset, path_length);
                 position=0;
             } else {
                 // make it cyclic
@@ -292,7 +293,7 @@ namespace microgl {
                 // find new position markers
                 position+=dash_length;
                 dash_index=(dash_index+1)%dash_arr_length;
-                dash_length= min_(dash_array[dash_index], path_length-position);
+                dash_length= min__(dash_array[dash_index], path_length-position);
             }
 
         }
@@ -318,7 +319,7 @@ namespace microgl {
             if(size==0) return;
             const auto indices_offset= output_indices.size();
             output_indices_type=triangles::indices::TRIANGLES_STRIP;
-            number stroke_size = max_(number(1), stroke_width / number(2));
+            number stroke_size = max__(number(1), stroke_width / number(2));
             index start_index=0; // find the first non-degenerate index
             while((start_index+1<size) && points[start_index]==points[start_index+1]) {
                 start_index++;

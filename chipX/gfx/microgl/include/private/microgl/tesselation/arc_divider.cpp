@@ -15,7 +15,7 @@ namespace microgl {
             const auto half_pi = math::pi<number>() / number(2);
             const auto zero = number(0);
             number epsilon = number(1) / number(100);
-            if (microgl::math::abs_(start_angle_rad - end_angle_rad) <= epsilon)
+            if (microgl::math::abs(start_angle_rad - end_angle_rad) <= epsilon)
                 return;
 
             start_angle_rad = math::mod(start_angle_rad, two_pi);
@@ -32,7 +32,7 @@ namespace microgl {
                 }
             }
             // after the moduli operation we might have done a%a which is equal to zero
-            if (microgl::math::abs_(delta) <= epsilon)
+            if (microgl::math::abs(delta) <= epsilon)
                 end_angle_rad = start_angle_rad + two_pi;
 
             delta = (end_angle_rad - start_angle_rad) / number(divisions);

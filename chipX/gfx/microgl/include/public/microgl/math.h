@@ -18,6 +18,7 @@ namespace microgl {
 #define TWO_PI    6.28318530718
 #define min_(a, b) ((a)<(b) ? (a) : (b))
 #define max_(a, b) ((a)>(b) ? (a) : (b))
+#define abs_(a) ((a)<(0) ? (-a) : (a))
 
         static l64 to_fixed(const float &val, unsigned char precision) {
             return l64(val*float(1u<<precision));
@@ -162,13 +163,13 @@ namespace microgl {
         }
 
         static
-        float abs_(const float &val) {
+        float abs(const float &val) {
             return fabs(val);
         }
 
         template <unsigned N>
         static
-        Q<N> abs_(const Q<N> & val) {
+        Q<N> abs(const Q<N> & val) {
             return Q<N>(val.value()<0 ? -val.value() : val.value(), N);
         }
 

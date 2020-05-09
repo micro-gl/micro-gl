@@ -7,7 +7,7 @@
 namespace microgl {
     namespace tessellation {
 
-#define abs(a) ((a)<0 ? -(a) : (a))
+#define abs_(a) ((a)<0 ? -(a) : (a))
         using namespace microgl;
 
         template<typename number>

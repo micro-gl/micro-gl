@@ -69,8 +69,9 @@ set(SOURCES
 #        main_stroke_tessellation.cpp
 #        main_stroke_dash_tessellation.cpp
 #        main_arc_divider.cpp
+        main_elliptic_arc_divider.cpp
 #        main_fan_triangulation.cpp
-        main_path.cpp
+#        main_path.cpp
 #        main_q_sort.cpp
 #        main_avl_tree.cpp
         libs/stb_image/stb_image.cpp

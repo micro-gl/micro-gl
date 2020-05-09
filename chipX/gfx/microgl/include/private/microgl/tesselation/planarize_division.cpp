@@ -1007,7 +1007,7 @@ namespace microgl {
             // we raise everything to quads to avoid square function and we avoid division.
             // while this is more robust, you have to make sure that your number type will
             // not overflow (use 64 bit for fixed point integers)
-            number numerator= abs((b.x - a.x) * (v.y - a.y) - (v.x - a.x) * (b.y - a.y)); // 2*A
+            number numerator= abs_((b.x - a.x) * (v.y - a.y) - (v.x - a.x) * (b.y - a.y)); // 2*A
             number numerator_quad = numerator*numerator; // (2A)^2
             number ab_length_quad = (b.y - a.y)*(b.y - a.y) + (b.x - a.x)*(b.x - a.x); // (length(a,b))^2
             number epsilon_quad = epsilon*epsilon;
@@ -1324,10 +1324,10 @@ namespace microgl {
         bool planarize_division<number>::infer_fill(int winding, const fill_rule & rule) {
             switch (rule) {
                 case fill_rule::non_zero:
-                    return abs(winding);
+                    return abs_(winding);
                     break;
                 case fill_rule::even_odd:
-                    return abs(winding)%2==1;
+                    return abs_(winding)%2==1;
                     break;
             }
         }
@@ -1594,7 +1594,7 @@ namespace microgl {
             auto dem = ab.x * cd.y - ab.y * cd.x;
 
             // parallel lines
-            if (abs(dem) <= number(1))
+            if (abs_(dem) <= number(1))
                 return intersection_status::parallel;
             else {
                 auto ca = a - c;

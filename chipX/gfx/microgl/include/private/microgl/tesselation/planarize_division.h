@@ -12,7 +12,7 @@
 namespace microgl {
 
     namespace tessellation {
-#define abs(a) ((a)<0 ? -(a) : (a))
+#define abs_(a) ((a)<0 ? -(a) : (a))
 
         enum class fill_rule {
             non_zero, even_odd
