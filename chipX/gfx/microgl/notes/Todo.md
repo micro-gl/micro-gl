@@ -39,9 +39,6 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - follow http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rt-abi
 - std::sort must be replaced with c qsort
 
-#### svg:
-5. use ear clipper from J. Orourke book
-
 #### road-map
 - investigate mip-mapping (I have all the theory from open gl spec)
 - explore avoid blending, and draw pixel directly mechanism
@@ -51,14 +48,11 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - shader need to retain some fragCoord(x,y,z,1/w) and bounding box, so user can do cool stuff
 - 3d pipeline, make 3d clipping configurable for planes and even skip
 - AA for 3d with stencil buffer and multi-sampling of coverage, should be interesting
-- move and equality logic for dynamic array
 
 0. improve ear_clipper
-1. complex poly tesselator and stroker
 4. catmaull-rom splines https://www.youtube.com/watch?v=9_aJGUTePYo (super great for music visualisazion)
    c++ example with guide - https://qroph.github.io/2018/07/30/smooth-paths-using-catmull-rom-splines.html
    converting catmull-rom to cubic - https://stackoverflow.com/questions/30748316/catmull-rom-interpolation-on-svg-paths
-8. add clip rectangles
 9. sine function approximation - https://www.youtube.com/watch?v=1xlCVBIF_ig
 
 # 3d

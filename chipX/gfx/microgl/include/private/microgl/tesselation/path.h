@@ -98,24 +98,26 @@ namespace microgl {
                     lineTo(*it);
                 return *this;
             }
-            auto lineTo(const vertex & point) -> path & {
+            auto lineTo(const vertex & point, number threshold=number(1)) -> path & {
                 auto current_path = _paths_vertices.back();
-                bool avoid = current_path.size && current_path.data[current_path.size-1]==point;
+                threshold=threshold<0 ? 0 : threshold;
+                bool avoid=false;
+                if(current_path.size) {
+                    const auto vec= current_path.data[current_path.size-1]-point;
+                    avoid= (vec.x*vec.x + vec.y*vec.y)<=threshold*threshold;
+                }
                 if(!avoid) {
                     if(current_path.size==0) {
                         const auto paths= subpathsCount();
                         if(paths>=2) {
                             auto last_path = _paths_vertices[paths-2];
-                            _paths_vertices.push_back(last_path.data[last_path.size-1]); // todo: size may be 0
-                        } //else _paths_vertices.push_back({0, 0});
+                            _paths_vertices.push_back(last_path.data[last_path.size-1]);
+                        }
                     }
                     _paths_vertices.push_back(point);
                     invalidate();
                 }
                 return *this;
-            }
-            auto lineTo(const number & x, const number & y) -> path & {
-                return lineTo({x, y});
             }
 
             auto moveTo(const vertex & point) -> path & {
@@ -124,9 +126,6 @@ namespace microgl {
                 invalidate();
                 return *this;
             }
-            auto moveTo(const number & x, const number & y) -> path & {
-                return moveTo({x, y});
-            }
 
             auto cubicBezierCurveTo(const vertex &cp1, const vertex &cp2, const vertex &last,
                                     CurveDivisionAlgorithm bezier_curve_divider=
@@ -134,84 +133,56 @@ namespace microgl {
                 vertex bezier[4] = {lastPointOfCurrentSubPath(), cp1, cp2, last};
                 dynamic_array<vertex> output{32};
                 curve_divider<number>::compute(bezier, output, bezier_curve_divider, CurveType::Cubic);
-                _paths_vertices.push_back(output);
+                for (unsigned ix = 0; ix < output.size(); ++ix)
+                    lineTo(output[ix]);
                 invalidate();
                 return *this;
             }
-            auto cubicBezierCurveTo(const number & cp1x, const number & cp1y,
-                                    const number & cp2x, const number & cp2y,
-                                    const number & lastX, const number & lastY,
-                                    CurveDivisionAlgorithm bezier_curve_divider=
-                                            CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium) -> path & {
-                return cubicBezierCurveTo({cp1x, cp1y}, {cp2x, cp2y}, {lastX, lastY}, bezier_curve_divider);
-            }
 
             auto quadraticCurveTo(const vertex &cp, const vertex &last,
-                    CurveDivisionAlgorithm bezier_curve_divider=CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium)
+                    CurveDivisionAlgorithm bezier_curve_divider=
+                            CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium)
                     -> path & {
                 vertex bezier[3] = {lastPointOfCurrentSubPath(), cp, last};
                 dynamic_array<vertex> output{32};
                 curve_divider<number>::compute(bezier, output, bezier_curve_divider, CurveType::Quadratic);
-                _paths_vertices.push_back(output);
+                for (unsigned ix = 0; ix < output.size(); ++ix)
+                    lineTo(output[ix]);
                 invalidate();
                 return *this;
             }
-            auto quadraticCurveTo(const number & cpx, const number & cpy,
-                                  const number & lastX, const number & lastY,
-                                  CurveDivisionAlgorithm bezier_curve_divider=
-                                          CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium) -> path & {
-                return quadraticCurveTo({cpx, cpy}, {lastX, lastY}, bezier_curve_divider);
-            }
 
-            auto rect(const vertex &leftTop, const number &width,
+            auto rect(const number &left, const number &top, const number &width,
                     const number &height, const bool cw=true) -> path & {
-                moveTo(leftTop);
+                moveTo({left, top});
                 if(cw) {
-                    if(width) lineTo(leftTop.x+width, leftTop.y);
-                    if(height) lineTo(leftTop.x+width, leftTop.y+height);
-                    if(width && height) lineTo(leftTop.x, leftTop.y+height);
+                    if(width) lineTo({left+width, top});
+                    if(height) lineTo({left+width, top+height});
+                    if(width && height) lineTo({left, top+height});
                 } else {
-                    if(height) lineTo(leftTop.x, leftTop.y+height);
-                    if(width) lineTo(leftTop.x+width, leftTop.y+height);
-                    if(width && height) lineTo(leftTop.x+width, leftTop.y);
+                    if(height) lineTo({left, top+height});
+                    if(width) lineTo({left+width, top+height});
+                    if(width && height) lineTo({left+width, top});
                 }
                 return closePath();
-            }
-            auto rect(const number &x, const number &y,
-                      const number &width, const number &height, const bool cw=true) -> path & {
-                return rect({x, y}, width, height, cw);
             }
 
             auto arc(const vertex &point, const number &radius,
                      const number &startAngle, const number &endAngle,
-                     bool anti_clockwise, unsigned divisions_count=16) -> path & {
-                dynamic_array<vertex> output{divisions_count};
-                elliptic_arc_divider<number>::compute(output, point.x, point.y,
-                                                      radius, radius, 0, startAngle, endAngle,
-                                                      divisions_count, anti_clockwise);
-                _paths_vertices.push_back(output); invalidate();
-                return *this;
-            }
-            auto arc(const number &x, const number &y, const number &radius,
-                     const number &startAngle, const number &endAngle,
-                     bool anti_clockwise, unsigned divisions_count=16) -> path & {
-                return arc({x, y}, radius, startAngle, endAngle, anti_clockwise, divisions_count);
+                     bool anti_clockwise, unsigned divisions_count=32) -> path & {
+                return ellipse(point, radius, radius, 0, startAngle, endAngle,
+                        anti_clockwise, divisions_count);
             }
 
             auto ellipse(const vertex &point, const number &radius_x, const number &radius_y,
                      const number & rotation, const number &startAngle, const number &endAngle,
-                     bool anti_clockwise, unsigned divisions_count=16) -> path & {
+                     bool anti_clockwise, unsigned divisions_count=32) -> path & {
                 dynamic_array<vertex> output{divisions_count};
                 elliptic_arc_divider<number>::compute(output, point.x, point.y, radius_x, radius_y,
                         rotation, startAngle, endAngle, divisions_count, anti_clockwise);
-                _paths_vertices.push_back(output); invalidate();
+                for (int ix = 0; ix < output.size(); ++ix)
+                    lineTo(output[ix]);
                 return *this;
-            }
-            auto ellipse(const number &x, const number &y, const number &radius_x, const number &radius_y,
-                         const number & rotation, const number &startAngle, const number &endAngle,
-                         bool anti_clockwise, unsigned divisions_count=16) -> path & {
-                return ellipse({x, y}, radius_x, radius_y, rotation, startAngle, endAngle, anti_clockwise,
-                        divisions_count);
             }
 
             auto invalidate() -> path & {
@@ -307,9 +278,10 @@ namespace microgl {
                             _tess_fill.output_vertices,
                             _tess_fill.output_indices_type,
                             _tess_fill.output_indices,
-                            &_tess_fill.output_boundary,
-                            &_tess_fill.DEBUG_output_trapezes);
-//                            nullptr);
+                            nullptr,
+//                            &_tess_fill.output_boundary,
+//                            &_tess_fill.DEBUG_output_trapezes);
+                            nullptr);
                 }
                 return _tess_fill;
             }
@@ -340,7 +312,7 @@ namespace microgl {
                                 cap, line_join,
                                 miter_limit,
                                 stroke_dash_array, stroke_dash_offset,
-                                chunk.data, chunk.size - 0,
+                                chunk.data, chunk.size - (isClosing?2:0),
                                 _tess_stroke.output_vertices,
                                 _tess_stroke.output_indices,
                                 _tess_stroke.output_indices_type,

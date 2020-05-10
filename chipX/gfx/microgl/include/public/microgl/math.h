@@ -64,6 +64,16 @@ namespace microgl {
             return sqrtf(p_x*p_x + p_y*p_y);
         }
 
+        static double distance(double p0_x, double p0_y, double p1_x, double p1_y) {
+            auto dx= p0_x-p1_x;
+            auto dy= p0_y-p1_y;
+            return length(dx, dy);
+        }
+
+        static double length(double p_x, double p_y) {
+            return sqrtl(p_x*p_x + p_y*p_y);
+        }
+
         template<unsigned N>
         static Q<N> distance(cqr<N> p0_x, cqr<N> p0_y, cqr<N> p1_x, cqr<N> p1_y) {
             auto dx= p0_x-p1_x;

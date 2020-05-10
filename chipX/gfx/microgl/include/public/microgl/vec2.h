@@ -40,6 +40,14 @@ namespace microgl {
             return {this->y, -this->x};
         }
 
+        vec2 square() const {
+            return {this->x*this->x, this->y*this->y};
+        }
+
+        number sum() const {
+            return this->x+this->y;
+        }
+
         vec2 operator*(const number & val) const {
             return {this->x*val, this->y*val};
         }

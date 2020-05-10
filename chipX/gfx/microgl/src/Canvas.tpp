@@ -1294,6 +1294,7 @@ void Canvas<P, CODER>::drawPathFill(const sampling::sampler<S> &sampler,
                                     const number2 u1, const number2 v1,
                                     const bool debug) {
     const auto & buffers= path.tessellateFill(rule, quality);
+    if(buffers.output_vertices.size()==0) return;
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, S>(
             sampler,
             buffers.output_vertices.data(),
@@ -1304,6 +1305,7 @@ void Canvas<P, CODER>::drawPathFill(const sampling::sampler<S> &sampler,
             buffers.output_indices_type,
             opacity,
             u0, v0, u1, v1);
+//    if(debug||true) {
     if(debug) {
         drawTrianglesWireframe({0,0,0,255},
                                buffers.output_vertices.data(),

@@ -1,5 +1,5 @@
 #pragma once
-#define DEBUG_PLANAR false
+#define DEBUG_PLANAR true
 #define MAX_ITERATIONS 200
 #define APPLY_MERGE true
 
@@ -137,6 +137,10 @@ namespace microgl {
                 bool isSimple() {
                     return left_top->next==left_bottom && left_bottom->next==right_bottom &&
                            right_bottom->next==right_top && right_top->next==left_top;
+                }
+                bool isDeg() {
+                    return left_top->origin->coords==left_bottom->origin->coords &&
+                            right_top->origin->coords==right_bottom->origin->coords;
                 }
             };
 

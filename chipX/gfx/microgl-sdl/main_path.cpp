@@ -22,7 +22,6 @@ Canvas24 * canvas;
 void loop();
 void init_sdl(int width, int height);
 
-float t = 0;
 
 template <typename number>
 dynamic_array<vec2<number>> box(float left, float top, float right, float bottom, bool ccw=false) {
@@ -43,78 +42,11 @@ dynamic_array<vec2<number>> box(float left, float top, float right, float bottom
 };
 
 template <typename number>
-chunker<vec2<number>> poly_inter_star() {
-    chunker<vec2<number>> A;
-
-    A.push_back_and_cut({
-                                {150, 150},
-                                {450,150},
-                                {200,450},
-                                {300,50},
-                                {400,450},
-                        });
-
-    return A;
-}
-
-
-template <typename number>
-chunker<vec2<number>> poly_inter_star_2() {
-    chunker<vec2<number>> A;
-
-    A.push_back_and_cut({
-                                {150, 150},
-                                {450,150},
-                                {200,450},
-                                {300,50},
-                                {400,450},
-                        });
-
-    A.push_back_and_cut({
-                                {150/2, 150/2},
-                                {450/2,150/2},
-                                {200/2,450/2},
-                                {300/2,50/2},
-                                {400/2,450/2},
-                        });
-
-    A.push_back_and_cut({
-                                {150/10, 150/10},
-                                {450/10,150/10},
-                                {200/10,450/10},
-                                {300/10,50/10},
-                                {400/10,450/10},
-                        });
-
-    A.push_back_and_cut(box<number>(50,50,300,300, false));
-    A.push_back_and_cut(box<number>(50,250,600,300, true));
-    A.push_back_and_cut(box<number>(50,450,100,500, true));
-
-    return A;
-}
-
-template <typename number>
-chunker<vec2<number>> box_1() {
-    chunker<vec2<number>> A;
-
-//    A.push_back_and_cut({
-//                                {20,20},
-//                                {400,20},
-//                                {200,400},
-//                        });
-
-    A.push_back_and_cut(box<number>(50,50,300,300));
-//    A.push_back_and_cut(box<number>(150,150,200,200));
-
-    return A;
-}
-
-template <typename number>
 path<number> path_star() {
     path<number> path{};
-    path.lineTo(150, 150).lineTo(450, 150)
-            .lineTo(200,450).lineTo(300,50)
-            .lineTo(400,450).closePath();
+    path.lineTo({150, 150}).lineTo({450, 150})
+            .lineTo({200,450}).lineTo({300,50})
+            .lineTo({400,450}).closePath();
     return path;
 }
 
@@ -141,8 +73,37 @@ path<number> path_star_2() {
             .rect(50, 250, 550, 50, false)
             .rect(50, 450, 50, 50, false)
             .closePath();
+
     return path;
 }
+
+float t = 0;
+
+template <typename number>
+path<number> path_arc() {
+    path<number> path{};
+    int div=32;
+    path.arc({200,200}, 100,
+             math::deg_to_rad(0.0f),
+             math::deg_to_rad(360.0f),
+             false, div).closePath();
+
+    path.arc({250,200}, 50,
+             math::deg_to_rad(0.0f),
+             math::deg_to_rad(360.0f),
+             true, div).closePath();
+t+=0.82f;
+//    t=137.999039f;
+////t=26.0399914;
+//    path.moveTo({150+t,150});
+    path.arc({150+0,150}, 50+t,
+             math::deg_to_rad(0.0f),
+             math::deg_to_rad(360.0f),
+             true, div);//.closePath();
+
+    return path;
+}
+
 
 template <typename number>
 path<number> path_rects() {
@@ -151,6 +112,22 @@ path<number> path_rects() {
         .rect(50, 50, 250, 250, false)
         .rect(50, 250, 550, 50, true)
         .rect(50, 450, 50, 50, true);
+    return path;
+}
+
+template <typename number>
+path<number> path_test() {
+    path<number> path{};
+    int div=8;
+//    t+=0.01;
+    t=137.999039f;
+    path.linesTo({{100,100}, {300,100}, {300, 300}, {100,300}});
+    vec2<number> start{22.0f, 150.0f-0.002323204};
+    path.moveTo(start);
+    path.linesTo({start, {300,120.002323204-t}, {300, 300}, {100,300}});
+    path.moveTo({200, 200});
+    path.lineTo({300,10});
+
     return path;
 }
 
@@ -163,14 +140,16 @@ void render_path(path<number> path) {
     canvas->drawPathFill<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
             color_red,
             path,
-            tessellation::fill_rule::even_odd
+            tessellation::fill_rule::even_odd,
+            tessellation::tess_quality::prettier_with_extra_vertices,
+            50
     );
 
-//    return;
+    return;
     canvas->drawPathStroke<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
             color_green,
             path,
-            number{1},
+            number{10},
             tessellation::stroke_cap::butt,
 //            tessellation::stroke_cap::round,
 //            tessellation::stroke_cap::square,
@@ -178,17 +157,22 @@ void render_path(path<number> path) {
 //            tessellation::stroke_line_join::miter,
 //            tessellation::stroke_line_join::miter_clip,
 //            tessellation::stroke_line_join::round,
-            4, {20,10}, 0,
-            255
+            4, {0,0}, 0,
+            44
     );
 }
 
 void render() {
-    t+=.05f;
+//    t+=.05f;
 
 //    render_path<float>(path_star<float>());
-    render_path<float>(path_star_2<float>());
+//    render_path<float>(path_star_2<float>());
 //    render_path<float>(path_rects<float>());
+//    render_path<float>(path_arc<float>());
+    render_path<double>(path_arc<double>());
+//    render_path<float>(path_arc<float>());
+//    render_path<Q<15>>(path_arc<Q<15>>());
+//    render_path<double>(path_test<double>());
 
 }
 
@@ -244,7 +228,7 @@ void loop() {
                 break;
         }
 //
-//        render();
+        render();
 
         SDL_UpdateTexture(texture, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());

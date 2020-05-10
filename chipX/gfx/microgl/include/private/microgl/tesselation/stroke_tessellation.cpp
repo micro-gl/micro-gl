@@ -37,7 +37,7 @@ namespace microgl {
             auto dem = ab.x * cd.y - ab.y * cd.x;
 
             // parallel lines
-            if (abs(dem) <= number(1))
+            if (abs_(dem) <= number(1))
                 return intersection_status::parallel;
             else {
                 auto ca = a - c;
@@ -259,7 +259,7 @@ namespace microgl {
                         dash_index=ix; break;
                     }
                 }
-                dash_length= min__(partial_sum-offset, path_length);
+                dash_length= min__(number(partial_sum-offset), path_length);
                 position=0;
             } else {
                 // make it cyclic
@@ -293,7 +293,7 @@ namespace microgl {
                 // find new position markers
                 position+=dash_length;
                 dash_index=(dash_index+1)%dash_arr_length;
-                dash_length= min__(dash_array[dash_index], path_length-position);
+                dash_length= min__(number(dash_array[dash_index]), path_length-position);
             }
 
         }
