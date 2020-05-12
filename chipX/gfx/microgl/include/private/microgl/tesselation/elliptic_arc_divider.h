@@ -57,6 +57,7 @@ namespace microgl {
                 auto radians = start_angle_rad;
                 auto rotation_sin = math::sin(rotation);
                 auto rotation_cos = math::cos(rotation);
+                index first= output.size();
                 for (index ix = 0; ix <= divisions; ++ix) {
                     auto sine = math::sin(radians);
                     auto cosine = math::sin(radians + half_pi);
@@ -71,6 +72,7 @@ namespace microgl {
                                       (center_y + rotated_y)});
                     radians += delta;
                 }
+                //output[output.size()-1]=output[first];
             }
 
         private:

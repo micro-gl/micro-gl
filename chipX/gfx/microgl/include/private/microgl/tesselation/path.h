@@ -19,18 +19,18 @@ namespace microgl {
             chunker<vertex> _paths_vertices;
             bool _invalid=true;
 
-            const vertex & firstPointOfCurrentSubPath() const {
+            vertex firstPointOfCurrentSubPath() const {
                 auto current_path = _paths_vertices.back();
                 return current_path.data[0];
             }
-            vertex & lastPointOfCurrentSubPath() {
+            vertex lastPointOfCurrentSubPath() {
                 auto current_path = _paths_vertices.back();
                 return current_path.data[current_path.size-1]; // todo: size may be 0
             }
             int sizeOfCurrentSubPath() {
                 return _paths_vertices.back().size;
             }
-            vertex & firstPointOfLastSubPath() {
+            vertex firstPointOfLastSubPath() {
                 auto current_path = _paths_vertices.back();
                 return current_path.data[current_path.size-1];
             }
@@ -84,10 +84,11 @@ namespace microgl {
             auto closePath() -> path & {
                 if(sizeOfCurrentSubPath()==0) return *this;
                 // move the pen to the first vertex of the sub-path and
-                const vertex &first_point = firstPointOfCurrentSubPath();
+                const vertex first_point = firstPointOfCurrentSubPath();
+                const vertex last_point = lastPointOfCurrentSubPath();
                 // if two last points equal the first one, it is a close path signal
-                _paths_vertices.push_back(first_point);
-                _paths_vertices.push_back(first_point);
+                _paths_vertices.push_back(last_point);
+                _paths_vertices.push_back(last_point);
                 _paths_vertices.cut_chunk_if_current_not_empty();
                 invalidate();
                 return *this;
@@ -278,10 +279,10 @@ namespace microgl {
                             _tess_fill.output_vertices,
                             _tess_fill.output_indices_type,
                             _tess_fill.output_indices,
-                            nullptr,
-//                            &_tess_fill.output_boundary,
-//                            &_tess_fill.DEBUG_output_trapezes);
-                            nullptr);
+                            &_tess_fill.output_boundary,
+                            &_tess_fill.DEBUG_output_trapezes);
+//                            nullptr,
+//                            nullptr);
                 }
                 return _tess_fill;
             }
@@ -304,8 +305,8 @@ namespace microgl {
                     for (unsigned ix = 0; ix < paths; ++ix) {
                         auto chunk = _paths_vertices[ix];
                         if(chunk.size==0) continue;
-                        bool isClosing = chunk.size >= 3 && chunk.data[0] == chunk.data[chunk.size - 1]
-                                         && chunk.data[0] == chunk.data[chunk.size - 2];
+                        bool isClosing = chunk.size >= 3 && chunk.data[chunk.size - 3] == chunk.data[chunk.size - 1]
+                                         && chunk.data[chunk.size - 3] == chunk.data[chunk.size - 2];
                         stroke_tessellation<number>::compute_with_dashes(
                                 stroke_width,
                                 isClosing,

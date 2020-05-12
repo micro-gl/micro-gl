@@ -637,6 +637,71 @@ namespace microgl {
         }
 
         template<typename number>
+        auto planarize_division<number>::locate_next_trapeze_boundary_vertex_from(half_edge *a,
+                                                                           const trapeze_t &trapeze) -> half_edge * {
+            half_edge *iter = a;
+            const half_edge *end = iter;
+            do {
+                iter=iter->next;
+                bool is_boundary=iter==trapeze.left_top || iter==trapeze.left_bottom ||
+                                 iter==trapeze.right_bottom || iter==trapeze.right_top;
+                if(is_boundary) return iter;
+            } while(iter!=end);
+            return nullptr;
+        }
+
+        template<typename number>
+        auto planarize_division<number>::locate_prev_trapeze_boundary_vertex_from(half_edge *a,
+                                                                           const trapeze_t &trapeze) -> half_edge * {
+            half_edge *iter = a;
+            const half_edge *end = iter;
+            do {
+                iter=iter->prev;
+                bool is_boundary=iter==trapeze.left_top || iter==trapeze.left_bottom ||
+                                 iter==trapeze.right_bottom || iter==trapeze.right_top;
+                if(is_boundary) return iter;
+            } while(iter!=end);
+            return nullptr;
+        }
+
+        template<typename number>
+        auto planarize_division<number>::locate_face_of_a_b(const half_edge_vertex &a,
+                                                            const vertex &b) -> half_edge * {
+            // given edge (a,b) as half_edge_vertex a and a vertex b, find out to which
+            // adjacent face does this edge should belong. we return the half_edge that
+            // has this face to it's left and vertex 'a' as an origin. we walk CW around
+            // the vertex to find which subdivision. The reason that the natural order around
+            // a vertex is CW is BECAUSE, that the face edges are CCW. If one draws it on paper
+            // then it will become super clear.
+            // also to mention, that due to precision errors, we perform a full cone test,
+            // even for more than 180 degrees, although in theory all angles are less than
+            // 180, BUT, in practice, due to precision errors this will happen
+            half_edge *iter = a.edge;
+            const half_edge *end = iter;
+            const auto root=a.coords;
+            do { // we walk in CW order around the vertex
+                // it seems the safest is to test against the trapeze and not just against the
+                // immidate edge
+                const auto trapeze_adj= infer_trapeze(iter->face);
+                const auto prev= locate_prev_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
+                const auto next= locate_next_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
+                // todo:: add safety tests if prev==root || next==root ?
+                bool inside_cone;
+                bool is_less_than_180=classify_point(next, root, prev)<=0;
+                int cls1= classify_point(b, root, prev);
+                int cls2= classify_point(b, root, next);
+                if(is_less_than_180) inside_cone=cls1<=0 && cls2>0;
+                else inside_cone=!(cls1>0 && cls2<=0);
+                // is (a,b) inside the cone so right of iter and left of next
+                if(inside_cone)
+                    return iter;
+                iter=iter->twin->next;
+            } while(iter!=end);
+            return iter;
+        }
+
+/*
+        template<typename number>
         auto planarize_division<number>::locate_face_of_a_b(const half_edge_vertex &a,
                                                             const vertex &b) -> half_edge * {
             // given edge (a,b) as half_edge_vertex a and a vertex b, find out to which
@@ -654,7 +719,7 @@ namespace microgl {
                 auto* next = iter->twin->next;
                 bool inside_cone=false;
                 bool is_less_than_180=classify_point(next->twin->origin->coords, iter->origin->coords,
-                                                        iter->twin->origin->coords)<=0;
+                                                     iter->twin->origin->coords)<=0;
                 int cls1= classify_point(b, iter->origin->coords,
                                          iter->twin->origin->coords);
                 int cls2= classify_point(b, next->origin->coords,
@@ -672,6 +737,7 @@ namespace microgl {
 
             return iter;
         }
+*/
 
         template<typename number>
         auto planarize_division<number>::insert_edge_between_non_co_linear_vertices(half_edge *vertex_a_edge,
@@ -1153,12 +1219,12 @@ namespace microgl {
                     handle_face_merge(a_vertex_edge->origin);
 
 #if DEBUG_PLANAR==true
-//                if(count>=MAX_ITERATIONS)
-//                    throw std::runtime_error("insert_edge():: seems like infinite looping !! edge # " + std::to_string(idx));
+                if(count>=MAX_ITERATIONS)
+                    throw std::runtime_error("insert_edge():: seems like infinite looping !! edge # " + std::to_string(idx));
 #endif
                 // increment
                 // if b'==b we are done, this might be problematic if b' was rounded/clamped
-                are_we_done = b==b_tag || (a==b_tag && class_a==class_b_tag) || count>=MAX_ITERATIONS;
+                are_we_done = b==b_tag || count>=MAX_ITERATIONS || (a==b_tag && class_a==class_b_tag);
                 if(are_we_done){
                     edge->twin->origin->coords=b_tag;
                     break;
@@ -1200,6 +1266,7 @@ namespace microgl {
 
             // now start iterations
             for (index ix = 0; ix < v_size; ++ix) {
+//            for (index ix = 0; ix < 10; ++ix) {
                 auto *e = edges_list[ix];
                 if(e== nullptr) continue;
                 insert_edge(e, ix, dynamic_pool);

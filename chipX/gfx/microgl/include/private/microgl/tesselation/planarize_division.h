@@ -1,7 +1,7 @@
 #pragma once
 #define DEBUG_PLANAR true
 #define MAX_ITERATIONS 200
-#define APPLY_MERGE true
+#define APPLY_MERGE false
 
 #include <microgl/tesselation/half_edge.h>
 #include <microgl/chunker.h>
@@ -342,6 +342,12 @@ namespace microgl {
 
             static
             bool infer_fill(int winding, const fill_rule &rule);
+
+            static
+            half_edge *locate_next_trapeze_boundary_vertex_from(half_edge *a, const trapeze_t &trapeze);
+
+            static
+            half_edge *locate_prev_trapeze_boundary_vertex_from(half_edge *a, const trapeze_t &trapeze);
         };
 
     }
