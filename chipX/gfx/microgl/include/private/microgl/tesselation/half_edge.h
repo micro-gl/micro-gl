@@ -17,6 +17,8 @@ namespace microgl {
         struct half_edge_vertex_t;
         template <typename number>
         struct half_edge_face_t;
+        template <typename number>
+        struct poly_info_t;
 
         template <typename number>
         struct half_edge_t {
@@ -29,7 +31,7 @@ namespace microgl {
             half_edge_face_t<number> * face = nullptr;
             // pointer to the conflicting face, the face for which
             // the start endpoint of the edge lies in for unadded edge
-            half_edge_face_t<number> *conflict_face = nullptr;
+//            half_edge_face_t<number> *conflict_face = nullptr;
 
             edge_type type = edge_type::unknown;
             int winding = 0;
@@ -40,9 +42,6 @@ namespace microgl {
             microgl::vec2<number> coords;
             // pointer to any edge that has this vertex as starting point
             half_edge_t<number> * edge = nullptr;
-//        // pointer to the conflicting face, valid for regular vertices
-//        half_edge_face_t<number> *conflict_face = nullptr;
-//            point_type type = point_type::unknown;
             // used to locate inside the output vertices buffer
             int tess_index=-1;
             bool internal_tess_clipped=false;
@@ -50,10 +49,8 @@ namespace microgl {
 
         template <typename number>
         struct conflict_node_t {
-            // conflicting vertex
-            half_edge_t<number> *edge = nullptr;
-//        half_edge_vertex_t<number> *vertex = nullptr;
-            // next one
+//            half_edge_t<number> *edge = nullptr;
+            poly_info_t<number> *unadded_input_poly=nullptr;
             conflict_node_t * next = nullptr;
         };
 
@@ -69,6 +66,15 @@ namespace microgl {
             bool isValid() { //when deleted for example
                 return edge!=nullptr;
             }
+        };
+
+        template <typename number>
+        struct poly_info_t {
+            half_edge_face_t<number> *conflict_face = nullptr;
+            const microgl::vec2<number> *points= nullptr;
+            index size=0;
+            int id=-1;
+            bool is_closed=false;
         };
 
 

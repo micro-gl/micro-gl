@@ -43,7 +43,9 @@ namespace microgl {
             using half_edge_vertex = half_edge_vertex_t<number>;
             using half_edge_face = half_edge_face_t<number>;
             using conflict = conflict_node_t<number>;
+            using poly_info = poly_info_t<number>;
 
+            /*
             struct static_pool {
             private:
                 half_edge_vertex * _vertices = nullptr;
@@ -81,6 +83,7 @@ namespace microgl {
                     _conflicts = nullptr;
                 }
             };
+             */
 
             struct dynamic_pool {
             private:
@@ -172,6 +175,7 @@ namespace microgl {
                 int left_wall, bottom_wall, right_wall, top_wall;
             };
 
+
         public:
             static
             void compute(const chunker<vertex> &pieces,
@@ -204,11 +208,13 @@ namespace microgl {
                     dynamic_array<vertex> *debug_trapezes);
 
             static
-            auto create_frame(const chunker<vertex> &pieces, static_pool & static_pool, dynamic_pool & dynamic_pool) -> half_edge_face *;
+            auto create_frame(const chunker<vertex> &pieces, dynamic_pool & dynamic_pool) -> half_edge_face *;
 
             static
-            auto build_edges_and_conflicts(const chunker<vertex> &pieces, half_edge_face & main_frame,
-                    static_pool & pool) -> half_edge** ;
+            auto build_poly_and_conflicts(const chunker<vertex> &pieces,
+                                          half_edge_face & main_frame,
+                                          poly_info ** poly_list_out,
+                                          conflict ** conflict_list_out) -> void ;
 
             static
             void insert_edge(half_edge *edge, index idx, dynamic_pool &pool);
@@ -247,7 +253,8 @@ namespace microgl {
                     dynamic_pool &dynamic_pool) -> half_edge *;
 
             static
-            auto classify_conflict_against_two_faces(const half_edge *face_separator, const half_edge *edge)->half_edge_face *;
+            auto classify_conflict_against_two_faces(const half_edge *face_separator,
+                    const vertex &c, const vertex &d)->half_edge_face *;
 
             static
             void re_distribute_conflicts_of_split_face(conflict *conflict_list, const half_edge *face_separator);
@@ -348,6 +355,9 @@ namespace microgl {
 
             static
             half_edge *locate_prev_trapeze_boundary_vertex_from(half_edge *a, const trapeze_t &trapeze);
+
+            static
+            void insert_poly(poly_info &poly, dynamic_pool &dynamic_pool);
         };
 
     }

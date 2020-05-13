@@ -82,11 +82,11 @@ float t = 0;
 template <typename number>
 path<number> path_arc() {
     path<number> path{};
-    int div=8;
-    path.arc({200,200}, 100,
-             math::deg_to_rad(0.0f),
-             math::deg_to_rad(360.0f),
-             false, div).closePath();
+    int div=4;
+//    path.arc({200,200}, 100,
+//             math::deg_to_rad(0.0f),
+//             math::deg_to_rad(360.0f),
+//             false, div).closePath();
 
 //    path.moveTo({250,200});
 //    path.arc({250,200}, 50,
@@ -94,13 +94,13 @@ path<number> path_arc() {
 //             math::deg_to_rad(360.0f),
 //             true, div).closePath();
 t+=0.82f;
-//    t=137.999039f;
+    t=1.;//819999992f;//-0.01f;
 ////t=26.0399914;
-//    path.moveTo({150+t,150});
-//    path.arc({150+0,150}, 50+t,
-//             math::deg_to_rad(0.0f),
-//             math::deg_to_rad(360.0f),
-//             true, div);//.closePath();
+    path.moveTo({150+t,150});
+    path.arc({150+0,150}, 50+t,
+             math::deg_to_rad(0.0f),
+             math::deg_to_rad(360.0f),
+             true, div);//.closePath();
 
     return path;
 }

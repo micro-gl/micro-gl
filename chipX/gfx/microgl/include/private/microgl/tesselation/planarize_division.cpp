@@ -4,7 +4,7 @@ namespace microgl {
 
         template<typename number>
         auto planarize_division<number>::create_frame(const chunker<vertex> &pieces,
-                                                      static_pool & static_pool, dynamic_pool & dynamic_pool) -> half_edge_face * {
+                                                      dynamic_pool & dynamic_pool) -> half_edge_face * {
             const auto pieces_length = pieces.size();
             vertex left_top=pieces.raw_data()[0];
             vertex right_bottom=left_top;
@@ -31,25 +31,25 @@ namespace microgl {
             right_bottom.x += number(10);
             right_bottom.y += number(10);
             // vertices
-            auto * v0 = static_pool.get_vertex();
-            auto * v1 = static_pool.get_vertex();
-            auto * v2 = static_pool.get_vertex();
-            auto * v3 = static_pool.get_vertex();
+            auto * v0 = dynamic_pool.create_vertex(left_top);
+            auto * v1 = dynamic_pool.create_vertex({left_top.x, right_bottom.y});
+            auto * v2 = dynamic_pool.create_vertex(right_bottom);
+            auto * v3 = dynamic_pool.create_vertex({right_bottom.x, left_top.y});
             // coords
-            v0->coords = left_top;
-            v1->coords = {left_top.x, right_bottom.y};
-            v2->coords = right_bottom;
-            v3->coords = {right_bottom.x, left_top.y};
+//            v0->coords = left_top;
+//            v1->coords = {left_top.x, right_bottom.y};
+//            v2->coords = right_bottom;
+//            v3->coords = {right_bottom.x, left_top.y};
             // half edges of vertices
-            auto * edge_0 = static_pool.get_edge();
-            auto * edge_1 = static_pool.get_edge();
-            auto * edge_2 = static_pool.get_edge();
-            auto * edge_3 = static_pool.get_edge();
-            // twins of edges
-            auto * edge_0_twin = static_pool.get_edge();
-            auto * edge_1_twin = static_pool.get_edge();
-            auto * edge_2_twin = static_pool.get_edge();
-            auto * edge_3_twin = static_pool.get_edge();
+            auto * edge_0 = dynamic_pool.create_edge();
+            auto * edge_1 = dynamic_pool.create_edge();
+            auto * edge_2 = dynamic_pool.create_edge();
+            auto * edge_3 = dynamic_pool.create_edge();
+            // twins of edges, todo:: i might not need twins for the frame
+            auto * edge_0_twin = dynamic_pool.create_edge();
+            auto * edge_1_twin = dynamic_pool.create_edge();
+            auto * edge_2_twin = dynamic_pool.create_edge();
+            auto * edge_3_twin = dynamic_pool.create_edge();
             // connect edges to vertices, CCW from left-top vertex
             edge_0->origin = v0; edge_0_twin->origin = v1;
             edge_1->origin = v1; edge_1_twin->origin = v2;
@@ -90,83 +90,47 @@ namespace microgl {
         }
 
         template<typename number>
-        auto planarize_division<number>::build_edges_and_conflicts(const chunker<vertex> &pieces,
-                                                                   half_edge_face & main_frame,
-                                                                   static_pool & pool) -> half_edge ** {
+        auto planarize_division<number>::build_poly_and_conflicts(const chunker<vertex> &pieces,
+                                                                  half_edge_face & main_frame,
+                                                                  poly_info ** poly_list_out,
+                                                                  conflict ** conflict_list_out) -> void {
             // given polygons, build their vertices, edges and conflicts
             const auto pieces_length = pieces.size();
             conflict * conflict_first = nullptr;
             const auto v_size = pieces.unchunked_size();
-            auto ** edges_list = new half_edge*[v_size]{nullptr};
-            index edges_list_counter = 0;
+            auto * poly_list = new poly_info[pieces_length];
+            auto * conflict_list = new conflict[pieces_length];
 
-            // build edges and twins, do not make next/prev connections
             for (index ix = 0; ix < pieces_length; ++ix) {
-                half_edge * edge_first = nullptr;
-                half_edge * edge_last = nullptr;
-                auto const piece = pieces[ix];
+                auto piece = pieces[ix];
                 const auto piece_size = piece.size;
+                auto & poly= poly_list[ix];
+                poly.id=ix;
+                poly.is_closed=true;
+                poly.size=0;
+                poly.points=nullptr;
+                poly.conflict_face= nullptr;
                 if(piece_size<=1) continue;
-                index last_index= piece_size-1;
-                // in case, last vertex is same as first, it is better to remove na connect at the end
-                while(last_index>0 && piece.data[last_index]==piece.data[0]) {
+                index last_index= piece_size-1, first_index=0;
+                while((first_index+1<piece_size)&& piece.data[first_index]==piece.data[first_index+1])
+                    first_index++;
+                while(last_index>0 && piece.data[last_index]==piece.data[first_index])
                     last_index--;
-                }
-                for (index jx = 0; jx<=last_index; ++jx) {
-                    // if last point equals first point. let's skip because
-                    // we will connect them so there is no need to add zero length edge
-                    if(jx>1) {
-                        if(piece.data[jx]==edge_last->origin->coords)
-                            continue;
-                    }
-                    // v, e, c
-                    auto * v = pool.get_vertex();
-                    auto * e = pool.get_edge();
-                    auto * c = pool.get_conflict_node();
-
-                    // hook current v to e and c
-                    v->coords = piece.data[jx];
-                    v->edge = e;
-                    e->origin = v;
-                    e->type = edge_type::unknown;
-                    // only the first half edge records conflict info, the twin will not record !!
-                    e->conflict_face = &main_frame;
-                    c->edge = e;
-                    edges_list[edges_list_counter++] = e;
-
-                    // record first edge of polygon
-                    if(edge_first==nullptr) {
-                        edge_first = e;
-                    }
-
-                    // set last twin
-                    if(edge_last) {
-                        auto * e_last_twin = pool.get_edge();
-                        e_last_twin->origin = v;
-                        edge_last->twin = e_last_twin;
-                        e_last_twin->twin = edge_last;
-                    }
-
-                    if(conflict_first)
-                        c->next = conflict_first;
-
-                    conflict_first = c;
-                    edge_last = e;
-                }
-
-                // hook the last edge, from last vertex into first vertex
-                // of the current polygon
-                if(edge_last) {
-                    auto * e_last_twin = pool.get_edge();
-                    e_last_twin->origin = edge_first->origin;
-                    edge_last->twin = e_last_twin;
-                    e_last_twin->twin = edge_last;
-                }
+                const index new_size=last_index-first_index+1;
+                if(new_size<=1) continue;
+                poly.size=new_size;
+                poly.points=&piece.data[first_index];
+                poly.conflict_face= &main_frame;
+                auto * c = &conflict_list[ix];
+                c->unadded_input_poly=&poly;
+                if(conflict_first) c->next = conflict_first;
+                conflict_first = c;
             }
 
             main_frame.conflict_list = conflict_first;
 
-            return edges_list;
+            *poly_list_out=poly_list;
+            *conflict_list_out=conflict_list;
         }
 
         template<typename number>
@@ -551,23 +515,24 @@ namespace microgl {
             f2->conflict_list = nullptr;
             conflict * list_ref = conflict_list;
             while(list_ref!= nullptr) {
-                auto * current_ref = list_ref;  // record head
+                conflict * current_ref = list_ref;  // record head
                 list_ref=list_ref->next;        // advance
                 current_ref->next = nullptr;    // de-attach
-                auto * e = current_ref->edge;
+                auto * poly = current_ref->unadded_input_poly;
                 // find the face to which the edge is classified
-                auto * f = classify_conflict_against_two_faces(face_separator, e);
+                auto * f = classify_conflict_against_two_faces(face_separator, poly->points[0], poly->points[1]);
                 // insert edge into head of conflict list
                 current_ref->next = f->conflict_list;
                 f->conflict_list = current_ref;
                 // pointer from edge to conflicting face
-                e->conflict_face=f;
+                poly->conflict_face=f;
             }
         }
 
         template<typename number>
         auto planarize_division<number>::classify_conflict_against_two_faces(const half_edge* face_separator,
-                                                                             const half_edge* edge) -> half_edge_face *{
+                                                                             const vertex &c, const vertex &d)
+                                                                             -> half_edge_face *{
             // note:: edge's face always points to the face that lies to it's left.
             // 1. if the first point lie completely to the left of the edge, then they belong to f1, other wise f2
             // 2. if they lie exactly on the edge, then we test the second end-point
@@ -575,8 +540,6 @@ namespace microgl {
             // 2.2 if the second lies on the face_separator as well, choose whoever face you want, let's say f1
             const auto & a = face_separator->origin->coords;
             const auto & b = face_separator->twin->origin->coords;
-            const auto & c = edge->origin->coords;
-            const auto & d = edge->twin->origin->coords;
             const int cls = classify_point(c, a, b);
 
             if(cls>0) // if strictly left of
@@ -659,9 +622,9 @@ namespace microgl {
                 iter=iter->prev;
                 bool is_boundary=iter==trapeze.left_top || iter==trapeze.left_bottom ||
                                  iter==trapeze.right_bottom || iter==trapeze.right_top;
-                if(is_boundary) return iter;
+                if(is_boundary && iter->origin->coords!=a->origin->coords) return iter;
             } while(iter!=end);
-            return nullptr;
+            return iter;
         }
 
         template<typename number>
@@ -690,8 +653,10 @@ namespace microgl {
                 bool is_less_than_180=classify_point(next, root, prev)<=0;
                 int cls1= classify_point(b, root, prev);
                 int cls2= classify_point(b, root, next);
-                if(is_less_than_180) inside_cone=cls1<=0 && cls2>0;
-                else inside_cone=!(cls1>0 && cls2<=0);
+//                if(is_less_than_180) inside_cone=cls1<=0 && cls2>0;
+//                else inside_cone=!(cls1>0 && cls2<=0);
+                if(is_less_than_180) inside_cone=cls1<=0 && cls2>=0;
+                else inside_cone=!(cls1>=0 && cls2<=0);
                 // is (a,b) inside the cone so right of iter and left of next
                 if(inside_cone)
                     return iter;
@@ -699,45 +664,6 @@ namespace microgl {
             } while(iter!=end);
             return iter;
         }
-
-/*
-        template<typename number>
-        auto planarize_division<number>::locate_face_of_a_b(const half_edge_vertex &a,
-                                                            const vertex &b) -> half_edge * {
-            // given edge (a,b) as half_edge_vertex a and a vertex b, find out to which
-            // adjacent face does this edge should belong. we return the half_edge that
-            // has this face to it's left and vertex 'a' as an origin. we walk CW around
-            // the vertex to find which subdivision. The reason that the natural order around
-            // a vertex is CW is BECAUSE, that the face edges are CCW. If one draws it on paper
-            // then it will become super clear.
-            // also to mention, that due to precision errors, we perform a full cone test,
-            // even for more than 180 degrees, although in theory all angles are less than
-            // 180, BUT, in practice, due to precision errors this will happen
-            half_edge *iter = a.edge;
-            const half_edge *end = iter;
-            do { // we walk in CCW order around the vertex
-                auto* next = iter->twin->next;
-                bool inside_cone=false;
-                bool is_less_than_180=classify_point(next->twin->origin->coords, iter->origin->coords,
-                                                     iter->twin->origin->coords)<=0;
-                int cls1= classify_point(b, iter->origin->coords,
-                                         iter->twin->origin->coords);
-                int cls2= classify_point(b, next->origin->coords,
-                                         next->twin->origin->coords);
-                if(is_less_than_180)
-                    inside_cone=cls1<=0 && cls2>0;
-                else
-                    inside_cone=!(cls1>0 && cls2<=0);
-                // is (a,b) inside the cone so right of iter and left of next
-                if(inside_cone)
-                    return next;
-
-                iter=iter->twin->next;
-            } while(iter!=end);
-
-            return iter;
-        }
-*/
 
         template<typename number>
         auto planarize_division<number>::insert_edge_between_non_co_linear_vertices(half_edge *vertex_a_edge,
@@ -1142,7 +1068,8 @@ namespace microgl {
             }
             // now update the conflicting edges with the correct face
             while (conflict_ref!=nullptr) {
-                conflict_ref->edge->conflict_face=face_1;
+//                conflict_ref->edge->conflict_face=face_1;
+                conflict_ref->unadded_input_poly->conflict_face=face_1;
                 conflict_ref=conflict_ref->next;
             }
             face_2->edge=nullptr; face_2->conflict_list= nullptr;
@@ -1244,6 +1171,144 @@ namespace microgl {
         }
 
         template<typename number>
+        void planarize_division<number>::insert_poly(poly_info &poly, dynamic_pool & dynamic_pool) {
+
+            const unsigned size= poly.size;
+            half_edge_vertex *a_origin, *b_origin, *poly_origin;
+            bool first_edge=true;
+            for (unsigned edge = 0; edge < size; ++edge) {
+
+                bool are_we_done = false;
+                int count = 0;
+                vertex a=poly.points[(edge)%size],b=poly.points[(edge+1)%size], b_tag;
+                half_edge_face * face = nullptr;
+                point_class_with_trapeze wall_result;
+                trapeze_t trapeze;
+                point_class_with_trapeze class_a;
+                bool last_edge= edge==size-1;
+                if(last_edge) // last edge connects to first vertex in the planar polygon
+                    b=poly_origin->coords;
+                bool zero_edge= a==b;
+                if(zero_edge) continue;
+
+                if(first_edge) {
+                    first_edge=false;
+                    // first edge always needs to consult with the conflicts info
+                    face=poly.conflict_face;
+                    trapeze=infer_trapeze(face);
+                    a=poly.points[edge];
+                    class_a= round_vertex_to_trapeze(a, trapeze);
+                    if(class_a!=point_class_with_trapeze::strictly_inside) {
+                        // due to rounding errors, we may need to re-consider the
+                        // starting trapeze.
+                        const auto * e= try_insert_vertex_on_trapeze_boundary_at(a, trapeze, class_a, dynamic_pool);
+                        half_edge * located_face_edge= locate_face_of_a_b(*(e->origin), b);
+                        face = located_face_edge->face;
+                        trapeze=infer_trapeze(face);
+                        class_a = locate_and_classify_point_that_is_already_on_trapeze(a, trapeze);
+                    }
+                } else {
+                    const auto * last_planar_vertex= b_origin; // we use the last planar vertex
+                    a=last_planar_vertex->coords;
+                    half_edge * located_face_edge= locate_face_of_a_b(*last_planar_vertex, b);
+                    face = located_face_edge->face;
+                    trapeze=infer_trapeze(face);
+                    class_a = locate_and_classify_point_that_is_already_on_trapeze(a, trapeze);
+                }
+
+//                a=edge->origin->coords;
+//                b=edge->twin->origin->coords;
+//                if(a==b) return;
+
+                while(!are_we_done) {
+                    // start with the conflicting face and iterate carefully, a---b'---b
+                    half_edge *a_vertex_edge= nullptr, *b_tag_vertex_edge= nullptr;
+                    // the reporting of and class of the next interesting point of the edge against current trapeze
+                    conflicting_edge_intersection_status edge_status =
+                            compute_conflicting_edge_intersection_against_trapeze(trapeze, a, b, class_a);
+                    b_tag = edge_status.point_of_interest;
+                    point_class_with_trapeze class_b_tag = edge_status.class_of_interest_point;
+
+    //                are_we_done = a==b_tag || count>=MAX_ITERATIONS;
+    //                if(are_we_done)
+    //                    break;
+                    if(class_b_tag==point_class_with_trapeze::outside)
+                        return;
+    #if DEBUG_PLANAR==true
+    //                if(b_tag==a)
+    //                throw std::runtime_error("insert_edge():: a==b_tag, which indicates a problem !!!");
+    #endif
+                    // does edge (a,b') is co linear with boundary ? if so treat it
+                    bool co_linear_with_boundary = do_a_b_lies_on_same_trapeze_wall(trapeze, a, b_tag,
+                                                                                    class_a, class_b_tag,
+                                                                                    wall_result);
+                    if(co_linear_with_boundary) {
+                        // co-linear, so let's just insert vertices on the boundary and handle windings
+                        // we do not need to split face in this case
+                        // Explain:: why don't we send vertical splits lines for boundary ? I think
+                        // because the input is always a closed polyline so it doesn't matter
+                        handle_co_linear_edge_with_trapeze(trapeze, a, b_tag, wall_result,
+                                                           &a_vertex_edge, &b_tag_vertex_edge, dynamic_pool);
+                    } else {
+                        // not co-linear so we have to split the trapeze into up to 4 faces
+                        // btw, we at-least split vertically into two top and bottom pieces
+                        const bool has_inserted_edge= handle_face_split(trapeze, a, b_tag, class_a, class_b_tag,
+                                                                        &a_vertex_edge, &b_tag_vertex_edge, dynamic_pool);
+                    }
+
+                    // a and b' might got rounded on the edges, so let's update
+                    a= a_vertex_edge->origin->coords;
+                    b_tag= b_tag_vertex_edge->origin->coords;
+                    if(count==0) {
+                        // handle_face_split ,method might change/clamp 'a' vertex. If this is
+                        // the first endpoint, we would like to copy this change to source.
+                        // this should contribute to robustness
+                        if(edge==0) poly_origin=a_vertex_edge->origin;
+                    }
+
+                    // now, we need to merge faces if we split a vertical wall, i.e, if
+                    // the new 'a' coord strictly lies in the left/right wall
+                    // record last split vertex if it was on a vertical wall and not the first vertex
+                    // and not a co-linear segment on the boundary
+                    bool candidate_merge = (count>=1) && !co_linear_with_boundary &&
+                                           (class_a==point_class_with_trapeze::left_wall ||
+                                            class_a==point_class_with_trapeze::right_wall);
+
+                    if(candidate_merge&&(APPLY_MERGE))
+                        handle_face_merge(a_vertex_edge->origin);
+
+    #if DEBUG_PLANAR==true
+                    if(count>=MAX_ITERATIONS)
+                        throw std::runtime_error("insert_edge():: seems like infinite looping !!: poly #" +
+                                                         std::to_string(poly.id) +", edge # " + std::to_string(edge));
+    #endif
+                    // increment
+                    a_origin=a_vertex_edge->origin;
+                    // if b'==b we are done, this might be problematic if b' was rounded/clamped
+                    are_we_done = b==b_tag || count>=MAX_ITERATIONS;// || (a==b_tag && class_a==class_b_tag);
+                    if(are_we_done) {
+                        b_origin=b_tag_vertex_edge->origin;
+                        break;
+                    }
+                    // ITERATION STEP, therefore update:
+                    // 1. now iterate on the sub-line (b', b), by assigning a=b'
+                    // 2. locate the face, that (b', b) is intruding into / conflicting
+                    // 3. infer the trapeze of the face
+                    // 4. infer the class of the updated vertex a=b' in this face
+                    a =b_tag;
+                    half_edge * located_face_edge= locate_face_of_a_b(*b_tag_vertex_edge->origin, b);
+                    face = located_face_edge->face;
+                    trapeze=infer_trapeze(face);
+                    class_a = locate_and_classify_point_that_is_already_on_trapeze(a, trapeze);
+                    count++;
+                }
+
+//                a_origin=b_origin;
+            }
+
+        }
+
+        template<typename number>
         void planarize_division<number>::compute(const chunker<vertex> &pieces,
                                                  const fill_rule &rule,
                                                  const tess_quality &quality,
@@ -1255,22 +1320,26 @@ namespace microgl {
 
             // vertices size is also edges size since these are polygons
             const auto v_size = pieces.unchunked_size();
+            const auto poly_count = pieces.size();
             // plus 4s for the sake of frame
-            static_pool static_pool(v_size + 4, 4 * 2 + v_size * 2, v_size);
             dynamic_pool dynamic_pool{};
             // create the main frame
-            auto *main_face = create_frame(pieces, static_pool, dynamic_pool);
+            auto *main_face = create_frame(pieces, dynamic_pool);
             // create edges and conflict lists
-            auto **edges_list = build_edges_and_conflicts(pieces, *main_face, static_pool);
-            // todo: here create a random permutation of edges
+            poly_info *poly_list;
+            conflict *conflict_list;
+            build_poly_and_conflicts(pieces, *main_face, &poly_list, &conflict_list);
 
             // now start iterations
-            for (index ix = 0; ix < v_size; ++ix) {
+            for (index ix = 0; ix < poly_count; ++ix) {
 //            for (index ix = 0; ix < 10; ++ix) {
-                auto *e = edges_list[ix];
-                if(e== nullptr) continue;
-                insert_edge(e, ix, dynamic_pool);
+                auto &poly = poly_list[ix];
+                if(poly.size<=1) continue;
+                insert_poly(poly, dynamic_pool);
             }
+
+            delete [] poly_list;
+            delete [] conflict_list;
 
             tessellate(dynamic_pool.getFaces().data(),
                        dynamic_pool.getFaces().size(),
@@ -1598,7 +1667,10 @@ namespace microgl {
             // 4. therefore, always consider the intersection with the biggest alpha as what we want.
             //
 
-            point_class_with_trapeze cla_b= round_edge_to_trapeze(a, b, a_class, trapeze);
+//            point_class_with_trapeze cla_b= round_edge_to_trapeze(a, b, a_class, trapeze);
+            const auto codes= compute_location_codes(b, trapeze);
+            const auto cla_b = classify_from_location_codes(codes);
+
             conflicting_edge_intersection_status result{};
             result.class_of_interest_point = cla_b;
             result.point_of_interest = b;
