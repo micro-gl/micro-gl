@@ -1,7 +1,7 @@
 #pragma once
 #define DEBUG_PLANAR true
 #define MAX_ITERATIONS 200
-#define APPLY_MERGE false
+#define APPLY_MERGE true
 
 #include <microgl/tesselation/half_edge.h>
 #include <microgl/chunker.h>
@@ -44,46 +44,6 @@ namespace microgl {
             using half_edge_face = half_edge_face_t<number>;
             using conflict = conflict_node_t<number>;
             using poly_info = poly_info_t<number>;
-
-            /*
-            struct static_pool {
-            private:
-                half_edge_vertex * _vertices = nullptr;
-                half_edge * _edges = nullptr;
-                half_edge_face * _faces = nullptr;
-                conflict * _conflicts = nullptr;
-                index _curr_v = 0;
-                index _curr_e = 0;
-                index _curr_c = 0;
-
-            public:
-                half_edge_vertex * get_vertex() {
-                    return &_vertices[_curr_v++];
-                }
-                half_edge * get_edge() {
-                    return &_edges[_curr_e++];
-                }
-                conflict * get_conflict_node() {
-                    return &_conflicts[_curr_c++];
-                }
-
-                static_pool(const int v, const int e, const int c) {
-                    _vertices = new half_edge_vertex[v];
-                    _edges = new half_edge[e];
-                    _conflicts = new conflict[c];
-                }
-
-                ~static_pool() {
-                    delete [] _vertices;
-                    delete [] _edges;
-                    delete [] _conflicts;
-
-                    _vertices = nullptr;
-                    _edges = nullptr;
-                    _conflicts = nullptr;
-                }
-            };
-             */
 
             struct dynamic_pool {
             private:
@@ -142,8 +102,10 @@ namespace microgl {
                            right_bottom->next==right_top && right_top->next==left_top;
                 }
                 bool isDeg() {
-                    return left_top->origin->coords==left_bottom->origin->coords &&
-                            right_top->origin->coords==right_bottom->origin->coords;
+                    return (left_top->origin->coords==left_bottom->origin->coords &&
+                            right_top->origin->coords==right_bottom->origin->coords) ||
+                            (left_top->origin->coords==right_top->origin->coords &&
+                             left_bottom->origin->coords==right_bottom->origin->coords);
                 }
             };
 
@@ -162,13 +124,11 @@ namespace microgl {
             };
 
             struct vertical_face_cut_result {
-                // true/false if was split into two
-                bool face_was_split = false;
-                // if a vertical split occurs, vertex_a_edge_split_edge is oriented from bottom->top
-                // and has left_trapeze to it's left
-                half_edge * vertex_a_edge_split_edge = nullptr;
                 trapeze_t left_trapeze;
                 trapeze_t right_trapeze;
+                half_edge * vertex_a_edge_split_edge = nullptr;
+                // true/false if was split into two
+                bool face_was_split = false;
             };
 
             struct location_codes {
@@ -215,9 +175,6 @@ namespace microgl {
                                           half_edge_face & main_frame,
                                           poly_info ** poly_list_out,
                                           conflict ** conflict_list_out) -> void ;
-
-            static
-            void insert_edge(half_edge *edge, index idx, dynamic_pool &pool);
 
             static
             int classify_point(const vertex &point, const vertex &a, const vertex &b);
@@ -358,6 +315,10 @@ namespace microgl {
 
             static
             void insert_poly(poly_info &poly, dynamic_pool &dynamic_pool);
+
+            static
+            point_class_with_trapeze
+            locate_and_classify_vertex_that_is_already_on_trapeze(const half_edge_vertex *v, const trapeze_t &trapeze);
         };
 
     }

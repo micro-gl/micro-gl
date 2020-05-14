@@ -49,7 +49,6 @@ namespace microgl {
 
         template <typename number>
         struct conflict_node_t {
-//            half_edge_t<number> *edge = nullptr;
             poly_info_t<number> *unadded_input_poly=nullptr;
             conflict_node_t * next = nullptr;
         };
