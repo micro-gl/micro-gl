@@ -1,7 +1,7 @@
 #pragma once
 #define DEBUG_PLANAR true
 #define MAX_ITERATIONS 200
-#define APPLY_MERGE true
+#define APPLY_MERGE false
 
 #include <microgl/tesselation/half_edge.h>
 #include <microgl/chunker.h>
@@ -126,6 +126,7 @@ namespace microgl {
             struct vertical_face_cut_result {
                 trapeze_t left_trapeze;
                 trapeze_t right_trapeze;
+                half_edge_vertex * vertex = nullptr;
                 half_edge * vertex_a_edge_split_edge = nullptr;
                 // true/false if was split into two
                 bool face_was_split = false;
@@ -207,14 +208,16 @@ namespace microgl {
             static
             auto
             insert_edge_between_non_co_linear_vertices(half_edge *vertex_a_edge, half_edge *vertex_b_edge,
+                    const vertex &extra_direction_for_split,
                     dynamic_pool &dynamic_pool) -> half_edge *;
 
             static
             auto classify_conflict_against_two_faces(const half_edge *face_separator,
-                    const vertex &c, const vertex &d)->half_edge_face *;
+                    const vertex &c, const vertex &d, const vertex &extra_direction_for_split={0,0})->half_edge_face *;
 
             static
-            void re_distribute_conflicts_of_split_face(conflict *conflict_list, const half_edge *face_separator);
+            void re_distribute_conflicts_of_split_face(conflict *conflict_list, const half_edge *face_separator,
+                    const vertex &extra_direction_for_split={0,0});
 
             static
             void walk_and_update_edges_face(half_edge *edge_start, half_edge_face *face);
@@ -319,6 +322,9 @@ namespace microgl {
             static
             point_class_with_trapeze
             locate_and_classify_vertex_that_is_already_on_trapeze(const half_edge_vertex *v, const trapeze_t &trapeze);
+
+            static
+            auto contract_edge(half_edge *e) -> half_edge_vertex *;
         };
 
     }

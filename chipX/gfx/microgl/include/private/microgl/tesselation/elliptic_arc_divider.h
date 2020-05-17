@@ -35,18 +35,14 @@ namespace microgl {
                 number epsilon = number(1) / number(100);
                 if (microgl::math::abs(start_angle_rad - end_angle_rad) <= epsilon)
                     return;
+                // todo: FIX BUG, when angle is>=360, the direction wise clock is not respected, very serious bug for tess fill
                 start_angle_rad = math::mod(start_angle_rad, two_pi);
                 end_angle_rad = math::mod(end_angle_rad, two_pi);
                 auto delta = end_angle_rad - start_angle_rad;
-                if (!anti_clockwise) {
-                    if (delta < zero) {
-                        end_angle_rad += two_pi;
-                    }
-                } else {
-                    if (delta > zero) {
-                        end_angle_rad -= two_pi;
-                    }
-                }
+                if (!anti_clockwise){
+                    if (delta < zero) end_angle_rad += two_pi;}
+                else{
+                    if (delta > zero) end_angle_rad -= two_pi;}
                 // after the moduli operation we might have done a%a which is equal to zero
                 if (microgl::math::abs(delta) <= epsilon)
                     end_angle_rad = start_angle_rad + two_pi;

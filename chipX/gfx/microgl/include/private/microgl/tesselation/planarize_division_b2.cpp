@@ -534,8 +534,7 @@ namespace microgl {
 
         template<typename number>
         void planarize_division<number>::re_distribute_conflicts_of_split_face(conflict *conflict_list,
-                                                                               const half_edge* face_separator,
-                                                                               const vertex &extra_direction_for_split) {
+                                                                               const half_edge* face_separator) {
             // given that a face f was just split into two faces with
             // face_separator edge, let's redistribute the conflicts
             auto * f1 = face_separator->face;
@@ -550,7 +549,7 @@ namespace microgl {
                 auto * poly = current_ref->unadded_input_poly;
                 // find the face to which the edge is classified
                 auto * f = classify_conflict_against_two_faces(face_separator, poly->points[0],
-                        poly->points[1], extra_direction_for_split);
+                        poly->points[1]);
                 // insert edge into head of conflict list
                 current_ref->next = f->conflict_list;
                 f->conflict_list = current_ref;
@@ -561,8 +560,7 @@ namespace microgl {
 
         template<typename number>
         auto planarize_division<number>::classify_conflict_against_two_faces(const half_edge* face_separator,
-                                                                             const vertex &c, const vertex &d,
-                                                                             const vertex &extra_direction_for_split)
+                                                                             const vertex &c, const vertex &d)
                                                                              -> half_edge_face *{
             // note:: edge's face always points to the face that lies to it's left.
             // 1. if the first point lie completely to the left of the edge, then they belong to f1, other wise f2
@@ -570,7 +568,7 @@ namespace microgl {
             // 2.1 if the second lies completely in f1, then the first vertex is in f1, otherwise f2
             // 2.2 if the second lies on the face_separator as well, choose whoever face you want, let's say f1
             const auto & a = face_separator->origin->coords;
-            const auto & b = face_separator->twin->origin->coords+extra_direction_for_split;
+            const auto & b = face_separator->twin->origin->coords;
             const int cls = classify_point(c, a, b);
 
             if(cls>0) // if strictly left of
@@ -707,7 +705,6 @@ namespace microgl {
         template<typename number>
         auto planarize_division<number>::insert_edge_between_non_co_linear_vertices(half_edge *vertex_a_edge,
                                                                                     half_edge *vertex_b_edge,
-                                                                                    const vertex &extra_direction_for_split,
                                                                                     dynamic_pool & pool) -> half_edge * {
             // insert edge between two vertices in a face, that are not co linear with one of the 4 walls, located
             // by their leaving edges. co linearity means the vertices lie on the same boundary ray.
@@ -739,7 +736,7 @@ namespace microgl {
             face->edge= e;
             face_2->edge= e_twin;
             // now, iterate on all of the conflicts of f, and move the correct ones to f2
-            re_distribute_conflicts_of_split_face(e->face->conflict_list, e, extra_direction_for_split);
+            re_distribute_conflicts_of_split_face(e->face->conflict_list, e);
             // all edges of face_2 point to the old face_1, we need to change that
             walk_and_update_edges_face(e_twin, face_2);
             return e;
@@ -800,8 +797,8 @@ namespace microgl {
             //    in this case just split the vertical left or right walls vertically by inserting a vertex if not exist already.
             const bool on_boundary = a_classs != point_class_with_trapeze::strictly_inside;
             const bool on_boundary_vertices = a_classs == point_class_with_trapeze::boundary_vertex;
-            const bool in_left_wall = a_classs == point_class_with_trapeze::left_wall || a.x==trapeze.left_top->origin->coords.x;
-            const bool in_right_wall = a_classs == point_class_with_trapeze::right_wall || a.x==trapeze.right_bottom->origin->coords.x;
+            const bool in_left_wall = a_classs == point_class_with_trapeze::left_wall;
+            const bool in_right_wall = a_classs == point_class_with_trapeze::right_wall;
             const bool in_top_wall = a_classs == point_class_with_trapeze::top_wall;
             const bool should_try_split_horizontal_trapeze_parts = !in_left_wall
                     && !in_right_wall && !on_boundary_vertices;
@@ -821,6 +818,7 @@ namespace microgl {
                     if(in_top_wall) top_vertex_edge=e;
                     else bottom_vertex_edge=e;
                 }
+
                 if(top_vertex_edge== nullptr) {
                     auto y = evaluate_line_at_x(a.x, trapeze.left_top->origin->coords,
                                                 trapeze.right_top->origin->coords);
@@ -828,6 +826,7 @@ namespace microgl {
                             try_insert_vertex_on_trapeze_boundary_at({a.x,y}, trapeze,
                                     point_class_with_trapeze::top_wall,dynamic_pool);
                 }
+
                 if(bottom_vertex_edge== nullptr) {
                     auto y = evaluate_line_at_x(a.x, trapeze.left_bottom->origin->coords,
                                                 trapeze.right_bottom->origin->coords);
@@ -841,26 +840,22 @@ namespace microgl {
                 // we insert a vertical edge, that starts at bottom edge into the top wall (bottom-to-top)
                 auto *start_vertical_wall =
                         insert_edge_between_non_co_linear_vertices(bottom_vertex_edge,
-                                top_vertex_edge, vertex{0,-1}, dynamic_pool);
+                                top_vertex_edge,dynamic_pool);
                 // clamp vertex to this new edge endpoints if it is before or after
                 // this fights the geometric numeric precision errors, that can happen in y coords
-//                clamp_vertex_horizontally(a, start_vertical_wall->origin->coords,
-//                        start_vertical_wall->twin->origin->coords);
-//                clamp_vertex_vertically(a, start_vertical_wall->origin->coords,
-//                        start_vertical_wall->twin->origin->coords);
+                clamp_vertex_horizontally(a, start_vertical_wall->origin->coords,
+                        start_vertical_wall->twin->origin->coords);
+                clamp_vertex_vertically(a, start_vertical_wall->origin->coords,
+                        start_vertical_wall->twin->origin->coords);
                 // update resulting trapezes
                 result.left_trapeze.right_bottom = start_vertical_wall;
                 result.left_trapeze.right_top = start_vertical_wall->next;
                 result.right_trapeze.left_top = start_vertical_wall->twin;
                 result.right_trapeze.left_bottom = start_vertical_wall->twin->next;
                 // if the vertex is on the edge boundary, it will not split of course
-                bool is_zero_edge=start_vertical_wall->origin->coords==start_vertical_wall->twin->origin->coords;
-                if(is_zero_edge) {
-                    contract_edge(start_vertical_wall);
-                    outgoing_vertex_edge=result.left_trapeze.right_bottom = result.left_trapeze.right_top;
-                    result.right_trapeze.left_top = result.right_trapeze.left_bottom;
-                } else {
-                    outgoing_vertex_edge = try_split_edge_at(a, start_vertical_wall, dynamic_pool);
+                outgoing_vertex_edge = try_split_edge_at(a, start_vertical_wall, dynamic_pool);
+                if(bottom_vertex_edge->origin->coords==top_vertex_edge->origin->coords) {
+                    outgoing_vertex_edge=in_top_wall?top_vertex_edge:bottom_vertex_edge;
                 }
             } // else we are on left or right walls already
             else // we are on left or right boundary
@@ -869,30 +864,9 @@ namespace microgl {
 
             result.face_was_split = should_try_split_horizontal_trapeze_parts;
             result.vertex_a_edge_split_edge = outgoing_vertex_edge;
-            result.vertex=outgoing_vertex_edge->origin;
-            return result;
-        }
 
-        template<typename number>
-        auto planarize_division<number>::contract_edge(half_edge * e) -> half_edge_vertex * {
-            // given edge (e)=(a,b) contract it,  which is like removal and connecting it's neighbors
-            auto * origin_a=e->origin;
-            auto * origin_b=e->twin->origin;
-            { // rewire all of (a) outgoing edges to have (b) as their origin vertex
-                auto *iter = origin_a->edge;
-                const auto * const end = origin_a->edge;
-                do {
-                    iter->origin=origin_b;
-                    iter=iter->twin->next;
-                } while(iter!=end);
-            }
-            // contract
-            e->prev->next=e->next; e->next->prev=e->prev;
-            e->twin->prev->next=e->twin->next; e->twin->next->prev=e->twin->prev;
-            // clear
-            origin_a->edge= nullptr;
-            e->face= nullptr;
-            return origin_b;
+            a=outgoing_vertex_edge->origin->coords;
+            return result;
         }
 
         template<typename number>
@@ -916,36 +890,37 @@ namespace microgl {
             // first, in order to avoid robust issues later, we insert the (b) vertex on the trapeze.
             // if (b) is not strictly inside, then it is on the boundary of the trapeze, so let's
             // insert the vertex ASAP before the cuts begin
-//            const bool b_is_on_original_boundary = b_class!=point_class_with_trapeze::strictly_inside;
-//            if(b_is_on_original_boundary) {
-//                const auto * edge = try_insert_vertex_on_trapeze_boundary_at(b, trapeze, b_class, dynamic_pool);
-//                b=edge->origin->coords;
-//            }
+            const bool b_is_on_original_boundary = b_class!=point_class_with_trapeze::strictly_inside;
+            if(b_is_on_original_boundary) {
+                const auto * edge = try_insert_vertex_on_trapeze_boundary_at(b, trapeze, b_class, dynamic_pool);
+                b=edge->origin->coords;
+            }
             // first, try to split vertically with endpoint (a)
             vertical_face_cut_result a_cut_result = handle_vertical_face_cut(trapeze,
-                    a, a_class, dynamic_pool);
+                                                                             a, a_class, dynamic_pool);
             // let's find out where (b) ended up after a split (that might have not happened)
             const trapeze_t * trapeze_of_b = &trapeze;
             point_class_with_trapeze b_new_class = b_class;
             if(a_cut_result.face_was_split) {
                 // a vertical split happened, let's see where b is
-                bool left = b.x<=a_cut_result.vertex->coords.x;
+                bool left = b.x<=a_cut_result.vertex_a_edge_split_edge->origin->coords.x;
                 trapeze_of_b = left ? &a_cut_result.left_trapeze : &a_cut_result.right_trapeze;
                 // now, we need to update vertex (b) class after the vertical (a) cut in a robust manner.
                 // - If b was on boundary, then it is still on a boundary but might change to a boundary_vertex class
                 //   this happens if a.x==b.x
                 // - if b had 'strictly_inside' class, then it stays the same unless a.x==b.x and then it
                 //   changes class into left/right wall
-                if(a.x==b.x) {
-                    b_new_class=left?point_class_with_trapeze::right_wall : point_class_with_trapeze::left_wall;
-//                    if(b_is_on_original_boundary){
-//                        b_new_class= point_class_with_trapeze::boundary_vertex;
-//                    }
-//                    else { // b was strictly inside in original trapeze
-//                        b_new_class = trapeze_of_b->left_bottom->origin->coords.x == b.x ?
-//                                      point_class_with_trapeze::left_wall :
-//                                      point_class_with_trapeze::right_wall;
-//                    }
+                {
+                    if(a.x==b.x) {
+                        if(b_is_on_original_boundary){
+                            b_new_class= point_class_with_trapeze::boundary_vertex;
+                        }
+                        else { // b was strictly inside in original trapeze
+                            b_new_class = trapeze_of_b->left_bottom->origin->coords.x == b.x ?
+                                          point_class_with_trapeze::left_wall :
+                                          point_class_with_trapeze::right_wall;
+                        }
+                    }
                 }
             }
 
@@ -956,7 +931,7 @@ namespace microgl {
             // now, infer the mutual trapeze of a and b after the vertical splits have occurred
             if(b_cut_result.face_was_split) {
                 // a vertical split happened, let's see where b is
-                bool left = a.x<=b_cut_result.vertex->coords.x;
+                bool left = a.x<=b_cut_result.vertex_a_edge_split_edge->origin->coords.x;
                 mutual_trapeze = left ? &b_cut_result.left_trapeze : &b_cut_result.right_trapeze;
             }
 
