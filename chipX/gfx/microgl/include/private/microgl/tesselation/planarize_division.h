@@ -68,7 +68,7 @@ namespace microgl {
                 auto create_vertex(const vertex &coords) -> half_edge_vertex * {
                     auto * v = new half_edge_vertex();
                     v->coords = coords;
-                    _vertices.push_back(v);
+                    v->id=_vertices.push_back(v);
                     return v;
                 }
 
@@ -130,6 +130,15 @@ namespace microgl {
                 half_edge * vertex_a_edge_split_edge = nullptr;
                 // true/false if was split into two
                 bool face_was_split = false;
+            };
+
+            struct face_split_result {
+                half_edge_vertex *planar_vertex_a= nullptr, *planar_vertex_b=nullptr;
+            };
+
+            struct vertex_location_result {
+                point_class_with_trapeze classs=point_class_with_trapeze::unknown;
+                half_edge *outgoing_edge= nullptr;
             };
 
             struct location_codes {
@@ -250,10 +259,10 @@ namespace microgl {
             bool is_trapeze_degenerate(const trapeze_t &trapeze);
 
             static
-            bool do_a_b_lies_on_same_trapeze_wall(const trapeze_t &trapeze, const vertex &a, const vertex &b,
+            point_class_with_trapeze
+            do_a_b_lies_on_same_trapeze_wall(const trapeze_t &trapeze, const vertex &a, const vertex &b,
                                                   const point_class_with_trapeze &a_class,
-                                                  const point_class_with_trapeze &b_class,
-                                                  point_class_with_trapeze &resulting_wall);
+                                                  const point_class_with_trapeze &b_class);
 
             static
             int infer_edge_winding(const vertex &a, const vertex &b);
@@ -269,15 +278,21 @@ namespace microgl {
                                                     half_edge **result_edge_b, dynamic_pool &pool);
 
             static
+            void handle_co_linear_edge_with_trapeze(const trapeze_t &trapeze, const half_edge *edge_vertex_a,
+                                                    const half_edge *edge_vertex_b,
+                                                    const point_class_with_trapeze &wall_class,
+                                                    int winding, dynamic_pool &pool);
+
+            static
             point_class_with_trapeze
             locate_and_classify_point_that_is_already_on_trapeze(const vertex &point, const trapeze_t &trapeze);
 
-            static bool
+            static
+            face_split_result
             handle_face_split(const trapeze_t &trapeze, vertex &a, vertex &b,
                               const point_class_with_trapeze &a_class,
                               const point_class_with_trapeze &b_class,
-                              half_edge ** result_edge_a,
-                              half_edge ** result_edge_b,
+                              int winding,
                               dynamic_pool &dynamic_pool);
 
             static
@@ -320,11 +335,12 @@ namespace microgl {
             void insert_poly(poly_info &poly, dynamic_pool &dynamic_pool);
 
             static
-            point_class_with_trapeze
+            vertex_location_result
             locate_and_classify_vertex_that_is_already_on_trapeze(const half_edge_vertex *v, const trapeze_t &trapeze);
 
             static
             auto contract_edge(half_edge *e) -> half_edge_vertex *;
+
         };
 
     }

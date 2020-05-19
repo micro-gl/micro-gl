@@ -346,32 +346,33 @@ namespace microgl {
         template<typename number>
         auto planarize_division<number>::locate_and_classify_vertex_that_is_already_on_trapeze(const half_edge_vertex * v,
                                                                                               const trapeze_t &trapeze)
-        -> point_class_with_trapeze {
+                -> vertex_location_result {
             // given that the planar vertex IS present on the trapeze boundary
-            if(v==trapeze.left_top->origin || v==trapeze.left_bottom->origin ||
-            v==trapeze.right_bottom->origin || v==trapeze.right_top->origin)
-                return point_class_with_trapeze::boundary_vertex;
-            auto * start = trapeze.left_top; auto * end = trapeze.left_bottom;
-            while(start!=end) {
-                if(v==start->origin) return point_class_with_trapeze::left_wall;
-                start=start->next;
+            if(v==trapeze.left_top->origin) return {point_class_with_trapeze::boundary_vertex, trapeze.left_top};
+            if(v==trapeze.left_bottom->origin) return {point_class_with_trapeze::boundary_vertex, trapeze.left_bottom};
+            if(v==trapeze.right_bottom->origin) return {point_class_with_trapeze::boundary_vertex, trapeze.right_bottom};
+            if(v==trapeze.right_top->origin) return {point_class_with_trapeze::boundary_vertex, trapeze.right_top};
+            auto * iter = trapeze.left_top; auto * end = trapeze.left_bottom;
+            while(iter!=end) { // left wall
+                if(v==iter->origin) return {point_class_with_trapeze::left_wall, iter};
+                iter=iter->next;
             }
-            start = trapeze.left_bottom; end = trapeze.right_bottom;
-            while(start!=end) {
-                if(v==start->origin) return point_class_with_trapeze::bottom_wall;
-                start=start->next;
+            iter = trapeze.left_bottom; end = trapeze.right_bottom;
+            while(iter!=end) { // bottom wall
+                if(v==iter->origin) return {point_class_with_trapeze::bottom_wall, iter};
+                iter=iter->next;
             }
-            start = trapeze.right_bottom; end = trapeze.right_top;
-            while(start!=end) {
-                if(v==start->origin) return point_class_with_trapeze::right_wall;
-                start=start->next;
+            iter = trapeze.right_bottom; end = trapeze.right_top;
+            while(iter!=end) { // right wall
+                if(v==iter->origin) return {point_class_with_trapeze::right_wall, iter};
+                iter=iter->next;
             }
-            start = trapeze.right_top; end = trapeze.left_top;
-            while(start!=end) {
-                if(v==start->origin) return point_class_with_trapeze::top_wall;
-                start=start->next;
+            iter = trapeze.right_top; end = trapeze.left_top;
+            while(iter!=end) { // top wall
+                if(v==iter->origin) return {point_class_with_trapeze::top_wall, iter};
+                iter=iter->next;
             }
-            return point_class_with_trapeze::unknown;
+            return {point_class_with_trapeze::unknown, nullptr};
         }
 
         template<typename number>
@@ -778,6 +779,29 @@ namespace microgl {
         }
 
         template<typename number>
+        void planarize_division<number>::handle_co_linear_edge_with_trapeze(const trapeze_t &trapeze,
+                                                                            const half_edge * edge_vertex_a,
+                                                                            const half_edge * edge_vertex_b,
+                                                                            const point_class_with_trapeze &wall_class,
+                                                                            int winding,
+                                                                            dynamic_pool& pool) {
+            // given that (a) and (b) are on the boundary and edge (a,b) is co-linear with one of the 4 boundaries of the trapeze,
+            // try inserting vertices on that boundary, update windings along their path/between them.
+            if(winding==0) return;
+            const auto *start = edge_vertex_a;
+            const auto *end = edge_vertex_b;
+            // sort if needed
+            bool before = is_a_before_or_equal_b_on_same_boundary(edge_vertex_a->origin->coords,
+                    edge_vertex_b->origin->coords, wall_class);
+            if(!before) { auto *temp=start;start=end;end=temp; }
+            while(start!=end) {
+                start->winding+=winding;
+                start->twin->winding=start->winding;
+                start=start->next;
+            }
+        }
+
+        template<typename number>
         auto planarize_division<number>::handle_vertical_face_cut(const trapeze_t &trapeze, vertex & a,
                                                                   const point_class_with_trapeze &a_classs,
                                                                   dynamic_pool & dynamic_pool) -> vertical_face_cut_result {
@@ -892,6 +916,7 @@ namespace microgl {
             // clear
             origin_a->edge= nullptr;
             e->face= nullptr;
+            origin_b->id=max__(origin_a->id, origin_b->id);
             return origin_b;
         }
 
@@ -900,9 +925,8 @@ namespace microgl {
                                                            vertex &a, vertex &b,
                                                            const point_class_with_trapeze &a_class,
                                                            const point_class_with_trapeze &b_class,
-                                                           half_edge ** result_edge_a,
-                                                           half_edge ** result_edge_b,
-                                                           dynamic_pool & dynamic_pool) -> bool {
+                                                           int winding,
+                                                           dynamic_pool & dynamic_pool) -> face_split_result {
             // given that edge (a,b) should split the face, i.e inside the face and is NOT
             // on the same boundary wall of trapeze (for that case we have another procedure),
             // split the face to up to 4 pieces, strategy is:
@@ -912,15 +936,28 @@ namespace microgl {
             // 3. infer the correct trapeze where "b" is in and perform roughly the same
             //    operation
             // 4. connect the two points, so they again split a face (in case they are not vertical)
-            const int winding = infer_edge_winding(a, b);
-            // first, in order to avoid robust issues later, we insert the (b) vertex on the trapeze.
-            // if (b) is not strictly inside, then it is on the boundary of the trapeze, so let's
-            // insert the vertex ASAP before the cuts begin
-//            const bool b_is_on_original_boundary = b_class!=point_class_with_trapeze::strictly_inside;
-//            if(b_is_on_original_boundary) {
-//                const auto * edge = try_insert_vertex_on_trapeze_boundary_at(b, trapeze, b_class, dynamic_pool);
-//                b=edge->origin->coords;
-//            }
+            face_split_result result;
+            {
+                const auto mutual_wall = do_a_b_lies_on_same_trapeze_wall(trapeze, a, b,
+                                                                          a_class, b_class);
+                if(mutual_wall!=point_class_with_trapeze::unknown) {
+                    // co-linear, so let's just insert vertices on the boundary and handle windings
+                    // we do not need to split face in this case
+                    // Explain:: why don't we send vertical splits lines for boundary ? I think
+                    // because the input is always a closed polyline so it doesn't matter
+                    const auto * edge_vertex_a =
+                            try_insert_vertex_on_trapeze_boundary_at(a, trapeze, mutual_wall, dynamic_pool);
+                    const auto * edge_vertex_b =
+                            try_insert_vertex_on_trapeze_boundary_at(b, trapeze, mutual_wall, dynamic_pool);
+
+                    handle_co_linear_edge_with_trapeze(trapeze, edge_vertex_a, edge_vertex_b,
+                                                       mutual_wall, winding, dynamic_pool);
+                    result.planar_vertex_a=edge_vertex_a->origin;
+                    result.planar_vertex_b=edge_vertex_b->origin;
+                    return result;
+                }
+            }
+
             // first, try to split vertically with endpoint (a)
             vertical_face_cut_result a_cut_result = handle_vertical_face_cut(trapeze,
                     a, a_class, dynamic_pool);
@@ -936,17 +973,8 @@ namespace microgl {
                 //   this happens if a.x==b.x
                 // - if b had 'strictly_inside' class, then it stays the same unless a.x==b.x and then it
                 //   changes class into left/right wall
-                if(a.x==b.x) {
+                if(a.x==b.x)
                     b_new_class=left?point_class_with_trapeze::right_wall : point_class_with_trapeze::left_wall;
-//                    if(b_is_on_original_boundary){
-//                        b_new_class= point_class_with_trapeze::boundary_vertex;
-//                    }
-//                    else { // b was strictly inside in original trapeze
-//                        b_new_class = trapeze_of_b->left_bottom->origin->coords.x == b.x ?
-//                                      point_class_with_trapeze::left_wall :
-//                                      point_class_with_trapeze::right_wall;
-//                    }
-                }
             }
 
             // next, try to split trapeze_of_b vertically with b endpoint
@@ -960,42 +988,45 @@ namespace microgl {
                 mutual_trapeze = left ? &b_cut_result.left_trapeze : &b_cut_result.right_trapeze;
             }
 
-//            if(a==b) {
-//                b_cut_result.vertex_a_edge_split_edge=a_cut_result.vertex_a_edge_split_edge->prev;
-//            }
-
-            // two options ?
-            // 1. (a,b) is vertical, need to only update it's winding,  because we already made a split
-            // 2. (a,b) is NOT vertical, connect a new edge between them, split
-            // 3. BUT, first we need to infer the correct half edges, that go out of a and b
-            //    and have the mutual face to their left
+            result.planar_vertex_a=a_cut_result.vertex; result.planar_vertex_b=b_cut_result.vertex;
+            if(result.planar_vertex_a == result.planar_vertex_b)
+                return result;
 
             // any edge of the trapeze of b will tell us the face
             const auto * face = mutual_trapeze->right_bottom->face;
-            // a_edge/b_edge both are half edges rooted at a/b respectively and such that both belong to same face
-            auto * a_edge = locate_half_edge_of_face_rooted_at_vertex(a_cut_result.vertex_a_edge_split_edge->origin, face);
-            auto * b_edge = locate_half_edge_of_face_rooted_at_vertex(b_cut_result.vertex_a_edge_split_edge->origin, face);
-#if DEBUG_PLANAR==true
-            if(a_edge==b_edge)
-                throw std::runtime_error("handle_face_split()::a_edge==b_edge, weird !!!");
-#endif
-            auto * inserted_edge = a_edge;
-            bool is_a_b_vertical = a_edge->origin->coords.x==b_edge->origin->coords.x;
-            if(!is_a_b_vertical)
-                inserted_edge = insert_edge_between_non_co_linear_vertices(a_edge, b_edge, dynamic_pool);
-            inserted_edge->winding += winding;
-            inserted_edge->twin->winding = inserted_edge->winding; // a_edge->twin is b_edge
-            *result_edge_a = inserted_edge;
-            *result_edge_b = inserted_edge->twin;
-            if(a_edge==b_edge) {
-
+            const auto loc_a=
+                    locate_and_classify_vertex_that_is_already_on_trapeze(result.planar_vertex_a, mutual_trapeze);
+            const auto loc_b=
+                    locate_and_classify_vertex_that_is_already_on_trapeze(result.planar_vertex_b, mutual_trapeze);
+            auto * a_edge = locate_half_edge_of_face_rooted_at_vertex(result.planar_vertex_a, face);
+            auto * b_edge = locate_half_edge_of_face_rooted_at_vertex(result.planar_vertex_b, face);
+            point_class_with_trapeze mutual_wall=
+                    do_a_b_lies_on_same_trapeze_wall(mutual_trapeze, result.planar_vertex_a,
+                            result.planar_vertex_b, loc_a.classs, loc_b.classs);
+            if(mutual_wall!=point_class_with_trapeze::unknown) // they are on the same wall
+                handle_co_linear_edge_with_trapeze(mutual_trapeze, a_edge, b_edge, mutual_wall, winding, dynamic_pool);
+            else {
+                // different walls require a split
+                vertex extra_dir{0,0};
+                const bool prepare_degenrate=result.planar_vertex_a->coords==result.planar_vertex_b->coords;
+                if(prepare_degenrate) {
+                    if(loc_a.classs==point_class_with_trapeze::left_wall && loc_b.classs==point_class_with_trapeze::right_wall)
+                        extra_dir={1,0};
+                    else if(loc_b.classs==point_class_with_trapeze::left_wall && loc_a.classs==point_class_with_trapeze::right_wall)
+                        extra_dir={-1,0};
+                }
+                auto * inserted_edge= insert_edge_between_non_co_linear_vertices(a_edge, b_edge, extra_dir, dynamic_pool);
+                inserted_edge->winding += winding;
+                inserted_edge->twin->winding = inserted_edge->winding;
+                if(prepare_degenrate) { // we need to contract the zero edge
+                    result.planar_vertex_a=result.planar_vertex_b=contract_edge(inserted_edge);
+                }
             }
-            return true;
+            return result;
         }
 
         template<typename number>
-        auto planarize_division<number>::handle_face_merge(const half_edge_vertex *vertex_on_vertical_wall
-        ) -> void {
+        auto planarize_division<number>::handle_face_merge(const half_edge_vertex *vertex_on_vertical_wall) -> void {
             // given that vertex v is on a past vertical wall (left/right) boundary, we want to check 2 things:
             // 1. the vertical top/bottom edge that adjacent to it, is single(not divided) in it's adjacent trapezes
             // 2. has winding==0
@@ -1145,23 +1176,30 @@ namespace microgl {
 
         template<typename number>
         void planarize_division<number>::insert_poly(poly_info &poly, dynamic_pool & dynamic_pool) {
+#if DEBUG_PLANAR==true
+#define throw_debug(msg, poly, edge, count) throw std::runtime_error(msg+" | poly #" + std::to_string(poly.id) \
+                                        +", edge # "+std::to_string(edge) \
+                                         +", count # "+std::to_string(count));
+#else
+#define throw_debug(msg, poly, edge, count);
+#endif
 
             const unsigned size= poly.size;
-            half_edge_vertex *a_origin, *b_origin, *poly_origin;
+            half_edge_vertex *last_edge_planar_vertex=nullptr, *first_edge_planar_vertex=nullptr;
             bool first_edge=true;
             for (unsigned edge = 0; edge < size; ++edge) {
                 bool are_we_done = false;
                 int count = 0;
                 vertex a=poly.points[(edge)%size],b=poly.points[(edge+1)%size], b_tag;
                 half_edge_face * face = nullptr;
-                point_class_with_trapeze wall_result;
                 trapeze_t trapeze;
                 point_class_with_trapeze class_a;
                 bool last_edge= edge==size-1;
                 if(last_edge) // last edge connects to first vertex in the planar polygon
-                    b=poly_origin->coords;
+                    b=first_edge_planar_vertex->coords;
                 bool zero_edge= a==b;
                 if(zero_edge) continue;
+                int winding=infer_edge_winding(a, b);
                 if(first_edge) {
                     first_edge=false;
                     // first edge always needs to consult with the conflicts info
@@ -1176,15 +1214,14 @@ namespace microgl {
                         half_edge * located_face_edge= locate_face_of_a_b(*(e->origin), b);
                         face = located_face_edge->face;
                         trapeze=infer_trapeze(face);
-                        class_a = locate_and_classify_vertex_that_is_already_on_trapeze(e->origin, trapeze);
+                        class_a = locate_and_classify_vertex_that_is_already_on_trapeze(e->origin, trapeze).classs;
                     }
                 } else {
-                    const auto * last_planar_vertex= b_origin; // we use the last planar vertex
-                    a=last_planar_vertex->coords;
-                    half_edge * located_face_edge= locate_face_of_a_b(*last_planar_vertex, b);
+                    a=last_edge_planar_vertex->coords;
+                    half_edge * located_face_edge= locate_face_of_a_b(*last_edge_planar_vertex, b);
                     face = located_face_edge->face;
                     trapeze=infer_trapeze(face);
-                    class_a = locate_and_classify_vertex_that_is_already_on_trapeze(last_planar_vertex, trapeze);
+                    class_a = locate_and_classify_vertex_that_is_already_on_trapeze(last_edge_planar_vertex, trapeze).classs;
                 }
 
                 while(!are_we_done) {
@@ -1195,65 +1232,49 @@ namespace microgl {
                     }
 
                     // start with the conflicting face and iterate carefully, a---b'---b
-                    half_edge *a_vertex_edge= nullptr, *b_tag_vertex_edge= nullptr;
                     // the reporting of and class of the next interesting point of the edge against current trapeze
                     conflicting_edge_intersection_status edge_status =
                             compute_conflicting_edge_intersection_against_trapeze(trapeze, a, b, class_a);
                     b_tag = edge_status.point_of_interest;
                     point_class_with_trapeze class_b_tag = edge_status.class_of_interest_point;
-                    if(class_b_tag==point_class_with_trapeze::outside)
+                    if(class_b_tag==point_class_with_trapeze::outside) {
+                        throw_debug(std::string("insert_edge():: class_b_tag==point_class_with_trapeze::outside !!"),
+                                poly.id, edge, count);
                         return;
-                    // does edge (a,b') is co linear with boundary ? if so treat it
-                    bool co_linear_with_boundary = do_a_b_lies_on_same_trapeze_wall(trapeze, a, b_tag,
-                                                                                    class_a, class_b_tag,
-                                                                                    wall_result);
-                    if(co_linear_with_boundary) {
-                        // co-linear, so let's just insert vertices on the boundary and handle windings
-                        // we do not need to split face in this case
-                        // Explain:: why don't we send vertical splits lines for boundary ? I think
-                        // because the input is always a closed polyline so it doesn't matter
-                        handle_co_linear_edge_with_trapeze(trapeze, a, b_tag, wall_result,
-                                                           &a_vertex_edge, &b_tag_vertex_edge, dynamic_pool);
-                    } else {
-                        // not co-linear so we have to split the trapeze into up to 4 faces
-                        // btw, we at-least split vertically into two top and bottom pieces
-                        const bool has_inserted_edge= handle_face_split(trapeze, a, b_tag, class_a, class_b_tag,
-                                                                        &a_vertex_edge, &b_tag_vertex_edge, dynamic_pool);
                     }
 
+                    const auto face_split_result= handle_face_split(trapeze, a, b_tag, class_a,
+                            class_b_tag, winding, dynamic_pool);
+
                     // a and b' might got rounded on the edges, so let's update
-                    a= a_vertex_edge->origin->coords;
-                    b_tag= b_tag_vertex_edge->origin->coords;
-                    if(count==0) {
-                        // handle_face_split ,method might change/clamp 'a' vertex. If this is
-                        // the first endpoint, we would like to copy this change to source.
-                        // this should contribute to robustness
-                        if(edge==0) poly_origin=a_vertex_edge->origin;
+                    half_edge_vertex *a_planar=face_split_result.planar_vertex_a;
+                    half_edge_vertex *b_tag_planar=face_split_result.planar_vertex_b;
+                    { // record and stalk the first planar vertex of the polygon
+                        if(first_edge && count==0)
+                            first_edge_planar_vertex=a_planar;
+                        if(first_edge_planar_vertex->edge==nullptr) { // start vertex might have been contracted into another vertex
+                            if(a_planar->coords==first_edge_planar_vertex->coords)
+                                first_edge_planar_vertex=a_planar;
+                            if(b_tag_planar->coords==first_edge_planar_vertex->coords)
+                                first_edge_planar_vertex=b_tag_planar;
+                        }
                     }
 
                     // now, we need to merge faces if we split a vertical wall, i.e, if
                     // the new 'a' coord strictly lies in the left/right wall
-                    // record last split vertex if it was on a vertical wall and not the first vertex
-                    // and not a co-linear segment on the boundary
-                    bool candidate_merge = (count>=1) && !co_linear_with_boundary &&
+                    bool candidate_merge = (count>=1) && //!co_linear_with_boundary &&
                                            (class_a==point_class_with_trapeze::left_wall ||
                                             class_a==point_class_with_trapeze::right_wall);
 
                     if(candidate_merge&&(APPLY_MERGE))
-                        handle_face_merge(a_vertex_edge->origin);
+                        handle_face_merge(a_planar);
 
-    #if DEBUG_PLANAR==true
                     if(count>=MAX_ITERATIONS)
-                        throw std::runtime_error("insert_edge():: seems like infinite looping !!: poly #" +
-                                                         std::to_string(poly.id)+", edge # "+std::to_string(edge)
-                                                         +", count # "+std::to_string(count));
-    #endif
-                    // increment
-                    a_origin=a_vertex_edge->origin;
+                        throw_debug(std::string("insert_edge():: seems like infinite looping !!"), poly.id, edge, count)
                     // if b'==b we are done, this might be problematic if b' was rounded/clamped
-                    are_we_done = b==b_tag || count>=MAX_ITERATIONS;// || (a==b_tag && class_a==class_b_tag);
+                    are_we_done = !last_edge && (b==b_tag_planar->coords || count>=MAX_ITERATIONS);
                     if(are_we_done) {
-                        b_origin=b_tag_vertex_edge->origin;
+                        last_edge_planar_vertex=b_tag_planar;
                         break;
                     }
                     // ITERATION STEP, therefore update:
@@ -1261,15 +1282,14 @@ namespace microgl {
                     // 2. locate the face, that (b', b) is intruding into / conflicting
                     // 3. infer the trapeze of the face
                     // 4. infer the class of the updated vertex a=b' in this face
-                    a =b_tag;
-                    half_edge * located_face_edge= locate_face_of_a_b(*b_tag_vertex_edge->origin, b);
+                    a =b_tag_planar->coords;
+                    half_edge * located_face_edge= locate_face_of_a_b(*b_tag_planar, b);
                     face = located_face_edge->face;
                     trapeze=infer_trapeze(face);
-                    class_a = locate_and_classify_vertex_that_is_already_on_trapeze(b_tag_vertex_edge->origin, trapeze);
+                    class_a = locate_and_classify_vertex_that_is_already_on_trapeze(b_tag_planar, trapeze).classs;
                     count++;
                 }
 
-//                a_origin=b_origin;
             }
 
         }
@@ -1377,7 +1397,6 @@ namespace microgl {
                         break;
                     case tess_quality::better:
                     {
-                        point_class_with_trapeze mutual_wall;
                         auto *root= trapeze.left_top;
                         auto *a_edge= root->next;
                         auto *b_edge= root->prev;
@@ -1388,7 +1407,7 @@ namespace microgl {
                         while(a_edge!=b_edge && count++<100) {
                             // check if RAB triangle is empty on the boundary
                             bool a_b=do_a_b_lies_on_same_trapeze_wall(trapeze, a_edge->origin->coords,
-                                                                      b_edge->origin->coords, cls_a, cls_b, mutual_wall);
+                                    b_edge->origin->coords, cls_a, cls_b)!=point_class_with_trapeze::unknown;
                             bool isEmpty=(a_b && a_edge->next->origin->coords==b_edge->origin->coords)
                                     || (!a_b);
                             if(isEmpty) { // clip an ear
@@ -1399,10 +1418,10 @@ namespace microgl {
                                 if(requested_boundary_info) {
                                     bool root_a= root->next==a_edge &&
                                                  do_a_b_lies_on_same_trapeze_wall(trapeze, root->origin->coords,
-                                                         a_edge->origin->coords, cls_root, cls_a, mutual_wall);
+                                                         a_edge->origin->coords, cls_root, cls_a)!=point_class_with_trapeze::unknown;
                                     bool b_root=b_edge->next==root &&
                                                 do_a_b_lies_on_same_trapeze_wall(trapeze, b_edge->origin->coords,
-                                                        root->origin->coords, cls_b, cls_root, mutual_wall);
+                                                        root->origin->coords, cls_b, cls_root)!=point_class_with_trapeze::unknown;
                                     root_a=root_a ? !infer_fill(root->twin->face->winding, rule) : root_a;
                                     a_b=(a_b) ? !infer_fill(a_edge->twin->face->winding, rule) : a_b;
                                     b_root=b_root ? !infer_fill(b_edge->twin->face->winding, rule) : b_root;
@@ -1536,12 +1555,11 @@ namespace microgl {
         }
 
         template<typename number>
-        bool planarize_division<number>::do_a_b_lies_on_same_trapeze_wall(const trapeze_t & trapeze,
+        auto planarize_division<number>::do_a_b_lies_on_same_trapeze_wall(const trapeze_t & trapeze,
                                                                           const vertex &a,
                                                                           const vertex &b,
                                                                           const point_class_with_trapeze & a_class,
-                                                                          const point_class_with_trapeze & b_class,
-                                                                          point_class_with_trapeze &resulting_wall) {
+                                                                          const point_class_with_trapeze & b_class) -> point_class_with_trapeze {
             // given an edge (a,b) where both a and b belong to trapeze, test if the edge is co-linear with one of the
             // boundaries of the trapeze. we classify symbolically rather than analytically in order to be robust.
             // this procedure also handles degenerate trapezes. if true, then resulting_wall will indicate which wall
@@ -1549,17 +1567,12 @@ namespace microgl {
             // skip inside
             if(a_class==point_class_with_trapeze::strictly_inside ||
                b_class==point_class_with_trapeze::strictly_inside)
-                return false;
-
+                return point_class_with_trapeze::unknown;
             bool a_on_boundary_vertex = a_class==point_class_with_trapeze::boundary_vertex;
             bool b_on_boundary_vertex = b_class==point_class_with_trapeze::boundary_vertex;
             bool same_class = a_class==b_class;
-
-            // test if on same wall
-            if(same_class && !a_on_boundary_vertex && !b_on_boundary_vertex) {
-                resulting_wall=a_class;
-                return true;
-            }
+            if(same_class && !a_on_boundary_vertex && !b_on_boundary_vertex) // test if on same wall
+                return a_class;
             // todo: what happens when trapeze is degenerate - a triangle
             bool a_on_wall, b_on_wall;
             // test left wall
@@ -1569,10 +1582,8 @@ namespace microgl {
             b_on_wall = b_class==point_class_with_trapeze::left_wall ||
                         (b_on_boundary_vertex &&
                          (b==trapeze.left_top->origin->coords || b==trapeze.left_bottom->origin->coords));
-            if(a_on_wall && b_on_wall) {
-                resulting_wall=point_class_with_trapeze::left_wall;
-                return true;
-            }
+            if(a_on_wall && b_on_wall)
+                return point_class_with_trapeze::left_wall;
             // test right wall
             a_on_wall = a_class==point_class_with_trapeze::right_wall ||
                         (a_on_boundary_vertex &&
@@ -1580,10 +1591,8 @@ namespace microgl {
             b_on_wall = b_class==point_class_with_trapeze::right_wall ||
                         (b_on_boundary_vertex &&
                          (b==trapeze.right_top->origin->coords || b==trapeze.right_bottom->origin->coords));
-            if(a_on_wall && b_on_wall) {
-                resulting_wall=point_class_with_trapeze::right_wall;
-                return true;
-            }
+            if(a_on_wall && b_on_wall)
+                return point_class_with_trapeze::right_wall;
             // test top wall
             a_on_wall = a_class==point_class_with_trapeze::top_wall ||
                         (a_on_boundary_vertex &&
@@ -1591,10 +1600,8 @@ namespace microgl {
             b_on_wall = b_class==point_class_with_trapeze::top_wall ||
                         (b_on_boundary_vertex &&
                          (b==trapeze.right_top->origin->coords || b==trapeze.left_top->origin->coords));
-            if(a_on_wall && b_on_wall) {
-                resulting_wall=point_class_with_trapeze::top_wall;
-                return true;
-            }
+            if(a_on_wall && b_on_wall)
+                return point_class_with_trapeze::top_wall;
             // test bottom wall
             a_on_wall = a_class==point_class_with_trapeze::bottom_wall ||
                         (a_on_boundary_vertex &&
@@ -1602,11 +1609,9 @@ namespace microgl {
             b_on_wall = b_class==point_class_with_trapeze::bottom_wall ||
                         (b_on_boundary_vertex &&
                          (b==trapeze.left_bottom->origin->coords || b==trapeze.right_bottom->origin->coords));
-            if(a_on_wall && b_on_wall) {
-                resulting_wall=point_class_with_trapeze::bottom_wall;
-                return true;
-            }
-            return false;
+            if(a_on_wall && b_on_wall)
+                return point_class_with_trapeze::bottom_wall;
+            return point_class_with_trapeze::unknown;
         }
 
         template<typename number>
@@ -1632,24 +1637,35 @@ namespace microgl {
             //    top/bottom/left/right boundaries.
             // 4. therefore, always consider the intersection with the biggest alpha as what we want.
             //
-            const auto codes= compute_location_codes(b, trapeze);
+            const auto codes_b= compute_location_codes(b, trapeze);
+            const auto codes_a= compute_location_codes(a, trapeze);
             point_class_with_trapeze cla_b=point_class_with_trapeze::outside;
             if(a_class==point_class_with_trapeze::top_wall) {
-                bool mostly_in= codes.left_wall>=0 && codes.bottom_wall>=0 && codes.right_wall>=0;
+                bool mostly_in= codes_b.left_wall >= 0 && codes_b.bottom_wall >= 0 && codes_b.right_wall >= 0;
                 if(mostly_in) {
-                    if(codes.left_wall==0) cla_b= point_class_with_trapeze::left_wall;
-                    else if(codes.bottom_wall==0) cla_b= point_class_with_trapeze::bottom_wall;
-                    else if(codes.right_wall==0) cla_b= point_class_with_trapeze::right_wall;
+                    if(codes_b.left_wall == 0) cla_b= point_class_with_trapeze::left_wall;
+                    else if(codes_b.bottom_wall == 0) cla_b= point_class_with_trapeze::bottom_wall;
+                    else if(codes_b.right_wall == 0) cla_b= point_class_with_trapeze::right_wall;
                     else cla_b= point_class_with_trapeze::strictly_inside;
+                } else {
+                    if(codes_a.bottom_wall <= 0) {
+                        b=a;cla_b= point_class_with_trapeze::bottom_wall;
+                    }
                 }
             }
             else if(a_class==point_class_with_trapeze::bottom_wall) {
-                bool mostly_in= codes.left_wall>=0 && codes.top_wall>=0 && codes.right_wall>=0;
+                bool mostly_in= codes_b.left_wall >= 0 && codes_b.top_wall >= 0 && codes_b.right_wall >= 0;
                 if(mostly_in) {
-                    if(codes.left_wall==0) cla_b= point_class_with_trapeze::left_wall;
-                    else if(codes.top_wall==0) cla_b= point_class_with_trapeze::top_wall;
-                    else if(codes.right_wall==0) cla_b= point_class_with_trapeze::right_wall;
+                    if(codes_b.left_wall == 0) cla_b= point_class_with_trapeze::left_wall;
+                    else if(codes_b.top_wall == 0) cla_b= point_class_with_trapeze::top_wall;
+                    else if(codes_b.right_wall == 0) cla_b= point_class_with_trapeze::right_wall;
                     else cla_b= point_class_with_trapeze::strictly_inside;
+                } else {
+                    // a is on bottom wall but underflowed before the top-wall,  therefore,  it is
+                    // as if we had a zero edge from bottom to top wall, so we need to jump
+                    if(codes_a.top_wall <= 0) {
+                        b=a;cla_b= point_class_with_trapeze::top_wall;
+                    }
                 }
             } else
                 cla_b= round_edge_to_trapeze(a, b, a_class, trapeze);
