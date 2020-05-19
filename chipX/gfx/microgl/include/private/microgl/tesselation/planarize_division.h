@@ -1,7 +1,7 @@
 #pragma once
 #define DEBUG_PLANAR true
 #define MAX_ITERATIONS 200
-#define APPLY_MERGE false
+#define APPLY_MERGE true
 
 #include <microgl/tesselation/half_edge.h>
 #include <microgl/chunker.h>
@@ -68,7 +68,8 @@ namespace microgl {
                 auto create_vertex(const vertex &coords) -> half_edge_vertex * {
                     auto * v = new half_edge_vertex();
                     v->coords = coords;
-                    v->id=_vertices.push_back(v);
+//                    v->head_id=
+                            _vertices.push_back(v);
                     return v;
                 }
 
@@ -139,10 +140,45 @@ namespace microgl {
             struct vertex_location_result {
                 point_class_with_trapeze classs=point_class_with_trapeze::unknown;
                 half_edge *outgoing_edge= nullptr;
+                vertex_location_result(point_class_with_trapeze $classs, half_edge *$outgoing_edge)
+                : classs{$classs}, outgoing_edge{$outgoing_edge}{
+
+                }
             };
 
             struct location_codes {
                 int left_wall, bottom_wall, right_wall, top_wall;
+                int array[4];
+                void fill() {
+                    array[indexOfClass(point_class_with_trapeze::left_wall)]=left_wall;
+                    array[indexOfClass(point_class_with_trapeze::bottom_wall)]=bottom_wall;
+                    array[indexOfClass(point_class_with_trapeze::right_wall)]=right_wall;
+                    array[indexOfClass(point_class_with_trapeze::top_wall)]=top_wall;
+                }
+                point_class_with_trapeze classOfIndex(int index) {
+                    if(index==0)
+                        return point_class_with_trapeze::left_wall;
+                    else if(index==1)
+                        return point_class_with_trapeze::bottom_wall;
+                    else if(index==2)
+                        return point_class_with_trapeze::right_wall;
+                    else if(index==3)
+                        return point_class_with_trapeze::top_wall;
+                }
+                int indexOfClass(point_class_with_trapeze cls) {
+                    switch (cls) {
+                        case point_class_with_trapeze::left_wall:
+                            return 0;
+                        case point_class_with_trapeze::bottom_wall:
+                            return 1;
+                        case point_class_with_trapeze::right_wall:
+                            return 2;
+                        case point_class_with_trapeze::top_wall:
+                            return 3;
+                        default:
+                            return 0;
+                    }
+                }
             };
 
 
@@ -278,8 +314,8 @@ namespace microgl {
                                                     half_edge **result_edge_b, dynamic_pool &pool);
 
             static
-            void handle_co_linear_edge_with_trapeze(const trapeze_t &trapeze, const half_edge *edge_vertex_a,
-                                                    const half_edge *edge_vertex_b,
+            void handle_co_linear_edge_with_trapeze(const trapeze_t &trapeze, half_edge *edge_vertex_a,
+                                                    half_edge *edge_vertex_b,
                                                     const point_class_with_trapeze &wall_class,
                                                     int winding, dynamic_pool &pool);
 

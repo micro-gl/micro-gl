@@ -88,7 +88,6 @@ path<number> path_arc() {
              math::deg_to_rad(360.0f),
              false, div).closePath();
 //
-////    path.moveTo({250,200});
     path.arc({250,200}, 50,
              math::deg_to_rad(0.0f),
              math::deg_to_rad(360.0f),
