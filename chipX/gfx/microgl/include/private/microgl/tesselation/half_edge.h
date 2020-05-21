@@ -43,6 +43,7 @@ namespace microgl {
             // pointer to any edge that has this vertex as starting point
             half_edge_t<number> * edge = nullptr;
             // used to locate inside the output vertices buffer
+            int id=-1;
             int head_id=-1;
             int tess_index=-1;
             bool internal_tess_clipped=false;

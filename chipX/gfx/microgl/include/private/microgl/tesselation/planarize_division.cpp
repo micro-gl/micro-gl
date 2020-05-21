@@ -654,7 +654,7 @@ namespace microgl {
                 iter=iter->prev;
                 bool is_boundary=iter==trapeze.left_top || iter==trapeze.left_bottom ||
                                  iter==trapeze.right_bottom || iter==trapeze.right_top;
-                if(is_boundary && iter->origin->coords!=a->origin->coords) return iter;
+                if(is_boundary) return iter;
             } while(iter!=end);
             return iter;
         }
@@ -681,18 +681,23 @@ namespace microgl {
                 const auto trapeze_prev= infer_trapeze(iter->prev->twin->face);
                 if(!trapeze_adj.isDeg()) {
 //                const auto prev= locate_prev_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
-                    const auto prev= locate_next_trapeze_boundary_vertex_from(iter->prev->twin, trapeze_prev)->origin->coords;
-                    const auto next= locate_next_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
+                    auto prev= locate_next_trapeze_boundary_vertex_from(iter->prev->twin, trapeze_prev)->origin->coords;
+                    auto next= locate_next_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
                     // todo:: add safety tests if prev==root || next==root ?
                     bool inside_cone;
+//                    bool is_less_than_180=classify_point(next, root, prev)<0;
+//                    int cls1= classify_point(b, root, prev);
+//                    int cls2= classify_point(b, root, next);
+//                    if(is_less_than_180) inside_cone=cls1<=0 && cls2>0;
+//                    else inside_cone=!(cls1>0 && cls2<=0);
+                    //
+                    bool is_next_after_prev=classify_point(next, root, prev)<=0;
+                    if(!is_next_after_prev) prev=locate_prev_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
                     bool is_less_than_180=classify_point(next, root, prev)<0;
                     int cls1= classify_point(b, root, prev);
                     int cls2= classify_point(b, root, next);
-                    // todo:: investigate this, why this fails ? probably on degenrate input
                     if(is_less_than_180) inside_cone=cls1<=0 && cls2>0;
                     else inside_cone=!(cls1>0 && cls2<=0);
-//                if(is_less_than_180) inside_cone=cls1<=0 && cls2>=0;
-//                else inside_cone=!(cls1>=0 && cls2<=0);
                     // is (a,b) inside the cone so right of iter and left of next
                     if(inside_cone)
                         return iter;
@@ -861,6 +866,9 @@ namespace microgl {
                             try_insert_vertex_on_trapeze_boundary_at({a.x,y}, trapeze,
                                     point_class_with_trapeze::bottom_wall,dynamic_pool);
                 }
+                // in case of precision issues
+                bottom_vertex_edge->origin->coords.y=max__(bottom_vertex_edge->origin->coords.y,
+                        top_vertex_edge->origin->coords.y);
 
                 // now, we need to split face in two
                 // edge cannot exist yet because we are strictly inside horizontal part.
@@ -886,12 +894,15 @@ namespace microgl {
                     outgoing_vertex_edge=result.left_trapeze.right_bottom = result.left_trapeze.right_top;
                     result.right_trapeze.left_top = result.right_trapeze.left_bottom;
                 } else {
+                    clamp_vertex_vertically(a, start_vertical_wall->origin->coords,
+                                            start_vertical_wall->twin->origin->coords);
                     outgoing_vertex_edge = try_split_edge_at(a, start_vertical_wall, dynamic_pool);
                 }
             } // else we are on left or right walls already
-            else // we are on left or right boundary
-                outgoing_vertex_edge=try_insert_vertex_on_trapeze_boundary_at(a,
+            else {// we are on left or right boundary
+                outgoing_vertex_edge = try_insert_vertex_on_trapeze_boundary_at(a,
                         trapeze, a_classs, dynamic_pool);
+            }
 
             result.face_was_split = should_try_split_horizontal_trapeze_parts;
             result.vertex_a_edge_split_edge = outgoing_vertex_edge;
@@ -924,6 +935,8 @@ namespace microgl {
             return origin_b;
         }
 
+        int id_a=-1;
+
         template<typename number>
         auto planarize_division<number>::handle_face_split(const trapeze_t & trapeze,
                                                            vertex &a, vertex &b, vertex extra_direction,
@@ -955,7 +968,9 @@ namespace microgl {
                             try_insert_vertex_on_trapeze_boundary_at(a, trapeze, mutual_wall, dynamic_pool);
                     auto * edge_vertex_b =
                             try_insert_vertex_on_trapeze_boundary_at(b, trapeze, mutual_wall, dynamic_pool);
-
+                    if(id_a!=-1 && edge_vertex_a->origin->id!=id_a) {
+                        int n=0;
+                    }
                     handle_co_linear_edge_with_trapeze(trapeze, edge_vertex_a, edge_vertex_b,
                                                        mutual_wall, winding, dynamic_pool);
                     result.planar_vertex_a=edge_vertex_a->origin;
@@ -980,7 +995,8 @@ namespace microgl {
                 //   this happens if a.x==b.x
                 // - if b had 'strictly_inside' class, then it stays the same unless a.x==b.x and then it
                 //   changes class into left/right wall
-                if(a.x==b.x)
+//                if(a.x==b.x)
+                if(a_cut_result.vertex->coords.x==b.x)
                     b_new_class=left?point_class_with_trapeze::right_wall : point_class_with_trapeze::left_wall;
             }
 
@@ -991,7 +1007,8 @@ namespace microgl {
             // now, infer the mutual trapeze of a and b after the vertical splits have occurred
             if(b_cut_result.face_was_split) {
                 // a vertical split happened, let's see where b is
-                bool left = a.x<=b_cut_result.vertex->coords.x;
+//                bool left = a.x<=b_cut_result.vertex->coords.x;
+                bool left = a_cut_result.vertex->coords.x<=b_cut_result.vertex->coords.x;
                 mutual_trapeze = left ? &b_cut_result.left_trapeze : &b_cut_result.right_trapeze;
             }
 
@@ -1227,6 +1244,7 @@ namespace microgl {
                     class_a = locate_and_classify_vertex_that_is_already_on_trapeze(last_edge_last_planar_vertex, trapeze).classs;
                 }
                 const vertex direction=b-a;
+                half_edge_vertex *a_planar=nullptr, *b_tag_planar=nullptr;
                 while(!are_we_done) {
                     // debug
                     if(poly.id>=1 && edge==0) {
@@ -1245,13 +1263,13 @@ namespace microgl {
                                 poly.id, edge, count);
                         return;
                     }
-
+                    id_a=b_tag_planar ? b_tag_planar->id : -1;
                     const auto face_split_result= handle_face_split(trapeze, a, b_tag, direction, class_a,
                             class_b_tag, winding, dynamic_pool);
 
                     // a and b' might got rounded on the edges, so let's update
-                    half_edge_vertex *a_planar=face_split_result.planar_vertex_a;
-                    half_edge_vertex *b_tag_planar=face_split_result.planar_vertex_b;
+                    a_planar=face_split_result.planar_vertex_a;
+                    b_tag_planar=face_split_result.planar_vertex_b;
                     { // record and stalk the first planar vertex of the polygon
                         if(first_edge){
                             first_edge=false;
@@ -1686,7 +1704,9 @@ namespace microgl {
             // if vertex (b) is closure (inside or on the boundary), we are done
             bool b_in_closure = cla_b!=point_class_with_trapeze::unknown && cla_b!=point_class_with_trapeze::outside;
             if(b_in_closure) return result;
-
+            if(trapeze.isDeg()) {
+                int a=5;
+            }
             // if we got here, vertex (a) is in the closure and vertex (b) is outside/exterior.
             // the strategy is to behave like cohen-sutherland
             vertex intersection_point{};

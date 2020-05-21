@@ -1,7 +1,7 @@
 #pragma once
 #define DEBUG_PLANAR true
 #define MAX_ITERATIONS 200
-#define APPLY_MERGE true
+#define APPLY_MERGE false
 
 #include <microgl/tesselation/half_edge.h>
 #include <microgl/chunker.h>
@@ -84,7 +84,10 @@ namespace microgl {
                     auto * v = new half_edge_vertex();
                     v->coords = coords;
 //                    v->head_id=
-                            _vertices.push_back(v);
+                    v->id=_vertices.push_back(v);
+                    if(v->id==43) {
+                        int debug=1;
+                    }
                     return v;
                 }
 
