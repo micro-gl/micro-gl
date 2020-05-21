@@ -679,22 +679,24 @@ namespace microgl {
                 // immidate edge
                 const auto trapeze_adj= infer_trapeze(iter->face);
                 const auto trapeze_prev= infer_trapeze(iter->prev->twin->face);
+                if(!trapeze_adj.isDeg()) {
 //                const auto prev= locate_prev_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
-                const auto prev= locate_next_trapeze_boundary_vertex_from(iter->prev->twin, trapeze_prev)->origin->coords;
-                const auto next= locate_next_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
-                // todo:: add safety tests if prev==root || next==root ?
-                bool inside_cone;
-                bool is_less_than_180=classify_point(next, root, prev)<0;
-                int cls1= classify_point(b, root, prev);
-                int cls2= classify_point(b, root, next);
-                // todo:: investigate this, why this fails ? probably on degenrate input
-                if(is_less_than_180) inside_cone=cls1<=0 && cls2>0;
-                else inside_cone=!(cls1>0 && cls2<=0);
+                    const auto prev= locate_next_trapeze_boundary_vertex_from(iter->prev->twin, trapeze_prev)->origin->coords;
+                    const auto next= locate_next_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
+                    // todo:: add safety tests if prev==root || next==root ?
+                    bool inside_cone;
+                    bool is_less_than_180=classify_point(next, root, prev)<0;
+                    int cls1= classify_point(b, root, prev);
+                    int cls2= classify_point(b, root, next);
+                    // todo:: investigate this, why this fails ? probably on degenrate input
+                    if(is_less_than_180) inside_cone=cls1<=0 && cls2>0;
+                    else inside_cone=!(cls1>0 && cls2<=0);
 //                if(is_less_than_180) inside_cone=cls1<=0 && cls2>=0;
 //                else inside_cone=!(cls1>=0 && cls2<=0);
-                // is (a,b) inside the cone so right of iter and left of next
-                if(inside_cone)
-                    return iter;
+                    // is (a,b) inside the cone so right of iter and left of next
+                    if(inside_cone)
+                        return iter;
+                }
                 iter=iter->twin->next;
             } while(iter!=end);
 
@@ -924,7 +926,7 @@ namespace microgl {
 
         template<typename number>
         auto planarize_division<number>::handle_face_split(const trapeze_t & trapeze,
-                                                           vertex &a, vertex &b,
+                                                           vertex &a, vertex &b, vertex extra_direction,
                                                            const point_class_with_trapeze &a_class,
                                                            const point_class_with_trapeze &b_class,
                                                            int winding,
@@ -939,6 +941,8 @@ namespace microgl {
             //    operation
             // 4. connect the two points, so they again split a face (in case they are not vertical)
             face_split_result result;
+            result.has_horizontal_split=false;
+
             {
                 const auto mutual_wall = do_a_b_lies_on_same_trapeze_wall(trapeze, a, b,
                                                                           a_class, b_class);
@@ -956,6 +960,7 @@ namespace microgl {
                                                        mutual_wall, winding, dynamic_pool);
                     result.planar_vertex_a=edge_vertex_a->origin;
                     result.planar_vertex_b=edge_vertex_b->origin;
+                    result.has_horizontal_split=false;
                     return result;
                 }
             }
@@ -1011,17 +1016,21 @@ namespace microgl {
                 // different walls require a split
                 vertex extra_dir{0,0};
                 const bool prepare_degenrate=result.planar_vertex_a->coords==result.planar_vertex_b->coords;
-                if(prepare_degenrate) {
-                    if(loc_a.classs==point_class_with_trapeze::left_wall && loc_b.classs==point_class_with_trapeze::right_wall)
-                        extra_dir={1,0};
-                    else if(loc_b.classs==point_class_with_trapeze::left_wall && loc_a.classs==point_class_with_trapeze::right_wall)
-                        extra_dir={-1,0};
-                }
+                if(prepare_degenrate)
+                    extra_dir=extra_direction;
+//                    if(loc_a.classs==point_class_with_trapeze::left_wall && loc_b.classs==point_class_with_trapeze::right_wall)
+//                        extra_dir={1,0};
+//                    else if(loc_b.classs==point_class_with_trapeze::left_wall && loc_a.classs==point_class_with_trapeze::right_wall)
+//                        extra_dir={-1,0};
+//                }
                 auto * inserted_edge= insert_edge_between_non_co_linear_vertices(a_edge, b_edge, extra_dir, dynamic_pool);
                 inserted_edge->winding += winding;
                 inserted_edge->twin->winding = inserted_edge->winding;
                 if(prepare_degenrate) { // we need to contract the zero edge
                     result.planar_vertex_a=result.planar_vertex_b=contract_edge(inserted_edge);
+                } else {
+                    result.has_horizontal_split=loc_a.classs==point_class_with_trapeze::left_wall ||
+                            loc_a.classs==point_class_with_trapeze::right_wall;
                 }
             }
             return result;
@@ -1178,16 +1187,8 @@ namespace microgl {
 
         template<typename number>
         void planarize_division<number>::insert_poly(poly_info &poly, dynamic_pool & dynamic_pool) {
-#if DEBUG_PLANAR==true
-#define throw_debug(msg, poly, edge, count) throw std::runtime_error(msg+" | poly #" + std::to_string(poly) \
-                                        +", edge # "+std::to_string(edge) \
-                                         +", count # "+std::to_string(count));
-#else
-#define throw_debug(msg, poly, edge, count);
-#endif
-
             const unsigned size= poly.size;
-            half_edge_vertex *last_edge_planar_vertex=nullptr, *first_edge_planar_vertex=nullptr;
+            half_edge_vertex *last_edge_last_planar_vertex=nullptr, *first_edge_first_planar_vertex=nullptr;
             bool first_edge=true;
             for (unsigned edge = 0; edge < size; ++edge) {
                 bool are_we_done = false;
@@ -1198,12 +1199,12 @@ namespace microgl {
                 point_class_with_trapeze class_a;
                 bool last_edge= edge==size-1;
                 if(last_edge) // last edge connects to first vertex in the planar polygon
-                    b=first_edge_planar_vertex->coords;
+                    b=first_edge_first_planar_vertex->coords;
                 bool zero_edge= a==b;
                 if(zero_edge) continue;
                 int winding=infer_edge_winding(a, b);
                 if(first_edge) {
-                    first_edge=false;
+//                    first_edge=false;
                     // first edge always needs to consult with the conflicts info
                     face=poly.conflict_face;
                     trapeze=infer_trapeze(face);
@@ -1219,13 +1220,13 @@ namespace microgl {
                         class_a = locate_and_classify_vertex_that_is_already_on_trapeze(e->origin, trapeze).classs;
                     }
                 } else {
-                    a=last_edge_planar_vertex->coords;
-                    half_edge * located_face_edge= locate_face_of_a_b(*last_edge_planar_vertex, b);
+                    a=last_edge_last_planar_vertex->coords;
+                    half_edge * located_face_edge= locate_face_of_a_b(*last_edge_last_planar_vertex, b);
                     face = located_face_edge->face;
                     trapeze=infer_trapeze(face);
-                    class_a = locate_and_classify_vertex_that_is_already_on_trapeze(last_edge_planar_vertex, trapeze).classs;
+                    class_a = locate_and_classify_vertex_that_is_already_on_trapeze(last_edge_last_planar_vertex, trapeze).classs;
                 }
-
+                const vertex direction=b-a;
                 while(!are_we_done) {
                     // debug
                     if(poly.id>=1 && edge==0) {
@@ -1240,37 +1241,32 @@ namespace microgl {
                     b_tag = edge_status.point_of_interest;
                     point_class_with_trapeze class_b_tag = edge_status.class_of_interest_point;
                     if(class_b_tag==point_class_with_trapeze::outside) {
-                        throw_debug(std::string("insert_edge():: class_b_tag==point_class_with_trapeze::outside !!"),
+                        throw_debug(string_debug("insert_edge():: class_b_tag==point_class_with_trapeze::outside !!"),
                                 poly.id, edge, count);
                         return;
                     }
 
-                    bool co_linear_with_boundary= do_a_b_lies_on_same_trapeze_wall(trapeze, a, b_tag,
-                                                                                   class_a, class_b_tag)!=point_class_with_trapeze::unknown;
-
-                    const auto face_split_result= handle_face_split(trapeze, a, b_tag, class_a,
+                    const auto face_split_result= handle_face_split(trapeze, a, b_tag, direction, class_a,
                             class_b_tag, winding, dynamic_pool);
 
                     // a and b' might got rounded on the edges, so let's update
                     half_edge_vertex *a_planar=face_split_result.planar_vertex_a;
                     half_edge_vertex *b_tag_planar=face_split_result.planar_vertex_b;
                     { // record and stalk the first planar vertex of the polygon
-                        if(first_edge_planar_vertex==nullptr && count==0){
-                            first_edge_planar_vertex=a_planar;
-                            first_edge_planar_vertex->head_id=poly.id;
+                        if(first_edge){
+                            first_edge=false;
+                            first_edge_first_planar_vertex=a_planar;
+                            first_edge_first_planar_vertex->head_id=poly.id;
                         }
                         if(a_planar->head_id==poly.id && a_planar->edge)
-                            first_edge_planar_vertex=a_planar;
+                            first_edge_first_planar_vertex=a_planar;
                         else if(b_tag_planar->head_id==poly.id && b_tag_planar->edge)
-                            first_edge_planar_vertex=b_tag_planar;
+                            first_edge_first_planar_vertex=b_tag_planar;
                     }
 
                     // now, we need to merge faces if we split a vertical wall, i.e, if
                     // the new 'a' coord strictly lies in the left/right wall
-                    bool candidate_merge = (count>=1) && !co_linear_with_boundary &&
-                                           (class_a==point_class_with_trapeze::left_wall ||
-                                            class_a==point_class_with_trapeze::right_wall);
-
+                    bool candidate_merge = (count>=1) && face_split_result.has_horizontal_split;
                     if(candidate_merge&&(APPLY_MERGE))
                         handle_face_merge(a_planar);
 
@@ -1279,12 +1275,12 @@ namespace microgl {
                     // if b'==b we are done, this might be problematic if b' was rounded/clamped
                     are_we_done = !last_edge && (b==b_tag_planar->coords || count>=MAX_ITERATIONS);
                     if(are_we_done) {
-                        last_edge_planar_vertex=b_tag_planar;
+                        last_edge_last_planar_vertex=b_tag_planar;
                         break;
                     }
                     if(last_edge && b==b_tag_planar->coords) {
                         if(b_tag_planar->head_id!=poly.id)
-                            throw_debug(std::string("didn't land on last vertex !!"), poly.id, edge, count)
+                            throw_debug(std::string("didn't land on first vertex !!"), poly.id, edge, count)
                         else
                             break;
 

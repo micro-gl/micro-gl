@@ -7,6 +7,21 @@
 #include <microgl/chunker.h>
 #if DEBUG_PLANAR==true
 #include <stdexcept>
+#include <string>
+#endif
+
+#if DEBUG_PLANAR==true
+#define string_debug(msg) std::string(msg)
+#else
+#define string(msg)
+#endif
+
+#if DEBUG_PLANAR==true
+#define throw_debug(msg, poly, edge, count) throw std::runtime_error(msg+" | poly #" + std::to_string(poly) \
+                                        +"| edge # "+std::to_string(edge) \
+                                         +"| count # "+std::to_string(count));
+#else
+#define throw_debug(msg, poly, edge, count);
 #endif
 
 namespace microgl {
@@ -102,7 +117,7 @@ namespace microgl {
                     return left_top->next==left_bottom && left_bottom->next==right_bottom &&
                            right_bottom->next==right_top && right_top->next==left_top;
                 }
-                bool isDeg() {
+                bool isDeg() const {
                     return (left_top->origin->coords==left_bottom->origin->coords &&
                             right_top->origin->coords==right_bottom->origin->coords) ||
                             (left_top->origin->coords==right_top->origin->coords &&
@@ -135,6 +150,7 @@ namespace microgl {
 
             struct face_split_result {
                 half_edge_vertex *planar_vertex_a= nullptr, *planar_vertex_b=nullptr;
+                bool has_horizontal_split=false;
             };
 
             struct vertex_location_result {
@@ -326,6 +342,7 @@ namespace microgl {
             static
             face_split_result
             handle_face_split(const trapeze_t &trapeze, vertex &a, vertex &b,
+                              vertex extra_direction,
                               const point_class_with_trapeze &a_class,
                               const point_class_with_trapeze &b_class,
                               int winding,
