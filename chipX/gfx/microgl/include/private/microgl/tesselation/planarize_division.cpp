@@ -691,16 +691,31 @@ namespace microgl {
 //                    if(is_less_than_180) inside_cone=cls1<=0 && cls2>0;
 //                    else inside_cone=!(cls1>0 && cls2<=0);
                     //
-                    bool is_next_after_prev=classify_point(next, root, prev)<=0;
-                    if(!is_next_after_prev) prev=locate_prev_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
-                    bool is_less_than_180=classify_point(next, root, prev)<0;
-                    int cls1= classify_point(b, root, prev);
-                    int cls2= classify_point(b, root, next);
-                    if(is_less_than_180) inside_cone=cls1<=0 && cls2>0;
-                    else inside_cone=!(cls1>0 && cls2<=0);
-                    // is (a,b) inside the cone so right of iter and left of next
-                    if(inside_cone)
-                        return iter;
+//                    bool is_next_after_prev=classify_point(next, root, prev)<0
+//                                            || (classify_point(next, root, prev)==0 && prev.dot(next)<=0);
+                    auto gg=prev-root, gg2=next-root;
+                    auto ll= gg.dot(gg2);
+                    bool is_prev_after_next=classify_point(prev, root, next)<0
+                                            || (classify_point(prev, root, next)==0
+                                            && robust_dot(prev-root, next-root)>=0);//(prev-root).dot(next-root)>=0);
+                    if(is_prev_after_next)
+                        prev=locate_prev_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
+                    //
+                    bool is_next_right_of_prev=classify_point(next, root, prev)<0;
+                    bool is_next_on_prev=classify_point(next, root, prev)==0;
+                    bool a2= is_next_on_prev  && robust_dot(prev-root, next-root)>=0;
+                    if(!a2) {
+                        bool is_less_than_180=is_next_right_of_prev||a2;
+                        //
+                        int cls1= classify_point(b, root, prev);
+                        int cls2= classify_point(b, root, next);
+                        if(is_less_than_180) inside_cone=cls1<=0 && cls2>0;
+                        else inside_cone=!(cls1>0 && cls2<=0);
+                        // is (a,b) inside the cone so right of iter and left of next
+                        if(inside_cone)
+                            return iter;
+
+                    }
                 }
                 iter=iter->twin->next;
             } while(iter!=end);
@@ -1289,7 +1304,7 @@ namespace microgl {
                         handle_face_merge(a_planar);
 
                     if(count>=MAX_ITERATIONS)
-                        throw_debug(std::string("insert_edge():: seems like infinite looping !!"), poly.id, edge, count)
+                        throw_debug(string_debug("insert_edge():: seems like infinite looping !!"), poly.id, edge, count)
                     // if b'==b we are done, this might be problematic if b' was rounded/clamped
                     are_we_done = !last_edge && (b==b_tag_planar->coords || count>=MAX_ITERATIONS);
                     if(are_we_done) {
@@ -1298,7 +1313,7 @@ namespace microgl {
                     }
                     if(last_edge && b==b_tag_planar->coords) {
                         if(b_tag_planar->head_id!=poly.id)
-                            throw_debug(std::string("didn't land on first vertex !!"), poly.id, edge, count)
+                            throw_debug(string_debug("didn't land on first vertex !!"), poly.id, edge, count)
                         else
                             break;
 
@@ -1840,10 +1855,23 @@ namespace microgl {
             }
             return intersection_status::intersect;
         }
-
+int PP=16;
         template <typename number>
         inline int
         planarize_division<number>::classify_point(const vertex & point, const vertex &a, const vertex & b) {
+            auto a_p=point-a, a_b=b-a;
+            auto result2= robust_dot(a_b, a_p.orthogonalLeft());
+//            auto result2= (a_b*PP).dot(a_p.orthogonalLeft()*PP);
+            if(result2<0) return 1;
+            else if(result2>0) return -1;
+            else return 0;
+//
+//            auto a_p=point-a, a_b=b-a;
+//            auto result2= (a_b*PP).dot(a_p.orthogonalLeft()*PP);
+//            if(result2<0) return 1;
+//            else if(result2>0) return -1;
+//            else return 0;
+
             // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
             // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
             //    Input:  three points p, a, b
@@ -1857,5 +1885,20 @@ namespace microgl {
             else return 0;
         }
 
+
+        template <typename number>
+        inline number
+        planarize_division<number>::robust_dot(const vertex &u, const vertex & v) {
+            int f1=1, f2=1;
+            number w_u=u.x<0?(-u.x):u.x;
+            number h_u=u.y<0?(-u.y):u.y;
+            if(w_u>0 && w_u<number(1)) f1=int(number(2)/w_u);
+            if(h_u>0 && h_u<number(1)) f2=int(number(2)/h_u);
+//            int f=16;
+            int f=f1>f2?f1:f2;
+            auto result= (u * f).dot(v * f);
+            return result;
+        }
+// 3*2 - (3*0)
     }
 }

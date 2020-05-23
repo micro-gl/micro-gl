@@ -453,8 +453,8 @@ namespace microgl {
                     const edge clip_ray=
                             compute_distanced_tangent_at_joint(first_vertex, join_vertex, last_vertex,
                                                                miter_threshold);
-                    edge a_ray = {first_vertex, first_vertex+(join_vertex-first_vertex).ortho()};
-                    edge b_ray = {last_vertex, last_vertex+(join_vertex-last_vertex).ortho()};
+                    edge a_ray = {first_vertex, first_vertex+(join_vertex-first_vertex).orthogonalLeft()};
+                    edge b_ray = {last_vertex, last_vertex+(join_vertex-last_vertex).orthogonalLeft()};
                     vertex intersection{};
                     number alpha;
                     // clip rays against the clip ray, so miter will avoid overflows

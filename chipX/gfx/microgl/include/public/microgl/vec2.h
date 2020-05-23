@@ -36,8 +36,12 @@ namespace microgl {
             return (this->x*a.x + this->y*a.y);
         }
 
-        vec2 ortho() const {
+        vec2 orthogonalLeft() const {
             return {this->y, -this->x};
+        }
+
+        vec2 orthogonalRight() const {
+            return {-this->y, this->x};
         }
 
         vec2 square() const {

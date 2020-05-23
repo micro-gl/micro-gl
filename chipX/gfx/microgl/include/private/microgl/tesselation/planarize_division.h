@@ -397,6 +397,8 @@ namespace microgl {
             static
             auto contract_edge(half_edge *e) -> half_edge_vertex *;
 
+            static
+            number robust_dot(const vertex &u, const vertex &v);
         };
 
     }
