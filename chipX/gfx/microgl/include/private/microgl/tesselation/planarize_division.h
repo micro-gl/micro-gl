@@ -20,8 +20,10 @@
 #define throw_debug(msg, poly, edge, count) throw std::runtime_error(msg+" | poly #" + std::to_string(poly) \
                                         +"| edge # "+std::to_string(edge) \
                                          +"| count # "+std::to_string(count));
+#define throw_regular(msg) throw std::runtime_error(msg);
 #else
 #define throw_debug(msg, poly, edge, count);
+#define throw_regular(msg);
 #endif
 
 namespace microgl {
@@ -287,10 +289,8 @@ namespace microgl {
             void walk_and_update_edges_face(half_edge *edge_start, half_edge_face *face);
 
             static
-            void clamp(number &val, const number &a, const number &b);
+            number clamp(const number &val, number a, number b);
 
-            static
-            void clamp_vertex(vertex &v, vertex a, vertex b);
             static
             void clamp_vertex_horizontally(vertex &v, vertex a, vertex b);
             static
@@ -309,9 +309,6 @@ namespace microgl {
             compute_conflicting_edge_intersection_against_trapeze(const trapeze_t &trapeze,
                                                                   vertex &a, vertex b, const point_class_with_trapeze & a_class)
                                                                   -> conflicting_edge_intersection_status;
-
-            static
-            bool is_trapeze_degenerate(const trapeze_t &trapeze);
 
             static
             point_class_with_trapeze
@@ -399,6 +396,11 @@ namespace microgl {
 
             static
             number robust_dot(const vertex &u, const vertex &v);
+
+            static void
+            wall_endpoints(const trapeze_t &trapeze, const point_class_with_trapeze &wall, vertex &start, vertex &end);
+
+            static vertex clamp_vertex_to_edge(const vertex & v, const vertex & a, const vertex & b);
         };
 
     }

@@ -182,7 +182,7 @@ namespace microgl {
                 const auto & end = trapeze.left_bottom->origin->coords;
                 if(codes.left_wall<=0) { // outside or on wall
                     point.x= start.x; // truncate x
-                    clamp(point.y, start.y, end.y);
+                    point.y=clamp(point.y, start.y, end.y);
                     if(point==start || point==end) return point_class_with_trapeze::boundary_vertex;
                     return point_class_with_trapeze::left_wall;
                 }
@@ -192,7 +192,7 @@ namespace microgl {
                 const auto & end = trapeze.right_top->origin->coords;
                 if(codes.right_wall<=0) {
                     point.x= start.x; // truncate x
-                    clamp(point.y, end.y, start.y);
+                    point.y=clamp(point.y, end.y, start.y);
                     if(point==start || point==end) return point_class_with_trapeze::boundary_vertex;
                     return point_class_with_trapeze::right_wall;
                 }
@@ -262,7 +262,7 @@ namespace microgl {
                 const bool b_right_of_wall = codes.left_wall<=0;
                 if(a_on_wall && b_right_of_wall) { // bingo, let's round
                     b.x= start.x;
-                    clamp(b.y, start.y, end.y);
+                    b.y=clamp(b.y, start.y, end.y);
                     if(b==start || b==end) return point_class_with_trapeze::boundary_vertex;
                     return point_class_with_trapeze::left_wall;
                 }
@@ -275,7 +275,7 @@ namespace microgl {
                 const bool b_right_of_wall = codes.right_wall<=0;
                 if(a_on_wall && b_right_of_wall) { // bingo, let's round
                     b.x= start.x;
-                    clamp(b.y, end.y, start.y);
+                    b.y=clamp(b.y, end.y, start.y);
                     if(b==start || b==end) return point_class_with_trapeze::boundary_vertex;
                     return point_class_with_trapeze::right_wall;
                 }
@@ -287,7 +287,7 @@ namespace microgl {
                                        (a_is_boundary_vertex && (a==start || a==end));
                 const bool b_right_of_wall = codes.bottom_wall<=0;
                 if(a_on_wall && b_right_of_wall) { // bingo, let's round
-                    clamp(b.x, start.x, end.x);
+                    b.x=clamp(b.x, start.x, end.x);
                     b.y= evaluate_line_at_x(b.x, start, end);
                     clamp_vertex_vertically(b, start, end);
                     if(b==start || b==end) return point_class_with_trapeze::boundary_vertex;
@@ -301,7 +301,7 @@ namespace microgl {
                                        (a_is_boundary_vertex && (a==start || a==end));
                 const bool b_right_of_wall = codes.top_wall<=0;
                 if(a_on_wall && b_right_of_wall) { // bingo, let's round
-                    clamp(b.x, end.x, start.x);
+                    b.x=clamp(b.x, end.x, start.x);
                     b.y= evaluate_line_at_x(b.x, end, start);
                     clamp_vertex_vertically(b, start, end);
                     if(b==start || b==end) return point_class_with_trapeze::boundary_vertex;
@@ -676,7 +676,7 @@ namespace microgl {
             const auto root=a.coords;
             do { // we walk in CW order around the vertex
                 // it seems the safest is to test against the trapeze and not just against the
-                // immidate edge
+                // immidiate edge
                 const auto trapeze_adj= infer_trapeze(iter->face);
                 const auto trapeze_prev= infer_trapeze(iter->prev->twin->face);
                 if(!trapeze_adj.isDeg()) {
@@ -1552,19 +1552,11 @@ namespace microgl {
         }
 
         template<typename number>
-        void planarize_division<number>::clamp(number &val, const number & a, const number &b) {
-            if(val<a) val = a;
-            if(val>b) val = b;
-        }
-
-        template<typename number>
-        void planarize_division<number>::clamp_vertex(vertex &v, vertex a, vertex b) {
-            bool is_a_before_b = a.x<b.x || (a.x==b.x && a.y<b.y);
-            if(!is_a_before_b) { vertex c=a;a=b;b=c; } // sort, so a is before b
-            bool is_v_before_a = v.x<a.x || (v.x==a.x && v.y<a.y);
-            if(is_v_before_a) v=a;
-            bool is_v_after_b = v.x>b.x || (v.x==b.x && v.y>=b.y);
-            if(is_v_after_b) v=b;
+        number planarize_division<number>::clamp(const number &val, number a, number b) {
+            if(a>b) { auto c=a;a=b;b=c; }
+            if(val<a) return a;
+            if(val>b) return b;
+            return val;
         }
 
         template<typename number>
@@ -1579,12 +1571,6 @@ namespace microgl {
             if(a.y>b.y) { vertex c=a;a=b;b=c; }
             if(v.y<a.y) v=a;
             if(v.y>b.y) v=b;
-        }
-
-        template<typename number>
-        bool planarize_division<number>::is_trapeze_degenerate(const trapeze_t & trapeze) {
-            return (trapeze.left_top->origin==trapeze.left_bottom->origin) ||
-                   (trapeze.right_top->origin==trapeze.right_bottom->origin);
         }
 
         template<typename number>
@@ -1656,6 +1642,29 @@ namespace microgl {
         }
 
         template<typename number>
+        auto planarize_division<number>::wall_endpoints(
+                const trapeze_t & trapeze,
+                const point_class_with_trapeze & wall,
+                vertex & start, vertex& end)
+        -> void {
+            switch (wall) {
+                case point_class_with_trapeze::left_wall: {start=trapeze.left_top->origin->coords;end=trapeze.left_bottom->origin->coords;return;}
+                case point_class_with_trapeze::bottom_wall: {start=trapeze.left_bottom->origin->coords;end=trapeze.right_bottom->origin->coords;return;}
+                case point_class_with_trapeze::right_wall: {start=trapeze.right_bottom->origin->coords;end=trapeze.right_top->origin->coords;return;}
+                case point_class_with_trapeze::top_wall: {start=trapeze.right_top->origin->coords;end=trapeze.left_top->origin->coords;return;}
+                default: {throw_regular(string_debug("wall_endpoints():: invalid wall"));return;}
+            }
+        }
+
+        template<typename number>
+        auto planarize_division<number>::clamp_vertex_to_edge(const vertex & v, const vertex & a, const vertex & b)
+        -> vertex {
+            vertex c=v;
+            c.x=clamp(c.x,a.x,b.x); c.y=clamp(c.y,a.y,b.y);
+            return c;
+        }
+
+        template<typename number>
         auto planarize_division<number>::compute_conflicting_edge_intersection_against_trapeze(const trapeze_t & trapeze,
                                                                                                vertex &a, vertex b,
                                                                                                const point_class_with_trapeze & a_class)
@@ -1672,6 +1681,7 @@ namespace microgl {
             if(!a_is_boundary_vertex) {
                 int idx_start=codes_a.indexOfClass(a_class);
                 point_class_with_trapeze overflow_wall=point_class_with_trapeze::unknown;
+                // offset is used to skip the edge we penetrated obviously
                 for (int ix = idx_start+1; ix < idx_start+4; ++ix) {
                     int idx=ix%4;
                     if(codes_a.array[idx]<=0) {
@@ -1688,7 +1698,7 @@ namespace microgl {
             ///// we got here, no overflow, let's test for insideness
             {
                 int idx_start=codes_a.indexOfClass(a_class);
-                int offset= a_is_boundary_vertex ? 0 : 1; // test 3 or 4
+                int offset= a_is_boundary_vertex ? 0 : 1; // test 3 or 4,
                 bool in_interior_of_others=true;
                 for (int ix = idx_start+offset; ix < idx_start+4; ++ix) {
                     int idx=ix%4;
@@ -1728,6 +1738,35 @@ namespace microgl {
             number alpha(0), alpha1(0); // alphas are not reliable because of the way I compute
             intersection_status status;
 
+            ////
+            if(!a_is_boundary_vertex) {
+                int idx_start=codes_a.indexOfClass(a_class);
+                codes_a.array[idx_start]=0;
+            }
+            for (int ix = 0; ix < 4; ++ix) {
+//                bool is_a_on_wall=codes_a.array[ix]==0;
+//                if(is_a_on_wall) continue;
+                bool suspect= codes_a.array[ix] * codes_b.array[ix] == -1;
+                if(!suspect) continue;
+                const auto wall=codes_a.classOfIndex(ix); vertex start, end;
+                wall_endpoints(trapeze, wall, start, end);
+                status = finite_segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
+                if(status==intersection_status::intersect) {
+                    result.class_of_interest_point = wall;
+                    result.point_of_interest=clamp_vertex_to_edge(intersection_point, start, end);
+                    if(result.point_of_interest==start || result.point_of_interest==end)
+                        result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
+                    return result;
+                }
+            }
+
+
+
+            //////
+            if(result.class_of_interest_point==point_class_with_trapeze::unknown)
+                result.class_of_interest_point= point_class_with_trapeze::strictly_inside;
+            return result;
+/*
             { // left-wall
                 const auto &start = trapeze.left_top->origin->coords;
                 const auto &end = trapeze.left_bottom->origin->coords;
@@ -1737,8 +1776,9 @@ namespace microgl {
                     if(status==intersection_status::intersect) {
                         result.class_of_interest_point = point_class_with_trapeze::left_wall;
                         result.point_of_interest = intersection_point;
-                        result.point_of_interest.x=start.x;
+                        result.point_of_interest=clamp_vertex_to_edge(intersection_point, start, end);
                         clamp(result.point_of_interest.y, start.y, end.y); // important to clamp for symbolic reasons as well in case of numeric errors.
+                        result.point_of_interest.x=start.x;
                         if(result.point_of_interest==start || result.point_of_interest==end)
                             result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
                         b=intersection_point;
@@ -1754,6 +1794,7 @@ namespace microgl {
                     if(status==intersection_status::intersect) {
                         result.class_of_interest_point = point_class_with_trapeze::right_wall;
                         result.point_of_interest = intersection_point;
+                        result.point_of_interest=clamp_vertex_to_edge(intersection_point, start, end);
                         result.point_of_interest.x = start.x;
                         clamp(result.point_of_interest.y, end.y, start.y);
                         if (result.point_of_interest == start || result.point_of_interest == end)
@@ -1770,11 +1811,12 @@ namespace microgl {
                     status = finite_segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
                     if(status==intersection_status::intersect) {
                         result.class_of_interest_point = point_class_with_trapeze::bottom_wall;
-                        result.point_of_interest = intersection_point;
-                        if(result.point_of_interest.x<=start.x) result.point_of_interest=start;
-                        else if(result.point_of_interest.x>=end.x) result.point_of_interest=end;
-                        if(result.point_of_interest==start || result.point_of_interest==end)
-                            result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
+                        result.point_of_interest=clamp_vertex_to_edge(intersection_point, start, end);
+//                        result.point_of_interest = intersection_point;
+//                        if(result.point_of_interest.x<=start.x) result.point_of_interest=start;
+//                        else if(result.point_of_interest.x>=end.x) result.point_of_interest=end;
+//                        if(result.point_of_interest==start || result.point_of_interest==end)
+//                            result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
                         b=intersection_point;
                     }
                 }
@@ -1787,9 +1829,10 @@ namespace microgl {
                     status = finite_segment_intersection_test(a, b, start, end, intersection_point, alpha, alpha1);
                     if(status==intersection_status::intersect) {
                         result.class_of_interest_point = point_class_with_trapeze::top_wall;
-                        result.point_of_interest = intersection_point;
-                        if(result.point_of_interest.x>=start.x) result.point_of_interest=start;
-                        else if(result.point_of_interest.x<=end.x) result.point_of_interest=end;
+                        result.point_of_interest=clamp_vertex_to_edge(intersection_point, start, end);
+//                        result.point_of_interest = intersection_point;
+//                        if(result.point_of_interest.x>=start.x) result.point_of_interest=start;
+//                        else if(result.point_of_interest.x<=end.x) result.point_of_interest=end;
                         if(result.point_of_interest==start || result.point_of_interest==end)
                                 result.class_of_interest_point = point_class_with_trapeze::boundary_vertex;
                         b=intersection_point;
@@ -1799,6 +1842,7 @@ namespace microgl {
             if(result.class_of_interest_point==point_class_with_trapeze::unknown)
                 result.class_of_interest_point= point_class_with_trapeze::strictly_inside;
             return result;
+            */
         }
 
         template<typename number>
