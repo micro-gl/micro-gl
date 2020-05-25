@@ -1,22 +1,15 @@
 #pragma once
-#define DEBUG_PLANAR true
+#define DEBUG_PLANAR false
 #define MAX_ITERATIONS 200
 #define APPLY_MERGE false
 
 #include <microgl/tesselation/half_edge.h>
 #include <microgl/chunker.h>
+
 #if DEBUG_PLANAR==true
 #include <stdexcept>
 #include <string>
-#endif
-
-#if DEBUG_PLANAR==true
 #define string_debug(msg) std::string(msg)
-#else
-#define string(msg)
-#endif
-
-#if DEBUG_PLANAR==true
 #define throw_debug(msg, poly, edge, count) throw std::runtime_error(msg+" | poly #" + std::to_string(poly) \
                                         +"| edge # "+std::to_string(edge) \
                                          +"| count # "+std::to_string(count));
@@ -24,6 +17,7 @@
 #else
 #define throw_debug(msg, poly, edge, count);
 #define throw_regular(msg);
+#define string_debug(msg);
 #endif
 
 namespace microgl {
@@ -200,6 +194,25 @@ namespace microgl {
                             return 0;
                     }
                 }
+                bool isBoundaryVertex() {
+                    if(left_wall==0&&top_wall==0) return true; // left-top
+                    else if(left_wall==0&&bottom_wall==0) return true; // left-bottom
+                    else if(bottom_wall==0&&right_wall==0) return true; // right-bottom
+                    else if(right_wall==0&&top_wall==0) return true; // right-top
+                    else return false; // else
+                }
+                bool isOnBoundary() {
+                    return (left_wall==0 || bottom_wall==0 || right_wall==0 || top_wall==0);
+                }
+                bool isInterior() {
+                    return (left_wall>0 && bottom_wall>0 && right_wall>0 && top_wall>0);
+                }
+                bool isInClosure() {
+                    return isOnBoundary() || isInterior();
+                }
+                bool isExterior() {
+                    return !isInClosure();
+                }
             };
 
 
@@ -292,9 +305,9 @@ namespace microgl {
             number clamp(const number &val, number a, number b);
 
             static
-            void clamp_vertex_horizontally(vertex &v, vertex a, vertex b);
+            vertex clamp_vertex_horizontally(const vertex &v, vertex a, vertex b);
             static
-            void clamp_vertex_vertically(vertex &v, vertex a, vertex b);
+            vertex clamp_vertex_vertically(const vertex &v, vertex a, vertex b);
 
             static
             point_class_with_trapeze classify_arbitrary_point_with_trapeze(const vertex &point, const trapeze_t &trapeze);
@@ -322,12 +335,6 @@ namespace microgl {
             static
             bool is_a_before_or_equal_b_on_same_boundary(const vertex &a, const vertex &b,
                                                          const point_class_with_trapeze &wall);
-
-            static
-            void handle_co_linear_edge_with_trapeze(const trapeze_t &trapeze, const vertex &a, const vertex &b,
-                                                    const point_class_with_trapeze &wall_class,
-                                                    half_edge **result_edge_a,
-                                                    half_edge **result_edge_b, dynamic_pool &pool);
 
             static
             void handle_co_linear_edge_with_trapeze(const trapeze_t &trapeze, half_edge *edge_vertex_a,
@@ -369,7 +376,7 @@ namespace microgl {
 
             static
             point_class_with_trapeze
-            round_edge_to_trapeze(const vertex &a, vertex &b,
+            round_edge_to_trapeze2(const vertex &a, vertex &b,
                                   const point_class_with_trapeze &class_a, const trapeze_t &trapeze);
 
             static
@@ -400,7 +407,9 @@ namespace microgl {
             static void
             wall_endpoints(const trapeze_t &trapeze, const point_class_with_trapeze &wall, vertex &start, vertex &end);
 
-            static vertex clamp_vertex_to_edge(const vertex & v, const vertex & a, const vertex & b);
+            static
+            vertex clamp_vertex_to_trapeze_wall(const vertex &v, const point_class_with_trapeze &wall,
+                                                const trapeze_t &trapeze);
         };
 
     }
