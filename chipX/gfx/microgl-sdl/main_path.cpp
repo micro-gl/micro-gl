@@ -150,6 +150,7 @@ void render_path(path<number> path) {
             path,
             tessellation::fill_rule::even_odd,
             tessellation::tess_quality::prettier_with_extra_vertices,
+//            tessellation::tess_quality::better,
             50
     );
 

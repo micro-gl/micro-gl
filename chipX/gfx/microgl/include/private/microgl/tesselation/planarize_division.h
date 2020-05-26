@@ -343,10 +343,6 @@ namespace microgl {
                                                     int winding, dynamic_pool &pool);
 
             static
-            point_class_with_trapeze
-            locate_and_classify_point_that_is_already_on_trapeze(const vertex &point, const trapeze_t &trapeze);
-
-            static
             face_split_result
             handle_face_split(const trapeze_t &trapeze, vertex &a, vertex &b,
                               vertex extra_direction,
