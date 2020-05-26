@@ -170,7 +170,45 @@ namespace microgl {
                     array[indexOfClass(point_class_with_trapeze::right_wall)]=right_wall;
                     array[indexOfClass(point_class_with_trapeze::top_wall)]=top_wall;
                 }
-                point_class_with_trapeze classOfIndex(int index) {
+                void compute_location_codes(const vertex & point, const trapeze_t &trapeze) {
+                    // reminder: 0=on wall, -1=right of wall, 1= left of wall
+                    const number pre_left_wall = point.x-trapeze.left_top->origin->coords.x;
+                    const number pre_right_wall = -point.x+trapeze.right_top->origin->coords.x;
+                    left_wall= pre_left_wall<number(0) ? -1 : (pre_left_wall>number(0) ? 1 : 0);
+                    right_wall= pre_right_wall<number(0) ? -1 : (pre_right_wall>number(0) ? 1 : 0);
+                    bottom_wall = classify_point(point, trapeze.left_bottom->origin->coords, trapeze.right_bottom->origin->coords);
+                    top_wall = classify_point(point, trapeze.right_top->origin->coords, trapeze.left_top->origin->coords);
+                    if(point==trapeze.right_top->origin->coords || point==trapeze.left_top->origin->coords) top_wall=0; // this may be more robust and accurate for boundary vertices
+                    if(point==trapeze.left_bottom->origin->coords || point==trapeze.right_bottom->origin->coords) bottom_wall=0; // this may be more robust and accurate for boundary vertices
+                }
+                void compute_codes_from_class(const vertex& v, const point_class_with_trapeze & classs, const trapeze_t & trapeze) {
+                    if(classs==point_class_with_trapeze::outside || classs==point_class_with_trapeze::unknown)
+                        compute_location_codes(v, trapeze);
+                    else { // it is in closure
+                        left_wall=bottom_wall=right_wall=top_wall=1; // this covers strictly inside
+                        if(v==trapeze.left_top->origin->coords) top_wall=left_wall=0;
+                        if(v==trapeze.left_bottom->origin->coords) left_wall=bottom_wall=0;
+                        if(v==trapeze.right_bottom->origin->coords) bottom_wall=right_wall=0;
+                        if(v==trapeze.right_top->origin->coords) right_wall=top_wall=0;
+                        if(classs==point_class_with_trapeze::left_wall) left_wall=0;
+                        else if(classs==point_class_with_trapeze::bottom_wall) bottom_wall=0;
+                        else if(classs==point_class_with_trapeze::right_wall) right_wall=0;
+                        else if(classs==point_class_with_trapeze::top_wall) top_wall=0;
+                    }
+                }
+                point_class_with_trapeze classify_from_location_codes(const location_codes &codes) {
+                    // given any point, classify it against the location codes, this is robust
+                    if(codes.isInClosure()) {
+                        if(codes.isBoundaryVertex()) return point_class_with_trapeze::boundary_vertex;
+                        if(codes.left_wall==0) return point_class_with_trapeze::left_wall;
+                        if(codes.right_wall==0) return point_class_with_trapeze::right_wall;
+                        if(codes.bottom_wall==0) return point_class_with_trapeze::bottom_wall;
+                        if(codes.top_wall==0) return point_class_with_trapeze::top_wall;
+                        return point_class_with_trapeze::strictly_inside;
+                    }
+                    return point_class_with_trapeze::outside;
+                }
+                static point_class_with_trapeze classOfIndex(int index) {
                     if(index==0)
                         return point_class_with_trapeze::left_wall;
                     else if(index==1)
@@ -180,7 +218,7 @@ namespace microgl {
                     else if(index==3)
                         return point_class_with_trapeze::top_wall;
                 }
-                int indexOfClass(point_class_with_trapeze cls) {
+                static int indexOfClass(point_class_with_trapeze cls) {
                     switch (cls) {
                         case point_class_with_trapeze::left_wall:
                             return 0;
@@ -305,19 +343,6 @@ namespace microgl {
             number clamp(const number &val, number a, number b);
 
             static
-            vertex clamp_vertex_horizontally(const vertex &v, vertex a, vertex b);
-            static
-            vertex clamp_vertex_vertically(const vertex &v, vertex a, vertex b);
-
-            static
-            point_class_with_trapeze classify_arbitrary_point_with_trapeze(const vertex &point, const trapeze_t &trapeze);
-            static
-            point_class_with_trapeze classify_from_location_codes(const location_codes &codes);
-
-            static
-            location_codes compute_location_codes(const vertex &point, const trapeze_t &trapeze);
-
-            static
             auto
             compute_conflicting_edge_intersection_against_trapeze(const trapeze_t &trapeze,
                                                                   vertex &a, vertex b, const point_class_with_trapeze & a_class)
@@ -371,11 +396,6 @@ namespace microgl {
             round_vertex_to_trapeze(vertex &point, const trapeze_t &trapeze);
 
             static
-            point_class_with_trapeze
-            round_edge_to_trapeze2(const vertex &a, vertex &b,
-                                  const point_class_with_trapeze &class_a, const trapeze_t &trapeze);
-
-            static
             int compute_face_windings(half_edge_face *face);
 
             static
@@ -401,8 +421,11 @@ namespace microgl {
             number robust_dot(const vertex &u, const vertex &v);
 
             static void
-            wall_endpoints(const trapeze_t &trapeze, const point_class_with_trapeze &wall, vertex &start, vertex &end);
+            wall_vertex_endpoints(const trapeze_t &trapeze, const point_class_with_trapeze &wall, vertex &start, vertex &end);
 
+            static void
+            wall_edge_endpoints(const trapeze_t & trapeze, const point_class_with_trapeze & wall,
+                           half_edge ** start, half_edge ** end);
             static
             vertex clamp_vertex_to_trapeze_wall(const vertex &v, const point_class_with_trapeze &wall,
                                                 const trapeze_t &trapeze);

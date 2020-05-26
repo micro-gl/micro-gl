@@ -175,6 +175,7 @@ void render() {
 //    t+=.05f;
 //    render_path<float>(path_star<float>());
 //    render_path<float>(path_star_2<float>());
+//    render_path<Q<8>>(path_star_2<Q<8>>());
 //    render_path<float>(path_rects<float>());
 //    render_path<float>(path_arc<float>());
 //    render_path<double>(path_arc<double>());
