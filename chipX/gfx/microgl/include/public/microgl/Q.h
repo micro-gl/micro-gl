@@ -16,20 +16,34 @@ private:
         return convert(q.value(), q.precision, this->precision);
     }
 
+    static
+    integer abs(const integer & val) {
+        return val<0?-val:val;
+    }
+    static integer sign(const integer & val) {
+        return val<0?-1:1;
+    }
 public:
     static const precision_t precision = P;
     integer _value = 0;
 
     static inline
-    integer convert(long long from_value,
+    integer convert(integer from_value,
                 precision_t from_precision,
                 precision_t to_precision) {
         if(from_precision==to_precision)
             return from_value;
-        else if(from_precision>to_precision)
-            return (from_value)>>(from_precision - to_precision);
-        else
-            return (from_value)<<(to_precision - from_precision);
+        else {
+            const bool isNegative=from_value<0;
+            integer from_value_abs=abs(from_value);
+            if(from_precision>to_precision) {
+                integer inter=from_value_abs>>(from_precision - to_precision);
+                return isNegative ? -inter : inter;
+            } else {
+                integer inter=from_value_abs<<(to_precision - from_precision);
+                return isNegative ? -inter : inter;
+            }
+        }
     }
 
     Q() {
@@ -78,11 +92,16 @@ public:
     }
     q_ref operator *=(const_ref q) {
         long long inter = ((long long)this->_value*q.value());
-        this->_value = inter>>P;
+        const bool isNegative=inter<0;
+        this->_value = abs(inter)>>P;
+        if(isNegative) this->_value = -this->_value;
         return *this;
     }
     q_ref operator /=(const_ref q) {
-        this->_value = (_value<<P)/q.value();
+        const bool isNegative=_value<0;
+        integer value_abs=abs(_value)<<P;
+        this->_value = value_abs/q.value();
+        if(isNegative) this->_value = -this->_value;
         return *this;
     }
     q_ref operator +=(const_ref q) {

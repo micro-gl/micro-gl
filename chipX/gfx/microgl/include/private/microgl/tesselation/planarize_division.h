@@ -1,5 +1,5 @@
 #pragma once
-#define DEBUG_PLANAR false
+#define DEBUG_PLANAR true
 #define MAX_ITERATIONS 200
 #define APPLY_MERGE false
 
@@ -365,7 +365,7 @@ namespace microgl {
             void handle_co_linear_edge_with_trapeze(const trapeze_t &trapeze, half_edge *edge_vertex_a,
                                                     half_edge *edge_vertex_b,
                                                     const point_class_with_trapeze &wall_class,
-                                                    int winding, dynamic_pool &pool);
+                                                    int winding);
 
             static
             face_split_result

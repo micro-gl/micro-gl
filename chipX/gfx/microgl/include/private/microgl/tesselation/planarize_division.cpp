@@ -189,7 +189,7 @@ namespace microgl {
             wall_vertex_endpoints(trapeze, wall, start, end);
             result.x=clamp(result.x, start.x, end.x);
             result.y=clamp(result.y, start.y, end.y);
-            if(start.x!=end.x) { // very important for horizontal edges
+            if(start.x!=end.x) { // SUPER important for horizontal edges
                 if(result.x==start.x) result=start;
                 else if(result.x==end.x) result=end;
             }
@@ -205,7 +205,7 @@ namespace microgl {
             if(v==trapeze.left_bottom->origin) return {point_class_with_trapeze::boundary_vertex, trapeze.left_bottom};
             if(v==trapeze.right_bottom->origin) return {point_class_with_trapeze::boundary_vertex, trapeze.right_bottom};
             if(v==trapeze.right_top->origin) return {point_class_with_trapeze::boundary_vertex, trapeze.right_top};
-            for (int ix = 0; ix < 4; ++ix) {
+            for (int ix = 0; ix < 4; ++ix) { // iterate the 4 walls
                 const auto wall=location_codes::classOfIndex(ix);
                 half_edge *start= nullptr, *end= nullptr;
                 wall_edge_endpoints(trapeze, wall, &start, &end);
@@ -270,15 +270,11 @@ namespace microgl {
                                                                                   point_class_with_trapeze where_boundary,
                                                                                   dynamic_pool & pool) -> half_edge * {
             // given where on the boundary: left, top, right, bottom
-            // walk along that boundary ray and insert the vertex at the right place.
+            // walk along that boundary wall and insert the vertex at the right place.
             // if the vertex already exists, return it's corresponding half edge.
             // otherwise, insert a vertex and split the correct edge segment of the ray.
-            // at the end, return the corresponding half-edge, whose origin is the vertex.
-            half_edge * e_start = nullptr;
-            half_edge * e_end = nullptr;
-            bool compare_y = false;
-            bool reverse_direction = false;
-
+            half_edge * e_start = nullptr, * e_end = nullptr;
+            bool compare_y = false, reverse_direction = false;
             switch (where_boundary) {
                 case point_class_with_trapeze::strictly_inside:
                     return nullptr;
@@ -467,38 +463,25 @@ namespace microgl {
             const half_edge *end = iter;
             const auto root=a.coords;
             do { // we walk in CW order around the vertex
-                // it seems the safest is to test against the trapeze and not just against the
-                // immidiate edge
                 const auto trapeze_adj= infer_trapeze(iter->face);
                 const auto trapeze_prev= infer_trapeze(iter->prev->twin->face);
                 if(!trapeze_adj.isDeg()) {
-//                const auto prev= locate_prev_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
                     auto prev= locate_next_trapeze_boundary_vertex_from(iter->prev->twin, trapeze_prev)->origin->coords;
                     auto next= locate_next_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
                     // todo:: add safety tests if prev==root || next==root ?
-                    bool inside_cone;
-//                    bool is_less_than_180=classify_point(next, root, prev)<0;
-//                    int cls1= classify_point(b, root, prev);
-//                    int cls2= classify_point(b, root, next);
-//                    if(is_less_than_180) inside_cone=cls1<=0 && cls2>0;
-//                    else inside_cone=!(cls1>0 && cls2<=0);
-                    //
-//                    bool is_next_after_prev=classify_point(next, root, prev)<0
-//                                            || (classify_point(next, root, prev)==0 && prev.dot(next)<=0);
-                    auto gg=prev-root, gg2=next-root;
-                    auto ll= gg.dot(gg2);
-                    bool is_prev_after_next=classify_point(prev, root, next)<0
-                                            || (classify_point(prev, root, next)==0
-                                            && robust_dot(prev-root, next-root)>=0);//(prev-root).dot(next-root)>=0);
-                    if(is_prev_after_next)
+                    int cross=classify_point(next, root, prev);
+                    number dot=robust_dot(prev-root, next-root);
+                    bool is_prev_after_next=cross>=0 && dot>=0;// cross left-of or on root->prev ray, dot: 0-90 or 270-360
+                    if(is_prev_after_next) { // pick a better candidate
                         prev=locate_prev_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
+                        cross=classify_point(next, root, prev);
+                        dot=robust_dot(prev-root, next-root);
+                    }
                     //
-                    bool is_next_right_of_prev=classify_point(next, root, prev)<0;
-                    bool is_next_on_prev=classify_point(next, root, prev)==0;
-                    bool a2= is_next_on_prev  && robust_dot(prev-root, next-root)>=0;
-                    if(!a2) {
-                        bool is_less_than_180=is_next_right_of_prev||a2;
-                        //
+                    bool is_0_or_360_degrees= cross==0 && dot>=0;
+                    if(!is_0_or_360_degrees) {
+                        // we support cones that are wider than 180 degrees due to precision issues
+                        bool is_less_than_180=cross<0, inside_cone;
                         int cls1= classify_point(b, root, prev);
                         int cls2= classify_point(b, root, next);
                         if(is_less_than_180) inside_cone=cls1<=0 && cls2>0;
@@ -506,7 +489,6 @@ namespace microgl {
                         // is (a,b) inside the cone so right of iter and left of next
                         if(inside_cone)
                             return iter;
-
                     }
                 }
                 iter=iter->twin->next;
@@ -514,6 +496,55 @@ namespace microgl {
             throw_regular(string_debug("locate_face_of_a_b():: could not locate !!"));
             return nullptr;
         }
+
+        /*
+        template<typename number>
+        auto planarize_division<number>::locate_face_of_a_b(const half_edge_vertex &a,
+                                                            const vertex &b) -> half_edge * {
+            // given edge (a,b) as half_edge_vertex a and a vertex b, find out to which
+            // adjacent face does this edge should belong. we return the half_edge that
+            // has this face to it's left and vertex 'a' as an origin. we walk CW around
+            // the vertex to find which subdivision. The reason that the natural order around
+            // a vertex is CW is BECAUSE, that the face edges are CCW. If one draws it on paper
+            // then it will become super clear.
+            // also to mention, that due to precision errors, we perform a full cone test,
+            // even for more than 180 degrees, although in theory all angles are less than
+            // 180, BUT, in practice, due to precision errors this will happen
+            half_edge *iter = a.edge;
+            const half_edge *end = iter;
+            const auto root=a.coords;
+            do { // we walk in CW order around the vertex
+                const auto trapeze_adj= infer_trapeze(iter->face);
+                const auto trapeze_prev= infer_trapeze(iter->prev->twin->face);
+                if(!trapeze_adj.isDeg()) {
+                    auto prev= locate_next_trapeze_boundary_vertex_from(iter->prev->twin, trapeze_prev)->origin->coords;
+                    auto next= locate_next_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
+                    // todo:: add safety tests if prev==root || next==root ?
+
+                    bool is_prev_after_next=classify_point(prev, root, next)<0
+                                            || (classify_point(prev, root, next)==0
+                                                && robust_dot(prev-root, next-root)>=0);//(prev-root).dot(next-root)>=0);
+                    if(is_prev_after_next)
+                        prev=locate_prev_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
+                    //
+                    bool is_0_or_360_degrees= classify_point(next, root, prev) == 0 && robust_dot(prev - root, next - root) >= 0;
+                    if(!is_0_or_360_degrees) {
+                        bool is_less_than_180=classify_point(next, root, prev)<0, inside_cone=false;
+                        int cls1= classify_point(b, root, prev);
+                        int cls2= classify_point(b, root, next);
+                        if(is_less_than_180) inside_cone=cls1<=0 && cls2>0;
+                        else inside_cone=!(cls1>0 && cls2<=0);
+                        // is (a,b) inside the cone so right of iter and left of next
+                        if(inside_cone)
+                            return iter;
+                    }
+                }
+                iter=iter->twin->next;
+            } while(iter!=end);
+            throw_regular(string_debug("locate_face_of_a_b():: could not locate !!"));
+            return nullptr;
+        }
+*/
 
         template<typename number>
         auto planarize_division<number>::insert_edge_between_non_co_linear_vertices(half_edge *vertex_a_edge,
@@ -561,8 +592,7 @@ namespace microgl {
                                                                             half_edge * edge_vertex_a,
                                                                             half_edge * edge_vertex_b,
                                                                             const point_class_with_trapeze &wall_class,
-                                                                            int winding,
-                                                                            dynamic_pool& pool) {
+                                                                            int winding) {
             // given that (a) and (b) are on the same wall, update windings along their path/between them.
             if(winding==0) return;
             auto *start = edge_vertex_a;
@@ -631,12 +661,6 @@ namespace microgl {
                 auto *start_vertical_wall =
                         insert_edge_between_non_co_linear_vertices(bottom_vertex_edge,
                                 top_vertex_edge, vertex{0,-1}, dynamic_pool);
-                // clamp vertex to this new edge endpoints if it is before or after
-                // this fights the geometric numeric precision errors, that can happen in y coords
-//                clamp_vertex_horizontally(a, start_vertical_wall->origin->coords,
-//                        start_vertical_wall->twin->origin->coords);
-//                clamp_vertex_vertically(a, start_vertical_wall->origin->coords,
-//                        start_vertical_wall->twin->origin->coords);
                 // update resulting trapezes
                 result.left_trapeze.right_bottom = start_vertical_wall;
                 result.left_trapeze.right_top = start_vertical_wall->next;
@@ -728,7 +752,7 @@ namespace microgl {
                         int n=0;
                     }
                     handle_co_linear_edge_with_trapeze(trapeze, edge_vertex_a, edge_vertex_b,
-                                                       mutual_wall, winding, dynamic_pool);
+                                                       mutual_wall, winding);
                     result.planar_vertex_a=edge_vertex_a->origin;
                     result.planar_vertex_b=edge_vertex_b->origin;
                     result.has_horizontal_split=false;
@@ -786,7 +810,7 @@ namespace microgl {
                     do_a_b_lies_on_same_trapeze_wall(*mutual_trapeze, result.planar_vertex_a->coords,
                             result.planar_vertex_b->coords, loc_a.classs, loc_b.classs);
             if(mutual_wall!=point_class_with_trapeze::unknown) // they are on the same wall
-                handle_co_linear_edge_with_trapeze(*mutual_trapeze, a_edge, b_edge, mutual_wall, winding, dynamic_pool);
+                handle_co_linear_edge_with_trapeze(*mutual_trapeze, a_edge, b_edge, mutual_wall, winding);
             else {
                 // different walls require a split
                 vertex extra_dir{0,0};
@@ -1049,7 +1073,6 @@ namespace microgl {
                                     poly.id, edge, count)
                         else
                             break;
-
                     }
                     // ITERATION STEP, therefore update:
                     // 1. now iterate on the sub-line (b', b), by assigning a=b'
@@ -1501,50 +1524,51 @@ namespace microgl {
             }
             return intersection_status::intersect;
         }
-int PP=16;
+
         template <typename number>
         inline int
         planarize_division<number>::classify_point(const vertex & point, const vertex &a, const vertex & b) {
             auto a_p=point-a, a_b=b-a;
-            auto result2= robust_dot(a_b, a_p.orthogonalLeft());
-//            auto result2= (a_b*PP).dot(a_p.orthogonalLeft()*PP);
-            if(result2<0) return 1;
-            else if(result2>0) return -1;
-            else return 0;
-//
-//            auto a_p=point-a, a_b=b-a;
-//            auto result2= (a_b*PP).dot(a_p.orthogonalLeft()*PP);
-//            if(result2<0) return 1;
-//            else if(result2>0) return -1;
-//            else return 0;
-
-            // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
-            // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
-            //    Input:  three points p, a, b
-            //    Return: >0 for P left of the line through a and b
-            //            =0 for P  on the line
-            //            <0 for P  right of the line
-            //    See: Algorithm 1 "Area of Triangles and Polygons"
-            auto result= (b.x-a.x)*(point.y-a.y)-(point.x-a.x)*(b.y-a.y);
-            if(result<0) return 1;
-            else if(result>0) return -1;
+            auto result= robust_dot(a_b.orthogonalLeft(), a_p);
+            if(result>0) return 1;
+            else if(result<0) return -1;
             else return 0;
         }
-
 
         template <typename number>
         inline number
         planarize_division<number>::robust_dot(const vertex &u, const vertex & v) {
             int f1=1, f2=1;
-            number w_u=u.x<0?(-u.x):u.x;
-            number h_u=u.y<0?(-u.y):u.y;
-            if(w_u>0 && w_u<number(1)) f1=int(number(2)/w_u);
-            if(h_u>0 && h_u<number(1)) f2=int(number(2)/h_u);
-//            int f=16;
+            bool skip=u.x>=1 || u.y>=1 || v.x>=1 || v.y>=1;
+//            skip=false;
+            if(!skip) {
+                number w_u=u.x<0?(-u.x):u.x;
+                number h_u=u.y<0?(-u.y):u.y;
+                if(w_u>0 && w_u<number(1)) f1=int(number(2)/w_u);
+                if(h_u>0 && h_u<number(1)) f2=int(number(2)/h_u);
+            }
             int f=f1>f2?f1:f2;
+//            auto A=u*f, B=v*f;
+//            auto C=A.dot(B);
             auto result= (u * f).dot(v * f);
             return result;
         }
-// 3*2 - (3*0)
+
+//        template <typename number>
+//        inline number
+//        planarize_division<number>::robust_dot(const vertex &u, const vertex & v) {
+//            int f1=1, f2=1;
+//            number w_u=u.x<0?(-u.x):u.x;
+//            number h_u=u.y<0?(-u.y):u.y;
+//            if(w_u>0 && w_u<number(1)) f1=int(number(2)/w_u);
+//            if(h_u>0 && h_u<number(1)) f2=int(number(2)/h_u);
+//            int f=f1>f2?f1:f2;
+//            auto result= (u * f).dot(v * f);
+//            return result;
+//        }
+
+
+
+        // 3*2 - (3*0)
     }
 }
