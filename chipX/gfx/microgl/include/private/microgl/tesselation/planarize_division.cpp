@@ -609,7 +609,7 @@ namespace microgl {
         }
 
         template<typename number>
-        auto planarize_division<number>::handle_vertical_face_cut(const trapeze_t &trapeze, vertex & a,
+        auto planarize_division<number>::handle_vertical_face_cut(const trapeze_t &trapeze, const vertex & a,
                                                                   const point_class_with_trapeze &a_classs,
                                                                   dynamic_pool & dynamic_pool) -> vertical_face_cut_result {
             // given that vertex (a) is in the closure of the trapeze
@@ -674,9 +674,10 @@ namespace microgl {
                     outgoing_vertex_edge=result.left_trapeze.right_bottom = result.left_trapeze.right_top;
                     result.right_trapeze.left_top = result.right_trapeze.left_bottom;
                 } else {
-                    a.y=clamp(a.y, start_vertical_wall->origin->coords.y,
+                    vertex v=a;
+                    v.y=clamp(v.y, start_vertical_wall->origin->coords.y,
                                             start_vertical_wall->twin->origin->coords.y);
-                    outgoing_vertex_edge = try_split_edge_at(a, start_vertical_wall, dynamic_pool);
+                    outgoing_vertex_edge = try_split_edge_at(v, start_vertical_wall, dynamic_pool);
                 }
             } // else we are on left or right walls already
             else { // we are on left or right boundary
@@ -719,7 +720,7 @@ namespace microgl {
 
         template<typename number>
         auto planarize_division<number>::handle_face_split(const trapeze_t & trapeze,
-                                                           vertex &a, vertex &b, vertex extra_direction,
+                                                           const vertex &a, vertex b, vertex extra_direction,
                                                            const point_class_with_trapeze &a_class,
                                                            const point_class_with_trapeze &b_class,
                                                            int winding,
@@ -1017,7 +1018,8 @@ namespace microgl {
                 half_edge_vertex *a_planar=nullptr, *b_tag_planar=nullptr;
                 while(!are_we_done) {
                     // debug
-                    if(poly.id>=1 && edge==0) {
+                    if(poly.id==1 && edge==8 && count>=100) {
+                        int kkk=0;
 //                        if(count>=1)
 //                            return;
                     }
@@ -1058,16 +1060,19 @@ namespace microgl {
                     if(candidate_merge&&(APPLY_MERGE))
                         handle_face_merge(a_planar);
 
-                    if(count>=MAX_ITERATIONS)
+                    if(true&&count>=MAX_ITERATIONS){
+                        int aaaaa=0;
                         throw_debug(string_debug("insert_edge():: seems like infinite looping !!"),
                                 poly.id, edge, count)
-                    // if b'==b we are done, this might be problematic if b' was rounded/clamped
-                    are_we_done = !last_edge && (b==b_tag_planar->coords || count>=MAX_ITERATIONS);
+                    }
+                    // if b'==b we are done. note, that b_tag_planar->coords might NOT equal b', BUT
+                    // b_tag_planar->coords corresponds to the place b' has settled on the trapeze
+                    are_we_done = !last_edge && (b==b_tag || count>=MAX_ITERATIONS);
                     if(are_we_done) {
                         last_edge_last_planar_vertex=b_tag_planar;
                         break;
                     }
-                    if(last_edge && b==b_tag_planar->coords) {
+                    if(last_edge && b==b_tag) {
                         if(b_tag_planar->head_id!=poly.id)
                             throw_debug(string_debug("last vertex didn't land on first vertex of polygon!!"),
                                     poly.id, edge, count)
@@ -1271,7 +1276,7 @@ namespace microgl {
                         count_active_faces++;
                     face_to_trapeze_vertices(faces[ix], *debug_trapezes);
                 }
-                //std::cout<< "# active faces: " << count_active_faces <<std::endl;
+                std::cout<< "# active faces: " << count_active_faces <<std::endl;
             }
         }
 
@@ -1540,7 +1545,7 @@ namespace microgl {
         planarize_division<number>::robust_dot(const vertex &u, const vertex & v) {
             int f1=1, f2=1;
             bool skip=u.x>=1 || u.y>=1 || v.x>=1 || v.y>=1;
-//            skip=false;
+            skip=false;
             if(!skip) {
                 number w_u=u.x<0?(-u.x):u.x;
                 number h_u=u.y<0?(-u.y):u.y;

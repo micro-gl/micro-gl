@@ -1,7 +1,7 @@
 #pragma once
 #define DEBUG_PLANAR true
 #define MAX_ITERATIONS 200
-#define APPLY_MERGE false
+#define APPLY_MERGE true
 
 #include <microgl/tesselation/half_edge.h>
 #include <microgl/chunker.h>
@@ -308,7 +308,7 @@ namespace microgl {
 
             static
             auto handle_vertical_face_cut(const trapeze_t &trapeze,
-                                          vertex & a,
+                                          const vertex & a,
                                           const point_class_with_trapeze &a_classs,
                                           dynamic_pool &pool) -> vertical_face_cut_result;
 
@@ -369,7 +369,7 @@ namespace microgl {
 
             static
             face_split_result
-            handle_face_split(const trapeze_t &trapeze, vertex &a, vertex &b,
+            handle_face_split(const trapeze_t &trapeze, const vertex &a, vertex b,
                               vertex extra_direction,
                               const point_class_with_trapeze &a_class,
                               const point_class_with_trapeze &b_class,

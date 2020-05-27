@@ -33,7 +33,9 @@ namespace microgl {
         }
 
         static l64 to_fixed(const int &val, unsigned char precision) {
-            return (val<<precision);
+            const bool isNegative=val<0;
+            l64 value_abs=abs(val) << precision;
+            return isNegative ? -value_abs : value_abs;
         }
 
         template<unsigned N>
@@ -172,9 +174,14 @@ namespace microgl {
             return numer%denom;
         }
 
+//        static
+//        float abs(const float &val) {
+//            return fabs(val);
+//        }
+
         static
-        float abs(const float &val) {
-            return fabs(val);
+        signed abs(const signed &val) {
+            return val<0?-val:val;
         }
 
         template <unsigned N>

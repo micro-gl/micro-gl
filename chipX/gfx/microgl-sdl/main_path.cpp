@@ -181,8 +181,8 @@ void render() {
 //    render_path<double>(path_arc<double>());
 //    render_path<float>(path_arc<float>());
 //    render_path<Q<16>>(path_arc<Q<16>>());
-    render_path<Q<15>>(path_arc<Q<15>>());
-//    render_path<Q<4>>(path_arc<Q<4>>());
+//    render_path<Q<15>>(path_arc<Q<15>>());
+    render_path<Q<4>>(path_arc<Q<4>>());
 //    render_path<Q<8>>(path_arc<Q<8>>());
 //    render_path<double>(path_test<double>());
 

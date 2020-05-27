@@ -21,7 +21,7 @@ using namespace microgl::sampling;
 using index_t = unsigned int;
 using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::Bilinear>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_filter::Bilinear>;
 Texture24 tex_uv;
 Canvas24 * canvas;
 sampling::flat_color color_grey{{0,0,0,255}};
