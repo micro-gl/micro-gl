@@ -168,27 +168,38 @@ namespace microgl {
             return fmodf(numer, denom);
         }
 
+        static
+        int mod(int numer, int denom) {
+            return numer%denom;
+        }
+
+        static
+        l64 mod(l64 numer, l64 denom) {
+            return numer%denom;
+        }
+
         template <unsigned N>
         static
         Q<N> mod(const Q<N> & numer, const Q<N> & denom) {
             return numer%denom;
         }
 
-//        static
-//        float abs(const float &val) {
-//            return fabs(val);
-//        }
-
+        template <typename number>
         static
-        signed abs(const signed &val) {
+        number abs(const number &val) {
             return val<0?-val:val;
         }
 
-        template <unsigned N>
-        static
-        Q<N> abs(const Q<N> & val) {
-            return Q<N>(val.value()<0 ? -val.value() : val.value(), N);
-        }
+//        static
+//        signed abs(const int &val) {
+//            return val<0?-val:val;
+//        }
+//
+//        template <unsigned N>
+//        static
+//        Q<N> abs(const Q<N> & val) {
+//            return Q<N>(val.value()<0 ? -val.value() : val.value(), N);
+//        }
 
     private:
         static

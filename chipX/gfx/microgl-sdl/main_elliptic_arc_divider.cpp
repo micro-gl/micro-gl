@@ -75,7 +75,7 @@ void render_arc_internal(number start_angle_rad,
             start_angle_rad,
             end_angle_rad,
             divisions_count,
-            false
+            true
             );
 
     for (uint ix = 0; ix < arc_points.size(); ++ix) {

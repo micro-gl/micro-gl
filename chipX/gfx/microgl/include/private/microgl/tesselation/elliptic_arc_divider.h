@@ -29,34 +29,40 @@ namespace microgl {
                     number end_angle_rad,
                     unsigned divisions=32,
                     bool anti_clockwise=false) {
+                if(divisions<0) return;
                 const auto two_pi = math::pi<number>() * number(2);
                 const auto half_pi = math::pi<number>() / number(2);
                 const auto zero = number(0);
-                number epsilon = number(1) / number(100);
-                if (microgl::math::abs(start_angle_rad - end_angle_rad) <= epsilon)
-                    return;
-                // todo: FIX BUG, when angle is>=360, the direction wise clock is not respected, very serious bug for tess fill
+                if (start_angle_rad==end_angle_rad) return;
                 start_angle_rad = math::mod(start_angle_rad, two_pi);
                 end_angle_rad = math::mod(end_angle_rad, two_pi);
                 auto delta = end_angle_rad - start_angle_rad;
-                if (!anti_clockwise){
-                    if (delta < zero) end_angle_rad += two_pi;}
-                else{
-                    if (delta > zero) end_angle_rad -= two_pi;}
-                // after the moduli operation we might have done a%a which is equal to zero
-                if (microgl::math::abs(delta) <= epsilon)
-                    end_angle_rad = start_angle_rad + two_pi;
-
-                // todo:: add minimal arc length fixer
-                delta = (end_angle_rad - start_angle_rad) / number(divisions);
+                if (!anti_clockwise) { // clockwise
+                    if (delta <= zero) end_angle_rad += two_pi;
+                } else {
+                    if (delta >= zero) end_angle_rad -= two_pi;
+                }
+                delta = end_angle_rad - start_angle_rad;
+                // we test for greater in case of precision issues
+                const bool full_circle=microgl::math::abs(delta)>=two_pi;
+                delta = delta / number(divisions);
 
                 auto radians = start_angle_rad;
                 auto rotation_sin = math::sin(rotation);
                 auto rotation_cos = math::cos(rotation);
-                index first= output.size();
+                index first_index= output.size(), last_index=first_index;
+                number min_degree=start_angle_rad<=end_angle_rad?start_angle_rad:end_angle_rad;
+                number max_degree=start_angle_rad>=end_angle_rad?start_angle_rad:end_angle_rad;
                 for (index ix = 0; ix <= divisions; ++ix) {
-                    auto sine = math::sin(radians);
-                    auto cosine = math::sin(radians + half_pi);
+                    number radians_clipped=radians;
+                    { // due to precision errors when adding radians they might overflow at the end
+                        if(radians<min_degree)
+                            radians_clipped=min_degree;
+                        if(radians>max_degree)
+                            radians_clipped=max_degree;
+                    }
+                    auto sine = math::sin(radians_clipped);
+                    auto cosine = math::sin(radians_clipped + half_pi);
                     // currently , we assume pixel coords and radians have the same precision
                     // this probably is not a very good idea
                     auto x = cosine * radius_x;
@@ -64,11 +70,14 @@ namespace microgl {
                     // now apply rotation
                     auto rotated_x= x*rotation_cos - y*rotation_sin;
                     auto rotated_y= x*rotation_sin + y*rotation_cos;
-                    output.push_back({(center_x + rotated_x),
-                                      (center_y + rotated_y)});
+                    const vertex point={(center_x + rotated_x), (center_y + rotated_y)};
+                    const bool skip=ix!=0 && point==output[last_index];
+                    if(!skip) last_index=output.push_back(point);
                     radians += delta;
                 }
-                //output[output.size()-1]=output[first];
+                // ina ddition to the clipping we perform, if it was a full circle, we need
+                // to use first sample as last one
+                if(full_circle) output[last_index]=output[first_index];
             }
 
         private:
