@@ -94,7 +94,6 @@ namespace microgl {
             conflict * conflict_first = nullptr;
             auto * poly_list = new poly_info[pieces_length];
             auto * conflict_list = new conflict[pieces_length];
-
             for (index ix = 0; ix < pieces_length; ++ix) {
                 auto piece = pieces[ix];
                 const auto piece_size = piece.size;
@@ -106,9 +105,9 @@ namespace microgl {
                 poly.conflict_face= nullptr;
                 if(piece_size<=1) continue;
                 index last_index= piece_size-1, first_index=0;
-                while((first_index+1<piece_size)&& piece.data[first_index]==piece.data[first_index+1])
+                while((first_index<last_index)&& piece.data[first_index]==piece.data[first_index+1])
                     first_index++;
-                while(last_index>0 && piece.data[last_index]==piece.data[first_index])
+                while(last_index>first_index && piece.data[last_index]==piece.data[first_index])
                     last_index--;
                 const index new_size=last_index-first_index+1;
                 if(new_size<=1) continue;
@@ -120,9 +119,7 @@ namespace microgl {
                 if(conflict_first) c->next = conflict_first;
                 conflict_first = c;
             }
-
             main_frame.conflict_list = conflict_first;
-
             *poly_list_out=poly_list;
             *conflict_list_out=conflict_list;
         }
@@ -497,55 +494,6 @@ namespace microgl {
             return nullptr;
         }
 
-        /*
-        template<typename number>
-        auto planarize_division<number>::locate_face_of_a_b(const half_edge_vertex &a,
-                                                            const vertex &b) -> half_edge * {
-            // given edge (a,b) as half_edge_vertex a and a vertex b, find out to which
-            // adjacent face does this edge should belong. we return the half_edge that
-            // has this face to it's left and vertex 'a' as an origin. we walk CW around
-            // the vertex to find which subdivision. The reason that the natural order around
-            // a vertex is CW is BECAUSE, that the face edges are CCW. If one draws it on paper
-            // then it will become super clear.
-            // also to mention, that due to precision errors, we perform a full cone test,
-            // even for more than 180 degrees, although in theory all angles are less than
-            // 180, BUT, in practice, due to precision errors this will happen
-            half_edge *iter = a.edge;
-            const half_edge *end = iter;
-            const auto root=a.coords;
-            do { // we walk in CW order around the vertex
-                const auto trapeze_adj= infer_trapeze(iter->face);
-                const auto trapeze_prev= infer_trapeze(iter->prev->twin->face);
-                if(!trapeze_adj.isDeg()) {
-                    auto prev= locate_next_trapeze_boundary_vertex_from(iter->prev->twin, trapeze_prev)->origin->coords;
-                    auto next= locate_next_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
-                    // todo:: add safety tests if prev==root || next==root ?
-
-                    bool is_prev_after_next=classify_point(prev, root, next)<0
-                                            || (classify_point(prev, root, next)==0
-                                                && robust_dot(prev-root, next-root)>=0);//(prev-root).dot(next-root)>=0);
-                    if(is_prev_after_next)
-                        prev=locate_prev_trapeze_boundary_vertex_from(iter, trapeze_adj)->origin->coords;
-                    //
-                    bool is_0_or_360_degrees= classify_point(next, root, prev) == 0 && robust_dot(prev - root, next - root) >= 0;
-                    if(!is_0_or_360_degrees) {
-                        bool is_less_than_180=classify_point(next, root, prev)<0, inside_cone=false;
-                        int cls1= classify_point(b, root, prev);
-                        int cls2= classify_point(b, root, next);
-                        if(is_less_than_180) inside_cone=cls1<=0 && cls2>0;
-                        else inside_cone=!(cls1>0 && cls2<=0);
-                        // is (a,b) inside the cone so right of iter and left of next
-                        if(inside_cone)
-                            return iter;
-                    }
-                }
-                iter=iter->twin->next;
-            } while(iter!=end);
-            throw_regular(string_debug("locate_face_of_a_b():: could not locate !!"));
-            return nullptr;
-        }
-*/
-
         template<typename number>
         auto planarize_division<number>::insert_edge_between_non_co_linear_vertices(half_edge *vertex_a_edge,
                                                                                     half_edge *vertex_b_edge,
@@ -914,6 +862,7 @@ namespace microgl {
                     if(is_abc_almost_a_line) {
                         // if it is almost a line, then (v,b) edge eligible for removal
                         remove_edge(candidate_edge);
+                        // todo:: maybe also remove the b vertex if only has 2 edges and their winding is the same ?
                     }
                 }
             }
@@ -1276,7 +1225,7 @@ namespace microgl {
                         count_active_faces++;
                     face_to_trapeze_vertices(faces[ix], *debug_trapezes);
                 }
-                std::cout<< "# active faces: " << count_active_faces <<std::endl;
+//                std::cout<< "# active faces: " << count_active_faces <<std::endl;
             }
         }
 
@@ -1545,7 +1494,7 @@ namespace microgl {
         planarize_division<number>::robust_dot(const vertex &u, const vertex & v) {
             int f1=1, f2=1;
             bool skip=u.x>=1 || u.y>=1 || v.x>=1 || v.y>=1;
-            skip=false;
+//            skip=false;
             if(!skip) {
                 number w_u=u.x<0?(-u.x):u.x;
                 number h_u=u.y<0?(-u.y):u.y;
@@ -1558,22 +1507,5 @@ namespace microgl {
             auto result= (u * f).dot(v * f);
             return result;
         }
-
-//        template <typename number>
-//        inline number
-//        planarize_division<number>::robust_dot(const vertex &u, const vertex & v) {
-//            int f1=1, f2=1;
-//            number w_u=u.x<0?(-u.x):u.x;
-//            number h_u=u.y<0?(-u.y):u.y;
-//            if(w_u>0 && w_u<number(1)) f1=int(number(2)/w_u);
-//            if(h_u>0 && h_u<number(1)) f2=int(number(2)/h_u);
-//            int f=f1>f2?f1:f2;
-//            auto result= (u * f).dot(v * f);
-//            return result;
-//        }
-
-
-
-        // 3*2 - (3*0)
     }
 }

@@ -126,7 +126,7 @@ path<number> path_rects() {
 template <typename number>
 path<number> path_test() {
     path<number> path{};
-    int div=8;
+    int div=32;
 //    t+=0.01;
     t=137.999039f;
     path.linesTo({{100,100}, {300,100}, {300, 300}, {100,300}});
@@ -179,10 +179,10 @@ void render() {
 //    render_path<float>(path_rects<float>());
 //    render_path<float>(path_arc<float>());
 //    render_path<double>(path_arc<double>());
-//    render_path<float>(path_arc<float>());
+    render_path<float>(path_arc<float>());
 //    render_path<Q<16>>(path_arc<Q<16>>());
 //    render_path<Q<15>>(path_arc<Q<15>>());
-    render_path<Q<4>>(path_arc<Q<4>>());
+//    render_path<Q<4>>(path_arc<Q<4>>());
 //    render_path<Q<8>>(path_arc<Q<8>>());
 //    render_path<double>(path_test<double>());
 

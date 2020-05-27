@@ -5,14 +5,6 @@
 namespace microgl {
     namespace tessellation {
 
-        enum class point_type {
-            regular, attachment, intersection, unknown
-        };
-
-        enum class edge_type {
-            vertical, horizontal, unknown
-        };
-
         template <typename number>
         struct half_edge_vertex_t;
         template <typename number>
@@ -29,11 +21,6 @@ namespace microgl {
             half_edge_vertex_t<number> * origin = nullptr;
             // left incident face
             half_edge_face_t<number> * face = nullptr;
-            // pointer to the conflicting face, the face for which
-            // the start endpoint of the edge lies in for unadded edge
-//            half_edge_face_t<number> *conflict_face = nullptr;
-
-            edge_type type = edge_type::unknown;
             int winding = 0;
         };
 

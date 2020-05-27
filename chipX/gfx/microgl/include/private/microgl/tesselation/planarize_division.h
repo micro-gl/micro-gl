@@ -156,9 +156,7 @@ namespace microgl {
                 point_class_with_trapeze classs=point_class_with_trapeze::unknown;
                 half_edge *outgoing_edge= nullptr;
                 vertex_location_result(point_class_with_trapeze $classs, half_edge *$outgoing_edge)
-                : classs{$classs}, outgoing_edge{$outgoing_edge}{
-
-                }
+                : classs{$classs}, outgoing_edge{$outgoing_edge}{}
             };
 
             struct location_codes {
