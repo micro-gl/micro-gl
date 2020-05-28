@@ -75,7 +75,7 @@ namespace microgl {
                     if(!skip) last_index=output.push_back(point);
                     radians += delta;
                 }
-                // ina ddition to the clipping we perform, if it was a full circle, we need
+                // in addition to the clipping we perform, if it was a full circle, we need
                 // to use first sample as last one
                 if(full_circle) output[last_index]=output[first_index];
             }

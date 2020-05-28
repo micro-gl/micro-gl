@@ -43,7 +43,7 @@ void render_template() {
     auto t_number_angle = number_transform(t);
     static float sine = 0.0f;
     sine = microgl::math::sin(t*2);
-    auto number_scale = microgl::math::abs_(number_transform(sine)*5);
+    auto number_scale = microgl::math::abs(number_transform(sine)*5);
     if (number_scale < 1.f)
         number_scale=1.f;
 //    number_scale =5.0f;

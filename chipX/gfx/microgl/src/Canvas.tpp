@@ -349,6 +349,7 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawTriangles(const sampling::sampler<S> &sampler,
+                                     const matrix_3x3<number1> &matrix,
                                      const vec2<number1> *vertices,
                                      const vec2<number2> *uvs,
                                      const index *indices,
@@ -382,12 +383,13 @@ void Canvas<P, CODER>::drawTriangles(const sampling::sampler<S> &sampler,
                   aa_second_edge = triangles::classify_boundary_info(aa_info, edge_1_id);
                   aa_third_edge = triangles::classify_boundary_info(aa_info, edge_2_id);
               }
-              const auto & p1= vertices[first_index], p2=vertices[second_index], p3=vertices[third_index];
+              auto p1= vertices[first_index], p2=vertices[second_index], p3=vertices[third_index];
               vec2<number2> uv_s{u0,v0}, uv_e{u1,v1}, uv_d{u1-u0,v1-v0};
               auto uv1= uvs?uvs[first_index] : vec2<number2>(p1-min)/vec2<number2>(max-min);
               auto uv2= uvs?uvs[second_index] : vec2<number2>(p2-min)/vec2<number2>(max-min);
               auto uv3= uvs?uvs[third_index] : vec2<number2>(p3-min)/vec2<number2>(max-min);
               uv1= uv_s+uv1*uv_d, uv2= uv_s+uv2*uv_d, uv3= uv_s+uv3*uv_d;
+              p1=matrix*p1;p2=matrix*p2;p3=matrix*p3;
               drawTriangle<BlendMode, PorterDuff, antialias, false, S>(sampler,
                       f(p1.x,p), f(p1.y,p), f(uv1.x, uv_p), f(uv1.y, uv_p), 0,
                       f(p2.x,p), f(p2.y,p), f(uv2.x, uv_p), f(uv2.y, uv_p), 0,

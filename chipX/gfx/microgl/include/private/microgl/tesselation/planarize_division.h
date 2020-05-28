@@ -1,5 +1,5 @@
 #pragma once
-#define DEBUG_PLANAR true
+#define DEBUG_PLANAR false
 #define MAX_ITERATIONS 200
 #define APPLY_MERGE true
 

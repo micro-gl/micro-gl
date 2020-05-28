@@ -1,6 +1,7 @@
 #pragma once
 
 #include <microgl/vec2.h>
+#include <microgl/matrix_3x3.h>
 #include <microgl/rect.h>
 #include <microgl/color.h>
 #include <microgl/micro_gl_traits.h>
@@ -160,6 +161,7 @@ public:
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=float, typename S>
     void drawTriangles(const sampling::sampler<S> & sampler,
+                       const matrix_3x3<number1> &matrix,
                        const vec2<number1> *vertices= nullptr,
                        const vec2<number2> *uvs=nullptr,
                        const index *indices= nullptr,
