@@ -82,7 +82,7 @@ float t = 0;
 template <typename number>
 path<number> path_arc() {
     path<number> path{};
-    int div=8; //4
+    int div=32; //4
     path.arc({200,200}, 100,
              math::deg_to_rad(0.0f),
              math::deg_to_rad(360.0f),
@@ -93,7 +93,7 @@ path<number> path_arc() {
              math::deg_to_rad(360.0f),
              true, div).closePath();
 t+=0.82f;
-//    t=13.9399986f;//819999992f;//-0.01f;
+//    t=120.539963f;//819999992f;//-0.01f;
 ////t=26.0399914;
     path.moveTo({150,150});
     path.arc({150+0,150}, 50+t-0,

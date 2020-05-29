@@ -5,9 +5,7 @@ namespace microgl {
 
     template<typename number>
     struct vec2 {
-
         number x, y;
-
         vec2() = default;
         vec2(const number & x_, const number & y_) {
             x = x_;
@@ -53,6 +51,9 @@ namespace microgl {
         }
 
         vec2 operator*(const number & val) const {
+            return {this->x*val, this->y*val};
+        }
+        vec2 operator*(const signed & val) const {
             return {this->x*val, this->y*val};
         }
 

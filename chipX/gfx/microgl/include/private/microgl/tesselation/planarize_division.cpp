@@ -491,6 +491,7 @@ namespace microgl {
                 iter=iter->twin->next;
             } while(iter!=end);
             throw_regular(string_debug("locate_face_of_a_b():: could not locate !!"));
+            return iter;
             return nullptr;
         }
 

@@ -29,7 +29,7 @@ namespace microgl {
                     number end_angle_rad,
                     unsigned divisions=32,
                     bool anti_clockwise=false) {
-                if(divisions<0) return;
+                if(divisions<=0) return;
                 const auto two_pi = math::pi<number>() * number(2);
                 const auto half_pi = math::pi<number>() / number(2);
                 const auto zero = number(0);

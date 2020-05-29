@@ -70,10 +70,12 @@ public:
     }
 
     Q(const signed& int_val) {
-        this->_value = int_val<<P;
+        const bool isNegative=int_val<0;
+        this->_value = abs(integer(int_val))<<P;
+        if(isNegative) this->_value = -this->_value;
     }
     Q(const unsigned & int_val) {
-        this->_value = int_val<<P;
+        this->_value = integer(int_val)<<P;
     }
     Q(const float &val) {
         this->_value = integer(val * float(1u<<P));
