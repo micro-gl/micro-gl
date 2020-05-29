@@ -86,22 +86,20 @@ path<number> path_arc() {
     path.arc({200,200}, 100,
              math::deg_to_rad(0.0f),
              math::deg_to_rad(360.0f),
+             false, div).closePath();
+
+    path.arc({250,200}, 50,
+             math::deg_to_rad(0.0f),
+             math::deg_to_rad(360.0f),
              true, div).closePath();
-//
-//    path.arc({250,200}, 50,
-//             math::deg_to_rad(0.0f),
-//             math::deg_to_rad(360.0f),
-//             true, div).closePath();
-//t+=0.082f;
 t+=0.82f;
 //    t=13.9399986f;//819999992f;//-0.01f;
 ////t=26.0399914;
-//    path.moveTo({150,150});
-//    path.arc({150+0,150}, 50+t-0,
-//             math::deg_to_rad(0.0f),
-//             math::deg_to_rad(360.0f),
-//             false, div);//.closePath();
-
+    path.moveTo({150,150});
+    path.arc({150+0,150}, 50+t-0,
+             math::deg_to_rad(0.0f),
+             math::deg_to_rad(360.0f),
+             false, div);//.closePath();
 
     return path;
 }

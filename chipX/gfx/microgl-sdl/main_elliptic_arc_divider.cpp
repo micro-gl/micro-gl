@@ -36,8 +36,8 @@ void render_arc_internal(number start_angle_rad,
 
 template <typename number>
 void render_arc() {
-    number start_angle_rad = math::deg_to_rad(0.0f);
-    number end_angle_rad = math::deg_to_rad(180.0f);
+    number start_angle_rad = math::deg_to_rad(-45.0f);
+    number end_angle_rad = math::deg_to_rad(360.0f);
     number rotation = math::deg_to_rad(45.0f);
     number radius_x = 50, radius_y = 75;
     number center_x = 200, center_y=200;
@@ -75,10 +75,11 @@ void render_arc_internal(number start_angle_rad,
             start_angle_rad,
             end_angle_rad,
             divisions_count,
+//            false,
             true
             );
 
-    for (uint ix = 0; ix < arc_points.size(); ++ix) {
+    for (uint ix = 0; ix < arc_points.size()-0; ++ix) {
         canvas->drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
                 color_red, color_red,
                 arc_points[ix].x,

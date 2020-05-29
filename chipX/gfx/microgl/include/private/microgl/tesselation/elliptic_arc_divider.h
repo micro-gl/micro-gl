@@ -33,20 +33,24 @@ namespace microgl {
                 const auto two_pi = math::pi<number>() * number(2);
                 const auto half_pi = math::pi<number>() / number(2);
                 const auto zero = number(0);
-                if (start_angle_rad==end_angle_rad) return;
+                auto delta = end_angle_rad - start_angle_rad;
+                if (delta==0) return;
+                const bool full_circle_or_more= microgl::math::abs(delta) >= two_pi;
                 start_angle_rad = math::mod(start_angle_rad, two_pi);
                 end_angle_rad = math::mod(end_angle_rad, two_pi);
-                auto delta = end_angle_rad - start_angle_rad;
+                if(start_angle_rad<zero) start_angle_rad+=two_pi;
+                if(end_angle_rad<zero) end_angle_rad+=two_pi;
+                delta = end_angle_rad - start_angle_rad;
                 if (!anti_clockwise) { // clockwise
-                    if (delta <= zero) end_angle_rad += two_pi;
+                    if (delta < zero) end_angle_rad += two_pi;
+                    else if(full_circle_or_more) end_angle_rad =start_angle_rad+two_pi;
                 } else {
-                    if (delta >= zero) end_angle_rad -= two_pi;
+                    if (delta > zero) end_angle_rad -= two_pi;
+                    else if(full_circle_or_more) end_angle_rad =start_angle_rad-two_pi;
                 }
                 delta = end_angle_rad - start_angle_rad;
                 // we test for greater in case of precision issues
-                const bool full_circle=microgl::math::abs(delta)>=two_pi;
                 delta = delta / number(divisions);
-
                 auto radians = start_angle_rad;
                 auto rotation_sin = math::sin(rotation);
                 auto rotation_cos = math::cos(rotation);
@@ -77,7 +81,7 @@ namespace microgl {
                 }
                 // in addition to the clipping we perform, if it was a full circle, we need
                 // to use first sample as last one
-                if(full_circle) output[last_index]=output[first_index];
+                if(full_circle_or_more) output[last_index]=output[first_index];
             }
 
         private:
