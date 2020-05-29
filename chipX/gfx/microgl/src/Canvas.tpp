@@ -349,7 +349,7 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawTriangles(const sampling::sampler<S> &sampler,
-                                     const matrix_3x3<number1> &matrix,
+                                     const matrix_3x3<number1> &transform,
                                      const vec2<number1> *vertices,
                                      const vec2<number2> *uvs,
                                      const index *indices,
@@ -389,7 +389,7 @@ void Canvas<P, CODER>::drawTriangles(const sampling::sampler<S> &sampler,
               auto uv2= uvs?uvs[second_index] : vec2<number2>(p2-min)/vec2<number2>(max-min);
               auto uv3= uvs?uvs[third_index] : vec2<number2>(p3-min)/vec2<number2>(max-min);
               uv1= uv_s+uv1*uv_d, uv2= uv_s+uv2*uv_d, uv3= uv_s+uv3*uv_d;
-              p1=matrix*p1;p2=matrix*p2;p3=matrix*p3;
+              p1=transform*p1;p2=transform*p2;p3=transform*p3;
               drawTriangle<BlendMode, PorterDuff, antialias, false, S>(sampler,
                       f(p1.x,p), f(p1.y,p), f(uv1.x, uv_p), f(uv1.y, uv_p), 0,
                       f(p2.x,p), f(p2.y,p), f(uv2.x, uv_p), f(uv2.y, uv_p), 0,
@@ -437,6 +437,7 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
 void Canvas<P, CODER>::drawTrianglesWireframe(const color_t &color,
+                                              const matrix_3x3<number> &transform,
                                               const vec2<number> *vertices,
                                               const index *indices,
                                               const index size,
@@ -445,7 +446,7 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_t &color,
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
               [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
                   const index &edge_0_id, const index &edge_1_id, const index &edge_2_id) {
-                  drawTriangleWireframe(color, vertices[first_index], vertices[second_index], vertices[third_index], opacity);
+                  drawTriangleWireframe(color, transform*vertices[first_index], transform*vertices[second_index], transform*vertices[third_index], opacity);
               });
 }
 
@@ -1178,6 +1179,7 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
 template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
+                                   const matrix_3x3<number1> &transform,
                                    const vec2<number1> *points,
                                    index size, opacity_t opacity,
                                    polygons::hints hint,
@@ -1220,7 +1222,7 @@ void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
     const vec2<number2> * uvs= nullptr;//uv_map<number1, number2>::compute(points, size, u0, v0, u1, v1);
     // draw triangles batch
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, S>(
-            sampler,
+            sampler, transform,
             points,
             uvs,
             indices.data(),
@@ -1230,22 +1232,11 @@ void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
             opacity,
             u0, v0, u1, v1);
 
-//    drawTriangles<BlendMode, PorterDuff, antialias>(
-//            color::colors::RED,
-//            points,
-//            indices.data(),
-//            boundary_buffer.data(),
-//            indices.size(),
-//            type,
-//            opacity);
-
     if(debug)
         drawTrianglesWireframe({0,0,0,255},
-                               points,
-                               indices.data(),
-                               indices.size(),
-                               type,
-                               255);
+                transform, points,
+                indices.data(), indices.size(),
+                type, 255);
 
     if(uvs)
         delete [] uvs;
@@ -1254,6 +1245,7 @@ void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
 template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawPathStroke(const sampling::sampler<S> &sampler,
+                                      const matrix_3x3<number1> &transform,
                                       tessellation::path<number1> & path,
                                       const number1 & stroke_width,
                                       const tessellation::stroke_cap &cap,
@@ -1267,7 +1259,7 @@ void Canvas<P, CODER>::drawPathStroke(const sampling::sampler<S> &sampler,
                                       const bool debug) {
     const auto & buffers= path.tessellateStroke(stroke_width, cap, line_join, miter_limit, stroke_dash_array, stroke_dash_offset);
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, S>(
-            sampler,
+            sampler, transform,
             buffers.output_vertices.data(),
             static_cast<vec2<number2> *>(nullptr),
             buffers.output_indices.data(),
@@ -1277,7 +1269,7 @@ void Canvas<P, CODER>::drawPathStroke(const sampling::sampler<S> &sampler,
             opacity,
             u0, v0, u1, v1);
     if(debug)
-        drawTrianglesWireframe({0,0,0,255},
+        drawTrianglesWireframe({0,0,0,255}, transform,
                                buffers.output_vertices.data(),
                                buffers.output_indices.data(),
                                buffers.output_indices.size(),
@@ -1288,6 +1280,7 @@ void Canvas<P, CODER>::drawPathStroke(const sampling::sampler<S> &sampler,
 template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawPathFill(const sampling::sampler<S> &sampler,
+                                    const matrix_3x3<number1> &transform,
                                     tessellation::path<number1> & path,
                                     const tessellation::fill_rule &rule,
                                     const tessellation::tess_quality &quality,
@@ -1298,7 +1291,7 @@ void Canvas<P, CODER>::drawPathFill(const sampling::sampler<S> &sampler,
     const auto & buffers= path.tessellateFill(rule, quality);
     if(buffers.output_vertices.size()==0) return;
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, S>(
-            sampler,
+            sampler, transform,
             buffers.output_vertices.data(),
             static_cast<vec2<number2> *>(nullptr),
             buffers.output_indices.data(),
@@ -1309,7 +1302,7 @@ void Canvas<P, CODER>::drawPathFill(const sampling::sampler<S> &sampler,
             u0, v0, u1, v1);
     if(debug||true) {
 //    if(debug) {
-        drawTrianglesWireframe({0,0,0,255},
+        drawTrianglesWireframe({0,0,0,255}, transform,
                                buffers.output_vertices.data(),
                                buffers.output_indices.data(),
                                buffers.output_indices.size(),
@@ -1470,6 +1463,7 @@ int nn=0;
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawBezierPatch(const sampling::sampler<S> & sampler,
+                                       const matrix_3x3<number1> &transform,
                                        const vec3<number1> *mesh,
                                        const unsigned uOrder, const unsigned vOrder,
                                        const unsigned uSamples, const unsigned vSamples,
@@ -1477,6 +1471,7 @@ void Canvas<P, CODER>::drawBezierPatch(const sampling::sampler<S> & sampler,
                                        const number2 u1, const number2 v1,
                                        const opacity_t opacity) {
     using tess= microgl::tessellation::bezier_patch_tesselator<number1, number2>;
+    using vertex=vec2<number1>;
     dynamic_array<number1> vertices_attributes;
     dynamic_array<index> indices;
     microgl::triangles::indices indices_type;
@@ -1493,20 +1488,21 @@ void Canvas<P, CODER>::drawBezierPatch(const sampling::sampler<S> & sampler,
         index first_index   = (even ? IND(ix + 0) : IND(ix + 2))*window_size;
         index second_index  = (even ? IND(ix + 1) : IND(ix + 1))*window_size;
         index third_index   = (even ? IND(ix + 2) : IND(ix + 0))*window_size;
+        vertex v1=vertex{vertices_attributes[first_index+I_X], vertices_attributes[first_index+I_Y]};
+        vertex v2=vertex{vertices_attributes[second_index+I_X], vertices_attributes[second_index+I_Y]};
+        vertex v3=vertex{vertices_attributes[third_index+I_X], vertices_attributes[third_index+I_Y]};
+        v1=transform*v1;v2=transform*v2;v3=transform*v3;
         drawTriangle<BlendMode, PorterDuff, antialias>(sampler,
-                                                        vertices_attributes[first_index+I_X],
-                                                        vertices_attributes[first_index+I_Y],
-                                                        vertices_attributes[first_index+I_U],
-                                                        vertices_attributes[first_index+I_V],
-                                                        vertices_attributes[second_index+I_X],
-                                                        vertices_attributes[second_index+I_Y],
-                                                        vertices_attributes[second_index+I_U],
-                                                        vertices_attributes[second_index+I_V],
-                                                        vertices_attributes[third_index+I_X],
-                                                        vertices_attributes[third_index+I_Y],
-                                                        vertices_attributes[third_index+I_U],
-                                                        vertices_attributes[third_index+I_V],
-                                                        opacity);
+                v1.x, v1.y,
+                vertices_attributes[first_index+I_U],
+                vertices_attributes[first_index+I_V],
+                v2.x, v2.y,
+                vertices_attributes[second_index+I_U],
+                vertices_attributes[second_index+I_V],
+                v3.x, v3.y,
+                vertices_attributes[third_index+I_U],
+                vertices_attributes[third_index+I_V],
+                opacity);
 //        drawTriangleWireframe({channel(nn),0,0,255},
 //                              {vertices_attributes[first_index+I_X], vertices_attributes[first_index+I_Y]},
 //                              {vertices_attributes[second_index+I_X], vertices_attributes[second_index+I_Y]},
@@ -1515,46 +1511,4 @@ void Canvas<P, CODER>::drawBezierPatch(const sampling::sampler<S> & sampler,
         even = !even;
     }
 #undef IND
-}
-
-// todo: drawBezierPath will be removed once the path maker is ready
-
-template<typename P, typename CODER>
-template<typename number>
-void Canvas<P, CODER>::drawBezierPath(color_f_t & color, vec2<number> *points,
-                                               unsigned int size,
-                                               typename tessellation::curve_divider<number>::CurveType type,
-                                               typename tessellation::curve_divider<number>::CurveDivisionAlgorithm algorithm) {
-    using vertex = vec2<number>;
-    dynamic_array<vertex> samples;
-    vertex previous, current;
-    using c = tessellation::curve_divider<number>;
-    index pitch = type==c::CurveType::Quadratic ? 2 : 3;
-    number circle_diameter = 5;
-    for (index jx = 0; jx < size-pitch; jx+=pitch) {
-        auto * point_anchor = &points[jx];
-        samples.clear();
-        c::compute(point_anchor, samples, algorithm, type);
-        for (index ix = 0; ix < samples.size(); ++ix) {
-            current = samples[ix];
-            if(ix) drawWuLine<number>(color, previous.x, previous.y, current.x, current.y);
-            drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(color_f_t{1.0, 0.0, 0.0, 1.0},
-                                                                                            current.x, current.y, circle_diameter, 255);
-            previous = current;
-        }
-        drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(color_f_t{0.0, 0.0, 1.0, 1.0},
-                                                                                        point_anchor[0].x, point_anchor[0].y,
-                                                                                        circle_diameter, 255);
-        drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(color_f_t{0.0, 0.0, 1.0, 1.0},
-                                                                                point_anchor[1].x, point_anchor[1].y,
-                                                                                circle_diameter, 255);
-        drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(color_f_t{0.0, 0.0, 1.0, 1.0},
-                                                                                point_anchor[2].x, point_anchor[2].y,
-                                                                                circle_diameter, 255);
-        if(type==c::CurveType::Cubic ) {
-            drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(color_f_t{0.0, 0.0, 1.0, 1.0},
-                                                                                    point_anchor[3].x, point_anchor[3].y,
-                                                                                    circle_diameter, 255);
-        }
-    }
 }

@@ -157,6 +157,7 @@ void render_polygon(std::vector<vec2<T>> polygon) {
     // draw triangles batch
     canvas->drawTriangles<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
             RED,
+            matrix_3x3<T>::identity(),
             polygon.data(),
             indices.data(),
             boundary_buffer.data(),
@@ -169,6 +170,7 @@ void render_polygon(std::vector<vec2<T>> polygon) {
     // draw triangulation
     canvas->drawTrianglesWireframe(
             BLACK,
+            matrix_3x3<T>::identity(),
             polygon.data(),
             indices.data(),
             indices.size(),

@@ -179,6 +179,7 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_width, b
     canvas->clear({255,255,255,255});
     canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
             color_red,
+            matrix_3x3<number>::identity(),
             vertices.data(),
             (vec2<number> *)nullptr,
             indices.data(),
@@ -192,6 +193,7 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_width, b
     // draw triangulation
     canvas->drawTrianglesWireframe(
             {0,0,0,255},
+            matrix_3x3<number>::identity(),
             vertices.data(),
             indices.data(),
             indices.size(),

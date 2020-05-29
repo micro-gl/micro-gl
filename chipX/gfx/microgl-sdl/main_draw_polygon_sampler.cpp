@@ -83,6 +83,7 @@ void render_polygon(dynamic_array<vec2<number>> &polygon) {
     canvas->drawPolygon<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
 //            tex_2,
             gradient2Colors,
+            matrix_3x3<number>::identity(),
             polygon.data(),
             polygon.size(),
             255,

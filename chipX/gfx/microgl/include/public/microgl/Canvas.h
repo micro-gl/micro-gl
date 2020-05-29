@@ -161,7 +161,7 @@ public:
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=float, typename S>
     void drawTriangles(const sampling::sampler<S> & sampler,
-                       const matrix_3x3<number1> &matrix,
+                       const matrix_3x3<number1> &transform,
                        const vec2<number1> *vertices= nullptr,
                        const vec2<number2> *uvs=nullptr,
                        const index *indices= nullptr,
@@ -190,6 +190,7 @@ public:
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number=float>
     void drawTrianglesWireframe(const color_t & color,
+                                const matrix_3x3<number> &transform,
                                 const vec2<number> *vertices,
                                 const index *indices,
                                 index size,
@@ -311,6 +312,7 @@ public:
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1, typename number2=number1, typename S>
     void drawBezierPatch(const sampling::sampler<S> &sampler,
+                         const matrix_3x3<number1> &transform,
                          const vec3<number1> *mesh,
                          unsigned uOrder, unsigned vOrder,
                          unsigned uSamples=20, unsigned vSamples=20,
@@ -322,8 +324,9 @@ public:
     template <typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=number1, typename S>
     void drawPolygon(const sampling::sampler<S> &sampler,
+                     const matrix_3x3<number1> &transform,
                      const vec2<number1> * points,
-                     index size, opacity_t opacity,
+                     index size, opacity_t opacity=255,
                      polygons::hints hint = polygons::hints::SIMPLE,
                      number2 u0=number2(0), number2 v0=number2(1),
                      number2 u1=number2(1), number2 v1=number2(0), bool debug=false);
@@ -345,18 +348,10 @@ public:
                         unsigned int size = 4,
                         bool closed_path = false);
 
-    template <typename number>
-    void drawBezierPath(color_f_t & color, vec2<number> *points,
-                         unsigned int size = 3,
-                        typename tessellation::curve_divider<number>::CurveType type
-                        = tessellation::curve_divider<number>::CurveType ::Quadratic,
-                         typename tessellation::curve_divider<number>::CurveDivisionAlgorithm algorithm
-                         = tessellation::curve_divider<number>::CurveDivisionAlgorithm::Uniform_16);
-
-
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=float, typename S>
     void drawPathStroke(const sampling::sampler<S> &sampler,
+                        const matrix_3x3<number1> &transform,
                         tessellation::path<number1> &path,
                         const number1 &stroke_width=number1(1),
                         const tessellation::stroke_cap &cap=tessellation::stroke_cap::butt,
@@ -370,6 +365,7 @@ public:
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=float, typename S>
     void drawPathFill(const sampling::sampler<S> &sampler,
+                      const matrix_3x3<number1> &transform,
                       tessellation::path<number1> &path,
                       const tessellation::fill_rule &rule=tessellation::fill_rule::non_zero,
                       const tessellation::tess_quality &quality=tessellation::tess_quality::better,

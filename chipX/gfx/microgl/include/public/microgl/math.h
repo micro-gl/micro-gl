@@ -169,6 +169,11 @@ namespace microgl {
         }
 
         static
+        double mod(double numer, double denom) {
+            return fmodf(numer, denom);
+        }
+
+        static
         int mod(int numer, int denom) {
             return numer%denom;
         }

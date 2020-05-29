@@ -86,28 +86,22 @@ path<number> path_arc() {
     path.arc({200,200}, 100,
              math::deg_to_rad(0.0f),
              math::deg_to_rad(360.0f),
-             false, div).closePath();
-//
-    path.arc({250,200}, 50,
-             math::deg_to_rad(0.0f),
-             math::deg_to_rad(360.0f),
              true, div).closePath();
+//
+//    path.arc({250,200}, 50,
+//             math::deg_to_rad(0.0f),
+//             math::deg_to_rad(360.0f),
+//             true, div).closePath();
 //t+=0.082f;
 t+=0.82f;
 //    t=13.9399986f;//819999992f;//-0.01f;
 ////t=26.0399914;
-    path.moveTo({150,150});
-    path.arc({150+0,150}, 50+t-0,
-             math::deg_to_rad(0.0f),
-             math::deg_to_rad(360.0f),
-             false, div);//.closePath();
-
-//             // case 1
 //    path.moveTo({150,150});
-//    path.arc({150+t,150}, 50+t-0,
+//    path.arc({150+0,150}, 50+t-0,
 //             math::deg_to_rad(0.0f),
 //             math::deg_to_rad(360.0f),
 //             false, div);//.closePath();
+
 
     return path;
 }
@@ -147,6 +141,7 @@ void render_path(path<number> path) {
     canvas->clear({255, 255, 255, 255});
     canvas->drawPathFill<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
             color_red,
+            matrix_3x3<number>::identity(),
             path,
             tessellation::fill_rule::even_odd,
             tessellation::tess_quality::prettier_with_extra_vertices,
@@ -157,6 +152,7 @@ void render_path(path<number> path) {
     return;
     canvas->drawPathStroke<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
             color_green,
+            matrix_3x3<number>::identity(),
             path,
             number{10},
             tessellation::stroke_cap::butt,
@@ -177,8 +173,8 @@ void render() {
 //    render_path<float>(path_star_2<float>());
 //    render_path<Q<8>>(path_star_2<Q<8>>());
 //    render_path<float>(path_rects<float>());
-    render_path<float>(path_arc<float>());
-//    render_path<double>(path_arc<double>());
+//    render_path<float>(path_arc<float>());
+    render_path<double>(path_arc<double>());
 //    render_path<float>(path_arc<float>());
 //    render_path<Q<16>>(path_arc<Q<16>>());
 //    render_path<Q<15>>(path_arc<Q<15>>());

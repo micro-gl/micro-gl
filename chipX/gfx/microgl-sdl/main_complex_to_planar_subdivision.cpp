@@ -130,6 +130,7 @@ void render_polygon(chunker<vec2<number>> pieces) {
 
     canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
             color_red,
+            matrix_3x3<number>::identity(),
             vertices.data(),
             (vec2<number> *)nullptr,
             indices.data(),
@@ -141,6 +142,7 @@ void render_polygon(chunker<vec2<number>> pieces) {
 //        return;
 
     canvas->drawTrianglesWireframe({0,0,0,255},
+            matrix_3x3<number>::identity(),
             vertices.data(),
             indices.data(),
             indices.size(),

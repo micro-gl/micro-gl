@@ -5,8 +5,6 @@
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
-#include <microgl/matrix_3x3.h>
-#include <microgl/Q.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
