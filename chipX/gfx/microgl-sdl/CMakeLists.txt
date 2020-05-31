@@ -61,13 +61,14 @@ set(SOURCES
 #        main_bentley_ottmann.cpp
 #        main_complex_to_simple_polygon.cpp
 #        main_complex_to_simple_comps_tree.cpp
-#        main_ear_clipping.cpp
+        main_ear_clipping.cpp
+#        main_monotone_polygon_triangulation.cpp
 #        main_complex_to_planar_subdivision.cpp
 #        main_stroke_tessellation.cpp
 #        main_stroke_dash_tessellation.cpp
 #        main_elliptic_arc_divider.cpp
 #        main_fan_triangulation.cpp
-        main_path.cpp
+#        main_path.cpp
 #        main_q_sort.cpp
 #        main_avl_tree.cpp
         libs/stb_image/stb_image.cpp

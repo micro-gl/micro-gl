@@ -30,9 +30,6 @@ namespace microgl {
                 index original_index = -1;
                 node_t *prev = nullptr;
                 node_t *next = nullptr;
-                bool isValid() {
-                    return prev!= nullptr && next!= nullptr;
-                }
             };
 
         private:
@@ -80,14 +77,33 @@ namespace microgl {
                                            index size,
                                            bool reverse,
                                            pool_nodes_t &);
-            static number orientation_value(const vertex *a, const vertex *b, const vertex *c);
+
+            // t
+            // positive if CCW
+            static number orientation_value(const vertex *a,
+                                            const vertex *b,
+                                            const vertex *c);
+
             static int neighborhood_orientation_sign(const node_t *v);
+
+            // tv
             static char sign_orientation_value(const vertex *i, const vertex *j, const vertex *k);
+
+            // main
+
             static node_t *maximal_y_element(node_t *list);
+
+            static bool isConvex(const node_t *v, node_t *list);
+            static bool isConvex(const node_t *v, int global_orientation);
+
             static bool isEmpty(const node_t *v, node_t *list);
-            static bool areEqual(const node_t *a, const node_t *b);
-            static bool isDegenrate(const node_t *v);
-            static auto remove_degenerate_from(node_t *v) -> node_t *;
+
+            static
+            bool areEqual(const node_t *a,
+                          const node_t *b);
+
+            static
+            bool isDegenrate(const node_t *v);
 
         };
 
