@@ -158,10 +158,10 @@ void render() {
 //    std::cout << t << std::endl;
 //    render_polygon(poly_rect());
 //    render_polygon<float>(poly_2<float>());
-//    render_polygon<float>(poly_3<float>());
+    render_polygon<float>(poly_3<float>());
 //    render_polygon<float>(poly_hole<float>());
 //    render_polygon<float>(poly_hole3<float>());
-    render_polygon<float>(poly_hole4<float>());
+//    render_polygon<float>(poly_hole4<float>());
 //    render_polygon<float>(poly_rect<float>());
 //    render_polygon<float>(poly_tri<float>());
 }
@@ -177,7 +177,7 @@ void render_polygon(dynamic_array<vec2<number>> polygon) {
 
     using ear = tessellation::ear_clipping_triangulation<number>;
 
-    auto type = triangles::indices::TRIANGLES_WITH_BOUNDARY;
+    triangles::indices type;
     dynamic_array<index> indices;
     dynamic_array<boundary_info> boundary_buffer;
 
@@ -211,9 +211,7 @@ void render_polygon(dynamic_array<vec2<number>> polygon) {
             indices.size(),
             type,
             255);
-
 }
-
 
 int main() {
     init_sdl(W, H);

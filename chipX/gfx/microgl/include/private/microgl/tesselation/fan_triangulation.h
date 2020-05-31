@@ -21,9 +21,7 @@ namespace microgl {
                          index size,
                          dynamic_array<index> &indices_buffer_triangulation,
                          dynamic_array<triangles::boundary_info> *boundary_buffer,
-                         const triangles::indices &requested =
-                         triangles::indices::TRIANGLES_FAN
-            );
+                         triangles::indices &output_type);
 
         };
 

@@ -46,10 +46,10 @@ namespace microgl {
                                                          index size,
                                                          dynamic_array<index> & indices_buffer_triangulation,
                                                          dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
-                                                         const microgl::triangles::indices &requested) {
+                                                         microgl::triangles::indices &output_type) {
             pool_nodes_t pool{size};
             auto * outer = polygon_to_linked_list(polygon, 0, size, false, pool);
-            compute(outer, size, indices_buffer_triangulation, boundary_buffer, requested);
+            compute(outer, size, indices_buffer_triangulation, boundary_buffer, output_type);
         }
 
         template <typename number>
@@ -69,9 +69,10 @@ namespace microgl {
                                                          index size,
                                                          dynamic_array<index> & indices_buffer_triangulation,
                                                          dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
-                                                         const microgl::triangles::indices &requested) {
-            bool requested_triangles_with_boundary =
-                    requested==microgl::triangles::indices::TRIANGLES_WITH_BOUNDARY;
+                                                         microgl::triangles::indices &output_type) {
+            bool requested_triangles_with_boundary = boundary_buffer;
+            output_type=requested_triangles_with_boundary? microgl::triangles::indices::TRIANGLES_WITH_BOUNDARY :
+                        microgl::triangles::indices::TRIANGLES;
             auto &indices = indices_buffer_triangulation;
             index ind = 0;
             node_t * first = list;

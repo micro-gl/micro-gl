@@ -67,16 +67,14 @@ namespace microgl {
                                 index size,
                                 dynamic_array<index> &indices_buffer_triangulation,
                                 dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
-                                const microgl::triangles::indices &requested =
-                                    microgl::triangles::indices::TRIANGLES
+                                microgl::triangles::indices &output_type
             );
 
             static void compute(node_t *list,
                                 index size,
                                 dynamic_array<index> &indices_buffer_triangulation,
                                 dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
-                                const microgl::triangles::indices &requested =
-                                microgl::triangles::indices::TRIANGLES
+                                microgl::triangles::indices &output_type
             );
 
         private:

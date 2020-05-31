@@ -1193,23 +1193,19 @@ void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
         case hints::CONCAVE:
         case hints::SIMPLE:
         {
-            type = antialias ? triangles::indices::TRIANGLES_WITH_BOUNDARY :
-                   triangles::indices::TRIANGLES;
             microgl::tessellation::ear_clipping_triangulation<number1>::compute(points,
                                                                                 size,
                                                                                 indices,
-                                                                                &boundary_buffer,
+                                                                                antialias? &boundary_buffer: nullptr,
                                                                                 type);
             break;
         }
         case hints::CONVEX:
         {
-            type = antialias ? triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY :
-                   triangles::indices::TRIANGLES_FAN;
             microgl::tessellation::fan_triangulation<number1>::compute(points,
                                                                        size,
                                                                        indices,
-                                                                       &boundary_buffer,
+                                                                       antialias? &boundary_buffer: nullptr,
                                                                        type);
             break;
         }
