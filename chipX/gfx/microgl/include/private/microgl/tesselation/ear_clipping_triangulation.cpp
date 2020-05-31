@@ -24,7 +24,7 @@ namespace microgl {
                 }
                 last = node;
                 auto * candidate_deg=last->prev;
-                if(ix>=2 && isDegenrate(candidate_deg)){
+                if(ix>=2 && isDegenerate(candidate_deg)){
                     candidate_deg->prev->next=candidate_deg->next;
                     candidate_deg->next->prev=candidate_deg->prev;
                     candidate_deg->prev=candidate_deg->next= nullptr;
@@ -33,7 +33,7 @@ namespace microgl {
             // make it cyclic
             last->next = first;
             first->prev = last;
-            if(isDegenrate(last)){
+            if(isDegenerate(last)){
                 last->prev->next=last->next;
                 last->next->prev=last->prev;
                 last->prev=last->next= nullptr;
@@ -53,6 +53,18 @@ namespace microgl {
         }
 
         template <typename number>
+        void ear_clipping_triangulation<number>::update_ear_status(node_t *vertex, const int &polygon_orientation) {
+            if(!vertex->isValid()) {
+                vertex->is_ear=false;
+                return;
+            }
+            int vertex_orient=neighborhood_orientation_sign(vertex);
+            bool is_convex = vertex_orient*polygon_orientation>0; // same orientation as polygon
+            bool is_empty = isEmpty(vertex);
+            vertex->is_ear=is_convex && is_empty;
+        }
+
+        template <typename number>
         void ear_clipping_triangulation<number>::compute(node_t *list,
                                                          index size,
                                                          dynamic_array<index> & indices_buffer_triangulation,
@@ -64,51 +76,47 @@ namespace microgl {
             index ind = 0;
             node_t * first = list;
             node_t * point = first;
-            // remove degenerate ears, I assume, that removing all deg ears
-            // will create a poly that will never have deg again (I might be wrong)
             int poly_orient=neighborhood_orientation_sign(maximal_y_element(first));
             if(poly_orient==0) return;
+            do {
+                update_ear_status(point, poly_orient);
+            } while((point=point->next) && point!=first);
+            // remove degenerate ears, I assume, that removing all deg ears
+            // will create a poly that will never have deg again (I might be wrong)
             for (index ix = 0; ix < size - 2; ++ix) {
                 point = first;
                 if(point== nullptr) break;
                 do {
-                    int vertex_orient=neighborhood_orientation_sign(point);
-                    bool is_degenerate = vertex_orient==0;
-                    bool is_ear=false;
-                    if(!is_degenerate) {
-                        bool is_convex = vertex_orient*poly_orient>0; // same orientation as polygon
-                        bool is_empty = isEmpty(point, first);
-                        is_ear=is_convex && is_empty;
-                    }
-                    if (is_degenerate || is_ear) {
-                        if(is_ear) {
-                            indices.push_back(point->prev->original_index);
-                            indices.push_back(point->original_index);
-                            indices.push_back(point->next->original_index);
-                            // record boundary
-                            if(requested_triangles_with_boundary) {
-                                // classify if edges are on boundary
-                                unsigned int first_edge_index_distance = abs_((int)indices[ind + 0] - (int)indices[ind + 1]);
-                                unsigned int second_edge_index_distance = abs_((int)indices[ind + 1] - (int)indices[ind + 2]);
-                                unsigned int third_edge_index_distance = abs_((int)indices[ind + 2] - (int)indices[ind + 0]);
-                                bool first_edge = first_edge_index_distance==1 || first_edge_index_distance==size-1;
-                                bool second_edge = second_edge_index_distance==1 || second_edge_index_distance==size-1;
-                                bool third_edge = third_edge_index_distance==1 || third_edge_index_distance==size-1;
-                                index info = microgl::triangles::create_boundary_info(first_edge, second_edge, third_edge);
-                                boundary_buffer->push_back(info);
-                                ind += 3;
-                            }
+                    bool is_ear=point->is_ear;
+                    if (is_ear) {
+                        indices.push_back(point->prev->original_index);
+                        indices.push_back(point->original_index);
+                        indices.push_back(point->next->original_index);
+                        // record boundary
+                        if(requested_triangles_with_boundary) {
+                            // classify if edges are on boundary
+                            unsigned int first_edge_index_distance = abs_((int)indices[ind + 0] - (int)indices[ind + 1]);
+                            unsigned int second_edge_index_distance = abs_((int)indices[ind + 1] - (int)indices[ind + 2]);
+                            unsigned int third_edge_index_distance = abs_((int)indices[ind + 2] - (int)indices[ind + 0]);
+                            bool first_edge = first_edge_index_distance==1 || first_edge_index_distance==size-1;
+                            bool second_edge = second_edge_index_distance==1 || second_edge_index_distance==size-1;
+                            bool third_edge = third_edge_index_distance==1 || third_edge_index_distance==size-1;
+                            index info = microgl::triangles::create_boundary_info(first_edge, second_edge, third_edge);
+                            boundary_buffer->push_back(info);
+                            ind += 3;
                         }
                         // prune the point from the polygon
                         point->prev->next = point->next;
                         point->next->prev = point->prev;
                         auto* anchor_prev=point->prev, * anchor_next=point->next;
                         point->prev=point->next= nullptr;
-                        anchor_prev=remove_degenerate_from(anchor_prev);
-                        anchor_next=remove_degenerate_from(anchor_next);
+                        anchor_prev=remove_degenerate_from(anchor_prev, true);
+                        anchor_next=remove_degenerate_from(anchor_next, false);
+                        update_ear_status(anchor_prev, poly_orient);
+                        update_ear_status(anchor_next, poly_orient);
                         if(anchor_prev && anchor_prev->isValid()) first=anchor_prev;
                         else if(anchor_next && anchor_next->isValid()) first=anchor_next;
-                        else  first= nullptr;
+                        else first= nullptr;
                         break;
                     }
                 } while((point = point->next) && point!=first);
@@ -116,28 +124,27 @@ namespace microgl {
         }
 
         template <typename number>
-        auto ear_clipping_triangulation<number>::remove_degenerate_from(node_t *v) ->node_t * {
-            if(!v->isValid()) return nullptr;
+        auto ear_clipping_triangulation<number>::remove_degenerate_from(node_t *v, bool backwards) ->node_t * {
+            if(!v->isValid()) return v;
             node_t* anchor=v;
-            if (isDegenrate(anchor)) {
+            while (anchor->isValid() && isDegenerate(anchor)) {
                 auto * prev=anchor->prev, * next=anchor->next;
+                // rewire
                 prev->next = next;
                 next->prev = prev;
                 anchor->prev=anchor->next= nullptr;
-                auto * result_prev=remove_degenerate_from(prev);
-                auto * result_next=remove_degenerate_from(next);
-                if(result_prev && result_prev->isValid()) return result_prev;
-                else if(result_next && result_next->isValid()) return result_next;
-                else return nullptr;
-            } else return v;
+                anchor=backwards ? prev : next;
+            }
+            return anchor;
         }
-        // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
-        // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
+
         template <typename number>
         number
         ear_clipping_triangulation<number>::orientation_value(const vertex *a,
                                                               const vertex *b,
                                                               const vertex *c) {
+            // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
+            // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
             return (b->x-a->x)*(c->y-a->y) - (c->x-a->x)*(b->y-a->y);
         }
 
@@ -183,7 +190,7 @@ namespace microgl {
         }
 
         template <typename number>
-        bool ear_clipping_triangulation<number>::isDegenrate(const node_t *v) {
+        bool ear_clipping_triangulation<number>::isDegenerate(const node_t *v) {
             return sign_orientation_value(v->prev->pt, v->pt, v->next->pt)==0;
         }
 
@@ -194,15 +201,14 @@ namespace microgl {
         }
 
         template <typename number>
-        bool ear_clipping_triangulation<number>::isEmpty(const node_t *v,
-                                                         node_t *list){
+        bool ear_clipping_triangulation<number>::isEmpty(node_t *v) {
             int tsv;
             bool is_super_simple = false;
             const node_t * l = v->next;
             const node_t * r = v->prev;
             tsv = sign_orientation_value(v->pt, l->pt, r->pt);
             if(tsv==0) return true;
-            node_t * n = list;
+            node_t * n = v;
             do {
                 if(areEqual(n, v) || areEqual(n, l) || areEqual(n, r))
                     continue;
@@ -234,7 +240,7 @@ namespace microgl {
                     bool edge_outside_triangle = w1 || w2 || w3 || w4;
                     if(!edge_outside_triangle) return false;
                 }
-            } while((n=n->next) && (n!=list));
+            } while((n=n->next) && (n!=v));
             return true;
         }
 

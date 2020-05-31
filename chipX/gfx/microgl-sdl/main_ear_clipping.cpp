@@ -95,7 +95,7 @@ dynamic_array<vec2<number>> poly_hole() {
 
 template <typename number>
 dynamic_array<vec2<number>> poly_hole3() {
-    using vertex=vec2<number>;
+    int M=10;
     return {
             {10,10},
             {400,10},
@@ -103,13 +103,53 @@ dynamic_array<vec2<number>> poly_hole3() {
             {10,400},
 
             {10,10},
+            {20,20},
+            {20,400-M},
+            {400-M,400-M},
+            {400-M,20},
 
             {20,20},
-            {20,400-1},
-            {400-1,400-1},
-            {400-1,20},
+    };
+}
 
+template <typename number>
+dynamic_array<vec2<number>> poly_hole4() {
+    int M=10;
+    return {
+            {10,10},
+            {400,10},
+            {400,400},
+            {10,400},
+
+            {10,10},
             {20,20},
+            {20,220},
+            {400-0,220},
+            {400-0,20},
+            {20,20},
+            {10,10},
+    };
+}
+
+template <typename number>
+dynamic_array<vec2<number>> poly_3() {
+    return {
+            {50,100},
+            {100,50},
+            {150,100},
+            {200,50},
+            {300,100},
+            {400,50},
+            {500,100},
+
+            {500,200},
+            {300-40,100+50},
+            {300,100+100},
+            {200,100+50},
+            {150,100+100},
+            {100,100+50},
+            {50,100+100},
+
     };
 }
 
@@ -117,9 +157,11 @@ void render() {
     t+=.05f;
 //    std::cout << t << std::endl;
 //    render_polygon(poly_rect());
-    render_polygon<float>(poly_2<float>());
+//    render_polygon<float>(poly_2<float>());
+//    render_polygon<float>(poly_3<float>());
 //    render_polygon<float>(poly_hole<float>());
 //    render_polygon<float>(poly_hole3<float>());
+    render_polygon<float>(poly_hole4<float>());
 //    render_polygon<float>(poly_rect<float>());
 //    render_polygon<float>(poly_tri<float>());
 }

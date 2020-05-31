@@ -12,13 +12,19 @@ namespace microgl {
         using index = unsigned int;
 
         /**
-         * todo:: we can:
          *
-         * 1. make this O(n^2) by precomputing if a vertex is an ear, and every time we remove
-         *    an ear, only recompute for it's two adjescent vertices.
-         * 2. make it an O(r*n) algorithm where r are the number of reflex(concave) vertices,
+         * 1. we make this O(n^2) by pre computing if a vertex is an ear, and every time we remove
+         *    an ear, only recompute for it's two adjacent vertices.
+         * 2. This algorithm was customized by me tolerate simple polygons with touching vertices on edges,
+         *    which is important. It can also tolerate holes which is cool, BUT not opposing edges on edges
+         *    in order to create perfect hole (this will not work due to aliasing).
+         * 3. I also remove degenerate vertices as I go to make it easier on the algorithm.
+         * 4. I can also make the sign function more robust but it really won't matter much.
+         * 5. I can also make it an O(r*n) algorithm where r are the number of reflex(concave) vertices,
          *    simply track them, and when testing for earness of a vertex, compare it against
          *    these reflex vertices.
+         * 6. The strength of this algorithm is it's simplicity, short code, stability, low memory usage,
+         *    does not require crazy numeric robustness.
          */
         template<typename number>
         class ear_clipping_triangulation {
@@ -30,6 +36,7 @@ namespace microgl {
                 index original_index = -1;
                 node_t *prev = nullptr;
                 node_t *next = nullptr;
+                bool is_ear=false;
                 bool isValid() {
                     return prev!= nullptr && next!= nullptr;
                 }
@@ -84,10 +91,11 @@ namespace microgl {
             static int neighborhood_orientation_sign(const node_t *v);
             static char sign_orientation_value(const vertex *i, const vertex *j, const vertex *k);
             static node_t *maximal_y_element(node_t *list);
-            static bool isEmpty(const node_t *v, node_t *list);
+            static bool isEmpty(node_t *v);
             static bool areEqual(const node_t *a, const node_t *b);
-            static bool isDegenrate(const node_t *v);
-            static auto remove_degenerate_from(node_t *v) -> node_t *;
+            static bool isDegenerate(const node_t *v);
+            static auto remove_degenerate_from(node_t *v, bool backwards) -> node_t *;
+            static void update_ear_status(node_t *vertex, const int &polygon_orientation);
 
         };
 
