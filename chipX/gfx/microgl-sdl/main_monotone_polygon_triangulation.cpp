@@ -130,8 +130,8 @@ dynamic_array<vec2<number>> poly_2_y_monotone() {
 void render() {
 //    render_polygon<float>(poly_1_x_monotone<float>(), true);
 //    render_polygon<float>(poly_1_y_monotone<float>(), false);
-//    render_polygon<float>(poly_2_x_monotone<float>(), true);
-    render_polygon<float>(poly_2_y_monotone<float>(), false);
+    render_polygon<float>(poly_2_x_monotone<float>(), true);
+//    render_polygon<float>(poly_2_y_monotone<float>(), false);
 }
 
 
@@ -160,7 +160,7 @@ void render_polygon(dynamic_array<vec2<number>> polygon, bool x_monotone_or_y) {
     // draw triangles batch
     canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
             color_red,
-            matrix_3x3<number>::identity(),
+            matrix_3x3<number>::scale(1,2),
             polygon.data(),
             (vec2<number> *)nullptr,
             indices.data(),
@@ -169,7 +169,7 @@ void render_polygon(dynamic_array<vec2<number>> polygon, bool x_monotone_or_y) {
             type,
             122);
 
-//    return;
+    return;
 
     // draw triangulation
     canvas->drawTrianglesWireframe(

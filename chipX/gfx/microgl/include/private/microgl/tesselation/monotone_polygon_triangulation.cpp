@@ -59,6 +59,25 @@ namespace microgl {
         }
 
         template <typename number>
+        void monotone_polygon_triangulation<number>::triangle(
+                dynamic_array<index> & indices_buffer_triangulation,
+                dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
+                int v0_index, int v1_index, int v2_index, int size) {
+            indices_buffer_triangulation.push_back(v0_index);
+            indices_buffer_triangulation.push_back(v1_index);
+            indices_buffer_triangulation.push_back(v2_index);
+            if(boundary_buffer) {
+                int first_edge_index_distance = abs_(v0_index - v1_index);
+                int second_edge_index_distance = abs_(v1_index- v2_index);
+                int third_edge_index_distance = abs_(v2_index - v0_index);
+                bool first_edge = first_edge_index_distance==1 || first_edge_index_distance==size-1;
+                bool second_edge = second_edge_index_distance==1 || second_edge_index_distance==size-1;
+                bool third_edge = third_edge_index_distance==1 || third_edge_index_distance==size-1;
+                boundary_buffer->push_back(triangles::create_boundary_info(first_edge, second_edge, third_edge));
+            }
+        }
+
+        template <typename number>
         void monotone_polygon_triangulation<number>::compute(node_t *list,
                                                              index size,
                                                              const monotone_axis & axis,
@@ -88,9 +107,11 @@ namespace microgl {
             index count=0;
             while(count<size) {
                 if(a_B_b(iter_chain_a, iter_chain_b, axis)) {
-                    sorted_list[count]=iter_chain_a; iter_chain_a=is_poly_cw?iter_chain_a->prev:iter_chain_a->next;
+                    sorted_list[count]=iter_chain_a;
+                    iter_chain_a=is_poly_cw?iter_chain_a->prev:iter_chain_a->next;
                 } else {
-                    sorted_list[count]=iter_chain_b; iter_chain_b=is_poly_cw?iter_chain_b->next:iter_chain_b->prev;
+                    sorted_list[count]=iter_chain_b;
+                    iter_chain_b=is_poly_cw?iter_chain_b->next:iter_chain_b->prev;
                 }
                 count++;
             }
@@ -106,11 +127,10 @@ namespace microgl {
                     if(stack.size()>=2) {
                         // insert a diagonal to every point on the stack except the last one
                         for (unsigned ix = 0; ix < stack.size()-1; ++ix) {
-                            const node_t * stack_point=stack[ix];
-                            const node_t * stack_point_next=stack[ix+1];
-                            indices.push_back(u_j->original_index);
-                            indices.push_back(stack_point->original_index);
-                            indices.push_back(stack_point_next->original_index);
+                            const node_t * a=stack[ix];
+                            const node_t * b=stack[ix+1];
+                            triangle(indices, boundary_buffer, u_j->original_index,
+                                    a->original_index, b->original_index, size);
                         }
                         stack.clear(); // empty the stack
                         // push u_(j-1) and u_j
@@ -121,19 +141,15 @@ namespace microgl {
                     // search for the longest chain for which diagonals work
                     bool is_top_chain=u_j->chain_index==1;
                     if(stack.size()>=2) {
-                        index index_longest_vertex=stack.size()-1;
                         unsigned s_index=stack.size()-1;
                         for (unsigned ix = s_index; ix >= 1; --ix) {
                             const node_t * a=stack[ix-1];
                             const node_t * b=stack[ix];
                             int cls=classify_point(*u_j->pt, *a->pt, *b->pt);
-//                            bool is_inside=is_top_chain?cls<=0 : cls>=0;
                             bool is_inside=is_top_chain?cls<0 : cls>0;
                             if(is_inside) {
-                                index_longest_vertex=ix;
-                                indices.push_back(u_j->original_index);
-                                indices.push_back(a->original_index);
-                                indices.push_back(b->original_index);
+                                triangle(indices, boundary_buffer, u_j->original_index,
+                                         a->original_index, b->original_index, size);
                                 stack.pop_back();
                             } else break;
                         }
@@ -145,14 +161,12 @@ namespace microgl {
             auto * u_n= sorted_list[size-1];
             if(stack.size()>=2) {
                 for (unsigned ix = 0; ix < stack.size()-1; ++ix) {
-                    const node_t * stack_point=stack[ix];
-                    const node_t * stack_point_next=stack[ix+1];
-                    indices.push_back(u_n->original_index);
-                    indices.push_back(stack_point->original_index);
-                    indices.push_back(stack_point_next->original_index);
+                    const node_t * a=stack[ix];
+                    const node_t * b=stack[ix+1];
+                    triangle(indices, boundary_buffer, u_n->original_index,
+                             a->original_index, b->original_index, size);
                 }
             }
-
             delete [] sorted_list;
         }
 

@@ -71,6 +71,9 @@ namespace microgl {
             static bool a_G_b(node_t *a, node_t *b, const monotone_axis & axis);
             static bool isDegenerate(const node_t *v);
             static int classify_point(const vertex & point, const vertex &a, const vertex & b);
+            static void triangle(dynamic_array<index> & indices_buffer_triangulation,
+                                 dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
+                                 int v0_index, int v1_index, int v2_index, int size);
         };
 
     }
