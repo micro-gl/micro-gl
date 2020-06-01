@@ -61,8 +61,8 @@ set(SOURCES
 #        main_bentley_ottmann.cpp
 #        main_complex_to_simple_polygon.cpp
 #        main_complex_to_simple_comps_tree.cpp
-        main_ear_clipping.cpp
-#        main_monotone_polygon_triangulation.cpp
+#        main_ear_clipping.cpp
+        main_monotone_polygon_triangulation.cpp
 #        main_complex_to_planar_subdivision.cpp
 #        main_stroke_tessellation.cpp
 #        main_stroke_dash_tessellation.cpp

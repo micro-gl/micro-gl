@@ -33,12 +33,16 @@ namespace microgl {
             // make it cyclic
             last->next = first;
             first->prev = last;
-            if(isDegenerate(last)){
-                last->prev->next=last->next;
-                last->next->prev=last->prev;
-                last->prev=last->next= nullptr;
+            for (int ix = 0; ix < 2; ++ix) {
+                if(isDegenerate(last)){
+                    last->prev->next=last->next;
+                    last->next->prev=last->prev;
+                    auto *new_last=last->prev;
+                    last->prev=last->next= nullptr;
+                    last=new_last;
+                }
             }
-            return first;
+            return last;
         }
 
         template <typename number>

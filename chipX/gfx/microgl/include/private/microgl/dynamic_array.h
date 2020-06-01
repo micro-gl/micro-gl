@@ -117,10 +117,8 @@ public:
     void pop_back()  {
         if(_current < (_cap>>1))
             alloc_(false);
-
         if(_current==0)
             return;
-
         _data[_current--].~T();
     }
 

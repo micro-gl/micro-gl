@@ -67,17 +67,14 @@ namespace microgl {
                                 index size,
                                 dynamic_array<index> &indices_buffer_triangulation,
                                 dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
-                                microgl::triangles::indices &output_type
-            );
+                                microgl::triangles::indices &output_type);
+        private:
 
             static void compute(node_t *list,
                                 index size,
                                 dynamic_array<index> &indices_buffer_triangulation,
                                 dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
-                                microgl::triangles::indices &output_type
-            );
-
-        private:
+                                microgl::triangles::indices &output_type);
 
             static
             node_t *polygon_to_linked_list(const vertex *$pts,
