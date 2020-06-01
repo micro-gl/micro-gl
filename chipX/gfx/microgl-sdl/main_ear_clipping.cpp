@@ -45,7 +45,7 @@ dynamic_array<vec2<number>> poly_rect() {
 
 float b = 1;
 template <typename number>
-dynamic_array<vec2<number>> poly_2() {
+dynamic_array<vec2<number>> poly_2_x_monotone() {
     using vertex=vec2<number>;
     vertex p0 = {100,100};
     vertex p1 = {300, 100};

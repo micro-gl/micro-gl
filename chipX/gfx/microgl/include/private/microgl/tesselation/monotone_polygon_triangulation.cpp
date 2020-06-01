@@ -69,7 +69,6 @@ namespace microgl {
             output_type=requested_triangles_with_boundary? microgl::triangles::indices::TRIANGLES_WITH_BOUNDARY :
                         microgl::triangles::indices::TRIANGLES;
             auto &indices = indices_buffer_triangulation;
-
             // find monotone
             node_t *min, *max, *iter;
             find_min_max(list, axis, &min, &max);
@@ -128,7 +127,8 @@ namespace microgl {
                             const node_t * a=stack[ix-1];
                             const node_t * b=stack[ix];
                             int cls=classify_point(*u_j->pt, *a->pt, *b->pt);
-                            bool is_inside=is_top_chain?cls<=0 : cls>=0;
+//                            bool is_inside=is_top_chain?cls<=0 : cls>=0;
+                            bool is_inside=is_top_chain?cls<0 : cls>0;
                             if(is_inside) {
                                 index_longest_vertex=ix;
                                 indices.push_back(u_j->original_index);

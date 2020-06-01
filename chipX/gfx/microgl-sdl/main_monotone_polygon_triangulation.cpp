@@ -1,6 +1,5 @@
 #include <iostream>
 #include <chrono>
-#include "src/Resources.h"
 #include <SDL2/SDL.h>
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
@@ -20,15 +19,13 @@ sampling::flat_color color_red{{255,0,0,255}};
 sampling::flat_color color_black{{0,0,0,255}};
 Canvas24Bit_Packed32 * canvas;
 
-Resources resources{};
-
 void loop();
 void init_sdl(int width, int height);
 
 using namespace tessellation;
 
 template <typename number>
-void render_polygon(dynamic_array<vec2<number>> polygon);
+void render_polygon(dynamic_array<vec2<number>> polygon, bool x_monotone_or_y);
 
 float t = 0;
 
@@ -53,7 +50,7 @@ dynamic_array<vec2<number>> poly_tri() {
 }
 
 template <typename number>
-dynamic_array<vec2<number>> poly_1() {
+dynamic_array<vec2<number>> poly_1_x_monotone() {
     return {
             {50,100},
             {100,50},
@@ -75,21 +72,29 @@ dynamic_array<vec2<number>> poly_1() {
 }
 
 template <typename number>
-dynamic_array<vec2<number>> poly_2() {
-//    return {
-//            {50,200},
-//            {50,100},
-//            {100,150},
-//            {150,100},
-//            {150,200},
-////            {200,150},
-////            {250,100},
-////            {300,150},
-////            {350,100},
-////            {400,150},
-////            {400,200},
-//
-//    };
+dynamic_array<vec2<number>> poly_1_y_monotone() {
+    return {
+            {100, 50},
+            {50, 100},
+            {100, 150},
+            {50,200},
+            {100,300},
+            {50,400},
+            {100,500},
+
+            {200,500},
+            {100+50,400},
+            {100+100,300},
+            {100+50,200},
+            {100+100,150},
+            {100+50,100},
+            {100+100,50},
+
+    };
+}
+
+template <typename number>
+dynamic_array<vec2<number>> poly_2_x_monotone() {
     return {
             {50,200},
             {50,100},
@@ -105,22 +110,33 @@ dynamic_array<vec2<number>> poly_2() {
     };
 }
 
+template <typename number>
+dynamic_array<vec2<number>> poly_2_y_monotone() {
+    return {
+            {200,50},
+            {100,50},
+            {150,100},
+            {100,150},
+            {190,200},
+            {100,250},
+            {150,300},
+            {100,350},
+            {150,400},
+            {200,400},
+
+    };
+}
+
 void render() {
-    t+=.05f;
-//    std::cout << t << std::endl;
-//    render_polygon(poly_rect());
-    render_polygon<float>(poly_2<float>());
-//    render_polygon<float>(poly_1<float>());
-//    render_polygon<float>(poly_hole<float>());
-//    render_polygon<float>(poly_hole3<float>());
-//    render_polygon<float>(poly_hole4<float>());
-//    render_polygon<float>(poly_rect<float>());
-//    render_polygon<float>(poly_tri<float>());
+//    render_polygon<float>(poly_1_x_monotone<float>(), true);
+//    render_polygon<float>(poly_1_y_monotone<float>(), false);
+//    render_polygon<float>(poly_2_x_monotone<float>(), true);
+    render_polygon<float>(poly_2_y_monotone<float>(), false);
 }
 
 
 template <typename number>
-void render_polygon(dynamic_array<vec2<number>> polygon) {
+void render_polygon(dynamic_array<vec2<number>> polygon, bool x_monotone_or_y) {
     using index = unsigned int;
 
 //    polygon[1].x = 140 + 20 +  t;
@@ -135,7 +151,7 @@ void render_polygon(dynamic_array<vec2<number>> polygon) {
 
     mpt::compute(polygon.data(),
                  polygon.size(),
-                 mpt::monotone_axis::x_monotone,
+                 x_monotone_or_y ? mpt::monotone_axis::x_monotone : mpt::monotone_axis::y_monotone,
                  indices,
                  &boundary_buffer,
                  type
@@ -181,8 +197,6 @@ void init_sdl(int width, int height) {
                                 SDL_TEXTUREACCESS_STATIC, width, height);
 
     canvas = new Canvas24Bit_Packed32(width, height);
-
-    resources.init();
 }
 
 int render_test(int N) {
@@ -203,7 +217,7 @@ void loop() {
 
     // 100 Quads
     int ms = render_test(TEST_ITERATIONS);
-    cout << ms << endl;
+    std::cout << ms << std::endl;
 
     while (!quit)
     {

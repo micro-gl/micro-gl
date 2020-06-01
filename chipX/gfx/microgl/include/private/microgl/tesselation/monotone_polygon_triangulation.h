@@ -24,33 +24,19 @@ namespace microgl {
                 cw, ccw
             };
 
+        private:
             struct node_t {
                 const vertex *pt = nullptr;
                 index original_index = -1;
                 node_t *prev = nullptr;
                 node_t *next = nullptr;
                 char chain_index=0;
-                bool is_ear=false;
-                bool isValid() {
-                    return prev!= nullptr && next!= nullptr;
-                }
             };
 
-        private:
-
             struct pool_nodes_t {
-                explicit pool_nodes_t(index count) {
-                    pool = new node_t[count];
-                }
-
-                ~pool_nodes_t() {
-                    delete[] pool;
-                }
-
-                node_t *get() {
-                    return &pool[_current++];
-                }
-
+                explicit pool_nodes_t(index count) { pool = new node_t[count]; }
+                ~pool_nodes_t() { delete[] pool; }
+                node_t *get() { return &pool[_current++];}
             private:
                 index _current = 0;
                 node_t *pool = nullptr;
