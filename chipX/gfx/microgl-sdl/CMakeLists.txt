@@ -35,7 +35,7 @@ set(SOURCES
 #        main_blend_modes.cpp
 #        main_draw_triangle.cpp
 #        main_draw_quadrilaterals.cpp
-#        main_draw_polygon_sampler.cpp
+        main_draw_polygon_sampler.cpp
 #        main_draw_bezier_patch.cpp
 #        main_draw_rounded_rectangle.cpp
 #        main_draw_circles.cpp
@@ -62,7 +62,7 @@ set(SOURCES
 #        main_complex_to_simple_polygon.cpp
 #        main_complex_to_simple_comps_tree.cpp
 #        main_ear_clipping.cpp
-        main_monotone_polygon_triangulation.cpp
+#        main_monotone_polygon_triangulation.cpp
 #        main_complex_to_planar_subdivision.cpp
 #        main_stroke_tessellation.cpp
 #        main_stroke_dash_tessellation.cpp
