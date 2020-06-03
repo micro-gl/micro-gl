@@ -1,7 +1,3 @@
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-
-#include <microgl/Canvas.h>
-
 template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(bitmap *$bmp) : _bitmap_canvas($bmp) {
     updateCanvasWindow(0, 0, $bmp);
@@ -1177,46 +1173,56 @@ void Canvas<P, CODER>::drawMask(const masks::chrome_mode &mode,
 }
 
 template<typename P, typename CODER>
-template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
+template <microgl::polygons::hints hint, typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
                                    const matrix_3x3<number1> &transform,
                                    const vec2<number1> *points,
                                    index size, opacity_t opacity,
-                                   polygons::hints hint,
                                    const number2 u0, const number2 v0,
-                                   const number2 u1, const number2 v1,
-                                   const bool debug) {
+                                   const number2 u1, const number2 v1) {
     indices type;
     dynamic_array<index> indices;
     dynamic_array<boundary_info> boundary_buffer;
+    dynamic_array<boundary_info> *boundary_buffer_ptr=antialias? &boundary_buffer: nullptr;
     switch (hint) {
         case hints::CONCAVE:
         case hints::SIMPLE:
         {
-            microgl::tessellation::ear_clipping_triangulation<number1>::compute(points,
-                                                                                size,
-                                                                                indices,
-                                                                                antialias? &boundary_buffer: nullptr,
-                                                                                type);
+            using ect=microgl::tessellation::ear_clipping_triangulation<number1>;
+            ect::compute(points, size, indices, boundary_buffer_ptr, type);
+            break;
+        }
+        case hints::X_MONOTONE:
+        case hints::Y_MONOTONE:
+        {
+            using mpt=microgl::tessellation::monotone_polygon_triangulation<number1>;
+            typename mpt::monotone_axis axis=hint==hints::X_MONOTONE ? mpt::monotone_axis::x_monotone :
+                                    mpt::monotone_axis::y_monotone;
+            mpt::compute(points, size, axis, indices, boundary_buffer_ptr, type);
             break;
         }
         case hints::CONVEX:
         {
-            microgl::tessellation::fan_triangulation<number1>::compute(points,
-                                                                       size,
-                                                                       indices,
-                                                                       antialias? &boundary_buffer: nullptr,
-                                                                       type);
+            using fan=microgl::tessellation::fan_triangulation<number1>;
+            fan::compute(points, size, indices, boundary_buffer_ptr, type);
             break;
         }
         case hints::NON_SIMPLE:
         case hints::SELF_INTERSECTING:
+        case hints::COMPLEX:
+        case hints::MULTIPLE_POLYGONS:
+        {
+            tessellation::path<number1> path{};
+            path.addPoly(points, size);
+            drawPathFill<BlendMode, PorterDuff, antialias, debug, number1, number2, S>(
+                    sampler, transform, path, tessellation::fill_rule::non_zero,
+                    tessellation::tess_quality::better, opacity, u0, v0, u1, v1);
+            return;
+        }
         default:
             return;
     }
-
     const vec2<number2> * uvs= nullptr;//uv_map<number1, number2>::compute(points, size, u0, v0, u1, v1);
-    // draw triangles batch
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, S>(
             sampler, transform,
             points,
@@ -1233,13 +1239,10 @@ void Canvas<P, CODER>::drawPolygon(const sampling::sampler<S> &sampler,
                 transform, points,
                 indices.data(), indices.size(),
                 type, 255);
-
-    if(uvs)
-        delete [] uvs;
 }
 
 template<typename P, typename CODER>
-template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
+template <typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawPathStroke(const sampling::sampler<S> &sampler,
                                       const matrix_3x3<number1> &transform,
                                       tessellation::path<number1> & path,
@@ -1251,8 +1254,7 @@ void Canvas<P, CODER>::drawPathStroke(const sampling::sampler<S> &sampler,
                                       int stroke_dash_offset,
                                       opacity_t opacity,
                                       const number2 u0, const number2 v0,
-                                      const number2 u1, const number2 v1,
-                                      const bool debug) {
+                                      const number2 u1, const number2 v1) {
     const auto & buffers= path.tessellateStroke(stroke_width, cap, line_join, miter_limit, stroke_dash_array, stroke_dash_offset);
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, S>(
             sampler, transform,
@@ -1274,7 +1276,7 @@ void Canvas<P, CODER>::drawPathStroke(const sampling::sampler<S> &sampler,
 }
 
 template<typename P, typename CODER>
-template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
+template <typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawPathFill(const sampling::sampler<S> &sampler,
                                     const matrix_3x3<number1> &transform,
                                     tessellation::path<number1> & path,
@@ -1282,8 +1284,7 @@ void Canvas<P, CODER>::drawPathFill(const sampling::sampler<S> &sampler,
                                     const tessellation::tess_quality &quality,
                                     opacity_t opacity,
                                     const number2 u0, const number2 v0,
-                                    const number2 u1, const number2 v1,
-                                    const bool debug) {
+                                    const number2 u1, const number2 v1) {
     const auto & buffers= path.tessellateFill(rule, quality);
     if(buffers.output_vertices.size()==0) return;
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, S>(
@@ -1296,7 +1297,7 @@ void Canvas<P, CODER>::drawPathFill(const sampling::sampler<S> &sampler,
             buffers.output_indices_type,
             opacity,
             u0, v0, u1, v1);
-    if(debug||true) {
+    if(debug) {
 //    if(debug) {
         drawTrianglesWireframe({0,0,0,255}, transform,
                                buffers.output_vertices.data(),

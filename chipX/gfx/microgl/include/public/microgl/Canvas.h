@@ -17,6 +17,7 @@
 #include <microgl/masks.h>
 #include <microgl/math.h>
 #include <microgl/tesselation/path.h>
+#include <microgl/tesselation/monotone_polygon_triangulation.h>
 #include <microgl/tesselation/ear_clipping_triangulation.h>
 #include <microgl/tesselation/fan_triangulation.h>
 #include <microgl/tesselation/bezier_patch_tesselator.h>
@@ -321,15 +322,15 @@ public:
                          opacity_t opacity=255);
 
     // polygons
-    template <typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, typename number1=float, typename number2=number1, typename S>
+    template <microgl::polygons::hints hint=polygons::hints::SIMPLE, typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false, bool debug=false,
+            typename number1=float, typename number2=number1, typename S>
     void drawPolygon(const sampling::sampler<S> &sampler,
                      const matrix_3x3<number1> &transform,
                      const vec2<number1> * points,
                      index size, opacity_t opacity=255,
-                     polygons::hints hint = polygons::hints::SIMPLE,
                      number2 u0=number2(0), number2 v0=number2(1),
-                     number2 u1=number2(1), number2 v1=number2(0), bool debug=false);
+                     number2 u1=number2(1), number2 v1=number2(0));
 private:
     void drawWuLine(const color_t & color,
                     int x0, int y0, int x1, int y1,
@@ -349,7 +350,7 @@ public:
                         bool closed_path = false);
 
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, typename number1=float, typename number2=float, typename S>
+            bool antialias=false, bool debug=false, typename number1=float, typename number2=float, typename S>
     void drawPathStroke(const sampling::sampler<S> &sampler,
                         const matrix_3x3<number1> &transform,
                         tessellation::path<number1> &path,
@@ -360,10 +361,10 @@ public:
                         const std::initializer_list<int> & stroke_dash_array={},
                         int stroke_dash_offset=0, opacity_t opacity=255,
                         number2 u0=number2(0), number2 v0=number2(1),
-                        number2 u1=number2(1), number2 v1=number2(0), bool debug=false);
+                        number2 u1=number2(1), number2 v1=number2(0));
 
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, typename number1=float, typename number2=float, typename S>
+            bool antialias=false, bool debug=false, typename number1=float, typename number2=float, typename S>
     void drawPathFill(const sampling::sampler<S> &sampler,
                       const matrix_3x3<number1> &transform,
                       tessellation::path<number1> &path,
@@ -371,7 +372,7 @@ public:
                       const tessellation::tess_quality &quality=tessellation::tess_quality::better,
                       opacity_t opacity=255,
                       number2 u0=number2(0), number2 v0=number2(1),
-                      number2 u1=number2(1), number2 v1=number2(0), bool debug=false);
+                      number2 u1=number2(1), number2 v1=number2(0));
 };
 
 #include "../../src/Canvas.tpp"

@@ -9,7 +9,6 @@
 #include <microgl/samplers/fast_radial_gradient.h>
 #include <microgl/samplers/linear_gradient_2_colors.h>
 #include <microgl/samplers/flat_color.h>
-#include "src/Resources.h"
 
 #define TEST_ITERATIONS 100
 #define W 640*1
@@ -80,14 +79,18 @@ void render_polygon(dynamic_array<vec2<number>> &polygon) {
 //    polygon[3].x = 100 +  t;
 //    polygon[3].y = 300 -  t;
     canvas->clear({255,255,255,255});
-    canvas->drawPolygon<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+    canvas->drawPolygon<
+            polygons::hints::CONVEX,
+//            polygons::hints::SIMPLE,
+//            polygons::hints::COMPLEX,
+            blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, false>(
 //            tex_2,
-            gradient2Colors,
+//            gradient2Colors,
+            flatColor,
             matrix_3x3<number>::identity(),
             polygon.data(),
             polygon.size(),
-            255,
-            polygons::hints::SIMPLE);
+            255);
 
 }
 

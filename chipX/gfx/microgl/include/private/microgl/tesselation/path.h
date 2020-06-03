@@ -75,8 +75,14 @@ namespace microgl {
             }
 
             auto addPoly(const dynamic_array<vertex> & poly) -> path & {
+                return addPoly(poly.data(), poly.size());
+            }
+
+            auto addPoly(const vertex *poly, unsigned size) -> path & {
+                if(size==0) return *this;
                 _paths_vertices.cut_chunk_if_current_not_empty();
-                _paths_vertices.push_back(poly);
+                for (unsigned ix = 0; ix < size; ++ix)
+                    lineTo(poly[ix]);
                 invalidate();
                 return *this;
             }
