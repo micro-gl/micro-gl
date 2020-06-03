@@ -35,8 +35,8 @@ set(SOURCES
 #        main_blend_modes.cpp
 #        main_draw_triangle.cpp
 #        main_draw_quadrilaterals.cpp
-        main_draw_polygon_sampler.cpp
-#        main_draw_bezier_patch.cpp
+#        main_draw_polygon_sampler.cpp
+        main_draw_bezier_patch.cpp
 #        main_draw_rounded_rectangle.cpp
 #        main_draw_circles.cpp
 #        main_draw_masks.cpp

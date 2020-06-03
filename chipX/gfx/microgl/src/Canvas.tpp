@@ -447,7 +447,7 @@ void Canvas<P, CODER>::drawTrianglesWireframe(const color_t &color,
 }
 
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
+template<typename BlendMode, typename PorterDuff, typename number>
 void Canvas<P, CODER>::drawTriangleWireframe(const color_t &color,
                                              const vec2<number> &p0,
                                              const vec2<number> &p1,
@@ -1458,7 +1458,7 @@ Canvas<P, CODER>::drawWuLinePath(const color_t &color,
 }
 int nn=0;
 template<typename P, typename CODER>
-template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
+template<typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1, typename number2, typename S>
 void Canvas<P, CODER>::drawBezierPatch(const sampling::sampler<S> & sampler,
                                        const matrix_3x3<number1> &transform,
                                        const vec3<number1> *mesh,
@@ -1472,16 +1472,16 @@ void Canvas<P, CODER>::drawBezierPatch(const sampling::sampler<S> & sampler,
     dynamic_array<number1> vertices_attributes;
     dynamic_array<index> indices;
     microgl::triangles::indices indices_type;
-    tess::compute(mesh, uOrder, vOrder, uSamples, vSamples, vertices_attributes, indices, indices_type,
-                    u0, v0, u1, v1);
+    tess::compute(mesh, uOrder, vOrder, uSamples, vSamples, vertices_attributes,
+            indices, indices_type, u0, v0, u1, v1);
     const index size = indices.size();
     const index window_size=5;
     const index I_X=0, I_Y=1, I_Z=2, I_U=3, I_V=4;
     if(size==0) return;
 #define IND(a) indices[(a)]
     bool even = true;
-    for (index ix = 0; ix < size-2; ++ix) {
-        // we alternate order inorder to preserve CCW or CW,
+    for (index ix = 0; ix < size-2; ++ix) { // we alternate order inorder to preserve CCW or CW,
+
         index first_index   = (even ? IND(ix + 0) : IND(ix + 2))*window_size;
         index second_index  = (even ? IND(ix + 1) : IND(ix + 1))*window_size;
         index third_index   = (even ? IND(ix + 2) : IND(ix + 0))*window_size;
@@ -1500,12 +1500,12 @@ void Canvas<P, CODER>::drawBezierPatch(const sampling::sampler<S> & sampler,
                 vertices_attributes[third_index+I_U],
                 vertices_attributes[third_index+I_V],
                 opacity);
-//        drawTriangleWireframe({channel(nn),0,0,255},
-//                              {vertices_attributes[first_index+I_X], vertices_attributes[first_index+I_Y]},
-//                              {vertices_attributes[second_index+I_X], vertices_attributes[second_index+I_Y]},
-//                              {vertices_attributes[third_index+I_X], vertices_attributes[third_index+I_Y]}
-//                              );
         even = !even;
+        if(debug)
+            drawTriangleWireframe({0,0,0,255},
+                                  {vertices_attributes[first_index+I_X], vertices_attributes[first_index+I_Y]},
+                                  {vertices_attributes[second_index+I_X], vertices_attributes[second_index+I_Y]},
+                                  {vertices_attributes[third_index+I_X], vertices_attributes[third_index+I_Y]});
     }
 #undef IND
 }

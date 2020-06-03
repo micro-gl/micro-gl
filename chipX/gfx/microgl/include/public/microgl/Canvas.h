@@ -200,8 +200,7 @@ public:
 
     // single triangles, includes shader based and one very fast fixed pipeline for color and textures
     template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, typename number=float>
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque, typename number=float>
     void drawTriangleWireframe(const color_t &color,
                                const vec2<number> &p0,
                                const vec2<number> &p1,
@@ -311,7 +310,7 @@ private:
 
 public:
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, typename number1, typename number2=number1, typename S>
+            bool antialias=false, bool debug=false, typename number1, typename number2=number1, typename S>
     void drawBezierPatch(const sampling::sampler<S> &sampler,
                          const matrix_3x3<number1> &transform,
                          const vec3<number1> *mesh,
