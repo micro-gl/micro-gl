@@ -688,7 +688,8 @@ void Canvas<P, CODER>::drawTriangle(shader_base<impl, vertex_attr, varying, numb
         varying_v1_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_1_fixed);
         varying_v2_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_2_fixed);
 
-        drawTriangle_shader_homo_internal<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag, impl, vertex_attr, varying, number>(
+        drawTriangle_shader_homo_internal<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag,
+        impl, vertex_attr, varying, number>(
                 shader, viewport_width, viewport_height,
                 p0, p1, p2,
                 varying_v0_clip, varying_v1_clip, varying_v2_clip,
@@ -773,23 +774,6 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
     if(bbox.empty()) return;
 #undef ceil_fixed
 #undef floor_fixed
-    constexpr int max_opacity_value= 255;//bitmap::maxNativeAlphaChannelValue();
-    // anti-alias SDF configurations
-    bits bits_distance = 0;
-    bits bits_distance_complement = 8;
-    // max distance to consider in canvas space
-    unsigned int max_distance_canvas_space_anti_alias=0;
-    // max distance to consider in scaled space
-    unsigned int max_distance_scaled_space_anti_alias=0;
-    bits PREC_DIST = 15;
-    bool aa_all_edges = false;
-    if(antialias) {
-        aa_all_edges = aa_first_edge && aa_second_edge && aa_third_edge;
-        bits_distance = 0;
-        bits_distance_complement = 8 - bits_distance;
-        max_distance_canvas_space_anti_alias = 1u << bits_distance;
-        max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias<<PREC_DIST;
-    }
     // fill rules configurations
     triangles::top_left_t top_left =
             triangles::classifyTopLeftEdges(false,
@@ -813,36 +797,12 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
     int64_t A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
     int64_t A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
     int64_t A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
-    // AA, 2A/L = h, therefore the division produces a P bit number
-    int64_t w0_row_h=0, w1_row_h=0, w2_row_h=0;
-    int64_t A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
-
-    if(antialias) {
-        // lengths of edges, produces a P+1 bits number
-        unsigned int length_w0 = microgl::math::distance(v0_x, v0_y, v1_x, v1_y);
-        unsigned int length_w1 = microgl::math::distance(v1_x, v1_y, v2_x, v2_y);
-        unsigned int length_w2 = microgl::math::distance(v0_x, v0_y, v2_x, v2_y);
-
-        A01_h = ((int64_t)(v0_y - v1_y)<<PREC_DIST)/length_w0, B01_h = ((int64_t)(v1_x - v0_x)<<PREC_DIST)/length_w0;
-        A12_h = ((int64_t)(v1_y - v2_y)<<PREC_DIST)/length_w1, B12_h = ((int64_t)(v2_x - v1_x)<<PREC_DIST)/length_w1;
-        A20_h = ((int64_t)(v2_y - v0_y)<<PREC_DIST)/length_w2, B20_h = ((int64_t)(v0_x - v2_x)<<PREC_DIST)/length_w2;
-
-        w0_row_h = ((int64_t)(w0_row)<<PREC_DIST)/length_w0;
-        w1_row_h = ((int64_t)(w1_row)<<PREC_DIST)/length_w1;
-        w2_row_h = ((int64_t)(w2_row)<<PREC_DIST)/length_w2;
-    }
     const int pitch= width();
     int index = p.y * pitch;
     for (p.y = bbox.top; p.y <= bbox.bottom; p.y++) {
         int w0 = w0_row;
         int w1 = w1_row;
         int w2 = w2_row;
-        int w0_h=0,w1_h=0,w2_h=0;
-        if(antialias) {
-            w0_h = w0_row_h;
-            w1_h = w1_row_h;
-            w2_h = w2_row_h;
-        }
         for (p.x = bbox.left; p.x<=bbox.right; p.x++) {
             const bool in_closure= (w0|w1|w2)>=0;
             bool should_sample= in_closure;
@@ -853,42 +813,12 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
                 bary.w=bary.x+bary.y+bary.z;
                 if(bary.w==0) bary.w=1;
             }
-            if(antialias && !in_closure) {
-                // any of the distances are negative, we are outside.
-                // test if we can anti-alias
-                // take minimum of all meta distances
-                int64_t distance = functions::min(w0_h, w1_h, w2_h);
-                int64_t delta = (distance) + max_distance_scaled_space_anti_alias;
-                bool perform_aa = aa_all_edges;
-                // test edges
-                if(!perform_aa) {
-                    if(distance==w0_h && aa_first_edge) perform_aa = true;
-                    else if(distance==w1_h && aa_second_edge) perform_aa = true;
-                    else perform_aa = distance == w2_h && aa_third_edge;
-                }
-                should_sample= perform_aa && delta>=0;
-                if(should_sample) {
-                    opacity_t blend = functions::clamp<int64_t>((((int64_t(delta) << bits_distance_complement))>>PREC_DIST),
-                                                                0, 255);
-                    if (opacity < max_opacity_value)
-                        blend = (blend * opacity) >> 8;
-                    opacity_sample= blend;
-
-                    if(perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
-                        bary.x= (l64(w0)*v0_w)>>w_bits, bary.y= (l64(w1)*v1_w)>>w_bits, bary.z= (l64(w2)*v2_w)>>w_bits;
-                        bary.w=bary.x+bary.y+bary.z;
-                        if(bary.w==0) bary.w=1;
-                    }
-                    // rewrite barycentric coords for AA so it sticks to the edges, seems to work
-                    bary.x= functions::clamp<long long>(bary.x, 0, bary.w);
-                    bary.y= functions::clamp<long long>(bary.y, 0, bary.w);
-                    bary.z= functions::clamp<long long>(bary.z, 0, bary.w);
-                    bary.w= bary.x+bary.y+bary.z;
-                }
-            }
             if(depth_buffer_flag && should_sample) {
-                //l64 z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
-                l64 z= (long long)(number((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/(area));
+                l64 z;
+                constexpr bool is_float_point=microgl::traits::is_float_point<number>();
+                // take advantage of FPU
+                if(is_float_point) z= (long long)(number((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/(area));
+                else z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
                 //z_tag= functions::clamp<l64>(z_tag, 0, l64(1)<<44);
                 const int z_index = index - _window.index_correction + p.x;
                 if(z<0 || z>depth_buffer[z_index]) should_sample=false;
@@ -907,20 +837,10 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
             w0 += A01;
             w1 += A12;
             w2 += A20;
-            if(antialias) {
-                w0_h += A01_h;
-                w1_h += A12_h;
-                w2_h += A20_h;
-            }
         }
         w0_row += B01;
         w1_row += B12;
         w2_row += B20;
-        if(antialias) {
-            w0_row_h += B01_h;
-            w1_row_h += B12_h;
-            w2_row_h += B20_h;
-        }
         index += pitch;
     }
 }

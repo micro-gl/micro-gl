@@ -44,7 +44,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     using vertex_attribute= sampler_shader_vertex_attribute<number>;
 
 //    z-=0.0004;
-    z-=0.425;
+    z-=0.0425;
 
     // setup mvp matrix
     mat4 model_1 = mat4::transform({ math::deg_to_rad(z/2), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
@@ -81,7 +81,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     }
 
     // draw model_1
-    canvas->drawTriangles<blendmode::Normal, porterduff::None<>, false, true, true>(
+    canvas->drawTriangles<blendmode::Normal, porterduff::None<>, true, true, true>(
             shader,
             canvas->width(), canvas->height(),
             vertex_buffer.data(),
@@ -95,7 +95,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
 //    return;
     // draw model_2
     shader.matrix= mvp_2;
-    canvas->drawTriangles<blendmode::Normal, porterduff::None<>, false, true, true>(
+    canvas->drawTriangles<blendmode::Normal, porterduff::None<>, true, true, true>(
             shader,
             canvas->width(), canvas->height(),
             vertex_buffer.data(),
@@ -113,7 +113,9 @@ void render() {
     canvas->clear({255,255,255,255});
     canvas->updateClipRect(0,0,W,H);
     test_shader_texture_3d<float>(cube_3d<float>);
+//    test_shader_texture_3d<Q<17>>(cube_3d<Q<17>>);
 //    test_shader_texture_3d<Q<16>>(cube_3d<Q<16>>);
+//    test_shader_texture_3d<Q<15>>(cube_3d<Q<15>>);
 //    test_shader_texture_3d<Q<10>>(cube_3d<Q<10>>);
 //    test_shader_texture_3d<Q<5>>(cube_3d<Q<5>>);
 

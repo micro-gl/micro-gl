@@ -12,6 +12,11 @@ namespace microgl {
             const static bool value = true;
         };
 
+        template<class number>
+        constexpr bool is_float_point() {
+            return is_same<float, number>::value || is_same<double, number>::value || is_same<long double , number>::value;
+        }
+
     }
 
 }
