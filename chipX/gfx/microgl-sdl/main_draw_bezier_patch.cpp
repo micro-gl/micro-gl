@@ -21,7 +21,7 @@ using namespace microgl::sampling;
 using index_t = unsigned int;
 using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_filter::NearestNeighboor>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_filter::Bilinear>;
 Texture24 tex_uv;
 Canvas24 * canvas;
 sampling::flat_color color_grey{{0,0,0,255}};
@@ -30,7 +30,7 @@ void init_sdl(int width, int height);
 
 template <typename number>
 void test_bezier(vec3<number>* mesh, unsigned U, unsigned V) {
-    canvas->drawBezierPatch<blendmode::Normal, porterduff::None<>, false, true, number, number>(
+    canvas->drawBezierPatch<blendmode::Normal, porterduff::None<>, false, false, number, number>(
 //            color_grey,
             tex_uv,
             matrix_3x3<number>::identity(),
@@ -69,6 +69,8 @@ vec3<number>* bi_cubic_1(){
 void render() {
     canvas->clear({255,255,255,255});
     test_bezier<float>(bi_cubic_1<float>(), 4, 4);
+//    canvas->fxaa(10,10,canvas->width()-10,canvas->height()-10);
+//    canvas->fxaa(10,10,canvas->width()-10,canvas->height()-10);
 //    test_bezier<Q<16>>(bi_cubic_1<Q<16>>(), 4, 4);
 
 }

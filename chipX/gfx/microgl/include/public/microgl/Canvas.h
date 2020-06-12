@@ -180,12 +180,15 @@ public:
                        int viewport_width, int viewport_height,
                        const vertex_attr *vertex_buffer,
                        const index *indices,
-                       const boundary_info * boundary_buffer,
                        index size,
                        enum indices type,
                        const triangles::face_culling & culling= triangles::face_culling::none,
                        long long * depth_buffer=nullptr,
                        opacity_t opacity=255);
+
+    void fxaa(int left, int top, int right, int bottom);
+    void fxaa2(int left, int top, int right, int bottom);
+
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,

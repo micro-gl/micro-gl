@@ -11,7 +11,7 @@
 #include "data/model_3d_cube.h"
 
 using namespace microgl::shading;
-#define TEST_ITERATIONS 100
+#define TEST_ITERATIONS 1
 #define W 640*1
 #define H 640*1
 
@@ -24,7 +24,7 @@ using namespace microgl::shading;
 using index_t = unsigned int;
 using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_filter::NearestNeighboor>;
+using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_filter::Bilinear>;
 Canvas24 * canvas;
 Texture24 tex_1, tex_2;
 
@@ -32,7 +32,7 @@ void loop();
 void init_sdl(int width, int height);
 
 float t = 0;
-float z=0.0;
+float z=-30.0;
 
 template <typename number>
 void test_shader_texture_3d(const model_3d<number> & object) {
@@ -86,7 +86,6 @@ void test_shader_texture_3d(const model_3d<number> & object) {
             canvas->width(), canvas->height(),
             vertex_buffer.data(),
             object.indices.data(),
-            nullptr,
             object.indices.size(),
             object.type,
             triangles::face_culling::ccw,
@@ -100,7 +99,6 @@ void test_shader_texture_3d(const model_3d<number> & object) {
             canvas->width(), canvas->height(),
             vertex_buffer.data(),
             object.indices.data(),
-            nullptr,
             object.indices.size(),
             object.type,
             triangles::face_culling::ccw,
@@ -110,7 +108,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
 }
 
 void render() {
-    canvas->clear({255,255,255,255});
+    canvas->clear({255,0,255,255});
     canvas->updateClipRect(0,0,W,H);
     test_shader_texture_3d<float>(cube_3d<float>);
 //    test_shader_texture_3d<Q<17>>(cube_3d<Q<17>>);
@@ -118,6 +116,8 @@ void render() {
 //    test_shader_texture_3d<Q<15>>(cube_3d<Q<15>>);
 //    test_shader_texture_3d<Q<10>>(cube_3d<Q<10>>);
 //    test_shader_texture_3d<Q<5>>(cube_3d<Q<5>>);
+    canvas->fxaa(10,10,canvas->width()-10,canvas->height()-10);
+//    canvas->fxaa2(10,10,canvas->width()-10,canvas->height()-10);
 
 }
 

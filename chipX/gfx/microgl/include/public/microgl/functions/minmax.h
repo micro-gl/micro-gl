@@ -31,6 +31,11 @@ namespace microgl {
         }
 
         template<typename T>
+        inline T min(const T &p0, const T &p1, const T &p2, const T &p3, const T &p4) {
+            return min(min(min(min(p0, p1), p2), p3), p4);
+        }
+
+        template<typename T>
         inline T max(const T &p0, const T &p1) {
             return p0 > p1 ? p0 : p1;
         }
@@ -47,6 +52,11 @@ namespace microgl {
         template<typename T>
         inline T max(const T &p0, const T &p1, const T &p2, const T &p3) {
             return max(max(max(p0, p1), p2), p3);
+        }
+
+        template<typename T>
+        inline T max(const T &p0, const T &p1, const T &p2, const T &p3, const T &p4) {
+            return max(max(max(max(p0, p1), p2), p3), p4);
         }
 
 //        template<typename T>

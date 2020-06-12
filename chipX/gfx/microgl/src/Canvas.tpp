@@ -1,3 +1,6 @@
+
+#include <microgl/Canvas.h>
+
 template<typename P, typename CODER>
 Canvas<P, CODER>::Canvas(bitmap *$bmp) : _bitmap_canvas($bmp) {
     updateCanvasWindow(0, 0, $bmp);
@@ -108,7 +111,7 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
 
         // we assume that either they are the same or one of them is zero, this is FASTER then comparison.
         // if we don't own a native alpha channel, check if the color has a suggestion for alpha channel.
-        bits alpha_bits = coder().alpha_bits() | val.a_bits;// || _alpha_bits_for_compositing;
+        bits alpha_bits = coder().alpha_bits() | val.a_bits;
         if(alpha_bits) blended.a = src.a;
         else {
             blended.a= 255;
@@ -157,8 +160,7 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
         }
 
         // I fixed opacity is always 8 bits no matter what the alpha depth of the native canvas
-        if(opacity < 255)
-            blended.a =  (int(blended.a) * int(opacity)*int(257))>>16;
+        if(opacity < 255) blended.a =  (int(blended.a) * int(opacity)*int(257))>>16;
 //            blended.a =  (blended.a * opacity)>>8;
 
         constexpr bool premultiply_result = !hasNativeAlphaChannel;//CODER::alpha_bits()!=0;
@@ -402,7 +404,6 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
                                      int viewport_width, int viewport_height,
                                      const vertex_attr *vertex_buffer,
                                      const index *indices,
-                                     const boundary_info * boundary_buffer,
                                      const index size,
                                      const enum indices type,
                                      const triangles::face_culling & culling,
@@ -411,23 +412,16 @@ void Canvas<P, CODER>::drawTriangles(shader_base<impl, vertex_attr, varying, num
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
           [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
               const index &edge_0_id, const index &edge_1_id, const index &edge_2_id) {
-              const bool aa_2d= boundary_buffer!=nullptr;
-              bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
-              if(aa_2d) {
-                  const boundary_info aa_info = boundary_buffer[idx];
-                  aa_first_edge = triangles::classify_boundary_info(aa_info, edge_0_id);
-                  aa_second_edge = triangles::classify_boundary_info(aa_info, edge_1_id);
-                  aa_third_edge = triangles::classify_boundary_info(aa_info, edge_2_id);
-              }
               drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag>(
                       shader,
                       viewport_width, viewport_height,
                       vertex_buffer[first_index],
                       vertex_buffer[second_index],
                       vertex_buffer[third_index],
-                      opacity, culling, depth_buffer,
-                      aa_first_edge, aa_second_edge, aa_third_edge);
+                      opacity, culling, depth_buffer);
           });
+
+//    if(antialias) fxaa(10,10,width()-10,height()-10);
 }
 
 template<typename P, typename CODER>
@@ -1428,4 +1422,165 @@ void Canvas<P, CODER>::drawBezierPatch(const sampling::sampler<S> & sampler,
                                   {vertices_attributes[third_index+I_X], vertices_attributes[third_index+I_Y]});
     }
 #undef IND
+}
+
+template<typename P, typename CODER>
+void Canvas<P, CODER>::fxaa(int left, int top, int right, int bottom) {
+//    left=160;top=160;right=left+300;bottom=top+300;
+//return;
+    // this is the config in an optimized manner
+    const l64 FXAA_SPAN_PIXELS_MAX = 8; // max pixels span
+    const l64 FXAA_REDUCE_MUL_BITS = 3; // to be used as 1/2^3
+    const l64 FXAA_REDUCE_MIN_BITS = 4; // to be used as 1/2^7
+    const l64 LUMA_THRESHOLD_BITS = 5; // to be used as 1/2^5
+
+    const char p = 10;
+    const char t = p - coder().green_bits();
+    const l64 ONE = l64(1) << p;
+    const l64 FXAA_REDUCE_MIN = ONE >> FXAA_REDUCE_MIN_BITS;
+    const l64 FXAA_SPAN_MAX = FXAA_SPAN_PIXELS_MAX << p;
+    const int pitch = width();
+    for (int yy = top, index = top * pitch; yy < bottom; ++yy, index += pitch) {
+        for (int xx = left; xx < right; ++xx) {
+            color_t nw, ne, sw, se, m, rgb_1, rgb_2, rgb_3, rgb_4, rgb_A, rgb_B;
+            this->_bitmap_canvas->decode(index + xx, m);
+            this->_bitmap_canvas->decode(index + xx - pitch - 1, nw);
+            this->_bitmap_canvas->decode(index + xx - pitch + 1, ne);
+            this->_bitmap_canvas->decode(index + xx + pitch - 1, sw);
+            this->_bitmap_canvas->decode(index + xx + pitch + 1, se);
+            // convert lumas to p bits space
+            l64 luma_M = l64(m.g) << t, luma_NW = l64(nw.g) << t, luma_NE = l64(ne.g) << t, luma_SW =
+                    l64(sw.g) << t, luma_SE = l64(se.g) << t;
+            l64 luma_min = microgl::functions::min(luma_M, luma_NW, luma_NE, luma_SW, luma_SE);
+            l64 luma_max = microgl::functions::max(luma_M, luma_NW, luma_NE, luma_SW, luma_SE);
+            // If contrast is lower than a maximum threshold ...
+            if (luma_max - luma_min <= (luma_max >> LUMA_THRESHOLD_BITS))
+                continue;
+            l64 dirSwMinusNe = luma_SW - luma_NE;
+            l64 dirSeMinusNw = luma_SE - luma_NW;
+            l64 dir_x = dirSwMinusNe + dirSeMinusNw;
+            l64 dir_y = dirSwMinusNe - dirSeMinusNw;
+            if (dir_x == 0 && dir_y == 0) continue;
+
+            l64 dirReduce = microgl::functions::max(
+                    ((luma_NW + luma_NE + luma_SW + luma_SE) >> (FXAA_REDUCE_MUL_BITS + 2)), // +2 for average
+                    FXAA_REDUCE_MIN);
+            l64 rcpDirMin = microgl::functions::min(microgl::math::abs(dir_x), microgl::math::abs(dir_y)) + dirReduce;
+            dir_x = (dir_x << p) / rcpDirMin, dir_y = (dir_y << p) / rcpDirMin;
+            dir_x = microgl::functions::clamp(dir_x, -FXAA_SPAN_MAX, FXAA_SPAN_MAX);
+            dir_y = microgl::functions::clamp(dir_y, -FXAA_SPAN_MAX, FXAA_SPAN_MAX);
+            l64 dir_x_temp = (dir_x / 4) >> p, dir_y_temp = (dir_y / 4) >> p;
+            this->_bitmap_canvas->decode(xx - dir_x_temp, yy - dir_y_temp, rgb_1);
+            this->_bitmap_canvas->decode(xx + dir_x_temp, yy + dir_y_temp, rgb_2);
+            rgb_A.r = (int(rgb_1.r) + int(rgb_2.r)) >> 1, rgb_A.g = (int(rgb_1.g) + int(rgb_2.g)) >> 1, rgb_A.b =
+                    (int(rgb_1.b) + int(rgb_2.b)) >> 1;
+            dir_x_temp = (dir_x >> 1) >> p, dir_y_temp = (dir_y >> 1) >> p;
+            this->_bitmap_canvas->decode(xx - dir_x_temp, yy - dir_y_temp, rgb_3);
+            this->_bitmap_canvas->decode(xx + dir_x_temp, yy + dir_y_temp, rgb_4);
+            rgb_B.r = int(rgb_A.r >> 1) + ((int(rgb_3.r) + int(rgb_4.r)) >> 2); // compute the average of 4 pixels
+            rgb_B.g = int(rgb_A.g >> 1) + ((int(rgb_3.g) + int(rgb_4.g)) >> 2);
+            rgb_B.b = int(rgb_A.b >> 1) + ((int(rgb_3.b) + int(rgb_4.b)) >> 2);
+            l64 luma_rgb_B = l64(rgb_B.g) << t;
+            color_t *selected_color;
+            if (luma_rgb_B < luma_min || luma_rgb_B > luma_max)
+                selected_color = &rgb_A;
+            else
+                selected_color = &rgb_B;
+//            selected_color=&rgb_B;
+            selected_color->a = m.a; // restore middle alpha
+            P output;
+            color_t black{0, 0, 0};
+//            selected_color=&black;
+            coder().encode(*selected_color, output);
+            drawPixel(output, index + xx);
+        }
+    }
+}
+
+
+template<typename P, typename CODER>
+void Canvas<P, CODER>::fxaa2(int left, int top, int right, int bottom) {
+//    left=160;top=160;right=left+300;bottom=top+300;
+//return;
+    // this is the config in an optimized manner
+    const l64 FXAA_SPAN_PIXELS_MAX = 8; // max pixels span
+    const l64 FXAA_REDUCE_MUL_BITS = 3; // to be used as 1/2^3
+    const l64 FXAA_REDUCE_MIN_BITS = 7; // to be used as 1/2^7
+    const l64 LUMA_THRESHOLD_BITS = 5; // to be used as 1/2^5
+
+    const char p = 12;
+    const char t = p - coder().green_bits();
+    const l64 ONE = l64(1) << p;
+    const l64 FXAA_REDUCE_MIN = ONE >> FXAA_REDUCE_MIN_BITS;
+    const l64 FXAA_SPAN_MAX = FXAA_SPAN_PIXELS_MAX << p;
+
+    const l64 fxaaConsoleEdgeThresholdBits = 3;
+    const l64 fxaaConsoleEdgeThresholdMin = 0;
+    const l64 fxaaConsoleRcpFrameOpt = 1;
+    const l64 fxaaConsoleRcpFrameOpt2 = 1;
+    const l64 fxaaConsoleEdgeSharpness = 2;
+    const l64 epsilon = ONE/384;
+    const int pitch = width();
+    for (int yy = top, index = top * pitch; yy < bottom; ++yy, index += pitch) {
+        for (int xx = left; xx < right; ++xx) {
+            color_t nw, ne, sw, se, m, rgb_N1, rgb_P1, rgb_N2, rgb_P2, rgb_3, rgb_4, rgb_A, rgb_B;
+            this->_bitmap_canvas->decode(index + xx, m);
+            this->_bitmap_canvas->decode(index + xx - pitch - 1, nw);
+            this->_bitmap_canvas->decode(index + xx - pitch + 1, ne);
+            this->_bitmap_canvas->decode(index + xx + pitch - 1, sw);
+            this->_bitmap_canvas->decode(index + xx + pitch + 1, se);
+            // convert lumas to p bits space
+            l64 luma_M = l64(m.g) << t, luma_NW = l64(nw.g) << t, luma_NE = epsilon+(l64(ne.g) << t),
+                    luma_SW =l64(sw.g) << t, luma_SE = l64(se.g) << t;
+            l64 luma_min = microgl::functions::min(luma_NW, luma_NE, luma_SW, luma_SE);
+            l64 luma_max = microgl::functions::max(luma_NW, luma_NE, luma_SW, luma_SE);
+            l64 lumaMaxScaled = luma_max >> fxaaConsoleEdgeThresholdBits;
+            l64 lumaMinM = microgl::functions::min(luma_min, luma_M);
+            l64 lumaMaxScaledClamped = microgl::functions::max(fxaaConsoleEdgeThresholdMin, lumaMaxScaled);
+            l64 lumaMaxM = microgl::functions::max(luma_max, luma_M);
+            l64 lumaMaxSubMinM = lumaMaxM - lumaMinM;
+            // If contrast is lower than a maximum threshold ...
+            if (lumaMaxSubMinM < (lumaMaxScaledClamped))
+                continue;
+
+            l64 dirSwMinusNe = luma_SW - luma_NE;
+            l64 dirSeMinusNw = luma_SE - luma_NW;
+            l64 dir_x = dirSwMinusNe + dirSeMinusNw;
+            l64 dir_y = dirSwMinusNe - dirSeMinusNw;
+            if (dir_x == 0 && dir_y == 0) continue;
+            // dir 1
+            {
+                const l64 length= microgl::math::length(dir_x, dir_y);
+                l64 dir1_x= ((dir_x << p) / length) >> fxaaConsoleRcpFrameOpt;
+                l64 dir1_y= ((dir_y << p) / length) >> fxaaConsoleRcpFrameOpt;
+                this->_bitmap_canvas->decode(xx - (dir1_x>>p), yy - (dir1_y>>p), rgb_N1);
+                this->_bitmap_canvas->decode(xx + (dir1_x>>p), yy + (dir1_y>>p), rgb_P1);
+                l64 dirAbsMinTimesC = microgl::functions::min(microgl::math::abs(dir1_x),
+                        microgl::math::abs(dir1_y)) * fxaaConsoleEdgeSharpness;
+                l64 dir2_x = 2*microgl::functions::clamp((dir1_x << p) / dirAbsMinTimesC, -(2ll << p), 2ll << p);
+                l64 dir2_y = 2*microgl::functions::clamp((dir1_y << p) / dirAbsMinTimesC, -(2ll << p), 2ll << p);
+                this->_bitmap_canvas->decode(xx - (dir2_x>>p), yy - (dir2_y>>p), rgb_N2);
+                this->_bitmap_canvas->decode(xx + (dir2_x>>p), yy + (dir2_y>>p), rgb_P2);
+
+            }
+            rgb_A.r = (int(rgb_N1.r) + int(rgb_P1.r)) >> 1, rgb_A.g = (int(rgb_N1.g) + int(rgb_P1.g)) >> 1;
+            rgb_A.b =(int(rgb_N1.b) + int(rgb_P1.b)) >> 1;
+            rgb_B.r = int(rgb_A.r >> 1) + ((int(rgb_N2.r) + int(rgb_P2.r)) >> 2); // compute the average of 4 pixels
+            rgb_B.g = int(rgb_A.g >> 1) + ((int(rgb_N2.g) + int(rgb_P2.g)) >> 2);
+            rgb_B.b = int(rgb_A.b >> 1) + ((int(rgb_N2.b) + int(rgb_P2.b)) >> 2);
+            l64 luma_rgb_B = l64(rgb_B.g) << t;
+            color_t *selected_color;
+            if (luma_rgb_B < luma_min || luma_rgb_B > luma_max)
+                selected_color = &rgb_A;
+            else
+                selected_color = &rgb_B;
+//            selected_color=&rgb_B;
+            selected_color->a = m.a; // restore middle alpha
+            P output;
+            color_t black{0, 0, 0};
+//            selected_color=&black;
+            coder().encode(*selected_color, output);
+            drawPixel(output, index + xx);
+        }
+    }
 }

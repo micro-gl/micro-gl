@@ -56,6 +56,7 @@ namespace microgl {
                         u_=u&((1<<bits)-1);
                         break;
                     }
+                    case texture_wrap::None : break;
                 }
 
                 switch(wrap_v) {
@@ -72,6 +73,7 @@ namespace microgl {
                         v_=v&((l64(1)<<bits)-1);
                         break;
                     }
+                    case texture_wrap::None : break;
                 }
 
                 // compile time branching for default sampling
