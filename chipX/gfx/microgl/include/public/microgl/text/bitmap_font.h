@@ -179,7 +179,7 @@ namespace microgl {
 
                 int layout_v_offset=0;
                 if (format.verticalAlign!=vAlign::top) {
-                    int bottom=currentY + (lineHeight<<PP);
+                    int bottom=currentY;// + (lineHeight<<PP);
                     layout_v_offset = containerHeight - bottom; // bottom
                     if (format.verticalAlign==vAlign::center) layout_v_offset/=2;
                 }

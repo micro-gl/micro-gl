@@ -41,14 +41,16 @@ void test_texture() {
 //    font.lineHeight=19;
     format.leading=5;
     format.fontSize=30;
-    format.horizontalAlign=text::hAlign::right;
+//    format.horizontalAlign=text::hAlign::right;
 //    format.horizontalAlign=text::hAlign::left;
-//    format.horizontalAlign=text::hAlign::center;
-    format.verticalAlign=text::vAlign::center;
+    format.horizontalAlign=text::hAlign::center;
+//    format.verticalAlign=text::vAlign::center;
+    format.verticalAlign=text::vAlign::bottom;
+//    format.verticalAlign=text::vAlign::top;
 //    format.wordWrap=text::wordWrap ::normal;
     format.wordWrap=text::wordWrap ::break_word;
-    canvas->drawText("hello hello helloaaaaaaaaaaaaaa hello hello hello ", font, format,
-//    canvas->drawText("hello hello hello\nhello", font, format,
+    canvas->drawText("hello hello helloaaaaaaaaaaaaaa hello hello hello ",
+            font, {255, 255, 255, 255},format,
             10, 10, 300, 300, 255);
 }
 

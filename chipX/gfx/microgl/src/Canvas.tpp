@@ -1484,6 +1484,7 @@ void Canvas<P, CODER>::fxaa(int left, int top, int right, int bottom) {
 template<typename P, typename CODER>
 template<typename P2, typename CODER2>
 void Canvas<P, CODER>::drawText(const char * text, microgl::text::bitmap_font<P2, CODER2> &font,
+        const color_t & color,
         microgl::text::text_format & format,
         int left, int top, int right, int bottom, opacity_t opacity) {
     rect old=clipRect();
@@ -1518,5 +1519,9 @@ void Canvas<P, CODER>::drawText(const char * text, microgl::text::bitmap_font<P2
                 texture, ll, tt, rr, bb, u0, v0, u1, v1, PP, UVP, opacity
                 );
     }
+    drawWuLine(color, left, top, left, bottom);
+    drawWuLine(color, left, top, right, top);
+    drawWuLine(color, right, top, right, bottom);
+    drawWuLine(color, left, bottom, right, bottom);
     updateClipRect(old.left, old.top, old.right, old.bottom);
 }
