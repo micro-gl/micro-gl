@@ -87,7 +87,7 @@ namespace microgl {
                 int scale=0;
                 int size=nativeSize<<PP;
                 int currentX=0, currentY=0;
-                int start_loc_index=-1, end_loc_index=-1;
+                int start_loc_index=-1, loc_idx=0;
                 while (!finished)
                 {
                     scale = (format.fontSize<<PP) / nativeSize;
@@ -96,7 +96,7 @@ namespace microgl {
                     if (size <= containerHeight) // && autoScale
                     {
                         int lastWhiteSpace=-1, lastCharID=-1;
-                        for (int ix=0, loc_idx=0; ix<numChars; ++ix)
+                        for (int ix=0; ix<numChars; ++ix)
                         {
                             bool lineFull = false;
                             int charID = text[ix];
@@ -113,8 +113,8 @@ namespace microgl {
 //                                if (kerning)
 //                                    currentX += char.getKerning(lastCharID);
 
-                                char_location & loc = locations_buffer[loc_idx++];
                                 if(start_loc_index==-1) start_loc_index=loc_idx;
+                                char_location & loc = locations_buffer[loc_idx++];
                                 loc.character=bitmap_char;
                                 loc.x = currentX + (bitmap_char->xOffset<<PP);
                                 loc.y = currentY + (bitmap_char->yOffset<<PP);
@@ -153,23 +153,22 @@ namespace microgl {
                             }
 
                             if (lineFull) {
-                                end_loc_index=loc_idx;
+                                int end_loc_index=loc_idx-1;
                                 if (lastWhiteSpace==ix) end_loc_index-=1;
-                                if ((currentY + size+ ((lineHeight + format.leading)<<PP)) <= containerHeight)
-                                {
-                                    if (format.horizontalAlign!=hAlign::left) {
-                                        int layoutOffset=0;
-                                        const auto last_char=locations_buffer[end_loc_index];
-                                        layoutOffset = last_char.x - ((last_char.character->xOffset+last_char.character->xAdvance)<<PP);
-                                        if (format.horizontalAlign==hAlign::center) layoutOffset/=2;
-                                        for (int jj=start_loc_index; jj<=end_loc_index; ++jj)
-                                            locations_buffer[jj].x+=layoutOffset;
-                                    }
-                                    currentX = 0; currentY += (lineHeight + format.leading)<<PP;
-                                    start_loc_index=lastCharID=lastWhiteSpace = -1;
-
+                                if (format.horizontalAlign!=hAlign::left) {
+                                    int layoutOffset=0;
+                                    const auto last_char_loc=locations_buffer[end_loc_index];
+                                    layoutOffset = last_char_loc.x- ((last_char_loc.character->xOffset-
+                                            last_char_loc.character->xAdvance)<<PP);
+                                    layoutOffset= containerWidth-layoutOffset;
+                                    if (format.horizontalAlign==hAlign::center) layoutOffset/=2;
+                                    for (int jj=start_loc_index; jj<=end_loc_index; ++jj)
+                                        locations_buffer[jj].x+=layoutOffset;
                                 }
-                                else break;
+                                currentX = 0; currentY += (lineHeight + format.leading)<<PP;
+                                start_loc_index=lastCharID=lastWhiteSpace = -1;
+                                if ((currentY + size+ ((lineHeight + format.leading)<<PP)) > containerHeight)
+                                    break;
                             }
                         } // for each char
                     } // if (_lineHeight <= containerHeight)
@@ -184,14 +183,14 @@ namespace microgl {
                     layout_v_offset = containerHeight - bottom; // bottom
                     if (format.verticalAlign==vAlign::center) layout_v_offset/=2;
                 }
-                for (int jj=0; jj<=end_loc_index; ++jj) {
+                for (int jj=0; jj<loc_idx; ++jj) {
                     auto & char_final_loc=locations_buffer[jj];
                     char_final_loc.x = (scale * (char_final_loc.x + (offsetX<<PP)))>>PP;
                     char_final_loc.y = (scale * (char_final_loc.y + layout_v_offset + (offsetY<<PP)))>>PP;
                     char_final_loc.x += (padding<<PP); char_final_loc.y += (padding<<PP);
                 }
                 result.scale=scale;
-                result.end_index=end_loc_index;
+                result.end_index=loc_idx;
                 return result;
             }
         };

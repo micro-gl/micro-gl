@@ -63,3 +63,5 @@ std::string & Resources::getAssetFolder() {
     return _asset_folder;
 }
 
+
+

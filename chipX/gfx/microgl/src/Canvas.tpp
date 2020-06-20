@@ -1486,6 +1486,8 @@ template<typename P2, typename CODER2>
 void Canvas<P, CODER>::drawText(const char * text, microgl::text::bitmap_font<P2, CODER2> &font,
         microgl::text::text_format & format,
         int left, int top, int right, int bottom, opacity_t opacity) {
+    rect old=clipRect();
+    updateClipRect(left, top, right, bottom);
     microgl::sampling::texture<P2, CODER2, sampling::texture_filter::NearestNeighboor> texture{font._bitmap};
 //        drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(texture,
 //                                                                           0,0, font._bitmap->width(), font._bitmap->height());
@@ -1516,4 +1518,5 @@ void Canvas<P, CODER>::drawText(const char * text, microgl::text::bitmap_font<P2
                 texture, ll, tt, rr, bb, u0, v0, u1, v1, PP, UVP, opacity
                 );
     }
+    updateClipRect(old.left, old.top, old.right, old.bottom);
 }
