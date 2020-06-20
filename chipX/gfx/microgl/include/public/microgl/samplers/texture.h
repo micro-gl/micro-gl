@@ -24,7 +24,7 @@ namespace microgl {
         public:
             texture() : texture{nullptr} {};
             explicit texture(Bitmap<P, CODER> * bitmap) :
-                    _bmp{bitmap}, base{CODER::red_bits(),CODER::green_bits(),CODER::blue_bits(),CODER::alpha_bits()} {};
+                    base{CODER::red_bits(),CODER::green_bits(),CODER::blue_bits(),CODER::alpha_bits()}, _bmp{bitmap} {};
 
             void updateBitmap(Bitmap<P, CODER> * bitmap) {
                 _bmp=bitmap;

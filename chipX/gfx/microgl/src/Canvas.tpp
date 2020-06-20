@@ -1496,7 +1496,7 @@ void Canvas<P, CODER>::drawText(const char * text, microgl::text::bitmap_font<P2
     { const char * iter=text; while(*iter++!= '\0' && ++text_size); }
     microgl::text::char_location loc_buffer[text_size];
     const auto result=font.layout_text(text, text_size, right-left, bottom-top, format, loc_buffer);
-    unsigned count= result.end_index-1;
+    unsigned count= result.end_index-0;
     const int PP=result.precision;
     const int UVP=12;
     const int s=result.scale;

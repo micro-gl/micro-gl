@@ -38,8 +38,13 @@ void test_texture() {
 //                                                                           t,10, 400, 400);
 
     text::text_format format;
-    format.fontSize=30;
-    canvas->drawText("hello", font, format, 10, 10, 200, 200, 255);
+//    font.lineHeight=19;
+    format.leading=5;
+    format.fontSize=50;
+    format.horizontalAlign=text::hAlign::left;
+//    format.wordWrap=text::wordWrap ::normal;
+    format.wordWrap=text::wordWrap ::break_word;
+    canvas->drawText("hello hello helloaaaaaaaaaaaaaa hello hello hello ", font, format, 10, 10, 400, 400, 255);
 }
 
 void render() {
@@ -98,6 +103,7 @@ void init_sdl(int width, int height) {
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
     auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
+//    loadFont("font", font);
     loadFont("digital_7", font);
     canvas = new Canvas24(width, height);
 }

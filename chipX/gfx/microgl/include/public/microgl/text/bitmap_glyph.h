@@ -3,9 +3,9 @@
 namespace microgl {
     namespace text {
 
-        struct bitmap_gylph {
-            bitmap_gylph() = default;
-            bitmap_gylph(int id, int x, int y, int w, int h, int xOffset, int yOffset, int xAdvance) :
+        struct bitmap_glyph {
+            bitmap_glyph() = default;
+            bitmap_glyph(int id, int x, int y, int w, int h, int xOffset, int yOffset, int xAdvance) :
                     id{id}, xOffset{xOffset}, yOffset{yOffset}, xAdvance{xAdvance}, x{x}, y{y}, width{w}, height{h} {
             };
             char character;

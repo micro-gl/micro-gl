@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/text/bitmap_gylph.h>
+#include <microgl/text/bitmap_glyph.h>
 #include <microgl/text/text_format.h>
 #include <microgl/Bitmap.h>
 
@@ -8,7 +8,7 @@ namespace microgl {
     namespace text {
         struct char_location {
             int x=0, y=0;
-            bitmap_gylph * character= nullptr;
+            bitmap_glyph * character= nullptr;
         };
         struct text_layout_result {
             int scale=1; int precision=0;
@@ -24,12 +24,12 @@ namespace microgl {
             static const int CHAR_NEWLINE = 10;
             static const int CHAR_CARRIAGE_RETURN = 13;
             static const int CHAR_SPACE = 32;
-            bitmap_gylph char_missing =
-                    bitmap_gylph{CHAR_MISSING, 0, 0, 0, 0, 0, 0, 0};
+            bitmap_glyph char_missing =
+                    bitmap_glyph{CHAR_MISSING, 0, 0, 0, 0, 0, 0, 0};
             int count_internal = 0;
         public:
             /** The name of the font as it was parsed from the font file. */
-            char name[20];
+            char name[20]={};
             /** The native size of the font. */
             int nativeSize=0;
             /** The height of one line in points. */
@@ -50,7 +50,7 @@ namespace microgl {
             int gylphs_count = 0;
             int width=0, height=0;
             Bitmap<P, Coder> *_bitmap = nullptr;
-            bitmap_gylph gylphs[MAX_CHARS];
+            bitmap_glyph gylphs[MAX_CHARS];
 
         public:
             bitmap_font() {
@@ -58,10 +58,10 @@ namespace microgl {
             }
 
             void addChar(int id, int x, int y, int w, int h, int xOffset, int yOffset, int xAdvance) {
-                gylphs[count_internal++] = bitmap_gylph{id, x, y, w, h, xOffset, yOffset, xAdvance};
+                gylphs[count_internal++] = bitmap_glyph{id, x, y, w, h, xOffset, yOffset, xAdvance};
             }
 
-            bitmap_gylph *charByID(int id) {
+            bitmap_glyph *charByID(int id) {
                 for (int ix = 0; ix < count_internal; ++ix) {
                     if (gylphs[ix].id == id) return &gylphs[ix];
                 }
@@ -69,12 +69,12 @@ namespace microgl {
             }
 
             text_layout_result layout_text(
-                    const char * text, unsigned int numChars,
-                    int width, int height,
+                    const char * text, int numChars,
+                    int box_width, int box_height,
                     text_format format,
                     char_location * locations_buffer)
             {
-                int PP=8;
+                int PP=4;
                 text_layout_result result;
                 result.locations=locations_buffer;
                 result.precision=PP;
@@ -91,12 +91,12 @@ namespace microgl {
                 while (!finished)
                 {
                     scale = (format.fontSize<<PP) / nativeSize;
-                    containerWidth  = (((width  - 2 * padding)<<PP)<<PP) / scale;
-                    containerHeight = (((height - 2 * padding)<<PP)<<PP) / scale;
+                    containerWidth  = (((box_width - 2 * padding) << PP) << PP) / scale;
+                    containerHeight = (((box_height - 2 * padding) << PP) << PP) / scale;
                     if (size <= containerHeight) // && autoScale
                     {
                         int lastWhiteSpace=-1, lastCharID=-1;
-                        for (int ix=0, loc_idx=0; ix<int(numChars); ++ix)
+                        for (int ix=0, loc_idx=0; ix<numChars; ++ix)
                         {
                             bool lineFull = false;
                             int charID = text[ix];
@@ -138,7 +138,8 @@ namespace microgl {
                                             if (autoScale) break;
                                             loc_idx-=1;
                                             // continue with next line, if there is one
-                                            while (ix++<numChars-1 && text[ix]!=CHAR_NEWLINE);
+                                            while (ix++<numChars-1 && text[ix]!=CHAR_NEWLINE && text[ix]!=CHAR_SPACE
+                                                                                                && text[ix]!=CHAR_TAB);
                                             break;
                                         }
                                     }
@@ -146,7 +147,7 @@ namespace microgl {
                                 }
                             }
 
-                            if (ix==int(numChars)-1) {
+                            if (ix==numChars-1) {
                                 finished = true;
                                 lineFull=true; //tomer
                             }
@@ -156,8 +157,6 @@ namespace microgl {
                                 if (lastWhiteSpace==ix) end_loc_index-=1;
                                 if ((currentY + size+ ((lineHeight + format.leading)<<PP)) <= containerHeight)
                                 {
-                                    currentX = 0; currentY += (lineHeight + format.leading)<<PP;
-                                    start_loc_index=lastCharID=lastWhiteSpace = -1;
                                     if (format.horizontalAlign!=hAlign::left) {
                                         int layoutOffset=0;
                                         const auto last_char=locations_buffer[end_loc_index];
@@ -166,6 +165,8 @@ namespace microgl {
                                         for (int jj=start_loc_index; jj<=end_loc_index; ++jj)
                                             locations_buffer[jj].x+=layoutOffset;
                                     }
+                                    currentX = 0; currentY += (lineHeight + format.leading)<<PP;
+                                    start_loc_index=lastCharID=lastWhiteSpace = -1;
 
                                 }
                                 else break;
