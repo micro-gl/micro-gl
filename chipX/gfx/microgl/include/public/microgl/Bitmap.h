@@ -35,19 +35,19 @@ public:
     P pixelAt(int x, int y) const;
     P pixelAt(int index) const;
     // decoders
-    void decode(int x, int y, color_t &output) const;
-    void decode(int index, color_t &output) const;
+    void decode(int x, int y, microgl::color::color_t &output) const;
+    void decode(int index, microgl::color::color_t &output) const;
     template <typename number>
-    void decode(int x, int y, intensity<number> &output) const;
+    void decode(int x, int y, microgl::color::intensity<number> &output) const;
     template <typename number>
-    void decode(int index, intensity<number> &output) const;
+    void decode(int index, microgl::color::intensity<number> &output) const;
     // encoders
-    void writeColor(int index, const color_t & color);
-    void writeColor(int x, int y, const color_t & color);
+    void writeColor(int index, const microgl::color::color_t & color);
+    void writeColor(int x, int y, const microgl::color::color_t & color);
     template <typename number>
-    void writeColor(int index, const intensity<number> & color);
+    void writeColor(int index, const microgl::color::intensity<number> & color);
     template <typename number>
-    void writeColor(int x, int y, const intensity<number> & color);
+    void writeColor(int x, int y, const microgl::color::intensity<number> & color);
     int width() const;
     int height() const;
     const microgl::coder::PixelCoder<P, CODER> & coder() const;

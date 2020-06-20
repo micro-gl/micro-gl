@@ -54,7 +54,7 @@ set(SOURCES
 #        main_draw_triangles_matrix_transforms.cpp
 #        main_draw_shaders_2d.cpp
 #        main_draw_shaders_3d.cpp
-        main_draw_z_buffer.cpp
+#        main_draw_z_buffer.cpp
 #        main_3d_pipeline.cpp
 #        main_3d_camera.cpp
 #        main_number_systems.cpp
@@ -71,6 +71,7 @@ set(SOURCES
 #        main_path.cpp
 #        main_q_sort.cpp
 #        main_avl_tree.cpp
+        main_draw_bitmap_fonts.cpp
         libs/stb_image/stb_image.cpp
         src/Resources.cpp)
 

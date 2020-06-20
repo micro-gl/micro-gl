@@ -22,9 +22,9 @@ namespace microgl {
             using base= sampler<texture<P, CODER, filter, wrap_u, wrap_v>>;
             using l64= long long;
         public:
-            texture() : base{CODER::red_bits(),CODER::green_bits(),CODER::blue_bits(),CODER::alpha_bits()} {};
+            texture() : texture{nullptr} {};
             explicit texture(Bitmap<P, CODER> * bitmap) :
-                    _bmp{bitmap}, texture() {};
+                    _bmp{bitmap}, base{CODER::red_bits(),CODER::green_bits(),CODER::blue_bits(),CODER::alpha_bits()} {};
 
             void updateBitmap(Bitmap<P, CODER> * bitmap) {
                 _bmp=bitmap;
@@ -90,6 +90,7 @@ namespace microgl {
                 const l64 y = (l64(_bmp->height()-1)*(v)+half) >> bits;
                 const int index_bmp = y*_bmp->width() + x;
                 _bmp->decode(index_bmp, output);
+//                output={0,0,0,255};
             }
 
             inline void sample_bilinear(l64 u, l64 v,

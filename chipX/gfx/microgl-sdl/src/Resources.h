@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <libs/stb_image/stb_image.h>
+#include <libs/rapidxml/rapidxml.hpp>
 
 using std::cout;
 using std::endl;
@@ -80,6 +81,8 @@ public:
      */
     std::vector<unsigned char> * loadFileAsByteArray(const std::string &file_name);
 
+
+
     /**
      * load text file
      *
@@ -90,8 +93,10 @@ public:
      */
     std::string loadTextFile(const std::string &file_name);
 
+    void loadXML(const std::string &file_name, rapidxml::xml_document<> & doc);
 protected:
 
 private:
     std::string _asset_folder;
+
 };

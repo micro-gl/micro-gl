@@ -103,28 +103,21 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
     if(!skip_all){
         color_t backdrop, blended;
         const color_t & src = val;
-
         // get backdrop color if blending or compositing is required
         if(!skip_blending || !none_compositing)
             this->_bitmap_canvas->decode(index, backdrop); // not using getPixelColor to avoid extra subtraction
             //getPixelColor(index, backdrop);
-
         // we assume that either they are the same or one of them is zero, this is FASTER then comparison.
         // if we don't own a native alpha channel, check if the color has a suggestion for alpha channel.
         bits alpha_bits = coder().alpha_bits() | val.a_bits;
         if(alpha_bits) blended.a = src.a;
-        else {
-            blended.a= 255;
-            alpha_bits=8;
-        }
+        else { blended.a= 255; alpha_bits=8; }
         constexpr bool hasNativeAlphaChannel = CODER::alpha_bits()!=0;
         constexpr unsigned int max_alpha_value = hasNativeAlphaChannel ? (1 << CODER::alpha_bits()) - 1 : (255);
         // fix alpha bits depth in case we don't natively
         // support alpha, this is correct because we want to
         // support compositing even if the surface is opaque.
-        if(!hasNativeAlphaChannel)
-            backdrop.a = max_alpha_value;
-
+        if(!hasNativeAlphaChannel) backdrop.a = max_alpha_value;
         // if blend-mode is normal or the backdrop is completely transparent
         // then we don't need to blend.
         // the first conditional should be resolved at compile-time therefore it is zero cost !!!
@@ -134,12 +127,10 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
 
         // if we are normal then do nothing
         if(!skip_blending && backdrop.a!=0) { //  or backdrop alpha is zero is also valid
-
             BlendMode::blend(backdrop, src, blended,
                              coder().red_bits(),
                              coder().green_bits(),
                              coder().blue_bits());
-
             // if backdrop alpha!= max_alpha let's first composite the blended color, this is
             // an intermidiate step before Porter-Duff
             if(backdrop.a < max_alpha_value) {
@@ -150,21 +141,14 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
                 blended.g = (comp * src.g + backdrop.a * blended.g) >> alpha_bits;
                 blended.b = (comp * src.b + backdrop.a * blended.b) >> alpha_bits;
             }
-
         }
         else {
             // skipped blending therefore use src color
-            blended.r = src.r;
-            blended.g = src.g;
-            blended.b = src.b;
+            blended.r = src.r; blended.g = src.g; blended.b = src.b;
         }
-
         // I fixed opacity is always 8 bits no matter what the alpha depth of the native canvas
         if(opacity < 255) blended.a =  (int(blended.a) * int(opacity)*int(257))>>16;
-//            blended.a =  (blended.a * opacity)>>8;
-
-        constexpr bool premultiply_result = !hasNativeAlphaChannel;//CODER::alpha_bits()!=0;
-
+        constexpr bool premultiply_result = !hasNativeAlphaChannel;
         // finally alpha composite with Porter-Duff equations,
         // this should be zero-cost for None option with compiler optimizations
         // if we do not own a native alpha channel, then please keep the composited result
@@ -1426,6 +1410,7 @@ void Canvas<P, CODER>::drawBezierPatch(const sampling::sampler<S> & sampler,
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::fxaa(int left, int top, int right, int bottom) {
+    // taken from opengl cookbook
 //    left=160;top=160;right=left+300;bottom=top+300;
 //return;
     // this is the config in an optimized manner
@@ -1482,10 +1467,8 @@ void Canvas<P, CODER>::fxaa(int left, int top, int right, int bottom) {
             rgb_B.b = int(rgb_A.b >> 1) + ((int(rgb_3.b) + int(rgb_4.b)) >> 2);
             l64 luma_rgb_B = l64(rgb_B.g) << t;
             color_t *selected_color;
-            if (luma_rgb_B < luma_min || luma_rgb_B > luma_max)
-                selected_color = &rgb_A;
-            else
-                selected_color = &rgb_B;
+            if (luma_rgb_B < luma_min || luma_rgb_B > luma_max) selected_color = &rgb_A;
+            else selected_color = &rgb_B;
 //            selected_color=&rgb_B;
             selected_color->a = m.a; // restore middle alpha
             P output;
@@ -1497,90 +1480,40 @@ void Canvas<P, CODER>::fxaa(int left, int top, int right, int bottom) {
     }
 }
 
-
+#include <microgl/samplers/texture.h>
 template<typename P, typename CODER>
-void Canvas<P, CODER>::fxaa2(int left, int top, int right, int bottom) {
-//    left=160;top=160;right=left+300;bottom=top+300;
-//return;
-    // this is the config in an optimized manner
-    const l64 FXAA_SPAN_PIXELS_MAX = 8; // max pixels span
-    const l64 FXAA_REDUCE_MUL_BITS = 3; // to be used as 1/2^3
-    const l64 FXAA_REDUCE_MIN_BITS = 7; // to be used as 1/2^7
-    const l64 LUMA_THRESHOLD_BITS = 5; // to be used as 1/2^5
+template<typename P2, typename CODER2>
+void Canvas<P, CODER>::drawText(const char * text, microgl::text::bitmap_font<P2, CODER2> &font,
+        microgl::text::text_format & format,
+        int left, int top, int right, int bottom, opacity_t opacity) {
+    microgl::sampling::texture<P2, CODER2, sampling::texture_filter::NearestNeighboor> texture{font._bitmap};
+//        drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(texture,
+//                                                                           0,0, font._bitmap->width(), font._bitmap->height());
+//
+//    return;
 
-    const char p = 12;
-    const char t = p - coder().green_bits();
-    const l64 ONE = l64(1) << p;
-    const l64 FXAA_REDUCE_MIN = ONE >> FXAA_REDUCE_MIN_BITS;
-    const l64 FXAA_SPAN_MAX = FXAA_SPAN_PIXELS_MAX << p;
+    unsigned int text_size=0;
+    { const char * iter=text; while(*iter++!= '\0' && ++text_size); }
+    microgl::text::char_location loc_buffer[text_size];
+    const auto result=font.layout_text(text, text_size, right-left, bottom-top, format, loc_buffer);
+    unsigned count= result.end_index-1;
+    const int PP=result.precision;
+    const int UVP=12;
+    const int s=result.scale;
+    int u0, v0, u1, v1;
+    for (unsigned ix = 0; ix < count; ++ix) {
+        const auto & l= result.locations[ix];
+        u0=(l.character->x<<UVP)/font._bitmap->width();
+        u1=((l.character->x+l.character->width)<<UVP)/font._bitmap->width();
+        v0=((font._bitmap->height()-l.character->y)<<UVP)/font._bitmap->height();
+        v1=((font._bitmap->height()-l.character->y-l.character->height)<<UVP)/font._bitmap->height();
 
-    const l64 fxaaConsoleEdgeThresholdBits = 3;
-    const l64 fxaaConsoleEdgeThresholdMin = 0;
-    const l64 fxaaConsoleRcpFrameOpt = 1;
-    const l64 fxaaConsoleRcpFrameOpt2 = 1;
-    const l64 fxaaConsoleEdgeSharpness = 2;
-    const l64 epsilon = ONE/384;
-    const int pitch = width();
-    for (int yy = top, index = top * pitch; yy < bottom; ++yy, index += pitch) {
-        for (int xx = left; xx < right; ++xx) {
-            color_t nw, ne, sw, se, m, rgb_N1, rgb_P1, rgb_N2, rgb_P2, rgb_3, rgb_4, rgb_A, rgb_B;
-            this->_bitmap_canvas->decode(index + xx, m);
-            this->_bitmap_canvas->decode(index + xx - pitch - 1, nw);
-            this->_bitmap_canvas->decode(index + xx - pitch + 1, ne);
-            this->_bitmap_canvas->decode(index + xx + pitch - 1, sw);
-            this->_bitmap_canvas->decode(index + xx + pitch + 1, se);
-            // convert lumas to p bits space
-            l64 luma_M = l64(m.g) << t, luma_NW = l64(nw.g) << t, luma_NE = epsilon+(l64(ne.g) << t),
-                    luma_SW =l64(sw.g) << t, luma_SE = l64(se.g) << t;
-            l64 luma_min = microgl::functions::min(luma_NW, luma_NE, luma_SW, luma_SE);
-            l64 luma_max = microgl::functions::max(luma_NW, luma_NE, luma_SW, luma_SE);
-            l64 lumaMaxScaled = luma_max >> fxaaConsoleEdgeThresholdBits;
-            l64 lumaMinM = microgl::functions::min(luma_min, luma_M);
-            l64 lumaMaxScaledClamped = microgl::functions::max(fxaaConsoleEdgeThresholdMin, lumaMaxScaled);
-            l64 lumaMaxM = microgl::functions::max(luma_max, luma_M);
-            l64 lumaMaxSubMinM = lumaMaxM - lumaMinM;
-            // If contrast is lower than a maximum threshold ...
-            if (lumaMaxSubMinM < (lumaMaxScaledClamped))
-                continue;
-
-            l64 dirSwMinusNe = luma_SW - luma_NE;
-            l64 dirSeMinusNw = luma_SE - luma_NW;
-            l64 dir_x = dirSwMinusNe + dirSeMinusNw;
-            l64 dir_y = dirSwMinusNe - dirSeMinusNw;
-            if (dir_x == 0 && dir_y == 0) continue;
-            // dir 1
-            {
-                const l64 length= microgl::math::length(dir_x, dir_y);
-                l64 dir1_x= ((dir_x << p) / length) >> fxaaConsoleRcpFrameOpt;
-                l64 dir1_y= ((dir_y << p) / length) >> fxaaConsoleRcpFrameOpt;
-                this->_bitmap_canvas->decode(xx - (dir1_x>>p), yy - (dir1_y>>p), rgb_N1);
-                this->_bitmap_canvas->decode(xx + (dir1_x>>p), yy + (dir1_y>>p), rgb_P1);
-                l64 dirAbsMinTimesC = microgl::functions::min(microgl::math::abs(dir1_x),
-                        microgl::math::abs(dir1_y)) * fxaaConsoleEdgeSharpness;
-                l64 dir2_x = 2*microgl::functions::clamp((dir1_x << p) / dirAbsMinTimesC, -(2ll << p), 2ll << p);
-                l64 dir2_y = 2*microgl::functions::clamp((dir1_y << p) / dirAbsMinTimesC, -(2ll << p), 2ll << p);
-                this->_bitmap_canvas->decode(xx - (dir2_x>>p), yy - (dir2_y>>p), rgb_N2);
-                this->_bitmap_canvas->decode(xx + (dir2_x>>p), yy + (dir2_y>>p), rgb_P2);
-
-            }
-            rgb_A.r = (int(rgb_N1.r) + int(rgb_P1.r)) >> 1, rgb_A.g = (int(rgb_N1.g) + int(rgb_P1.g)) >> 1;
-            rgb_A.b =(int(rgb_N1.b) + int(rgb_P1.b)) >> 1;
-            rgb_B.r = int(rgb_A.r >> 1) + ((int(rgb_N2.r) + int(rgb_P2.r)) >> 2); // compute the average of 4 pixels
-            rgb_B.g = int(rgb_A.g >> 1) + ((int(rgb_N2.g) + int(rgb_P2.g)) >> 2);
-            rgb_B.b = int(rgb_A.b >> 1) + ((int(rgb_N2.b) + int(rgb_P2.b)) >> 2);
-            l64 luma_rgb_B = l64(rgb_B.g) << t;
-            color_t *selected_color;
-            if (luma_rgb_B < luma_min || luma_rgb_B > luma_max)
-                selected_color = &rgb_A;
-            else
-                selected_color = &rgb_B;
-//            selected_color=&rgb_B;
-            selected_color->a = m.a; // restore middle alpha
-            P output;
-            color_t black{0, 0, 0};
-//            selected_color=&black;
-            coder().encode(*selected_color, output);
-            drawPixel(output, index + xx);
-        }
+        int ll= l.x; ll += left<<PP;
+        int tt= l.y; tt+=(top<<PP);
+        int rr= ll + ((l.character->width*s));
+        int bb= tt + ((l.character->height*s));
+        drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, decltype(texture)>(
+                texture, ll, tt, rr, bb, u0, v0, u1, v1, PP, UVP, opacity
+                );
     }
 }

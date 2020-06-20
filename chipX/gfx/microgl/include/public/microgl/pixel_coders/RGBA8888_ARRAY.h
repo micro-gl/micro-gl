@@ -11,7 +11,7 @@ namespace microgl {
 
             static
             inline void encode(const color_t &input, vec4<channel> &output) {
-                output.x = input.r, output.y = input.g, output.z = input.b;, output.w = input.a;
+                output.x = input.r, output.y = input.g, output.z = input.b; output.w = input.a;
             }
 
             static

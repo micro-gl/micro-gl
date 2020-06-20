@@ -1,5 +1,6 @@
 #pragma once
 
+#include <microgl/text/bitmap_font.h>
 #include <microgl/vec2.h>
 #include <microgl/matrix_3x3.h>
 #include <microgl/rect.h>
@@ -375,6 +376,11 @@ public:
                       opacity_t opacity=255,
                       number2 u0=number2(0), number2 v0=number2(1),
                       number2 u1=number2(1), number2 v1=number2(0));
+
+
+    template<typename P2, typename CODER2>
+    void drawText(const char *text, microgl::text::bitmap_font<P2, CODER2> &font, microgl::text::text_format & format,
+            int left, int top, int right, int bottom, opacity_t opacity=255);
 };
 
 #include "../../src/Canvas.tpp"
