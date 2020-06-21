@@ -14,7 +14,7 @@ namespace microgl {
 
         struct text_format {
             int leading=0;
-            unsigned int fontSize=10;
+            int fontSize=-1;
             int letterSpacing=0;
             wordWrap wordWrap=wordWrap::normal;
             hAlign horizontalAlign=hAlign::left;

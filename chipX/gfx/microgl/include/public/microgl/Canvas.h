@@ -381,7 +381,7 @@ public:
     template<typename P2, typename CODER2>
     void drawText(const char *text, microgl::text::bitmap_font<P2, CODER2> &font, const color_t & color,
             microgl::text::text_format & format,
-            int left, int top, int right, int bottom, opacity_t opacity=255);
+            int left, int top, int right, int bottom, bool frame, opacity_t opacity=255);
 };
 
 #include "../../src/Canvas.tpp"

@@ -906,21 +906,23 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
                                 const precision sub_pixel_precision,
                                 const precision uv_precision,
                                 const opacity_t opacity) {
-
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
 #define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
 #define floor_fixed(val, bits) (val>>bits)
     color_t col_bmp{};
     const precision p= sub_pixel_precision;
+    if(left==right || top==bottom) return;
     const rect bbox_r = {floor_fixed(left, p), floor_fixed(top, p),
-                 ceil_fixed(right, p)-1, ceil_fixed(bottom, p)-1};
+                 ceil_fixed(right, p)-0, ceil_fixed(bottom, p)-0};
     const rect bbox_r_c = bbox_r.intersect(effectiveRect);
     if(bbox_r_c.empty()) return;
     // calculate uvs with original unclipped deltas, this way we can always accurately predict blocks
-    const int du = (u1-u0)/(bbox_r.right-bbox_r.left);
-    const int dv = (v1-v0)/(bbox_r.bottom-bbox_r.top);
+    const int du = (u1-u0)/(bbox_r.right-bbox_r.left-0);
+    const int dv = (v1-v0)/(bbox_r.bottom-bbox_r.top-0);
     const int dx= bbox_r_c.left-bbox_r.left, dy= bbox_r_c.top-bbox_r.top;
+    u0+=du>>1;
+    v0+=dv>>1;
     const int u_start= u0+dx*du;
     const int pitch= width();
     if(antialias) {
@@ -969,8 +971,8 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
     }
     else {
         int index= bbox_r_c.top * pitch;
-        for (int y=bbox_r_c.top, v=v0+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
-            for (int x=bbox_r_c.left, u=u_start; x<=bbox_r_c.right; x++, u+=du) {
+        for (int y=bbox_r_c.top, v=v0+dy*dv; y<bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
+            for (int x=bbox_r_c.left, u=u_start; x<bbox_r_c.right; x++, u+=du) {
                 sampler.sample(u, v, uv_precision, col_bmp);
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
             }
@@ -1484,44 +1486,60 @@ void Canvas<P, CODER>::fxaa(int left, int top, int right, int bottom) {
 template<typename P, typename CODER>
 template<typename P2, typename CODER2>
 void Canvas<P, CODER>::drawText(const char * text, microgl::text::bitmap_font<P2, CODER2> &font,
-        const color_t & color,
-        microgl::text::text_format & format,
-        int left, int top, int right, int bottom, opacity_t opacity) {
-    rect old=clipRect();
-    updateClipRect(left, top, right, bottom);
-    microgl::sampling::texture<P2, CODER2, sampling::texture_filter::NearestNeighboor> texture{font._bitmap};
-//        drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(texture,
-//                                                                           0,0, font._bitmap->width(), font._bitmap->height());
-//
-//    return;
-
+        const color_t & color, microgl::text::text_format & format,
+        int left, int top, int right, int bottom, bool frame,
+        opacity_t opacity) {
+    rect old=clipRect(); updateClipRect(left, top, right, bottom);
+//        drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(texture,0,0, font._bitmap->width(), font._bitmap->height());return;
     unsigned int text_size=0;
     { const char * iter=text; while(*iter++!= '\0' && ++text_size); }
     microgl::text::char_location loc_buffer[text_size];
     const auto result=font.layout_text(text, text_size, right-left, bottom-top, format, loc_buffer);
-    unsigned count= result.end_index-0;
-    const int PP=result.precision;
-    const int UVP=12;
-    const int s=result.scale;
-    int u0, v0, u1, v1;
-    for (unsigned ix = 0; ix < count; ++ix) {
-        const auto & l= result.locations[ix];
-        u0=(l.character->x<<UVP)/font._bitmap->width();
-        u1=((l.character->x+l.character->width)<<UVP)/font._bitmap->width();
-        v0=((font._bitmap->height()-l.character->y)<<UVP)/font._bitmap->height();
-        v1=((font._bitmap->height()-l.character->y-l.character->height)<<UVP)/font._bitmap->height();
-
-        int ll= l.x; ll += left<<PP;
-        int tt= l.y; tt+=(top<<PP);
-        int rr= ll + ((l.character->width*s));
-        int bb= tt + ((l.character->height*s));
-        drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, decltype(texture)>(
-                texture, ll, tt, rr, bb, u0, v0, u1, v1, PP, UVP, opacity
-                );
+    unsigned count= result.end_index;
+    const int s=result.scale, PP=result.precision;
+    const bool has_scaled=s!=1<<PP;
+    if(has_scaled){ // we use the sampler for scaled
+        microgl::sampling::texture<P2, CODER2, sampling::texture_filter::NearestNeighboor> texture{font._bitmap};
+        const int UVP=15;
+        int u0, v0, u1, v1;
+        for (unsigned ix = 0; ix < count; ++ix) {
+            const auto & l= result.locations[ix];
+            u0=(l.character->x<<UVP)/font._bitmap->width();
+            u1=((l.character->x+l.character->width)<<UVP)/font._bitmap->width();
+            v0=((font._bitmap->height()-l.character->y)<<UVP)/font._bitmap->height();
+            v1=((font._bitmap->height()-l.character->y-l.character->height)<<UVP)/font._bitmap->height();
+            v0=((l.character->y)<<UVP)/font._bitmap->height();
+            v1=((l.character->y+l.character->height)<<UVP)/font._bitmap->height();
+            int ll= l.x; ll+=left<<PP; int tt= l.y; tt+=top<<PP;
+            int rr= ll + ((l.character->width*s)); int bb= tt + ((l.character->height*s));
+            drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, decltype(texture)>(
+                    texture, ll, tt, rr, bb, u0, v0, u1, v1, PP, UVP, opacity
+            );
+        }
     }
-    drawWuLine(color, left, top, left, bottom);
-    drawWuLine(color, left, top, right, top);
-    drawWuLine(color, right, top, right, bottom);
-    drawWuLine(color, left, bottom, right, bottom);
+    else { // the sampler above gives amazing results for unscaled graphics, but I  to go for the most accurate version
+        for (unsigned ix = 0; ix < count; ++ix) {
+            const auto & l= result.locations[ix];
+            const auto & c= *l.character;
+            int ll= l.x>>PP; ll+= left; int tt= l.y>>PP; tt+=(top);
+            int rr= ll+c.width; int bb= tt+c.height;
+            rect box{ll, tt, rr, bb};
+            rect draw_rect=calculateEffectiveDrawRect();
+            auto b_r=box.intersect(draw_rect);
+            color_t font_col;
+            for (int y = b_r.top; y < b_r.bottom; ++y) {
+                for (int x = b_r.left; x < b_r.right; ++x) {
+                    font._bitmap->decode(c.x + x-b_r.left, (c.y + y-b_r.top), font_col);
+                    blendColor(font_col, x, y, opacity);
+                }
+            }
+        }
+    }
+    if(frame) {
+        drawWuLine(color, left, top, left, bottom);
+        drawWuLine(color, left, top, right, top);
+        drawWuLine(color, right, top, right, bottom);
+        drawWuLine(color, left, bottom, right, bottom);
+    }
     updateClipRect(old.left, old.top, old.right, old.bottom);
 }

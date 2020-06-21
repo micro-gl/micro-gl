@@ -80,7 +80,7 @@ namespace microgl {
                 result.precision=PP;
                 if (text == nullptr || numChars == 0) return result;
 
-                int fontSize = format.fontSize;
+                int fontSize = format.fontSize<0 ? nativeSize : format.fontSize;
                 bool autoScale = false;
                 bool finished = false;
                 int containerWidth, containerHeight;
@@ -90,7 +90,7 @@ namespace microgl {
                 int start_loc_index=-1, loc_idx=0;
                 while (!finished)
                 {
-                    scale = (format.fontSize<<PP) / nativeSize;
+                    scale = (fontSize<<PP) / nativeSize;
                     containerWidth  = (((box_width - 2 * padding) << PP) << PP) / scale;
                     containerHeight = (((box_height - 2 * padding) << PP) << PP) / scale;
                     if (size <= containerHeight) // && autoScale

@@ -32,32 +32,31 @@ void init_sdl(int width, int height);
 float t=0;
 
 template <typename number>
-void test_texture() {
-//    t+=-0.1;//-0.01;
-//    canvas->drawQuad<blendmode::Normal, porterduff::None<>, false, number>(tex_uv,
-//                                                                           t,10, 400, 400);
-
+void test() {
     text::text_format format;
 //    font.lineHeight=19;
     format.leading=5;
-    format.fontSize=30;
+    format.fontSize=-1;
 //    format.horizontalAlign=text::hAlign::right;
-//    format.horizontalAlign=text::hAlign::left;
-    format.horizontalAlign=text::hAlign::center;
+    format.horizontalAlign=text::hAlign::left;
+//    format.horizontalAlign=text::hAlign::center;
 //    format.verticalAlign=text::vAlign::center;
-    format.verticalAlign=text::vAlign::bottom;
-//    format.verticalAlign=text::vAlign::top;
+//    format.verticalAlign=text::vAlign::bottom;
+    format.verticalAlign=text::vAlign::top;
 //    format.wordWrap=text::wordWrap ::normal;
-    format.wordWrap=text::wordWrap ::break_word;
-    canvas->drawText("hello hello helloaaaaaaaaaaaaaa hello hello hello ",
+    format.wordWrap=text::wordWrap::break_word;
+//    canvas->drawText("hello hello helloaaaaaaaaaaaaaa hello hello hello ",
+    canvas->drawText("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!№;%:?*()_+-=.,/|\"'@#$^&{}[]",
+//    canvas->drawText("BBDDD dd",
             font, {255, 255, 255, 255},format,
-            10, 10, 300, 300, 255);
+            0, 0, 300, 300, true,
+            255);
 }
 
 void render() {
-    canvas->clear({111,111,111,255});
-    test_texture<float>();
-
+//    canvas->clear({111,111,111,255});
+    canvas->clear({73,84,101,255});
+    test<float>();
 }
 
 int main() {
@@ -69,15 +68,19 @@ void init_sdl(int width, int height) {
     SDL_Init(SDL_INIT_VIDEO);
 
     sdl_window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED,
-                                  SDL_WINDOWPOS_UNDEFINED, width, height, 0);
+                                  SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_ALLOW_HIGHDPI);
     sdl_renderer = SDL_CreateRenderer(sdl_window, -1, 0);
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STATIC, width, height);
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
     auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
-//    loadFont("font", font);
-    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("digital_7", font);
+//    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("minecraft-20", font);
+    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("digital_7-20", font);
+//    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("roboto-thin-28", font);
+//    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("roboto-thin-14", font);
+//    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("mont-med-16", font);
+//    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("test", font);
     canvas = new Canvas24(width, height);
 }
 
@@ -118,7 +121,9 @@ void loop() {
         SDL_UpdateTexture(sdl_texture, nullptr, canvas->pixels(),
                 canvas->width() * canvas->sizeofPixel());
         SDL_RenderClear(sdl_renderer);
+        SDL_Rect dst{0,0, W, H};
         SDL_RenderCopy(sdl_renderer, sdl_texture, nullptr, nullptr);
+//        SDL_RenderCopy(sdl_renderer, sdl_texture, nullptr, &dst);
         SDL_RenderPresent(sdl_renderer);
     }
 

@@ -33,7 +33,7 @@ void init_sdl(int width, int height);
 float t=0;
 
 template <typename number>
-void test_texture() {
+void test() {
 //    t+=-0.1;//-0.01;
     canvas->drawQuad<blendmode::Normal, porterduff::None<>, false, number, number>(
             tex_uv,

@@ -49,7 +49,7 @@ namespace microgl {
             return bottom-top;
         }
         bool empty() const {
-            return width()==0 || height()==0;
+            return width()<=0 || height()<=0;
         }
     };
 
