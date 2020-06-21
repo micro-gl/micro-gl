@@ -109,7 +109,7 @@ public:
         font.baseline=atoi(f_common->first_attribute("base")->value());
         font.width=atoi(f_common->first_attribute("scaleW")->value());
         font.height=atoi(f_common->first_attribute("scaleH")->value());
-        font.gylphs_count=atoi(f_chars->first_attribute("count")->value());
+        font.glyphs_count=atoi(f_chars->first_attribute("count")->value());
         auto * iter= f_chars->first_node("char");
         do {
             int id=atoi(iter->first_attribute("id")->value());

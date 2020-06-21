@@ -47,7 +47,7 @@ namespace microgl {
               *  This can be used to bring the output more in line with standard TrueType rendering:
               *  Flash always draws them with 2 pixels of padding. @default 0.0 */
             int padding = 0;
-            int gylphs_count = 0;
+            int glyphs_count = 0;
             int width=0, height=0;
             Bitmap<P, Coder> *_bitmap = nullptr;
             bitmap_glyph gylphs[MAX_CHARS];

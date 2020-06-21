@@ -921,8 +921,7 @@ void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
     const int du = (u1-u0)/(bbox_r.right-bbox_r.left-0);
     const int dv = (v1-v0)/(bbox_r.bottom-bbox_r.top-0);
     const int dx= bbox_r_c.left-bbox_r.left, dy= bbox_r_c.top-bbox_r.top;
-    u0+=du>>1;
-    v0+=dv>>1;
+    u0+=du>>1; v0+=dv>>1; // sample from the middle always for best results
     const int u_start= u0+dx*du;
     const int pitch= width();
     if(antialias) {
