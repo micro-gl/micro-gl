@@ -34,17 +34,13 @@ namespace microgl {
                 _border_color=color;
             }
 
-            inline l64 apply_wrap(const l64 t) {
-
-            }
-
             inline void sample(const l64 u, const l64 v,
                                const uint8_t bits,
                                color_t &output) const {
                 l64 u_=u, v_=v;
                 switch(wrap_u) {
                     case texture_wrap::Clamp : {
-                        l64 one= 1<<bits;
+                        l64 one= l64(1)<<bits;
                         u_=u_<0?0:(u_>one ? one : u_); break;
                     }
                     case texture_wrap::ClampToBorderColor : {

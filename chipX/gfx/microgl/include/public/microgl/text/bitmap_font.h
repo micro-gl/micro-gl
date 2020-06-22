@@ -18,7 +18,7 @@ namespace microgl {
 
         template<typename P, typename Coder>
         class bitmap_font {
-            static const int MAX_CHARS = 256;
+            static const int MAX_CHARS = 100;
             static const int CHAR_MISSING = 0;
             static const int CHAR_TAB = 9;
             static const int CHAR_NEWLINE = 10;

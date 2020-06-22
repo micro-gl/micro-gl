@@ -71,9 +71,10 @@ set(SOURCES
 #        main_path.cpp
 #        main_q_sort.cpp
 #        main_avl_tree.cpp
-        main_draw_bitmap_fonts.cpp
+#        main_draw_bitmap_fonts.cpp
+        main_draw_bitmap_packed.cpp
         libs/stb_image/stb_image.cpp
-        src/Resources.cpp)
+        src/Resources.cpp data/packed.h)
 
 add_executable(${PROJECT_NAME}
                ${SOURCES}

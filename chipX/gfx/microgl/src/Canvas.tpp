@@ -159,18 +159,18 @@ inline void Canvas<P, CODER>::blendColor(const color_t &val, int index, opacity_
         result = val;
 
     coder().encode(result, output);
-    _bitmap_canvas->writeAt(output, index); // not using drawPixel to avoid extra subtraction
+    _bitmap_canvas->writeAt(index, output); // not using drawPixel to avoid extra subtraction
     //drawPixel(output, index);
 }
 
 template<typename P, typename CODER>
 void Canvas<P, CODER>::drawPixel(const P & val, int x, int y) {
-    _bitmap_canvas->writeAt(val, y*width()+x);
+    _bitmap_canvas->writeAt(y*width()+x, val);
 }
 
 template<typename P, typename CODER>
 inline void Canvas<P, CODER>::drawPixel(const P & val, int index) {
-    _bitmap_canvas->writeAt(val, index - _window.index_correction);
+    _bitmap_canvas->writeAt(index - _window.index_correction, val);
 }
 
 // fast common graphics shapes like circles and rounded rectangles
