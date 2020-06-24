@@ -28,8 +28,9 @@ namespace microgl {
                     base{bitmap->coder().red_bits(),
                          bitmap->coder().green_bits(),
                          bitmap->coder().blue_bits(),
-                         bitmap->coder().alpha_bits()}, _bmp{bitmap},
-                    _border_color{0,0,0, channel((1<<bitmap->coder().alpha_bits())-1)} {};
+                         bitmap->coder().alpha_bits()},
+                    _border_color{0,0,0, channel((1<<bitmap->coder().alpha_bits())-1)},
+                    _bmp{bitmap} {};
 
             void updateBitmap(Bitmap * bitmap) {
                 _bmp=bitmap;

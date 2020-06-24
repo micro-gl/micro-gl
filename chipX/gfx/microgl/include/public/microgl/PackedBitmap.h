@@ -7,12 +7,14 @@
 template <unsigned BPP, typename CODER, bool reverse_bits=false>
 class PackedBitmap : public base_bitmap<PackedBitmap<BPP, CODER, reverse_bits>, uint8_t, CODER> {
     using base=base_bitmap<PackedBitmap<BPP, CODER, reverse_bits>, uint8_t, CODER>;
-    static constexpr int M = 3;
-    static constexpr int BPE = 1<<M;
-    static constexpr int K=(BPP==1 ? 0 : (BPP==2 ? 1 : (BPP==4 ? 2 : (BPP==8 ? 3 : -1))));
-    static constexpr int T=M-K;
-    static constexpr uint8_t MASK=(BPP==1 ? 0b00000001 : (BPP==2 ? 0b00000011 : (BPP==4 ? 0b00001111 : (BPP==8 ? 0b11111111 : 0b11111111))));
-    typename std::enable_if<K>=0, bool>::type fails_if_else;
+    using byte=unsigned char;
+    static constexpr bool is_1_2_4_8 = BPP==1||BPP==2||BPP==4||BPP==8;
+    typename std::enable_if<is_1_2_4_8, bool>::type fails_if_else;
+    static constexpr byte M = 3;
+    static constexpr byte BPE = 1u<<M;
+    static constexpr byte K=(BPP==1 ? 0 : (BPP==2 ? 1 : (BPP==4 ? 2 : (BPP==8 ? 3 : 4))));
+    static constexpr byte T=M-K;
+    static constexpr byte MASK=(BPP==1 ? 0b00000001 : (BPP==2 ? 0b00000011 : (BPP==4 ? 0b00001111 : (BPP==8 ? 0b11111111 : 0b11111111))));
 public:
     using base::pixelAt;
     using base::writeAt;
@@ -36,6 +38,7 @@ public:
 //        }
 //    }
 
+    static
     int pad_to(int val, int bits, int align) {
         int I=(val*bits)%align;
         int R=8-I;
@@ -43,17 +46,18 @@ public:
         return val+extra;
     }
 
-    PackedBitmap(int w, int h) : base{w,h} {};
-    PackedBitmap(uint8_t* $pixels, int w, int h) : base {$pixels, w, h} {};
+    PackedBitmap(int w, int h) : PackedBitmap{new uint8_t[(w*h)>>T], w, h} {};
+//    PackedBitmap(int w, int h) : PackedBitmap{new uint8_t[(w*h)>>T], w, h} {};
+    PackedBitmap(uint8_t* $pixels, int w, int h) : base {$pixels, (w*h)>>T, w, h} {};
     ~PackedBitmap() = default;
 
-    uint8_t extract_pixel(int index1) const {
-        int mm=M, kk=K, tt=T, mask=MASK; // debug
-        int idx2=(index1)>>T; // index inside the elements array
-        uint8_t element= this->_buffer._data[idx2]; // inside this element we need to extract the pixel
-        int R=-((idx2)<<M)+((index1)<<K);
-        element=reverse_bits ? int(element)>>(BPE-BPP-R) : int(element)>>(R); // move the element to the lower part
-        uint8_t masked=element&(MASK); // mask out the upper bits
+    uint8_t extract_pixel(unsigned int index1) const {
+        byte mm=M, kk=K, tt=T, mask=MASK; // debug
+        unsigned int idx2=(index1)>>T; // index inside the elements array
+        byte element= this->_buffer._data[idx2]; // inside this element we need to extract the pixel
+        unsigned int R=(index1<<K)-(idx2<<M); // compute distance to the beginning of the block
+        element=reverse_bits ? (element)>>(BPE-BPP-R) : (element)>>(R); // move the element to the lower part
+        byte masked=element&(MASK); // mask out the upper bits
         return masked<<7;
     }
 

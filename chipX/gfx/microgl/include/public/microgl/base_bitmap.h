@@ -13,72 +13,30 @@ protected:
 
 public:
 
-    static
-    constexpr bool hasNativeAlphaChannel() {
-        return CODER::alpha_bits()!=0;
-    }
+    static constexpr bool hasNativeAlphaChannel() { return CODER::alpha_bits()!=0; }
+    static constexpr bool nativeAlphaChannelBits() { return hasNativeAlphaChannel() ? CODER::alpha_bits() : 8; }
+    static constexpr int maxNativeAlphaChannelValue() { return (1u<<nativeAlphaChannelBits())-1; }
 
-    static
-    constexpr bool nativeAlphaChannelBits() {
-        return hasNativeAlphaChannel() ? CODER::alpha_bits() : 8;
+    base_bitmap(int w, int h) : base_bitmap(new uint8_t[sizeof(P) * w * h], w, h) {}
+    base_bitmap(uint8_t *$pixels, int w, int h) : base_bitmap($pixels, w*h, w, h) {}
+    base_bitmap(uint8_t *$pixels, int size, int w, int h) :
+            _width{w}, _height{h}, _buffer(reinterpret_cast<P *>($pixels), size) {
     }
+    ~base_bitmap() { _width =_height=0; }
 
-    static
-    constexpr int maxNativeAlphaChannelValue() {
-        return (1<<nativeAlphaChannelBits())-1;
-    }
-
-    base_bitmap(int w, int h) :
-            base_bitmap(new uint8_t[sizeof(P) * w * h], w, h) {
-    }
-
-    base_bitmap(uint8_t *$pixels, int w, int h) :
-            _buffer(reinterpret_cast<P *>($pixels), w * h), _width{w}, _height{h} {
-        //_size=_width*_height;
-    }
-
-    ~base_bitmap() {
-        _width = 0;
-        _height = 0;
-    }
-
-    int width() const {
-        return _width;
-    }
-
-    int height() const {
-        return _height;
-    }
-
+    int width() const { return _width; }
+    int height() const { return _height; }
     int size() const { return _buffer.size();}
+    P * data() { return _buffer._data; }
 
-    P * data() {
-        return _buffer._data;
-    }
+    int locate(int x, int y) const { return y*this->_width + x; }
+    P pixelAt(int x, int y) const { return this->pixelAt(y*this->_width + x); }
+    P pixelAt(int index) const { return this->derived().pixelAt(index); }
+    void writeAt(int x, int y, const P &value) { this->writeAt(y*this->_width + x, value); }
+    void writeAt(int index, const P &value) { this->derived().writeAt(index, value); }
+    void fill(const P &value) { this->derived().fill(value); }
 
-    int locate(int x, int y) const {
-        return y*this->_width + x;
-    }
-
-    P pixelAt(int x, int y) const {
-        return this->pixelAt(y*this->_width + x);
-    }
-    P pixelAt(int index) const {
-        return this->derived().pixelAt(index);
-    }
-    void writeAt(int x, int y, const P &value) {
-        this->writeAt(y*this->_width + x, value);
-    }
-    void writeAt(int index, const P &value) {
-        this->derived().writeAt(index, value);
-    }
-    void fill(const P &value) {
-        this->derived().fill(value);
-    }
-
-    const microgl::coder::PixelCoder<P, CODER> &coder() const {
-        return _coder;
-    }
+    const microgl::coder::PixelCoder<P, CODER> &coder() const { return _coder; }
 
     void decode(int x, int y, microgl::color::color_t &output)  const{
         _coder.decode(pixelAt(x, y), output);

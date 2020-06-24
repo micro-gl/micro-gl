@@ -188,8 +188,6 @@ public:
                        opacity_t opacity=255);
 
     void fxaa(int left, int top, int right, int bottom);
-    void fxaa2(int left, int top, int right, int bottom);
-
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
