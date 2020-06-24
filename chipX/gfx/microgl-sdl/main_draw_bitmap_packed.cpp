@@ -7,8 +7,12 @@
 #include <microgl/pixel_coders/RGBA8888_ARRAY.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/pixel_coders/RGB8.h>
+//#include <microgl/porter_duff/SourceOver.h>
 #include <microgl/samplers/texture.h>
 #include <microgl/PackedBitmap.h>
+#include "data/packed_1.h"
+#include "data/packed_2.h"
+#include "data/packed_4.h"
 
 #define TEST_ITERATIONS 100
 #define W 640*1
@@ -22,11 +26,22 @@ using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
 using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
+using Bitmap24_ARRAY= Bitmap<vec4<uint8_t>, coder::RGBA8888_ARRAY>;
+using Bitmap8= Bitmap<uint8_t , coder::RGB8>;
+using BitmapPacked_1= PackedBitmap<1, coder::RGB8, true>;
+using BitmapPacked_2= PackedBitmap<2, coder::RGB8, true>;
+using BitmapPacked_4= PackedBitmap<4, coder::RGB8, true>;
 using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_filter::NearestNeighboor>;
-using font32= microgl::text::bitmap_font<vec4<uint8_t>, coder::RGBA8888_ARRAY>;
+using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
+using TexPacked1= sampling::texture<BitmapPacked_1>;
+using TexPacked2= sampling::texture<BitmapPacked_2>;
+using TexPacked4= sampling::texture<BitmapPacked_4>;
+using font32= microgl::text::bitmap_font<Bitmap24_ARRAY>;
 Canvas24 * canvas;
 Texture24 tex_uv;
+TexPacked1 tex_1;
+TexPacked2 tex_2;
+TexPacked4 tex_4;
 font32 font;
 
 void loop();
@@ -34,7 +49,7 @@ void init_sdl(int width, int height);
 float t=0;
 
 template <typename number>
-void test() {
+void test_text() {
     text::text_format format;
 //    font.lineHeight=19;
     format.leading=5;
@@ -50,15 +65,29 @@ void test() {
 //    canvas->drawText("hello hello helloaaaaaaaaaaaaaa hello hello hello ",
     canvas->drawText("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!№;%:?*()_+-=.,/|\"'@#$^&{}[]",
 //    canvas->drawText("BBDDD dd",
-            font, {255, 255, 255, 255},format,
-            0, 0, 300, 300, true,
-            255);
+                     font, {255, 255, 255, 255},format,
+                     0, 0, 300, 300, true,
+                     255);
+
+}
+
+template <typename number, typename TEX>
+void test(TEX & tex) {
+        canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(
+                tex,
+                0, 0,
+                tex.bitmap().width(), tex.bitmap().height(),
+                255,
+                0,0,
+                1,1);
 }
 
 void render() {
-//    canvas->clear({111,111,111,255});
     canvas->clear({73,84,101,255});
-    test<float>();
+    test<float>(tex_1);
+//    test<float>(tex_2);
+//    test<float>(tex_4);
+//    test_text<float>();
 }
 
 int main() {
@@ -78,18 +107,25 @@ void init_sdl(int width, int height) {
     auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("minecraft-20", font);
-    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("digital_7-20", font);
+    resources.loadFont<Bitmap24_ARRAY>("digital_7-20", font);
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("roboto-thin-28", font);
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("roboto-thin-14", font);
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("mont-med-16", font);
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("test", font);
     canvas = new Canvas24(width, height);
 
-    PackedBitmap<0, coder::RGB8> packed{10,10};
-    auto p=packed.pixelAt(0,0);
+    auto * bitmap_packed_1 = new BitmapPacked_1{font_map_1_bpp, 152, 128};
+    auto * bitmap_packed_2 = new BitmapPacked_2{font_map_2_bpp, 148, 128};
+    auto * bitmap_packed_4 = new BitmapPacked_4{font_map_4_bpp, 148, 128};
+    auto p=bitmap_packed_1->pixelAt(0, 0);
+    p=bitmap_packed_1->pixelAt(1, 0);
+    tex_1.updateBitmap(bitmap_packed_1);
+    tex_2.updateBitmap(bitmap_packed_2);
+    tex_4.updateBitmap(bitmap_packed_4);
+//    auto p=packed.pixelAt(0,0);
 
-    Bitmap<uint8_t, coder::RGB8> &bit = packed;
-    p=bit.pixelAt(0,0);
+//    Bitmap<uint8_t, coder::RGB8> &bit = packed;
+//    p=bit.pixelAt(0,0);
 
 }
 

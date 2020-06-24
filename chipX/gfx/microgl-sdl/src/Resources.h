@@ -95,8 +95,8 @@ public:
 
     void loadXML(const std::string &file_name, rapidxml::xml_document<> & doc);
 
-    template<typename P, typename CODER>
-    void loadFont(const std::string &name, microgl::text::bitmap_font<P, CODER> &font) {
+    template<typename BITMAP>
+    void loadFont(const std::string &name, microgl::text::bitmap_font<BITMAP> &font) {
         rapidxml::xml_document<> d;
         loadXML("fonts/"+name+"/font.fnt", d);
         auto * f= d.first_node("font");
@@ -125,7 +125,7 @@ public:
         } while (iter);
         // load bitmap
         auto img_font = loadImageFromCompressedPath("fonts/"+name+"/font.png");
-        auto *bmp_font = new Bitmap<P, CODER>(img_font.data, img_font.width, img_font.height);
+        auto *bmp_font = new BITMAP(img_font.data, img_font.width, img_font.height);
         font._bitmap=bmp_font;
     }
 protected:

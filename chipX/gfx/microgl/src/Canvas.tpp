@@ -1483,13 +1483,14 @@ void Canvas<P, CODER>::fxaa(int left, int top, int right, int bottom) {
 
 #include <microgl/samplers/texture.h>
 template<typename P, typename CODER>
-template<typename P2, typename CODER2>
-void Canvas<P, CODER>::drawText(const char * text, microgl::text::bitmap_font<P2, CODER2> &font,
+template<typename BITMAP>
+void Canvas<P, CODER>::drawText(const char * text, microgl::text::bitmap_font<BITMAP> &font,
         const color_t & color, microgl::text::text_format & format,
         int left, int top, int right, int bottom, bool frame,
         opacity_t opacity) {
     rect old=clipRect(); updateClipRect(left, top, right, bottom);
-//        drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(texture,0,0, font._bitmap->width(), font._bitmap->height());return;
+//    microgl::sampling::texture<BITMAP, sampling::texture_filter::NearestNeighboor> texture{font._bitmap};
+//    drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(texture,0,0, font._bitmap->width(), font._bitmap->height());return;
     unsigned int text_size=0;
     { const char * iter=text; while(*iter++!= '\0' && ++text_size); }
     microgl::text::char_location loc_buffer[text_size];
@@ -1498,7 +1499,7 @@ void Canvas<P, CODER>::drawText(const char * text, microgl::text::bitmap_font<P2
     const int s=result.scale, PP=result.precision;
     const bool has_scaled=s!=1<<PP;
     if(has_scaled){ // we use the sampler for scaled
-        microgl::sampling::texture<P2, CODER2, sampling::texture_filter::NearestNeighboor> texture{font._bitmap};
+        microgl::sampling::texture<BITMAP, sampling::texture_filter::NearestNeighboor> texture{font._bitmap};
         const int UVP=15;
         int u0, v0, u1, v1;
         for (unsigned ix = 0; ix < count; ++ix) {

@@ -378,8 +378,8 @@ public:
                       number2 u1=number2(1), number2 v1=number2(0));
 
 
-    template<typename P2, typename CODER2>
-    void drawText(const char *text, microgl::text::bitmap_font<P2, CODER2> &font, const color_t & color,
+    template<typename BITMAP>
+    void drawText(const char *text, microgl::text::bitmap_font<BITMAP> &font, const color_t & color,
             microgl::text::text_format & format,
             int left, int top, int right, int bottom, bool frame, opacity_t opacity=255);
 };

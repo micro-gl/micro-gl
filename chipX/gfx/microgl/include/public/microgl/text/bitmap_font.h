@@ -16,7 +16,7 @@ namespace microgl {
             char_location * locations=nullptr;
         };
 
-        template<typename P, typename Coder>
+        template<typename BITMAP>
         class bitmap_font {
             static const int MAX_CHARS = 100;
             static const int CHAR_MISSING = 0;
@@ -49,7 +49,8 @@ namespace microgl {
             int padding = 0;
             int glyphs_count = 0;
             int width=0, height=0;
-            Bitmap<P, Coder> *_bitmap = nullptr;
+//            Bitmap<P, Coder> *_bitmap = nullptr;
+            BITMAP *_bitmap = nullptr;
             bitmap_glyph gylphs[MAX_CHARS];
 
         public:

@@ -2,7 +2,8 @@
 #pragma ide diagnostic ignored "HidingNonVirtualFunction"
 
 #include <microgl/sampler.h>
-#include <microgl/Bitmap.h>
+//#include <microgl/Bitmap.h>
+#include <microgl/base_bitmap.h>
 
 namespace microgl {
     namespace sampling {
@@ -14,20 +15,28 @@ namespace microgl {
             None, Clamp, ClampToBorderColor, Repeat, MirroredRepeat
         };
 
-        template <typename P, typename CODER,
+        template <typename Bitmap,
                 texture_filter filter=texture_filter::NearestNeighboor,
                 texture_wrap wrap_u=texture_wrap::None,
                 texture_wrap wrap_v=texture_wrap::None>
-        class texture : public sampler<texture<P, CODER, filter, wrap_u, wrap_v>> {
-            using base= sampler<texture<P, CODER, filter, wrap_u, wrap_v>>;
+        class texture : public sampler<texture<Bitmap, filter, wrap_u, wrap_v>> {
+            using base= sampler<texture<Bitmap, filter, wrap_u, wrap_v>>;
             using l64= long long;
         public:
             texture() : texture{nullptr} {};
-            explicit texture(Bitmap<P, CODER> * bitmap) :
-                    base{CODER::red_bits(),CODER::green_bits(),CODER::blue_bits(),CODER::alpha_bits()}, _bmp{bitmap} {};
+            explicit texture(Bitmap * bitmap) :
+                    base{bitmap->coder().red_bits(),
+                         bitmap->coder().green_bits(),
+                         bitmap->coder().blue_bits(),
+                         bitmap->coder().alpha_bits()}, _bmp{bitmap},
+                    _border_color{0,0,0, channel((1<<bitmap->coder().alpha_bits())-1)} {};
 
-            void updateBitmap(Bitmap<P, CODER> * bitmap) {
+            void updateBitmap(Bitmap * bitmap) {
                 _bmp=bitmap;
+            }
+
+            Bitmap & bitmap() {
+                return *_bmp;
             }
 
             void updateBorderColor(const color_t & color) {
@@ -136,8 +145,9 @@ namespace microgl {
             }
 
         private:
-            color_t _border_color {0,0,0,(1<<CODER::alpha_bits())-1};
-            Bitmap<P, CODER> * _bmp= nullptr;
+            color_t _border_color;// {0,0,0,(1<<Bitmap::alpha_bits())-1};
+//            Bitmap<P, CODER> * _bmp= nullptr;
+            Bitmap * _bmp= nullptr;
         };
 
     }
