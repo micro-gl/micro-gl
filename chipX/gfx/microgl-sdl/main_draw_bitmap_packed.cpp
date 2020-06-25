@@ -39,9 +39,9 @@ using TexPacked4= sampling::texture<BitmapPacked_4>;
 using font32= microgl::text::bitmap_font<Bitmap24_ARRAY>;
 Canvas24 * canvas;
 Texture24 tex_uv;
-TexPacked1 tex_1;
-TexPacked2 tex_2;
-TexPacked4 tex_4;
+TexPacked1 tex_1, tex_1_fill;
+TexPacked2 tex_2, tex_2_fill;
+TexPacked4 tex_4, tex_4_fill;
 font32 font;
 
 void loop();
@@ -72,11 +72,10 @@ void test_text() {
 }
 
 template <typename number, typename TEX>
-void test(TEX & tex) {
+void test_texture(TEX & tex) {
         canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(
                 tex,
-                0, 0,
-                tex.bitmap().width(), tex.bitmap().height(),
+                0, 0, tex.bitmap().width(), tex.bitmap().height(),
                 255,
                 0,0,
                 1,1);
@@ -84,9 +83,12 @@ void test(TEX & tex) {
 
 void render() {
     canvas->clear({73,84,101,255});
-    test<float>(tex_1);
-//    test<float>(tex_2);
-//    test<float>(tex_4);
+//    test_texture<float>(tex_1);
+//    test_texture<float>(tex_1_fill);
+//    test_texture<float>(tex_2);
+    test_texture<float>(tex_2_fill);
+//    test_texture<float>(tex_4);
+//    test_texture<float>(tex_4_fill);
 //    test_text<float>();
 }
 
@@ -111,22 +113,24 @@ void init_sdl(int width, int height) {
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("roboto-thin-28", font);
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("roboto-thin-14", font);
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("mont-med-16", font);
-//    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("test", font);
+//    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("test_texture", font);
     canvas = new Canvas24(width, height);
 
     auto * bitmap_packed_1 = new BitmapPacked_1{font_map_1_bpp, 152, 128};
+    auto * bitmap_packed_1_fill = new BitmapPacked_1{128, 128};
     auto * bitmap_packed_2 = new BitmapPacked_2{font_map_2_bpp, 148, 128};
+    auto * bitmap_packed_2_fill = new BitmapPacked_2{128, 128};
     auto * bitmap_packed_4 = new BitmapPacked_4{font_map_4_bpp, 148, 128};
-    auto p=bitmap_packed_1->pixelAt(0, 0);
-    p=bitmap_packed_1->pixelAt(1, 0);
+    auto * bitmap_packed_4_fill = new BitmapPacked_4{128, 128};
+    bitmap_packed_1_fill->fill(1); bitmap_packed_1_fill->writeAt(2,2,0); bitmap_packed_1_fill->writeAt(4,4,0);
+    bitmap_packed_2_fill->fill(3); bitmap_packed_2_fill->writeAt(2,2,0); bitmap_packed_2_fill->writeAt(4,4,2);
+    bitmap_packed_4_fill->fill(15); bitmap_packed_4_fill->writeAt(2,2,0); bitmap_packed_4_fill->writeAt(4,4,0);
     tex_1.updateBitmap(bitmap_packed_1);
+    tex_1_fill.updateBitmap(bitmap_packed_1_fill);
     tex_2.updateBitmap(bitmap_packed_2);
+    tex_2_fill.updateBitmap(bitmap_packed_2_fill);
     tex_4.updateBitmap(bitmap_packed_4);
-//    auto p=packed.pixelAt(0,0);
-
-//    Bitmap<uint8_t, coder::RGB8> &bit = packed;
-//    p=bit.pixelAt(0,0);
-
+    tex_4_fill.updateBitmap(bitmap_packed_4_fill);
 }
 
 int render_test(int N) {

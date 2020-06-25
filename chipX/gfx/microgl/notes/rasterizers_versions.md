@@ -825,7 +825,7 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
                 int64_t distance = functions::min(w0_h, w1_h, w2_h);
                 int64_t delta = (distance) + max_distance_scaled_space_anti_alias;
                 bool perform_aa = aa_all_edges;
-                // test edges
+                // test_texture edges
                 if(!perform_aa) {
                     if(distance==w0_h && aa_first_edge) perform_aa = true;
                     else if(distance==w1_h && aa_second_edge) perform_aa = true;

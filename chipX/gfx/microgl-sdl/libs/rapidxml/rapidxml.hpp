@@ -1824,7 +1824,7 @@ namespace rapidxml
                 {
                 
                 // If '[' encountered, scan for matching ending ']' using naive algorithm with depth
-                // This works for all W3C test files except for 2 most wicked
+                // This works for all W3C test_texture files except for 2 most wicked
                 case Ch('['):
                 {
                     ++text;     // Skip '['
@@ -1967,7 +1967,7 @@ namespace rapidxml
                 }
             }
             
-            // If characters are still left between end and value (this test is only necessary if normalization is enabled)
+            // If characters are still left between end and value (this test_texture is only necessary if normalization is enabled)
             // Create new data node
             if (!(Flags & parse_no_data_nodes))
             {

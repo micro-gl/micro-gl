@@ -49,7 +49,7 @@ namespace microgl {
                     else if(full_circle_or_more) end_angle_rad =start_angle_rad-two_pi;
                 }
                 delta = end_angle_rad - start_angle_rad;
-                // we test for greater in case of precision issues
+                // we test_texture for greater in case of precision issues
                 delta = delta / number(divisions);
                 auto radians = start_angle_rad;
                 auto rotation_sin = math::sin(rotation);

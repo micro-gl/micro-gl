@@ -19,7 +19,7 @@ namespace microgl {
         bool operator!=(const rect_t& r) {
             return !(*this==r);
         }
-        // test inclusion
+        // test_texture inclusion
         bool operator<(const rect_t& r) {
             return left>r.left && top>r.top && right<r.right && bottom<r.bottom;
         }

@@ -357,7 +357,7 @@ namespace microgl {
                                                                              -> half_edge_face *{
             // note:: edge's face always points to the face that lies to it's left.
             // 1. if the first point lie completely to the left of the edge, then they belong to f1, other wise f2
-            // 2. if they lie exactly on the edge, then we test the second end-point
+            // 2. if they lie exactly on the edge, then we test_texture the second end-point
             // 2.1 if the second lies completely in f1, then the first vertex is in f1, otherwise f2
             // 2.2 if the second lies on the face_separator as well, choose whoever face you want, let's say f1
             const auto & a = face_separator->origin->coords;
@@ -453,7 +453,7 @@ namespace microgl {
             // the vertex to find which subdivision. The reason that the natural order around
             // a vertex is CW is BECAUSE, that the face edges are CCW. If one draws it on paper
             // then it will become super clear.
-            // also to mention, that due to precision errors, we perform a full cone test,
+            // also to mention, that due to precision errors, we perform a full cone test_texture,
             // even for more than 180 degrees, although in theory all angles are less than
             // 180, BUT, in practice, due to precision errors this will happen
             half_edge *iter = a.edge;
@@ -786,7 +786,7 @@ namespace microgl {
             // 2. has winding==0
             // 3. horizontal (top/bottom) wall that touches it from both side is almost a line
             // if all the above happens then we can remove that edge and maintain a variant of the contraction principle.
-            // now, try to test if we can shrink the top or bottom or both edges adjacent to the vertex
+            // now, try to test_texture if we can shrink the top or bottom or both edges adjacent to the vertex
             // how we do it: examine upwards/downwards half edge
             // 1. if it has winding!=0 skip
             // 2. if there is another edge after it on the vertical wall, skip as well
@@ -827,7 +827,7 @@ namespace microgl {
                 if(!candidate_edge) break;
 
                 // start with top edge
-                // perform test 1 & 2
+                // perform test_texture 1 & 2
                 bool valid = candidate_edge->winding==0 &&
                              (candidate_edge->next->twin->origin->coords.x!=candidate_edge->origin->coords.x);
                 if(valid) {
@@ -837,7 +837,7 @@ namespace microgl {
                     // ----v----
                     //     |
                     // c'__b'__a'
-                    // now test how much is a-b-c looks like a line
+                    // now test_texture how much is a-b-c looks like a line
                     // we do it by calculating the distance from vertex c to line (a,b)
                     // the illustration above is for top_edge= v-->b
 //                    const auto & a = candidate_edge->next->twin->origin->coords;
@@ -858,7 +858,7 @@ namespace microgl {
                         int a=0;
                     }
                     ////
-                    // perform test #3
+                    // perform test_texture #3
                     bool is_abc_almost_a_line = is_distance_to_line_less_than_epsilon(c, a, b, number(1));
                     if(is_abc_almost_a_line) {
                         // if it is almost a line, then (v,b) edge eligible for removal
@@ -1355,7 +1355,7 @@ namespace microgl {
             ///// we got here, no overflow, let's test for insideness of b
             {
                 int idx_start=codes_a.indexOfClass(a_class);
-                int offset= a_is_boundary_vertex ? 0 : 1; // test 3 or 4,
+                int offset= a_is_boundary_vertex ? 0 : 1; // test_texture 3 or 4,
                 bool in_interior_of_others=true;
                 for (int ix = idx_start+offset; ix < idx_start+4; ++ix) {
                     int idx=ix%4;

@@ -276,7 +276,7 @@ void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fil
                         blend_stroke = opacity;
                         sample_stroke=true;
                     }
-                    else { // outside stroke disk, let's test for aa disk or radius inclusion
+                    else { // outside stroke disk, let's test_texture for aa disk or radius inclusion
                         const l64 delta_inner_aa = -inner_aa_radius + distance_squared;
                         const bool inside_inner_aa_ring = delta_inner_aa >= 0;
                         if (antialias && inside_inner_aa_ring) {

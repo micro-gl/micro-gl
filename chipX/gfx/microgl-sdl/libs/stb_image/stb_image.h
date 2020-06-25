@@ -206,7 +206,7 @@ RECENT REVISION HISTORY:
 // code.)
 //
 // On x86, SSE2 will automatically be used when available based on a run-time
-// test; if not, the generic C versions are used as a fall-back. On ARM targets,
+// test_texture; if not, the generic C versions are used as a fall-back. On ARM targets,
 // the typical path is to have separate builds for NEON and non-NEON devices
 // (at least this is true for iOS and Android). Therefore, the NEON support is
 // toggled by a build flag: define STBI_NEON to get NEON loops.
@@ -765,7 +765,7 @@ static void stbi__rewind(stbi__context *s)
 {
     // conceptually rewind SHOULD rewind to the beginning of the stream,
     // but we just rewind to the beginning of the initial buffer, because
-    // we only use it after doing 'test', which only ever looks at at most 92 bytes
+    // we only use it after doing 'test_texture', which only ever looks at at most 92 bytes
     s->img_buffer = s->img_buffer_original;
     s->img_buffer_end = s->img_buffer_original_end;
 }
@@ -1006,7 +1006,7 @@ static void *stbi__load_main(stbi__context *s, int *x, int *y, int *comp, int re
 #endif
 
 #ifndef STBI_NO_TGA
-    // test tga last because it's a crappy test!
+    // test tga last because it's a crappy test_texture!
     if (stbi__tga_test(s))
         return stbi__tga_load(s,x,y,comp,req_comp, ri);
 #endif
@@ -2152,7 +2152,7 @@ static int stbi__jpeg_decode_block_prog_ac(stbi__jpeg *j, short data[64], stbi__
 // take a -128..127 value and stbi__clamp it and convert to 0..255
 stbi_inline static stbi_uc stbi__clamp(int x)
 {
-    // trick to use a single test to catch both cases
+    // trick to use a single test_texture to catch both cases
     if ((unsigned int) x > 255) {
         if (x < 0) return 0;
         if (x > 255) return 255;
@@ -5420,7 +5420,7 @@ static int stbi__tga_test(stbi__context *s)
         stbi__skip(s,9); // skip colormap specification and image x/y origin
     }
     if ( stbi__get16le(s) < 1 ) goto errorEnd;      //   test width
-    if ( stbi__get16le(s) < 1 ) goto errorEnd;      //   test height
+    if ( stbi__get16le(s) < 1 ) goto errorEnd;      //   test_texture height
     sz = stbi__get8(s);   //   bits per pixel
     if ( (tga_color_type == 1) && (sz != 8) && (sz != 16) ) goto errorEnd; // for colormapped images, bpp is size of an index
     if ( (sz != 8) && (sz != 15) && (sz != 16) && (sz != 24) && (sz != 32) ) goto errorEnd;
@@ -7141,7 +7141,7 @@ static int stbi__info_main(stbi__context *s, int *x, int *y, int *comp)
     if (stbi__hdr_info(s, x, y, comp))  return 1;
 #endif
 
-    // test tga last because it's a crappy test!
+    // test tga last because it's a crappy test_texture!
 #ifndef STBI_NO_TGA
     if (stbi__tga_info(s, x, y, comp))
         return 1;
@@ -7413,7 +7413,7 @@ STBIDEF int stbi_is_16_bit_from_callbacks(stbi_io_callbacks const *c, void *user
       0.53    fix bug in png 3->4; speedup png decoding
       0.52    png handles req_comp=3,4 directly; minor cleanup; jpeg comments
       0.51    obey req_comp requests, 1-component jpegs return as 1-component,
-              on 'test' only check type, not whether we support this variant
+              on 'test_texture' only check type, not whether we support this variant
       0.50  (2006-11-19)
               first released version
 */

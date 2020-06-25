@@ -147,7 +147,7 @@ namespace microgl {
             poly_inter_result result{};
             vertex result_inter;
             number alpha;
-            // test left walls
+            // test_texture left walls
             auto status= finite_segment_intersection_test(a.left, a.top, b.left, b.top,
                                                           result_inter, alpha, alpha);
             if(status==intersection_status::parallel) {

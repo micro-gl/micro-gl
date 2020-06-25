@@ -2041,7 +2041,7 @@ void Canvas<P, CODER>::drawRoundedQuad(const color_f_t &color,
                     const bool inside_stroke_disk = (distance_squared - stroke_radius) >= 0;
                     if (inside_stroke_disk) // inside stroke disk
                     g2(x, y, black, opacity)
-                    else { // outside stroke disk, let's test for aa disk or radius inclusion
+                    else { // outside stroke disk, let's test_texture for aa disk or radius inclusion
                         const int delta_inner_aa = -inner_aa_radius + distance_squared;
                         const bool inside_inner_aa_ring = delta_inner_aa >= 0;
                         if (antialias && inside_inner_aa_ring) {

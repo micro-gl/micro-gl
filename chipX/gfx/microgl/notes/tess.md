@@ -1281,7 +1281,7 @@ namespace microgl {
             bool b_on_boundary_vertex = b_class==point_class_with_trapeze::boundary_vertex;
             bool same_class = a_class==b_class;
 
-            // test if on same wall
+            // test_texture if on same wall
             if(same_class && !a_on_boundary_vertex && !b_on_boundary_vertex) {
                 resulting_wall=a_class;
                 return true;

@@ -103,7 +103,7 @@ namespace microgl {
                     bool cull = true;
 
                     /*
-                    test all vertices against the plane, i.e. find out for each vertex, in which side of the plane lies.
+                    test_texture all vertices against the plane, i.e. find out for each vertex, in which side of the plane lies.
                     this is done using the dot product.
                     */
                     for (unsigned kx=0; kx<vertex_count; kx++) {

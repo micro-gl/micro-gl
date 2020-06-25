@@ -167,8 +167,8 @@ namespace microgl {
                                                                    const vertex *j,
                                                                    const vertex *k) {
             auto v = orientation_value(i, j, k);
-//            bool test  = abs(v)<1;
-//            if(test) return 0;
+//            bool test_texture  = abs(v)<1;
+//            if(test_texture) return 0;
             if(v > 0) return 1;
             else if(v < 0) return -1;
             else return 0;
@@ -226,9 +226,9 @@ namespace microgl {
                         return false;
                     }
                 } else {
-                    // this can handle small degenerate cases, we basically test
+                    // this can handle small degenerate cases, we basically test_texture
                     // if the interior is completely empty, if we have used the regular
-                    // tests than the degenerate cases where things just touch would fail the test
+                    // tests than the degenerate cases where things just touch would fail the test_texture
                     auto *v_a =  n->pt;
                     auto *v_b =  n->next->pt;
                     // todo:: can break prematurely instead of calcing everything
