@@ -4,22 +4,23 @@
 
 #include <microgl/base_bitmap.h>
 
-template <typename P, typename CODER>
-class Bitmap : public base_bitmap<Bitmap<P, CODER>, P, CODER> {
-    using base=base_bitmap<Bitmap<P, CODER>, P, CODER>;
+template <typename CODER>
+class Bitmap : public base_bitmap<CODER, Bitmap<CODER>> {
+    using base=base_bitmap<CODER, Bitmap<CODER>>;
 public:
     using base::pixelAt;
     using base::writeAt;
+    using Pixel=typename base::Pixel;
 
-    template<typename P2, typename CODER2>
-    Bitmap<P2, CODER2> * convertToBitmap() {
-        auto * bmp_2 = new Bitmap<P2, CODER2>(this->_width, this->_height);
+    template<typename CODER2>
+    Bitmap<CODER2> * convertToBitmap() {
+        auto * bmp_2 = new Bitmap<CODER2>(this->_width, this->_height);
         copyToBitmap(*bmp_2);
         return bmp_2;
     }
 
-    template<typename P2, typename CODER2>
-    void copyToBitmap(Bitmap<P2, CODER2> & bmp) {
+    template<typename CODER2>
+    void copyToBitmap(Bitmap<CODER2> & bmp) {
         if(bmp.size()!=this->size()) return;
         const int size = this->size();
         microgl::color::color_t color_bmp_1, color_bmp_2;
@@ -34,15 +35,15 @@ public:
     Bitmap(uint8_t* $pixels, int w, int h) : base {$pixels, w, h} {};
     ~Bitmap() = default;
 
-    P pixelAt(int index) const {
+    Pixel pixelAt(int index) const {
         return this->_buffer._data[index];
     }
 
-    void writeAt(int index, const P &value) {
+    void writeAt(int index, const Pixel &value) {
         this->_buffer.writeAt(value, index);
     }
 
-    void fill(const P &value) {
+    void fill(const Pixel &value) {
         this->_buffer.fill(value);
     }
 

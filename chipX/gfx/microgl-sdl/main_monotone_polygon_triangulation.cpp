@@ -14,10 +14,12 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-typedef Canvas<uint32_t, coder::RGB888_PACKED_32> Canvas24Bit_Packed32;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
+using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 sampling::flat_color color_red{{255,0,0,255}};
 sampling::flat_color color_black{{0,0,0,255}};
-Canvas24Bit_Packed32 * canvas;
+Canvas24 * canvas;
 
 void loop();
 void init_sdl(int width, int height);
@@ -196,7 +198,7 @@ void init_sdl(int width, int height) {
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
                                 SDL_TEXTUREACCESS_STATIC, width, height);
 
-    canvas = new Canvas24Bit_Packed32(width, height);
+    canvas = new Canvas24(width, height);
 }
 
 int render_test(int N) {

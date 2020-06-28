@@ -18,7 +18,8 @@
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
-using Canvas24 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
 
 Canvas24 * canvas;
 

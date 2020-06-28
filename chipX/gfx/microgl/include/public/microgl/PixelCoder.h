@@ -54,7 +54,8 @@ namespace microgl {
         template<typename P, typename IMPL>
         class PixelCoder : public crpt<IMPL> {
         public:
-
+//            typedef P Pixel;
+            using Pixel=P;
             // integer colors
             static
             void encode(const color_t &input, P &output) {
@@ -83,22 +84,10 @@ namespace microgl {
                 convert_color(int_color, output, red_bits(), green_bits(), blue_bits(), alpha_bits());
             }
 
-            static constexpr
-            channel red_bits() {
-                return IMPL::red_bits();
-            }
-            static constexpr
-            channel green_bits() {
-                return IMPL::green_bits();
-            }
-            static constexpr
-            channel blue_bits() {
-                return IMPL::blue_bits();
-            }
-            static constexpr
-            channel alpha_bits() {
-                return IMPL::alpha_bits();
-            }
+            static constexpr channel red_bits() { return IMPL::red_bits(); }
+            static constexpr channel green_bits() { return IMPL::green_bits(); }
+            static constexpr channel blue_bits() { return IMPL::blue_bits(); }
+            static constexpr channel alpha_bits() { return IMPL::alpha_bits(); }
 
             static
             void update_channel_bit(color_t &color) {

@@ -2,7 +2,7 @@
 #pragma ide diagnostic ignored "cert-err58-cpp"
 #include <iostream>
 #include <chrono>
-#include <microgl/AVLTree.h>
+#include <microgl/tesselation/experiments/bentley_ottmann/AVLTree.h>
 
 using namespace ds;
 

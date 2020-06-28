@@ -22,9 +22,9 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
-using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
+using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 
 Canvas24 * canvas;
 Texture24 tex_mask, tex_1, tex_2;
@@ -68,13 +68,13 @@ void init_sdl(int width, int height) {
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
     auto img_3 = resources.loadImageFromCompressedPath("bw.png");
 //
-    auto *bmp_1_native = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
-    auto *bmp_2_native = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
-    auto *bmp_3_native = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
+    auto *bmp_1_native = new Bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
+    auto *bmp_2_native = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
+    auto *bmp_3_native = new Bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
 
-    tex_1.updateBitmap(bmp_1_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>());
-    tex_2.updateBitmap(bmp_2_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>());
-    tex_mask.updateBitmap(bmp_3_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>());
+    tex_1.updateBitmap(bmp_1_native->convertToBitmap<coder::RGB888_PACKED_32>());
+    tex_2.updateBitmap(bmp_2_native->convertToBitmap<coder::RGB888_PACKED_32>());
+    tex_mask.updateBitmap(bmp_3_native->convertToBitmap<coder::RGB888_PACKED_32>());
     resources.init();
 }
 

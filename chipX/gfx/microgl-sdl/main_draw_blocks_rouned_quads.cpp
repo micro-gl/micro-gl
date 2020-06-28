@@ -19,9 +19,9 @@ Resources resources{};
 using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
-using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
-using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::Bilinear>;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
+using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::Bilinear>;
 Texture24 tex_uv;
 Canvas24 * canvas;
 sampling::flat_color color_grey{{0,0,122,255}};
@@ -89,8 +89,8 @@ void init_sdl(int width, int height) {
             SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
-    auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
-    tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
+    auto bmp_uv_U8 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
+    tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
     canvas = new Canvas24(width, height);
 }
 

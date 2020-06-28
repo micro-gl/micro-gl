@@ -22,9 +22,10 @@ Resources resources{};
 
 using namespace microgl::shading;
 using index_t = unsigned int;
-using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
-using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
+using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
+
 Canvas24 * canvas;
 Texture24 tex_1, tex_2;
 
@@ -34,7 +35,7 @@ void init_sdl(int width, int height);
 float t = 0;
 
 // bitmap for mapping
-Bitmap<uint32_t, coder::RGB888_PACKED_32> *bmp_uv;
+Bitmap24 *bmp_uv;
 
 float z=0.0;
 template <typename number>
@@ -75,9 +76,9 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     // draw
     canvas->drawTriangles<blendmode::Normal, porterduff::None<>, false, true>(
             shader,
+            W, H,
             vertex_buffer.data(),
             object.indices.data(),
-            nullptr,
             object.indices.size(),
             object.type,
             triangles::face_culling::ccw);
@@ -109,8 +110,8 @@ void init_sdl(int width, int height) {
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
             SDL_TEXTUREACCESS_STATIC, width, height);
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
-    auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
-    tex_1.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
+    auto bmp_uv_U8 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
+    tex_1.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
     canvas = new Canvas24(width, height);
 }
 

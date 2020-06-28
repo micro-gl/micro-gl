@@ -15,7 +15,8 @@ SDL_Texture * texture;
 
 using microgl::tessellation::path;
 using index_t = unsigned int;
-using Canvas24 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
 
 Canvas24 * canvas;
 
@@ -137,7 +138,7 @@ sampling::flat_color color_green {{22,22,22,255}};
 template <typename number>
 void render_path(path<number> path) {
     canvas->clear({255, 255, 255, 255});
-    canvas->drawPathFill<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+    canvas->drawPathFill<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, true>(
             color_red,
             matrix_3x3<number>::identity(),
             path,

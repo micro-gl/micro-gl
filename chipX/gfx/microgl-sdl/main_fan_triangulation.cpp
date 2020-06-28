@@ -15,7 +15,8 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-using Canvas24 = Canvas<uint32_t, microgl::coder::RGB888_PACKED_32>;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
 Canvas24 * canvas;
 sampling::flat_color color_red{{255,0,0,255}};
 
@@ -67,6 +68,7 @@ void render_polygon(const dynamic_array<vec2<number>> & polygon) {
     // draw triangles batch
     canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
             color_red,
+            matrix_3x3<number>::identity(),
             polygon.data(),
             (vec2<number> *)nullptr,
             indices.data(),
@@ -80,6 +82,7 @@ void render_polygon(const dynamic_array<vec2<number>> & polygon) {
     // draw triangulation
     canvas->drawTrianglesWireframe(
             {0,0,0,255},
+            matrix_3x3<number>::identity(),
             polygon.data(),
             indices.data(),
             indices.size(),

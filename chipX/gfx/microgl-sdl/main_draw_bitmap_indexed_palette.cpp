@@ -9,7 +9,7 @@
 #include <microgl/pixel_coders/RGB8.h>
 //#include <microgl/porter_duff/SourceOver.h>
 #include <microgl/samplers/texture.h>
-#include <microgl/PackedBitmap.h>
+#include <microgl/PaletteBitmap.h>
 #include "data/packed_1.h"
 #include "data/packed_2.h"
 #include "data/packed_4.h"
@@ -25,24 +25,23 @@ Resources resources{};
 using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
-using Bitmap24_Packed= Bitmap<microgl::coder::RGB888_PACKED_32>;
-using Bitmap24_ARRAY= Bitmap<coder::RGBA8888_ARRAY>;
-using Bitmap8= Bitmap<coder::RGB8>;
-using BitmapPacked_1= PackedBitmap<1, coder::RGB8, true>;
-using BitmapPacked_2= PackedBitmap<2, coder::RGB8, true>;
-using BitmapPacked_4= PackedBitmap<4, coder::RGB8, true>;
-//using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Canvas24= Canvas<Bitmap24_Packed>;
-using Texture24= sampling::texture<Bitmap24_Packed, sampling::texture_filter::NearestNeighboor>;
-using TexPacked1= sampling::texture<BitmapPacked_1>;
-using TexPacked2= sampling::texture<BitmapPacked_2>;
-using TexPacked4= sampling::texture<BitmapPacked_4>;
+using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
+using Bitmap24_ARRAY= Bitmap<vec4<uint8_t>, coder::RGBA8888_ARRAY>;
+using Bitmap8= Bitmap<uint8_t , coder::RGB8>;
+using PaletteBitmap_1= PaletteBitmap<1, uint32_t , coder::RGBA8888_ARRAY, true>;
+using PaletteBitmap_2= PaletteBitmap<2, uint32_t , coder::RGBA8888_ARRAY, true>;
+using PaletteBitmap_4= PaletteBitmap<4, uint32_t , coder::RGBA8888_ARRAY, true>;
+using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
+using TexPalette1= sampling::texture<PaletteBitmap_1>;
+using TexPalette2= sampling::texture<PaletteBitmap_2>;
+using TexPalette4= sampling::texture<PaletteBitmap_4>;
 using font32= microgl::text::bitmap_font<Bitmap24_ARRAY>;
 Canvas24 * canvas;
 Texture24 tex_uv;
-TexPacked1 tex_1, tex_1_fill;
-TexPacked2 tex_2, tex_2_fill;
-TexPacked4 tex_4, tex_4_fill;
+TexPalette1 tex_1, tex_1_fill;
+TexPalette2 tex_2, tex_2_fill;
+TexPalette4 tex_4, tex_4_fill;
 font32 font;
 
 void loop();
@@ -74,12 +73,12 @@ void test_text() {
 
 template <typename number, typename TEX>
 void test_texture(TEX & tex) {
-    canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(
-            tex,
-            0, 0, tex.bitmap().width(), tex.bitmap().height(),
-            255,
-            0,0,
-            1,1);
+        canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(
+                tex,
+                0, 0, tex.bitmap().width(), tex.bitmap().height(),
+                255,
+                0,0,
+                1,1);
 }
 
 void render() {
@@ -107,8 +106,8 @@ void init_sdl(int width, int height) {
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STATIC, width, height);
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
-    auto bmp_uv_U8 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
-    tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
+    auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
+    tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("minecraft-20", font);
     resources.loadFont<Bitmap24_ARRAY>("digital_7-20", font);
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("roboto-thin-28", font);
@@ -116,22 +115,23 @@ void init_sdl(int width, int height) {
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("mont-med-16", font);
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("test_texture", font);
     canvas = new Canvas24(width, height);
+//
+//    auto * bitmap_packed_1 = new PaletteBitmap_1{font_map_1_bpp, 152, 128};
+//    auto * bitmap_packed_1_fill = new PaletteBitmap_1{128, 128};
+//    auto * bitmap_packed_2 = new PaletteBitmap_2{font_map_2_bpp, 148, 128};
+//    auto * bitmap_packed_2_fill = new PaletteBitmap_2{128, 128};
+    auto * bitmap_packed_4 = new PaletteBitmap_4{font_map_4_bpp, 148, 128};
 
-    auto * bitmap_packed_1 = new BitmapPacked_1{font_map_1_bpp, 152, 128};
-    auto * bitmap_packed_1_fill = new BitmapPacked_1{128, 128};
-    auto * bitmap_packed_2 = new BitmapPacked_2{font_map_2_bpp, 148, 128};
-    auto * bitmap_packed_2_fill = new BitmapPacked_2{128, 128};
-    auto * bitmap_packed_4 = new BitmapPacked_4{font_map_4_bpp, 148, 128};
-    auto * bitmap_packed_4_fill = new BitmapPacked_4{128, 128};
-    bitmap_packed_1_fill->fill(1); bitmap_packed_1_fill->writeAt(2,2,0); bitmap_packed_1_fill->writeAt(4,4,0);
-    bitmap_packed_2_fill->fill(3); bitmap_packed_2_fill->writeAt(2,2,0); bitmap_packed_2_fill->writeAt(4,4,2);
-    bitmap_packed_4_fill->fill(15); bitmap_packed_4_fill->writeAt(2,2,0); bitmap_packed_4_fill->writeAt(4,4,0);
-    tex_1.updateBitmap(bitmap_packed_1);
-    tex_1_fill.updateBitmap(bitmap_packed_1_fill);
-    tex_2.updateBitmap(bitmap_packed_2);
-    tex_2_fill.updateBitmap(bitmap_packed_2_fill);
-    tex_4.updateBitmap(bitmap_packed_4);
-    tex_4_fill.updateBitmap(bitmap_packed_4_fill);
+//    auto * bitmap_packed_4_fill = new PaletteBitmap_4{128, 128};
+//    bitmap_packed_1_fill->fill(1); bitmap_packed_1_fill->writeAt(2,2,0); bitmap_packed_1_fill->writeAt(4,4,0);
+//    bitmap_packed_2_fill->fill(3); bitmap_packed_2_fill->writeAt(2,2,0); bitmap_packed_2_fill->writeAt(4,4,2);
+//    bitmap_packed_4_fill->fill(15); bitmap_packed_4_fill->writeAt(2,2,0); bitmap_packed_4_fill->writeAt(4,4,0);
+//    tex_1.updateBitmap(bitmap_packed_1);
+//    tex_1_fill.updateBitmap(bitmap_packed_1_fill);
+//    tex_2.updateBitmap(bitmap_packed_2);
+//    tex_2_fill.updateBitmap(bitmap_packed_2_fill);
+//    tex_4.updateBitmap(bitmap_packed_4);
+//    tex_4_fill.updateBitmap(bitmap_packed_4_fill);
 }
 
 int render_test(int N) {

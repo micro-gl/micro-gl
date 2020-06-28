@@ -3,18 +3,21 @@
 #pragma once
 
 #include <microgl/base_bitmap.h>
+#include <microgl/micro_gl_traits.h>
 
 template <unsigned BPP, typename CODER, bool reverse_elements_pos_in_byte=false>
-class PackedBitmap : public base_bitmap<PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte>, uint8_t, CODER> {
-    using base=base_bitmap<PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte>, uint8_t, CODER>;
+class PackedBitmap : public base_bitmap<CODER, PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte>> {
+    using base=base_bitmap<CODER, PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte>>;
     using byte=unsigned char;
     static constexpr bool is_1_2_4_8 = BPP==1||BPP==2||BPP==4||BPP==8;
     typename std::enable_if<is_1_2_4_8, bool>::type fails_if_else;
+    typename std::enable_if<microgl::traits::is_same<typename CODER::Pixel, byte>::value, bool>::type fails_if_not_pixel_8_bit;
     static constexpr byte M = 3;
     static constexpr byte BPE = byte(1)<<M; // always 8 bits, 1 byte
     static constexpr byte K=(BPP==1 ? 0 : (BPP==2 ? 1 : (BPP==4 ? 2 : (BPP==8 ? 3 : 4))));
     static constexpr byte T=M-K;
     static constexpr byte MASK=(BPP==1 ? 0b00000001 : (BPP==2 ? 0b00000011 : (BPP==4 ? 0b00001111 : (BPP==8 ? 0b11111111 : 0b11111111))));
+
 public:
     using base::pixelAt;
     using base::writeAt;
@@ -38,8 +41,8 @@ public:
         unsigned int R=(index1<<K)-(idx2<<M); // compute distance to the beginning of the 8bit aligned block
         element= reverse_elements_pos_in_byte ? (element) >> (BPE - BPP - R) : (element) >> (R); // move the element to the lower part
         byte masked=element&(MASK); // mask out the upper bits
-//        return masked<<4;
-        return masked<<6;
+        return masked<<4;
+//        return masked<<6;
 //        return masked<<7;
     }
 

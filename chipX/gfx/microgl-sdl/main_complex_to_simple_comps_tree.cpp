@@ -6,6 +6,8 @@
 #include <microgl/PixelCoder.h>
 #include <microgl/tesselation/simple_components_tree.h>
 
+// todo:: this is an old experiment
+
 #define TEST_ITERATIONS 1
 #define W 640*1
 #define H 640*1

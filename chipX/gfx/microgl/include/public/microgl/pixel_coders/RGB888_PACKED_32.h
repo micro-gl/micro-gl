@@ -7,6 +7,8 @@ namespace microgl {
 
         class RGB888_PACKED_32 : public PixelCoder<uint32_t, RGB888_PACKED_32> {
         public:
+            using PixelCoder::decode;
+            using PixelCoder::encode;
             static
             inline void encode(const color_t &input, uint32_t &output) {
                 output = (input.r << 16) + (input.g << 8) + input.b;

@@ -40,10 +40,13 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - std::sort must be replaced with c qsort
 
 #### road-map
+- indexed bitmap support
+- 1/2/4/8 bit conversion samplers with LUT
+- drawRect with matrix and drawAxisRect without
+- tools for images and fonts
 - investigate mip-mapping (I have all the theory from open gl spec)
 - explore avoid blending, and draw pixel directly mechanism
 - remove bits info from samplers ? currently only use it in masks, but this info can be embeded in color_t
-- remove framebuffer from bitmap ? or use encapsulation ?
 - configurable custom sin/cos/tan provider
 - shader need to retain some fragCoord(x,y,z,1/w) and bounding box, so user can do cool stuff
 - 3d pipeline, make 3d clipping configurable for planes and even skip

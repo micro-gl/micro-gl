@@ -19,9 +19,9 @@ Resources resources{};
 using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
-using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
-using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_sampling::NearestNeighboor>;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
+using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::Bilinear>;
 Texture24 tex_uv;
 Canvas24 * canvas;
 sampling::flat_color color_grey{{122,122,122,255}};
@@ -74,15 +74,17 @@ void render_blocks() {
         for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
             canvas->updateCanvasWindow(ix, iy, bitmap);
             canvas->clear({255,255,255,255});
-            canvas->drawBezierPatch<blendmode::Normal, porterduff::None<>, false, number, number>(
+            canvas->drawBezierPatch<blendmode::Normal, porterduff::None<>, false, false, number, number>(
 //                    color_grey,
                     tex_uv,
+                    matrix_3x3<number>::identity(),
                     mesh, 4, 4, 20, 20,
                     0, 1, 1, 0,
                     255);
 
             SDL_Rect rect_source {0, 0, block_size, block_size};
             SDL_Rect rect_dest {ix, iy, block_size-debug, block_size-debug};
+            // very slow operation here
             SDL_UpdateTexture(sdl_texture,
                               &rect_source,
                               &canvas->pixels()[0],
@@ -117,8 +119,8 @@ void init_sdl(int width, int height) {
     sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
             SDL_TEXTUREACCESS_STREAMING, width, height);
     auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
-    auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
-    tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
+    auto bmp_uv_U8 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
+    tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
     canvas = new Canvas24(width, height);
 }
 

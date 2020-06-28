@@ -30,7 +30,7 @@ namespace microgl {
                     // keeping c in 2P space helps reducing bit shifting (therefore faster evaluation)
                     // in the distance function,
                     // BUT may cause overflow, so keep tabs on it and the distance function
-                    a=n.x, b=n.y, c= -((n*p));
+                    a=n.x, b=n.y, c= -((n.dot(p)));
                     inv_normal_length = (1<<p_bits_double) / microgl::math::sqrt(n.x*n.x + n.y*n.y);
                 }
 

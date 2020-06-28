@@ -1,3 +1,5 @@
+#pragma once
+
 namespace microgl {
     namespace traits {
         template<class T1, class T2>

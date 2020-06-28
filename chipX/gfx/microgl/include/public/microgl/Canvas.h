@@ -33,9 +33,11 @@ using namespace microgl::triangles;
 using namespace microgl::polygons;
 using namespace microgl::shading;
 
-template<typename P, typename CODER>
+//template<typename P, typename CODER>
+template<typename BITMAP>
 class Canvas {
 public:
+//    using P=typename CODER::Pixel;
     using rect = rect_t<int>;
     struct window_t {
         rect canvas_rect;
@@ -49,9 +51,13 @@ private:
     using precision = unsigned char;
     using opacity_t = unsigned char;
     using l64= long long;
-    using pixel_coder= coder::PixelCoder<P, CODER>;
-    using canvas= Canvas<P, CODER>;
-    using bitmap= Bitmap<P, CODER>;
+//    using pixel_coder= coder::PixelCoder<P, CODER>;
+//    using canvas= Canvas<P, CODER>;
+    using bitmap= BITMAP;
+    using canvas= Canvas<bitmap>;
+    using Pixel= typename BITMAP::Pixel;
+    using pixel_coder= typename BITMAP::Coder;
+//    using bitmap= Bitmap<P, CODER>;
 
     bitmap * _bitmap_canvas = nullptr;
     window_t _window;
@@ -96,9 +102,9 @@ public:
     int width() const;
     int height() const;
     unsigned int sizeofPixel() const;
-    P* pixels() const;
-    P &getPixel(int x, int y) const ;
-    P &getPixel(int index) const ;
+    Pixel * pixels() const;
+    Pixel &getPixel(int x, int y) const ;
+    Pixel &getPixel(int index) const ;
     void getPixelColor(int index, color_t & output) const;
     void getPixelColor(int x, int y, color_t & output) const;
 
@@ -117,8 +123,8 @@ public:
              typename PorterDuff=porterduff::FastSourceOverOnOpaque>
     inline void blendColor(const color_t &val, int index, opacity_t opacity);
 
-    void drawPixel(const P &val, int x, int y);
-    void drawPixel(const P &val, int index);
+    void drawPixel(const Pixel &val, int x, int y);
+    void drawPixel(const Pixel &val, int index);
 
     // circles
 
@@ -375,9 +381,8 @@ public:
                       number2 u0=number2(0), number2 v0=number2(1),
                       number2 u1=number2(1), number2 v1=number2(0));
 
-
-    template<typename BITMAP>
-    void drawText(const char *text, microgl::text::bitmap_font<BITMAP> &font, const color_t & color,
+    template<typename BITMAP_FONT_TYPE>
+    void drawText(const char *text, microgl::text::bitmap_font<BITMAP_FONT_TYPE> &font, const color_t & color,
             microgl::text::text_format & format,
             int left, int top, int right, int bottom, bool frame, opacity_t opacity=255);
 };

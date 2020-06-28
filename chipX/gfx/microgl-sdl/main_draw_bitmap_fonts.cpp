@@ -5,6 +5,7 @@
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGBA8888_ARRAY.h>
+#include <microgl/pixel_coders/RGBA8888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/texture.h>
 
@@ -19,10 +20,12 @@ Resources resources{};
 using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
-using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
-using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_filter::NearestNeighboor>;
-using font32= microgl::text::bitmap_font<vec4<uint8_t>, coder::RGBA8888_ARRAY>;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Bitmap24_ARRAY= Bitmap<coder::RGBA8888_ARRAY>;
+using Bitmap24_PACKED= Bitmap<coder::RGBA8888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
+using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
+using font32= microgl::text::bitmap_font<Bitmap24_ARRAY>;
 Canvas24 * canvas;
 Texture24 tex_uv;
 font32 font;
@@ -73,10 +76,10 @@ void init_sdl(int width, int height) {
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STATIC, width, height);
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
-    auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
-    tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
+    auto bmp_uv_U8 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
+    tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("minecraft-20", font);
-    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("digital_7-20", font);
+    resources.loadFont<Bitmap24_ARRAY>("digital_7-20", font);
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("roboto-thin-28", font);
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("roboto-thin-14", font);
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("mont-med-16", font);

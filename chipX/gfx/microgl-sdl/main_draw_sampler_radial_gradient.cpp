@@ -15,7 +15,9 @@ SDL_Texture * sdl_texture;
 using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
-using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
+using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 
 Canvas24 * canvas;
 fast_radial_gradient<float> gradient{0.5, 0.5, 0.5};

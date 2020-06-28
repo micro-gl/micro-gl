@@ -18,11 +18,12 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture_sdl;
 
-using Canvas24Bit_Packed32 = Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
+using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 using namespace microgl;
 using namespace microgl::sampling;
 
-using Texture24= sampling::texture<uint32_t, coder::RGB888_PACKED_32, sampling::texture_filter::NearestNeighboor>;
 fast_radial_gradient<float> radial_gradient{0.5, 0.5, 0.75};
 linear_gradient_2_colors<false> gradient2Colors{{255,0,255}, {255,0,0}};
 linear_gradient_2_colors<true> gradient2Colors2{{0,0,255}, {0,0,0}};
@@ -30,7 +31,7 @@ flat_color flatColor{{133,133,133, 255}};
 flat_color flatColorRed{{255,0,0, 255}};
 Texture24 tex_1, tex_2;
 
-Canvas24Bit_Packed32 * canvas;
+Canvas24 * canvas;
 Resources resources{};
 
 void loop();
@@ -111,17 +112,17 @@ void init_sdl(int width, int height) {
     auto img_1 = resources.loadImageFromCompressedPath("charsprites.png");
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
 
-    auto bmp_1 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
-    auto bmp_2 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
+    auto bmp_1 = new Bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
+    auto bmp_2 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
 
-    tex_1.updateBitmap(bmp_1->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
-    tex_2.updateBitmap(bmp_2->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
+    tex_1.updateBitmap(bmp_1->convertToBitmap<coder::RGB888_PACKED_32>());
+    tex_2.updateBitmap(bmp_2->convertToBitmap<coder::RGB888_PACKED_32>());
 
     radial_gradient.addStop(0.0f, {255,0,0});
     radial_gradient.addStop(0.45f, {255,0,0});
     radial_gradient.addStop(0.50f, {0,255,0});
     radial_gradient.addStop(1.f, {255,0,255});
-    canvas = new Canvas24Bit_Packed32(width, height);
+    canvas = new Canvas24(width, height);
     resources.init();
 }
 

@@ -12,8 +12,9 @@
 #include <microgl/blend_modes/Normal.h>
 #include <microgl/blend_modes/Multiply.h>
 #include <microgl/Bitmap.h>
+#include <microgl/samplers/flat_color.h>
 
-#define TEST_ITERATIONS 1000
+#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 480*1
 
@@ -21,8 +22,9 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
-using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
+sampling::flat_color color_grey{{122,122,122,255}};
 
 Canvas24 * canvas;
 Bitmap24 * bmp_1, *bmp_2, *mask;
@@ -38,7 +40,7 @@ inline void render() {
 //    canvas->drawQuad<blendmode::Normal, porterduff::SourceOver<true>>(
     canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque>(
 //    canvas->drawQuad<blendmode::Normal, porterduff::None<>>(
-            {255,0,0,122},
+            color_grey,
             -0, -0, 300, 300,
             255);
 
@@ -62,13 +64,13 @@ void init_sdl(int width, int height) {
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
     auto img_3 = resources.loadImageFromCompressedPath("bw.png");
 //
-    auto *bmp_1_native = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
-    auto *bmp_2_native = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
-    auto *bmp_3_native = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
+    auto *bmp_1_native = new Bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
+    auto *bmp_2_native = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
+    auto *bmp_3_native = new Bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
 
-    bmp_1 = bmp_1_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>();
-    bmp_2 = bmp_2_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>();
-    mask = bmp_3_native->convertToBitmap<uint32_t, coder::RGB888_PACKED_32>();
+    bmp_1 = bmp_1_native->convertToBitmap<coder::RGB888_PACKED_32>();
+    bmp_2 = bmp_2_native->convertToBitmap<coder::RGB888_PACKED_32>();
+    mask = bmp_3_native->convertToBitmap<coder::RGB888_PACKED_32>();
     resources.init();
 }
 

@@ -16,7 +16,9 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-using Canvas24 = Canvas<uint32_t, microgl::coder::RGB888_PACKED_32>;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
+using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 Canvas24 * canvas;
 sampling::flat_color color_red{{255,0,0,255}};
 
@@ -155,17 +157,14 @@ void render_path(const dynamic_array<vec2<number>> &path, number stroke_width, b
     stroke_tess::compute(
             stroke_width,
             close_path,
-            tessellation::stroke_cap::butt,
+//            tessellation::stroke_cap::butt,
 //            tessellation::stroke_cap::square,
-//            tessellation::stroke_cap::round,
+            tessellation::stroke_cap::round,
 //            tessellation::stroke_line_join::round,
             tessellation::stroke_line_join::bevel,
 //            tessellation::stroke_line_join::miter_clip,
 //            tessellation::stroke_line_join::miter,
 //            tessellation::stroke_line_join::none,
-            tessellation::stroke_gravity::center,
-//            tessellation::stroke_gravity::inward,
-//            tessellation::stroke_gravity::outward,
             2,
             path.data(),
             path.size(),

@@ -10,7 +10,7 @@
 #include <vector>
 #include <iostream>
 
-namespace tessellation {
+namespace experiments {
 
 #define abs(a) ((a)<0 ? -(a) : (a))
 

@@ -57,22 +57,22 @@ set(SOURCES
 #        main_draw_z_buffer.cpp
 #        main_3d_pipeline.cpp
 #        main_3d_camera.cpp
-#        main_number_systems.cpp
 #        main_bentley_ottmann.cpp
 #        main_complex_to_simple_polygon.cpp
 #        main_complex_to_simple_comps_tree.cpp
 #        main_ear_clipping.cpp
 #        main_monotone_polygon_triangulation.cpp
+#        main_fan_triangulation.cpp
 #        main_complex_to_planar_subdivision.cpp
 #        main_stroke_tessellation.cpp
 #        main_stroke_dash_tessellation.cpp
 #        main_elliptic_arc_divider.cpp
-#        main_fan_triangulation.cpp
 #        main_path.cpp
 #        main_q_sort.cpp
 #        main_avl_tree.cpp
 #        main_draw_bitmap_fonts.cpp
-        main_draw_bitmap_packed.cpp
+#        main_draw_bitmap_packed.cpp
+        main_draw_bitmap_indexed_palette.cpp
         libs/stb_image/stb_image.cpp
         src/Resources.cpp data/packed_4.h)
 

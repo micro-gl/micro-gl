@@ -15,8 +15,8 @@ SDL_Texture * sdl_texture;
 using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
-using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
-using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
 
 Canvas24 * canvas;
 flat_color color_sampler{{255,122,0}};

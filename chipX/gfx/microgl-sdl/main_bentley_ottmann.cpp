@@ -8,10 +8,10 @@
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/color.h>
-#include <microgl/tesselation/Segment.h>
-//#include <microgl/PixelFormat.h>
-#include <microgl/PixelCoder.h>
-#include <microgl/tesselation/BentleyOttmannLineIntersection.h>
+#include <microgl/pixel_coders/RGB888_PACKED_32.h>
+#include <microgl/samplers/flat_color.h>
+#include <microgl/tesselation/experiments/bentley_ottmann/Segment.h>
+#include <microgl/tesselation/experiments/bentley_ottmann/BentleyOttmannLineIntersection.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -21,10 +21,11 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-typedef Canvas<uint32_t, RGB888_PACKED_32> Canvas24Bit_Packed32;
-
-Canvas24Bit_Packed32 * canvas;
-
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= Canvas<Bitmap24>;
+using namespace experiments;
+Canvas24 * canvas;
+microgl::sampling::flat_color color_RED {{255,0,0,255}};
 Resources resources{};
 
 void loop();
@@ -49,7 +50,7 @@ void render_star() {
     Segment s4 {{200, 20}, {280,300}};
     Segment s5 {{280,300}, {100, 100}};
 
-    canvas->clear(WHITE);
+    canvas->clear({255,255,255,255});
 
     std::vector<Segment> segments_2 {s1, s2, s3, s4, s5};
 
@@ -60,12 +61,12 @@ void render_star() {
     auto & I = bentleyOttmann.compute(segments.data(), segments.size(), precision);
 
     for (auto & inter : I) {
-        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-                RED, inter.x, inter.y, 8<<precision, precision, 80);
+        canvas->drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+                color_RED, color_RED, inter.x, inter.y, 8, 1, 80);
     }
 
     for (auto & segment : segments) {
-        canvas->drawLine(BLACK,
+        canvas->drawWuLine({0,0,0,255},
                          segment.p0.x, segment.p0.y,
                          segment.p1.x, segment.p1.y,
                          0
@@ -91,7 +92,7 @@ void render_chaos() {
     Segment s7 {{110,50+m}, {180, 400+m}};
     Segment s8 {{500,5+m}, {130, 400+m}};
 
-    canvas->clear(WHITE);
+    canvas->clear({255,255,255,255});
 //    t -=0.25;
     t -=0.2;
     //s7.p0.x = 15 + t;
@@ -121,12 +122,12 @@ void render_chaos() {
     auto & I = bentleyOttmann.compute(segments.data(), segments.size(), precision);
 
     for (auto & inter : I) {
-        canvas->drawCircle<blendmode::Normal, porterduff::SourceOverOnOpaque, true>(
-                RED, inter.x, inter.y, 8<<precision, precision, 80);
+        canvas->drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+                color_RED, color_RED, inter.x, inter.y, 8, 1, 80);
     }
 
     for (auto & segment : segments) {
-        canvas->drawLine(BLACK,
+        canvas->drawWuLine({0,0,0,255},
                          segment.p0.x, segment.p0.y,
                          segment.p1.x, segment.p1.y,
                          0
@@ -152,7 +153,7 @@ void init_sdl(int width, int height) {
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
             SDL_TEXTUREACCESS_STATIC, width, height);
 
-    canvas = new Canvas24Bit_Packed32(width, height, new RGB888_PACKED_32());
+    canvas = new Canvas24(width, height);
 
     resources.init();
 }
