@@ -7,12 +7,12 @@
 #include <microgl/pixel_coders/RGBA8888_ARRAY.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/pixel_coders/RGB8.h>
-//#include <microgl/porter_duff/SourceOver.h>
 #include <microgl/samplers/texture.h>
 #include <microgl/PaletteBitmap.h>
 #include "data/packed_1.h"
 #include "data/packed_2.h"
 #include "data/packed_4.h"
+#include "data/bitmap_1_palette_256_colors.h"
 
 #define TEST_ITERATIONS 100
 #define W 640*1
@@ -25,23 +25,26 @@ Resources resources{};
 using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
-using Bitmap24= Bitmap<uint32_t, coder::RGB888_PACKED_32>;
-using Bitmap24_ARRAY= Bitmap<vec4<uint8_t>, coder::RGBA8888_ARRAY>;
-using Bitmap8= Bitmap<uint8_t , coder::RGB8>;
-using PaletteBitmap_1= PaletteBitmap<1, uint32_t , coder::RGBA8888_ARRAY, true>;
-using PaletteBitmap_2= PaletteBitmap<2, uint32_t , coder::RGBA8888_ARRAY, true>;
-using PaletteBitmap_4= PaletteBitmap<4, uint32_t , coder::RGBA8888_ARRAY, true>;
-using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
+using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+using Bitmap8888_ARRAY= Bitmap<coder::RGBA8888_ARRAY>;
+using Bitmap8= Bitmap<coder::RGB8>;
+using PaletteBitmap_1= PaletteBitmap<1, coder::RGBA8888_ARRAY, true>;
+using PaletteBitmap_2= PaletteBitmap<2, coder::RGBA8888_ARRAY, true>;
+using PaletteBitmap_4= PaletteBitmap<4, coder::RGBA8888_ARRAY, true>;
+using PaletteBitmap_8= PaletteBitmap<8, coder::RGBA8888_ARRAY, false>;
+using Canvas24= Canvas<Bitmap24>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 using TexPalette1= sampling::texture<PaletteBitmap_1>;
 using TexPalette2= sampling::texture<PaletteBitmap_2>;
 using TexPalette4= sampling::texture<PaletteBitmap_4>;
-using font32= microgl::text::bitmap_font<Bitmap24_ARRAY>;
+using TexPalette8= sampling::texture<PaletteBitmap_8, sampling::texture_filter::Bilinear>;
+using font32= microgl::text::bitmap_font<Bitmap8888_ARRAY>;
 Canvas24 * canvas;
 Texture24 tex_uv;
 TexPalette1 tex_1, tex_1_fill;
 TexPalette2 tex_2, tex_2_fill;
 TexPalette4 tex_4, tex_4_fill;
+TexPalette8 tex_8, tex_8_fill;
 font32 font;
 
 void loop();
@@ -73,9 +76,9 @@ void test_text() {
 
 template <typename number, typename TEX>
 void test_texture(TEX & tex) {
-        canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(
+        canvas->drawQuad<blendmode::Normal, porterduff::None<>, false>(
                 tex,
-                0, 0, tex.bitmap().width(), tex.bitmap().height(),
+                0, 0, tex.bitmap().width()>>0, tex.bitmap().height()>>0,
                 255,
                 0,0,
                 1,1);
@@ -87,7 +90,9 @@ void render() {
 //    test_texture<float>(tex_1_fill);
 //    test_texture<float>(tex_2);
 //    test_texture<float>(tex_2_fill);
-    test_texture<float>(tex_4);
+//    test_texture<float>(tex_4);
+//    test_texture<float>(tex_4_fill);
+    test_texture<float>(tex_8);
 //    test_texture<float>(tex_4_fill);
 //    test_text<float>();
 }
@@ -106,10 +111,10 @@ void init_sdl(int width, int height) {
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STATIC, width, height);
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
-    auto bmp_uv_U8 = new Bitmap<vec3<uint8_t>, coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
-    tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<uint32_t , coder::RGB888_PACKED_32>());
+    auto bmp_uv_U8 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
+    tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("minecraft-20", font);
-    resources.loadFont<Bitmap24_ARRAY>("digital_7-20", font);
+    resources.loadFont<Bitmap8888_ARRAY>("digital_7-20", font);
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("roboto-thin-28", font);
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("roboto-thin-14", font);
 //    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("mont-med-16", font);
@@ -120,7 +125,12 @@ void init_sdl(int width, int height) {
 //    auto * bitmap_packed_1_fill = new PaletteBitmap_1{128, 128};
 //    auto * bitmap_packed_2 = new PaletteBitmap_2{font_map_2_bpp, 148, 128};
 //    auto * bitmap_packed_2_fill = new PaletteBitmap_2{128, 128};
-    auto * bitmap_packed_4 = new PaletteBitmap_4{font_map_4_bpp, 148, 128};
+//    auto * bitmap_packed_4 = new PaletteBitmap_4{font_map_4_bpp, 148, 128};
+    auto * bitmap_packed_8 = new PaletteBitmap_8{bitmap_1_256_colors_data,
+//                                                 reinterpret_cast<vec4<uint8_t> *>(bitmap_1_256_colors_palette),
+                                                 (bitmap_1_256_colors_palette),
+                                                 256, 256};
+    tex_8.updateBitmap(bitmap_packed_8);
 
 //    auto * bitmap_packed_4_fill = new PaletteBitmap_4{128, 128};
 //    bitmap_packed_1_fill->fill(1); bitmap_packed_1_fill->writeAt(2,2,0); bitmap_packed_1_fill->writeAt(4,4,0);

@@ -32,7 +32,7 @@ float t=0;
 template <typename number>
 void test() {
     t+=0.1;//-0.01;
-    canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
+    canvas->drawQuad<blendmode::Normal, porterduff::None<>, false, number>(
             tex_uv,
             t,t, 500, 500);
 }
@@ -69,7 +69,8 @@ int render_test(int N) {
         render();
     auto end = std::chrono::high_resolution_clock::now();
     auto int_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    return int_ms.count();}
+    return int_ms.count();
+}
 
 void loop() {
     bool quit = false;

@@ -5,8 +5,8 @@
 #include <microgl/base_bitmap.h>
 
 template <typename CODER>
-class Bitmap : public base_bitmap<CODER, Bitmap<CODER>> {
-    using base=base_bitmap<CODER, Bitmap<CODER>>;
+class Bitmap : public base_bitmap<Bitmap<CODER>, CODER> {
+    using base=base_bitmap<Bitmap<CODER>, CODER>;
 public:
     using base::pixelAt;
     using base::writeAt;

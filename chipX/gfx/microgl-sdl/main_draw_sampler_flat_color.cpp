@@ -28,7 +28,8 @@ float t=0;
 template <typename number>
 void test_1() {
 //    t+=0.001;
-    canvas->drawQuad<blendmode::Normal, porterduff::None<>, false, number>(color_sampler, t, t, 400, 400);
+    canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
+            color_sampler, t, t, 400, 400);
 }
 
 void render() {

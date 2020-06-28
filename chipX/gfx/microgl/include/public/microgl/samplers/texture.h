@@ -2,8 +2,6 @@
 #pragma ide diagnostic ignored "HidingNonVirtualFunction"
 
 #include <microgl/sampler.h>
-//#include <microgl/Bitmap.h>
-#include <microgl/base_bitmap.h>
 
 namespace microgl {
     namespace sampling {

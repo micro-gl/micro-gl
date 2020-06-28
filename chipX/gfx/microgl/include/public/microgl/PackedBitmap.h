@@ -6,8 +6,8 @@
 #include <microgl/micro_gl_traits.h>
 
 template <unsigned BPP, typename CODER, bool reverse_elements_pos_in_byte=false>
-class PackedBitmap : public base_bitmap<CODER, PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte>> {
-    using base=base_bitmap<CODER, PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte>>;
+class PackedBitmap : public base_bitmap<PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte>, CODER, uint8_t> {
+    using base=base_bitmap<PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte>, CODER, uint8_t>;
     using byte=unsigned char;
     static constexpr bool is_1_2_4_8 = BPP==1||BPP==2||BPP==4||BPP==8;
     typename std::enable_if<is_1_2_4_8, bool>::type fails_if_else;

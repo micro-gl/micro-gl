@@ -5,15 +5,16 @@
 #include <microgl/PixelCoder.h>
 
 //template <typename IMPL, typename P, typename CODER>
-template <typename CODER, typename IMPL>
+template <typename IMPL, typename CODER, typename buffer_element_type=typename CODER::Pixel>
 class base_bitmap : public crpt<IMPL> {
 public:
     using Pixel=typename CODER::Pixel;
+//    using Pixel=Pixel_Type;//typename CODER::Pixel;
     using Coder=CODER;
 protected:
     int _width = 0, _height = 0;
     CODER _coder;
-    buffer<Pixel> _buffer;
+    buffer<buffer_element_type> _buffer;
 
 public:
 
@@ -24,7 +25,7 @@ public:
     base_bitmap(int w, int h) : base_bitmap(new uint8_t[sizeof(Pixel) * w * h], w, h) {}
     base_bitmap(uint8_t *$pixels, int w, int h) : base_bitmap($pixels, w*h, w, h) {}
     base_bitmap(uint8_t *$pixels, int size, int w, int h) :
-            _width{w}, _height{h}, _buffer(reinterpret_cast<Pixel *>($pixels), size) {
+            _width{w}, _height{h}, _buffer(reinterpret_cast<buffer_element_type *>($pixels), size) {
     }
     ~base_bitmap() { _width =_height=0; }
 

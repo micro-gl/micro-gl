@@ -5,22 +5,24 @@
 #include <microgl/base_bitmap.h>
 
 template <unsigned BPI, typename CODER, bool reverse_elements_pos_in_byte=false>
-class PaletteBitmap : public base_bitmap<PaletteBitmap<BPI, CODER, reverse_elements_pos_in_byte>, uint8_t, CODER> {
-    using base=base_bitmap<PaletteBitmap<BPI, P, CODER, reverse_elements_pos_in_byte>, uint8_t, CODER>;
+class PaletteBitmap : public base_bitmap<PaletteBitmap<BPI, CODER, reverse_elements_pos_in_byte>, CODER, uint8_t> {
+    using base=base_bitmap<PaletteBitmap<BPI, CODER, reverse_elements_pos_in_byte>, CODER, uint8_t>;
     using byte=unsigned char;
     static constexpr bool is_1_2_4_8 = BPI == 1 || BPI == 2 || BPI == 4 || BPI == 8;
     typename std::enable_if<is_1_2_4_8, bool>::type fails_if_else;
-    static constexpr byte M = 3;
+    static constexpr byte M = 3; // always <= 3
     static constexpr byte BPE = byte(1)<<M; // always 8 bits, 1 byte
     static constexpr byte K=(BPI == 1 ? 0 : (BPI == 2 ? 1 : (BPI == 4 ? 2 : (BPI == 8 ? 3 : 4))));
     static constexpr byte T=M-K;
-    static constexpr byte MASK=(BPI == 1 ? 0b00000001 : (BPI == 2 ? 0b00000011 : (BPI == 4 ? 0b00001111 : (BPI == 8 ? 0b11111111 : 0b11111111))));
-    static constexpr byte PALETTE_SIZE = byte(1)<<BPI;
+    static constexpr byte MASK=(BPI == 1 ? 0b00000001 : (BPI == 2 ? 0b00000011 :
+                            (BPI == 4 ? 0b00001111 : (BPI == 8 ? 0b11111111 : 0b11111111))));
+    static constexpr int PALETTE_SIZE = (uint32_t(1)<<BPI);
 
     typename CODER::Pixel _palette[PALETTE_SIZE];
 public:
     using base::pixelAt;
     using base::writeAt;
+    using Pixel=typename base::Pixel;
 
     static
     int pad_to(int val, int bits, int align) {
@@ -30,18 +32,21 @@ public:
         return val+extra;
     }
 
-    PaletteBitmap(int w, int h) : PaletteBitmap{new uint8_t[(w*h)>>T], w, h} {};
-    PaletteBitmap(uint8_t* $pixels, const P *palette, int w, int h) : base {$pixels, (w*h)>>T, w, h} {
+    PaletteBitmap(int w, int h) : PaletteBitmap{new uint8_t[(w*h)>>T], nullptr, w, h} {};
+    PaletteBitmap(uint8_t* $indices, const Pixel *palette, int w, int h) : base {$indices, (w*h)>>T, w, h} {
         updatePalette(palette);
     };
+    PaletteBitmap(uint8_t* $indices, const void *palette, int w, int h) :
+                            PaletteBitmap{$indices, reinterpret_cast<const Pixel *>(palette), w, h} {};
     ~PaletteBitmap() = default;
 
-    void updatePaletteValue(const byte& index, const P & value) {
+    void updatePaletteValue(const byte& index, const Pixel & value) {
         _palette[index]=value;
     }
 
-    void updatePalette(const P *palette) {
-        for (byte ix = 0; ix < PALETTE_SIZE; ++ix) updatePaletteValue(ix, palette[ix]);
+    void updatePalette(const Pixel *palette) {
+        int ps=PALETTE_SIZE, bpi= BPI; // debug
+        for (int ix = 0; ix < PALETTE_SIZE; ++ix) updatePaletteValue(ix, palette[ix]);
     }
 
     byte extract_pixel(unsigned int index1) const {
@@ -51,16 +56,16 @@ public:
         unsigned int R=(index1<<K)-(idx2<<M); // compute distance to the beginning of the 8bit aligned block
         element= reverse_elements_pos_in_byte ? (element) >> (BPE - BPI - R) : (element) >> (R); // move the element to the lower part
         byte masked=element&(MASK); // mask out the upper bits
-//        return masked<<4;
-//        return masked<<6;
-//        return masked<<7;
+        return masked;
     }
 
-    P pixelAt(int index) const {
+    Pixel pixelAt(int index) const {
+        byte ind=extract_pixel(index);
+        Pixel pix=_palette[extract_pixel(index)];
         return _palette[extract_pixel(index)];
     }
 
-    int locate_index_color_of_pixel_in_palette(const P & pixel) {
+    int locate_index_color_of_pixel_in_palette(const Pixel & pixel) {
         for (byte ix = 0; ix < PALETTE_SIZE; ++ix) {
             if (_palette[ix] == pixel)
                 return ix;
@@ -68,7 +73,7 @@ public:
         return -1;
     }
 
-    void writeAt(int index1, const P &value) {
+    void writeAt(int index1, const Pixel &value) {
         // warning:: very slow method
         byte color = locate_index_color_of_pixel_in_palette(value);
         byte mm=M, kk=K, tt=T, mask=MASK; // debug
