@@ -328,7 +328,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 ```c++
 template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff, typename S>
-void Canvas<P, CODER>::drawQuad(const sampling::sampler<S> & sampler,
+void Canvas<P, CODER>::drawRect(const sampling::sampler<S> & sampler,
                                 const int left, const int top,
                                 const int right, const int bottom,
                                 int u0, int v0,
@@ -544,7 +544,7 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
 ```c++
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
-void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
+void Canvas<P, CODER>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
                                        const sampling::sampler<S2> & sampler_stroke,
                                        int left, int top,
                                        int right, int bottom,

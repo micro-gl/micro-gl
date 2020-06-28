@@ -33,31 +33,24 @@ using namespace microgl::triangles;
 using namespace microgl::polygons;
 using namespace microgl::shading;
 
-//template<typename P, typename CODER>
 template<typename BITMAP>
 class Canvas {
 public:
-//    using P=typename CODER::Pixel;
     using rect = rect_t<int>;
     struct window_t {
         rect canvas_rect;
         rect clip_rect;
         int index_correction=0;
     };
-
 private:
-
     using index = unsigned int;
     using precision = unsigned char;
     using opacity_t = unsigned char;
     using l64= long long;
-//    using pixel_coder= coder::PixelCoder<P, CODER>;
-//    using canvas= Canvas<P, CODER>;
     using bitmap= BITMAP;
     using canvas= Canvas<bitmap>;
     using Pixel= typename BITMAP::Pixel;
     using pixel_coder= typename BITMAP::Coder;
-//    using bitmap= Bitmap<P, CODER>;
 
     bitmap * _bitmap_canvas = nullptr;
     window_t _window;
@@ -141,27 +134,27 @@ public:
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1, typename number2=number1, typename S1, typename S2>
-    void drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
+    void drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
                          const sampling::sampler<S2> & sampler_stroke,
                          const number1 &left, const number1 &top,
                          const number1 &right, const number1 &bottom,
                          const number1 &radius, const number1 &stroke_size,
-                         opacity_t opacity=255,
-                         const number2 &u0=number2(0), const number2 &v0=number2(1),
-                         const number2 &u1=number2(1), const number2 &v1=number2(0));
+                         opacity_t opacity= 255,
+                         const number2 &u0= number2(0), const number2 &v0= number2(1),
+                         const number2 &u1= number2(1), const number2 &v1= number2(0));
 
 private:
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename S1, typename S2>
-    void drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
+    void drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
                          const sampling::sampler<S2> & sampler_stroke,
                          int left, int top,
                          int right, int bottom,
                          int radius, int stroke_size,
                          l64 u0, l64 v0, l64 u1, l64 v1,
                          precision sub_pixel_precision, precision uv_precision,
-                         opacity_t opacity=255);
+                         opacity_t opacity= 255);
 public:
 
     // Triangle batches
@@ -277,7 +270,7 @@ public:
 private:
     template <typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename S>
-    void drawQuad(const sampling::sampler<S> &sampler,
+    void drawRect(const sampling::sampler<S> &sampler,
                   int left, int top,
                   int right, int bottom,
                   int u0, int v0,
@@ -289,12 +282,12 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
             typename number1=float, typename number2=number1, typename S>
-    void drawQuad(const sampling::sampler<S> &sampler,
+    void drawRect(const sampling::sampler<S> &sampler,
                   number1 left, number1 top,
                   number1 right, number1 bottom,
                   opacity_t opacity = 255,
-                  number2 u0=number2(0), number2 v0=number2(1),
-                  number2 u1=number2(1), number2 v1=number2(0));
+                  number2 u0= number2(0), number2 v0= number2(1),
+                  number2 u1= number2(1), number2 v1= number2(0));
     // Masks
     template <typename number1, typename number2=number1, typename S>
     void drawMask(const masks::chrome_mode &mode,

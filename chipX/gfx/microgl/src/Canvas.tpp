@@ -184,28 +184,30 @@ void Canvas<BITMAP>::drawCircle(const sampling::sampler<S1> & sampler_fill,
                                   const number1 &radius, const number1 &stroke_size, opacity_t opacity,
                                   const number2 &u0, const number2 &v0,
                                   const number2 &u1, const number2 &v1) {
-    drawRoundedQuad<BlendMode, PorterDuff, antialias, number1, number2, S1, S2>(sampler_fill, sampler_stroke,
-                                                      centerX-radius, centerY-radius,
-                                                      centerX+radius, centerY+radius,
-                                                      radius, stroke_size, opacity,
-                                                      u0, v0, u1, v1);
+    drawRoundedRect<BlendMode, PorterDuff, antialias, number1, number2, S1, S2>(sampler_fill, sampler_stroke,
+                                                                                centerX - radius, centerY - radius,
+                                                                                centerX + radius, centerY + radius,
+                                                                                radius, stroke_size, opacity,
+                                                                                u0, v0, u1, v1);
 }
 
 template<typename BITMAP>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S1, typename S2>
-void Canvas<BITMAP>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
-                                       const sampling::sampler<S2> & sampler_stroke,
-                                       const number1 & left, const number1 & top,
-                                       const number1 & right, const number1 & bottom,
-                                       const number1 & radius, const number1 & stroke_size,
-                                       Canvas::opacity_t opacity,
-                                       const number2 & u0, const number2 & v0,
-                                       const number2 & u1, const number2 & v1) {
+void Canvas<BITMAP>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
+                                     const sampling::sampler<S2> & sampler_stroke,
+                                     const number1 & left, const number1 & top,
+                                     const number1 & right, const number1 & bottom,
+                                     const number1 & radius, const number1 & stroke_size,
+                                     Canvas::opacity_t opacity,
+                                     const number2 & u0, const number2 & v0,
+                                     const number2 & u1, const number2 & v1) {
     const precision p = 8; const precision p_uv = 24;
 #define f_p(x) microgl::math::to_fixed((x), p)
 #define f_uv(x) microgl::math::to_fixed((x), p_uv)
-    drawRoundedQuad<BlendMode, PorterDuff, antialias>(sampler_fill, sampler_stroke, f_p(left), f_p(top),f_p(right), f_p(bottom),
-                                                      f_p(radius), f_p(stroke_size), f_uv(u0), f_uv(v0), f_uv(u1), f_uv(v1),
+    drawRoundedRect<BlendMode, PorterDuff, antialias>(sampler_fill, sampler_stroke, f_p(left), f_p(top), f_p(right),
+                                                      f_p(bottom),
+                                                      f_p(radius), f_p(stroke_size), f_uv(u0), f_uv(v0), f_uv(u1),
+                                                      f_uv(v1),
                                                       p, p_uv, opacity);
 #undef f_uv
 #undef f_p
@@ -213,14 +215,14 @@ void Canvas<BITMAP>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
 
 template<typename BITMAP>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
-void Canvas<BITMAP>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
-                                       const sampling::sampler<S2> & sampler_stroke,
-                                       int left, int top,
-                                       int right, int bottom,
-                                       int radius, int stroke_size,
-                                       l64 u0, l64 v0, l64 u1, l64 v1,
-                                       precision sub_pixel_precision, precision uv_p,
-                                       Canvas::opacity_t opacity) {
+void Canvas<BITMAP>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
+                                     const sampling::sampler<S2> & sampler_stroke,
+                                     int left, int top,
+                                     int right, int bottom,
+                                     int radius, int stroke_size,
+                                     l64 u0, l64 v0, l64 u1, l64 v1,
+                                     precision sub_pixel_precision, precision uv_p,
+                                     Canvas::opacity_t opacity) {
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
     const precision p = sub_pixel_precision;
@@ -881,14 +883,14 @@ void Canvas<BITMAP>::drawQuadrilateral(const sampling::sampler<S> & sampler,
 
 template<typename BITMAP>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
-void Canvas<BITMAP>::drawQuad(const sampling::sampler<S> & sampler,
-                                const number1 left, const number1 top,
-                                const number1 right, const number1 bottom,
-                                const opacity_t opacity,
-                                const number2 u0, const number2 v0,
-                                const number2 u1, const number2 v1) {
+void Canvas<BITMAP>::drawRect(const sampling::sampler<S> & sampler,
+                              const number1 left, const number1 top,
+                              const number1 right, const number1 bottom,
+                              opacity_t opacity,
+                              const number2 u0, const number2 v0,
+                              const number2 u1, const number2 v1) {
     const precision p_sub = 4, p_uv = 24;
-    drawQuad<BlendMode, PorterDuff, antialias, S>(sampler,
+    drawRect<BlendMode, PorterDuff, antialias, S > (sampler,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
             microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
             microgl::math::to_fixed(u0, p_uv), microgl::math::to_fixed(v0, p_uv),
@@ -898,14 +900,14 @@ void Canvas<BITMAP>::drawQuad(const sampling::sampler<S> & sampler,
 
 template<typename BITMAP>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename S>
-void Canvas<BITMAP>::drawQuad(const sampling::sampler<S> & sampler,
-                                const int left, const int top,
-                                const int right, const int bottom,
-                                int u0, int v0,
-                                int u1, int v1,
-                                const precision sub_pixel_precision,
-                                const precision uv_precision,
-                                const opacity_t opacity) {
+void Canvas<BITMAP>::drawRect(const sampling::sampler<S> & sampler,
+                              int left, int top,
+                              int right, int bottom,
+                              int u0, int v0,
+                              int u1, int v1,
+                              precision sub_pixel_precision,
+                              precision uv_precision,
+                              opacity_t opacity) {
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
 #define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
@@ -1490,7 +1492,7 @@ void Canvas<BITMAP>::drawText(const char * text, microgl::text::bitmap_font<BITM
         opacity_t opacity) {
     rect old=clipRect(); updateClipRect(left, top, right, bottom);
 //    microgl::sampling::texture<BITMAP, sampling::texture_filter::NearestNeighboor> texture{font._bitmap};
-//    drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(texture,0,0, font._bitmap->width(), font._bitmap->height());return;
+//    drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(texture,0,0, font._bitmap->width(), font._bitmap->height());return;
     unsigned int text_size=0;
     { const char * iter=text; while(*iter++!= '\0' && ++text_size); }
     microgl::text::char_location loc_buffer[text_size];
@@ -1512,7 +1514,7 @@ void Canvas<BITMAP>::drawText(const char * text, microgl::text::bitmap_font<BITM
             v1=((l.character->y+l.character->height)<<UVP)/font._bitmap->height();
             int ll= l.x; ll+=left<<PP; int tt= l.y; tt+=top<<PP;
             int rr= ll + ((l.character->width*s)); int bb= tt + ((l.character->height*s));
-            drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, decltype(texture)>(
+            drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, decltype(texture)>(
                     texture, ll, tt, rr, bb, u0, v0, u1, v1, PP, UVP, opacity
             );
         }

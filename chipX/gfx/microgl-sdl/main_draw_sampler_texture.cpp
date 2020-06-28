@@ -34,7 +34,7 @@ void test() {
     t+=0.1;//-0.01;
     canvas->drawQuad<blendmode::Normal, porterduff::None<>, false, number>(
             tex_uv,
-            t,t, 500, 500);
+            t,t, 400, 400);
 }
 
 void render() {

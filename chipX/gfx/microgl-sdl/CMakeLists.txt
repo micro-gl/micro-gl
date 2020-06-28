@@ -43,7 +43,7 @@ set(SOURCES
 #        main_clear.cpp
 #        main_draw_quad_aa_sub_pixel_experiment.cpp
 #        main_draw_sampler_texture_wrap.cpp
-        main_draw_sampler_texture.cpp
+#        main_draw_sampler_texture.cpp
 #        main_draw_sampler_radial_gradient.cpp
 #        main_draw_sampler_angular_linear_gradient.cpp
 #        main_draw_sampler_line_gradient.cpp
@@ -72,7 +72,7 @@ set(SOURCES
 #        main_avl_tree.cpp
 #        main_draw_bitmap_fonts.cpp
 #        main_draw_bitmap_packed.cpp
-#        main_draw_bitmap_indexed_palette.cpp
+        main_draw_bitmap_indexed_palette.cpp
         libs/stb_image/stb_image.cpp
         src/Resources.cpp data/packed_4.h)
 

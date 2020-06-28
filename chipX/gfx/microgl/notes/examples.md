@@ -1955,7 +1955,7 @@ Canvas<P, CODER>::drawTriangleFast(const Bitmap<P2, CODER2> & bmp,
 // rounded rectangle
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawRoundedQuad(const color_f_t &color,
+void Canvas<P, CODER>::drawRoundedRect(const color_f_t &color,
                                        int left, int top,
                                        int right, int bottom, int radius,
                                        precision sub_pixel_precision,  Canvas::opacity_t opacity) {
@@ -2149,7 +2149,7 @@ void Canvas<P, CODER>::drawCircleOLD(const color_f_t & color,
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
-void Canvas<P, CODER>::drawRoundedQuad(const sampling::sampler<S1> & sampler_fill,
+void Canvas<P, CODER>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
                                        const sampling::sampler<S2> & sampler_stroke,
                                        int left, int top,
                                        int right, int bottom,

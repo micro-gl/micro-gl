@@ -144,8 +144,7 @@ namespace microgl {
             }
 
         private:
-            color_t _border_color;// {0,0,0,(1<<Bitmap::alpha_bits())-1};
-//            Bitmap<P, CODER> * _bmp= nullptr;
+            color_t _border_color {0,0,0,(1<<Bitmap::Coder::alpha_bits())-1};
             Bitmap * _bmp= nullptr;
         };
 

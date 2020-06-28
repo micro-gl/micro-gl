@@ -4,12 +4,10 @@
 #include <microgl/crpt.h>
 #include <microgl/PixelCoder.h>
 
-//template <typename IMPL, typename P, typename CODER>
 template <typename IMPL, typename CODER, typename buffer_element_type=typename CODER::Pixel>
 class base_bitmap : public crpt<IMPL> {
 public:
     using Pixel=typename CODER::Pixel;
-//    using Pixel=Pixel_Type;//typename CODER::Pixel;
     using Coder=CODER;
 protected:
     int _width = 0, _height = 0;
