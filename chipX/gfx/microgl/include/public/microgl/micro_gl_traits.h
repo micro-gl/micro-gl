@@ -19,6 +19,11 @@ namespace microgl {
             return is_same<float, number>::value || is_same<double, number>::value || is_same<long double , number>::value;
         }
 
+        template<bool B, class T, class F>
+        struct conditional { typedef T type; };
+
+        template<class T, class F>
+        struct conditional<false, T, F> { typedef F type; };
     }
 
 }

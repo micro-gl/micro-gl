@@ -181,6 +181,15 @@ namespace microgl {
             return res;
         }
 
+        bool isIdentity() const {
+            number zero=number{0}, one{1};
+            return (
+                    this->_data[0]==one   && this->_data[1]==zero  && this->_data[2]==zero  && this->_data[3]==zero  &&
+                    this->_data[4]==zero  && this->_data[5]==one   && this->_data[6]==zero  && this->_data[7]==zero  &&
+                    this->_data[8]==zero  && this->_data[9]==zero  && this->_data[10]==one  && this->_data[11]==zero &&
+                    this->_data[12]==zero && this->_data[13]==zero && this->_data[14]==zero && this->_data[15]==one);
+        }
+
     };
 
 }

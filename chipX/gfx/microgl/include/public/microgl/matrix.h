@@ -2,16 +2,16 @@
 
 namespace microgl {
     // this is a column major matrix
-    template <typename T, unsigned W, unsigned H>
+    template <typename number, unsigned W, unsigned H>
     class matrix {
     protected:
         using index = unsigned;
-        using matrix_ref = matrix<T, W, H> &;
-        using const_matrix_ref = const matrix<T, W, H> &;
-        using type_ref = T &;
-        using const_type_ref = const T &;
+        using matrix_ref = matrix<number, W, H> &;
+        using const_matrix_ref = const matrix<number, W, H> &;
+        using type_ref = number &;
+        using const_type_ref = const number &;
 
-        T _data[W * H];
+        number _data[W * H];
         static const index _cols = W;
         static const index _rows = H;
         static const index _size = W * H;
@@ -19,7 +19,7 @@ namespace microgl {
     public:
         explicit matrix() = default;
 
-        matrix(const std::initializer_list<T> &list) {
+        matrix(const std::initializer_list<number> &list) {
             index ix = 0;
             for(auto it = list.begin(); it!=list.end() && ix < size(); it++)
                 _data[ix++] = *it;
@@ -45,11 +45,11 @@ namespace microgl {
 
         template<unsigned A, unsigned B, unsigned C>
         static
-        matrix<T, C, B> multiply(
-                        const matrix<T, A, B> & m1,
-                        const matrix<T, C, A> & m2) {
+        matrix<number, C, B> multiply(
+                        const matrix<number, A, B> & m1,
+                        const matrix<number, C, A> & m2) {
 
-            matrix<T, C, B> result;
+            matrix<number, C, B> result;
             // I use iterative indices to avoid multiplications
             index m1_row_start_index = 0;
             index result_row_start_index = 0;
@@ -58,7 +58,7 @@ namespace microgl {
 
                 for(index col = 0; col < C; col++) {
 
-                    T c = 0;
+                    number c = 0;
                     index ix_m = 0;
 
                     for(index ix = 0; ix < A; ix++) {
@@ -86,13 +86,13 @@ namespace microgl {
         }
 
         template<unsigned A>
-        matrix<T, A, H> operator*(const matrix<T, A, W> & mat) const {
+        matrix<number, A, H> operator*(const matrix<number, A, W> & mat) const {
             auto result = multiply(*this, mat);
             return result;
         };
 
         template<unsigned A>
-        matrix<T, A, H> operator*=(const matrix<T, A, W> & mat) {
+        matrix<number, A, H> operator*=(const matrix<number, A, W> & mat) {
             (*this) = multiply(*this, mat);
             return *this;
         };
@@ -142,7 +142,7 @@ namespace microgl {
             return true;
         };
 
-        void setColumn(const index column_index, const T (&val)[H]) {
+        void setColumn(const index column_index, const number (&val)[H]) {
             index ind = column_index;
             for (index ix = 0; ix < H; ++ix) {
                 _data[ind] = val[ix];
@@ -150,15 +150,15 @@ namespace microgl {
             }
         }
 
-        void setRow(const index row_index, const T (&val)[W]) {
+        void setRow(const index row_index, const number (&val)[W]) {
             index ind = row_index*W;
             for (index ix = 0; ix < W; ++ix) {
                 _data[ind+ix] = val[ix];
             }
         }
 
-        matrix<T, H, W> transpose() {
-            matrix<T, H, W> result{};
+        matrix<number, H, W> transpose() {
+            matrix<number, H, W> result{};
 
             for (index row = 0; row < H; ++row) {
                 for (index col = 0; col < W; ++col) {

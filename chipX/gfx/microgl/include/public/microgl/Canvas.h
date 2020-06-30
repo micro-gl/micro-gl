@@ -33,27 +33,55 @@ using namespace microgl::triangles;
 using namespace microgl::polygons;
 using namespace microgl::shading;
 
-template<typename BITMAP>
+constexpr bool is_set(const uint8_t ops, const uint8_t feature)  {
+    return ops & feature;
+}
+
+#define CANVAS_OPT_2d_raster_USE_BIG_INT uint8_t(0b00000001)
+#define CANVAS_OPT_2d_raster_USE_DIVISION uint8_t(0b00000010)
+#define CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS uint8_t(0b00000100)
+#define CANVAS_OPT_2d_raster_FORCE_32_BIT CANVAS_OPT_2d_raster_USE_DIVISION
+#define CANVAS_OPT_default CANVAS_OPT_2d_raster_USE_BIG_INT | \
+            CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS
+
+template<typename BITMAP, uint8_t options=CANVAS_OPT_default>
 class Canvas {
 public:
+    static constexpr bool op_CANVAS_OPT_2d_raster_FORCE_32_BIT=
+            is_set(options, CANVAS_OPT_2d_raster_FORCE_32_BIT);
+    static constexpr bool op_CANVAS_OPT_2d_raster_USE_BIG_INT=
+            !op_CANVAS_OPT_2d_raster_FORCE_32_BIT &&
+            is_set(options, CANVAS_OPT_2d_raster_USE_BIG_INT);
+
+    using bitmap= BITMAP;
     using rect = rect_t<int>;
     struct window_t {
         rect canvas_rect;
         rect clip_rect;
         int index_correction=0;
     };
+
+    struct render_options_t {
+        uint8_t _2d_raster_bits_sub_pixel= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 8 : 0;
+        uint8_t _2d_raster_bits_uv= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 15 : 10;
+        uint8_t bits_sub_pixel_3D_rasterizer= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 8 : 0;
+    };
+
 private:
     using index = unsigned int;
     using precision = unsigned char;
     using opacity_t = unsigned char;
     using l64= long long;
-    using bitmap= BITMAP;
-    using canvas= Canvas<bitmap>;
+    using canvas= Canvas<bitmap, options>;
     using Pixel= typename BITMAP::Pixel;
     using pixel_coder= typename BITMAP::Coder;
+    // rasterizer integers
+    using rint_big = l64;
+    using rint =typename microgl::traits::conditional<op_CANVAS_OPT_2d_raster_USE_BIG_INT, rint_big, int>::type;
 
     bitmap * _bitmap_canvas = nullptr;
     window_t _window;
+    render_options_t _options;
 public:
     explicit Canvas(bitmap * $bmp);
     Canvas(int width, int height);
@@ -90,6 +118,10 @@ public:
 
     const rect & canvasWindowRect() const {
         return _window.canvas_rect;
+    }
+
+    render_options_t & renderingOptions() {
+        return _options;
     }
 
     int width() const;
@@ -288,6 +320,18 @@ public:
                   opacity_t opacity = 255,
                   number2 u0= number2(0), number2 v0= number2(1),
                   number2 u1= number2(1), number2 v1= number2(0));
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
+            typename number1=float, typename number2=number1, typename S>
+    void drawRect(const sampling::sampler<S> &sampler,
+                  const matrix_3x3<number1> &transform,
+                  number1 left, number1 top,
+                  number1 right, number1 bottom,
+                  opacity_t opacity = 255,
+                  number2 u0= number2(0), number2 v0= number2(1),
+                  number2 u1= number2(1), number2 v1= number2(0));
+
     // Masks
     template <typename number1, typename number2=number1, typename S>
     void drawMask(const masks::chrome_mode &mode,

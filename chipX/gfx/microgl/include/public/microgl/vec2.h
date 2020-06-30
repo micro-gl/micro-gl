@@ -53,11 +53,11 @@ namespace microgl {
         vec2 operator*(const number & val) const {
             return {this->x*val, this->y*val};
         }
-        vec2 operator*(const signed & val) const {
-            return {this->x*val, this->y*val};
-        }
+//        vec2 operator*(const signed & val) const {
+//            return {this->x*val, this->y*val};
+//        }
 
-        vec2 operator<<(const int & a) const {
+        vec2 operator<<(const signed & a) const {
             return vec2<number>{this->x*(1<<a), this->y*(1<<a)};
         }
 

@@ -1,93 +1,91 @@
 
-#include <microgl/Canvas.h>
-
-template<typename BITMAP>
-Canvas<BITMAP>::Canvas(bitmap *$bmp) : _bitmap_canvas($bmp) {
+template<typename BITMAP, uint8_t options>
+Canvas<BITMAP, options>::Canvas(bitmap *$bmp) : _bitmap_canvas($bmp) {
     updateCanvasWindow(0, 0, $bmp);
     updateClipRect(0, 0, $bmp->width(), $bmp->height());
 }
 
-template<typename BITMAP>
-Canvas<BITMAP>::Canvas(int width, int height) :
+template<typename BITMAP, uint8_t options>
+Canvas<BITMAP, options>::Canvas(int width, int height) :
             canvas(new bitmap(width, height)) {
 }
 
-template<typename BITMAP>
-auto Canvas<BITMAP>::coder() const -> const pixel_coder & {
+template<typename BITMAP, uint8_t options>
+auto Canvas<BITMAP, options>::coder() const -> const pixel_coder & {
     return _bitmap_canvas->coder();
 }
 
-template<typename BITMAP>
-inline BITMAP *Canvas<BITMAP>::bitmapCanvas() const {
+template<typename BITMAP, uint8_t options>
+inline BITMAP *Canvas<BITMAP, options>::bitmapCanvas() const {
     return _bitmap_canvas;
 }
 
-template<typename BITMAP>
-unsigned int Canvas<BITMAP>::sizeofPixel() const {
+template<typename BITMAP, uint8_t options>
+unsigned int Canvas<BITMAP, options>::sizeofPixel() const {
     return sizeof(Pixel{});
 }
 
-template<typename BITMAP>
-auto Canvas<BITMAP>::getPixel(int x, int y) const -> Pixel & {
+template<typename BITMAP, uint8_t options>
+auto Canvas<BITMAP, options>::getPixel(int x, int y) const -> Pixel & {
     // this is not good for high performance loop
     return _bitmap_canvas->pixelAt(x, y);
 }
 
-template<typename BITMAP>
-auto Canvas<BITMAP>::getPixel(int index) const -> Pixel & {
+template<typename BITMAP, uint8_t options>
+auto Canvas<BITMAP, options>::getPixel(int index) const -> Pixel & {
     // this is better for high performance loop
     return _bitmap_canvas->pixelAt(index);
 }
 
-template<typename BITMAP>
-void Canvas<BITMAP>::getPixelColor(int x, int y, color_t & output)  const {
+template<typename BITMAP, uint8_t options>
+void Canvas<BITMAP, options>::getPixelColor(int x, int y, color_t & output)  const {
     this->_bitmap_canvas->decode(x, y, output);
 }
 
-template<typename BITMAP>
-void Canvas<BITMAP>::getPixelColor(int index, color_t & output)  const {
+template<typename BITMAP, uint8_t options>
+void Canvas<BITMAP, options>::getPixelColor(int index, color_t & output)  const {
     this->_bitmap_canvas->decode(index - _window.index_correction, output);
 }
 
-template<typename BITMAP>
-int Canvas<BITMAP>::width() const {
+template<typename BITMAP, uint8_t options>
+int Canvas<BITMAP, options>::width() const {
     return _window.canvas_rect.width();
 }
 
-template<typename BITMAP>
-int Canvas<BITMAP>::height() const {
+template<typename BITMAP, uint8_t options>
+int Canvas<BITMAP, options>::height() const {
     return _window.canvas_rect.height();
 }
 
-template<typename BITMAP>
-auto Canvas<BITMAP>::pixels()  const -> Pixel *{
+template<typename BITMAP, uint8_t options>
+auto Canvas<BITMAP, options>::pixels()  const -> Pixel *{
     return _bitmap_canvas->data();
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template <typename number>
-void Canvas<BITMAP>::clear(const intensity<number> &color) {
+void Canvas<BITMAP, options>::clear(const intensity<number> &color) {
     Pixel output;
     _bitmap_canvas->coder().encode(color, output);
     _bitmap_canvas->fill(output);
 }
 
-template<typename BITMAP>
-void Canvas<BITMAP>::clear(const color_t &color) {
+template<typename BITMAP, uint8_t options>
+void Canvas<BITMAP, options>::clear(const color_t &color) {
     Pixel output;
     _bitmap_canvas->coder().encode(color, output);
     _bitmap_canvas->fill(output);
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff>
-inline void Canvas<BITMAP>::blendColor(const color_t &val, int x, int y, opacity_t opacity) {
+inline void Canvas<BITMAP, options>::blendColor(const color_t &val, int x, int y, opacity_t opacity) {
     blendColor<BlendMode, PorterDuff>(val, y*width() + x, opacity);
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff>
-inline void Canvas<BITMAP>::blendColor(const color_t &val, int index, opacity_t opacity) {
+inline void Canvas<BITMAP, options>::blendColor(const color_t &val, int index, opacity_t opacity) {
     // correct index position when window is not at the (0,0) costs one subtraction.
     // we use it for sampling the backdrop if needed and for writing the output pixel
     index -= _window.index_correction;
@@ -163,22 +161,22 @@ inline void Canvas<BITMAP>::blendColor(const color_t &val, int index, opacity_t 
     //drawPixel(output, index);
 }
 
-template<typename BITMAP>
-void Canvas<BITMAP>::drawPixel(const Pixel & val, int x, int y) {
+template<typename BITMAP, uint8_t options>
+void Canvas<BITMAP, options>::drawPixel(const Pixel & val, int x, int y) {
     _bitmap_canvas->writeAt(y*width()+x, val);
 }
 
-template<typename BITMAP>
-inline void Canvas<BITMAP>::drawPixel(const Pixel & val, int index) {
+template<typename BITMAP, uint8_t options>
+inline void Canvas<BITMAP, options>::drawPixel(const Pixel & val, int index) {
     _bitmap_canvas->writeAt(index - _window.index_correction, val);
 }
 
 // fast common graphics shapes like circles and rounded rectangles
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias,
         typename number1, typename number2, typename S1, typename S2>
-void Canvas<BITMAP>::drawCircle(const sampling::sampler<S1> & sampler_fill,
+void Canvas<BITMAP, options>::drawCircle(const sampling::sampler<S1> & sampler_fill,
                                   const sampling::sampler<S2> & sampler_stroke,
                                   const number1 &centerX, const number1 &centerY,
                                   const number1 &radius, const number1 &stroke_size, opacity_t opacity,
@@ -191,9 +189,9 @@ void Canvas<BITMAP>::drawCircle(const sampling::sampler<S1> & sampler_fill,
                                                                                 u0, v0, u1, v1);
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S1, typename S2>
-void Canvas<BITMAP>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
+void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
                                      const sampling::sampler<S2> & sampler_stroke,
                                      const number1 & left, const number1 & top,
                                      const number1 & right, const number1 & bottom,
@@ -213,9 +211,9 @@ void Canvas<BITMAP>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
 #undef f_p
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
-void Canvas<BITMAP>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
+void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
                                      const sampling::sampler<S2> & sampler_stroke,
                                      int left, int top,
                                      int right, int bottom,
@@ -330,9 +328,9 @@ void Canvas<BITMAP>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
 
 // Triangles
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
-void Canvas<BITMAP>::drawTriangles(const sampling::sampler<S> &sampler,
+void Canvas<BITMAP, options>::drawTriangles(const sampling::sampler<S> &sampler,
                                      const matrix_3x3<number1> &transform,
                                      const vec2<number1> *vertices,
                                      const vec2<number2> *uvs,
@@ -344,8 +342,8 @@ void Canvas<BITMAP>::drawTriangles(const sampling::sampler<S> &sampler,
                                      const number2 &u0, const number2 &v0,
                                      const number2 &u1, const number2 &v1) {
 #define f microgl::math::to_fixed
-    const precision p = 8;
-    const precision uv_p = 16;
+    const precision p = renderingOptions()._2d_raster_bits_sub_pixel;
+    const precision uv_p = renderingOptions()._2d_raster_bits_uv;
     vec2<number1> min, max;
     if(!uvs) { // if we don't have per-vertex uv, then let's compute
         min.x=max.x=vertices[0].x;
@@ -383,10 +381,10 @@ void Canvas<BITMAP>::drawTriangles(const sampling::sampler<S> &sampler,
 #undef f
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename impl, typename vertex_attr, typename varying, typename number>
-void Canvas<BITMAP>::drawTriangles(shader_base<impl, vertex_attr, varying, number> &shader,
+void Canvas<BITMAP, options>::drawTriangles(shader_base<impl, vertex_attr, varying, number> &shader,
                                      int viewport_width, int viewport_height,
                                      const vertex_attr *vertex_buffer,
                                      const index *indices,
@@ -406,13 +404,11 @@ void Canvas<BITMAP>::drawTriangles(shader_base<impl, vertex_attr, varying, numbe
                       vertex_buffer[third_index],
                       opacity, culling, depth_buffer);
           });
-
-//    if(antialias) fxaa(10,10,width()-10,height()-10);
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
-void Canvas<BITMAP>::drawTrianglesWireframe(const color_t &color,
+void Canvas<BITMAP, options>::drawTrianglesWireframe(const color_t &color,
                                               const matrix_3x3<number> &transform,
                                               const vec2<number> *vertices,
                                               const index *indices,
@@ -426,9 +422,9 @@ void Canvas<BITMAP>::drawTrianglesWireframe(const color_t &color,
               });
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, typename number>
-void Canvas<BITMAP>::drawTriangleWireframe(const color_t &color,
+void Canvas<BITMAP, options>::drawTriangleWireframe(const color_t &color,
                                              const vec2<number> &p0,
                                              const vec2<number> &p1,
                                              const vec2<number> &p2,
@@ -438,185 +434,184 @@ void Canvas<BITMAP>::drawTriangleWireframe(const color_t &color,
     drawWuLine(color, p2.x, p2.y, p0.x, p0.y, opacity);
 }
 
-template<typename BITMAP>
+
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, typename S>
-void Canvas<BITMAP>::drawTriangle(const sampling::sampler<S> &sampler,
-                                    int v0_x, int v0_y, int u0, int v0, int q0,
-                                    int v1_x, int v1_y, int u1, int v1, int q1,
-                                    int v2_x, int v2_y, int u2, int v2, int q2,
-                                    const opacity_t opacity, const precision sub_pixel_precision,
-                                    const precision uv_precision, bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
+void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
+                                  int v0_x, int v0_y, int u0, int v0, int q0,
+                                  int v1_x, int v1_y, int u1, int v1, int q1,
+                                  int v2_x, int v2_y, int u2, int v2, int q2,
+                                  const opacity_t opacity, const precision sub_pixel_precision,
+                                  const precision uv_precision, bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
+    constexpr precision precision_one_over_area=15;
+    constexpr precision P_AA = 16;
+    constexpr bool divide=is_set(options, CANVAS_OPT_2d_raster_USE_DIVISION); // compile time flag
+    constexpr bool avoid_overflows=is_set(options, CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS); // compile time flag
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
-    l64 area = functions::orient2d(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
+    rint area = functions::orient2d<int, rint_big>(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
     if(area==0) return;
     if(area<0) { // convert CCW to CW triangle
         area=-area;
-        functions::swap(v1_x, v2_x);
-        functions::swap(v1_y, v2_y);
-        functions::swap(u1, u2);
-        functions::swap(v1, v2);
-        functions::swap(q1, q2);
-        functions::swap(aa_first_edge, aa_third_edge);
+        functions::swap(v1_x, v2_x); functions::swap(v1_y, v2_y);
+        functions::swap(u1, u2); functions::swap(v1, v2);
+        functions::swap(q1, q2); functions::swap(aa_first_edge, aa_third_edge);
+    }
+    precision bits_used=0;
+    { while (rint(area)>rint(rint(1)<<(bits_used++))) {}; }
+    const precision LL = bits_used+precision_one_over_area;//MAX_PREC - (sub_pixel_precision + BITS_UV_COORDS+10);
+    if(avoid_overflows) {
+        precision size_of_int_bits = sizeof(rint)<<3;
+        const bool first_test = bits_used+uv_precision <= size_of_int_bits;
+        if(!first_test) return;
+        if(!divide) {
+            precision size_of_big_int_bits = sizeof(rint_big)<<3;
+            const bool second_test = bits_used+uv_precision-sub_pixel_precision+precision_one_over_area <= size_of_big_int_bits;
+            if(!second_test) return;
+        }
     }
     // bounding box
 #define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
 #define floor_fixed(val, bits) ((val)>>bits)
     rect bbox;
-    l64 mask = ~((l64(1)<<sub_pixel_precision)-1);
-    bbox.left = floor_fixed(functions::min<l64>(v0_x, v1_x, v2_x)&mask, sub_pixel_precision);
-    bbox.top = floor_fixed(functions::min<l64>(v0_y, v1_y, v2_y)&mask, sub_pixel_precision);
-    bbox.right = ceil_fixed(functions::max<l64>(v0_x, v1_x, v2_x), sub_pixel_precision);
-    bbox.bottom = ceil_fixed(functions::max<l64>(v0_y, v1_y, v2_y), sub_pixel_precision);
+    rint mask = ~((rint(1)<<sub_pixel_precision)-1);
+    bbox.left = floor_fixed(functions::min<rint>(v0_x, v1_x, v2_x)&mask, sub_pixel_precision);
+    bbox.top = floor_fixed(functions::min<rint>(v0_y, v1_y, v2_y)&mask, sub_pixel_precision);
+    bbox.right = ceil_fixed(functions::max<rint>(v0_x, v1_x, v2_x), sub_pixel_precision);
+    bbox.bottom = ceil_fixed(functions::max<rint>(v0_y, v1_y, v2_y), sub_pixel_precision);
     // clipping
     bbox = bbox.intersect(effectiveRect);
 #undef ceil_fixed
 #undef floor_fixed
-//bbox.right=319;
     // anti-alias pad for distance calculation
-    constexpr int max_opacity_value= 255;//bitmap::maxNativeAlphaChannelValue();
     precision bits_distance = 0;
     precision bits_distance_complement = 8;
     // max distance to consider in canvas space
     unsigned int max_distance_canvas_space_anti_alias=0;
     // max distance to consider in scaled space
     unsigned int max_distance_scaled_space_anti_alias=0;
-    const precision PREC_DIST = 16;
     bool aa_all_edges = false;
     if(antialias) {
         aa_all_edges = aa_first_edge && aa_second_edge && aa_third_edge;
-        bits_distance = 0;
+        bits_distance = 6;
         bits_distance_complement = 8 - bits_distance;
         max_distance_canvas_space_anti_alias = 1 << bits_distance;
-        max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias<<PREC_DIST;
+        max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias << P_AA;
     }
     // fill rules adjustments
     triangles::top_left_t top_left =
-            triangles::classifyTopLeftEdges(false, v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
-    int bias_w0 = top_left.first  ? 0 : -(1);
-    int bias_w1 = top_left.second ? 0 : -(1);
-    int bias_w2 = top_left.third  ? 0 : -(1);
+            triangles::classifyTopLeftEdges<rint>(false, v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
+    int bias_w0=top_left.first?0:-1, bias_w1=top_left.second?0:-1, bias_w2=top_left.third?0:-1;
     // Barycentric coordinates at minX/minY corner
-    vec2<l64> p = { bbox.left, bbox.top };
-    vec2<l64> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
-    l64 half= (l64(1)<<(sub_pixel_precision))>>1;
-    p_fixed = p_fixed + vec2<l64> {half, half}; // we sample at the center
-    // this can produce a 2P bits number if the points form a a perpendicular triangle
+    vec2<rint> p = { bbox.left, bbox.top };
+    vec2<rint> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
+    p_fixed = p_fixed + vec2<rint> {(rint(1)<<(sub_pixel_precision))>>1, (rint(1)<<(sub_pixel_precision))>>1}; // we sample at the center
+    // this can produce a 2B+2P bits number if the points form a a perpendicular triangle
     // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
-    // I still need to exaplin to myself why it works so well :)
-    l64 w0_row = functions::orient2d(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, 0) + bias_w0;
-    l64 w1_row = functions::orient2d(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) + bias_w1;
-    l64 w2_row = functions::orient2d(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) + bias_w2;
-    w0_row = w0_row>>sub_pixel_precision; w1_row = w1_row>>sub_pixel_precision; w2_row = w2_row>>sub_pixel_precision;
-    // sub_pixel_precision;
-    const precision BITS_UV_COORDS = uv_precision;
-    const precision PP = sub_pixel_precision;
-    uint8_t MAX_PREC = 63;
-    uint8_t LL = MAX_PREC - (sub_pixel_precision + BITS_UV_COORDS);
-    uint64_t ONE = ((uint64_t)1)<<LL;
-    uint64_t one_area = (ONE) / area;
+    // I still need to exaplin to myself why it works so well :) compress down to (2B+P) after
+    rint w0_row = rint((functions::orient2d<int, rint_big>(v0_x,v0_y, v1_x,v1_y, p_fixed.x,p_fixed.y, 0) + bias_w0)>>sub_pixel_precision);
+    rint w1_row = rint((functions::orient2d<int, rint_big>(v1_x,v1_y, v2_x,v2_y, p_fixed.x,p_fixed.y, 0) + bias_w1)>>sub_pixel_precision);
+    rint w2_row = rint((functions::orient2d<int, rint_big>(v2_x,v2_y, v0_x,v0_y, p_fixed.x,p_fixed.y, 0) + bias_w2)>>sub_pixel_precision);
+    rint A01 = (v0_y - v1_y), A12 = (v1_y - v2_y), A20 = (v2_y - v0_y);
+    rint B01 = (v1_x - v0_x), B12 = (v2_x - v1_x), B20 = (v0_x - v2_x);
+    // once we divide, then one_area occupies at most precision_one_over_area=12 bits, this is
+    // important for not overflowing when multiplying it with another integer we know, it can only
+    // add up to 12+1=13 bits to the result,  this is the trick for big integers
+    rint one_area = (rint_big(1)<<LL) / rint_big(area);
     // Triangle setup
     // this needs at least (P+1) bits, since the delta is always <= length
-    l64 A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
-    l64 A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
-    l64 A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
     // AA, 2A/L = h, therefore the division produces a P bit number
-    l64 w0_row_h=0, w1_row_h=0, w2_row_h=0;
-    l64 A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
-    if(antialias) {
-        // lengths of edges, produces a P+1 bits number
+    rint w0_row_h=0, w1_row_h=0, w2_row_h=0;
+    rint A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
+    if(antialias) { // lengths of edges, produces a P+1 bits number
         unsigned int length_w0 = microgl::math::distance(v0_x, v0_y, v1_x, v1_y);
         unsigned int length_w1 = microgl::math::distance(v1_x, v1_y, v2_x, v2_y);
         unsigned int length_w2 = microgl::math::distance(v0_x, v0_y, v2_x, v2_y);
-        A01_h = (((l64)(v0_y - v1_y))<<PREC_DIST)/length_w0, B01_h = (((l64)(v1_x - v0_x))<<PREC_DIST)/length_w0;
-        A12_h = (((l64)(v1_y - v2_y))<<PREC_DIST)/length_w1, B12_h = (((l64)(v2_x - v1_x))<<PREC_DIST)/length_w1;
-        A20_h = (((l64)(v2_y - v0_y))<<PREC_DIST)/length_w2, B20_h = (((l64)(v0_x - v2_x))<<PREC_DIST)/length_w2;
-        w0_row_h = (((l64)(w0_row))<<PREC_DIST)/length_w0;
-        w1_row_h = (((l64)(w1_row))<<PREC_DIST)/length_w1;
-        w2_row_h = (((l64)(w2_row))<<PREC_DIST)/length_w2;
+        A01_h = (((rint_big)(v0_y - v1_y)) << P_AA) / length_w0, B01_h = (((rint_big)(v1_x - v0_x)) << P_AA) / length_w0;
+        A12_h = (((rint_big)(v1_y - v2_y)) << P_AA) / length_w1, B12_h = (((rint_big)(v2_x - v1_x)) << P_AA) / length_w1;
+        A20_h = (((rint_big)(v2_y - v0_y)) << P_AA) / length_w2, B20_h = (((rint_big)(v0_x - v2_x)) << P_AA) / length_w2;
+        w0_row_h = (((rint_big)(w0_row)) << P_AA) / length_w0;
+        w1_row_h = (((rint_big)(w1_row)) << P_AA) / length_w1;
+        w2_row_h = (((rint_big)(w2_row)) << P_AA) / length_w2;
     }
     const int pitch= width();
     int index = p.y * pitch;
-    for (p.y = bbox.top; p.y <= bbox.bottom; p.y++) {
-        l64 w0 = w0_row;
-        l64 w1 = w1_row;
-        l64 w2 = w2_row;
-        l64 w0_h=0,w1_h=0,w2_h=0;
+    for (p.y = bbox.top; p.y <= bbox.bottom; p.y++, index+=pitch) {
+        rint w0=w0_row, w1=w1_row, w2=w2_row, w0_h=0, w1_h=0, w2_h=0;
         if(antialias) {
-            w0_h = w0_row_h;
-            w1_h = w1_row_h;
-            w2_h = w2_row_h;
+            w0_h=w0_row_h; w1_h=w1_row_h; w2_h=w2_row_h;
         }
         for (p.x = bbox.left; p.x <= bbox.right; p.x++) {
             bool should_sample=false;
             uint8_t blend=opacity;
             if((w0|w1|w2)>=0) should_sample=true;
             else if(antialias) { // cheap AA based on SDF
-                const l64 distance = functions::min(w0_h, w1_h, w2_h);
-                l64 delta = distance+max_distance_scaled_space_anti_alias;
-                bool perform_aa = delta>=0 && (aa_all_edges || ((distance == w0_h) && aa_first_edge) ||
-                                               ((distance == w1_h) && aa_second_edge) ||
-                                               ((distance == w2_h) && aa_third_edge));
+                const rint distance = functions::min<rint>((w0_h), (w1_h), (w2_h));
+                // delta is at most 16 bits
+                rint delta = distance+max_distance_scaled_space_anti_alias;
+                bool perform_aa = delta>=0 && (aa_all_edges || ((distance == (w0_h)) && aa_first_edge) ||
+                                               ((distance == (w1_h)) && aa_second_edge) ||
+                                               ((distance == (w2_h)) && aa_third_edge));
                 if (perform_aa) {
-                    should_sample = true;
-                    blend = functions::clamp<int>(((uint64_t)(delta << bits_distance_complement))>>PREC_DIST,0, 255);
-                    if (opacity < max_opacity_value) blend = (blend * opacity) >> 8; // * 257>>16 - blinn method
+                    should_sample = true; // 16+8=24 bits
+                    blend = functions::clamp<rint>(((delta << bits_distance_complement))>>P_AA, 0, 255);
+                    blend = (blend * opacity) >> 8; // * 257>>16 - blinn method
                 }
             }
-
             if(should_sample) {
-                int u_i, v_i;
-                auto u_fixed = ((w0*u2)>>PP) + ((w1*u0)>>PP) + ((w2*u1)>>PP);
-                auto v_fixed = ((w0*v2)>>PP) + ((w1*v0)>>PP) + ((w2*v1)>>PP);
+                rint u_i, v_i;
+                // I compress down the weights to save some bits, I needed sub-pixel precision for inclusion tests
+                // this will overflow for 32 bit integer if bits are not chosen carefully
+                rint u_fixed = (w0*rint(u2) + w1*rint(u0) + w2*rint(u1))>>sub_pixel_precision; // bits=(bits_area_used+uv_precision) - sub_pixel_precision
+                rint v_fixed = (w0*rint(v2) + w1*rint(v0) + w2*rint(v1))>>sub_pixel_precision;
                 if(perspective_correct) {
-                    auto q_fixed = ((w0*q2)>>PP) + ((w1*q0)>>PP) + ((w2*q1)>>PP);
-                    u_i = (u_fixed<<BITS_UV_COORDS)/q_fixed;
-                    v_i = (v_fixed<<BITS_UV_COORDS)/q_fixed;
+                    rint q_fixed = ((w0*rint(q2))>>sub_pixel_precision) +
+                            ((w1*rint(q0))>>sub_pixel_precision) + ((w2*rint(q1))>>sub_pixel_precision);
+                    u_i = (u_fixed<<uv_precision)/q_fixed; // big int ??
+                    v_i = (v_fixed<<uv_precision)/q_fixed;
                 } else {
-                    // stabler rasterizer, that will not overflow fast
-                    //u_i = (u_fixed)/uint64_t(area>>PP);
-                    //v_i = (v_fixed)/uint64_t(area>>PP);
-                    u_i = (u_fixed*one_area)>>(LL-PP);
-                    v_i = (v_fixed*one_area)>>(LL-PP);
+                    if(divide) { // division is stabler and is un-avoidable most of the time for pure 32 bit mode
+                        u_i = (u_fixed)/(area>>sub_pixel_precision);
+                        v_i = (v_fixed)/(area>>sub_pixel_precision);
+                    } else { // we use a temporary 64 bit and one_area to mimic division, this is FASTER even in 32 bits mode.
+                        u_i = rint_big(rint_big(u_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
+                        v_i = rint_big(rint_big(v_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
+                    }
                 }
                 if(antialias) {
-                    u_i = functions::clamp<int>(u_i, 0, 1<<BITS_UV_COORDS);
-                    v_i = functions::clamp<int>(v_i, 0, 1<<BITS_UV_COORDS);
+                    u_i = functions::clamp<rint>(u_i, 0, (rint(1)<<uv_precision));
+                    v_i = functions::clamp<rint>(v_i, 0, (rint(1)<<uv_precision));
                 }
                 color_t col_bmp;
-                sampler.sample(u_i, v_i, BITS_UV_COORDS, col_bmp);
+                sampler.sample(u_i, v_i, uv_precision, col_bmp);
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, blend);
             }
-
-            w0 += A01;
-            w1 += A12;
-            w2 += A20;
+            w0+=A01; w1+=A12; w2+=A20;
             if(antialias) {
-                w0_h += A01_h;
-                w1_h += A12_h;
-                w2_h += A20_h;
+                w0_h+=A01_h; w1_h+=A12_h; w2_h+=A20_h;
             }
         }
-        w0_row += B01;
-        w1_row += B12;
-        w2_row += B20;
+        w0_row+=B01; w1_row+=B12; w2_row+=B20;
         if(antialias) {
-            w0_row_h += B01_h;
-            w1_row_h += B12_h;
-            w2_row_h += B20_h;
+            w0_row_h+=B01_h; w1_row_h+=B12_h; w2_row_h+=B20_h;
         }
-        index += pitch;
     }
 }
 
-template<typename BITMAP>
+/*
+
+
+*/
+
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
-void Canvas<BITMAP>::drawTriangle(const sampling::sampler<S> & sampler,
+void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> & sampler,
                                     const number1 &v0_x, const number1 &v0_y, const number2 &u0, const number2 &v0,
                                     const number1 &v1_x, const number1 &v1_y, const number2 &u1, const number2 &v1,
                                     const number1 &v2_x, const number1 &v2_y, const number2 &u2, const number2 &v2,
                                     const opacity_t opacity, bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    const precision prec_pixel = 4, prec_uv = 16; const number2 one= number2(1);
+    const precision prec_pixel = renderingOptions()._2d_raster_bits_sub_pixel,
+        prec_uv = renderingOptions()._2d_raster_bits_uv; const number2 one= number2(1);
 #define f_pos(v) microgl::math::to_fixed((v), prec_pixel)
 #define f_uv(v) microgl::math::to_fixed((v), prec_uv)
     drawTriangle<BlendMode, PorterDuff, antialias, false, S>(sampler,
@@ -629,10 +624,10 @@ void Canvas<BITMAP>::drawTriangle(const sampling::sampler<S> & sampler,
 #undef f_uv
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename impl, typename vertex_attr, typename varying, typename number>
-void Canvas<BITMAP>::drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
+void Canvas<BITMAP, options>::drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
                                     int viewport_width, int viewport_height,
                                     vertex_attr v0, vertex_attr v1, vertex_attr v2,
                                     const opacity_t opacity, const triangles::face_culling & culling,
@@ -678,10 +673,10 @@ void Canvas<BITMAP>::drawTriangle(shader_base<impl, vertex_attr, varying, number
 #undef f
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename impl, typename vertex_attr, typename varying, typename number>
-void Canvas<BITMAP>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
+void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
                                                          int viewport_width, int viewport_height,
                                                          const vec4<number> &p0,  const vec4<number> &p1,  const vec4<number> &p2,
                                                          varying &varying_v0, varying &varying_v1, varying &varying_v2,
@@ -719,7 +714,7 @@ void Canvas<BITMAP>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_
     const int z_bits= 24; const l64 one_z= (l64(1) << (z_bits)); // negate z because camera is looking negative z axis
     l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
 
-    l64 area = functions::orient2d(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
+    l64 area = functions::orient2d<l64, l64>(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
     // infer back-face culling
     const bool ccw = area<0;
     if(area==0) return; // discard degenerate triangles
@@ -740,7 +735,6 @@ void Canvas<BITMAP>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_
     functions::swap(v0_z, v1_z);
 
 #undef f
-
     // bounding box in raster space
 #define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
 #define floor_fixed(val, bits) ((val)>>bits)
@@ -769,17 +763,16 @@ void Canvas<BITMAP>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
     // I still need to explain to myself why it works so well :)
-    l64 w0_row = functions::orient2d(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, 0) + bias_w0;
-    l64 w1_row = functions::orient2d(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) + bias_w1;
-    l64 w2_row = functions::orient2d(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) + bias_w2;
+    l64 w0_row = functions::orient2d<int, l64>(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, 0) + bias_w0;
+    l64 w1_row = functions::orient2d<int, l64>(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) + bias_w1;
+    l64 w2_row = functions::orient2d<int, l64>(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) + bias_w2;
     w0_row = w0_row>>sub_pixel_precision; w1_row = w1_row>>sub_pixel_precision; w2_row = w2_row>>sub_pixel_precision;
     // Triangle setup, this needs at least (P+1) bits, since the delta is always <= length
     int64_t A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
     int64_t A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
     int64_t A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
-    const int pitch= width();
-    int index = p.y * pitch;
-    for (p.y = bbox.top; p.y <= bbox.bottom; p.y++) {
+    const int pitch= width(); int index = p.y * pitch;
+    for (p.y = bbox.top; p.y <= bbox.bottom; p.y++, index+=pitch) {
         int w0 = w0_row;
         int w1 = w1_row;
         int w2 = w2_row;
@@ -807,34 +800,26 @@ void Canvas<BITMAP>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_
             if(should_sample) {
                 // cast to user's number types vec4<number> casted_bary= bary;, I decided to stick with l64
                 // because other wise this would have wasted bits for Q types although it would have been more elegant.
-                interpolated_varying.interpolate(
-                        varying_v0,
-                        varying_v1,
-                        varying_v2, bary);
+                interpolated_varying.interpolate(varying_v0, varying_v1, varying_v2, bary);
                 auto color = shader.fragment(interpolated_varying);
                 blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity_sample);
             }
-            w0 += A01;
-            w1 += A12;
-            w2 += A20;
+            w0+=A01; w1+=A12; w2+=A20;
         }
-        w0_row += B01;
-        w1_row += B12;
-        w2_row += B20;
-        index += pitch;
+        w0_row+=B01; w1_row+=B12; w2_row+=B20;
     }
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff,
         bool antialias, typename number1, typename number2, typename S>
-void Canvas<BITMAP>::drawQuadrilateral(const sampling::sampler<S> & sampler,
+void Canvas<BITMAP, options>::drawQuadrilateral(const sampling::sampler<S> & sampler,
                                          const number1 &v0_x, const number1 & v0_y, const number2 & u0, const number2 & v0,
                                          const number1 & v1_x, const number1 & v1_y, const number2 & u1, const number2 & v1,
                                          const number1 & v2_x, const number1 & v2_y, const number2 & u2, const number2 & v2,
                                          const number1 & v3_x, const number1 & v3_y, const number2 & u3, const number2 & v3,
                                          const uint8_t opacity) {
-    const precision uv_p = 16, pixel_p = 8;
+    const precision uv_p = renderingOptions()._2d_raster_bits_uv, pixel_p = renderingOptions()._2d_raster_bits_sub_pixel;
 #define f microgl::math::to_fixed
     number2 q0 = 1, q1 = 1, q2 = 1, q3 = 1;
     number1 p0x = v0_x; number1 p0y = v0_y;
@@ -881,15 +866,16 @@ void Canvas<BITMAP>::drawQuadrilateral(const sampling::sampler<S> & sampler,
 
 // quads
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
-void Canvas<BITMAP>::drawRect(const sampling::sampler<S> & sampler,
+void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
                               const number1 left, const number1 top,
                               const number1 right, const number1 bottom,
                               opacity_t opacity,
                               const number2 u0, const number2 v0,
                               const number2 u1, const number2 v1) {
-    const precision p_sub = 4, p_uv = 24;
+    const precision p_sub = renderingOptions()._2d_raster_bits_sub_pixel,
+                p_uv = renderingOptions()._2d_raster_bits_uv;
     drawRect<BlendMode, PorterDuff, antialias, S > (sampler,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
             microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
@@ -898,9 +884,27 @@ void Canvas<BITMAP>::drawRect(const sampling::sampler<S> & sampler,
             p_sub, p_uv, opacity);
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
+template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
+void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
+                              const matrix_3x3<number1> &transform,
+                              const number1 left, const number1 top,
+                              const number1 right, const number1 bottom,
+                              opacity_t opacity,
+                              const number2 u0, const number2 v0,
+                              const number2 u1, const number2 v1) {
+    using point=vec2<number1>;
+    point p0{left, top}, p1{left, bottom}, p2{right, bottom}, p3{right, top};
+    if(!transform.isIdentity()) {p0=transform*p0; p1=transform*p1; p2=transform*p2; p3=transform*p3;}
+    drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, S>(sampler,
+            p0.x,p0.y,u0,v0, p1.x,p1.y,u0,v1, p2.x,p2.y,u1,v1, opacity, true, true, false);
+    drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, S>(sampler,
+            p2.x,p2.y,u1,v1, p3.x,p3.y,u1,v0, p0.x,p0.y,u0,v0, opacity, true, true, false);
+}
+
+template<typename BITMAP, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename S>
-void Canvas<BITMAP>::drawRect(const sampling::sampler<S> & sampler,
+void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
                               int left, int top,
                               int right, int bottom,
                               int u0, int v0,
@@ -983,16 +987,16 @@ void Canvas<BITMAP>::drawRect(const sampling::sampler<S> & sampler,
 #undef floor_fixed
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template <typename number1, typename number2, typename S>
-void Canvas<BITMAP>::drawMask(const masks::chrome_mode &mode,
+void Canvas<BITMAP, options>::drawMask(const masks::chrome_mode &mode,
                                 const sampling::sampler<S> & sampler,
                                 const number1 left, const number1 top,
                                 const number1 right, const number1 bottom,
                                 const number2 u0, const number2 v0,
                                 const number2 u1, const number2 v1,
                                 const opacity_t opacity) {
-    precision p_sub = 4, p_uv = 20;
+    precision p_sub = renderingOptions()._2d_raster_bits_sub_pixel, p_uv = renderingOptions()._2d_raster_bits_uv;
     drawMask<S>(mode, sampler,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
             microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
@@ -1002,9 +1006,9 @@ void Canvas<BITMAP>::drawMask(const masks::chrome_mode &mode,
     );
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template <typename S>
-void Canvas<BITMAP>::drawMask(const masks::chrome_mode &mode,
+void Canvas<BITMAP, options>::drawMask(const masks::chrome_mode &mode,
                                 const sampling::sampler<S> & sampler,
                                 const int left, const int top,
                                 const int right, const int bottom,
@@ -1073,9 +1077,9 @@ void Canvas<BITMAP>::drawMask(const masks::chrome_mode &mode,
     }
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template <microgl::polygons::hints hint, typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1, typename number2, typename S>
-void Canvas<BITMAP>::drawPolygon(const sampling::sampler<S> &sampler,
+void Canvas<BITMAP, options>::drawPolygon(const sampling::sampler<S> &sampler,
                                    const matrix_3x3<number1> &transform,
                                    const vec2<number1> *points,
                                    index size, opacity_t opacity,
@@ -1142,9 +1146,9 @@ void Canvas<BITMAP>::drawPolygon(const sampling::sampler<S> &sampler,
                 type, 255);
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1, typename number2, typename S>
-void Canvas<BITMAP>::drawPathStroke(const sampling::sampler<S> &sampler,
+void Canvas<BITMAP, options>::drawPathStroke(const sampling::sampler<S> &sampler,
                                       const matrix_3x3<number1> &transform,
                                       tessellation::path<number1> & path,
                                       const number1 & stroke_width,
@@ -1176,9 +1180,9 @@ void Canvas<BITMAP>::drawPathStroke(const sampling::sampler<S> &sampler,
                                255);
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1, typename number2, typename S>
-void Canvas<BITMAP>::drawPathFill(const sampling::sampler<S> &sampler,
+void Canvas<BITMAP, options>::drawPathFill(const sampling::sampler<S> &sampler,
                                     const matrix_3x3<number1> &transform,
                                     tessellation::path<number1> & path,
                                     const tessellation::fill_rule &rule,
@@ -1212,9 +1216,9 @@ void Canvas<BITMAP>::drawPathFill(const sampling::sampler<S> &sampler,
     }
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename number>
-void Canvas<BITMAP>::drawWuLine(const color_t &color,
+void Canvas<BITMAP, options>::drawWuLine(const color_t &color,
                                   const number &x0, const number &y0,
                                   const number &x1, const number &y1,
                                   const opacity_t opacity) {
@@ -1231,8 +1235,8 @@ void Canvas<BITMAP>::drawWuLine(const color_t &color,
     drawWuLine(color, x0_, y0_, x1_, y1_, p, opacity);
 }
 
-template<typename BITMAP>
-void Canvas<BITMAP>::drawWuLine(const color_t &color,
+template<typename BITMAP, uint8_t options>
+void Canvas<BITMAP, options>::drawWuLine(const color_t &color,
                                   const int x0, const int y0,
                                   const int x1, const int y1,
                                   precision bits, const opacity_t opacity) {
@@ -1341,10 +1345,10 @@ void Canvas<BITMAP>::drawWuLine(const color_t &color,
     blendColor(color_input, (X1+round)>>bits, (Y1+round)>>bits, opacity);
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template <typename number>
 void
-Canvas<BITMAP>::drawWuLinePath(const color_t &color,
+Canvas<BITMAP, options>::drawWuLinePath(const color_t &color,
                                  const vec2<number> *points,
                                  unsigned int size,
                                  bool closed_path) {
@@ -1358,9 +1362,9 @@ Canvas<BITMAP>::drawWuLinePath(const color_t &color,
         drawWuLine(color, points[0].x, points[0].y, points[jx - 1].x, points[jx - 1].y);
 }
 
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1, typename number2, typename S>
-void Canvas<BITMAP>::drawBezierPatch(const sampling::sampler<S> & sampler,
+void Canvas<BITMAP, options>::drawBezierPatch(const sampling::sampler<S> & sampler,
                                        const matrix_3x3<number1> &transform,
                                        const vec3<number1> *mesh,
                                        const unsigned uOrder, const unsigned vOrder,
@@ -1411,8 +1415,8 @@ void Canvas<BITMAP>::drawBezierPatch(const sampling::sampler<S> & sampler,
 #undef IND
 }
 
-template<typename BITMAP>
-void Canvas<BITMAP>::fxaa(int left, int top, int right, int bottom) {
+template<typename BITMAP, uint8_t options>
+void Canvas<BITMAP, options>::fxaa(int left, int top, int right, int bottom) {
     // taken from opengl cookbook
 //    left=160;top=160;right=left+300;bottom=top+300;
 //return;
@@ -1484,9 +1488,9 @@ void Canvas<BITMAP>::fxaa(int left, int top, int right, int bottom) {
 }
 
 #include <microgl/samplers/texture.h>
-template<typename BITMAP>
+template<typename BITMAP, uint8_t options>
 template<typename BITMAP_FONT_TYPE>
-void Canvas<BITMAP>::drawText(const char * text, microgl::text::bitmap_font<BITMAP_FONT_TYPE> &font,
+void Canvas<BITMAP, options>::drawText(const char * text, microgl::text::bitmap_font<BITMAP_FONT_TYPE> &font,
         const color_t & color, microgl::text::text_format & format,
         int left, int top, int right, int bottom, bool frame,
         opacity_t opacity) {

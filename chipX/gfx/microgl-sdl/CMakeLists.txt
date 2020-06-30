@@ -34,6 +34,7 @@ set(SOURCES
 #        main_compositing.cpp
 #        main_blend_modes.cpp
 #        main_draw_triangle.cpp
+        main_draw_rect.cpp
 #        main_draw_quadrilaterals.cpp
 #        main_draw_polygon_sampler.cpp
 #        main_draw_bezier_patch.cpp
@@ -72,7 +73,7 @@ set(SOURCES
 #        main_avl_tree.cpp
 #        main_draw_bitmap_fonts.cpp
 #        main_draw_bitmap_packed.cpp
-        main_draw_bitmap_indexed_palette.cpp
+#        main_draw_bitmap_indexed_palette.cpp
         libs/stb_image/stb_image.cpp
         src/Resources.cpp data/packed_4.h)
 

@@ -6,15 +6,15 @@
 
 namespace microgl {
 
-    template<typename T>
-    class matrix_3x3 : public matrix<T, 3, 3> {
+    template<typename number>
+    class matrix_3x3 : public matrix<number, 3, 3> {
     private:
         using index = unsigned;
-        using base__ =  matrix<T, 3, 3>;
-        using type_ref = T &;
-        using const_type_ref = const T &;
-        using matrix_ref = matrix_3x3<T> &;
-        using const_matrix_ref = const matrix_3x3<T> &;
+        using base__ =  matrix<number, 3, 3>;
+        using type_ref = number &;
+        using const_type_ref = const number &;
+        using matrix_ref = matrix_3x3<number> &;
+        using const_matrix_ref = const matrix_3x3<number> &;
 
         static const index SX = 0;
         static const index SY = 4;
@@ -101,7 +101,7 @@ namespace microgl {
 
             mat[6] = 0;
             mat[7] = 0;
-            mat[8] = T(1);
+            mat[8] = number(1);
 
             return mat;
         }
@@ -127,7 +127,7 @@ namespace microgl {
 
             mat[6] = 0;
             mat[7] = 0;
-            mat[8] = T(1);
+            mat[8] = number(1);
 
             return mat;
         }
@@ -136,7 +136,7 @@ namespace microgl {
             identity_fill();
         };
 
-        matrix_3x3(const std::initializer_list<T> &list) :
+        matrix_3x3(const std::initializer_list<number> &list) :
                             base__(list) {}
 
         matrix_3x3(const_type_ref fill_value) :
@@ -155,8 +155,8 @@ namespace microgl {
             return 5;
         };
 
-        vec2<T> operator*(const vec2<T>& point) const {
-            vec2<T> res;
+        vec2<number> operator*(const vec2<number>& point) const {
+            vec2<number> res;
             const auto & m = (*this);
             res.x = m[0]*point.x + m[1]*point.y + m[2];
             res.y = m[3]*point.x + m[4]*point.y + m[5];
@@ -171,9 +171,17 @@ namespace microgl {
 
         matrix_ref identity_fill() {
             this->fill(0);
-            T fill_one{1};
+            number fill_one{1};
             fill_diagonal(fill_one);
             return *this;
+        }
+
+        bool isIdentity() const {
+            number zero=number{0}, one{1};
+            return (
+                this->_data[0]==one  && this->_data[1]==zero && this->_data[2]==zero &&
+                this->_data[3]==zero && this->_data[4]==one  && this->_data[5]==zero &&
+                this->_data[6]==zero && this->_data[7]==zero && this->_data[8]==one);
         }
 
     };

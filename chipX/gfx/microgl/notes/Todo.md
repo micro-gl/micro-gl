@@ -40,7 +40,6 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 - std::sort must be replaced with c qsort
 
 #### road-map
-- indexed bitmap support
 - 1/2/4/8 bit conversion samplers with LUT
 - drawRect with matrix and drawAxisRect without
 - tools for images and fonts
