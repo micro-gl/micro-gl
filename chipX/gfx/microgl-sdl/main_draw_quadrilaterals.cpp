@@ -17,7 +17,8 @@ SDL_Renderer * renderer;
 SDL_Texture * texture;
 
 using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-using Canvas24= Canvas<Bitmap24>;
+//using Canvas24= Canvas<Bitmap24, CANVAS_OPT_2d_raster_FORCE_32_BIT | CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS>;
+using Canvas24= Canvas<Bitmap24, CANVAS_OPT_default>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 Canvas24 * canvas;
 Texture24 tex_1, tex_2;
@@ -31,7 +32,8 @@ template <typename number>
 void render_quadrilateral() {
     static float d =0;
     float G = 400;
-//    d+=1.01;
+    d+=10.01;
+//    d-=1.01;
     canvas->clear(intensity<number>{1, 1, 1, 1});
 //    canvas->drawQuadrilateral<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
     canvas->drawQuadrilateral<blendmode::Normal, porterduff::None<>, false, number>(

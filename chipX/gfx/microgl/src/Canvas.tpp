@@ -445,102 +445,97 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
                                   const precision uv_precision, bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
     constexpr precision precision_one_over_area=15;
     constexpr precision P_AA = 16;
-    constexpr bool divide=is_set(options, CANVAS_OPT_2d_raster_USE_DIVISION); // compile time flag
-    constexpr bool avoid_overflows=is_set(options, CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS); // compile time flag
+    constexpr bool divide=is_set(options,
+            CANVAS_OPT_2d_raster_USE_DIVISION); // compile time flag
+    constexpr bool avoid_overflows=is_set(options,
+            CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS); // compile time flag
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
     rint area = functions::orient2d<int, rint_big>(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
-    if(area==0) return;
+    // this is used for compressing bits, does not affect sub-pixel inclusion precision, we don't render sub-pixel areas
+    rint area_compressed = area>>sub_pixel_precision;
+    if(area==0 || area_compressed==0) return;
     if(area<0) { // convert CCW to CW triangle
-        area=-area;
+        area=-area; area_compressed=-area_compressed;
         functions::swap(v1_x, v2_x); functions::swap(v1_y, v2_y);
         functions::swap(u1, u2); functions::swap(v1, v2);
         functions::swap(q1, q2); functions::swap(aa_first_edge, aa_third_edge);
     }
-    precision bits_used=0;
-    { while (rint(area)>rint(rint(1)<<(bits_used++))) {}; }
-    const precision LL = bits_used+precision_one_over_area;//MAX_PREC - (sub_pixel_precision + BITS_UV_COORDS+10);
+    precision bits_used_area=microgl::functions::used_integer_bits(area);
+    precision bits_used_max_uv=
+            microgl::functions::used_integer_bits(
+                    microgl::functions::max({u0,v0,q0, u1,v1,q1, u2,v2,q2}));
+    const precision LL = bits_used_area + precision_one_over_area;
     if(avoid_overflows) {
-        precision size_of_int_bits = sizeof(rint)<<3;
-        const bool first_test = bits_used+uv_precision <= size_of_int_bits;
+        precision size_of_int_bits = sizeof(rint)<<3, size_of_big_int_bits = sizeof(rint_big)<<3;
+        const bool first_test = bits_used_area + bits_used_max_uv < size_of_int_bits;
         if(!first_test) return;
         if(!divide) {
-            precision size_of_big_int_bits = sizeof(rint_big)<<3;
-            const bool second_test = bits_used+uv_precision-sub_pixel_precision+precision_one_over_area <= size_of_big_int_bits;
+            const bool second_test= bits_used_area + bits_used_max_uv - sub_pixel_precision +
+                    (precision_one_over_area+1) < size_of_big_int_bits;
             if(!second_test) return;
         }
     }
-    // bounding box
 #define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
 #define floor_fixed(val, bits) ((val)>>bits)
-    rect bbox;
+    rect bbox; // bounding box
     rint mask = ~((rint(1)<<sub_pixel_precision)-1);
     bbox.left = floor_fixed(functions::min<rint>(v0_x, v1_x, v2_x)&mask, sub_pixel_precision);
     bbox.top = floor_fixed(functions::min<rint>(v0_y, v1_y, v2_y)&mask, sub_pixel_precision);
     bbox.right = ceil_fixed(functions::max<rint>(v0_x, v1_x, v2_x), sub_pixel_precision);
     bbox.bottom = ceil_fixed(functions::max<rint>(v0_y, v1_y, v2_y), sub_pixel_precision);
-    // clipping
-    bbox = bbox.intersect(effectiveRect);
+    bbox = bbox.intersect(effectiveRect); // raster clipping
 #undef ceil_fixed
 #undef floor_fixed
-    // anti-alias pad for distance calculation
-    precision bits_distance = 0;
+
+    precision bits_distance = 0; // anti-alias pad for distance calculation
     precision bits_distance_complement = 8;
-    // max distance to consider in canvas space
-    unsigned int max_distance_canvas_space_anti_alias=0;
-    // max distance to consider in scaled space
-    unsigned int max_distance_scaled_space_anti_alias=0;
+    unsigned int max_distance_scaled_space_anti_alias=0; // max distance to consider in scaled space
     bool aa_all_edges = false;
     if(antialias) {
+        unsigned int max_distance_canvas_space_anti_alias=0;
         aa_all_edges = aa_first_edge && aa_second_edge && aa_third_edge;
-        bits_distance = 6;
+        bits_distance = 0;
         bits_distance_complement = 8 - bits_distance;
         max_distance_canvas_space_anti_alias = 1 << bits_distance;
         max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias << P_AA;
     }
-    // fill rules adjustments
-    triangles::top_left_t top_left =
+    triangles::top_left_t top_left = // fill rules adjustments
             triangles::classifyTopLeftEdges<rint>(false, v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
     int bias_w0=top_left.first?0:-1, bias_w1=top_left.second?0:-1, bias_w2=top_left.third?0:-1;
-    // Barycentric coordinates at minX/minY corner
-    vec2<rint> p = { bbox.left, bbox.top };
+    vec2<rint> p = { bbox.left, bbox.top }; // Barycentric coordinates at minX/minY corner
     vec2<rint> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
     p_fixed = p_fixed + vec2<rint> {(rint(1)<<(sub_pixel_precision))>>1, (rint(1)<<(sub_pixel_precision))>>1}; // we sample at the center
     // this can produce a 2B+2P bits number if the points form a a perpendicular triangle
     // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
-    // I still need to exaplin to myself why it works so well :) compress down to (2B+P) after
+    // I still need to explain to myself why it works so well :) compress down to (2B+P) after
     rint w0_row = rint((functions::orient2d<int, rint_big>(v0_x,v0_y, v1_x,v1_y, p_fixed.x,p_fixed.y, 0) + bias_w0)>>sub_pixel_precision);
     rint w1_row = rint((functions::orient2d<int, rint_big>(v1_x,v1_y, v2_x,v2_y, p_fixed.x,p_fixed.y, 0) + bias_w1)>>sub_pixel_precision);
     rint w2_row = rint((functions::orient2d<int, rint_big>(v2_x,v2_y, v0_x,v0_y, p_fixed.x,p_fixed.y, 0) + bias_w2)>>sub_pixel_precision);
     rint A01 = (v0_y - v1_y), A12 = (v1_y - v2_y), A20 = (v2_y - v0_y);
     rint B01 = (v1_x - v0_x), B12 = (v2_x - v1_x), B20 = (v0_x - v2_x);
     // once we divide, then one_area occupies at most precision_one_over_area=12 bits, this is
-    // important for not overflowing when multiplying it with another integer we know, it can only
-    // add up to 12+1=13 bits to the result,  this is the trick for big integers
+    // important for not overflowing when multiplying it with another integer we know, this is the trick for big integers
     rint one_area = (rint_big(1)<<LL) / rint_big(area);
-    // Triangle setup
-    // this needs at least (P+1) bits, since the delta is always <= length
-    // AA, 2A/L = h, therefore the division produces a P bit number
     rint w0_row_h=0, w1_row_h=0, w2_row_h=0;
     rint A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
     if(antialias) { // lengths of edges, produces a P+1 bits number
+        // AA, 2A/L = h, therefore the division produces a P bit number
         unsigned int length_w0 = microgl::math::distance(v0_x, v0_y, v1_x, v1_y);
         unsigned int length_w1 = microgl::math::distance(v1_x, v1_y, v2_x, v2_y);
         unsigned int length_w2 = microgl::math::distance(v0_x, v0_y, v2_x, v2_y);
-        A01_h = (((rint_big)(v0_y - v1_y)) << P_AA) / length_w0, B01_h = (((rint_big)(v1_x - v0_x)) << P_AA) / length_w0;
-        A12_h = (((rint_big)(v1_y - v2_y)) << P_AA) / length_w1, B12_h = (((rint_big)(v2_x - v1_x)) << P_AA) / length_w1;
-        A20_h = (((rint_big)(v2_y - v0_y)) << P_AA) / length_w2, B20_h = (((rint_big)(v0_x - v2_x)) << P_AA) / length_w2;
-        w0_row_h = (((rint_big)(w0_row)) << P_AA) / length_w0;
-        w1_row_h = (((rint_big)(w1_row)) << P_AA) / length_w1;
-        w2_row_h = (((rint_big)(w2_row)) << P_AA) / length_w2;
+        A01_h = (((rint_big)(v0_y - v1_y))<<P_AA)/length_w0, B01_h = (((rint_big)(v1_x - v0_x))<<P_AA)/length_w0;
+        A12_h = (((rint_big)(v1_y - v2_y))<<P_AA)/length_w1, B12_h = (((rint_big)(v2_x - v1_x))<<P_AA)/length_w1;
+        A20_h = (((rint_big)(v2_y - v0_y))<<P_AA)/length_w2, B20_h = (((rint_big)(v0_x - v2_x))<<P_AA)/length_w2;
+        w0_row_h = (((rint_big)(w0_row))<<P_AA)/length_w0;
+        w1_row_h = (((rint_big)(w1_row))<<P_AA)/length_w1;
+        w2_row_h = (((rint_big)(w2_row))<<P_AA)/length_w2;
     }
     const int pitch= width();
     int index = p.y * pitch;
     for (p.y = bbox.top; p.y <= bbox.bottom; p.y++, index+=pitch) {
         rint w0=w0_row, w1=w1_row, w2=w2_row, w0_h=0, w1_h=0, w2_h=0;
-        if(antialias) {
-            w0_h=w0_row_h; w1_h=w1_row_h; w2_h=w2_row_h;
-        }
+        if(antialias) { w0_h=w0_row_h; w1_h=w1_row_h; w2_h=w2_row_h; }
         for (p.x = bbox.left; p.x <= bbox.right; p.x++) {
             bool should_sample=false;
             uint8_t blend=opacity;
@@ -549,33 +544,37 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
                 const rint distance = functions::min<rint>((w0_h), (w1_h), (w2_h));
                 // delta is at most 16 bits
                 rint delta = distance+max_distance_scaled_space_anti_alias;
-                bool perform_aa = delta>=0 && (aa_all_edges || ((distance == (w0_h)) && aa_first_edge) ||
+                bool perform_aa = (delta>=0) && (aa_all_edges || ((distance == (w0_h)) && aa_first_edge) ||
                                                ((distance == (w1_h)) && aa_second_edge) ||
                                                ((distance == (w2_h)) && aa_third_edge));
                 if (perform_aa) {
                     should_sample = true; // 16+8=24 bits
-                    blend = functions::clamp<rint>(((delta << bits_distance_complement))>>P_AA, 0, 255);
-                    blend = (blend * opacity) >> 8; // * 257>>16 - blinn method
+                    blend = functions::clamp<rint>((delta<<bits_distance_complement)>>P_AA, 0, 255);
+                    blend = (blend*opacity)>>8;
                 }
             }
             if(should_sample) {
-                rint u_i, v_i;
-                // I compress down the weights to save some bits, I needed sub-pixel precision for inclusion tests
-                // this will overflow for 32 bit integer if bits are not chosen carefully
-                rint u_fixed = (w0*rint(u2) + w1*rint(u0) + w2*rint(u1))>>sub_pixel_precision; // bits=(bits_area_used+uv_precision) - sub_pixel_precision
+                rint u_i=0, v_i=0;
+                // I compress down the weights to save some bits.
+                // bits=(bits_area_used+bits_used_max_uv) - sub_pixel_precision
+                rint u_fixed = (w0*rint(u2) + w1*rint(u0) + w2*rint(u1))>>sub_pixel_precision;
                 rint v_fixed = (w0*rint(v2) + w1*rint(v0) + w2*rint(v1))>>sub_pixel_precision;
                 if(perspective_correct) {
                     rint q_fixed = ((w0*rint(q2))>>sub_pixel_precision) +
                             ((w1*rint(q0))>>sub_pixel_precision) + ((w2*rint(q1))>>sub_pixel_precision);
-                    u_i = (u_fixed<<uv_precision)/q_fixed; // big int ??
-                    v_i = (v_fixed<<uv_precision)/q_fixed;
+                    rint q_compressed=q_fixed>>uv_precision; // this would not render with overflow detection
+                    if(q_compressed) { // compression has a pitfall of producing zero
+                        u_i = rint(u_fixed)/(q_compressed); v_i = rint(v_fixed)/(q_compressed);
+                    }
                 } else {
                     if(divide) { // division is stabler and is un-avoidable most of the time for pure 32 bit mode
-                        u_i = (u_fixed)/(area>>sub_pixel_precision);
-                        v_i = (v_fixed)/(area>>sub_pixel_precision);
+                        rint compressed_area=area_compressed; // area>>sub_pixel_precision
+                        u_i = u_fixed/compressed_area; v_i = v_fixed/compressed_area;
                     } else { // we use a temporary 64 bit and one_area to mimic division, this is FASTER even in 32 bits mode.
-                        u_i = rint_big(rint_big(u_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
-                        v_i = rint_big(rint_big(v_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
+                        u_i = rint_big(rint_big(u_fixed)*rint_big(one_area))>>LL;
+                        v_i = rint_big(rint_big(v_fixed)*rint_big(one_area))>>LL;
+//                        u_i = rint_big(rint_big(u_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
+//                        v_i = rint_big(rint_big(v_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
                     }
                 }
                 if(antialias) {
@@ -587,21 +586,12 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, blend);
             }
             w0+=A01; w1+=A12; w2+=A20;
-            if(antialias) {
-                w0_h+=A01_h; w1_h+=A12_h; w2_h+=A20_h;
-            }
+            if(antialias) { w0_h+=A01_h; w1_h+=A12_h; w2_h+=A20_h; }
         }
         w0_row+=B01; w1_row+=B12; w2_row+=B20;
-        if(antialias) {
-            w0_row_h+=B01_h; w1_row_h+=B12_h; w2_row_h+=B20_h;
-        }
+        if(antialias) { w0_row_h+=B01_h; w1_row_h+=B12_h; w2_row_h+=B20_h; }
     }
 }
-
-/*
-
-
-*/
 
 template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
@@ -893,8 +883,7 @@ void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
                               opacity_t opacity,
                               const number2 u0, const number2 v0,
                               const number2 u1, const number2 v1) {
-    using point=vec2<number1>;
-    point p0{left, top}, p1{left, bottom}, p2{right, bottom}, p3{right, top};
+    vec2<number1> p0{left, top}, p1{left, bottom}, p2{right, bottom}, p3{right, top};
     if(!transform.isIdentity()) {p0=transform*p0; p1=transform*p1; p2=transform*p2; p3=transform*p3;}
     drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, S>(sampler,
             p0.x,p0.y,u0,v0, p1.x,p1.y,u0,v1, p2.x,p2.y,u1,v1, opacity, true, true, false);
@@ -1033,6 +1022,7 @@ void Canvas<BITMAP, options>::drawMask(const masks::chrome_mode &mode,
     const int du = (u1-u0)/(bbox_r.right- bbox_r.left);
     const int dv = (v1-v0)/(bbox_r.bottom-bbox_r.top);
     const int dx= bbox_r_c.left-bbox_r.left, dy= bbox_r_c.top-bbox_r.top;
+    u0+=du>>1; v0+=dv>>1; // sample from the middle always for best results
     const int u_start= u0+dx*du;
     const int pitch= width();
     int index= bbox_r_c.top * pitch;
@@ -1374,43 +1364,34 @@ void Canvas<BITMAP, options>::drawBezierPatch(const sampling::sampler<S> & sampl
                                        const opacity_t opacity) {
     using tess= microgl::tessellation::bezier_patch_tesselator<number1, number2>;
     using vertex=vec2<number1>;
-    dynamic_array<number1> vertices_attributes;
+    dynamic_array<number1> v_a; // vertices attributes
     dynamic_array<index> indices;
     microgl::triangles::indices indices_type;
-    tess::compute(mesh, uOrder, vOrder, uSamples, vSamples, vertices_attributes,
-            indices, indices_type, u0, v0, u1, v1);
+    tess::compute(mesh, uOrder, vOrder, uSamples, vSamples, v_a,
+                  indices, indices_type, u0, v0, u1, v1);
     const index size = indices.size();
     const index window_size=5;
     const index I_X=0, I_Y=1, I_Z=2, I_U=3, I_V=4;
     if(size==0) return;
 #define IND(a) indices[(a)]
     bool even = true;
-    for (index ix = 0; ix < size-2; ++ix) { // we alternate order inorder to preserve CCW or CW,
-
+    for (index ix = 0; ix < size-2; ++ix, even=!even) { // we alternate order inorder to preserve CCW or CW,
         index first_index   = (even ? IND(ix + 0) : IND(ix + 2))*window_size;
         index second_index  = (even ? IND(ix + 1) : IND(ix + 1))*window_size;
         index third_index   = (even ? IND(ix + 2) : IND(ix + 0))*window_size;
-        vertex v1=vertex{vertices_attributes[first_index+I_X], vertices_attributes[first_index+I_Y]};
-        vertex v2=vertex{vertices_attributes[second_index+I_X], vertices_attributes[second_index+I_Y]};
-        vertex v3=vertex{vertices_attributes[third_index+I_X], vertices_attributes[third_index+I_Y]};
+        vertex v1=vertex{v_a[first_index + I_X], v_a[first_index + I_Y]};
+        vertex v2=vertex{v_a[second_index + I_X], v_a[second_index + I_Y]};
+        vertex v3=vertex{v_a[third_index + I_X], v_a[third_index + I_Y]};
         v1=transform*v1;v2=transform*v2;v3=transform*v3;
         drawTriangle<BlendMode, PorterDuff, antialias>(sampler,
-                v1.x, v1.y,
-                vertices_attributes[first_index+I_U],
-                vertices_attributes[first_index+I_V],
-                v2.x, v2.y,
-                vertices_attributes[second_index+I_U],
-                vertices_attributes[second_index+I_V],
-                v3.x, v3.y,
-                vertices_attributes[third_index+I_U],
-                vertices_attributes[third_index+I_V],
-                opacity);
-        even = !even;
+                v1.x, v1.y, v_a[first_index + I_U], v_a[first_index + I_V],
+                v2.x, v2.y, v_a[second_index + I_U], v_a[second_index + I_V],
+                v3.x, v3.y, v_a[third_index + I_U], v_a[third_index + I_V], opacity); //even = !even;
         if(debug)
             drawTriangleWireframe({0,0,0,255},
-                                  {vertices_attributes[first_index+I_X], vertices_attributes[first_index+I_Y]},
-                                  {vertices_attributes[second_index+I_X], vertices_attributes[second_index+I_Y]},
-                                  {vertices_attributes[third_index+I_X], vertices_attributes[third_index+I_Y]});
+                                  {v_a[first_index + I_X], v_a[first_index + I_Y]},
+                                  {v_a[second_index + I_X], v_a[second_index + I_Y]},
+                                  {v_a[third_index + I_X], v_a[third_index + I_Y]});
     }
 #undef IND
 }

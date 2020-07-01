@@ -28,6 +28,7 @@
 #include <microgl/functions/clamp.h>
 #include <microgl/functions/swap.h>
 #include <microgl/functions/orient2d.h>
+#include <microgl/functions/bits.h>
 
 using namespace microgl::triangles;
 using namespace microgl::polygons;

@@ -11,32 +11,46 @@ namespace microgl {
 #define clamp_(v, e0, e1) (min_(max_(v,e0),e1))
 #define abs_(a) ((a)<0 ? -(a) : (a))
 
-        template<typename T>
-        inline T min(const T &p0, const T &p1) {
+        template<typename number>
+        inline number min(const number &p0, const number &p1) {
             return p0 < p1 ? p0 : p1;
         }
         template<>
-        inline float min(const float &p0, const float &p1) {
+        inline float min<float>(const float &p0, const float &p1) {
             return fmin(p0, p1);
         }
 
-        template<typename T>
-        inline T min(const T &p0, const T &p1, const T &p2) {
+        template<typename number>
+        inline number min(const number &p0, const number &p1, const number &p2) {
             return min(min(p0, p1), p2);
         }
 
-        template<typename T>
-        inline T min(const T &p0, const T &p1, const T &p2, const T &p3) {
+        template<typename number>
+        inline number min(const number &p0, const number &p1, const number &p2, const number &p3) {
             return min(min(min(p0, p1), p2), p3);
         }
 
-        template<typename T>
-        inline T min(const T &p0, const T &p1, const T &p2, const T &p3, const T &p4) {
+        template<typename number>
+        inline number min(const number &p0, const number &p1, const number &p2, const number &p3, const number &p4) {
             return min(min(min(min(p0, p1), p2), p3), p4);
         }
 
-        template<typename T>
-        inline T max(const T &p0, const T &p1) {
+        template<typename number>
+        inline number min(const number &p0, const number &p1, const number &p2, const number &p3, const number &p4, const number &p5) {
+            return min(min(min(min(min(p0, p1), p2), p3), p4), p5);
+        }
+
+        template<typename number>
+        inline number min(const std::initializer_list<number> & list) {
+            number min=*list.begin();
+            for(auto it = list.begin(); it!=list.end(); it++) {
+                if(*it<min) min=*it;
+            }
+            return min;
+        }
+
+        template<typename number>
+        inline number max(const number &p0, const number &p1) {
             return p0 > p1 ? p0 : p1;
         }
         template<>
@@ -44,24 +58,34 @@ namespace microgl {
             return fmax(p0, p1);
         }
 
-        template<typename T>
-        inline T max(const T &p0, const T &p1, const T &p2) {
+        template<typename number>
+        inline number max(const number &p0, const number &p1, const number &p2) {
             return max(max(p0, p1), p2);
         }
 
-        template<typename T>
-        inline T max(const T &p0, const T &p1, const T &p2, const T &p3) {
+        template<typename number>
+        inline number max(const number &p0, const number &p1, const number &p2, const number &p3) {
             return max(max(max(p0, p1), p2), p3);
         }
 
-        template<typename T>
-        inline T max(const T &p0, const T &p1, const T &p2, const T &p3, const T &p4) {
+        template<typename number>
+        inline number max(const number &p0, const number &p1, const number &p2, const number &p3, const number &p4) {
             return max(max(max(max(p0, p1), p2), p3), p4);
         }
 
-//        template<typename T>
-//        inline T clamp(const T &val, const T &e0, const T &e1) {
-//            return min(max(val, e0), e1);
-//        }
+        template<typename number>
+        inline number max(const number &p0, const number &p1, const number &p2, const number &p3, const number &p4, const number &p5) {
+            return max(max(max(max(max(p0, p1), p2), p3), p4), p5);
+        }
+
+        template<typename number>
+        inline number max(const std::initializer_list<number> & list) {
+            number max=*list.begin();
+            for(auto it = list.begin(); it!=list.end(); it++) {
+                if(*it>max) max=*it;
+            }
+            return max;
+        }
+
     }
 }

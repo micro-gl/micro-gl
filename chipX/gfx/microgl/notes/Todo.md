@@ -41,7 +41,6 @@ http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.
 
 #### road-map
 - 1/2/4/8 bit conversion samplers with LUT
-- drawRect with matrix and drawAxisRect without
 - tools for images and fonts
 - investigate mip-mapping (I have all the theory from open gl spec)
 - explore avoid blending, and draw pixel directly mechanism

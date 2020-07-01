@@ -19,7 +19,7 @@ using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
 using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-using Canvas24= Canvas<Bitmap24, CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS>;
+using Canvas24= Canvas<Bitmap24, CANVAS_OPT_default>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 
 Canvas24 * canvas;
@@ -32,9 +32,9 @@ float t=0;
 template <typename number>
 void axial_rect() {
     //t+=0.1;//-0.01;
-    canvas->drawRect<blendmode::Normal, porterduff::None<>, false, number>(
+    canvas->drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
             tex_uv,
-            t,t, 400, 400);
+            t,t, 256, 256);
 }
 
 template <typename number>
