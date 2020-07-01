@@ -464,8 +464,9 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
     precision bits_used_area=microgl::functions::used_integer_bits(area);
     precision bits_used_max_uv=
             microgl::functions::used_integer_bits(
-                    microgl::functions::max({u0,v0,q0, u1,v1,q1, u2,v2,q2}));
-    const precision LL = bits_used_area + precision_one_over_area;
+                    microgl::functions::abs_max({u0,v0,q0, u1,v1,q1, u2,v2,q2}));
+    const precision LL = bits_used_area + precision_one_over_area-sub_pixel_precision;
+    rint one_area = (rint_big(1)<<LL) / rint_big(area_compressed);
     if(avoid_overflows) {
         precision size_of_int_bits = sizeof(rint)<<3, size_of_big_int_bits = sizeof(rint_big)<<3;
         const bool first_test = bits_used_area + bits_used_max_uv < size_of_int_bits;
@@ -476,6 +477,8 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
             if(!second_test) return;
         }
     }
+    // once we divide, then one_area occupies at most precision_one_over_area=12 bits, this is
+    // important for not overflowing when multiplying it with another integer we know, this is the trick for big integers
 #define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
 #define floor_fixed(val, bits) ((val)>>bits)
     rect bbox; // bounding box
@@ -514,9 +517,6 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
     rint w2_row = rint((functions::orient2d<int, rint_big>(v2_x,v2_y, v0_x,v0_y, p_fixed.x,p_fixed.y, 0) + bias_w2)>>sub_pixel_precision);
     rint A01 = (v0_y - v1_y), A12 = (v1_y - v2_y), A20 = (v2_y - v0_y);
     rint B01 = (v1_x - v0_x), B12 = (v2_x - v1_x), B20 = (v0_x - v2_x);
-    // once we divide, then one_area occupies at most precision_one_over_area=12 bits, this is
-    // important for not overflowing when multiplying it with another integer we know, this is the trick for big integers
-    rint one_area = (rint_big(1)<<LL) / rint_big(area);
     rint w0_row_h=0, w1_row_h=0, w2_row_h=0;
     rint A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
     if(antialias) { // lengths of edges, produces a P+1 bits number
@@ -568,8 +568,7 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
                     }
                 } else {
                     if(divide) { // division is stabler and is un-avoidable most of the time for pure 32 bit mode
-                        rint compressed_area=area_compressed; // area>>sub_pixel_precision
-                        u_i = u_fixed/compressed_area; v_i = v_fixed/compressed_area;
+                        u_i = u_fixed/area_compressed; v_i = v_fixed/area_compressed;
                     } else { // we use a temporary 64 bit and one_area to mimic division, this is FASTER even in 32 bits mode.
                         u_i = rint_big(rint_big(u_fixed)*rint_big(one_area))>>LL;
                         v_i = rint_big(rint_big(v_fixed)*rint_big(one_area))>>LL;

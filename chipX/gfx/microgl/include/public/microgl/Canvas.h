@@ -48,11 +48,8 @@ constexpr bool is_set(const uint8_t ops, const uint8_t feature)  {
 template<typename BITMAP, uint8_t options=CANVAS_OPT_default>
 class Canvas {
 public:
-    static constexpr bool op_CANVAS_OPT_2d_raster_FORCE_32_BIT=
-            is_set(options, CANVAS_OPT_2d_raster_FORCE_32_BIT);
     static constexpr bool op_CANVAS_OPT_2d_raster_USE_BIG_INT=
-            !op_CANVAS_OPT_2d_raster_FORCE_32_BIT &&
-            is_set(options, CANVAS_OPT_2d_raster_USE_BIG_INT);
+                    is_set(options, CANVAS_OPT_2d_raster_USE_BIG_INT);
 
     using bitmap= BITMAP;
     using rect = rect_t<int>;
@@ -78,7 +75,8 @@ private:
     using pixel_coder= typename BITMAP::Coder;
     // rasterizer integers
     using rint_big = l64;
-    using rint =typename microgl::traits::conditional<op_CANVAS_OPT_2d_raster_USE_BIG_INT, rint_big, int>::type;
+    using rint =typename microgl::traits::conditional<
+            op_CANVAS_OPT_2d_raster_USE_BIG_INT, rint_big, int>::type;
 
     bitmap * _bitmap_canvas = nullptr;
     window_t _window;
@@ -288,7 +286,6 @@ private:
                                            bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
 public:
-    // perspective correct 2d quadrilateral defined by 2d points
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=number1, typename S>
@@ -298,8 +295,6 @@ public:
                            const number1 & v2_x, const number1 & v2_y, const number2 & u2, const number2 & v2,
                            const number1 & v3_x, const number1 & v3_y, const number2 & u3, const number2 & v3,
                            opacity_t opacity = 255);
-    // QUADS
-
 private:
     template <typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename S>

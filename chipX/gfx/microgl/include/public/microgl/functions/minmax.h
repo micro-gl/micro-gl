@@ -87,5 +87,16 @@ namespace microgl {
             return max;
         }
 
+        template<typename number>
+        inline number abs_max(const std::initializer_list<number> & list) {
+            number max=*list.begin();
+            if(max<0) max=-max;
+            for(auto it = list.begin(); it!=list.end(); it++) {
+                auto val= (*it)<0?-(*it):(*it);
+                if(val>max) max=val;
+            }
+            return max;
+        }
+
     }
 }

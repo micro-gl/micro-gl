@@ -19,6 +19,8 @@ using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
 using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+//using Canvas24= Canvas<Bitmap24, CANVAS_OPT_2d_raster_USE_BIG_INT | CANVAS_OPT_2d_raster_USE_DIVISION | CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS>;
+//using Canvas24= Canvas<Bitmap24, CANVAS_OPT_2d_raster_FORCE_32_BIT | CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS>;
 using Canvas24= Canvas<Bitmap24, CANVAS_OPT_default>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 
@@ -40,7 +42,7 @@ void axial_rect() {
 template <typename number>
 void transfromed_rect() {
     t+=0.005;//-0.01;
-    canvas->drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
+    canvas->drawRect<blendmode::Normal, porterduff::None<>, false, number>(
             tex_uv,
             matrix_3x3<number>::rotation(microgl::math::deg_to_rad(5.0f+t), 128, 128),
 //            matrix_3x3<number>::identity(),
