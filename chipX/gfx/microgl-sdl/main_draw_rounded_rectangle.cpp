@@ -1,11 +1,13 @@
 #include <iostream>
 #include <chrono>
 #include <SDL2/SDL.h>
+#include "src/Resources.h"
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/fast_radial_gradient.h>
 #include <microgl/samplers/linear_gradient_2_colors.h>
 #include <microgl/samplers/flat_color.h>
+#include <microgl/pixel_coders/RGB888_ARRAY.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1
@@ -13,12 +15,13 @@
 SDL_Window * sdl_window;
 SDL_Renderer * sdl_renderer;
 SDL_Texture * sdl_texture;
-
+Resources resources{};
 using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
 using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<Bitmap24, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
+//using Canvas24= Canvas<Bitmap24>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 
 Canvas24 * canvas;
@@ -27,7 +30,7 @@ linear_gradient_2_colors<120> gradient2Colors{{255,0,255}, {255,0,0}};
 linear_gradient_2_colors<0> gradient2Colors2{{0,0,255}, {0,0,0}};
 flat_color flatColor{{133,133,133, 255}};
 flat_color flatColorRed{{255,0,0, 255}};
-
+Texture24 tex_uv;
 void loop();
 void init_sdl(int width, int height);
 float t=0;
@@ -36,7 +39,8 @@ template <typename number>
 void test_1() {
 //    t+=0.1;
     canvas->drawRoundedRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
-            gradient2Colors,
+            tex_uv,
+//            gradient2Colors,
             flatColor,
             10+t, 10+t, 400+t, 400+t,
             50, 10);
@@ -60,6 +64,9 @@ void init_sdl(int width, int height) {
     sdl_renderer = SDL_CreateRenderer(sdl_window, -1, 0);
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STATIC, width, height);
+    auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
+    auto bmp_uv_U8 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
+    tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
 
     gradient.addStop(0.0f, {255,0,0});
     gradient.addStop(0.45f, {255,0,0});

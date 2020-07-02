@@ -88,7 +88,7 @@ public:
 
     struct render_options_t {
         uint8_t _2d_raster_bits_sub_pixel= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 8 : 0;
-        uint8_t _2d_raster_bits_uv= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 15 : 10;
+        uint8_t _2d_raster_bits_uv= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 4 : 10;
         uint8_t bits_sub_pixel_3D_rasterizer= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 8 : 0;
     };
 
@@ -213,6 +213,50 @@ private:
                          int u0, int v0, int u1, int v1,
                          precision sub_pixel_precision, precision uv_precision,
                          opacity_t opacity= 255);
+
+private:
+    template <typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
+            bool antialias=false, typename S>
+    void drawRect(const sampling::sampler<S> &sampler,
+                  int left, int top,
+                  int right, int bottom,
+                  int u0, int v0,
+                  int u1, int v1,
+                  precision sub_pixel_precision, precision uv_precision,
+                  opacity_t opacity);
+
+public:
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
+            typename number1=float, typename number2=number1, typename S>
+    void drawRect(const sampling::sampler<S> &sampler,
+                  number1 left, number1 top,
+                  number1 right, number1 bottom,
+                  opacity_t opacity = 255,
+                  number2 u0= number2(0), number2 v0= number2(1),
+                  number2 u1= number2(1), number2 v1= number2(0));
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
+            typename number1=float, typename number2=number1, typename S>
+    void drawRect(const sampling::sampler<S> &sampler,
+                  const matrix_3x3<number1> &transform,
+                  number1 left, number1 top,
+                  number1 right, number1 bottom,
+                  opacity_t opacity = 255,
+                  number2 u0= number2(0), number2 v0= number2(1),
+                  number2 u1= number2(1), number2 v1= number2(0));
+
+    template <typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
+            bool antialias=false, typename number1=float, typename number2=number1, typename S>
+    void drawQuadrilateral(const sampling::sampler<S> &sampler,
+                           const number1 & v0_x, const number1 & v0_y, const number2 & u0, const number2 & v0,
+                           const number1 & v1_x, const number1 & v1_y, const number2 & u1, const number2 & v1,
+                           const number1 & v2_x, const number1 & v2_y, const number2 & u2, const number2 & v2,
+                           const number1 & v3_x, const number1 & v3_y, const number2 & u3, const number2 & v3,
+                           opacity_t opacity = 255);
+
 public:
 
     // Triangle batches
@@ -313,48 +357,6 @@ private:
                                            bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
 public:
-    template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, typename number1=float, typename number2=number1, typename S>
-    void drawQuadrilateral(const sampling::sampler<S> &sampler,
-                           const number1 & v0_x, const number1 & v0_y, const number2 & u0, const number2 & v0,
-                           const number1 & v1_x, const number1 & v1_y, const number2 & u1, const number2 & v1,
-                           const number1 & v2_x, const number1 & v2_y, const number2 & u2, const number2 & v2,
-                           const number1 & v3_x, const number1 & v3_y, const number2 & u3, const number2 & v3,
-                           opacity_t opacity = 255);
-private:
-    template <typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, typename S>
-    void drawRect(const sampling::sampler<S> &sampler,
-                  int left, int top,
-                  int right, int bottom,
-                  int u0, int v0,
-                  int u1, int v1,
-                  precision sub_pixel_precision, precision uv_precision,
-                  opacity_t opacity);
-
-public:
-    template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
-            typename number1=float, typename number2=number1, typename S>
-    void drawRect(const sampling::sampler<S> &sampler,
-                  number1 left, number1 top,
-                  number1 right, number1 bottom,
-                  opacity_t opacity = 255,
-                  number2 u0= number2(0), number2 v0= number2(1),
-                  number2 u1= number2(1), number2 v1= number2(0));
-
-    template <typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
-            typename number1=float, typename number2=number1, typename S>
-    void drawRect(const sampling::sampler<S> &sampler,
-                  const matrix_3x3<number1> &transform,
-                  number1 left, number1 top,
-                  number1 right, number1 bottom,
-                  opacity_t opacity = 255,
-                  number2 u0= number2(0), number2 v0= number2(1),
-                  number2 u1= number2(1), number2 v1= number2(0));
-
     // Masks
     template <typename number1, typename number2=number1, typename S>
     void drawMask(const masks::chrome_mode &mode,

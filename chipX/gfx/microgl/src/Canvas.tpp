@@ -239,8 +239,21 @@ void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & samp
     const rect bbox_r = {left_>>p, top_>>p,(right_+aa_range)>>p, (bottom_+aa_range)>>p};
     const rect bbox_r_c = bbox_r.intersect(effectiveRect);
     if(bbox_r_c.empty()) return;
-    const rint du = (u1-u0)/(bbox_r.right-bbox_r.left);
-    const rint dv = (v1-v0)/(bbox_r.bottom-bbox_r.top);
+    // calculate uvs with original unclipped deltas, this way we can always accurately predict blocks
+    const auto bits_du=microgl::functions::used_integer_bits(u1-u0);
+    const auto bits_dv=microgl::functions::used_integer_bits(v1-v0);
+    const auto bits_width=microgl::functions::used_integer_bits(bbox_r.width());
+    const auto bits_height=microgl::functions::used_integer_bits(bbox_r.height());
+    // boost is done against compressed sub pixel coords, so we really cannot overflow, we leave
+    // (31-14=17) bits for coords without sub-pixel
+    const precision boost_bits=14, boost_width= bits_width + boost_bits, boost_height= bits_height + boost_bits;
+    precision boost_u=0, boost_v=0;
+    if(boost_width > bits_du) boost_u= boost_width - bits_du;
+    if(boost_height > bits_dv) boost_v= boost_height - bits_dv;
+    u0=u0<<boost_u;v0=v0<<boost_v;u1=u1<<boost_u;v1=v1<<boost_v; // this is (coords-sub_pixel bits)+(boost_bits=14) bits
+    const int du= (u1-u0)/(bbox_r.width()); // this occupies (boost_bits=14) bits
+    const int dv = (v1-v0)/(bbox_r.height()); // this occupies (boost_bits=14) bits
+
     const rint dx=bbox_r_c.left-bbox_r.left, dy=bbox_r_c.top-bbox_r.top;
     color_t color;
     const int pitch = width();
@@ -313,15 +326,190 @@ void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & samp
                 }
             }
             if (sample_fill) {
-                sampler_fill.sample(u, v, uv_p, color);
+                sampler_fill.sample(u>>boost_u, v>>boost_v, uv_p, color);
                 blendColor<BlendMode, PorterDuff>(color, (index+x_r), blend_fill);
             }
             if (sample_stroke) {
-                sampler_stroke.sample(u, v, uv_p, color);
+                sampler_stroke.sample(u>>boost_u, v>>boost_v, uv_p, color);
                 blendColor<BlendMode, PorterDuff>(color, (index+x_r), blend_stroke);
             }
         }
     }
+}
+
+template<typename BITMAP, uint8_t options>
+template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
+void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
+                                       const number1 left, const number1 top,
+                                       const number1 right, const number1 bottom,
+                                       opacity_t opacity,
+                                       const number2 u0, const number2 v0,
+                                       const number2 u1, const number2 v1) {
+    const precision p_sub = renderingOptions()._2d_raster_bits_sub_pixel,
+            p_uv = renderingOptions()._2d_raster_bits_uv;
+    drawRect<BlendMode, PorterDuff, antialias, S > (sampler,
+            microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
+            microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
+            microgl::math::to_fixed(u0, p_uv), microgl::math::to_fixed(v0, p_uv),
+            microgl::math::to_fixed(u1, p_uv), microgl::math::to_fixed(v1, p_uv),
+            p_sub, p_uv, opacity);
+}
+
+template<typename BITMAP, uint8_t options>
+template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
+void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
+                                       const matrix_3x3<number1> &transform,
+                                       const number1 left, const number1 top,
+                                       const number1 right, const number1 bottom,
+                                       opacity_t opacity,
+                                       const number2 u0, const number2 v0,
+                                       const number2 u1, const number2 v1) {
+    vec2<number1> p0{left, top}, p1{left, bottom}, p2{right, bottom}, p3{right, top};
+    if(!transform.isIdentity()) {p0=transform*p0; p1=transform*p1; p2=transform*p2; p3=transform*p3;}
+    drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, S>(sampler,
+                                                                        p0.x,p0.y,u0,v0, p1.x,p1.y,u0,v1, p2.x,p2.y,u1,v1, opacity, true, true, false);
+    drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, S>(sampler,
+                                                                        p2.x,p2.y,u1,v1, p3.x,p3.y,u1,v0, p0.x,p0.y,u0,v0, opacity, true, true, false);
+}
+
+template<typename BITMAP, uint8_t options>
+template <typename BlendMode, typename PorterDuff, bool antialias, typename S>
+void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
+                                       int left, int top,
+                                       int right, int bottom,
+                                       int u0, int v0,
+                                       int u1, int v1,
+                                       precision sub_pixel_precision,
+                                       precision uv_precision,
+                                       opacity_t opacity) {
+    auto effectiveRect = calculateEffectiveDrawRect();
+    if(effectiveRect.empty()) return;
+#define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
+#define floor_fixed(val, bits) (val>>bits)
+    color_t col_bmp{};
+    const precision p= sub_pixel_precision;
+    if(left==right || top==bottom) return;
+    const rect bbox_r = {floor_fixed(left, p), floor_fixed(top, p),
+                         ceil_fixed(right, p)-0, ceil_fixed(bottom, p)-0};
+    const rect bbox_r_c = bbox_r.intersect(effectiveRect);
+    if(bbox_r_c.empty()) return;
+    // calculate uvs with original unclipped deltas, this way we can always accurately predict blocks
+    const auto bits_du=microgl::functions::used_integer_bits(u1-u0);
+    const auto bits_dv=microgl::functions::used_integer_bits(v1-v0);
+    const auto bits_dx=microgl::functions::used_integer_bits(bbox_r.right-bbox_r.left);
+    const auto bits_dy=microgl::functions::used_integer_bits(bbox_r.bottom-bbox_r.top);
+    // boost is done against compressed sub pixel coords, so we really cannot overflow, we leave
+    // (31-14=17) bits for coords without sub-pixel
+    const precision boost_bits=14, boost_dx=bits_dx+boost_bits, boost_dy=bits_dy+boost_bits;
+    precision boost_u=0, boost_v=0;
+    if(boost_dx>bits_du) boost_u=boost_dx-bits_du;
+    if(boost_dy>bits_dv) boost_v=boost_dy-bits_dv;
+    u0=u0<<boost_u;v0=v0<<boost_v;u1=u1<<boost_u;v1=v1<<boost_v; // this is (coords-sub_pixel bits)+(boost_bits=14) bits
+    const int du = (u1-u0)/(bbox_r.right-bbox_r.left); // this occupies (boost_bits=14) bits
+    const int dv = (v1-v0)/(bbox_r.bottom-bbox_r.top); // this occupies (boost_bits=14) bits
+    const int dx= bbox_r_c.left-bbox_r.left, dy= bbox_r_c.top-bbox_r.top;
+    const int pitch= width();
+    if(antialias) {
+        const bool clipped_left=bbox_r.left!=bbox_r_c.left, clipped_top=bbox_r.top!=bbox_r_c.top;
+        const bool clipped_right=bbox_r.right!=bbox_r_c.right, clipped_bottom=bbox_r.bottom!=bbox_r_c.bottom;
+        const int max=1<<p, mask=max-1;
+        const int coverage_left= max-(left&mask), coverage_right=max-(((bbox_r.right+1)<<p)-right);
+        const int coverage_top= max-(top&mask), coverage_bottom=max-(((bbox_r.bottom+1)<<p)-bottom);
+        const int blend_left_top= (int(opacity)*((coverage_left*coverage_top)>>p))>>p;
+        const int blend_left_bottom= (int(opacity)*((coverage_left*coverage_bottom)>>p))>>p;
+        const int blend_right_top= (int(opacity)*((coverage_right*coverage_top)>>p))>>p;
+        const int blend_right_bottom=(int(opacity)*((coverage_right*coverage_bottom)>>p))>>p;
+        const int blend_left= (int(opacity)*coverage_left)>>p;
+        const int blend_top= (int(opacity)*coverage_top)>>p;
+        const int blend_right= (int(opacity)*coverage_right)>>p;
+        const int blend_bottom= (int(opacity)*coverage_bottom)>>p;
+        int index= (bbox_r_c.top) * pitch;
+        opacity_t blend=0;
+        for (int y=bbox_r_c.top, v=v0+(dv>>1)+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
+            for (int x=bbox_r_c.left, u=u0+(du>>1)+dx*du; x<=bbox_r_c.right; x++, u+=du) {
+                blend=opacity;
+                if(x==bbox_r_c.left && !clipped_left) {
+                    if(y==bbox_r_c.top && !clipped_top) blend= blend_left_top;
+                    else if(y==bbox_r_c.bottom && !clipped_bottom) blend= blend_left_bottom;
+                    else blend= blend_left;
+                }
+                else if(x==bbox_r_c.right && !clipped_right) {
+                    if(y==bbox_r_c.top && !clipped_top) blend= blend_right_top;
+                    else if(y==bbox_r_c.bottom && !clipped_bottom) blend= blend_right_bottom;
+                    else blend= blend_right;
+                }
+                else if(y==bbox_r_c.top && !clipped_top) blend= blend_top;
+                else if(y==bbox_r_c.bottom && !clipped_bottom) blend= blend_bottom;
+                sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
+                blendColor<BlendMode, PorterDuff>(col_bmp, index + x, blend);
+            }
+        }
+    }
+    else {
+        int index= bbox_r_c.top * pitch;
+        for (int y=bbox_r_c.top, v=v0+(dv>>1)+dy*dv; y<bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
+            for (int x=bbox_r_c.left, u=u0+(du>>1)+dx*du; x<bbox_r_c.right; x++, u+=du) {
+                sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
+                blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
+            }
+        }
+    }
+#undef ceil_fixed
+#undef floor_fixed
+}
+
+template<typename BITMAP, uint8_t options>
+template<typename BlendMode, typename PorterDuff,
+        bool antialias, typename number1, typename number2, typename S>
+void Canvas<BITMAP, options>::drawQuadrilateral(const sampling::sampler<S> & sampler,
+                                                const number1 &v0_x, const number1 & v0_y, const number2 & u0, const number2 & v0,
+                                                const number1 & v1_x, const number1 & v1_y, const number2 & u1, const number2 & v1,
+                                                const number1 & v2_x, const number1 & v2_y, const number2 & u2, const number2 & v2,
+                                                const number1 & v3_x, const number1 & v3_y, const number2 & u3, const number2 & v3,
+                                                const uint8_t opacity) {
+    const precision uv_p = renderingOptions()._2d_raster_bits_uv, pixel_p = renderingOptions()._2d_raster_bits_sub_pixel;
+#define f microgl::math::to_fixed
+    number2 q0 = 1, q1 = 1, q2 = 1, q3 = 1;
+    number1 p0x = v0_x; number1 p0y = v0_y;
+    number1 p1x = v1_x; number1 p1y = v1_y;
+    number1 p2x = v2_x; number1 p2y = v2_y;
+    number1 p3x = v3_x; number1 p3y = v3_y;
+    number1 ax = p2x - p0x;
+    number1 ay = p2y - p0y;
+    number1 bx = p3x - p1x;
+    number1 by = p3y - p1y;
+    number1 t, s;
+    number1 cross = ax * by - ay * bx;
+    if (cross != number1(0)) {
+        number1 cy = p0y - p1y;
+        number1 cx = p0x - p1x;
+        s = (ax * cy - ay * cx) / cross;
+        if (s > number1(0) && s < number1(1)) {
+            t = (bx * cy - by * cx) / cross;
+            if (t > number1(0) && t < number1(1)) { // here casting t, s to number2
+                q0 = number2(1) / (number2(1) - number2(t));
+                q1 = number2(1) / (number2(1) - number2(s));
+                q2 = number2(1) / number2(t);
+                q3 = number2(1) / number2(s);
+            }
+        }
+    }
+    number2 u0_q0 = u0*q0, v0_q0 = v0*q0;
+    number2 u1_q1 = u1*q1, v1_q1 = v1*q1;
+    number2 u2_q2 = u2*q2, v2_q2 = v2*q2;
+    number2 u3_q3 = u3*q3, v3_q3 = v3*q3;
+    // perspective correct version
+    drawTriangle<BlendMode, PorterDuff, antialias, true, S>(sampler,
+            f(v0_x, pixel_p), f(v0_y, pixel_p), f(u0_q0, uv_p), f(v0_q0, uv_p), f(q0, uv_p),
+            f(v1_x, pixel_p), f(v1_y, pixel_p), f(u1_q1, uv_p), f(v1_q1, uv_p), f(q1, uv_p),
+            f(v2_x, pixel_p), f(v2_y, pixel_p), f(u2_q2, uv_p), f(v2_q2, uv_p), f(q2, uv_p),
+            opacity, pixel_p, uv_p, true, true, false);
+    drawTriangle<BlendMode, PorterDuff, antialias, true, S>(sampler,
+            f(v2_x, pixel_p), f(v2_y, pixel_p), f(u2_q2, uv_p), f(v2_q2, uv_p), f(q2, uv_p),
+            f(v3_x, pixel_p), f(v3_y, pixel_p), f(u3_q3, uv_p), f(v3_q3, uv_p), f(q3, uv_p),
+            f(v0_x, pixel_p), f(v0_y, pixel_p), f(u0_q0, uv_p), f(v0_q0, uv_p), f(q0, uv_p),
+            opacity, pixel_p, uv_p, true, true, false);
+#undef f
 }
 
 // Triangles
@@ -795,181 +983,6 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
         }
         w0_row+=B01; w1_row+=B12; w2_row+=B20;
     }
-}
-
-template<typename BITMAP, uint8_t options>
-template<typename BlendMode, typename PorterDuff,
-        bool antialias, typename number1, typename number2, typename S>
-void Canvas<BITMAP, options>::drawQuadrilateral(const sampling::sampler<S> & sampler,
-                                         const number1 &v0_x, const number1 & v0_y, const number2 & u0, const number2 & v0,
-                                         const number1 & v1_x, const number1 & v1_y, const number2 & u1, const number2 & v1,
-                                         const number1 & v2_x, const number1 & v2_y, const number2 & u2, const number2 & v2,
-                                         const number1 & v3_x, const number1 & v3_y, const number2 & u3, const number2 & v3,
-                                         const uint8_t opacity) {
-    const precision uv_p = renderingOptions()._2d_raster_bits_uv, pixel_p = renderingOptions()._2d_raster_bits_sub_pixel;
-#define f microgl::math::to_fixed
-    number2 q0 = 1, q1 = 1, q2 = 1, q3 = 1;
-    number1 p0x = v0_x; number1 p0y = v0_y;
-    number1 p1x = v1_x; number1 p1y = v1_y;
-    number1 p2x = v2_x; number1 p2y = v2_y;
-    number1 p3x = v3_x; number1 p3y = v3_y;
-    number1 ax = p2x - p0x;
-    number1 ay = p2y - p0y;
-    number1 bx = p3x - p1x;
-    number1 by = p3y - p1y;
-    number1 t, s;
-    number1 cross = ax * by - ay * bx;
-    if (cross != number1(0)) {
-        number1 cy = p0y - p1y;
-        number1 cx = p0x - p1x;
-        s = (ax * cy - ay * cx) / cross;
-        if (s > number1(0) && s < number1(1)) {
-            t = (bx * cy - by * cx) / cross;
-            if (t > number1(0) && t < number1(1)) { // here casting t, s to number2
-                q0 = number2(1) / (number2(1) - number2(t));
-                q1 = number2(1) / (number2(1) - number2(s));
-                q2 = number2(1) / number2(t);
-                q3 = number2(1) / number2(s);
-            }
-        }
-    }
-    number2 u0_q0 = u0*q0, v0_q0 = v0*q0;
-    number2 u1_q1 = u1*q1, v1_q1 = v1*q1;
-    number2 u2_q2 = u2*q2, v2_q2 = v2*q2;
-    number2 u3_q3 = u3*q3, v3_q3 = v3*q3;
-    // perspective correct version
-    drawTriangle<BlendMode, PorterDuff, antialias, true, S>(sampler,
-          f(v0_x, pixel_p), f(v0_y, pixel_p), f(u0_q0, uv_p), f(v0_q0, uv_p), f(q0, uv_p),
-          f(v1_x, pixel_p), f(v1_y, pixel_p), f(u1_q1, uv_p), f(v1_q1, uv_p), f(q1, uv_p),
-          f(v2_x, pixel_p), f(v2_y, pixel_p), f(u2_q2, uv_p), f(v2_q2, uv_p), f(q2, uv_p),
-          opacity, pixel_p, uv_p, true, true, false);
-    drawTriangle<BlendMode, PorterDuff, antialias, true, S>(sampler,
-          f(v2_x, pixel_p), f(v2_y, pixel_p), f(u2_q2, uv_p), f(v2_q2, uv_p), f(q2, uv_p),
-          f(v3_x, pixel_p), f(v3_y, pixel_p), f(u3_q3, uv_p), f(v3_q3, uv_p), f(q3, uv_p),
-          f(v0_x, pixel_p), f(v0_y, pixel_p), f(u0_q0, uv_p), f(v0_q0, uv_p), f(q0, uv_p),
-          opacity, pixel_p, uv_p, true, true, false);
-#undef f
-}
-
-template<typename BITMAP, uint8_t options>
-template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
-void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
-                              const number1 left, const number1 top,
-                              const number1 right, const number1 bottom,
-                              opacity_t opacity,
-                              const number2 u0, const number2 v0,
-                              const number2 u1, const number2 v1) {
-    const precision p_sub = renderingOptions()._2d_raster_bits_sub_pixel,
-                p_uv = renderingOptions()._2d_raster_bits_uv;
-    drawRect<BlendMode, PorterDuff, antialias, S > (sampler,
-            microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
-            microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
-            microgl::math::to_fixed(u0, p_uv), microgl::math::to_fixed(v0, p_uv),
-            microgl::math::to_fixed(u1, p_uv), microgl::math::to_fixed(v1, p_uv),
-            p_sub, p_uv, opacity);
-}
-
-template<typename BITMAP, uint8_t options>
-template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
-void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
-                              const matrix_3x3<number1> &transform,
-                              const number1 left, const number1 top,
-                              const number1 right, const number1 bottom,
-                              opacity_t opacity,
-                              const number2 u0, const number2 v0,
-                              const number2 u1, const number2 v1) {
-    vec2<number1> p0{left, top}, p1{left, bottom}, p2{right, bottom}, p3{right, top};
-    if(!transform.isIdentity()) {p0=transform*p0; p1=transform*p1; p2=transform*p2; p3=transform*p3;}
-    drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, S>(sampler,
-            p0.x,p0.y,u0,v0, p1.x,p1.y,u0,v1, p2.x,p2.y,u1,v1, opacity, true, true, false);
-    drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, S>(sampler,
-            p2.x,p2.y,u1,v1, p3.x,p3.y,u1,v0, p0.x,p0.y,u0,v0, opacity, true, true, false);
-}
-
-template<typename BITMAP, uint8_t options>
-template <typename BlendMode, typename PorterDuff, bool antialias, typename S>
-void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
-                              int left, int top,
-                              int right, int bottom,
-                              int u0, int v0,
-                              int u1, int v1,
-                              precision sub_pixel_precision,
-                              precision uv_precision,
-                              opacity_t opacity) {
-    auto effectiveRect = calculateEffectiveDrawRect();
-    if(effectiveRect.empty()) return;
-#define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
-#define floor_fixed(val, bits) (val>>bits)
-    color_t col_bmp{};
-    const precision p= sub_pixel_precision;
-    if(left==right || top==bottom) return;
-    const rect bbox_r = {floor_fixed(left, p), floor_fixed(top, p),
-                 ceil_fixed(right, p)-0, ceil_fixed(bottom, p)-0};
-    const rect bbox_r_c = bbox_r.intersect(effectiveRect);
-    if(bbox_r_c.empty()) return;
-    // calculate uvs with original unclipped deltas, this way we can always accurately predict blocks
-    const auto bits_du=microgl::functions::used_integer_bits(u1-u0);
-    const auto bits_dv=microgl::functions::used_integer_bits(v1-v0);
-    const auto bits_dx=microgl::functions::used_integer_bits(bbox_r.right-bbox_r.left);
-    const auto bits_dy=microgl::functions::used_integer_bits(bbox_r.bottom-bbox_r.top);
-    // boost is done against compressed sub pixel coords, so we really cannot overflow, we leave
-    // (31-14=17) bits for coords without sub-pixel
-    const precision boost_bits=14, boost_dx=bits_dx+boost_bits, boost_dy=bits_dy+boost_bits;
-    precision boost_u=0, boost_v=0;
-    if(boost_dx>bits_du) boost_u=boost_dx-bits_du;
-    if(boost_dy>bits_dv) boost_v=boost_dy-bits_dv;
-    u0=u0<<boost_u;v0=v0<<boost_v;u1=u1<<boost_u;v1=v1<<boost_v; // this is (coords-sub_pixel bits)+(boost_bits=14) bits
-    const int du = (u1-u0)/(bbox_r.right-bbox_r.left); // this occupies (boost_bits=14) bits
-    const int dv = (v1-v0)/(bbox_r.bottom-bbox_r.top); // this occupies (boost_bits=14) bits
-    const int dx= bbox_r_c.left-bbox_r.left, dy= bbox_r_c.top-bbox_r.top;
-    const int pitch= width();
-    if(antialias) {
-        const bool clipped_left=bbox_r.left!=bbox_r_c.left, clipped_top=bbox_r.top!=bbox_r_c.top;
-        const bool clipped_right=bbox_r.right!=bbox_r_c.right, clipped_bottom=bbox_r.bottom!=bbox_r_c.bottom;
-        const int max=1<<p, mask=max-1;
-        const int coverage_left= max-(left&mask), coverage_right=max-(((bbox_r.right+1)<<p)-right);
-        const int coverage_top= max-(top&mask), coverage_bottom=max-(((bbox_r.bottom+1)<<p)-bottom);
-        const int blend_left_top= (int(opacity)*((coverage_left*coverage_top)>>p))>>p;
-        const int blend_left_bottom= (int(opacity)*((coverage_left*coverage_bottom)>>p))>>p;
-        const int blend_right_top= (int(opacity)*((coverage_right*coverage_top)>>p))>>p;
-        const int blend_right_bottom=(int(opacity)*((coverage_right*coverage_bottom)>>p))>>p;
-        const int blend_left= (int(opacity)*coverage_left)>>p;
-        const int blend_top= (int(opacity)*coverage_top)>>p;
-        const int blend_right= (int(opacity)*coverage_right)>>p;
-        const int blend_bottom= (int(opacity)*coverage_bottom)>>p;
-        int index= (bbox_r_c.top) * pitch;
-        opacity_t blend=0;
-        for (int y=bbox_r_c.top, v=v0+(dv>>1)+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
-            for (int x=bbox_r_c.left, u=u0+(du>>1)+dx*du; x<=bbox_r_c.right; x++, u+=du) {
-                blend=opacity;
-                if(x==bbox_r_c.left && !clipped_left) {
-                    if(y==bbox_r_c.top && !clipped_top) blend= blend_left_top;
-                    else if(y==bbox_r_c.bottom && !clipped_bottom) blend= blend_left_bottom;
-                    else blend= blend_left;
-                }
-                else if(x==bbox_r_c.right && !clipped_right) {
-                    if(y==bbox_r_c.top && !clipped_top) blend= blend_right_top;
-                    else if(y==bbox_r_c.bottom && !clipped_bottom) blend= blend_right_bottom;
-                    else blend= blend_right;
-                }
-                else if(y==bbox_r_c.top && !clipped_top) blend= blend_top;
-                else if(y==bbox_r_c.bottom && !clipped_bottom) blend= blend_bottom;
-                sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
-                blendColor<BlendMode, PorterDuff>(col_bmp, index + x, blend);
-            }
-        }
-    }
-    else {
-        int index= bbox_r_c.top * pitch;
-        for (int y=bbox_r_c.top, v=v0+(dv>>1)+dy*dv; y<bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
-            for (int x=bbox_r_c.left, u=u0+(du>>1)+dx*du; x<bbox_r_c.right; x++, u+=du) {
-                sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
-                blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
-            }
-        }
-    }
-#undef ceil_fixed
-#undef floor_fixed
 }
 
 template<typename BITMAP, uint8_t options>
