@@ -28,6 +28,7 @@ namespace microgl {
                 this->derived().sample(u_fixed, v_fixed, bits, output);
             }
 
+            // todo:: this should be deprecated, does not make logic
             bits red_bits() const { return _red_bits; }
             bits green_bits() const { return _green_bits; }
             bits blue_bits() const { return _blue_bits; }

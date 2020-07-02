@@ -107,9 +107,10 @@ inline void Canvas<BITMAP, options>::blendColor(const color_t &val, int index, o
             //getPixelColor(index, backdrop);
         // we assume that either they are the same or one of them is zero, this is FASTER then comparison.
         // if we don't own a native alpha channel, check if the color has a suggestion for alpha channel.
-        bits alpha_bits = coder().alpha_bits() | val.a_bits;
+        // I use it because of masks. I really want to get rid of this
+        bits alpha_bits = pixel_coder::alpha_bits() | val.a_bits;
         if(alpha_bits) blended.a = src.a;
-        else { blended.a= 255; alpha_bits=8; }
+        else { blended.a= 255; alpha_bits=8; } // no alpha channel ? let's create one with 8 bits
         constexpr bool hasNativeAlphaChannel = pixel_coder::alpha_bits()!=0;
         constexpr unsigned int max_alpha_value = hasNativeAlphaChannel ? (1 << pixel_coder::alpha_bits()) - 1 : (255);
         // fix alpha bits depth in case we don't natively
@@ -145,7 +146,7 @@ inline void Canvas<BITMAP, options>::blendColor(const color_t &val, int index, o
             blended.r = src.r; blended.g = src.g; blended.b = src.b;
         }
         // I fixed opacity is always 8 bits no matter what the alpha depth of the native canvas
-        if(opacity < 255) blended.a =  (int(blended.a) * int(opacity)*int(257))>>16;
+        if(opacity < 255) blended.a =  (int(blended.a) * int(opacity)*int(257))>>16; // blinn method
         constexpr bool premultiply_result = !hasNativeAlphaChannel;
         // finally alpha composite with Porter-Duff equations,
         // this should be zero-cost for None option with compiler optimizations
@@ -253,14 +254,12 @@ void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & samp
     u0=u0<<boost_u;v0=v0<<boost_v;u1=u1<<boost_u;v1=v1<<boost_v; // this is (coords-sub_pixel bits)+(boost_bits=14) bits
     const int du= (u1-u0)/(bbox_r.width()); // this occupies (boost_bits=14) bits
     const int dv = (v1-v0)/(bbox_r.height()); // this occupies (boost_bits=14) bits
-
     const rint dx=bbox_r_c.left-bbox_r.left, dy=bbox_r_c.top-bbox_r.top;
     color_t color;
     const int pitch = width();
     int index = bbox_r_c.top * pitch;
     for (rint y_r=bbox_r_c.top, yy=(top_&~mask)+dy*step, v=v0+dy*dv+(dv>>1); y_r<=bbox_r_c.bottom; y_r++, yy+=step, v+=dv, index+=pitch) {
         for (rint x_r=bbox_r_c.left, xx=(left_&~mask)+dx*step, u=u0+dx*du+(du>>1); x_r<=bbox_r_c.right; x_r++, xx+=step, u+=du) {
-
             int blend_fill=opacity, blend_stroke=opacity;
             bool inside_radius;
             bool sample_fill=true, sample_stroke=false;
@@ -269,7 +268,6 @@ void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & samp
             const bool in_top_right= xx>=right_-radius && yy<=top_+radius;
             const bool in_bottom_right= xx>=right_-radius && yy>=bottom_-radius;
             const bool in_disks= in_top_left || in_bottom_left || in_top_right || in_bottom_right;
-
             if(in_disks) {
                 rint anchor_x=0, anchor_y=0;
                 if(in_top_left) {anchor_x= left_+radius, anchor_y=top_+radius; }
@@ -1028,18 +1026,28 @@ void Canvas<BITMAP, options>::drawMask(const masks::chrome_mode &mode,
 #undef ceil_fixed
 #undef floor_fixed
     // calculate original uv deltas, this way we can always accurately predict blocks
-    const int du = (u1-u0)/(bbox_r.right- bbox_r.left);
-    const int dv = (v1-v0)/(bbox_r.bottom-bbox_r.top);
+    // calculate uvs with original unclipped deltas, this way we can always accurately predict blocks
+    const auto bits_du=microgl::functions::used_integer_bits(u1-u0);
+    const auto bits_dv=microgl::functions::used_integer_bits(v1-v0);
+    const auto bits_width=microgl::functions::used_integer_bits(bbox_r.width());
+    const auto bits_height=microgl::functions::used_integer_bits(bbox_r.height());
+    // boost is done against compressed sub pixel coords, so we really cannot overflow, we leave
+    // (31-14=17) bits for coords without sub-pixel
+    const precision boost_bits=14, boost_width= bits_width + boost_bits, boost_height= bits_height + boost_bits;
+    precision boost_u=0, boost_v=0;
+    if(boost_width > bits_du) boost_u= boost_width - bits_du;
+    if(boost_height > bits_dv) boost_v= boost_height - bits_dv;
+    u0=u0<<boost_u;v0=v0<<boost_v;u1=u1<<boost_u;v1=v1<<boost_v; // this is (coords-sub_pixel bits)+(boost_bits=14) bits
+    const int du= (u1-u0)/bbox_r.width(); // this occupies (boost_bits=14) bits
+    const int dv = (v1-v0)/bbox_r.height(); // this occupies (boost_bits=14) bits
     const int dx= bbox_r_c.left-bbox_r.left, dy= bbox_r_c.top-bbox_r.top;
-    u0+=du>>1; v0+=dv>>1; // sample from the middle always for best results
-    const int u_start= u0+dx*du;
-    const int pitch= width();
+    const int u_start= u0+(du>>1)+dx*du, pitch= width();
     int index= bbox_r_c.top * pitch;
-    const bits alpha_bits = this->coder().alpha_bits() | 8;
-    const channel max_alpha_value = (1<<alpha_bits) - 1;
-    for (int y=bbox_r_c.top, v=v0+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
+    const bits alpha_bits = this->coder().alpha_bits() ? this->coder().alpha_bits() : 8;
+    const channel max_alpha_value = (uint16_t(1)<<alpha_bits) - 1;
+    for (int y=bbox_r_c.top, v=v0+(du>>1)+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
         for (int x=bbox_r_c.left, u=u_start; x<=bbox_r_c.right; x++, u+=du) {
-            sampler.sample(u, v, uv_precision, col_bmp);
+            sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
             channel a=0;
             switch (mode) {
                 case masks::chrome_mode::red_channel:

@@ -49,7 +49,7 @@ void test_1() {
             );
     return;
 //t=0.f;
-    canvas->drawRoundedQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
+    canvas->drawRoundedRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
             flatColor, gradient2Colors,
             50.0f+0, 50.0f+0,
             50.0f+300.0f+t, 50.0f+300.0f+t, 50.f+0,10.0f

@@ -37,7 +37,7 @@ void init_sdl(int width, int height);
 inline void render() {
     //t+=-0.01;
     canvas->clear({255,255,255,255});
-    canvas->drawQuad<blendmode::Normal, porterduff::None<>>(
+    canvas->drawRect<blendmode::Normal, porterduff::None<>>(
             tex_1,
             t, t, 300.0f, 300.0f,
             255);

@@ -88,7 +88,7 @@ public:
 
     struct render_options_t {
         uint8_t _2d_raster_bits_sub_pixel= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 8 : 0;
-        uint8_t _2d_raster_bits_uv= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 4 : 10;
+        uint8_t _2d_raster_bits_uv= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 15 : 10;
         uint8_t bits_sub_pixel_3D_rasterizer= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 8 : 0;
     };
 

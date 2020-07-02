@@ -19,7 +19,7 @@ namespace microgl {
                 texture_wrap wrap_v=texture_wrap::None>
         class texture : public sampler<texture<Bitmap, filter, wrap_u, wrap_v>> {
             using base= sampler<texture<Bitmap, filter, wrap_u, wrap_v>>;
-            using l64= long long;
+            using rint= int;
         public:
             texture() : texture{nullptr} {};
             explicit texture(Bitmap * bitmap) :
@@ -42,13 +42,13 @@ namespace microgl {
                 _border_color=color;
             }
 
-            inline void sample(const l64 u, const l64 v,
+            inline void sample(const rint u, const rint v,
                                const uint8_t bits,
                                color_t &output) const {
-                l64 u_=u, v_=v;
+                rint u_=u, v_=v;
                 switch(wrap_u) {
                     case texture_wrap::Clamp : {
-                        l64 one= l64(1)<<bits;
+                        rint one= rint(1)<<bits;
                         u_=u_<0?0:(u_>one ? one : u_); break;
                     }
                     case texture_wrap::ClampToBorderColor : {
@@ -65,16 +65,16 @@ namespace microgl {
 
                 switch(wrap_v) {
                     case texture_wrap::Clamp : {
-                        l64 one= 1<<bits;
+                        rint one= rint(1)<<bits;
                         v_=v<0?0:(v>one ? one : v); break;
                     }
                     case texture_wrap::ClampToBorderColor : {
-                        if(v<0 || v>(1<<bits)) {
+                        if(v<0 || v>(rint(1)<<bits)) {
                             output=_border_color; return;
                         }
                     }
                     case texture_wrap::Repeat : {
-                        v_=v&((l64(1)<<bits)-1);
+                        v_=v&((rint(1)<<bits)-1);
                         break;
                     }
                     case texture_wrap::None : break;
@@ -87,36 +87,36 @@ namespace microgl {
                     sample_bilinear(u_, v_, bits, output);
             }
 
-            inline void sample_nearest_neighboor(const l64 u, const l64 v,
+            inline void sample_nearest_neighboor(const rint u, const rint v,
                                         const uint8_t bits, color_t &output) const {
-                const l64 half= l64(1)<<(bits-1);
-                const l64 x = (l64(_bmp->width()-1)*(u)+half) >> bits;
-                const l64 y = (l64(_bmp->height()-1)*(v)+half) >> bits;
+                const rint half= rint(1)<<(bits-1);
+                const rint x = (rint(_bmp->width()-1)*(u)+half) >> bits;
+                const rint y = (rint(_bmp->height()-1)*(v)+half) >> bits;
                 const int index_bmp = y*_bmp->width() + x;
                 _bmp->decode(index_bmp, output);
 //                output={0,0,0,255};
             }
 
-            inline void sample_bilinear(l64 u, l64 v,
+            inline void sample_bilinear(rint u, rint v,
                                const uint8_t bits, color_t &output) const {
-                const l64 bmp_w_max = _bmp->width()-1;
-                const l64 bmp_h_max = _bmp->height()-1;
+                const rint bmp_w_max = _bmp->width()-1;
+                const rint bmp_h_max = _bmp->height()-1;
                 u=u*bmp_w_max;
                 v=v*bmp_h_max;
-                const l64 max = l64(1) << bits;
-                const l64 max_value = max - 1;
-//                l64 mask = ~max_value;
-//                l64 integral_sampleU = u & mask;
-//                l64 integral_sampleV = v & mask;
-//                l64 tx = -round_sampleU + u;
-//                l64 ty = -round_sampleV + v;
+                const rint max = rint(1) << bits;
+                const rint max_value = max - 1;
+//                rint mask = ~max_value;
+//                rint integral_sampleU = u & mask;
+//                rint integral_sampleV = v & mask;
+//                rint tx = -round_sampleU + u;
+//                rint ty = -round_sampleV + v;
                 // take reminder part
-                const l64 tx = u & max_value; // reminder u
-                const l64 ty = v & max_value; // reminder v
-                const l64 U = (u) >> bits; // integral u
-                const l64 V = (v) >> bits; // integral v
-                const l64 U_plus_one = U >= bmp_w_max ? U : U + 1;
-                const l64 V_plus_one = V >= bmp_h_max ? V : V + 1;
+                const rint tx = u & max_value; // reminder u
+                const rint ty = v & max_value; // reminder v
+                const rint U = (u) >> bits; // integral u
+                const rint V = (v) >> bits; // integral v
+                const rint U_plus_one = U >= bmp_w_max ? U : U + 1;
+                const rint V_plus_one = V >= bmp_h_max ? V : V + 1;
 
                 color_t c00, c10, c01, c11;
                 // todo: can optimize indices not to get multiplied
@@ -127,20 +127,20 @@ namespace microgl {
 
                 color_t a, b, c;
 
-                a.r = (l64(c00.r) * (max - tx) + l64(c10.r) * tx) >> bits;
-                a.g = (l64(c00.g) * (max - tx) + l64(c10.g) * tx) >> bits;
-                a.b = (l64(c00.b) * (max - tx) + l64(c10.b) * tx) >> bits;
-                a.a = (l64(c00.a) * (max - tx) + l64(c10.a) * tx) >> bits;
+                a.r = (rint(c00.r) * (max - tx) + rint(c10.r) * tx) >> bits;
+                a.g = (rint(c00.g) * (max - tx) + rint(c10.g) * tx) >> bits;
+                a.b = (rint(c00.b) * (max - tx) + rint(c10.b) * tx) >> bits;
+                a.a = (rint(c00.a) * (max - tx) + rint(c10.a) * tx) >> bits;
 
-                b.r = (l64(c01.r) * (max - tx) + l64(c11.r) * tx) >> bits;
-                b.g = (l64(c01.g) * (max - tx) + l64(c11.g) * tx) >> bits;
-                b.b = (l64(c01.b) * (max - tx) + l64(c11.b) * tx) >> bits;
-                b.a = (l64(c01.a) * (max - tx) + l64(c11.a) * tx) >> bits;
+                b.r = (rint(c01.r) * (max - tx) + rint(c11.r) * tx) >> bits;
+                b.g = (rint(c01.g) * (max - tx) + rint(c11.g) * tx) >> bits;
+                b.b = (rint(c01.b) * (max - tx) + rint(c11.b) * tx) >> bits;
+                b.a = (rint(c01.a) * (max - tx) + rint(c11.a) * tx) >> bits;
 
-                output.r = (l64(a.r) * (max - ty) + l64(b.r) * ty) >> bits;
-                output.g = (l64(a.g) * (max - ty) + l64(b.g) * ty) >> bits;
-                output.b = (l64(a.b) * (max - ty) + l64(b.b) * ty) >> bits;
-                output.a = (l64(a.a) * (max - ty) + l64(b.a) * ty) >> bits;
+                output.r = (rint(a.r) * (max - ty) + rint(b.r) * ty) >> bits;
+                output.g = (rint(a.g) * (max - ty) + rint(b.g) * ty) >> bits;
+                output.b = (rint(a.b) * (max - ty) + rint(b.b) * ty) >> bits;
+                output.a = (rint(a.a) * (max - ty) + rint(b.a) * ty) >> bits;
             }
 
         private:
