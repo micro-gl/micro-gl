@@ -199,14 +199,12 @@ void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & samp
                                      Canvas::opacity_t opacity,
                                      const number2 & u0, const number2 & v0,
                                      const number2 & u1, const number2 & v1) {
-    const precision p = 8; const precision p_uv = 24;
+    const precision p = renderingOptions()._2d_raster_bits_sub_pixel;
+    const precision p_uv = renderingOptions()._2d_raster_bits_uv;
 #define f_p(x) microgl::math::to_fixed((x), p)
 #define f_uv(x) microgl::math::to_fixed((x), p_uv)
     drawRoundedRect<BlendMode, PorterDuff, antialias>(sampler_fill, sampler_stroke, f_p(left), f_p(top), f_p(right),
-                                                      f_p(bottom),
-                                                      f_p(radius), f_p(stroke_size), f_uv(u0), f_uv(v0), f_uv(u1),
-                                                      f_uv(v1),
-                                                      p, p_uv, opacity);
+            f_p(bottom), f_p(radius), f_p(stroke_size), f_uv(u0), f_uv(v0), f_uv(u1), f_uv(v1), p, p_uv, opacity);
 #undef f_uv
 #undef f_p
 }
@@ -218,37 +216,37 @@ void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & samp
                                      int left, int top,
                                      int right, int bottom,
                                      int radius, int stroke_size,
-                                     l64 u0, l64 v0, l64 u1, l64 v1,
+                                     int u0, int v0, int u1, int v1,
                                      precision sub_pixel_precision, precision uv_p,
                                      Canvas::opacity_t opacity) {
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
     const precision p = sub_pixel_precision;
-    const l64 step = (l64(1)<<p);
-    const l64 half = step>>1;
-    const l64 stroke = stroke_size-step;//(10<<p)/1;
-    const l64 aa_range = step;// (1<<p)/1;
-    const l64 radius_squared=(l64(radius)*(radius))>>p;
-    const l64 stroke_radius = (l64(radius-(stroke-0))*(radius-(stroke-0)))>>p;
-    const l64 outer_aa_radius = (l64(radius+aa_range)*(radius+aa_range))>>p;
-    const l64 outer_aa_bend = outer_aa_radius-radius_squared;
-    const l64 inner_aa_radius = (l64(radius-(stroke-0)-aa_range)*(radius-(stroke-0)-aa_range))>>p;
-    const l64 inner_aa_bend = stroke_radius-inner_aa_radius;
+    const rint step = (rint(1)<<p);
+    const rint half = step>>1;
+    const rint stroke = stroke_size-step;//(10<<p)/1;
+    const rint aa_range = step;// (1<<p)/1;
+    const rint radius_squared=(rint_big(radius)*(radius))>>p;
+    const rint stroke_radius = (rint_big(radius-(stroke-0))*(radius-(stroke-0)))>>p;
+    const rint outer_aa_radius = (rint_big(radius+aa_range)*(radius+aa_range))>>p;
+    const rint outer_aa_bend = outer_aa_radius-radius_squared;
+    const rint inner_aa_radius = (rint_big(radius-(stroke-0)-aa_range)*rint_big(radius-(stroke-0)-aa_range))>>p;
+    const rint inner_aa_bend = stroke_radius-inner_aa_radius;
     const bool apply_opacity = opacity!=255;
-    const l64 mask= (1<<sub_pixel_precision)-1;
+    const rint mask= (rint(1)<<sub_pixel_precision)-1;
     // dimensions in two spaces, one in raster spaces for optimization
-    const l64 left_=(left+0), top_=(top+0), right_=(right), bottom_=(bottom);
+    const rint left_=(left+0), top_=(top+0), right_=(right), bottom_=(bottom);
     const rect bbox_r = {left_>>p, top_>>p,(right_+aa_range)>>p, (bottom_+aa_range)>>p};
     const rect bbox_r_c = bbox_r.intersect(effectiveRect);
     if(bbox_r_c.empty()) return;
-    const l64 du = (u1-u0)/(bbox_r.right-bbox_r.left);
-    const l64 dv = (v1-v0)/(bbox_r.bottom-bbox_r.top);
-    const l64 dx=bbox_r_c.left-bbox_r.left, dy=bbox_r_c.top-bbox_r.top;
+    const rint du = (u1-u0)/(bbox_r.right-bbox_r.left);
+    const rint dv = (v1-v0)/(bbox_r.bottom-bbox_r.top);
+    const rint dx=bbox_r_c.left-bbox_r.left, dy=bbox_r_c.top-bbox_r.top;
     color_t color;
     const int pitch = width();
     int index = bbox_r_c.top * pitch;
-    for (l64 y_r=bbox_r_c.top, yy=(top_&~mask)+dy*step, v=v0+dy*dv; y_r<=bbox_r_c.bottom; y_r++, yy+=step, v+=dv, index+=pitch) {
-        for (l64 x_r=bbox_r_c.left, xx=(left_&~mask)+dx*step, u=u0+dx*du; x_r<=bbox_r_c.right; x_r++, xx+=step, u+=du) {
+    for (rint y_r=bbox_r_c.top, yy=(top_&~mask)+dy*step, v=v0+dy*dv+(dv>>1); y_r<=bbox_r_c.bottom; y_r++, yy+=step, v+=dv, index+=pitch) {
+        for (rint x_r=bbox_r_c.left, xx=(left_&~mask)+dx*step, u=u0+dx*du+(du>>1); x_r<=bbox_r_c.right; x_r++, xx+=step, u+=du) {
 
             int blend_fill=opacity, blend_stroke=opacity;
             bool inside_radius;
@@ -260,14 +258,14 @@ void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & samp
             const bool in_disks= in_top_left || in_bottom_left || in_top_right || in_bottom_right;
 
             if(in_disks) {
-                l64 anchor_x=0, anchor_y=0;
+                rint anchor_x=0, anchor_y=0;
                 if(in_top_left) {anchor_x= left_+radius, anchor_y=top_+radius; }
                 if(in_bottom_left) {anchor_x= left_+radius, anchor_y=bottom_-radius; }
                 if(in_top_right) {anchor_x= right_-radius, anchor_y=top_+radius; }
                 if(in_bottom_right) {anchor_x= right_-radius, anchor_y=bottom_-radius; }
 
-                l64 delta_x = xx - anchor_x, delta_y = yy - anchor_y;
-                const l64 distance_squared = ((l64(delta_x) * delta_x) >> p) + ((l64(delta_y) * delta_y) >> p);
+                rint delta_x = xx - anchor_x, delta_y = yy - anchor_y;
+                const rint distance_squared = ((rint(delta_x) * delta_x) >> p) + ((rint(delta_y) * delta_y) >> p);
                 sample_fill=inside_radius = (distance_squared - radius_squared) <= 0;
 
                 if (inside_radius) {
@@ -277,7 +275,7 @@ void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & samp
                         sample_stroke=true;
                     }
                     else { // outside stroke disk, let's test_texture for aa disk or radius inclusion
-                        const l64 delta_inner_aa = -inner_aa_radius + distance_squared;
+                        const rint delta_inner_aa = -inner_aa_radius + distance_squared;
                         const bool inside_inner_aa_ring = delta_inner_aa >= 0;
                         if (antialias && inside_inner_aa_ring) {
                             // scale inner to 8 bit and then convert to integer
@@ -853,8 +851,6 @@ void Canvas<BITMAP, options>::drawQuadrilateral(const sampling::sampler<S> & sam
 #undef f
 }
 
-// quads
-
 template<typename BITMAP, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
 void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
@@ -912,11 +908,20 @@ void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
     const rect bbox_r_c = bbox_r.intersect(effectiveRect);
     if(bbox_r_c.empty()) return;
     // calculate uvs with original unclipped deltas, this way we can always accurately predict blocks
-    const int du = (u1-u0)/(bbox_r.right-bbox_r.left-0);
-    const int dv = (v1-v0)/(bbox_r.bottom-bbox_r.top-0);
+    const auto bits_du=microgl::functions::used_integer_bits(u1-u0);
+    const auto bits_dv=microgl::functions::used_integer_bits(v1-v0);
+    const auto bits_dx=microgl::functions::used_integer_bits(bbox_r.right-bbox_r.left);
+    const auto bits_dy=microgl::functions::used_integer_bits(bbox_r.bottom-bbox_r.top);
+    // boost is done against compressed sub pixel coords, so we really cannot overflow, we leave
+    // (31-14=17) bits for coords without sub-pixel
+    const precision boost_bits=14, boost_dx=bits_dx+boost_bits, boost_dy=bits_dy+boost_bits;
+    precision boost_u=0, boost_v=0;
+    if(boost_dx>bits_du) boost_u=boost_dx-bits_du;
+    if(boost_dy>bits_dv) boost_v=boost_dy-bits_dv;
+    u0=u0<<boost_u;v0=v0<<boost_v;u1=u1<<boost_u;v1=v1<<boost_v; // this is (coords-sub_pixel bits)+(boost_bits=14) bits
+    const int du = (u1-u0)/(bbox_r.right-bbox_r.left); // this occupies (boost_bits=14) bits
+    const int dv = (v1-v0)/(bbox_r.bottom-bbox_r.top); // this occupies (boost_bits=14) bits
     const int dx= bbox_r_c.left-bbox_r.left, dy= bbox_r_c.top-bbox_r.top;
-    u0+=du>>1; v0+=dv>>1; // sample from the middle always for best results
-    const int u_start= u0+dx*du;
     const int pitch= width();
     if(antialias) {
         const bool clipped_left=bbox_r.left!=bbox_r_c.left, clipped_top=bbox_r.top!=bbox_r_c.top;
@@ -934,39 +939,31 @@ void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
         const int blend_bottom= (int(opacity)*coverage_bottom)>>p;
         int index= (bbox_r_c.top) * pitch;
         opacity_t blend=0;
-        for (int y=bbox_r_c.top, v=v0+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
-            for (int x=bbox_r_c.left, u=u_start; x<=bbox_r_c.right; x++, u+=du) {
+        for (int y=bbox_r_c.top, v=v0+(dv>>1)+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
+            for (int x=bbox_r_c.left, u=u0+(du>>1)+dx*du; x<=bbox_r_c.right; x++, u+=du) {
                 blend=opacity;
                 if(x==bbox_r_c.left && !clipped_left) {
-                    if(y==bbox_r_c.top && !clipped_top)
-                        blend= blend_left_top;
-                    else if(y==bbox_r_c.bottom && !clipped_bottom)
-                        blend= blend_left_bottom;
+                    if(y==bbox_r_c.top && !clipped_top) blend= blend_left_top;
+                    else if(y==bbox_r_c.bottom && !clipped_bottom) blend= blend_left_bottom;
                     else blend= blend_left;
                 }
                 else if(x==bbox_r_c.right && !clipped_right) {
-                    if(y==bbox_r_c.top && !clipped_top)
-                        blend= blend_right_top;
-                    else if(y==bbox_r_c.bottom && !clipped_bottom)
-                        blend= blend_right_bottom;
-                    else
-                        blend= blend_right;
+                    if(y==bbox_r_c.top && !clipped_top) blend= blend_right_top;
+                    else if(y==bbox_r_c.bottom && !clipped_bottom) blend= blend_right_bottom;
+                    else blend= blend_right;
                 }
-                else if(y==bbox_r_c.top && !clipped_top)
-                    blend= blend_top;
-                else if(y==bbox_r_c.bottom && !clipped_bottom)
-                    blend= blend_bottom;
-
-                sampler.sample(u, v, uv_precision, col_bmp);
+                else if(y==bbox_r_c.top && !clipped_top) blend= blend_top;
+                else if(y==bbox_r_c.bottom && !clipped_bottom) blend= blend_bottom;
+                sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + x, blend);
             }
         }
     }
     else {
         int index= bbox_r_c.top * pitch;
-        for (int y=bbox_r_c.top, v=v0+dy*dv; y<bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
-            for (int x=bbox_r_c.left, u=u_start; x<bbox_r_c.right; x++, u+=du) {
-                sampler.sample(u, v, uv_precision, col_bmp);
+        for (int y=bbox_r_c.top, v=v0+(dv>>1)+dy*dv; y<bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
+            for (int x=bbox_r_c.left, u=u0+(du>>1)+dx*du; x<bbox_r_c.right; x++, u+=du) {
+                sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
             }
         }

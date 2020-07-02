@@ -40,20 +40,20 @@ void axial_rect() {
 }
 
 template <typename number>
-void transfromed_rect() {
+void transformed_rect() {
     t+=0.005;//-0.01;
     canvas->drawRect<blendmode::Normal, porterduff::None<>, false, number>(
             tex_uv,
             matrix_3x3<number>::rotation(microgl::math::deg_to_rad(5.0f+t), 128, 128),
 //            matrix_3x3<number>::identity(),
             0, 0, 256<<0, 256<<0);
-//            0, 0, 5560, 5560);
+//            0, 0, 12000, 12000);
 }
 
 void render() {
     canvas->clear({255,255,255,255});
 //    axial_rect<float>();
-    transfromed_rect<float>();
+    transformed_rect<float>();
 
 }
 

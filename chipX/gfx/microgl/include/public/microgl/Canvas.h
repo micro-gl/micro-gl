@@ -38,12 +38,39 @@ constexpr bool is_set(const uint8_t ops, const uint8_t feature)  {
     return ops & feature;
 }
 
+/**
+ * use big integers for 2d rasterizer, this implies a 64 bits place holders
+ * for all or most calculations inside the rasterizer. bigger integers imply
+ * overflow is harder to come by
+ */
 #define CANVAS_OPT_2d_raster_USE_BIG_INT uint8_t(0b00000001)
+/**
+ * inside the 2d rasterizer, use division for uv-mapping, this reduces
+ * the number of bits used BUT is slower. Generally this HAS to be used
+ * on a forced 32 bit rasterizer, in case you want a pure 32 bit integers
+ * only during rasterization. Do not use it when in BIG INT mode.
+ */
 #define CANVAS_OPT_2d_raster_USE_DIVISION uint8_t(0b00000010)
+/**
+ * the 2d rasterizer can detect overflow of uv mapping, the detection
+ * feature is great for debugging the rasterizer. this flag enables detection
+ * and if so, exits the rendering. This is helpful for when using a 32 bit mode,
+ * where overflows are likely to happen
+ */
 #define CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS uint8_t(0b00000100)
-#define CANVAS_OPT_2d_raster_FORCE_32_BIT CANVAS_OPT_2d_raster_USE_DIVISION
-#define CANVAS_OPT_default CANVAS_OPT_2d_raster_USE_BIG_INT | \
-            CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS
+/**
+ * use a true 32 bit mode in the 2d rasterizer, this means regular 32 bit integers
+ * and also the usage of division in order to reduce overflow and also detecting
+ * and exiting on overflows as they are likely to happen in 32 bit mode, if so,
+ * please adjust some of the render options bits in the canvas and make sure you
+ * render small geometries at a time
+ */
+#define CANVAS_OPT_2d_raster_FORCE_32_BIT CANVAS_OPT_2d_raster_USE_DIVISION | \
+                        CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS
+/**
+ * default preset, includes usage of big integers
+ */
+#define CANVAS_OPT_default CANVAS_OPT_2d_raster_USE_BIG_INT
 
 template<typename BITMAP, uint8_t options=CANVAS_OPT_default>
 class Canvas {
@@ -183,7 +210,7 @@ private:
                          int left, int top,
                          int right, int bottom,
                          int radius, int stroke_size,
-                         l64 u0, l64 v0, l64 u1, l64 v1,
+                         int u0, int v0, int u1, int v1,
                          precision sub_pixel_precision, precision uv_precision,
                          opacity_t opacity= 255);
 public:

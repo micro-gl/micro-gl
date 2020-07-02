@@ -8,7 +8,7 @@ namespace microgl {
         bits used_integer_bits(const Integer &value) {
             const Integer abs_value= value<0 ? -value:value;
             bits bits_used=0;
-            while (value>Integer(1)<<(bits_used++)) {};
+            while (abs_value>Integer(1)<<(bits_used++)) {};
             return bits_used-1;
         }
 

@@ -1078,3 +1078,206 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
     }
 }
 ```
+```c++
+template<typename BITMAP, uint8_t options>
+template <typename BlendMode, typename PorterDuff, bool antialias, typename S>
+void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
+                              int left, int top,
+                              int right, int bottom,
+                              int u0, int v0,
+                              int u1, int v1,
+                              precision sub_pixel_precision,
+                              precision uv_precision,
+                              opacity_t opacity) {
+    auto effectiveRect = calculateEffectiveDrawRect();
+    if(effectiveRect.empty()) return;
+#define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
+#define floor_fixed(val, bits) (val>>bits)
+    color_t col_bmp{};
+    const precision p= sub_pixel_precision;
+    if(left==right || top==bottom) return;
+    const rect bbox_r = {floor_fixed(left, p), floor_fixed(top, p),
+                 ceil_fixed(right, p)-0, ceil_fixed(bottom, p)-0};
+    const rect bbox_r_c = bbox_r.intersect(effectiveRect);
+    if(bbox_r_c.empty()) return;
+    // calculate uvs with original unclipped deltas, this way we can always accurately predict blocks
+    const int du = (u1-u0)/(bbox_r.right-bbox_r.left-0);
+    const int dv = (v1-v0)/(bbox_r.bottom-bbox_r.top-0);
+    const int dx= bbox_r_c.left-bbox_r.left, dy= bbox_r_c.top-bbox_r.top;
+    u0+=du>>1; v0+=dv>>1; // sample from the middle always for best results
+    const int u_start= u0+dx*du;
+    const int pitch= width();
+    if(antialias) {
+        const bool clipped_left=bbox_r.left!=bbox_r_c.left, clipped_top=bbox_r.top!=bbox_r_c.top;
+        const bool clipped_right=bbox_r.right!=bbox_r_c.right, clipped_bottom=bbox_r.bottom!=bbox_r_c.bottom;
+        const int max=1<<p, mask=max-1;
+        const int coverage_left= max-(left&mask), coverage_right=max-(((bbox_r.right+1)<<p)-right);
+        const int coverage_top= max-(top&mask), coverage_bottom=max-(((bbox_r.bottom+1)<<p)-bottom);
+        const int blend_left_top= (int(opacity)*((coverage_left*coverage_top)>>p))>>p;
+        const int blend_left_bottom= (int(opacity)*((coverage_left*coverage_bottom)>>p))>>p;
+        const int blend_right_top= (int(opacity)*((coverage_right*coverage_top)>>p))>>p;
+        const int blend_right_bottom=(int(opacity)*((coverage_right*coverage_bottom)>>p))>>p;
+        const int blend_left= (int(opacity)*coverage_left)>>p;
+        const int blend_top= (int(opacity)*coverage_top)>>p;
+        const int blend_right= (int(opacity)*coverage_right)>>p;
+        const int blend_bottom= (int(opacity)*coverage_bottom)>>p;
+        int index= (bbox_r_c.top) * pitch;
+        opacity_t blend=0;
+        for (int y=bbox_r_c.top, v=v0+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
+            for (int x=bbox_r_c.left, u=u_start; x<=bbox_r_c.right; x++, u+=du) {
+                blend=opacity;
+                if(x==bbox_r_c.left && !clipped_left) {
+                    if(y==bbox_r_c.top && !clipped_top)
+                        blend= blend_left_top;
+                    else if(y==bbox_r_c.bottom && !clipped_bottom)
+                        blend= blend_left_bottom;
+                    else blend= blend_left;
+                }
+                else if(x==bbox_r_c.right && !clipped_right) {
+                    if(y==bbox_r_c.top && !clipped_top)
+                        blend= blend_right_top;
+                    else if(y==bbox_r_c.bottom && !clipped_bottom)
+                        blend= blend_right_bottom;
+                    else
+                        blend= blend_right;
+                }
+                else if(y==bbox_r_c.top && !clipped_top)
+                    blend= blend_top;
+                else if(y==bbox_r_c.bottom && !clipped_bottom)
+                    blend= blend_bottom;
+
+                sampler.sample(u, v, uv_precision, col_bmp);
+                blendColor<BlendMode, PorterDuff>(col_bmp, index + x, blend);
+            }
+        }
+    }
+    else {
+        int index= bbox_r_c.top * pitch;
+        for (int y=bbox_r_c.top, v=v0+dy*dv; y<bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
+            for (int x=bbox_r_c.left, u=u_start; x<bbox_r_c.right; x++, u+=du) {
+                sampler.sample(u, v, uv_precision, col_bmp);
+                blendColor<BlendMode, PorterDuff>(col_bmp, index + x, opacity);
+            }
+        }
+    }
+#undef ceil_fixed
+#undef floor_fixed
+}
+```
+```c++
+template<typename BITMAP, uint8_t options>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
+void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
+                                     const sampling::sampler<S2> & sampler_stroke,
+                                     int left, int top,
+                                     int right, int bottom,
+                                     int radius, int stroke_size,
+                                     l64 u0, l64 v0, l64 u1, l64 v1,
+                                     precision sub_pixel_precision, precision uv_p,
+                                     Canvas::opacity_t opacity) {
+    auto effectiveRect = calculateEffectiveDrawRect();
+    if(effectiveRect.empty()) return;
+    const precision p = sub_pixel_precision;
+    const l64 step = (l64(1)<<p);
+    const l64 half = step>>1;
+    const l64 stroke = stroke_size-step;//(10<<p)/1;
+    const l64 aa_range = step;// (1<<p)/1;
+    const l64 radius_squared=(l64(radius)*(radius))>>p;
+    const l64 stroke_radius = (l64(radius-(stroke-0))*(radius-(stroke-0)))>>p;
+    const l64 outer_aa_radius = (l64(radius+aa_range)*(radius+aa_range))>>p;
+    const l64 outer_aa_bend = outer_aa_radius-radius_squared;
+    const l64 inner_aa_radius = (l64(radius-(stroke-0)-aa_range)*(radius-(stroke-0)-aa_range))>>p;
+    const l64 inner_aa_bend = stroke_radius-inner_aa_radius;
+    const bool apply_opacity = opacity!=255;
+    const l64 mask= (1<<sub_pixel_precision)-1;
+    // dimensions in two spaces, one in raster spaces for optimization
+    const l64 left_=(left+0), top_=(top+0), right_=(right), bottom_=(bottom);
+    const rect bbox_r = {left_>>p, top_>>p,(right_+aa_range)>>p, (bottom_+aa_range)>>p};
+    const rect bbox_r_c = bbox_r.intersect(effectiveRect);
+    if(bbox_r_c.empty()) return;
+    const l64 du = (u1-u0)/(bbox_r.right-bbox_r.left);
+    const l64 dv = (v1-v0)/(bbox_r.bottom-bbox_r.top);
+    const l64 dx=bbox_r_c.left-bbox_r.left, dy=bbox_r_c.top-bbox_r.top;
+    color_t color;
+    const int pitch = width();
+    int index = bbox_r_c.top * pitch;
+    for (l64 y_r=bbox_r_c.top, yy=(top_&~mask)+dy*step, v=v0+dy*dv; y_r<=bbox_r_c.bottom; y_r++, yy+=step, v+=dv, index+=pitch) {
+        for (l64 x_r=bbox_r_c.left, xx=(left_&~mask)+dx*step, u=u0+dx*du; x_r<=bbox_r_c.right; x_r++, xx+=step, u+=du) {
+
+            int blend_fill=opacity, blend_stroke=opacity;
+            bool inside_radius;
+            bool sample_fill=true, sample_stroke=false;
+            const bool in_top_left= xx<=left_+radius && yy<=top_+radius;
+            const bool in_bottom_left= xx<=left_+radius && yy>=bottom_-radius;
+            const bool in_top_right= xx>=right_-radius && yy<=top_+radius;
+            const bool in_bottom_right= xx>=right_-radius && yy>=bottom_-radius;
+            const bool in_disks= in_top_left || in_bottom_left || in_top_right || in_bottom_right;
+
+            if(in_disks) {
+                l64 anchor_x=0, anchor_y=0;
+                if(in_top_left) {anchor_x= left_+radius, anchor_y=top_+radius; }
+                if(in_bottom_left) {anchor_x= left_+radius, anchor_y=bottom_-radius; }
+                if(in_top_right) {anchor_x= right_-radius, anchor_y=top_+radius; }
+                if(in_bottom_right) {anchor_x= right_-radius, anchor_y=bottom_-radius; }
+
+                l64 delta_x = xx - anchor_x, delta_y = yy - anchor_y;
+                const l64 distance_squared = ((l64(delta_x) * delta_x) >> p) + ((l64(delta_y) * delta_y) >> p);
+                sample_fill=inside_radius = (distance_squared - radius_squared) <= 0;
+
+                if (inside_radius) {
+                    const bool inside_stroke = (distance_squared - stroke_radius) >= 0;
+                    if (inside_stroke) { // inside stroke disk
+                        blend_stroke = opacity;
+                        sample_stroke=true;
+                    }
+                    else { // outside stroke disk, let's test_texture for aa disk or radius inclusion
+                        const l64 delta_inner_aa = -inner_aa_radius + distance_squared;
+                        const bool inside_inner_aa_ring = delta_inner_aa >= 0;
+                        if (antialias && inside_inner_aa_ring) {
+                            // scale inner to 8 bit and then convert to integer
+                            blend_stroke = ((delta_inner_aa) << (8)) / inner_aa_bend;
+                            if (apply_opacity) blend_stroke = (blend_stroke * opacity) >> 8;
+                            sample_stroke=true;
+                        }
+                    }
+                } else if (antialias) { // we are outside the main radius
+                    const int delta_outer_aa = outer_aa_radius - distance_squared;
+                    const bool inside_outer_aa_ring = delta_outer_aa >= 0;
+                    if (inside_outer_aa_ring) {
+                        // scale inner to 8 bit and then convert to integer
+                        blend_stroke = ((delta_outer_aa) << (8)) / outer_aa_bend;
+                        if (apply_opacity) blend_stroke = (blend_stroke * opacity) >> 8;
+                        sample_stroke=true;
+                    }
+                }
+            } else {
+                // are we in external AA region ?
+                // few notes:
+                // this is not an accurate AA rounded rectangle, I use tricks to speed things up.
+                // - I need to do AA for the stroke walls, calculate the coverage.
+                //   currently I don't, therefore, there is a step function when rounded rectangle
+                //   moves in sub pixel coords
+                if(xx>right_ || yy>bottom_) {
+                    sample_fill=sample_stroke=false;
+                } else {
+                    if(xx-(left_&~mask)+0<=stroke) sample_stroke=true;
+                    else if(xx>=((right_&~mask) -stroke)) sample_stroke=true;
+                    else if(yy-(top_&~mask)<=stroke) sample_stroke=true;
+                    else if(yy>=(bottom_&~mask)-stroke) sample_stroke=true;
+                    else sample_stroke=false;
+                    sample_fill=true;
+                }
+            }
+            if (sample_fill) {
+                sampler_fill.sample(u, v, uv_p, color);
+                blendColor<BlendMode, PorterDuff>(color, (index+x_r), blend_fill);
+            }
+            if (sample_stroke) {
+                sampler_stroke.sample(u, v, uv_p, color);
+                blendColor<BlendMode, PorterDuff>(color, (index+x_r), blend_stroke);
+            }
+        }
+    }
+}
+
+```

@@ -34,7 +34,7 @@ set(SOURCES
 #        main_compositing.cpp
 #        main_blend_modes.cpp
 #        main_draw_triangle.cpp
-        main_draw_rect.cpp
+#        main_draw_rect.cpp
 #        main_draw_quadrilaterals.cpp
 #        main_draw_polygon_sampler.cpp
 #        main_draw_bezier_patch.cpp
@@ -44,7 +44,7 @@ set(SOURCES
 #        main_clear.cpp
 #        main_draw_quad_aa_sub_pixel_experiment.cpp
 #        main_draw_sampler_texture_wrap.cpp
-#        main_draw_sampler_texture.cpp
+        main_draw_sampler_texture.cpp
 #        main_draw_sampler_radial_gradient.cpp
 #        main_draw_sampler_angular_linear_gradient.cpp
 #        main_draw_sampler_line_gradient.cpp
