@@ -37,7 +37,7 @@ void test_2() {
 //    t+=0.001;
     canvas->drawRect<blendmode::Normal, porterduff::None<>, false, number>(
             color_sampler,
-            matrix_3x3<number>::identity(),
+//            matrix_3x3<number>::identity(),
             t, t, 400, 400);
 }
 

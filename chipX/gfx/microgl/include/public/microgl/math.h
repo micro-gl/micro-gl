@@ -10,7 +10,7 @@ namespace microgl {
         using cfr = const float &;
         template <unsigned N>
         using cqr = const Q<N> &;
-        using l64= long long;
+        using l64= int64_t ;//long long;
 
     public:
 #define PI        3.14159265358979323846264338327950288

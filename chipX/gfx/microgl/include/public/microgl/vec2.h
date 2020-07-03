@@ -53,20 +53,16 @@ namespace microgl {
         vec2 operator*(const number & val) const {
             return {this->x*val, this->y*val};
         }
-//        vec2 operator*(const signed & val) const {
-//            return {this->x*val, this->y*val};
-//        }
 
-        vec2 operator<<(const signed & a) const {
-            return vec2<number>{this->x*(1<<a), this->y*(1<<a)};
+        vec2 operator<<(const signed & val) const {
+            return vec2<number>{this->x*(signed(1) << val), this->y * (signed(1) << val)};
+        }
+        vec2 operator>>(const signed & val) const {
+            return vec2<number>{this->x/(signed(1) << val), this->y / (signed(1) << val)};
         }
 
         vec2 operator-() const {
             return vec2<number>{-this->x, -this->y};
-        }
-
-        vec2 operator>>(const int & a) const {
-            return vec2<number>{this->x/(1<<a), this->y/(1<<a)};
         }
 
         vec2 operator/(const number & val) const {
@@ -88,7 +84,20 @@ namespace microgl {
             this->x = a.x; this->y = a.y;
             return *this;
         }
-
     };
+
+    template<> vec2<signed> vec2<signed>::operator>>(const int & val) const {
+        return vec2<signed>{this->x >> val, this->y >> val};
+    }
+    template<> vec2<unsigned> vec2<unsigned>::operator>>(const int & val) const {
+        return vec2<unsigned>{this->x >> val, this->y >> val};
+    }
+    template<> vec2<signed> vec2<signed>::operator<<(const int & val) const {
+        return vec2<signed>{this->x << val, this->y << val};
+    }
+    template<> vec2<unsigned> vec2<unsigned>::operator<<(const int & val) const {
+        return vec2<unsigned>{this->x << val, this->y << val};
+    }
+
 
 }

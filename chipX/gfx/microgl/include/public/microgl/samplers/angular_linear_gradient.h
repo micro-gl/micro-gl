@@ -9,11 +9,9 @@ namespace microgl {
         /**
          * given an angle, compute the gradient line in the [0,1]x[0,1] box.
          */
-        template <typename number, unsigned N=10>
-        class angular_linear_gradient : public line_linear_gradient<number, N> {
-            using base= line_linear_gradient<number, N>;
-            using l64= long long;
-            using point_l64= vec2<l64>;
+        template <typename number, unsigned N=10, enum precision $precision=precision::high, bool useBigIntegers=false>
+        class angular_linear_gradient : public line_linear_gradient<number, N, $precision, useBigIntegers> {
+            using base= line_linear_gradient<number, N, $precision, useBigIntegers>;
             using point= vec2<number>;
 
             point intersect(const point &a, const point &b,
@@ -65,7 +63,6 @@ namespace microgl {
                     a1= left_top; a2= a1+normal;
                     b1= right_bottom; b2= b1+normal;
                 }
-
                 const auto start = intersect(p1, p2, a1, a2);
                 const auto end = intersect(p1, p2, b1, b2);
                 this->setNewLine(start, end);

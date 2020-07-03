@@ -29,14 +29,15 @@ float t=0;
 template <typename number>
 void test_1() {
 //    t+=-0.1;
-    canvas->drawQuad<blendmode::Normal, porterduff::None<>, false, number>(gradient, t, t, 400, 400);
-//    canvas->drawQuadrilateral<blendmode::Normal, porterduff::None<>, false, float>(
-//            gradient,
-//            0.0f,               0.0f,     0.0f, 1.0f,
-//            256 + 100.0f + t,     0.0f,       1.0f, 1.0f,
-//            256 + 0.0f,           256,         1.0f, 0.0f,
-//            0.0f,                 256,         0.0f, 0.0f,
-//            255);
+    canvas->drawRect<blendmode::Normal, porterduff::None<>, false, number>(gradient, t, t, 400, 400);
+return;
+    canvas->drawQuadrilateral<blendmode::Normal, porterduff::None<>, false, float>(
+            gradient,
+            0.0f,               0.0f,     0.0f, 1.0f,
+            256 + 100.0f + t,     0.0f,       1.0f, 1.0f,
+            256 + 0.0f,           256,         1.0f, 0.0f,
+            0.0f,                 256,         0.0f, 0.0f,
+            255);
 }
 
 void render() {

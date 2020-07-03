@@ -1269,9 +1269,9 @@ void Canvas<BITMAP, options>::drawWuLine(const color_t &color,
     blendColor(color_input, (X0+round)>>bits, (Y0+round)>>bits, opacity);
 
     if ((DeltaX = X1 - X0) >= 0) {
-        XDir = 1<<bits;
+        XDir = int(1)<<bits;
     } else {
-        XDir = -(1<<bits);
+        XDir = -(int(1)<<bits);
         DeltaX = -DeltaX; // make DeltaX positive
     }
     DeltaY = Y1 - Y0;
@@ -1361,12 +1361,10 @@ Canvas<BITMAP, options>::drawWuLinePath(const color_t &color,
                                  bool closed_path) {
     index jx = 0;
     for (jx = 0; jx < size; jx++)
-        if(jx)
-            drawWuLine(color,
-                       points[jx - 1].x, points[jx - 1].y,
-                       points[jx].x, points[jx].y);
-    if(closed_path)
-        drawWuLine(color, points[0].x, points[0].y, points[jx - 1].x, points[jx - 1].y);
+        if(jx) drawWuLine(color, points[jx - 1].x, points[jx - 1].y, points[jx].x,
+                points[jx].y);
+    if(closed_path) drawWuLine(color, points[0].x, points[0].y, points[jx - 1].x,
+            points[jx - 1].y);
 }
 
 template<typename BITMAP, uint8_t options>
@@ -1504,7 +1502,7 @@ void Canvas<BITMAP, options>::drawText(const char * text, microgl::text::bitmap_
     const bool has_scaled=s!=1<<PP;
     if(has_scaled){ // we use the sampler for scaled
         microgl::sampling::texture<BITMAP_FONT_TYPE, sampling::texture_filter::NearestNeighboor> texture{font._bitmap};
-        const int UVP=15;
+        const int UVP=renderingOptions()._2d_raster_bits_uv;
         int u0, v0, u1, v1;
         for (unsigned ix = 0; ix < count; ++ix) {
             const auto & l= result.locations[ix];

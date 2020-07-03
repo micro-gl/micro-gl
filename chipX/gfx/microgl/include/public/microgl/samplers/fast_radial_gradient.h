@@ -2,6 +2,7 @@
 #pragma ide diagnostic ignored "HidingNonVirtualFunction"
 
 #include <microgl/sampler.h>
+#include <microgl/micro_gl_traits.h>
 
 namespace microgl {
     namespace sampling {
@@ -12,26 +13,26 @@ namespace microgl {
          * a sqrt function which I avoid, therefore my interpolation function is closer
          * to a quadratic function interpolation to calculate interpolation factor
          */
-        template <typename number, unsigned N=10>
-        class fast_radial_gradient : public sampler<fast_radial_gradient<number, N>> {
-            using base= sampler<fast_radial_gradient<number, N>>;
-            using l64= long long;
-            static constexpr precision p_= precision::high;
-            static constexpr precision_t p_bits= static_cast<precision_t>(p_);
+        template <typename number, unsigned N=10, enum precision $precision=precision::high, bool useBigIntegers=false>
+        class fast_radial_gradient : public sampler<fast_radial_gradient<number, N, $precision, useBigIntegers>> {
+            using base= sampler<fast_radial_gradient<number, N, $precision, useBigIntegers>>;
+            using rint_big=int64_t;
+            using rint= typename microgl::traits::conditional<useBigIntegers, int64_t, int32_t>::type;
+            static constexpr precision_t p_bits= static_cast<precision_t>($precision);
             static constexpr precision_t p_bits_double= p_bits<<1;
-            static constexpr l64 ONE= l64(1)<<p_bits;
-            static constexpr l64 HALF= ONE>>1;
+            static constexpr rint ONE= rint(1)<<p_bits;
+            static constexpr rint HALF= ONE>>1;
 
             struct stop_t {
-                l64 where=0;
-                l64 start_squared=0;
-                l64 length_inverse=0;
-                l64 length=0;
+                rint where=0;
+                rint start_squared=0;
+                rint length_inverse=0;
+                rint length=0;
                 color_t color{};
             };
 
             static inline
-            l64 convert(l64 from_value, int from_precision, int to_precision) {
+            rint convert(rint from_value, int from_precision, int to_precision) {
                 const int pp= int(from_precision) - int(to_precision);
                 if(pp==0) return from_value;
                 else if(pp > 0) return from_value>>pp;
@@ -40,7 +41,7 @@ namespace microgl {
 
             unsigned index= 0;
             stop_t _stops[N];
-            l64 _cx=HALF, _cy=HALF, _radius=HALF;
+            rint _cx=HALF, _cy=HALF, _radius=HALF;
         public:
             fast_radial_gradient() : base{8, 8, 8, 8} {}
             fast_radial_gradient(const number &cx, const number &cy, const number &radius) :
@@ -56,19 +57,19 @@ namespace microgl {
             }
 
             void addStop(const number & where, const color_t &color) {
-                 l64 where_64= math::to_fixed(where, p_bits);
-                const l64 distance = (where_64*_radius)>>p_bits;
+                rint where_64= math::to_fixed(where, p_bits);
+                const rint distance = (rint_big(where_64)*_radius)>>p_bits; // p_bits number
                 auto & stop = _stops[index];
                 stop.where= (where_64);
                 stop.start_squared= (distance * distance) >> p_bits;
                 stop.color= color;
                 if(index>0) {
-                    l64 a= (_stops[index].where*_radius)>>p_bits;
-                    l64 b= (_stops[index-1].where*_radius)>>p_bits;
+                    rint a= (rint_big(_stops[index].where)*_radius)>>p_bits;
+                    rint b= (rint_big(_stops[index-1].where)*_radius)>>p_bits;
                     a = (a*a)>>p_bits;
                     b = (b*b)>>p_bits;
-                    l64 l=a-b;
-                    l64 l_inverse= (l64(1)<<p_bits_double)/l;
+                    rint l=a-b;
+                    rint l_inverse= (rint_big(1)<<p_bits_double)/l;
                     _stops[index].length_inverse= l_inverse;
                     _stops[index].length= l;
                 }
@@ -77,15 +78,17 @@ namespace microgl {
 
             inline void sample(const int u, const int v,
                                const unsigned bits, color_t &output) const {
+                // note:: inside the critical sampling we use only one type of integer, to allow for 32
+                //        bit computers for example to be efficient and avoid double registers
                 const auto u_tag= convert(u, bits, p_bits);
                 const auto v_tag= convert(v, bits, p_bits);
-                const l64 dx= u_tag-_cx, dy= v_tag-_cy;
-                const l64 distance_squared= ((dx * dx) >> p_bits) + ((dy * dy) >> p_bits);
+                const rint dx= u_tag-_cx, dy= v_tag-_cy;
+                const rint distance_squared= ((dx * dx) >> p_bits) + ((dy * dy) >> p_bits);
                 unsigned pos=0;
                 const auto top= index;
-                l64 distance_to_closest_stop= 0;
+                rint distance_to_closest_stop= 0;
                 for (pos=0; pos<top; ++pos) {
-                    const l64 d= distance_squared - _stops[pos].start_squared;
+                    const rint d= distance_squared - _stops[pos].start_squared;
                     if(d<0) break;
                     distance_to_closest_stop=d;
                 }
@@ -97,11 +100,11 @@ namespace microgl {
                 const auto & stop_0= _stops[pos-1];
                 const auto & stop_1= _stops[pos];
                 const auto & l_inverse= _stops[pos].length_inverse;
-                const l64 factor= (distance_to_closest_stop*l_inverse);
-                output.r= l64(stop_0.color.r) + ((l64(stop_1.color.r-stop_0.color.r)*factor)>>p_bits_double);
-                output.g= l64(stop_0.color.g) + ((l64(stop_1.color.g-stop_0.color.g)*factor)>>p_bits_double);
-                output.b= l64(stop_0.color.b) + ((l64(stop_1.color.b-stop_0.color.b)*factor)>>p_bits_double);
-                output.a= l64(stop_0.color.a) + ((l64(stop_1.color.a-stop_0.color.a)*factor)>>p_bits_double);
+                const rint factor= (distance_to_closest_stop*l_inverse)>>p_bits;
+                output.r= rint(stop_0.color.r) + ((rint(stop_1.color.r-stop_0.color.r)*factor)>>p_bits);
+                output.g= rint(stop_0.color.g) + ((rint(stop_1.color.g-stop_0.color.g)*factor)>>p_bits);
+                output.b= rint(stop_0.color.b) + ((rint(stop_1.color.b-stop_0.color.b)*factor)>>p_bits);
+                output.a= rint(stop_0.color.a) + ((rint(stop_1.color.a-stop_0.color.a)*factor)>>p_bits);
             }
 
             void reset() {

@@ -6,10 +6,11 @@
 namespace microgl {
     namespace sampling {
 
-        template <unsigned degree=90>
-        class linear_gradient_2_colors : public sampler<linear_gradient_2_colors<degree>> {
-            using base= sampler<linear_gradient_2_colors<degree>>;
-            using l64= long long;
+        template <unsigned degree=90, bool useBigIntegers=false>
+        class linear_gradient_2_colors : public sampler<linear_gradient_2_colors<degree, useBigIntegers>> {
+            using base= sampler<linear_gradient_2_colors<degree, useBigIntegers>>;
+            using rint_big=int64_t;
+            using rint= typename microgl::traits::conditional<useBigIntegers, int64_t, int32_t>::type;
 
         public:
             linear_gradient_2_colors() : linear_gradient_2_colors({0,0,0,0}, {0,0,0,0}) {}
@@ -21,19 +22,19 @@ namespace microgl {
 
             inline void sample(const int u, const int v,
                                const unsigned bits, color_t &output) const {
-                l64 t=0, h= l64(1)<<(bits-1);
+                rint t=0, h= rint(1)<<(bits-1);
                 if(degree<=0 || degree>315) t=u;
                 else if(degree<=45) t=(u+v)>>1;
                 else if(degree<=90) t=v;
-                else if(degree<=135) t=(1<<bits)-(((u-v)>>1)+h);
-                else if(degree<=180) t=(1<<bits)-u;
-                else if(degree<=225) t=(1<<bits)-((u+v)>>1);
-                else if(degree<=270) t=(1<<bits)-v;
+                else if(degree<=135) t=(rint(1)<<bits)-(((u-v)>>1)+h);
+                else if(degree<=180) t=(rint(1)<<bits)-u;
+                else if(degree<=225) t=(rint(1)<<bits)-((u+v)>>1);
+                else if(degree<=270) t=(rint(1)<<bits)-v;
                 else if(degree<=315) t=((u-v)>>1)-h;
-                output.r= l64(color1.r) + ((l64(color2.r-color1.r)*t)>>bits);
-                output.g= l64(color1.g) + ((l64(color2.g-color1.g)*t)>>bits);
-                output.b= l64(color1.b) + ((l64(color2.b-color1.b)*t)>>bits);
-                output.a= l64(color1.a) + ((l64(color2.a-color1.a)*t)>>bits);
+                output.r= rint(color1.r) + ((rint(color2.r-color1.r)*t)>>bits);
+                output.g= rint(color1.g) + ((rint(color2.g-color1.g)*t)>>bits);
+                output.b= rint(color1.b) + ((rint(color2.b-color1.b)*t)>>bits);
+                output.a= rint(color1.a) + ((rint(color2.a-color1.a)*t)>>bits);
             }
 
         private:

@@ -19,7 +19,7 @@ using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<Bitmap24>;
 
 Canvas24 * canvas;
-linear_gradient_2_colors<45> gradient{{255,0,0}, {255,0,255}};
+linear_gradient_2_colors<45> gradient{{255,0,0}, {0,0,255}};
 
 void loop();
 void init_sdl(int width, int height);
@@ -28,7 +28,7 @@ float t=0;
 template <typename number>
 void test_1() {
 //    t+=0.0001;
-    canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(gradient, t, t, 400, 400);
+    canvas->drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(gradient, t, t, 400, 400);
 //    canvas->drawQuadrilateral<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, float>(
 //            gradient,
 //            0.0f,               0.0f,     0.0f, 1.0f,

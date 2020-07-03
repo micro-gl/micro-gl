@@ -8,7 +8,6 @@ namespace microgl {
 
         class flat_color : public sampler<flat_color> {
             using base= sampler<flat_color>;
-            using l64= long long;
 
         public:
             explicit flat_color()= default;
