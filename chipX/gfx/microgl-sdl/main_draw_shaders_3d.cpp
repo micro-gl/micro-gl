@@ -11,7 +11,7 @@
 #include "data/model_3d_cube.h"
 
 using namespace microgl::shading;
-#define TEST_ITERATIONS 100
+#define TEST_ITERATIONS 0
 #define W 640*1
 #define H 640*1
 #define TTT 1
@@ -48,13 +48,15 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     using vertex_attribute= sampler_shader_vertex_attribute<number>;
 
 //    z-=0.0004;
-    z-=0.0425;
+//    z-=0.0425;
+//    z-=1.0425;
+    z-=3;
 
     // setup mvp matrix
     mat4 model = mat4::transform({ math::deg_to_rad(z/2), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
-                                 {0,0,0}, {10,10,10});
+                                 {0,0,-z/10.0f}, {10,10,10});
 //    mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
-    mat4 view = camera::angleAt({0, 0, 50}, 0, math::deg_to_rad(-0),0);
+    mat4 view = camera::angleAt({0, 0, 300}, 0, math::deg_to_rad(-0),0);
     mat4 projection = camera::perspective(math::deg_to_rad(60), canvas->width(), canvas->height(), 1, 500);
 //    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 100);
     mat4 mvp= projection*view*model;
@@ -89,8 +91,9 @@ void render() {
 
 //    test_shader_color_2d<float>();
 //    test_shader_color_2d<Q<10>>();
-//    test_shader_texture_3d<float>(cube_3d<float>);
-    test_shader_texture_3d<Q<16>>(cube_3d<Q<16>>);
+    test_shader_texture_3d<float>(cube_3d<float>);
+//    test_shader_texture_3d<double>(cube_3d<double>);
+//    test_shader_texture_3d<Q<16>>(cube_3d<Q<16>>);
 //    test_shader_texture_3d<Q<10>>(cube_3d<Q<10>>);
 //    test_shader_texture_3d<Q<5>>(cube_3d<Q<5>>);
 

@@ -21,7 +21,6 @@ namespace microgl {
                 output.b=color.b;
                 output.a=color.a;
             }
-
             color_t color;
         };
 

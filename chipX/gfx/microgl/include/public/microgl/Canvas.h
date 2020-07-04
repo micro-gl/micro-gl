@@ -70,7 +70,7 @@ constexpr bool is_set(const uint8_t ops, const uint8_t feature)  {
 /**
  * default preset, includes usage of big integers
  */
-#define CANVAS_OPT_default CANVAS_OPT_2d_raster_USE_BIG_INT
+#define CANVAS_OPT_default CANVAS_OPT_2d_raster_USE_BIG_INT | CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS | 0
 
 template<typename BITMAP, uint8_t options=CANVAS_OPT_default>
 class Canvas {
@@ -87,7 +87,7 @@ public:
     };
 
     struct render_options_t {
-        uint8_t _2d_raster_bits_sub_pixel= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 8 : 0;
+        uint8_t _2d_raster_bits_sub_pixel= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 0 : 0;
         uint8_t _2d_raster_bits_uv= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 15 : 10;
         uint8_t bits_sub_pixel_3D_rasterizer= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 8 : 0;
     };
@@ -101,9 +101,9 @@ private:
     using Pixel= typename BITMAP::Pixel;
     using pixel_coder= typename BITMAP::Coder;
     // rasterizer integers
-    using rint_big = l64;
+    using rint_big = int64_t;
     using rint =typename microgl::traits::conditional<
-            op_CANVAS_OPT_2d_raster_USE_BIG_INT, rint_big, int>::type;
+            op_CANVAS_OPT_2d_raster_USE_BIG_INT, rint_big, int32_t >::type;
 
     bitmap * _bitmap_canvas = nullptr;
     window_t _window;
@@ -340,8 +340,7 @@ public:
                       int viewport_width, int viewport_height,
                       vertex_attr v0, vertex_attr v1, vertex_attr v2,
                       opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
-                      long long * depth_buffer=nullptr,
-                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
+                      long long * depth_buffer=nullptr);
 
 private:
     template <typename BlendMode=blendmode::Normal,
@@ -353,8 +352,7 @@ private:
                                            const vec4<number> &p0, const vec4<number> &p1, const vec4<number> &p2,
                                            varying &varying_v0, varying &varying_v1, varying &varying_v2,
                                            opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
-                                            long long * depth_buffer=nullptr,
-                                           bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
+                                            long long * depth_buffer=nullptr);
 
 public:
     // Masks

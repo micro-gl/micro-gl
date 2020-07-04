@@ -70,7 +70,7 @@ void init_sdl(int width, int height) {
     sdl_renderer = SDL_CreateRenderer(sdl_window, -1, 0);
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STATIC, width, height);
-    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
+    auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
     auto bmp_uv_U8 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
     canvas = new Canvas24(width, height);

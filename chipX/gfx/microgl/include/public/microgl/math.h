@@ -21,20 +21,20 @@ namespace microgl {
 #define abs_(a) ((a)<(0) ? (-a) : (a))
 
         static l64 to_fixed(const float &val, unsigned char precision) {
-            return l64(val*float(1u<<precision));
+            return l64(val*float(l64(1)<<precision));
         }
 
         static l64 to_fixed(const double &val, unsigned char precision) {
-            return l64(val*double(1u<<precision));
+            return l64(val*double(l64(1)<<precision));
         }
 
         static l64 to_fixed(const unsigned &val, unsigned char precision) {
-            return (val<<precision);
+            return (l64(val)<<precision);
         }
 
         static l64 to_fixed(const int &val, unsigned char precision) {
             const bool isNegative=val<0;
-            l64 value_abs=abs(val) << precision;
+            l64 value_abs=abs(l64(val)) << precision;
             return isNegative ? -value_abs : value_abs;
         }
 

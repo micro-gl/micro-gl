@@ -34,7 +34,7 @@ void test_bezier(vec3<number>* mesh, unsigned U, unsigned V) {
 //            color_grey,
             tex_uv,
             matrix_3x3<number>::identity(),
-            mesh, U, V, 20, 20,
+            mesh, U, V, 40, 40,
             0,1,1,0,
             255);
     delete [] mesh;
@@ -69,6 +69,7 @@ vec3<number>* bi_cubic_1(){
 void render() {
     canvas->clear({255,255,255,255});
     test_bezier<float>(bi_cubic_1<float>(), 4, 4);
+//    test_bezier<double>(bi_cubic_1<double>(), 4, 4);
 //    canvas->fxaa(10,10,canvas->width()-10,canvas->height()-10);
 //    canvas->fxaa(10,10,canvas->width()-10,canvas->height()-10);
 //    test_bezier<Q<16>>(bi_cubic_1<Q<16>>(), 4, 4);

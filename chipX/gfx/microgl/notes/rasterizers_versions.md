@@ -1281,3 +1281,142 @@ void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & samp
 }
 
 ```
+
+```c++
+template<typename BITMAP, uint8_t options>
+template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
+        typename impl, typename vertex_attr, typename varying, typename number>
+void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
+                                                         int viewport_width, int viewport_height,
+                                                         const vec4<number> &p0,  const vec4<number> &p1,  const vec4<number> &p2,
+                                                         varying &varying_v0, varying &varying_v1, varying &varying_v2,
+                                                         opacity_t opacity, const triangles::face_culling & culling,
+                                                         long long * depth_buffer) {
+    /*
+     * given triangle coords in a homogeneous coords, a shader, and corresponding interpolated varying
+     * vertex attributes. we pass varying because somewhere in the pipeline we might have clipped things
+     * in homogeneous space and therefore had to update/correct the vertex attributes.
+     */
+    auto effectiveRect = calculateEffectiveDrawRect();
+    if(effectiveRect.empty()) return;
+    const precision sub_pixel_precision = 8;
+#define f microgl::math::to_fixed
+    varying interpolated_varying;
+    // perspective divide by w -> NDC space
+    if(p0.w==0 || p1.w==0 || p2.w==0) return;
+    const auto v0_ndc = p0/p0.w;
+    const auto v1_ndc = p1/p1.w;
+    const auto v2_ndc = p2/p2.w;
+    // viewport transform: NDC space -> raster space
+    const number w= viewport_width;
+    const number h= viewport_height;
+    number one = number(1), two=number(2);
+    vec3<number> v0_viewport = {((v0_ndc.x + one)*w)/two, h - ((v0_ndc.y + one)*h)/two, (v0_ndc.z + one)/two};
+    vec3<number> v1_viewport = {((v1_ndc.x + one)*w)/two, h - ((v1_ndc.y + one)*h)/two, (v1_ndc.z + one)/two};
+    vec3<number> v2_viewport = {((v2_ndc.x + one)*w)/two, h - ((v2_ndc.y + one)*h)/two, (v2_ndc.z + one)/two};
+    // collect values for interpolation as fixed point integers
+    int v0_x= f(v0_viewport.x, sub_pixel_precision), v0_y= f(v0_viewport.y, sub_pixel_precision);
+    int v1_x= f(v1_viewport.x, sub_pixel_precision), v1_y= f(v1_viewport.y, sub_pixel_precision);
+    int v2_x= f(v2_viewport.x, sub_pixel_precision), v2_y= f(v2_viewport.y, sub_pixel_precision);
+    //
+    auto bits_w0=microgl::functions::used_integer_bits(f(p0.w, sub_pixel_precision));
+    auto bits_w1=microgl::functions::used_integer_bits(f(p1.w, sub_pixel_precision));
+    auto bits_w2=microgl::functions::used_integer_bits(f(p2.w, sub_pixel_precision));
+    //
+    const int w_bits= 18; const l64 one_w= (l64(1) << (w_bits << 1)); // negate z because camera is looking negative z axis
+    l64 v0_w= one_w / f(p0.w, w_bits), v1_w= one_w / f(p1.w, w_bits), v2_w= one_w / f(p2.w, w_bits);
+    const int z_bits= 24; const l64 one_z= (l64(1) << (z_bits)); // negate z because camera is looking negative z axis
+    l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
+
+    l64 area = functions::orient2d<l64, l64>(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
+    // infer back-face culling
+    const bool ccw = area<0;
+    if(area==0) return; // discard degenerate triangles
+    if(ccw && culling==triangles::face_culling::ccw) return;
+    if(!ccw && culling==triangles::face_culling::cw) return;
+    if(ccw) { // convert CCW to CW triangle
+        functions::swap(v1_x, v2_x); functions::swap(v1_y, v2_y);
+        area = -area;
+    } else { // flip vertically
+        functions::swap(varying_v1, varying_v2);
+        functions::swap(v1_w, v2_w); functions::swap(v1_z, v2_z);
+    }
+    // rotate to match edges
+    functions::swap(varying_v0, varying_v1);
+    functions::swap(v0_w, v1_w); functions::swap(v0_z, v1_z);
+
+#undef f
+    // bounding box in raster space
+#define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
+#define floor_fixed(val, bits) ((val)>>bits)
+    rect bbox;
+    l64 mask = ~((l64(1)<<sub_pixel_precision)-1);
+    bbox.left = floor_fixed(functions::min<l64>(v0_x, v1_x, v2_x)&mask, sub_pixel_precision);
+    bbox.top = floor_fixed(functions::min<l64>(v0_y, v1_y, v2_y)&mask, sub_pixel_precision);
+    bbox.right = ceil_fixed(functions::max<l64>(v0_x, v1_x, v2_x), sub_pixel_precision);
+    bbox.bottom = ceil_fixed(functions::max<l64>(v0_y, v1_y, v2_y), sub_pixel_precision);
+    bbox = bbox.intersect(effectiveRect);
+    if(bbox.empty()) return;
+#undef ceil_fixed
+#undef floor_fixed
+    // fill rules configurations
+    triangles::top_left_t top_left =
+            triangles::classifyTopLeftEdges(false,
+                                            v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
+    int bias_w0 = top_left.first  ? 0 : -1;
+    int bias_w1 = top_left.second ? 0 : -1;
+    int bias_w2 = top_left.third  ? 0 : -1;
+    // Barycentric coordinates at minX/minY corner
+    vec2<l64> p = { bbox.left, bbox.top };
+    vec2<l64> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
+    l64 half= (l64(1)<<(sub_pixel_precision))>>1;
+    p_fixed = p_fixed + vec2<l64> {half, half}; // we sample at the center
+    // this can produce a 2P bits number if the points form a a perpendicular triangle
+    // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
+    // I still need to explain to myself why it works so well :)
+    l64 w0_row = functions::orient2d<int, l64>(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, 0) + bias_w0;
+    l64 w1_row = functions::orient2d<int, l64>(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) + bias_w1;
+    l64 w2_row = functions::orient2d<int, l64>(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) + bias_w2;
+    w0_row = w0_row>>sub_pixel_precision; w1_row = w1_row>>sub_pixel_precision; w2_row = w2_row>>sub_pixel_precision;
+    // Triangle setup, this needs at least (P+1) bits, since the delta is always <= length
+    int64_t A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
+    int64_t A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
+    int64_t A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
+    const int pitch= width(); int index = p.y * pitch;
+    for (p.y = bbox.top; p.y <= bbox.bottom; p.y++, index+=pitch) {
+        int w0 = w0_row, w1 = w1_row, w2 = w2_row;
+        for (p.x = bbox.left; p.x<=bbox.right; p.x++) {
+            const bool in_closure= (w0|w1|w2)>=0;
+            bool should_sample= in_closure;
+            auto opacity_sample = opacity;
+            auto bary = vec4<l64>{w0, w1, w2, area};
+            if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
+                bary.x= (l64(w0)*v0_w)>>w_bits, bary.y= (l64(w1)*v1_w)>>w_bits, bary.z= (l64(w2)*v2_w)>>w_bits;
+                bary.w=bary.x+bary.y+bary.z;
+                if(bary.w==0) bary.w=1;
+            }
+            if(depth_buffer_flag && should_sample) {
+                l64 z;
+                constexpr bool is_float_point=microgl::traits::is_float_point<number>();
+                // take advantage of FPU
+                if(is_float_point) z= (long long)(number((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/(area));
+                else z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
+                //z_tag= functions::clamp<l64>(z_tag, 0, l64(1)<<44);
+                const int z_index = index - _window.index_correction + p.x;
+                if(z<0 || z>depth_buffer[z_index]) should_sample=false;
+                else depth_buffer[z_index]=z;
+            }
+            if(should_sample) {
+                // cast to user's number types vec4<number> casted_bary= bary;, I decided to stick with l64
+                // because other wise this would have wasted bits for Q types although it would have been more elegant.
+                interpolated_varying.interpolate(varying_v0, varying_v1, varying_v2, bary);
+                auto color = shader.fragment(interpolated_varying);
+                blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity_sample);
+            }
+            w0+=A01; w1+=A12; w2+=A20;
+        }
+        w0_row+=B01; w1_row+=B12; w2_row+=B20;
+    }
+}
+
+```

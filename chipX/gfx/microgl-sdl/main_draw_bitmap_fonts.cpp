@@ -78,12 +78,12 @@ void init_sdl(int width, int height) {
     auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
     auto bmp_uv_U8 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
-//    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("minecraft-20", font);
-    resources.loadFont<Bitmap24_ARRAY>("digital_7-20", font);
-//    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("roboto-thin-28", font);
-//    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("roboto-thin-14", font);
-//    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("mont-med-16", font);
-//    resources.loadFont<vec4<uint8_t>, coder::RGBA8888_ARRAY>("test", font);
+    resources.loadFont<Bitmap24_ARRAY>("minecraft-20", font);
+//    resources.loadFont<Bitmap24_ARRAY>("digital_7-20", font);
+//    resources.loadFont<Bitmap24_ARRAY>("roboto-thin-28", font);
+//    resources.loadFont<Bitmap24_ARRAY>("roboto-thin-14", font);
+//    resources.loadFont<Bitmap24_ARRAY>("mont-med-16", font);
+//    resources.loadFont<Bitmap24_ARRAY>("test", font);
     canvas = new Canvas24(width, height);
 }
 

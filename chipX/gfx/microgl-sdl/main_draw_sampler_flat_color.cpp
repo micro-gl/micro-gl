@@ -16,7 +16,7 @@ using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
 using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-using Canvas24= Canvas<Bitmap24>;
+using Canvas24= Canvas<Bitmap24, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
 
 Canvas24 * canvas;
 flat_color color_sampler{{255,122,0}};
@@ -37,7 +37,7 @@ void test_2() {
 //    t+=0.001;
     canvas->drawRect<blendmode::Normal, porterduff::None<>, false, number>(
             color_sampler,
-//            matrix_3x3<number>::identity(),
+            matrix_3x3<number>::identity(),
             t, t, 400, 400);
 }
 

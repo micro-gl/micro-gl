@@ -16,10 +16,14 @@ namespace microgl {
                              const sampler_shader_varying &varying_b,
                              const sampler_shader_varying &varying_c,
                              const vec4<long long> &bary) {
+//                uv.x = (varying_a.uv.x*bary.x)/bary.w + (varying_b.uv.x*bary.y)/bary.w + (varying_c.uv.x*bary.z)/bary.w;
+//                uv.y = (varying_a.uv.y*bary.x)/bary.w + (varying_b.uv.y*bary.y)/bary.w + (varying_c.uv.y*bary.z)/bary.w;
+
                 uv.x = (varying_a.uv.x*bary.x + varying_b.uv.x*bary.y + varying_c.uv.x*bary.z)/bary.w;
                 uv.y = (varying_a.uv.y*bary.x + varying_b.uv.y*bary.y + varying_c.uv.y*bary.z)/bary.w;
-//                uv.x = (vec4<number>{varying_a.uv.x, varying_b.uv.x, varying_c.uv.x, 0} * vec4<number>{bary})/number(bary.w);
-//                uv.y = (vec4<number>{varying_a.uv.y, varying_b.uv.y, varying_c.uv.y, 0} * vec4<number>{bary})/number(bary.w);
+
+//                uv.x = vec4<number>{varying_a.uv.x, varying_b.uv.x, varying_c.uv.x, 0}.dot(vec4<number>{bary})/number(bary.w);
+//                uv.y = vec4<number>{varying_a.uv.y, varying_b.uv.y, varying_c.uv.y, 0}.dot(vec4<number>{bary})/number(bary.w);
             }
         };
 

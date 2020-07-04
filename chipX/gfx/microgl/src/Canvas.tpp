@@ -581,8 +581,7 @@ void Canvas<BITMAP, options>::drawTriangles(shader_base<impl, vertex_attr, varyi
           [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
               const index &edge_0_id, const index &edge_1_id, const index &edge_2_id) {
               drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag>(
-                      shader,
-                      viewport_width, viewport_height,
+                      shader, viewport_width, viewport_height,
                       vertex_buffer[first_index],
                       vertex_buffer[second_index],
                       vertex_buffer[third_index],
@@ -602,7 +601,8 @@ void Canvas<BITMAP, options>::drawTrianglesWireframe(const color_t &color,
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
               [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
                   const index &edge_0_id, const index &edge_1_id, const index &edge_2_id) {
-                  drawTriangleWireframe(color, transform*vertices[first_index], transform*vertices[second_index], transform*vertices[third_index], opacity);
+                  drawTriangleWireframe(color, transform*vertices[first_index], transform*vertices[second_index],
+                          transform*vertices[third_index], opacity);
               });
 }
 
@@ -636,11 +636,9 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
     rint area = functions::orient2d<int, rint_big>(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
-    // this is used for compressing bits, does not affect sub-pixel inclusion precision, we don't render sub-pixel areas
-    rint area_compressed = area>>sub_pixel_precision;
-    if(area==0 || area_compressed==0) return;
+    if(area==0) return;
     if(area<0) { // convert CCW to CW triangle
-        area=-area; area_compressed=-area_compressed;
+        area=-area;
         functions::swap(v1_x, v2_x); functions::swap(v1_y, v2_y);
         functions::swap(u1, u2); functions::swap(v1, v2);
         functions::swap(q1, q2); functions::swap(aa_first_edge, aa_third_edge);
@@ -649,8 +647,8 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
     precision bits_used_max_uv=
             microgl::functions::used_integer_bits(
                     microgl::functions::abs_max({u0,v0,q0, u1,v1,q1, u2,v2,q2}));
-    const precision LL = bits_used_area + precision_one_over_area-sub_pixel_precision;
-    rint one_area = (rint_big(1)<<LL) / rint_big(area_compressed);
+    const precision LL = bits_used_area + precision_one_over_area;
+    rint one_area = (rint_big(1)<<LL) / rint_big(area);
     if(avoid_overflows) {
         precision size_of_int_bits = sizeof(rint)<<3, size_of_big_int_bits = sizeof(rint_big)<<3;
         const bool first_test = bits_used_area + bits_used_max_uv < size_of_int_bits;
@@ -741,8 +739,8 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
                 rint u_i=0, v_i=0;
                 // I compress down the weights to save some bits.
                 // bits=(bits_area_used+bits_used_max_uv) - sub_pixel_precision
-                rint u_fixed = (w0*rint(u2) + w1*rint(u0) + w2*rint(u1))>>sub_pixel_precision;
-                rint v_fixed = (w0*rint(v2) + w1*rint(v0) + w2*rint(v1))>>sub_pixel_precision;
+                rint u_fixed = (w0*rint(u2) + w1*rint(u0) + w2*rint(u1));
+                rint v_fixed = (w0*rint(v2) + w1*rint(v0) + w2*rint(v1));
                 if(perspective_correct) {
                     rint q_fixed = ((w0*rint(q2))>>sub_pixel_precision) +
                             ((w1*rint(q0))>>sub_pixel_precision) + ((w2*rint(q1))>>sub_pixel_precision);
@@ -752,12 +750,11 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
                     }
                 } else {
                     if(divide) { // division is stabler and is un-avoidable most of the time for pure 32 bit mode
-                        u_i = u_fixed/area_compressed; v_i = v_fixed/area_compressed;
+                        u_i = (u_fixed)/area; v_i = (v_fixed)/area;
                     } else { // we use a temporary 64 bit and one_area to mimic division, this is FASTER even in 32 bits mode.
-                        u_i = rint_big(rint_big(u_fixed)*rint_big(one_area))>>LL;
-                        v_i = rint_big(rint_big(v_fixed)*rint_big(one_area))>>LL;
-//                        u_i = rint_big(rint_big(u_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
-//                        v_i = rint_big(rint_big(v_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
+                        u_fixed=u_fixed>>sub_pixel_precision;v_fixed=v_fixed>>sub_pixel_precision; // compress the bits, still is fine
+                        u_i = rint_big(rint_big(u_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
+                        v_i = rint_big(rint_big(v_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
                     }
                 }
                 if(antialias) {
@@ -784,13 +781,13 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> & sampler,
                                     const number1 &v2_x, const number1 &v2_y, const number2 &u2, const number2 &v2,
                                     const opacity_t opacity, bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
     const precision prec_pixel = renderingOptions()._2d_raster_bits_sub_pixel,
-        prec_uv = renderingOptions()._2d_raster_bits_uv; const number2 one= number2(1);
+        prec_uv = renderingOptions()._2d_raster_bits_uv;
 #define f_pos(v) microgl::math::to_fixed((v), prec_pixel)
 #define f_uv(v) microgl::math::to_fixed((v), prec_uv)
     drawTriangle<BlendMode, PorterDuff, antialias, false, S>(sampler,
-            f_pos(v0_x), f_pos(v0_y), f_uv(u0), f_uv(v0), f_uv(one),
-            f_pos(v1_x), f_pos(v1_y), f_uv(u1), f_uv(v1), f_uv(one),
-            f_pos(v2_x), f_pos(v2_y), f_uv(u2), f_uv(v2), f_uv(one),
+            f_pos(v0_x), f_pos(v0_y), f_uv(u0), f_uv(v0), f_uv(0),
+            f_pos(v1_x), f_pos(v1_y), f_uv(u1), f_uv(v1), f_uv(0),
+            f_pos(v2_x), f_pos(v2_y), f_uv(u2), f_uv(v2), f_uv(0),
             opacity, prec_pixel, prec_uv,
             aa_first_edge, aa_second_edge, aa_third_edge);
 #undef f_pos
@@ -804,8 +801,7 @@ void Canvas<BITMAP, options>::drawTriangle(shader_base<impl, vertex_attr, varyin
                                     int viewport_width, int viewport_height,
                                     vertex_attr v0, vertex_attr v1, vertex_attr v2,
                                     const opacity_t opacity, const triangles::face_culling & culling,
-                                     long long * depth_buffer,
-                                    bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
+                                     long long * depth_buffer) {
 #define f microgl::math::to_fixed
     // this and drawTriangle_shader_homo_internal is the programmable 3d pipeline
     // compute varying and positions per vertex for interpolation
@@ -835,13 +831,12 @@ void Canvas<BITMAP, options>::drawTriangle(shader_base<impl, vertex_attr, varyin
         varying_v0_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_0_fixed);
         varying_v1_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_1_fixed);
         varying_v2_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_2_fixed);
-
         drawTriangle_shader_homo_internal<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag,
         impl, vertex_attr, varying, number>(
                 shader, viewport_width, viewport_height,
                 p0, p1, p2,
                 varying_v0_clip, varying_v1_clip, varying_v2_clip,
-                opacity, culling, depth_buffer, aa_first_edge, aa_second_edge, aa_third_edge);
+                opacity, culling, depth_buffer);
     }
 #undef f
 }
@@ -854,8 +849,7 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
                                                          const vec4<number> &p0,  const vec4<number> &p1,  const vec4<number> &p2,
                                                          varying &varying_v0, varying &varying_v1, varying &varying_v2,
                                                          opacity_t opacity, const triangles::face_culling & culling,
-                                                         long long * depth_buffer,
-                                                         bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
+                                                         long long * depth_buffer) {
     /*
      * given triangle coords in a homogeneous coords, a shader, and corresponding interpolated varying
      * vertex attributes. we pass varying because somewhere in the pipeline we might have clipped things
@@ -863,14 +857,14 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
      */
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
-    const precision sub_pixel_precision = 8;
+    const precision sub_pixel_precision = renderingOptions()._2d_raster_bits_sub_pixel;
 #define f microgl::math::to_fixed
     varying interpolated_varying;
     // perspective divide by w -> NDC space
-    // todo: bail out if w==0
-    const auto v0_ndc = p0/p0.w;
-    const auto v1_ndc = p1/p1.w;
-    const auto v2_ndc = p2/p2.w;
+    if(p0.w==0 || p1.w==0 || p2.w==0) return;
+    const auto v0_ndc = p0/p0.w; const auto one_over_w0=number(1)/(p0.w*(1<<sub_pixel_precision));
+    const auto v1_ndc = p1/p1.w; const auto one_over_w1=number(1)/(p1.w*(1<<sub_pixel_precision));
+    const auto v2_ndc = p2/p2.w; const auto one_over_w2=number(1)/(p2.w*(1<<sub_pixel_precision));
     // viewport transform: NDC space -> raster space
     const number w= viewport_width;
     const number h= viewport_height;
@@ -882,32 +876,60 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     int v0_x= f(v0_viewport.x, sub_pixel_precision), v0_y= f(v0_viewport.y, sub_pixel_precision);
     int v1_x= f(v1_viewport.x, sub_pixel_precision), v1_y= f(v1_viewport.y, sub_pixel_precision);
     int v2_x= f(v2_viewport.x, sub_pixel_precision), v2_y= f(v2_viewport.y, sub_pixel_precision);
+    l64 area = functions::orient2d<l64, l64>(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
+//
+    auto bits_w0=microgl::functions::used_integer_bits(f(p0.w, sub_pixel_precision));
+    auto bits_w1=microgl::functions::used_integer_bits(f(p1.w, sub_pixel_precision));
+    auto bits_w2=microgl::functions::used_integer_bits(f(p2.w, sub_pixel_precision));
+    auto bits_area=microgl::functions::used_integer_bits(area);
+//    const int w_bits= 18; const l64 one_w= (l64(1) << (w_bits << 1)); // negate z because camera is looking negative z axis
+//    l64 v0_w= f(one_over_w0, w_bits), v1_w= f(one_over_w1, w_bits), v2_w= f(one_over_w2, w_bits);
+//    const int p_w0=w_bits+0,  p_w1=w_bits+0,  p_w2=w_bits+0;
+    //
+
     const int w_bits= 18; const l64 one_w= (l64(1) << (w_bits << 1)); // negate z because camera is looking negative z axis
     l64 v0_w= one_w / f(p0.w, w_bits), v1_w= one_w / f(p1.w, w_bits), v2_w= one_w / f(p2.w, w_bits);
+    const int p_w0=w_bits+0,  p_w1=w_bits+0,  p_w2=w_bits+0;
+
+// original
+//    const int w_bits= 10 +sub_pixel_precision; const l64 one_w= (l64(1) << (w_bits)); // negate z because camera is looking negative z axis
+//    l64 v0_w= one_w / f(p0.w, sub_pixel_precision), v1_w= one_w / f(p1.w, sub_pixel_precision), v2_w= one_w / f(p2.w, sub_pixel_precision);
+//    l64 v0_w_= (l64(1)<<(w_bits*2)) / f(p0.w, w_bits), v1_w_= (l64(1)<<(w_bits*2)) / f(p1.w, w_bits), v2_w_= (l64(1)<<(w_bits*2)) / f(p2.w, w_bits);
+//    const int p_w0=18-bits_w0,  p_w1=18+-bits_w1,  p_w2=18+-bits_w2;
+
+//    const int w_bits= 10+sub_pixel_precision; const l64 one_w= (l64(1) << (w_bits << 0)); // negate z because camera is looking negative z axis
+//    l64 v0_w= one_w / f(p0.w, sub_pixel_precision), v1_w= one_w / f(p1.w, sub_pixel_precision), v2_w= one_w / f(p2.w, sub_pixel_precision);
+
+//    const int w_bits= 10+0;
+//    const l64 one_w0=l64(1)<<(w_bits+bits_w0+0), one_w1=l64(1)<<(w_bits+bits_w1+0), one_w2=l64(1)<<(w_bits+bits_w2+0);
+//    l64 v0_w= one_w0 / f(p0.w, sub_pixel_precision+0), v1_w= one_w1 / f(p1.w, sub_pixel_precision+0), v2_w= one_w2 / f(p2.w, sub_pixel_precision+0);
+//    const int p_w0=w_bits+sub_pixel_precision,  p_w1=w_bits+sub_pixel_precision,  p_w2=w_bits+sub_pixel_precision;
+//    if(!(p_w0==p_w1 && p_w1==p_w2)) return;
+//    const int p_w0=11+0,  p_w1=11+0,  p_w2=11+0;
+    auto bits_v0w=microgl::functions::used_integer_bits(v0_w);
+    auto bits_v1w=microgl::functions::used_integer_bits(v1_w);
+    auto bits_v2w=microgl::functions::used_integer_bits(v2_w);
+
     const int z_bits= 24; const l64 one_z= (l64(1) << (z_bits)); // negate z because camera is looking negative z axis
     l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
 
-    l64 area = functions::orient2d<l64, l64>(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
     // infer back-face culling
     const bool ccw = area<0;
     if(area==0) return; // discard degenerate triangles
     if(ccw && culling==triangles::face_culling::ccw) return;
     if(!ccw && culling==triangles::face_culling::cw) return;
     if(ccw) { // convert CCW to CW triangle
-        functions::swap(v1_x, v2_x);
-        functions::swap(v1_y, v2_y);
+        functions::swap(v1_x, v2_x); functions::swap(v1_y, v2_y);
         area = -area;
     } else { // flip vertically
         functions::swap(varying_v1, varying_v2);
-        functions::swap(v1_w, v2_w);
-        functions::swap(v1_z, v2_z);
+        functions::swap(v1_w, v2_w); functions::swap(v1_z, v2_z);
     }
     // rotate to match edges
     functions::swap(varying_v0, varying_v1);
-    functions::swap(v0_w, v1_w);
-    functions::swap(v0_z, v1_z);
+    functions::swap(v0_w, v1_w); functions::swap(v0_z, v1_z);
 
-#undef f
+//#undef f
     // bounding box in raster space
 #define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
 #define floor_fixed(val, bits) ((val)>>bits)
@@ -936,28 +958,30 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
     // I still need to explain to myself why it works so well :)
-    l64 w0_row = functions::orient2d<int, l64>(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, 0) + bias_w0;
-    l64 w1_row = functions::orient2d<int, l64>(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) + bias_w1;
-    l64 w2_row = functions::orient2d<int, l64>(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) + bias_w2;
-    w0_row = w0_row>>sub_pixel_precision; w1_row = w1_row>>sub_pixel_precision; w2_row = w2_row>>sub_pixel_precision;
+    l64 w0_row = (functions::orient2d<int, l64>(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, 0) + bias_w0)>>sub_pixel_precision;
+    l64 w1_row = (functions::orient2d<int, l64>(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) + bias_w1)>>sub_pixel_precision;
+    l64 w2_row = (functions::orient2d<int, l64>(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) + bias_w2)>>sub_pixel_precision;
     // Triangle setup, this needs at least (P+1) bits, since the delta is always <= length
     int64_t A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
     int64_t A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
     int64_t A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
     const int pitch= width(); int index = p.y * pitch;
     for (p.y = bbox.top; p.y <= bbox.bottom; p.y++, index+=pitch) {
-        int w0 = w0_row;
-        int w1 = w1_row;
-        int w2 = w2_row;
+        l64 w0 = w0_row, w1 = w1_row, w2 = w2_row;
         for (p.x = bbox.left; p.x<=bbox.right; p.x++) {
             const bool in_closure= (w0|w1|w2)>=0;
             bool should_sample= in_closure;
             auto opacity_sample = opacity;
             auto bary = vec4<l64>{w0, w1, w2, area};
             if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
-                bary.x= (l64(w0)*v0_w)>>w_bits, bary.y= (l64(w1)*v1_w)>>w_bits, bary.z= (l64(w2)*v2_w)>>w_bits;
+//                bary.x= (l64(w0)*v0_w)>>w_bits, bary.y= (l64(w1)*v1_w)>>w_bits, bary.z= (l64(w2)*v2_w)>>w_bits;
+//                bary.x= (l64(w0)*v0_w)>>p_w0, bary.y= (l64(w1)*v1_w)>>p_w1, bary.z= (l64(w2)*v2_w)>>p_w2;
+                bary.x= ((l64(w0))*f(one_over_w0, 15)),
+                bary.y= ((l64(w1))*f(one_over_w1, 15)),
+                bary.z= ((l64(w2))*f(one_over_w2, 15));
                 bary.w=bary.x+bary.y+bary.z;
-                if(bary.w==0) bary.w=1;
+                int okok=1;
+//                if(bary.w==0) bary.w=1;
             }
             if(depth_buffer_flag && should_sample) {
                 l64 z;
@@ -981,6 +1005,7 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
         }
         w0_row+=B01; w1_row+=B12; w2_row+=B20;
     }
+#undef f
 }
 
 template<typename BITMAP, uint8_t options>
@@ -1210,7 +1235,6 @@ void Canvas<BITMAP, options>::drawPathFill(const sampling::sampler<S> &sampler,
             opacity,
             u0, v0, u1, v1);
     if(debug) {
-//    if(debug) {
         drawTrianglesWireframe({0,0,0,255}, transform,
                                buffers.output_vertices.data(),
                                buffers.output_indices.data(),
@@ -1256,18 +1280,12 @@ void Canvas<BITMAP, options>::drawWuLine(const color_t &color,
     uint32_t IntensityShift, ErrorAdj, ErrorAcc;
     unsigned int ErrorAccTemp, Weighting, WeightingComplementMask;
     int DeltaX, DeltaY, Temp, XDir;//, YDir;
-    int one = 1<<bits;
+    int one = int(1)<<bits;
     unsigned int round = 0;//one>>1;// -1;
     // Make sure the line runs top to bottom
-    if (Y0 > Y1) {
-        Temp = Y0; Y0 = Y1; Y1 = Temp;
-        Temp = X0; X0 = X1; X1 = Temp;
-    }
-
-    // Draw the initial pixel, which is always exactly intersected by
-    // the line and so needs no weighting
+    if (Y0 > Y1) { Temp = Y0; Y0 = Y1; Y1 = Temp; Temp = X0; X0 = X1; X1 = Temp; }
+    // Draw the initial pixel, which is always exactly intersected by the line and so needs no weighting
     blendColor(color_input, (X0+round)>>bits, (Y0+round)>>bits, opacity);
-
     if ((DeltaX = X1 - X0) >= 0) {
         XDir = int(1)<<bits;
     } else {
@@ -1275,9 +1293,7 @@ void Canvas<BITMAP, options>::drawWuLine(const color_t &color,
         DeltaX = -DeltaX; // make DeltaX positive
     }
     DeltaY = Y1 - Y0;
-
-    // Special-case horizontal, vertical, and diagonal lines, which
-    // require no weighting because they go right through the center of every pixel
+    // Special-cases
     if ((Y1 - Y0) == 0) { // Horizontal line
         while ((DeltaX-=one) > 0) {
             X0 += XDir;
@@ -1318,8 +1334,7 @@ void Canvas<BITMAP, options>::drawWuLine(const color_t &color,
         while ((DeltaY-=one) > 0) { // Draw all pixels other than the first and last
             ErrorAccTemp = ErrorAcc; // remember current accumulated error
             ErrorAcc += ErrorAdj; // calculate error for next pixel
-            if (ErrorAcc <= ErrorAccTemp)
-                X0 += XDir; // The error accumulator turned over, so advance the X coord
+            if (ErrorAcc <= ErrorAccTemp) X0 += XDir; // The error accumulator turned over, so advance the X coord
             Y0+=one;
             Weighting = ErrorAcc >> IntensityShift;
             unsigned int mix = (Weighting ^ WeightingComplementMask); // complement of Weighting
@@ -1330,16 +1345,13 @@ void Canvas<BITMAP, options>::drawWuLine(const color_t &color,
         blendColor(color_input, (X1+round)>>bits, (Y1+round)>>bits, opacity);
         return;
     }
-    // It's an X-major line; calculate 16-bit fixed-point fractional part of a
-    // pixel that Y advances each time X advances 1 pixel, truncating the
-    // result to avoid overrunning the endpoint along the X axis
+    // It's an X-major line;
     ErrorAdj = ((unsigned long long) DeltaY << 32) / (unsigned long long) DeltaX;
     // Draw all pixels other than the first and last
     while ((DeltaX-=one) > 0) {
         ErrorAccTemp = ErrorAcc; // remember currrent accumulated error
         ErrorAcc += ErrorAdj; // calculate error for next pixel
-        if (ErrorAcc <= ErrorAccTemp)
-            Y0+=one;
+        if (ErrorAcc <= ErrorAccTemp) Y0+=one;
         X0 += XDir; // X-major, so always advance X
         Weighting = (ErrorAcc >> IntensityShift);
         unsigned int mix = (Weighting ^ WeightingComplementMask);
@@ -1347,8 +1359,7 @@ void Canvas<BITMAP, options>::drawWuLine(const color_t &color,
         blendColor(color_input, X0>>bits, Y0>>bits, (mix*opacity*257)>>16);
         blendColor(color_input, X0>>bits, (Y0 + one)>>bits, (Weighting*opacity*257)>>16);
     }
-    // Draw the final pixel, which is always exactly intersected by the line
-    // and so needs no weighting
+    // Draw the final pixel, which is always exactly intersected by the line and so needs no weighting
     blendColor(color_input, (X1+round)>>bits, (Y1+round)>>bits, opacity);
 }
 
@@ -1394,14 +1405,14 @@ void Canvas<BITMAP, options>::drawBezierPatch(const sampling::sampler<S> & sampl
         index first_index   = (even ? IND(ix + 0) : IND(ix + 2))*window_size;
         index second_index  = (even ? IND(ix + 1) : IND(ix + 1))*window_size;
         index third_index   = (even ? IND(ix + 2) : IND(ix + 0))*window_size;
-        vertex v1=vertex{v_a[first_index + I_X], v_a[first_index + I_Y]};
-        vertex v2=vertex{v_a[second_index + I_X], v_a[second_index + I_Y]};
-        vertex v3=vertex{v_a[third_index + I_X], v_a[third_index + I_Y]};
-        v1=transform*v1;v2=transform*v2;v3=transform*v3;
+        vertex p1=vertex{v_a[first_index + I_X], v_a[first_index + I_Y]};
+        vertex p2=vertex{v_a[second_index + I_X], v_a[second_index + I_Y]};
+        vertex p3=vertex{v_a[third_index + I_X], v_a[third_index + I_Y]};
+        p1= transform * p1;p2= transform * p2;p3= transform * p3;
         drawTriangle<BlendMode, PorterDuff, antialias>(sampler,
-                v1.x, v1.y, v_a[first_index + I_U], v_a[first_index + I_V],
-                v2.x, v2.y, v_a[second_index + I_U], v_a[second_index + I_V],
-                v3.x, v3.y, v_a[third_index + I_U], v_a[third_index + I_V], opacity); //even = !even;
+               p1.x, p1.y, v_a[first_index + I_U],  v_a[first_index + I_V],
+               p2.x, p2.y, v_a[second_index + I_U], v_a[second_index + I_V],
+               p3.x, p3.y, v_a[third_index + I_U],  v_a[third_index + I_V], opacity); //even = !even;
         if(debug)
             drawTriangleWireframe({0,0,0,255},
                                   {v_a[first_index + I_X], v_a[first_index + I_Y]},
@@ -1487,9 +1498,9 @@ void Canvas<BITMAP, options>::fxaa(int left, int top, int right, int bottom) {
 template<typename BITMAP, uint8_t options>
 template<typename BITMAP_FONT_TYPE>
 void Canvas<BITMAP, options>::drawText(const char * text, microgl::text::bitmap_font<BITMAP_FONT_TYPE> &font,
-        const color_t & color, microgl::text::text_format & format,
-        int left, int top, int right, int bottom, bool frame,
-        opacity_t opacity) {
+                                       const color_t & color, microgl::text::text_format & format,
+                                       int left, int top, int right, int bottom, bool frame,
+                                       opacity_t opacity) {
     rect old=clipRect(); updateClipRect(left, top, right, bottom);
 //    microgl::sampling::texture<BITMAP, sampling::texture_filter::NearestNeighboor> texture{font._bitmap};
 //    drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(texture,0,0, font._bitmap->width(), font._bitmap->height());return;
