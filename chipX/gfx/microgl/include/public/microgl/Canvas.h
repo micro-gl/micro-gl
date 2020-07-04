@@ -52,6 +52,12 @@ constexpr bool is_set(const uint8_t ops, const uint8_t feature)  {
  */
 #define CANVAS_OPT_2d_raster_USE_DIVISION uint8_t(0b00000010)
 /**
+ * inside the rasterizers, allow some bit compression in-order to minimize
+ * overflow in 32 bit mode. disable it if 3d rendering for example starts
+ * to jitter.
+ */
+#define CANVAS_OPT_raster_COMPRESS_BITS uint8_t(0b00001000)
+/**
  * the 2d rasterizer can detect overflow of uv mapping, the detection
  * feature is great for debugging the rasterizer. this flag enables detection
  * and if so, exits the rendering. This is helpful for when using a 32 bit mode,
@@ -66,18 +72,15 @@ constexpr bool is_set(const uint8_t ops, const uint8_t feature)  {
  * render small geometries at a time
  */
 #define CANVAS_OPT_2d_raster_FORCE_32_BIT CANVAS_OPT_2d_raster_USE_DIVISION | \
-                        CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS
+                        CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS | CANVAS_OPT_raster_COMPRESS_BITS
 /**
  * default preset, includes usage of big integers
  */
-#define CANVAS_OPT_default CANVAS_OPT_2d_raster_USE_BIG_INT | CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS | 0
+#define CANVAS_OPT_default CANVAS_OPT_2d_raster_USE_BIG_INT | CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS | CANVAS_OPT_raster_COMPRESS_BITS
 
 template<typename BITMAP, uint8_t options=CANVAS_OPT_default>
 class Canvas {
 public:
-    static constexpr bool op_CANVAS_OPT_2d_raster_USE_BIG_INT=
-                    is_set(options, CANVAS_OPT_2d_raster_USE_BIG_INT);
-
     using bitmap= BITMAP;
     using rect = rect_t<int>;
     struct window_t {
@@ -86,10 +89,17 @@ public:
         int index_correction=0;
     };
 
+    static constexpr bool options_compress_bits() { return options&CANVAS_OPT_raster_COMPRESS_BITS; }
+    static constexpr bool options_big_integers() { return options&CANVAS_OPT_2d_raster_USE_BIG_INT; }
+    static constexpr bool options_avoid_overflow() { return options&CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS; }
+    static constexpr bool options_use_division() { return options&CANVAS_OPT_2d_raster_USE_DIVISION; }
+
     struct render_options_t {
-        uint8_t _2d_raster_bits_sub_pixel= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 0 : 0;
-        uint8_t _2d_raster_bits_uv= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 15 : 10;
-        uint8_t bits_sub_pixel_3D_rasterizer= op_CANVAS_OPT_2d_raster_USE_BIG_INT ? 8 : 0;
+        uint8_t _2d_raster_bits_sub_pixel= options_big_integers() ? 8 : 0;
+        uint8_t _2d_raster_bits_uv= options_big_integers() ? 15 : 10;
+        uint8_t _3d_raster_bits_sub_pixel= options_big_integers() ? 8 : 0;
+        uint8_t _3d_raster_bits_w= options_big_integers() ? 15 : 10;
+        uint8_t _3d_raster_bits_z= options_big_integers() ? 24 : 10;
     };
 
 private:
@@ -103,7 +113,7 @@ private:
     // rasterizer integers
     using rint_big = int64_t;
     using rint =typename microgl::traits::conditional<
-            op_CANVAS_OPT_2d_raster_USE_BIG_INT, rint_big, int32_t >::type;
+            options_big_integers(), rint_big, int32_t >::type;
 
     bitmap * _bitmap_canvas = nullptr;
     window_t _window;

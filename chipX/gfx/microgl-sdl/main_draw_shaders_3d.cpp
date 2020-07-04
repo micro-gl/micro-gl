@@ -49,8 +49,8 @@ void test_shader_texture_3d(const model_3d<number> & object) {
 
 //    z-=0.0004;
 //    z-=0.0425;
-//    z-=1.0425;
-    z-=3;
+    z-=1.5;
+//    z-=3;
 
     // setup mvp matrix
     mat4 model = mat4::transform({ math::deg_to_rad(z/2), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},

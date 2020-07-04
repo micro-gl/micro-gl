@@ -82,8 +82,8 @@ namespace microgl {
         ///////////////////////////////////////////////////////////////////////////////
         static
         matrix_4x4 transform(const vertex3 & rotation = {0, 0, 0},
-                            const vertex3 & translation = {0, 0, 0},
-                            const vertex3 & scale = {1, 1, 1})
+                             const vertex3 & translation = {0, 0, 0},
+                             const vertex3 & scale = {1, 1, 1})
         {
             matrix_4x4 result {};
             number sx, sy, sz, cx, cy, cz;
@@ -99,9 +99,9 @@ namespace microgl {
             cz = microgl::math::cos(rotation.z);
 
             // determine left vector
-            vertex3 left     {cy * cz * scale.x, (sx * sy * cz + cx * sz) * scale.y, (-cx * sy * cz + sx * sz) * scale.z};
-            vertex3 up       {-cy * sz * scale.x, (-sx * sy * sz + cx * cz) * scale.y, (cx * sy * sz + sx * cz) * scale.z};
-            vertex3 forward  {sy * scale.x, -sx * cy * scale.y, cx * cy * scale.z};
+            vertex3 left     { cy * cz * scale.x,  (sx * sy * cz + cx * sz) * scale.x, (-cx * sy * cz + sx * sz) * scale.x};
+            vertex3 up       {-cy * sz * scale.y, (-sx * sy * sz + cx * cz) * scale.y, (cx * sy * sz + sx * cz) * scale.y};
+            vertex3 forward  { sy * scale.z,       -sx * cy * scale.z,                 cx * cy * scale.z};
 
             result.setColumn(0, left);
             result.setColumn(1, up);

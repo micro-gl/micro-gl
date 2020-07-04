@@ -629,10 +629,8 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
                                   const precision uv_precision, bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
     constexpr precision precision_one_over_area=15;
     constexpr precision P_AA = 16;
-    constexpr bool divide=is_set(options,
-            CANVAS_OPT_2d_raster_USE_DIVISION); // compile time flag
-    constexpr bool avoid_overflows=is_set(options,
-            CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS); // compile time flag
+    constexpr bool divide=options_use_division(); // compile time flag
+    constexpr bool avoid_overflows=options_avoid_overflow(); // compile time flag
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
     rint area = functions::orient2d<int, rint_big>(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
@@ -858,13 +856,15 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
     const precision sub_pixel_precision = renderingOptions()._2d_raster_bits_sub_pixel;
+    const precision w_bits= renderingOptions()._3d_raster_bits_w;
+    const precision z_bits= renderingOptions()._3d_raster_bits_z;
 #define f microgl::math::to_fixed
     varying interpolated_varying;
     // perspective divide by w -> NDC space
     if(p0.w==0 || p1.w==0 || p2.w==0) return;
-    const auto v0_ndc = p0/p0.w; const auto one_over_w0=number(1)/(p0.w*(1<<sub_pixel_precision));
-    const auto v1_ndc = p1/p1.w; const auto one_over_w1=number(1)/(p1.w*(1<<sub_pixel_precision));
-    const auto v2_ndc = p2/p2.w; const auto one_over_w2=number(1)/(p2.w*(1<<sub_pixel_precision));
+    const auto v0_ndc = p0/p0.w; const auto one_over_w0=number(1)/(p0.w);
+    const auto v1_ndc = p1/p1.w; const auto one_over_w1=number(1)/(p1.w);
+    const auto v2_ndc = p2/p2.w; const auto one_over_w2=number(1)/(p2.w);
     // viewport transform: NDC space -> raster space
     const number w= viewport_width;
     const number h= viewport_height;
@@ -876,41 +876,25 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     int v0_x= f(v0_viewport.x, sub_pixel_precision), v0_y= f(v0_viewport.y, sub_pixel_precision);
     int v1_x= f(v1_viewport.x, sub_pixel_precision), v1_y= f(v1_viewport.y, sub_pixel_precision);
     int v2_x= f(v2_viewport.x, sub_pixel_precision), v2_y= f(v2_viewport.y, sub_pixel_precision);
-    l64 area = functions::orient2d<l64, l64>(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
+    rint area = functions::orient2d<rint, rint_big>(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
 //
     auto bits_w0=microgl::functions::used_integer_bits(f(p0.w, sub_pixel_precision));
     auto bits_w1=microgl::functions::used_integer_bits(f(p1.w, sub_pixel_precision));
     auto bits_w2=microgl::functions::used_integer_bits(f(p2.w, sub_pixel_precision));
     auto bits_area=microgl::functions::used_integer_bits(area);
-//    const int w_bits= 18; const l64 one_w= (l64(1) << (w_bits << 1)); // negate z because camera is looking negative z axis
-//    l64 v0_w= f(one_over_w0, w_bits), v1_w= f(one_over_w1, w_bits), v2_w= f(one_over_w2, w_bits);
-//    const int p_w0=w_bits+0,  p_w1=w_bits+0,  p_w2=w_bits+0;
-    //
-
-    const int w_bits= 18; const l64 one_w= (l64(1) << (w_bits << 1)); // negate z because camera is looking negative z axis
-    l64 v0_w= one_w / f(p0.w, w_bits), v1_w= one_w / f(p1.w, w_bits), v2_w= one_w / f(p2.w, w_bits);
-    const int p_w0=w_bits+0,  p_w1=w_bits+0,  p_w2=w_bits+0;
-
-// original
-//    const int w_bits= 10 +sub_pixel_precision; const l64 one_w= (l64(1) << (w_bits)); // negate z because camera is looking negative z axis
-//    l64 v0_w= one_w / f(p0.w, sub_pixel_precision), v1_w= one_w / f(p1.w, sub_pixel_precision), v2_w= one_w / f(p2.w, sub_pixel_precision);
-//    l64 v0_w_= (l64(1)<<(w_bits*2)) / f(p0.w, w_bits), v1_w_= (l64(1)<<(w_bits*2)) / f(p1.w, w_bits), v2_w_= (l64(1)<<(w_bits*2)) / f(p2.w, w_bits);
-//    const int p_w0=18-bits_w0,  p_w1=18+-bits_w1,  p_w2=18+-bits_w2;
-
-//    const int w_bits= 10+sub_pixel_precision; const l64 one_w= (l64(1) << (w_bits << 0)); // negate z because camera is looking negative z axis
-//    l64 v0_w= one_w / f(p0.w, sub_pixel_precision), v1_w= one_w / f(p1.w, sub_pixel_precision), v2_w= one_w / f(p2.w, sub_pixel_precision);
-
-//    const int w_bits= 10+0;
-//    const l64 one_w0=l64(1)<<(w_bits+bits_w0+0), one_w1=l64(1)<<(w_bits+bits_w1+0), one_w2=l64(1)<<(w_bits+bits_w2+0);
-//    l64 v0_w= one_w0 / f(p0.w, sub_pixel_precision+0), v1_w= one_w1 / f(p1.w, sub_pixel_precision+0), v2_w= one_w2 / f(p2.w, sub_pixel_precision+0);
-//    const int p_w0=w_bits+sub_pixel_precision,  p_w1=w_bits+sub_pixel_precision,  p_w2=w_bits+sub_pixel_precision;
-//    if(!(p_w0==p_w1 && p_w1==p_w2)) return;
-//    const int p_w0=11+0,  p_w1=11+0,  p_w2=11+0;
-    auto bits_v0w=microgl::functions::used_integer_bits(v0_w);
-    auto bits_v1w=microgl::functions::used_integer_bits(v1_w);
-    auto bits_v2w=microgl::functions::used_integer_bits(v2_w);
-
-    const int z_bits= 24; const l64 one_z= (l64(1) << (z_bits)); // negate z because camera is looking negative z axis
+    auto minnn=microgl::functions::abs_min({p0.w, p1.w, p2.w});
+    auto maxnn=microgl::functions::abs_max({p0.w, p1.w, p2.w});
+//    auto min_w_bits =microgl::functions::used_integer_bits(f(minnn, aaa));
+//    auto max_w_bits =microgl::functions::used_integer_bits(f(maxnn, aaa));
+    int w_compress_bits=0;
+    rint one_over_w0_fixed= f(one_over_w0, w_bits), one_over_w1_fixed= f(one_over_w1, w_bits), one_over_w2_fixed= f(one_over_w2, w_bits);
+//
+    auto bits_v0w=microgl::functions::used_integer_bits(one_over_w0_fixed);
+    auto bits_v1w=microgl::functions::used_integer_bits(one_over_w1_fixed);
+    auto bits_v2w=microgl::functions::used_integer_bits(one_over_w2_fixed);
+    if(options_compress_bits()) // compile time flag
+        w_compress_bits=8+microgl::functions::used_integer_bits(microgl::functions::abs_max({one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed}));
+    const l64 one_z= (l64(1) << (z_bits)); // negate z because camera is looking negative z axis
     l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
 
     // infer back-face culling
@@ -923,22 +907,22 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
         area = -area;
     } else { // flip vertically
         functions::swap(varying_v1, varying_v2);
-        functions::swap(v1_w, v2_w); functions::swap(v1_z, v2_z);
+        functions::swap(one_over_w1_fixed, one_over_w2_fixed); functions::swap(v1_z, v2_z);
     }
     // rotate to match edges
     functions::swap(varying_v0, varying_v1);
-    functions::swap(v0_w, v1_w); functions::swap(v0_z, v1_z);
+    functions::swap(one_over_w0_fixed, one_over_w1_fixed); functions::swap(v0_z, v1_z);
 
 //#undef f
     // bounding box in raster space
 #define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
 #define floor_fixed(val, bits) ((val)>>bits)
     rect bbox;
-    l64 mask = ~((l64(1)<<sub_pixel_precision)-1);
-    bbox.left = floor_fixed(functions::min<l64>(v0_x, v1_x, v2_x)&mask, sub_pixel_precision);
-    bbox.top = floor_fixed(functions::min<l64>(v0_y, v1_y, v2_y)&mask, sub_pixel_precision);
-    bbox.right = ceil_fixed(functions::max<l64>(v0_x, v1_x, v2_x), sub_pixel_precision);
-    bbox.bottom = ceil_fixed(functions::max<l64>(v0_y, v1_y, v2_y), sub_pixel_precision);
+    int mask = ~((int(1)<<sub_pixel_precision)-1);
+    bbox.left = floor_fixed(functions::min<int>(v0_x, v1_x, v2_x)&mask, sub_pixel_precision);
+    bbox.top = floor_fixed(functions::min<int>(v0_y, v1_y, v2_y)&mask, sub_pixel_precision);
+    bbox.right = ceil_fixed(functions::max<int>(v0_x, v1_x, v2_x), sub_pixel_precision);
+    bbox.bottom = ceil_fixed(functions::max<int>(v0_y, v1_y, v2_y), sub_pixel_precision);
     bbox = bbox.intersect(effectiveRect);
     if(bbox.empty()) return;
 #undef ceil_fixed
@@ -951,37 +935,34 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     int bias_w1 = top_left.second ? 0 : -1;
     int bias_w2 = top_left.third  ? 0 : -1;
     // Barycentric coordinates at minX/minY corner
-    vec2<l64> p = { bbox.left, bbox.top };
-    vec2<l64> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
-    l64 half= (l64(1)<<(sub_pixel_precision))>>1;
-    p_fixed = p_fixed + vec2<l64> {half, half}; // we sample at the center
+    vec2<int> p = { bbox.left, bbox.top };
+    vec2<int> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
+    l64 half= (int(1)<<(sub_pixel_precision))>>1;
+    p_fixed = p_fixed + vec2<int> {half, half}; // we sample at the center
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
     // I still need to explain to myself why it works so well :)
-    l64 w0_row = (functions::orient2d<int, l64>(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, 0) + bias_w0)>>sub_pixel_precision;
-    l64 w1_row = (functions::orient2d<int, l64>(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) + bias_w1)>>sub_pixel_precision;
-    l64 w2_row = (functions::orient2d<int, l64>(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) + bias_w2)>>sub_pixel_precision;
+    rint w0_row = (functions::orient2d<int, rint_big>(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, 0) + bias_w0)>>sub_pixel_precision;
+    rint w1_row = (functions::orient2d<int, rint_big>(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) + bias_w1)>>sub_pixel_precision;
+    rint w2_row = (functions::orient2d<int, rint_big>(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) + bias_w2)>>sub_pixel_precision;
     // Triangle setup, this needs at least (P+1) bits, since the delta is always <= length
-    int64_t A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
-    int64_t A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
-    int64_t A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
+    rint A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
+    rint A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
+    rint A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
     const int pitch= width(); int index = p.y * pitch;
     for (p.y = bbox.top; p.y <= bbox.bottom; p.y++, index+=pitch) {
-        l64 w0 = w0_row, w1 = w1_row, w2 = w2_row;
+        rint w0 = w0_row, w1 = w1_row, w2 = w2_row;
         for (p.x = bbox.left; p.x<=bbox.right; p.x++) {
             const bool in_closure= (w0|w1|w2)>=0;
             bool should_sample= in_closure;
             auto opacity_sample = opacity;
-            auto bary = vec4<l64>{w0, w1, w2, area};
+            auto bary = vec4<rint>{w0, w1, w2, area};
             if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
-//                bary.x= (l64(w0)*v0_w)>>w_bits, bary.y= (l64(w1)*v1_w)>>w_bits, bary.z= (l64(w2)*v2_w)>>w_bits;
-//                bary.x= (l64(w0)*v0_w)>>p_w0, bary.y= (l64(w1)*v1_w)>>p_w1, bary.z= (l64(w2)*v2_w)>>p_w2;
-                bary.x= ((l64(w0))*f(one_over_w0, 15)),
-                bary.y= ((l64(w1))*f(one_over_w1, 15)),
-                bary.z= ((l64(w2))*f(one_over_w2, 15));
+                bary.x= (w0*one_over_w0_fixed)>>w_compress_bits;
+                bary.y= (w1*one_over_w1_fixed)>>w_compress_bits;
+                bary.z= (w2*one_over_w2_fixed)>>w_compress_bits;
                 bary.w=bary.x+bary.y+bary.z;
-                int okok=1;
-//                if(bary.w==0) bary.w=1;
+                if(bary.w==0) bary={1,1,1,3};
             }
             if(depth_buffer_flag && should_sample) {
                 l64 z;

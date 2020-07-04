@@ -101,7 +101,7 @@ namespace microgl {
         template<typename number>
         inline number abs_min(const std::initializer_list<number> & list) {
             number min=*list.begin();
-            if(min<0) max=-min;
+            if(min<0) min=-min;
             for(auto it = list.begin(); it!=list.end(); it++) {
                 auto val= (*it)<0?-(*it):(*it);
                 if(val<min) min=val;
