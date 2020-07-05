@@ -575,7 +575,7 @@ void Canvas<BITMAP, options>::drawTriangles(shader_base<impl, vertex_attr, varyi
                                      const index size,
                                      const enum indices type,
                                      const triangles::face_culling & culling,
-                                     long long * depth_buffer,
+                                     int * depth_buffer,
                                      const opacity_t opacity) {
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
           [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
@@ -799,7 +799,7 @@ void Canvas<BITMAP, options>::drawTriangle(shader_base<impl, vertex_attr, varyin
                                     int viewport_width, int viewport_height,
                                     vertex_attr v0, vertex_attr v1, vertex_attr v2,
                                     const opacity_t opacity, const triangles::face_culling & culling,
-                                     long long * depth_buffer) {
+                                    int* depth_buffer) {
 #define f microgl::math::to_fixed
     // this and drawTriangle_shader_homo_internal is the programmable 3d pipeline
     // compute varying and positions per vertex for interpolation
@@ -847,7 +847,7 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
                                                          const vec4<number> &p0,  const vec4<number> &p1,  const vec4<number> &p2,
                                                          varying &varying_v0, varying &varying_v1, varying &varying_v2,
                                                          opacity_t opacity, const triangles::face_culling & culling,
-                                                         long long * depth_buffer) {
+                                                         int * depth_buffer) {
     /*
      * given triangle coords in a homogeneous coords, a shader, and corresponding interpolated varying
      * vertex attributes. we pass varying because somewhere in the pipeline we might have clipped things
@@ -857,7 +857,7 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     if(effectiveRect.empty()) return;
     const precision sub_pixel_precision = renderingOptions()._2d_raster_bits_sub_pixel;
     const precision w_bits= renderingOptions()._3d_raster_bits_w;
-    const precision z_bits= renderingOptions()._3d_raster_bits_z;
+    const precision z_bits= 20;//renderingOptions()._3d_raster_bits_z;
 #define f microgl::math::to_fixed
     varying interpolated_varying;
     // perspective divide by w -> NDC space
@@ -881,6 +881,9 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     auto bits_w0=microgl::functions::used_integer_bits(f(p0.w, sub_pixel_precision));
     auto bits_w1=microgl::functions::used_integer_bits(f(p1.w, sub_pixel_precision));
     auto bits_w2=microgl::functions::used_integer_bits(f(p2.w, sub_pixel_precision));
+//    auto bits_z0=microgl::functions::used_integer_bits(f(v0_viewport.z, z_bits));
+//    auto bits_z1=microgl::functions::used_integer_bits(f(v1_viewport.z, z_bits));
+//    auto bits_22=microgl::functions::used_integer_bits(f(v2_viewport.z, z_bits));
     auto bits_area=microgl::functions::used_integer_bits(area);
     auto minnn=microgl::functions::abs_min({p0.w, p1.w, p2.w});
     auto maxnn=microgl::functions::abs_max({p0.w, p1.w, p2.w});
@@ -914,7 +917,13 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     ///
 
     const l64 one_z= (l64(1) << (z_bits)); // negate z because camera is looking negative z axis
-    l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
+//    l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
+//    l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
+    const auto one_over_z0=number(1)/(p0.z), one_over_z1=number(1)/(p1.z), one_over_z2=number(1)/(p2.z);
+    l64 v0_z= f(one_over_z0, z_bits), v1_z= f(one_over_z1, z_bits), v2_z= f(one_over_z2, z_bits);
+    auto bits_z0=microgl::functions::used_integer_bits(v0_z);
+    auto bits_z1=microgl::functions::used_integer_bits(v1_z);
+    auto bits_22=microgl::functions::used_integer_bits(v2_z);
 
     // infer back-face culling
     const bool ccw = area<0;
@@ -984,12 +993,27 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
                 l64 z;
                 constexpr bool is_float_point=microgl::traits::is_float_point<number>();
                 // take advantage of FPU
-                if(is_float_point) z= (long long)(number((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/(area));
-                else z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
+int xx=is_float_point?1:0;
+                z= (int)(number(
+                        ((one_over_w0_fixed*w0)>>0) +
+                        ((one_over_w1_fixed*w1)>>0) +
+                        ((one_over_w2_fixed*w2)>>0))
+                                /(area));
+//                if(is_float_point) z= (long long)(number(one_over_w0_fixed*w0 +one_over_w1_fixed*w1 +one_over_w2_fixed*w2)/(area));
+//                else z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
+
+//                if(is_float_point) z= (long long)(number(v0_z*bary.x +v1_z*bary.y +v2_z*bary.z)/(bary.w));
+//                else z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
+
+//                if(is_float_point) z= (long long)(number((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/(area));
+//                else z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
                 //z_tag= functions::clamp<l64>(z_tag, 0, l64(1)<<44);
                 const int z_index = index - _window.index_correction + p.x;
-                if(z<0 || z>depth_buffer[z_index]) should_sample=false;
+                if((z<depth_buffer[z_index])) should_sample=false;
                 else depth_buffer[z_index]=z;
+
+//                if((z<0 || z>depth_buffer[z_index])) should_sample=false;
+//                else depth_buffer[z_index]=z;
             }
             if(should_sample) {
                 // cast to user's number types vec4<number> casted_bary= bary;, I decided to stick with l64

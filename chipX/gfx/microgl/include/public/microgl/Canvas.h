@@ -94,7 +94,7 @@ public:
         uint8_t _2d_raster_bits_sub_pixel= options_big_integers() ? 8 : 0;
         uint8_t _2d_raster_bits_uv= options_big_integers() ? 15 : 10;
         uint8_t _3d_raster_bits_sub_pixel= options_big_integers() ? 8 : 0;
-        uint8_t _3d_raster_bits_w= options_big_integers() ? 15 : 12;
+        uint8_t _3d_raster_bits_w= options_big_integers() ? 18 : 12;
         uint8_t _3d_raster_bits_z= options_big_integers() ? 24 : 10;
     };
 
@@ -291,7 +291,7 @@ public:
                        index size,
                        enum indices type,
                        const triangles::face_culling & culling= triangles::face_culling::none,
-                       long long * depth_buffer=nullptr,
+                       int * depth_buffer=nullptr,
                        opacity_t opacity=255);
 
     void fxaa(int left, int top, int right, int bottom);
@@ -346,7 +346,7 @@ public:
                       int viewport_width, int viewport_height,
                       vertex_attr v0, vertex_attr v1, vertex_attr v2,
                       opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
-                      long long * depth_buffer=nullptr);
+                      int * depth_buffer=nullptr);
 
 private:
     template <typename BlendMode=blendmode::Normal,
@@ -358,7 +358,7 @@ private:
                                            const vec4<number> &p0, const vec4<number> &p1, const vec4<number> &p2,
                                            varying &varying_v0, varying &varying_v1, varying &varying_v2,
                                            opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
-                                            long long * depth_buffer=nullptr);
+                                           int * depth_buffer=nullptr);
 
 public:
     // Masks

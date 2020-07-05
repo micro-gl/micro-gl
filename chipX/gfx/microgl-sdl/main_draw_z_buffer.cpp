@@ -74,10 +74,11 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     //std::cout << z<<std::endl;
 
     // init z-buffer
-    using ul64=  long long;
+    using ul64=  int;//long long;
     ul64 * z_buffer = new ul64[canvas->width()*canvas->height()]{};
     for (int zx = 0; zx < canvas->width() * canvas->height(); ++zx) {
-        z_buffer[zx]=(ul64(1)<<62);
+//        z_buffer[zx]=(ul64(1)<<62);
+        z_buffer[zx]=0;//(ul64(1)<<30)/(ul64(1)<<15);
     }
 
     // draw model_1
@@ -108,7 +109,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
 }
 
 void render() {
-    canvas->clear({255,0,255,255});
+    canvas->clear({255,255,255,255});
     canvas->updateClipRect(0,0,W,H);
     test_shader_texture_3d<float>(cube_3d<float>);
 //    test_shader_texture_3d<Q<17>>(cube_3d<Q<17>>);
@@ -116,7 +117,7 @@ void render() {
 //    test_shader_texture_3d<Q<15>>(cube_3d<Q<15>>);
 //    test_shader_texture_3d<Q<10>>(cube_3d<Q<10>>);
 //    test_shader_texture_3d<Q<5>>(cube_3d<Q<5>>);
-    canvas->fxaa(10,10,canvas->width()-10,canvas->height()-10);
+//    canvas->fxaa(10,10,canvas->width()-10,canvas->height()-10);
 //    canvas->fxaa2(10,10,canvas->width()-10,canvas->height()-10);
 
 }
