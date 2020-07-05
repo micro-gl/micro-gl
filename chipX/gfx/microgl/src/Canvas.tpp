@@ -886,14 +886,33 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     auto maxnn=microgl::functions::abs_max({p0.w, p1.w, p2.w});
 //    auto min_w_bits =microgl::functions::used_integer_bits(f(minnn, aaa));
 //    auto max_w_bits =microgl::functions::used_integer_bits(f(maxnn, aaa));
-    int w_compress_bits=0;
-    rint one_over_w0_fixed= f(one_over_w0, w_bits), one_over_w1_fixed= f(one_over_w1, w_bits), one_over_w2_fixed= f(one_over_w2, w_bits);
+    int w_compress_bits=sub_pixel_precision; // i hope this is not too harsh
+    rint one_over_w0_fixed= f(one_over_w0, w_bits), one_over_w1_fixed= f(one_over_w1, w_bits),
+                                one_over_w2_fixed= f(one_over_w2, w_bits);
 //
     auto bits_v0w=microgl::functions::used_integer_bits(one_over_w0_fixed);
     auto bits_v1w=microgl::functions::used_integer_bits(one_over_w1_fixed);
     auto bits_v2w=microgl::functions::used_integer_bits(one_over_w2_fixed);
     if(options_compress_bits()) // compile time flag
-        w_compress_bits=8+microgl::functions::used_integer_bits(microgl::functions::abs_max({one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed}));
+        w_compress_bits+=microgl::functions::used_integer_bits(microgl::functions::abs_max(
+                {one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed}));
+    /// overflow detection
+    if(options_avoid_overflow()) { // compile time flag
+        precision size_of_int_bits = sizeof(rint)<<3, size_of_big_int_bits = sizeof(rint_big)<<3;
+        auto bits_used_max_area=microgl::functions::used_integer_bits(area);
+        auto bits_used_max_w=microgl::functions::used_integer_bits(microgl::functions::abs_max(
+                {one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed}));
+        const bool first_test = bits_used_max_area + bits_used_max_w < size_of_int_bits;
+        if(!first_test) return;
+//        if(!divide) {
+//            const bool second_test= bits_used_area + bits_used_max_uv - sub_pixel_precision +
+//                                    (precision_one_over_area+1) < size_of_big_int_bits;
+//            if(!second_test) return;
+//        }
+    }
+
+    ///
+
     const l64 one_z= (l64(1) << (z_bits)); // negate z because camera is looking negative z axis
     l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
 
@@ -931,9 +950,7 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     triangles::top_left_t top_left =
             triangles::classifyTopLeftEdges(false,
                                             v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
-    int bias_w0 = top_left.first  ? 0 : -1;
-    int bias_w1 = top_left.second ? 0 : -1;
-    int bias_w2 = top_left.third  ? 0 : -1;
+    int bias_w0=top_left.first?0:-1, bias_w1=top_left.second?0:-1, bias_w2=top_left.third?0:-1;
     // Barycentric coordinates at minX/minY corner
     vec2<int> p = { bbox.left, bbox.top };
     vec2<int> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
@@ -946,9 +963,8 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     rint w1_row = (functions::orient2d<int, rint_big>(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) + bias_w1)>>sub_pixel_precision;
     rint w2_row = (functions::orient2d<int, rint_big>(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) + bias_w2)>>sub_pixel_precision;
     // Triangle setup, this needs at least (P+1) bits, since the delta is always <= length
-    rint A01 = (v0_y - v1_y), B01 = (v1_x - v0_x);
-    rint A12 = (v1_y - v2_y), B12 = (v2_x - v1_x);
-    rint A20 = (v2_y - v0_y), B20 = (v0_x - v2_x);
+    rint A01 = v0_y-v1_y, A12 = v1_y-v2_y, A20 = v2_y-v0_y;
+    rint B01 = v1_x-v0_x, B12 = v2_x-v1_x, B20 = v0_x-v2_x;
     const int pitch= width(); int index = p.y * pitch;
     for (p.y = bbox.top; p.y <= bbox.bottom; p.y++, index+=pitch) {
         rint w0 = w0_row, w1 = w1_row, w2 = w2_row;

@@ -34,10 +34,6 @@ using namespace microgl::triangles;
 using namespace microgl::polygons;
 using namespace microgl::shading;
 
-constexpr bool is_set(const uint8_t ops, const uint8_t feature)  {
-    return ops & feature;
-}
-
 /**
  * use big integers for 2d rasterizer, this implies a 64 bits place holders
  * for all or most calculations inside the rasterizer. bigger integers imply
@@ -98,7 +94,7 @@ public:
         uint8_t _2d_raster_bits_sub_pixel= options_big_integers() ? 8 : 0;
         uint8_t _2d_raster_bits_uv= options_big_integers() ? 15 : 10;
         uint8_t _3d_raster_bits_sub_pixel= options_big_integers() ? 8 : 0;
-        uint8_t _3d_raster_bits_w= options_big_integers() ? 15 : 10;
+        uint8_t _3d_raster_bits_w= options_big_integers() ? 15 : 12;
         uint8_t _3d_raster_bits_z= options_big_integers() ? 24 : 10;
     };
 

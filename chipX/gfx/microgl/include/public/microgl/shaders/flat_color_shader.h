@@ -10,7 +10,7 @@ namespace microgl {
             void interpolate(const flat_color_shader_varying &varying_a,
                              const flat_color_shader_varying &varying_b,
                              const flat_color_shader_varying &varying_c,
-                             const vec4<long long> &bary) {
+                             const vec4<int> &bary) {
             }
         };
 

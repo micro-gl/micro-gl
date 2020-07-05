@@ -11,7 +11,7 @@
 #include "data/model_3d_cube.h"
 
 using namespace microgl::shading;
-#define TEST_ITERATIONS 0
+#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 640*1
 #define TTT 1
@@ -23,6 +23,7 @@ Resources resources{};
 using namespace microgl::shading;
 using index_t = unsigned int;
 using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
+//using Canvas24= Canvas<Bitmap24, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
 using Canvas24= Canvas<Bitmap24>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 
@@ -53,12 +54,12 @@ void test_shader_texture_3d(const model_3d<number> & object) {
 //    z-=3;
 
     // setup mvp matrix
-    mat4 model = mat4::transform({ math::deg_to_rad(z/2), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
-                                 {0,0,-z/10.0f}, {10,10,10});
-//    mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
-    mat4 view = camera::angleAt({0, 0, 300}, 0, math::deg_to_rad(-0),0);
+    mat4 model = mat4::transform({ math::deg_to_rad(z/8), math::deg_to_rad(z/8), math::deg_to_rad(z/8)},
+                                 {0,0,0.0f}, {10,10,10});
+//    mat4 view = camera::lookAt({0, 0, 300}, {0,0, 0}, {0,1,0});
+    mat4 view = camera::angleAt({0, 0, z/20+400}, 0, math::deg_to_rad(-0),0);
     mat4 projection = camera::perspective(math::deg_to_rad(60), canvas->width(), canvas->height(), 1, 500);
-//    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 100);
+//    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 500);
     mat4 mvp= projection*view*model;
 
     // setup shader

@@ -15,7 +15,7 @@ namespace microgl {
             void interpolate(const sampler_shader_varying &varying_a,
                              const sampler_shader_varying &varying_b,
                              const sampler_shader_varying &varying_c,
-                             const vec4<long long> &bary) {
+                             const vec4<int> &bary) {
 //                uv.x = (varying_a.uv.x*bary.x)/bary.w + (varying_b.uv.x*bary.y)/bary.w + (varying_c.uv.x*bary.z)/bary.w;
 //                uv.y = (varying_a.uv.y*bary.x)/bary.w + (varying_b.uv.y*bary.y)/bary.w + (varying_c.uv.y*bary.z)/bary.w;
 
