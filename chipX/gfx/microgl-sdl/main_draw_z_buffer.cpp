@@ -31,8 +31,8 @@ Texture24 tex_1, tex_2;
 void loop();
 void init_sdl(int width, int height);
 
-float t = 0;
-float z=-30.0;
+float t = -30.0;
+//float z=-30.0;
 
 template <typename number>
 void test_shader_texture_3d(const model_3d<number> & object) {
@@ -44,16 +44,16 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     using vertex_attribute= sampler_shader_vertex_attribute<number>;
 
 //    z-=0.0004;
-    z-=0.0425;
+    t-=0.425;
 
     // setup mvp matrix
-    mat4 model_1 = mat4::transform({ math::deg_to_rad(z/2), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
+    mat4 model_1 = mat4::transform({math::deg_to_rad(t / 2), math::deg_to_rad(t / 2), math::deg_to_rad(t / 2)},
                                    {-5,0,0}, {10,10,10});
-    mat4 model_2 = mat4::transform({ math::deg_to_rad(z/1), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
+    mat4 model_2 = mat4::transform({math::deg_to_rad(t / 1), math::deg_to_rad(t / 2), math::deg_to_rad(t / 2)},
                                    {5,0,0}, {10,10,10});
 //    mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
-    mat4 view = camera::angleAt({0, 0, 70}, 0, math::deg_to_rad(0),0);
-    mat4 projection = camera::perspective(math::deg_to_rad(60), canvas->width(), canvas->height(), 1, 500);
+    mat4 view = camera::angleAt({0, 0, 70+ 0 / t}, 0, math::deg_to_rad(0), 0);
+    mat4 projection = camera::perspective(math::deg_to_rad(60), canvas->width(), canvas->height(), 20, 100);
 //    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 1000);
     mat4 mvp_1= projection*view*model_1;
     mat4 mvp_2= projection*view*model_2;
@@ -74,13 +74,13 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     //std::cout << z<<std::endl;
 
     // init z-buffer
-    using ul64=  int;//long long;
-    ul64 * z_buffer = new ul64[canvas->width()*canvas->height()]{};
-    for (int zx = 0; zx < canvas->width() * canvas->height(); ++zx) {
-//        z_buffer[zx]=(ul64(1)<<62);
-        z_buffer[zx]=0;//(ul64(1)<<30)/(ul64(1)<<15);
-    }
-
+//    using ul64=  int;//long long;
+//    ul64 * z_buffer = new ul64[canvas->width()*canvas->height()]{};
+//    for (int zx = 0; zx < canvas->width() * canvas->height(); ++zx) {
+//        z_buffer[zx]=(ul64(1)<<30);
+//    }
+    z_buffer<24> depth_buffer(canvas->width(), canvas->height());
+    depth_buffer.clear();
     // draw model_1
     canvas->drawTriangles<blendmode::Normal, porterduff::None<>, true, true, true>(
             shader,
@@ -90,7 +90,8 @@ void test_shader_texture_3d(const model_3d<number> & object) {
             object.indices.size(),
             object.type,
             triangles::face_culling::ccw,
-            z_buffer);
+            &depth_buffer);
+//            (z_buffer<0> *)nullptr);
 
 //    return;
     // draw model_2
@@ -103,9 +104,8 @@ void test_shader_texture_3d(const model_3d<number> & object) {
             object.indices.size(),
             object.type,
             triangles::face_culling::ccw,
-            z_buffer);
+            &depth_buffer);
 
-    delete [] z_buffer;
 }
 
 void render() {
