@@ -85,7 +85,6 @@ namespace microgl {
             // which is what we want. But, if we use regular fixed point multiplication, then
             // x*x would yield a p bit number (because we do (x*x)>>p) and then squaring would yield
             // a p/2 bits result which is not what we wanted
-//            return sqrt_64(dx.value()*dx.value() + dy.value()*dy.value());
             return length(dx, dy);
         }
 
@@ -195,17 +194,6 @@ namespace microgl {
             return val<0?-val:val;
         }
 
-//        static
-//        signed abs(const int &val) {
-//            return val<0?-val:val;
-//        }
-//
-//        template <unsigned N>
-//        static
-//        Q<N> abs(const Q<N> & val) {
-//            return Q<N>(val.value()<0 ? -val.value() : val.value(), N);
-//        }
-
     private:
         static
         uint32_t sqrt_64(uint64_t a_nInput) {
@@ -232,7 +220,5 @@ namespace microgl {
             return res;
         }
     };
-
-
 
 }

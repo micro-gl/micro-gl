@@ -170,33 +170,15 @@ public:
     }
 
     // negate
-    Q operator -() const {
-        return Q{-this->value(), P};
-    }
+    Q operator -() const { return Q{-this->value(), P}; }
 
     // booleans
-    bool operator <(const_ref q) const {
-        return this->_value<q._value;
-    }
-    bool operator >(const_ref q) const {
-        return this->_value>q._value;
-    }
-    bool operator <=(const_ref q) const {
-        return this->_value<=q._value;
-    }
-    bool operator >=(const_ref q) const {
-        return this->_value>=q._value;
-    }
-    bool operator ==(const_ref q) const {
-        return this->_value==q._value;
-    }
-    bool operator !=(const_ref q) const {
-        return this->_value!=q._value;
-    }
-    explicit operator bool() const {
-        return this->_value!=0;
-    }
-
+    bool operator <(const_ref q) const { return this->_value<q._value; }
+    bool operator >(const_ref q) const { return this->_value>q._value; }
+    bool operator <=(const_ref q) const { return this->_value<=q._value; }
+    bool operator >=(const_ref q) const { return this->_value>=q._value; }
+    bool operator ==(const_ref q) const { return this->_value==q._value; }
+    bool operator !=(const_ref q) const { return this->_value!=q._value; }
     Q operator %(const_ref q) const {
         Q res;
         res._value = this->value()%q.value();
@@ -204,40 +186,23 @@ public:
     }
 
     // conversion operators
-    explicit operator float() const {
-        return toFloat();
-    }
-    explicit operator int() const {
-        return toInt();
-    }
-    explicit operator long long() const {
-        return toInt();
-    }
-    explicit operator unsigned char() const {
-        return toInt();
-    }
+    explicit operator bool() const { return this->_value!=0; }
+    explicit operator float() const { return toFloat(); }
+    explicit operator double() const { return toFloat(); }
+    explicit operator short() const { return toInt(); }
+    explicit operator unsigned short() const { return toInt(); }
+    explicit operator int() const { return toInt(); }
+    explicit operator unsigned int() const { return toInt(); }
+    explicit operator long long() const { return toInt(); }
+    explicit operator unsigned long long() const { return toInt(); }
+    explicit operator char() const { return toInt(); }
+    explicit operator unsigned char() const { return toInt(); }
 
-    integer toInt() const {
-        return this->_value>>P;
-    }
-    integer toFixed(precision_t precision_value) const {
-        return convert(this->_value, P, precision_value);
-    }
-    float toFloat() const {
-        return float(this->_value)/float(1u<<P);
-    }
-    integer fraction() const {
-        return _value & ((1u<<P) - 1);
-    }
-    integer integral() const {
-        return _value & (~((1u<<P) - 1)); //this is wrong ?
-    }
-    inline integer value() const {
-        return _value;
-    }
-    // bypass all
-    inline void updateValue(const_signed_ref val) {
-        this->_value=val;
-    }
-
+    integer toInt() const { return this->_value>>P; }
+    integer toFixed(precision_t precision_value) const { return convert(this->_value, P, precision_value); }
+    float toFloat() const { return float(this->_value)/float(1u<<P); }
+    integer fraction() const { return _value & ((1u<<P) - 1); }
+    integer integral() const { return _value & (~((1u<<P) - 1)); } //this is wrong ?}
+    inline integer value() const { return _value; }
+    inline void updateValue(const_signed_ref val) { this->_value=val; }
 };

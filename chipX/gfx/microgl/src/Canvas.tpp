@@ -857,7 +857,7 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
     const precision sub_pixel_precision = renderingOptions()._2d_raster_bits_sub_pixel;
-    const precision w_bits= 18;//renderingOptions()._3d_raster_bits_w;
+    const precision w_bits= renderingOptions()._3d_raster_bits_w;
 //    const precision z_bits= 15;//renderingOptions()._3d_raster_bits_z;
 #define f microgl::math::to_fixed
     varying interpolated_varying;
@@ -878,25 +878,9 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     int v1_x= f(v1_viewport.x, sub_pixel_precision), v1_y= f(v1_viewport.y, sub_pixel_precision);
     int v2_x= f(v2_viewport.x, sub_pixel_precision), v2_y= f(v2_viewport.y, sub_pixel_precision);
     rint area = functions::orient2d<rint, rint_big>(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
-//
-    auto bits_w0=microgl::functions::used_integer_bits(f(p0.w, sub_pixel_precision));
-    auto bits_w1=microgl::functions::used_integer_bits(f(p1.w, sub_pixel_precision));
-    auto bits_w2=microgl::functions::used_integer_bits(f(p2.w, sub_pixel_precision));
-//    auto bits_z0=microgl::functions::used_integer_bits(f(v0_viewport.z, z_bits));
-//    auto bits_z1=microgl::functions::used_integer_bits(f(v1_viewport.z, z_bits));
-//    auto bits_22=microgl::functions::used_integer_bits(f(v2_viewport.z, z_bits));
-    auto bits_area=microgl::functions::used_integer_bits(area);
-    auto minnn=microgl::functions::abs_min({p0.w, p1.w, p2.w});
-    auto maxnn=microgl::functions::abs_max({p0.w, p1.w, p2.w});
-//    auto min_w_bits =microgl::functions::used_integer_bits(f(minnn, aaa));
-//    auto max_w_bits =microgl::functions::used_integer_bits(f(maxnn, aaa));
     int w_compress_bits=sub_pixel_precision; // i hope this is not too harsh
     rint one_over_w0_fixed= f(one_over_w0, w_bits), one_over_w1_fixed= f(one_over_w1, w_bits),
                                 one_over_w2_fixed= f(one_over_w2, w_bits);
-//
-    auto bits_v0w=microgl::functions::used_integer_bits(one_over_w0_fixed);
-    auto bits_v1w=microgl::functions::used_integer_bits(one_over_w1_fixed);
-    auto bits_v2w=microgl::functions::used_integer_bits(one_over_w2_fixed);
     if(options_compress_bits()) // compile time flag
         w_compress_bits+=microgl::functions::used_integer_bits(microgl::functions::abs_max(
                 {one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed}));
@@ -915,17 +899,7 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
 //        }
     }
 
-    ///
-
-//    const l64 one_z= (l64(1) << (z_bits)); // negate z because camera is looking negative z axis
-//    l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
-    l64 v0_z= v0_viewport.z*zbuff.maxValue(), v1_z= v1_viewport.z*zbuff.maxValue(), v2_z=v2_viewport.z*zbuff.maxValue();
-//    l64 v0_z= f(v0_viewport.z, z_bits), v1_z= f(v1_viewport.z, z_bits), v2_z= f(v2_viewport.z, z_bits);
-//    const auto one_over_z0=number(1)/(p0.z), one_over_z1=number(1)/(p1.z), one_over_z2=number(1)/(p2.z);
-//    l64 v0_z= f(one_over_z0, z_bits), v1_z= f(one_over_z1, z_bits), v2_z= f(one_over_z2, z_bits);
-    auto bits_z0=microgl::functions::used_integer_bits(v0_z);
-    auto bits_z1=microgl::functions::used_integer_bits(v1_z);
-    auto bits_22=microgl::functions::used_integer_bits(v2_z);
+    rint v0_z= rint(v0_viewport.z*zbuff.maxValue()), v1_z= rint(v1_viewport.z*zbuff.maxValue()), v2_z=rint(v2_viewport.z*zbuff.maxValue());
 
     // infer back-face culling
     const bool ccw = area<0;
@@ -991,31 +965,12 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
                 bary.w=bary.x+bary.y+bary.z;
                 if(bary.w==0) bary={1,1,1,3};
             }
-            constexpr bool AAA=false;
             if(depth_buffer_flag && should_sample) {
-                l64 z;
-//                typename depth_buffer_type::type z;
-                constexpr bool is_float_point=microgl::traits::is_float_point<number>();
-                // take advantage of FPU
-int xx=is_float_point?1:0;
-//                z= (int)(number(
-//                        ((one_over_w0_fixed*w0)>>0) +
-//                        ((one_over_w1_fixed*w1)>>0) +
-//                        ((one_over_w2_fixed*w2)>>0))
-//                                /(area));
-//                if(is_float_point) z= (long long)(number(one_over_w0_fixed*w0 +one_over_w1_fixed*w1 +one_over_w2_fixed*w2)/(area));
-//                else z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
-
-//                if(is_float_point) z= (long long)(number(v0_z*bary.x +v1_z*bary.y +v2_z*bary.z)/(bary.w));
-//                else z= (((v0_z)*bary.x) +((v1_z)*bary.y) +((v2_z)*bary.z))/(bary.w);
-
-                if(is_float_point) z= (long long)(number((v0_z*w0) +(v1_z*w1) +(v2_z*w2))/(area));
-                else z= (((v0_z)*w0) +((v1_z)*w1) +((v2_z)*w2))/(area);
-                //z_tag= functions::clamp<l64>(z_tag, 0, l64(1)<<44);
-                const int z_index = index - _window.index_correction + p.x;
-//                if((z<depth_buffer[z_index])) should_sample=false;
-//                else depth_buffer[z_index]=z;
-
+                using z_type=typename depth_buffer_type::type;
+                constexpr bool use_fpu=microgl::traits::is_float_point<number>();
+                rint denom=rint(v0_z)*w0 +rint(v1_z)*w1 +rint(v2_z)*w2;
+                z_type z=use_fpu ? z_type(number(denom)/area) : denom/area;
+                const int z_index = index-_window.index_correction+p.x;
                 if((z>zbuff[z_index])) should_sample=false;
                 else zbuff[z_index]=z;
             }

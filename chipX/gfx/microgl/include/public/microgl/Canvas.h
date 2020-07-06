@@ -95,8 +95,7 @@ public:
         uint8_t _2d_raster_bits_sub_pixel= options_big_integers() ? 8 : 0;
         uint8_t _2d_raster_bits_uv= options_big_integers() ? 15 : 10;
         uint8_t _3d_raster_bits_sub_pixel= options_big_integers() ? 8 : 0;
-        uint8_t _3d_raster_bits_w= options_big_integers() ? 18 : 12;
-        uint8_t _3d_raster_bits_z= options_big_integers() ? 24 : 10;
+        uint8_t _3d_raster_bits_w= options_big_integers() ? 15 : 12;
     };
 
 private:

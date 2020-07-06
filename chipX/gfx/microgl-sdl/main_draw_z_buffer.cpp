@@ -10,7 +10,6 @@
 #include <microgl/samplers/texture.h>
 #include "data/model_3d_cube.h"
 
-using namespace microgl::shading;
 #define TEST_ITERATIONS 1
 #define W 640*1
 #define H 640*1
@@ -20,10 +19,9 @@ SDL_Renderer * renderer;
 SDL_Texture * texture;
 Resources resources{};
 
-using namespace microgl::shading;
-using index_t = unsigned int;
 using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<Bitmap24>;
+//using Canvas24= Canvas<Bitmap24, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 Canvas24 * canvas;
 Texture24 tex_1, tex_2;
@@ -32,7 +30,6 @@ void loop();
 void init_sdl(int width, int height);
 
 float t = -30.0;
-//float z=-30.0;
 
 template <typename number>
 void test_shader_texture_3d(const model_3d<number> & object) {
@@ -43,7 +40,6 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     using math = microgl::math;
     using vertex_attribute= sampler_shader_vertex_attribute<number>;
 
-//    z-=0.0004;
     t-=0.425;
 
     // setup mvp matrix
@@ -54,7 +50,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
 //    mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
     mat4 view = camera::angleAt({0, 0, 70+ 0 / t}, 0, math::deg_to_rad(0), 0);
     mat4 projection = camera::perspective(math::deg_to_rad(60), canvas->width(), canvas->height(), 20, 100);
-//    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 1000);
+//    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 500);
     mat4 mvp_1= projection*view*model_1;
     mat4 mvp_2= projection*view*model_2;
 
@@ -73,13 +69,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     }
     //std::cout << z<<std::endl;
 
-    // init z-buffer
-//    using ul64=  int;//long long;
-//    ul64 * z_buffer = new ul64[canvas->width()*canvas->height()]{};
-//    for (int zx = 0; zx < canvas->width() * canvas->height(); ++zx) {
-//        z_buffer[zx]=(ul64(1)<<30);
-//    }
-    z_buffer<24> depth_buffer(canvas->width(), canvas->height());
+    z_buffer<16> depth_buffer(canvas->width(), canvas->height());
     depth_buffer.clear();
     // draw model_1
     canvas->drawTriangles<blendmode::Normal, porterduff::None<>, true, true, true>(
