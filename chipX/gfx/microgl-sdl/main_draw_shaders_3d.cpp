@@ -84,7 +84,8 @@ void test_shader_texture_3d(const model_3d<number> & object) {
             object.indices.data(),
             object.indices.size(),
             object.type,
-            triangles::face_culling::ccw);
+            triangles::face_culling::ccw,
+            (z_buffer<0> *)nullptr);
 }
 
 void render() {

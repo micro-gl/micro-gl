@@ -575,8 +575,8 @@ void Canvas<BITMAP, options>::drawTriangles(shader_base<impl, vertex_attr, varyi
                                      const index size,
                                      const enum indices type,
                                      const triangles::face_culling & culling,
-                                     depth_buffer_type *depth_buffer,
-                                     const opacity_t opacity) {
+                                     depth_buffer_type *depth_buffer, const opacity_t opacity,
+                                     const number& depth_range_near, const number& depth_range_far) {
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
           [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
               const index &edge_0_id, const index &edge_1_id, const index &edge_2_id) {
@@ -585,7 +585,7 @@ void Canvas<BITMAP, options>::drawTriangles(shader_base<impl, vertex_attr, varyi
                       vertex_buffer[first_index],
                       vertex_buffer[second_index],
                       vertex_buffer[third_index],
-                      opacity, culling, depth_buffer);
+                      opacity, culling, depth_buffer, depth_range_near, depth_range_far);
           });
 }
 
@@ -799,7 +799,8 @@ void Canvas<BITMAP, options>::drawTriangle(shader_base<impl, vertex_attr, varyin
                                     int viewport_width, int viewport_height,
                                     vertex_attr v0, vertex_attr v1, vertex_attr v2,
                                     const opacity_t opacity, const triangles::face_culling & culling,
-                                    depth_buffer_type *depth_buffer) {
+                                    depth_buffer_type *depth_buffer,
+                                    const number& depth_range_near, const number& depth_range_far) {
 #define f microgl::math::to_fixed
     // this and drawTriangle_shader_homo_internal is the programmable 3d pipeline
     // compute varying and positions per vertex for interpolation
@@ -823,9 +824,9 @@ void Canvas<BITMAP, options>::drawTriangle(shader_base<impl, vertex_attr, varyin
         const auto & bary_2= result_clipping[ix+2].bary;
         // convert bary to 16 bits fixed points
         constexpr precision p = 15; // this is not a problem, bary coords of clipping are always [0, 1] with bary.w=1
-        const vec4<long long> bary_0_fixed= {f(bary_0.x, p), f(bary_0.y, p), f(bary_0.z, p), f(bary_0.w, p)};
-        const vec4<long long> bary_1_fixed= {f(bary_1.x, p), f(bary_1.y, p), f(bary_1.z, p), f(bary_1.w, p)};
-        const vec4<long long> bary_2_fixed= {f(bary_2.x, p), f(bary_2.y, p), f(bary_2.z, p), f(bary_2.w, p)};
+        const vec4<int> bary_0_fixed= {f(bary_0.x, p), f(bary_0.y, p), f(bary_0.z, p), f(bary_0.w, p)};
+        const vec4<int> bary_1_fixed= {f(bary_1.x, p), f(bary_1.y, p), f(bary_1.z, p), f(bary_1.w, p)};
+        const vec4<int> bary_2_fixed= {f(bary_2.x, p), f(bary_2.y, p), f(bary_2.z, p), f(bary_2.w, p)};
         varying_v0_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_0_fixed);
         varying_v1_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_1_fixed);
         varying_v2_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_2_fixed);
@@ -834,7 +835,7 @@ void Canvas<BITMAP, options>::drawTriangle(shader_base<impl, vertex_attr, varyin
                 shader, viewport_width, viewport_height,
                 p0, p1, p2,
                 varying_v0_clip, varying_v1_clip, varying_v2_clip,
-                opacity, culling, depth_buffer);
+                opacity, culling, depth_buffer, depth_range_near, depth_range_far);
     }
 #undef f
 }
@@ -847,7 +848,8 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
                                                          const vec4<number> &p0,  const vec4<number> &p1,  const vec4<number> &p2,
                                                          varying &varying_v0, varying &varying_v1, varying &varying_v2,
                                                          opacity_t opacity, const triangles::face_culling & culling,
-                                                         depth_buffer_type * depth_buffer) {
+                                                         depth_buffer_type * depth_buffer,
+                                                         number depth_range_near, number depth_range_far) {
     /*
      * given triangle coords in a homogeneous coords, a shader, and corresponding interpolated varying
      * vertex attributes. we pass varying because somewhere in the pipeline we might have clipped things
@@ -856,9 +858,8 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     auto & zbuff=*depth_buffer;
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
-    const precision sub_pixel_precision = renderingOptions()._2d_raster_bits_sub_pixel;
+    const precision sub_pixel_precision = renderingOptions()._3d_raster_bits_sub_pixel;
     const precision w_bits= renderingOptions()._3d_raster_bits_w;
-//    const precision z_bits= 15;//renderingOptions()._3d_raster_bits_z;
 #define f microgl::math::to_fixed
     varying interpolated_varying;
     // perspective divide by w -> NDC space
@@ -866,13 +867,14 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     const auto v0_ndc = p0/p0.w; const auto one_over_w0=number(1)/(p0.w);
     const auto v1_ndc = p1/p1.w; const auto one_over_w1=number(1)/(p1.w);
     const auto v2_ndc = p2/p2.w; const auto one_over_w2=number(1)/(p2.w);
-    // viewport transform: NDC space -> raster space
-    const number w= viewport_width;
-    const number h= viewport_height;
-    number one = number(1), two=number(2);
-    vec3<number> v0_viewport = {((v0_ndc.x + one)*w)/two, h - ((v0_ndc.y + one)*h)/two, (v0_ndc.z + one)/two};
-    vec3<number> v1_viewport = {((v1_ndc.x + one)*w)/two, h - ((v1_ndc.y + one)*h)/two, (v1_ndc.z + one)/two};
-    vec3<number> v2_viewport = {((v2_ndc.x + one)*w)/two, h - ((v2_ndc.y + one)*h)/two, (v2_ndc.z + one)/two};
+    // viewport transform: NDC space -> window/viewport/raster space
+    const number w= viewport_width, h= viewport_height;
+    const number drn=microgl::functions::clamp<number>(depth_range_near, 0, 1);
+    const number drf=microgl::functions::clamp<number>(depth_range_far, 0, 1);
+    const number range =(drf-drn)/number(2), one = number(1), two=number(2);
+    vec3<number> v0_viewport = {((v0_ndc.x + one)*w)/two, h - ((v0_ndc.y + one)*h)/two, drn+(v0_ndc.z+one)*range};
+    vec3<number> v1_viewport = {((v1_ndc.x + one)*w)/two, h - ((v1_ndc.y + one)*h)/two, drn+(v1_ndc.z+one)*range};
+    vec3<number> v2_viewport = {((v2_ndc.x + one)*w)/two, h - ((v2_ndc.y + one)*h)/two, drn+(v2_ndc.z+one)*range};
     // collect values for interpolation as fixed point integers
     int v0_x= f(v0_viewport.x, sub_pixel_precision), v0_y= f(v0_viewport.y, sub_pixel_precision);
     int v1_x= f(v1_viewport.x, sub_pixel_precision), v1_y= f(v1_viewport.y, sub_pixel_precision);
@@ -898,9 +900,8 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
 //            if(!second_test) return;
 //        }
     }
-
-    rint v0_z= rint(v0_viewport.z*zbuff.maxValue()), v1_z= rint(v1_viewport.z*zbuff.maxValue()), v2_z=rint(v2_viewport.z*zbuff.maxValue());
-
+    rint v0_z= rint(v0_viewport.z*zbuff.maxValue()), v1_z= rint(v1_viewport.z*zbuff.maxValue()),
+    v2_z=rint(v2_viewport.z*zbuff.maxValue());
     // infer back-face culling
     const bool ccw = area<0;
     if(area==0) return; // discard degenerate triangles
@@ -916,8 +917,6 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     // rotate to match edges
     functions::swap(varying_v0, varying_v1);
     functions::swap(one_over_w0_fixed, one_over_w1_fixed); functions::swap(v0_z, v1_z);
-
-//#undef f
     // bounding box in raster space
 #define ceil_fixed(val, bits) ((val)&((1<<bits)-1) ? ((val>>bits)+1) : (val>>bits))
 #define floor_fixed(val, bits) ((val)>>bits)
@@ -944,9 +943,12 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
     // I still need to explain to myself why it works so well :)
-    rint w0_row = (functions::orient2d<int, rint_big>(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, 0) + bias_w0)>>sub_pixel_precision;
-    rint w1_row = (functions::orient2d<int, rint_big>(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) + bias_w1)>>sub_pixel_precision;
-    rint w2_row = (functions::orient2d<int, rint_big>(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) + bias_w2)>>sub_pixel_precision;
+    rint w0_row = (functions::orient2d<int, rint_big>(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, 0) +
+            bias_w0)>>sub_pixel_precision;
+    rint w1_row = (functions::orient2d<int, rint_big>(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) +
+            bias_w1)>>sub_pixel_precision;
+    rint w2_row = (functions::orient2d<int, rint_big>(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) +
+            bias_w2)>>sub_pixel_precision;
     // Triangle setup, this needs at least (P+1) bits, since the delta is always <= length
     rint A01 = v0_y-v1_y, A12 = v1_y-v2_y, A20 = v2_y-v0_y;
     rint B01 = v1_x-v0_x, B12 = v2_x-v1_x, B20 = v0_x-v2_x;
@@ -967,8 +969,8 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
             }
             if(depth_buffer_flag && should_sample) {
                 using z_type=typename depth_buffer_type::type;
-                constexpr bool use_fpu=microgl::traits::is_float_point<number>();
-                rint denom=rint(v0_z)*w0 +rint(v1_z)*w1 +rint(v2_z)*w2;
+                constexpr bool use_fpu=microgl::traits::is_float_point<number>(); // compile-time flag
+                rint denom=rint(v0_z)*w0+rint(v1_z)*w1+rint(v2_z)*w2;
                 z_type z=use_fpu ? z_type(number(denom)/area) : denom/area;
                 const int z_index = index-_window.index_correction+p.x;
                 if((z>zbuff[z_index])) should_sample=false;

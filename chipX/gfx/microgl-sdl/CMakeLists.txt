@@ -54,8 +54,8 @@ set(SOURCES
 #        main_matrix_transforms.cpp
 #        main_draw_triangles_matrix_transforms.cpp
 #        main_draw_shaders_2d.cpp
-#        main_draw_shaders_3d.cpp
-        main_draw_z_buffer.cpp
+        main_draw_shaders_3d.cpp
+#        main_draw_z_buffer.cpp
 #        main_3d_pipeline.cpp
 #        main_3d_camera.cpp
 #        main_bentley_ottmann.cpp

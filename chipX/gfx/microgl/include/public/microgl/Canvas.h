@@ -292,7 +292,8 @@ public:
                        enum indices type,
                        const triangles::face_culling & culling= triangles::face_culling::none,
                        depth_buffer_type *depth_buffer=(nullptr),
-                       opacity_t opacity=255);
+                       opacity_t opacity=255,
+                       const number& depth_range_near=number(0), const number& depth_range_far=number(1));
 
     void fxaa(int left, int top, int right, int bottom);
 
@@ -346,7 +347,8 @@ public:
                       int viewport_width, int viewport_height,
                       vertex_attr v0, vertex_attr v1, vertex_attr v2,
                       opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
-                      depth_buffer_type * depth_buffer=nullptr);
+                      depth_buffer_type * depth_buffer=nullptr,
+                      const number& depth_range_near=number(0), const number& depth_range_far=number(1));
 
 private:
     template <typename BlendMode=blendmode::Normal,
@@ -358,7 +360,8 @@ private:
                                            const vec4<number> &p0, const vec4<number> &p1, const vec4<number> &p2,
                                            varying &varying_v0, varying &varying_v1, varying &varying_v2,
                                            opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
-                                           depth_buffer_type * depth_buffer=nullptr);
+                                           depth_buffer_type * depth_buffer=nullptr,
+                                           number depth_range_near=number(0), number depth_range_far=number(1));
 
 public:
     // Masks

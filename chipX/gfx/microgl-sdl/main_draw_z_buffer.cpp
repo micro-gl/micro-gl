@@ -40,7 +40,7 @@ void test_shader_texture_3d(const model_3d<number> & object) {
     using math = microgl::math;
     using vertex_attribute= sampler_shader_vertex_attribute<number>;
 
-    t-=0.425;
+    t-=0.0425;
 
     // setup mvp matrix
     mat4 model_1 = mat4::transform({math::deg_to_rad(t / 2), math::deg_to_rad(t / 2), math::deg_to_rad(t / 2)},
