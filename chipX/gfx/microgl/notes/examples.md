@@ -2406,3 +2406,63 @@ void Canvas<P, CODER>::fxaa2(int left, int top, int right, int bottom) {
     }
 }
 ```
+```c++
+    //    static constexpr uint8_t size=123;//uint32_t(1)<<bits1;
+//    constexpr static Table tab=MagicFunction<func>(gen_seq<10>{});
+
+//    struct Table {
+//         uint8_t data[300];
+//    };
+
+
+//    template<typename T>
+//    static constexpr T look_up_table_elem (int i) {
+//        return {};
+//    }
+//
+//    template<>
+//    static constexpr int look_up_table_elem (int i) {
+//        return i;
+//    }
+//
+//    template<typename T, int... N>
+//    struct lookup_table_expand{};
+//
+//    template<typename T, int... N>
+//    struct lookup_table_expand<T, 1, N...> {
+//        static constexpr Table values = {{ look_up_table_elem<T>(0), N... }};
+//    };
+//
+//    template<typename T, int L, int... N>
+//    struct lookup_table_expand<T, L, N...>: lookup_table_expand<T, L-1, look_up_table_elem<T>(L-1), N...> {};
+//
+//    static constexpr Table tab = lookup_table_expand<int , 150>::values ;
+
+
+//    template<int... Is> struct seq{
+//        static const unsigned size= sizeof...(Is);
+//    };
+//
+//    template<int N, int... Is>
+//    struct gen_seq : gen_seq<(N)-(1), (N)-(1), (Is)...>{};
+//
+//    template<int... Is>
+//    struct gen_seq<(0), Is...> : seq<(Is)...>{};
+//
+//
+//    static constexpr uint8_t f(int i){ return i; /*lazy*/ }
+//
+//    template<int... Is>
+//    constexpr static Table MagicFunction(seq<Is...>){
+//        return {{ f(Is)... }};
+//    }
+//
+////    static constexpr Table tab=MagicFunction(gen_seq<uint8_t(size-1)>{});
+//    constexpr static int tab2[128]{gen_seq<10>{}};
+//
+//    constexpr static Table tab=MagicFunction(gen_seq<10>{});
+//public:
+//    static uint8_t get(const uint8_t & val) {
+//        return tab._[val];
+//    };
+```

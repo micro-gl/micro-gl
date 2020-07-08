@@ -4,6 +4,8 @@ project(microgl-sdl)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE "-fno-rtti -fno-exceptions -fstrict-aliasing -O3 -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
+#set(CMAKE_C_COMPILER "gcc-4.2")
+set(CMAKE_CXX_COMPILER "/usr/bin/g++")
 
 message("using compiler: ${CMAKE_CXX_COMPILER_ID}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
@@ -54,7 +56,7 @@ set(SOURCES
 #        main_matrix_transforms.cpp
 #        main_draw_triangles_matrix_transforms.cpp
 #        main_draw_shaders_2d.cpp
-        main_draw_shaders_3d.cpp
+#        main_draw_shaders_3d.cpp
 #        main_draw_z_buffer.cpp
 #        main_3d_pipeline.cpp
 #        main_3d_camera.cpp
@@ -74,6 +76,7 @@ set(SOURCES
 #        main_draw_bitmap_fonts.cpp
 #        main_draw_bitmap_packed.cpp
 #        main_draw_bitmap_indexed_palette.cpp
+        main_draw_lut_bits.cpp
         libs/stb_image/stb_image.cpp
         src/Resources.cpp data/packed_4.h)
 

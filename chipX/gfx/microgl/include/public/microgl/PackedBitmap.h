@@ -16,7 +16,7 @@ class PackedBitmap : public base_bitmap<PackedBitmap<BPP, CODER, reverse_element
     static constexpr byte BPE = byte(1)<<M; // always 8 bits, 1 byte
     static constexpr byte K=(BPP==1 ? 0 : (BPP==2 ? 1 : (BPP==4 ? 2 : (BPP==8 ? 3 : 4))));
     static constexpr byte T=M-K;
-    static constexpr byte MASK=(BPP==1 ? 0b00000001 : (BPP==2 ? 0b00000011 : (BPP==4 ? 0b00001111 : (BPP==8 ? 0b11111111 : 0b11111111))));
+    static constexpr byte MASK=(BPP==1 ? 0b00000001 : (BPP==2 ? 0b00000011 : (BPP==4 ? 0b00001111 : 0b11111111)));
 
 public:
     using base::pixelAt;
@@ -41,6 +41,7 @@ public:
         unsigned int R=(index1<<K)-(idx2<<M); // compute distance to the beginning of the 8bit aligned block
         element= reverse_elements_pos_in_byte ? (element) >> (BPE - BPP - R) : (element) >> (R); // move the element to the lower part
         byte masked=element&(MASK); // mask out the upper bits
+//        return masked;
         return masked<<4;
 //        return masked<<6;
 //        return masked<<7;

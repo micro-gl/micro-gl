@@ -1,6 +1,5 @@
 #pragma once
 
-#include <microgl/math.h>
 #include <microgl/micro_gl_traits.h>
 
 template<unsigned Bits>
@@ -15,7 +14,6 @@ private:
     static constexpr type max_value= (uint64_t(1)<<(Bits))-1;
     type * _data= nullptr;
     int _w=0, _h=0, _size=0;
-//    int _near_val=0, _far_val=1<<10;
 public:
     explicit z_buffer(int w, int h) :
             _data(new type[w * h]), _w{w}, _h{w}, _size{w * h} {
@@ -36,20 +34,4 @@ public:
         for (int ix=0; ix<_size; ++ix) _data[ix] = value;
     }
     void clear() { fill(maxValue()); }
-//
-//    template <typename number>
-//    void setDepthRange(const number & nearVal, const number & farVal) {
-//        _near_val=microgl::math::to_fixed(nearVal, 15);
-//        _far_val=microgl::math::to_fixed(farVal, 15);
-//    }
-//
-//    template <typename number>
-//    number remapDepth(const number & depth, const number & from_near,
-//            const number & from_far) {
-//        const number to_near_val= number(_near_val)/number();
-//        auto delta_1=_far_val-_near_val;
-//        auto delta_2=from_far-from_near;
-//        _near_val=microgl::math::to_fixed(nearVal, 15);
-//        _far_val=microgl::math::to_fixed(farVal, 15);
-//    }
 };

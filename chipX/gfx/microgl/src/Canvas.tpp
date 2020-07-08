@@ -1516,7 +1516,7 @@ void Canvas<BITMAP, options>::drawText(const char * text, microgl::text::bitmap_
         for (unsigned ix = 0; ix < count; ++ix) {
             const auto & l= result.locations[ix];
             const auto & c= *l.character;
-            int ll= l.x>>PP; ll+= left; int tt= l.y>>PP; tt+=(top);
+            int ll= l.x>>PP; ll+= left; int tt= l.y>>PP; tt+=top;
             int rr= ll+c.width; int bb= tt+c.height;
             rect box{ll, tt, rr, bb};
             rect draw_rect=calculateEffectiveDrawRect();
