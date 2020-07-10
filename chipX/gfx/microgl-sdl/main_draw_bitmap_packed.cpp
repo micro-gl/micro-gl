@@ -74,7 +74,7 @@ void test_text() {
 
 template <typename number, typename TEX>
 void test_texture(TEX & tex) {
-    canvas->drawQuad<blendmode::Normal, porterduff::None<>, false>(
+    canvas->drawRect<blendmode::Normal, porterduff::None<>, false>(
             tex,
             0, 0, tex.bitmap().width()<<1, tex.bitmap().height()<<1,
             255,

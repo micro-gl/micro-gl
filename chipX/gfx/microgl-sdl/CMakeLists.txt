@@ -74,9 +74,9 @@ set(SOURCES
 #        main_q_sort.cpp
 #        main_avl_tree.cpp
 #        main_draw_bitmap_fonts.cpp
-#        main_draw_bitmap_packed.cpp
+        main_draw_bitmap_packed.cpp
 #        main_draw_bitmap_indexed_palette.cpp
-        main_lut.cpp
+#        main_lut.cpp
         libs/stb_image/stb_image.cpp
         src/Resources.cpp data/packed_4.h)
 

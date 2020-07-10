@@ -8,13 +8,13 @@ namespace microgl {
         class RGB8 : public PixelCoder<uint8_t, RGB8> {
         public:
 
-            static
-            inline void encode(const color_t &input, uint8_t &output) {
+//            static
+            inline void encode(const color_t &input, uint8_t &output) const {
                 output = input.r;
             }
 
-            static
-            inline void decode(const uint8_t &input, color_t &output) {
+//            static
+            inline void decode(const uint8_t &input, color_t &output) const {
                 output.r = output.g = output.b = input;
 
                 update_channel_bit(output);

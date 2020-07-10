@@ -57,28 +57,30 @@ namespace microgl {
 //            typedef P Pixel;
             using Pixel=P;
             // integer colors
-            static
-            void encode(const color_t &input, P &output) {
-                IMPL::encode(input, output);
+//            static
+            void encode(const color_t &input, P &output) const {
+                this->derived().encode(input, output);
+//                IMPL::encode(input, output);
             }
 
-            static
-            void decode(const P &input, color_t &output) {
-                IMPL::decode(input, output);
+//            static
+            void decode(const P &input, color_t &output) const {
+                this->derived().decode(input, output);
+//                IMPL::decode(input, output);
                 //update_channel_bit(output);
             }
 
             template <typename number>
-            static
-            void encode(const intensity<number> &input, P &output) {
+//            static
+            void encode(const intensity<number> &input, P &output) const {
                 color_t int_color{};
                 convert_color(input, int_color, red_bits(), green_bits(), blue_bits(), alpha_bits());
                 encode(int_color, output);
             }
 
             template <typename number>
-            static
-            void decode(const P &input, intensity<number> &output) {
+//            static
+            void decode(const P &input, intensity<number> &output) const {
                 color_t int_color{};
                 decode(input, int_color);
                 convert_color(int_color, output, red_bits(), green_bits(), blue_bits(), alpha_bits());
@@ -98,20 +100,20 @@ namespace microgl {
             }
 
             template <typename number>
-            static
-            void convert(const intensity<number> &input, color_t &output) {
+//            static
+            void convert(const intensity<number> &input, color_t &output) const {
                 convert_color(input, output, red_bits(), green_bits(), blue_bits(), alpha_bits());
             }
 
             template <typename number>
-            static
-            void convert(const color_t &input, intensity<number> &output) {
+//            static
+            void convert(const color_t &input, intensity<number> &output) const {
                 convert_color(input, output, red_bits(), green_bits(), blue_bits(), alpha_bits());
             }
 
             template<typename P2, typename CODER2>
-            static
-            void convert(const color_t &input, color_t &output, const PixelCoder<P2, CODER2> &coder2) {
+//            static
+            void convert(const color_t &input, color_t &output, const PixelCoder<P2, CODER2> &coder2) const {
                 // convert input color of my space into a color in coder2 space
                 coder::convert_color(
                         input, output,
@@ -120,8 +122,8 @@ namespace microgl {
             }
 
             template<typename P2, typename CODER2>
-            static
-            void convert(const P &input, P2 &output, const PixelCoder<P2, CODER2> &coder2) {
+//            static
+            void convert(const P &input, P2 &output, const PixelCoder<P2, CODER2> &coder2) const {
                 color_t input_decoded{};
                 decode(input, input_decoded);
                 coder2.encode(input_decoded, output);

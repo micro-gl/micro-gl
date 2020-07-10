@@ -23,7 +23,7 @@ public:
     base_bitmap(int w, int h) : base_bitmap(new uint8_t[sizeof(Pixel) * w * h], w, h) {}
     base_bitmap(uint8_t *$pixels, int w, int h) : base_bitmap($pixels, w*h, w, h) {}
     base_bitmap(uint8_t *$pixels, int size, int w, int h) :
-            _width{w}, _height{h}, _buffer(reinterpret_cast<buffer_element_type *>($pixels), size) {
+            _width{w}, _height{h}, _coder{}, _buffer(reinterpret_cast<buffer_element_type *>($pixels), size) {
     }
     ~base_bitmap() { _width =_height=0; }
 
@@ -40,13 +40,12 @@ public:
     void fill(const Pixel &value) { this->derived().fill(value); }
     // replace with just CODER ?
     const CODER &coder() const { return _coder; }
-//    const microgl::coder::PixelCoder<Pixel, CODER> &coder() const { return _coder; }
 
-    void decode(int x, int y, microgl::color::color_t &output)  const{
+    void decode(int x, int y, microgl::color::color_t &output) const{
         _coder.decode(pixelAt(x, y), output);
     }
 
-    void decode(int index, microgl::color::color_t &output)  const{
+    void decode(int index, microgl::color::color_t &output) const{
         _coder.decode(pixelAt(index), output);
     }
 

@@ -9,13 +9,11 @@ namespace microgl {
         class RGB888_ARRAY : public PixelCoder<vec3<uint8_t>, RGB888_ARRAY> {
         public:
 
-            static
-            inline void encode(const color_t &input, vec3<uint8_t> &output) {
+            inline void encode(const color_t &input, vec3<uint8_t> &output) const {
                 output.x = input.r, output.y = input.g, output.z = input.b;
             }
 
-            static
-            inline void decode(const vec3<uint8_t> &input, color_t &output) {
+            inline void decode(const vec3<uint8_t> &input, color_t &output) const {
                 output.r = input.x, output.g = input.y, output.b = input.z, output.a = 255;
                 update_channel_bit(output);
             };
