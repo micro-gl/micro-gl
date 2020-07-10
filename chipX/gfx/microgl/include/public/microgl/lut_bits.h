@@ -1,67 +1,68 @@
 #pragma once
 
-#include <microgl/micro_gl_traits.h>
+#include <microgl/lut.h>
 
-template <typename type, unsigned size, typename function>
-struct constexpr_lut {
-private:
-    struct Table {
-        type data[size];
-    };
+namespace microgl {
+    namespace lut {
 
-    template<int... Is> struct seq{};
+        /**
+         * dynamic runtime (stack or heap storage) lookup table generation
+         * @tparam bits1
+         * @tparam bits2
+         */
+        template <uint8_t bits1, uint8_t bits2, bool heap=false>
+        struct dynamic_lut_bits {
+        private:
+            // let's fail if more than 8 bits
+            typename microgl::traits::enable_if<bits1<=8 && bits2<=8, bool>::type fail_if_more_than_8_bits;
+            constexpr static unsigned size=1u<<bits1;
+            dynamic_lut<uint8_t, size, heap> lut;
 
-    template<int N, int... Is>
-    struct gen_seq : gen_seq<(N)-(1), (N)-(1), (Is)...>{};
+        public:
+            dynamic_lut_bits() : lut{} {
+                const auto lambda = [](const int index) {
+                    return bits1==0 ? 0 : (index*((int(1)<<bits2)-1))/((int(1)<<bits1)-1);
+                };
+                lut.generate(lambda);
+            };
 
-    template<int... Is>
-    struct gen_seq<(0), Is...> : seq<(Is)...>{};
+            uint8_t operator[](const unsigned index) const {
+                return lut[index];
+            }
+        };
 
-    template<>
-    struct gen_seq<(0)> : seq<0>{};
+        /**
+         * compile time (static storage) lookup table generation
+         * @tparam bits1
+         * @tparam bits2
+         */
+        template <uint8_t bits1, uint8_t bits2>
+        struct static_lut_bits {
+        private:
+            // let's fail if more than 8 bits
+            typename microgl::traits::enable_if<bits1<=8 && bits2<=8, bool>::type fail_if_more_than_8_bits;
+            constexpr static unsigned size=1u<<bits1;
 
-    template<int... Is>
-    static constexpr Table generate(seq<Is...>){
-        return {{ function::apply(Is)... }};
+            struct func {
+                // this is the function to generate the LUT elements
+                static constexpr uint8_t apply(int n) {
+                    // one liner to support C++11 restrictive constexpr function
+                    return bits1==0 ? 0 : (n*((int(1)<<bits2)-1))/((int(1)<<bits1)-1);
+                }
+            };
+            const static static_lut<uint8_t, size, func> lut;
+
+        public:
+            static_lut_bits()= delete;
+            static uint8_t get(const int & n) {
+                return lut.get(n);
+            }
+        };
+
+        // definition
+        template <uint8_t bits1, uint8_t bits2>
+        const static_lut<uint8_t, static_lut_bits<bits1, bits2>::size, typename static_lut_bits<bits1, bits2>::func> static_lut_bits<bits1, bits2>::lut;
+
     }
 
-    constexpr static Table tab=generate(gen_seq<size>{});
-
-public:
-    static type get(const int & n) {
-        return tab.data[n];
-    }
-
-};
-
-// definition
-template <typename type, unsigned size, typename function>
-constexpr typename constexpr_lut<type, size, function>::Table constexpr_lut<type, size, function>::tab;
-
-template <uint8_t bits1, uint8_t bits2>
-struct lut_bits {
-    // let's fail if more than 8 bits
-    typename microgl::traits::enable_if<bits1<=8 && bits2<=8, bool>::type fail_if_more_than_8_bits;
-    constexpr static unsigned size=1u<<bits1;
-    lut_bits()= delete;
-
-    struct func {
-        // this is the function to generate the LUT elements
-        static constexpr uint8_t apply(int n) {
-            const int max_val_1 = (int(1)<<bits1)-1;
-            const int max_val_2 = (int(1)<<bits2)-1;
-            int inter= bits1==0 ? 0 : (n*max_val_2)/max_val_1;
-            return (inter);
-        }
-    };
-
-    static uint8_t get(const int & n) {
-        return lut.get(n);
-    }
-private:
-    const static constexpr_lut<uint8_t, size, func> lut;
-};
-
-// definition
-template <uint8_t bits1, uint8_t bits2>
-const constexpr_lut<uint8_t, lut_bits<bits1, bits2>::size, typename lut_bits<bits1, bits2>::func> lut_bits<bits1, bits2>::lut;
+}
