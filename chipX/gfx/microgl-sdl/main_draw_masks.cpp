@@ -41,7 +41,7 @@ inline void render() {
             tex_1,
             t, t, 300.0f, 300.0f,
             255);
-//    canvas->drawQuad<blendmode::Normal, porterduff::None>(
+//    canvas->drawRect<blendmode::Normal, porterduff::None>(
 //            color::colors::RED, -0, -0, 300, 300, 255);
     canvas->drawMask(masks::chrome_mode::red_channel,
             tex_mask,

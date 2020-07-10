@@ -5,7 +5,7 @@
 namespace microgl {
     namespace coder {
 
-        class RGBA1555_PACKED_16 : public PixelCoder<uint16_t, 5,5,5,1, RGBA1555_PACKED_16> {
+        class ARGB1555_PACKED_16 : public PixelCoder<uint16_t, 5,5,5,1, ARGB1555_PACKED_16> {
         public:
             using PixelCoder::decode;
             using PixelCoder::encode;

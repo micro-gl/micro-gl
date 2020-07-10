@@ -55,7 +55,7 @@ namespace microgl {
         class PixelCoder : public crpt<IMPL> {
         public:
             using Pixel=P;
-
+            PixelCoder()= default;
             void encode(const color_t &input, P &output) const {
                 this->derived().encode(input, output);
             }

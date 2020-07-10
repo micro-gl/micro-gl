@@ -9,13 +9,13 @@ class base_bitmap : public crpt<IMPL> {
 public:
     using Pixel=typename CODER::Pixel;
     using Coder=CODER;
+
 protected:
     int _width = 0, _height = 0;
     CODER _coder;
     buffer<buffer_element_type> _buffer;
 
 public:
-
     static constexpr bool hasNativeAlphaChannel() { return CODER::alpha_bits()!=0; }
     static constexpr bool nativeAlphaChannelBits() { return hasNativeAlphaChannel() ? CODER::alpha_bits() : 8; }
     static constexpr int maxNativeAlphaChannelValue() { return (1u<<nativeAlphaChannelBits())-1; }

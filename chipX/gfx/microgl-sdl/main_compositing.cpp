@@ -37,9 +37,9 @@ void init_sdl(int width, int height);
 
 inline void render() {
     canvas->clear({255, 255, 255, 255});
-//    canvas->drawQuad<blendmode::Normal, porterduff::SourceOver<true>>(
-    canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque>(
-//    canvas->drawQuad<blendmode::Normal, porterduff::None<>>(
+//    canvas->drawRect<blendmode::Normal, porterduff::SourceOver<true>>(
+    canvas->drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque>(
+//    canvas->drawRect<blendmode::Normal, porterduff::None<>>(
             color_grey,
             -0, -0, 300, 300,
             255);

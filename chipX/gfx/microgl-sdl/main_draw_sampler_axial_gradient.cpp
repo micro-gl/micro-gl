@@ -36,7 +36,7 @@ void test_1() {
 //            256 + 0.0f,           256,         1.0f, 0.0f,
 //            0.0f,                 256,         0.0f, 0.0f,
 //            255);
-//    canvas->drawQuad<blendmode::Normal, porterduff::None>({255,0,0}, 0, 0, 400, 400);
+//    canvas->drawRect<blendmode::Normal, porterduff::None>({255,0,0}, 0, 0, 400, 400);
 }
 
 void render() {

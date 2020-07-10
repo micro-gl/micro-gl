@@ -44,7 +44,7 @@ void render_blocks() {
         for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
             canvas->updateCanvasWindow(ix, iy, bitmap);
             canvas->clear({255,255,255,255});
-            canvas->drawQuad<blendmode::Normal, porterduff::None<>, false, number>(tex_uv,
+            canvas->drawRect<blendmode::Normal, porterduff::None<>, false, number>(tex_uv,
                     10, 10, 400, 400);
 
             SDL_Rect rect_source {0, 0, block_size, block_size};

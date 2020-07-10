@@ -41,8 +41,8 @@ public:
         unsigned int R=(index1<<K)-(idx2<<M); // compute distance to the beginning of the 8bit aligned block
         element= reverse_elements_pos_in_byte ? (element) >> (BPE - BPP - R) : (element) >> (R); // move the element to the lower part
         byte masked=element&(MASK); // mask out the upper bits
-//        return masked;
-        return masked<<4;
+        return masked;
+//        return masked<<4;
 //        return masked<<6;
 //        return masked<<7;
     }

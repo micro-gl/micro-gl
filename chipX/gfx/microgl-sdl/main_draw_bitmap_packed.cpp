@@ -7,6 +7,10 @@
 #include <microgl/pixel_coders/RGBA8888_ARRAY.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/pixel_coders/RGB8.h>
+#include <microgl/pixel_coders/BPP_RGB.h>
+#include <microgl/pixel_coders/BPP_1_RGB.h>
+#include <microgl/pixel_coders/BPP_2_RGB.h>
+#include <microgl/pixel_coders/BPP_4_RGB.h>
 //#include <microgl/porter_duff/SourceOver.h>
 #include <microgl/samplers/texture.h>
 #include <microgl/PackedBitmap.h>
@@ -28,9 +32,9 @@ using index_t = unsigned int;
 using Bitmap24_Packed= Bitmap<microgl::coder::RGB888_PACKED_32>;
 using Bitmap24_ARRAY= Bitmap<coder::RGBA8888_ARRAY>;
 using Bitmap8= Bitmap<coder::RGB8>;
-using BitmapPacked_1= PackedBitmap<1, coder::RGB8, true>;
-using BitmapPacked_2= PackedBitmap<2, coder::RGB8, true>;
-using BitmapPacked_4= PackedBitmap<4, coder::RGB8, true>;
+using BitmapPacked_1= PackedBitmap<1, coder::BPP_1_RGB<8,8,8>, true>;
+using BitmapPacked_2= PackedBitmap<2, coder::BPP_2_RGB<8,8,8>, true>;
+using BitmapPacked_4= PackedBitmap<4, coder::BPP_4_RGB<8,8,8>, true>;
 //using Canvas24= Canvas<uint32_t, coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<Bitmap24_Packed>;
 using Texture24= sampling::texture<Bitmap24_Packed, sampling::texture_filter::NearestNeighboor>;
@@ -86,9 +90,9 @@ void render() {
     canvas->clear({73,84,101,255});
 //    test_texture<float>(tex_1);
 //    test_texture<float>(tex_1_fill);
-//    test_texture<float>(tex_2);
+    test_texture<float>(tex_2);
 //    test_texture<float>(tex_2_fill);
-    test_texture<float>(tex_4);
+//    test_texture<float>(tex_4);
 //    test_texture<float>(tex_4_fill);
 //    test_text<float>();
 }
@@ -133,13 +137,13 @@ void init_sdl(int width, int height) {
     tex_4.updateBitmap(bitmap_packed_4);
     tex_4_fill.updateBitmap(bitmap_packed_4_fill);
 
-    color_t col{};
-    coder::RGB8 rgb{};
-    color::intensity<float> inten{};
-    coder::PixelCoder<uint8_t, 8,8,8,0,coder::RGB8> rgb2{};
-    rgb2.decode(127, inten);
-
-    int a;
+//    color_t col{};
+//    coder::BPP_4_RGB<5,5,5> rgb{};
+//    color::intensity<float> inten{};
+//    coder::PixelCoder<uint8_t, 8,8,8,0,coder::RGB8> rgb2{};
+//    rgb2.decode(127, inten);
+//
+//    int a;
 }
 
 int render_test(int N) {

@@ -34,7 +34,7 @@ float t=0;
 template <typename number>
 void test_quad() {
 //    t+=0.01;//-0.01;
-    canvas->drawQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
+    canvas->drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
             tex_uv,
             10+t, 10+t, 10+512 +t, 10+512+t,
             255,0,0, 1,1);

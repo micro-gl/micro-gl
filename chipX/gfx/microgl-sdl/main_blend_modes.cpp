@@ -54,23 +54,23 @@ void init_sdl(int width, int height);
 
 inline void render() {
     canvas->clear({128, 255, 255, 255});
-    canvas->drawQuad<blendmode::Multiply<false>, porterduff::FastSourceOverOnOpaque>(
-//    canvas->drawQuad<blendmode::Normal, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::Overlay<false>, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::PinLight, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::Screen<true>, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::Subtract, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::Darken, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::Lighten, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::Difference, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::Divide, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::ColorDodge, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::Exclusion<true>, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::HardLight<false, false>, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::VividLight, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::HardMix, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::LinearLight, porterduff::None<true>>(
-//    canvas->drawQuad<blendmode::SoftLight<true>, porterduff::None<true>>(
+    canvas->drawRect<blendmode::Multiply<false>, porterduff::FastSourceOverOnOpaque>(
+//    canvas->drawRect<blendmode::Normal, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::Overlay<false>, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::PinLight, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::Screen<true>, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::Subtract, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::Darken, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::Lighten, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::Difference, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::Divide, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::ColorDodge, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::Exclusion<true>, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::HardLight<false, false>, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::VividLight, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::HardMix, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::LinearLight, porterduff::None<true>>(
+//    canvas->drawRect<blendmode::SoftLight<true>, porterduff::None<true>>(
             color_grey,
             -0, -0, 300, 300,
             255);
