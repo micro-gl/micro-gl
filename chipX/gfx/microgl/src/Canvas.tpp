@@ -107,7 +107,8 @@ inline void Canvas<BITMAP, options>::blendColor(const color_t &val, int index, o
             //getPixelColor(index, backdrop);
         // we assume that either they are the same or one of them is zero, this is FASTER then comparison.
         // if we don't own a native alpha channel, check if the color has a suggestion for alpha channel.
-        // I use it because of masks. I really want to get rid of this
+        // I use it because of enabling masks for a canvas that does not have an alpha channel.
+        // I really want to get rid of this
         bits alpha_bits = pixel_coder::alpha_bits() | val.a_bits;
         if(alpha_bits) blended.a = src.a;
         else { blended.a= 255; alpha_bits=8; } // no alpha channel ? let's create one with 8 bits

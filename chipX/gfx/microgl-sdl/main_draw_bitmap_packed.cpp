@@ -132,6 +132,14 @@ void init_sdl(int width, int height) {
     tex_2_fill.updateBitmap(bitmap_packed_2_fill);
     tex_4.updateBitmap(bitmap_packed_4);
     tex_4_fill.updateBitmap(bitmap_packed_4_fill);
+
+    color_t col{};
+    coder::RGB8 rgb{};
+    color::intensity<float> inten{};
+    coder::PixelCoder<uint8_t, 8,8,8,0,coder::RGB8> rgb2{};
+    rgb2.decode(127, inten);
+
+    int a;
 }
 
 int render_test(int N) {

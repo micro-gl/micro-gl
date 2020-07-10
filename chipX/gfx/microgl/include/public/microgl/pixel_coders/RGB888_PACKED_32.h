@@ -5,7 +5,7 @@
 namespace microgl {
     namespace coder {
 
-        class RGB888_PACKED_32 : public PixelCoder<uint32_t, RGB888_PACKED_32> {
+        class RGB888_PACKED_32 : public PixelCoder<uint32_t, 8,8,8,0, RGB888_PACKED_32> {
         public:
             using PixelCoder::decode;
             using PixelCoder::encode;
@@ -17,18 +17,8 @@ namespace microgl {
                 output.r = (input & 0xFF0000) >> 16;
                 output.g = (input & 0x00FF00) >> 8;
                 output.b = (input & 0x0000FF);
-                update_channel_bit(output);
             };
 
-            static constexpr channel red_bits() { return 8; }
-            static constexpr channel green_bits() { return 8; }
-            static constexpr channel blue_bits() { return 8; }
-            static constexpr channel alpha_bits() { return 0; }
-            static inline const char *format() {
-                return "RGB888_PACKED_32";
-            }
-
         };
-
     }
 }
