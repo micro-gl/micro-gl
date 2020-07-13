@@ -20,7 +20,7 @@ include_directories("${PROJECT_BINARY_DIR}")
 set(SOURCES
         example_decode.cpp
         libs/lodepng/lodepng.cpp
-        Imagium.cpp types.cpp)
+        Imagium.cpp types.cpp bits.cpp color_t.h)
 
 add_executable(${PROJECT_NAME}
                ${SOURCES}

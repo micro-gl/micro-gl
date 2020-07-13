@@ -8,7 +8,10 @@ namespace imagium {
 
     using uint= unsigned int;
     using ubyte= unsigned char;
+    using channel= uint32_t ;
+    using bits= unsigned char;
     using byte_array= std::vector<ubyte>;
+    using str= std::string;
 
     enum class image_format {
         PNG, JPEG, BMP, unknown

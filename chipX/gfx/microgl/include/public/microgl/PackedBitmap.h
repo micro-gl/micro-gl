@@ -31,7 +31,7 @@ public:
     }
 
     PackedBitmap(int w, int h) : PackedBitmap{new uint8_t[(w*h)>>T], w, h} {};
-    PackedBitmap(uint8_t* $pixels, int w, int h) : base {$pixels, (w*h)>>T, w, h} {};
+    PackedBitmap(uint8_t* $pixels, int w, int h) : base {$pixels, (w*h)>>T, w, h} {}; // todo:: padding/rounding ?
     ~PackedBitmap() = default;
 
     uint8_t extract_pixel(unsigned int index1) const {

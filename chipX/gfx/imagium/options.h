@@ -11,6 +11,7 @@ namespace imagium {
         }
         image_format input_image_format=image_format::unknown;
         color_format output_color_format=color_format::unknown;
+        // todo:: convret all to a map instead
         int remap_r=-1;
         int remap_g=-1;
         int remap_b=-1;
