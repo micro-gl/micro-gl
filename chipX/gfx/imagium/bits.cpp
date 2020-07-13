@@ -26,6 +26,17 @@ namespace imagium {
         return 8;
     }
 
+    ubyte infer_power_of_2_bits_needed_from_bits(bits bits_val) {
+        if(bits_val<=1) return 1;
+        else if(bits_val<=2) return 2;
+        else if(bits_val<=4) return 4;
+        else if(bits_val<=8) return 8;
+        else if(bits_val<=16) return 16;
+        else if(bits_val<=32) return 32;
+        else if(bits_val<=64) return 64;
+        return 64;
+    }
+
     ubyte infer_power_of_2_bytes_needed_from_bits(bits bits_val) {
         if(bits_val<=8) return 1;
         else if(bits_val<=16) return 2;
@@ -37,6 +48,11 @@ namespace imagium {
     ubyte infer_power_of_2_bytes_needed_for_rgba(bits r, bits g, bits b, bits a) {
         bits sum =r+g+b+a;
         return infer_power_of_2_bytes_needed_from_bits(sum);
+    }
+
+    ubyte infer_power_of_2_bits_needed_for_rgba(bits r, bits g, bits b, bits a) {
+        bits sum =r+g+b+a;
+        return infer_power_of_2_bits_needed_from_bits(sum);
     }
 
 }

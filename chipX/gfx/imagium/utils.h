@@ -4,18 +4,33 @@
 #include <vector>
 
 namespace imagium {
-    std::vector<unsigned char> * loadFileAsByteArray(const std::string &file_name) {
-        std::ifstream ifs(file_name, std::ios::binary);
-        ifs.seekg(0, std::ios::end);
-        auto isGood = ifs.good();
-        if(!isGood) return nullptr;
-//        throw std::runtime_error("error loading file - " + file_name);
-        auto length = static_cast<size_t>(ifs.tellg());
-        auto *ret = new std::vector<unsigned char>(length);
-        ifs.seekg(0, std::ios::beg);
-        ifs.read(reinterpret_cast<char *>(ret->data()), length);
-        ifs.close();
-        return ret;
+    std::vector<unsigned char> * loadFileAsByteArray(const std::string &file_name);
+
+    template <typename I>
+    std::string intToHexString(I w, size_t hex_len = sizeof(I)<<1) {
+        static const char* digits = "0123456789ABCDEF";
+        std::string rc(hex_len,'0');
+        for (size_t i=0, j=(hex_len-1)*4 ; i<hex_len; ++i,j-=4)
+            rc[i] = digits[(w>>j) & 0x0f];
+        return "0x"+rc;
     }
 
+    template <class T,class U> U* Int2Hex(T lnumber, U* buffer)
+    {
+        const char* ref = "0123456789ABCDEF";
+        T hNibbles = (lnumber >> 4);
+
+        unsigned char* b_lNibbles = (unsigned char*)&lnumber;
+        unsigned char* b_hNibbles = (unsigned char*)&hNibbles;
+
+        U* pointer = buffer + (sizeof(lnumber) << 1);
+
+        *pointer = 0;
+        do {
+            *--pointer = ref[(*b_lNibbles++) & 0xF];
+            *--pointer = ref[(*b_hNibbles++) & 0xF];
+        } while (pointer > buffer);
+
+        return buffer;
+    }
 }
