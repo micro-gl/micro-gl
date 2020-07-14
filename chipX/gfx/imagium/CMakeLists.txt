@@ -20,6 +20,7 @@ include_directories("${PROJECT_BINARY_DIR}")
 set(SOURCES
         cli.cpp
         libs/lodepng/lodepng.cpp
+        libs/stb_image/stb_image.cpp
         Imagium.cpp types.cpp bits.cpp utils.cpp)
 
 add_executable(${PROJECT_NAME}

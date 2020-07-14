@@ -13,11 +13,10 @@ namespace imagium {
     class options {
     public:
         using strings=std::vector<str>;
-        // common options typed
-        image_format input_image_format=image_format::unknown;
-        color_format export_format=color_format::unknown;
+        str image_format;
         int r=-1, g=-1, b=-1, a=-1;
         bool pack_channels=true;
+        int palette=-1;
         str converter="";
         str output_name="test";
         str files_path;
@@ -27,11 +26,12 @@ namespace imagium {
         options()= default;
         explicit options(bundle & bundle) : _bundle{std::move(bundle)} {
             converter= _bundle.getValueAsString("converter", "");
+            image_format = _bundle.getValueAsString("image_format", "unknown_image_format");
             output_name= _bundle.getValueAsString("o", "no_name");
             files_path=_bundle.getValueAsString("files", "");
-            pack_channels=_bundle.getValueAsBoolean("files",  true);
+            pack_channels=_bundle.getValueAsBoolean("pack",  true);
+            palette=_bundle.getValueAsInteger("palette",  -1);
             auto rgba = _bundle.getValueAsString("rgba", "8|8|8|8");
-//            strings delimited{4, "0"};
             strings delimited= split(rgba, "|");
             delimited.resize(4, "0");
             r= delimited[0].empty() ? 0 : std::stoi(delimited[0]);
@@ -42,10 +42,5 @@ namespace imagium {
 
         bundle & extraOptions() { return _bundle; }
 
-        str toString() const {
-            if(!converter.empty()) return converter;
-            return image_format_to_string(input_image_format) + "_" +
-                                color_format_to_string(export_format);
-        }
     };
 }

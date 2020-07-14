@@ -61,7 +61,8 @@ namespace imagium {
         str toString(const str &name) const override {
             const str type_name = infer_type_needed_for_bits(buffer_element_size_bits);
             const str space = " ";
-            str var = type_name + space + name + "[" + std::to_string(_w) + "*" + std::to_string(_h) + "]= {";
+            str var = type_name + space + name + "[" + std::to_string(_w) + "*" +
+                    std::to_string(_h)+"*" + std::to_string(_channels_count) + "]= {";
             const auto buffer_size = _data.size();
             for (unsigned long ix = 0; ix < buffer_size; ++ix) {
                 const auto hex_str = intToHexString<number>(_data[ix]);

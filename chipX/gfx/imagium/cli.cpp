@@ -12,18 +12,14 @@ description:
   embed them in your program in the pixel format of your liking
 
 options include:
-  -format                  value: ( true_color | palette | grayscale )
-                           notes: some formats like palette depend on predefined
-                           palette that is embedded in your image
-
   -rgba                    value: `R|G|B|A` (literally)
                            values are bits per channel
                            example: 8|8|8|8 or 5|6|5|0 or 3|0|0|0 etc..
                            note: 0 bits for a channel will completely discard the channel
 
-  -colors                  value: ( 2 | 4 | 16 | 256 )
-                           amount of colors in palette or grayscale image
-                           notes: Only applicable in palette or grayscale formats
+  -palette                 value: ( 2 | 4 | 16 | 256 )
+                           amount of colors in palette
+                           notes: your image has to have a palette embedded
 
   -pack                    value: ( false | true )
                            if true, packs pixel inside a power of 2 number type = {pix1, pix2, ...}
@@ -48,6 +44,8 @@ int main(int argc, char *argv[]) {
         {"format", "true_color"},
         {"rgba", "8|8|8|0"},
         {"pack", "false"},
+        {"palette", "16"},
+//        {"pack", "true"},
 //        {"rgba", "5|6|5|0"},
     }}};
 #elif
@@ -58,17 +56,13 @@ int main(int argc, char *argv[]) {
         std::cerr << "no file specified !!!" << std::endl;
     }
 
-    // obviously a very quick and dirty method
-    auto file_type=files.substr(files.size()-3);
-    auto format=bundle_.getValueAsString("format", "unknown");
-    auto converter_tag= file_type+"_"+format;
-    if(bundle_.hasKey("converter")) // force specific converter
-        converter_tag=bundle_.getValueAsString("converter");
+    bundle_.putValue("image_format", files.substr(files.size()-3));
     bundle_.putValue("files", files);
     auto * data=imagium::loadFileAsByteArray(files);
     imagium::Imagium lib{};
     imagium::options options{bundle_};
-    byte_array result= lib.produce(converter_tag, data, options);
+    byte_array result= lib.produce(data, options);
+    str test(reinterpret_cast<char *>(result.data()), result.size());
     int a=0;
 }
 

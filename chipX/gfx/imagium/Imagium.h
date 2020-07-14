@@ -13,7 +13,8 @@ namespace imagium {
         std::map<std::string, generator> repo;
     public:
         Imagium() : repo{} {
-            repo["png_true_color"]= []() { return new png_true_color_converter(); };
+            repo["regular_converter"]= []() { return new png_true_color_converter(); };
+            repo["png_palette"]= []() { return new png_true_color_converter(); };
         };
 
         template <typename ...ARGS>
@@ -26,9 +27,17 @@ namespace imagium {
         }
 
         byte_array produce(const str & converter_tag, byte_array * data, const options & options) {
-            const auto tag= options.toString();
             const converter * worker= instantiateWorkerByTag<>(converter_tag);
             return worker->write(data, options);
+        }
+
+        byte_array produce(byte_array * data, const options & options) {
+            str tag=options.converter;
+            if(tag.empty())
+                tag="regular_converter";
+            if(options.palette>0)
+                tag="palette_converter";
+            return produce(tag, data, options);
         }
     };
 

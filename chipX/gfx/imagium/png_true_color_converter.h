@@ -1,5 +1,6 @@
 #pragma once
 
+#include "libs/stb_image/stb_image.h"
 #include <converter.h>
 #include <typed_packed_array.h>
 #include <typed_unpacked_array.h>
@@ -16,18 +17,24 @@ namespace imagium {
         png_true_color_converter()= default;
 
         byte_array write(byte_array * data, const options & options) const override {
-            std::vector<unsigned char> image, image2; //the raw pixels
-            unsigned width, height;
-            lodepng::State state; //optionally customize this one
+            int width, height, input_channels=4, bits_depth=8;
             bits r_bits=options.r, g_bits=options.g, b_bits=options.b, a_bits=options.a;
-            // ask for full rgba channels, user can drop channels out easily with options
-            state.info_raw.colortype=LodePNGColorType::LCT_RGBA;
-            unsigned channels=state.info_raw.colortype==LodePNGColorType::LCT_RGB ? 3:4;
-            bits bits_depth=state.info_raw.bitdepth;
-            unsigned error = lodepng::decode(image, width, height, state, *data);
 
-            if(error)
-                std::cerr << "png_true_color_converter error " << error << ": "<< lodepng_error_text(error) << std::endl;
+            /*
+            std::vector<unsigned char> image; //the raw pixels
+            lodepng::State state; //optionally customize this one
+            state.info_raw.colortype=LodePNGColorType::LCT_RGBA;
+            input_channels=state.info_raw.colortype==LodePNGColorType::LCT_RGB ? 3:4;
+            bits_depth=state.info_raw.bitdepth;
+            unsigned error = lodepng::decode(image, width, height, state, *data);
+            if(error) std::cerr << "png_true_color_converter error " << error << ": "<< lodepng_error_text(error) << std::endl;
+             */
+
+            ubyte * image=nullptr;
+            {
+                int nrChannels;
+                image=stbi_load_from_memory(data->data(), data->size(), &width, &height, &nrChannels, input_channels);
+            }
 
             const unsigned pixels_count = width*height;
 
@@ -37,11 +44,11 @@ namespace imagium {
             else
                 array=factory_UnpackedArray::getArray(width, height, r_bits, g_bits, b_bits, a_bits);
 
-            for (unsigned ix = 0; ix < pixels_count; ix+=channels) {
-                uint r=convert_channel(image[ix+0], bits_depth, r_bits);
-                uint g=convert_channel(image[ix+1], bits_depth, g_bits);
-                uint b=convert_channel(image[ix+2], bits_depth, b_bits);
-                uint a=convert_channel(image[ix+3], bits_depth, a_bits);
+            for (unsigned ix = 0, jx=0; ix < pixels_count; ++ix, jx+=input_channels) {
+                uint r=convert_channel(image[jx+0], bits_depth, r_bits);
+                uint g=convert_channel(image[jx+1], bits_depth, g_bits);
+                uint b=convert_channel(image[jx+2], bits_depth, b_bits);
+                uint a=convert_channel(image[jx+3], bits_depth, a_bits);
                 color_t color{r, g, b, a, r_bits, g_bits, b_bits, a_bits};
                 array->write(ix, color);
             }
@@ -49,8 +56,6 @@ namespace imagium {
             const str rendered_string= array->toString(options.output_name);
             byte_array result {rendered_string.begin(), rendered_string.end()};
             return result;
-            //if there's an error, display it
-            if(error) std::cout << "decoder error " << error << ": "<< lodepng_error_text(error) << std::endl;
         };
     };
 }

@@ -24,10 +24,10 @@ namespace imagium {
                                                                                           _g_bits{g_bits},
                                                                                           _b_bits{b_bits},
                                                                                           _a_bits{a_bits} {
-            _mask = (number(1) << _pixel_storage_size_bits) - 1;
             _pixels_count = _w * _h;
             _pixel_size_bits = r_bits + g_bits + b_bits + a_bits;
             _pixel_storage_size_bits = infer_power_of_2_bits_needed_from_bits(_pixel_size_bits);
+            _mask = (uint64_t (1) << _pixel_storage_size_bits) - 1;
             uint size = (_pixel_storage_size_bits * _pixels_count) / buffer_element_size_bits;
             _data.resize(size);
         }
