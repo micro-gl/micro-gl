@@ -2,22 +2,22 @@
 
 #include <options.h>
 #include <utils.h>
-#include <ImageWriterWorker.h>
-#include <png_true_color_worker.h>
+#include <converter.h>
+#include <png_true_color_converter.h>
 #include <map>
 
 namespace imagium {
     class Imagium {
     private:
-        using generator= std::function<ImageWriterWorker * (void)>;
+        using generator= std::function<converter * (void)>;
         std::map<std::string, generator> repo;
     public:
         Imagium() : repo{} {
-            repo["png_true_color"]= []() { return new png_true_color_worker(); };
+            repo["png_true_color"]= []() { return new png_true_color_converter(); };
         };
 
         template <typename ...ARGS>
-        ImageWriterWorker * instantiateWorkerByTag(const std::string & tag, ARGS... args) {
+        converter * instantiateWorkerByTag(const std::string & tag, ARGS... args) {
             const auto pair=repo.find(tag);
             if(pair==repo.end())
                 return nullptr;
@@ -27,7 +27,7 @@ namespace imagium {
 
         byte_array produce(const str & converter_tag, byte_array * data, const options & options) {
             const auto tag= options.toString();
-            const ImageWriterWorker * worker= instantiateWorkerByTag<>(converter_tag);
+            const converter * worker= instantiateWorkerByTag<>(converter_tag);
             return worker->write(data, options);
         }
     };

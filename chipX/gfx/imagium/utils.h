@@ -15,6 +15,9 @@ namespace imagium {
         return "0x"+rc;
     }
 
+    std::vector<std::string> split(std::string s, std::string delimiter);
+    void split(std::string s, std::string delimiter, std::vector<std::string> & list);
+
     template <class T,class U> U* Int2Hex(T lnumber, U* buffer)
     {
         const char* ref = "0123456789ABCDEF";

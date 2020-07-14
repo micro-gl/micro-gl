@@ -35,9 +35,10 @@ namespace imagium {
             return std::stof(as_str);
         }
 
-        float getValueAsBoolean(Key key, bool default_value=false) {
-            const auto as_str=getValueAsString(key, std::to_string(int(default_value)));
-            return as_str!="0";
+        bool getValueAsBoolean(Key key, bool default_value=false) {
+            str bool_str_default=default_value?"true":"false";
+            const auto as_str=getValueAsString(key, bool_str_default);
+            return as_str=="true";
         }
 
         str getValueAsString(Key key, str default_value="") {

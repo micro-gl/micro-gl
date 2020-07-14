@@ -5,9 +5,9 @@
 
 namespace imagium {
 
-    class ImageWriterWorker {
+    class converter {
     public:
-        ImageWriterWorker() = default;
+        converter() = default;
 
         virtual std::vector<ubyte> write(byte_array * $data, const options & options) const = 0;
     };

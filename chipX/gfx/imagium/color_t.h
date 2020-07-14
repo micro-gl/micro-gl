@@ -10,6 +10,7 @@ namespace imagium {
                     b_bits{$b_bits}, a_bits{$a_bits} {};
             color_t(const color_t &val) :
                     color_t(val.r, val.g, val.b, val.a, val.r_bits, val.g_bits, val.b_bits,val.a_bits) {};
+            color_t()= default;
             channel r=0, g=0, b=0, a=0;
             bits r_bits=8, g_bits=8, b_bits=8, a_bits=8;
             bits bits_rgba() const { return r_bits+g_bits+b_bits+a_bits; }

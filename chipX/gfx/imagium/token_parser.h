@@ -16,7 +16,6 @@ public:
 
     static
     dictionary parse (const int &argc, char **argv){
-        tokens tokens{};
         dictionary dic{};
         int index=1;
         str waiting_key="VOID_KEY";
