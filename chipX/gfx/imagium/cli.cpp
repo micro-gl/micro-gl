@@ -42,12 +42,13 @@ int main(int argc, char *argv[]) {
     std::cout<< info <<std::endl;
 #if (DEBUG==1)
     auto bundle_ = bundle{{{
-        {"VOID_KEY", "./assets/uv_256.png"},
+        {"VOID_KEY", "./assets/uv_256_16_colors.png"},
         {"format", "true_color"},
 //        {"rgba", "8|8|8|0"},
         {"rgba", "5|6|5|0"},
 //        {"pack", "false"},
         {"pack", "true"},
+        {"converter", "png_palette_converter"},
 //        {"palette", "16"},
 //        {"rgba", "5|6|5|0"},
     }}};

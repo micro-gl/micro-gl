@@ -10,21 +10,19 @@ namespace imagium {
     template<typename number>
     class typed_packed_array : public addressable_ram {
         std::vector<number> _data;
-        const uint _w, _h;
+        const uint _pixels_count;
         const bits _r_bits, _g_bits, _b_bits, _a_bits;
         unsigned _pixel_storage_size_bits = 0; // power of 2
         unsigned _pixel_size_bits = 0; // <= _pixel_storage_size_bits
-        unsigned _pixels_count = 0;
         const unsigned buffer_element_size_bits = sizeof(number) * 8;
         number _mask;
     public:
-        explicit typed_packed_array(uint w, uint h,
-                                    bits r_bits, bits g_bits, bits b_bits, bits a_bits) : _w{w}, _h{h},
+        explicit typed_packed_array(uint pixels,
+                                    bits r_bits, bits g_bits, bits b_bits, bits a_bits) : _pixels_count{pixels},
                                                                                           _r_bits{r_bits},
                                                                                           _g_bits{g_bits},
                                                                                           _b_bits{b_bits},
                                                                                           _a_bits{a_bits} {
-            _pixels_count = _w * _h;
             _pixel_size_bits = r_bits + g_bits + b_bits + a_bits;
             _pixel_storage_size_bits = infer_power_of_2_bits_needed_from_bits(_pixel_size_bits);
             _mask = (uint64_t (1) << _pixel_storage_size_bits) - 1;
@@ -37,7 +35,7 @@ namespace imagium {
             write(index, packed);
         }
 
-        void write(unsigned index, uint64_t value) {
+        void write(unsigned index, uint64_t value) override {
             // mask the value to the lower pixel storage bits window
             number value_masked = number(value) & _mask;
             // index of containing element inside the elements array
@@ -80,7 +78,7 @@ namespace imagium {
         str toString(const str &name) const override {
             const str type_name = infer_type_needed_for_bits(buffer_element_size_bits);
             const str space = " ";
-            str var = type_name + space + name + "[" + std::to_string(_w) + "*" + std::to_string(_h) + "]= {";
+            str var = type_name + space + name + "[" + std::to_string(_data.size()) + "]= {";
             const auto buffer_size = _data.size();
             for (unsigned long ix = 0; ix < buffer_size; ++ix) {
                 const auto hex_str = intToHexString<number>(_data[ix]);
@@ -99,16 +97,15 @@ namespace imagium {
         factory_PackedArray()= delete;
 
         static
-        addressable_ram * getArray(uint w, uint h,
-                                         bits r_bits, bits g_bits, bits b_bits, bits a_bits) {
+        addressable_ram * getArray(uint size, bits r_bits, bits g_bits, bits b_bits, bits a_bits) {
             ubyte needed_power_of_2_pixel_bits=infer_power_of_2_bits_needed_from_bits(r_bits+g_bits+b_bits+a_bits);
             const unsigned bytes_per_element=infer_power_of_2_bytes_needed_from_bits(needed_power_of_2_pixel_bits);
             switch (bytes_per_element) {
-                case 1: return new typed_packed_array<uint8_t>{w, h, r_bits, g_bits, b_bits, a_bits};
-                case 2: return new typed_packed_array<uint16_t>{w, h, r_bits, g_bits, b_bits, a_bits};
-                case 4: return new typed_packed_array<uint32_t>{w, h, r_bits, g_bits, b_bits, a_bits};
-                case 8: return new typed_packed_array<uint64_t>{w, h, r_bits, g_bits, b_bits, a_bits};
-                default: return new typed_packed_array<uint64_t>{w, h, r_bits, g_bits, b_bits, a_bits};
+                case 1: return new typed_packed_array<uint8_t>{size, r_bits, g_bits, b_bits, a_bits};
+                case 2: return new typed_packed_array<uint16_t>{size, r_bits, g_bits, b_bits, a_bits};
+                case 4: return new typed_packed_array<uint32_t>{size, r_bits, g_bits, b_bits, a_bits};
+                case 8: return new typed_packed_array<uint64_t>{size, r_bits, g_bits, b_bits, a_bits};
+                default: return new typed_packed_array<uint64_t>{size, r_bits, g_bits, b_bits, a_bits};
             }
         }
 

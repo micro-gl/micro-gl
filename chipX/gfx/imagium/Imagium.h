@@ -4,6 +4,7 @@
 #include <utils.h>
 #include <converter.h>
 #include <regular_converter.h>
+#include <png_palette_converter.h>
 #include <map>
 
 namespace imagium {
@@ -14,7 +15,7 @@ namespace imagium {
     public:
         Imagium() : repo{} {
             repo["regular_converter"]= []() { return new regular_converter(); };
-            repo["png_palette"]= []() { return new regular_converter(); };
+            repo["png_palette_converter"]= []() { return new png_palette_converter(); };
         };
 
         template <typename ...ARGS>
@@ -33,10 +34,11 @@ namespace imagium {
 
         byte_array produce(byte_array * data, const options & options) {
             str tag=options.converter;
-            if(tag.empty())
+            if(tag.empty()) {
                 tag="regular_converter";
-            if(options.palette>0)
-                tag="palette_converter";
+                if(options.palette>0)
+                    tag="palette_converter";
+            }
             return produce(tag, data, options);
         }
     };
