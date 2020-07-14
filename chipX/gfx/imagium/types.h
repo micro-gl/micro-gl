@@ -19,21 +19,30 @@ namespace imagium {
 
     enum class color_format {
         true_color,
-        true_color_with_alpha,
-
-        palette_2_colors,
-        palette_4_colors,
-        palette_16_colors,
-        palette_256_colors,
-
-        grayscale_2_colors,
-        grayscale_4_colors,
-        grayscale_16_colors,
-        grayscale_256_colors,
-
+        palette,
+        grayscale,
         unknown
     };
 
+//    enum class color_format {
+//        true_color,
+//        true_color_with_alpha,
+//
+//        palette_2_colors,
+//        palette_4_colors,
+//        palette_16_colors,
+//        palette_256_colors,
+//
+//        grayscale_2_colors,
+//        grayscale_4_colors,
+//        grayscale_16_colors,
+//        grayscale_256_colors,
+//
+//        unknown
+//    };
+
     std::string image_format_to_string(const image_format & val);
     std::string color_format_to_string(const color_format & val);
+    image_format string_to_image_format(const str &val);
+    color_format string_to_color_format(const str &val);
 }

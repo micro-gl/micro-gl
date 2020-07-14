@@ -1,6 +1,7 @@
 #pragma once
 
 #include <options.h>
+#include <utils.h>
 #include <ImageWriterWorker.h>
 #include <png_true_color_worker.h>
 #include <map>
@@ -24,9 +25,9 @@ namespace imagium {
                 return pair->second(args...);
         }
 
-        byte_array produce(byte_array * data, const options & options) {
+        byte_array produce(const str & converter_tag, byte_array * data, const options & options) {
             const auto tag= options.toString();
-            const ImageWriterWorker * worker= instantiateWorkerByTag<>(tag);
+            const ImageWriterWorker * worker= instantiateWorkerByTag<>(converter_tag);
             return worker->write(data, options);
         }
     };

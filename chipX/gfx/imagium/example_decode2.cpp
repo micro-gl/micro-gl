@@ -88,9 +88,10 @@ void decodeWithState(const char* filename) {
 
 int main(int argc, char *argv[]) {
     const char* filename = argc > 1 ? argv[1] : "./assets/uv_256.png";
+    imagium::bundle a{{{"k1", "v1"}}};
     auto * data=imagium::loadFileAsByteArray(filename);
     imagium::Imagium lib{};
-    imagium::options options{imagium::image_format::PNG, imagium::color_format::true_color};
+    imagium::options options{};
     lib.produce(data, options);
   decodeOneStep(filename);
 }

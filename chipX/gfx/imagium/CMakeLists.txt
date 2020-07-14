@@ -18,7 +18,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/lodepng")
 include_directories("${PROJECT_BINARY_DIR}")
 
 set(SOURCES
-        example_decode.cpp
+        cli.cpp
         libs/lodepng/lodepng.cpp
         Imagium.cpp types.cpp bits.cpp utils.cpp)
 

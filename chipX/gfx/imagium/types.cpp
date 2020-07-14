@@ -23,27 +23,27 @@ namespace imagium {
         switch (val) {
             case color_format::true_color :
                 res="true_color"; break;
-            case color_format::true_color_with_alpha :
-                res="true_color_with_alpha"; break;
-            case color_format::grayscale_2_colors :
-                res="grayscale_2_colors"; break;
-            case color_format::grayscale_4_colors :
-                res="grayscale_2_colors"; break;
-            case color_format::grayscale_16_colors :
-                res="grayscale_16_colors"; break;
-            case color_format::grayscale_256_colors :
-                res="grayscale_256_colors"; break;
-            case color_format::palette_2_colors :
-                res="palette_2_colors"; break;
-            case color_format::palette_4_colors :
-                res="palette_4_colors"; break;
-            case color_format::palette_16_colors :
-                res="palette_16_colors"; break;
-            case color_format::palette_256_colors :
-                res="palette_256_colors"; break;
+            case color_format::palette :
+                res="palette"; break;
+            case color_format::grayscale :
+                res="grayscale"; break;
             default:
                 res="unknown"; break;
         }
         return res;
+    }
+
+    image_format string_to_image_format(const str &val) {
+        if(val=="PNG") return image_format::PNG;
+        else if(val=="JPEG") return image_format::JPEG;
+        else if(val=="BMP") return image_format::BMP;
+        return image_format::unknown;
+    }
+
+    color_format string_to_color_format(const str &val) {
+        if(val=="true_color") return color_format::true_color;
+        else if(val=="palette") return color_format::palette;
+        else if(val=="grayscale") return color_format::grayscale;
+        return color_format::unknown;
     }
 }
