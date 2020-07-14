@@ -12,9 +12,9 @@
 
 namespace imagium {
 
-    class png_true_color_converter : public converter {
+    class regular_converter : public converter {
     public:
-        png_true_color_converter()= default;
+        regular_converter()= default;
 
         byte_array write(byte_array * data, const options & options) const override {
             int width, height, input_channels=4, bits_depth=8;
@@ -27,7 +27,7 @@ namespace imagium {
             input_channels=state.info_raw.colortype==LodePNGColorType::LCT_RGB ? 3:4;
             bits_depth=state.info_raw.bitdepth;
             unsigned error = lodepng::decode(image, width, height, state, *data);
-            if(error) std::cerr << "png_true_color_converter error " << error << ": "<< lodepng_error_text(error) << std::endl;
+            if(error) std::cerr << "regular_converter error " << error << ": "<< lodepng_error_text(error) << std::endl;
              */
 
             ubyte * image=nullptr;

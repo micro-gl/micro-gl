@@ -3,7 +3,7 @@ project(imagium)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS_RELEASE "-fno-rtti -fno-exceptions -fstrict-aliasing -O3 -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
+set(CMAKE_CXX_FLAGS_RELEASE "-fno-rtti -fstrict-aliasing -O3 -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
 #set(CMAKE_C_COMPILER "gcc-4.2")
 #set(CMAKE_CXX_COMPILER "/usr/bin/g++")
 

@@ -31,8 +31,10 @@ options include:
   -converter (optional)    value: converter-name
                            choose a specific converter that you know of. by default,
                            imagium will infer the correct one.
-                           example: png_true_color_converter
+                           example: regular_converter
 
+example:
+  imagium foo.png -rgba 5|6|5 -pack true
 )foo";
 
 
@@ -42,10 +44,11 @@ int main(int argc, char *argv[]) {
     auto bundle_ = bundle{{{
         {"VOID_KEY", "./assets/uv_256.png"},
         {"format", "true_color"},
-        {"rgba", "8|8|8|0"},
-        {"pack", "false"},
-        {"palette", "16"},
-//        {"pack", "true"},
+//        {"rgba", "8|8|8|0"},
+        {"rgba", "5|6|5|0"},
+//        {"pack", "false"},
+        {"pack", "true"},
+//        {"palette", "16"},
 //        {"rgba", "5|6|5|0"},
     }}};
 #elif

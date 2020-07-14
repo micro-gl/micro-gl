@@ -3,7 +3,7 @@
 #include <options.h>
 #include <utils.h>
 #include <converter.h>
-#include <png_true_color_converter.h>
+#include <regular_converter.h>
 #include <map>
 
 namespace imagium {
@@ -13,8 +13,8 @@ namespace imagium {
         std::map<std::string, generator> repo;
     public:
         Imagium() : repo{} {
-            repo["regular_converter"]= []() { return new png_true_color_converter(); };
-            repo["png_palette"]= []() { return new png_true_color_converter(); };
+            repo["regular_converter"]= []() { return new regular_converter(); };
+            repo["png_palette"]= []() { return new regular_converter(); };
         };
 
         template <typename ...ARGS>
