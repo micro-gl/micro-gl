@@ -26,14 +26,14 @@ namespace imagium {
                 return pair->second(args...);
         }
 
-        byte_array produce(const str & converter_tag, byte_array * data, const options & options) {
+        converter::result produce(const str & converter_tag, byte_array * data, const options & options) {
             const converter * worker= instantiateWorkerByTag<>(converter_tag);
             if(worker==nullptr)
                 throw std::runtime_error("could not find a matching converter for this data !!! ");
             return worker->write(data, options);
         }
 
-        byte_array produce(byte_array * data, const options & options) {
+        converter::result produce(byte_array * data, const options & options) {
             str tag=options.converter;
             if(tag.empty()) {
                 tag="regular_converter";

@@ -16,7 +16,7 @@ namespace imagium {
     }
 
     std::vector<std::string> split(std::string s, std::string delimiter);
-    void split(std::string s, std::string delimiter, std::vector<std::string> & list);
+    void split(std::string s, const std::string& delimiter, std::vector<std::string> & list);
 
     template <class T,class U> U* Int2Hex(T lnumber, U* buffer)
     {

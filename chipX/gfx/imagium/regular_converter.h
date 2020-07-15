@@ -15,7 +15,7 @@ namespace imagium {
     public:
         regular_converter()= default;
 
-        byte_array write(byte_array * data, const options & options) const override {
+        result write(byte_array * data, const options & options) const override {
             int width, height, input_channels=4, bits_depth=8, out_channels=0;
             bits r_bits=options.r, g_bits=options.g, b_bits=options.b, a_bits=options.a;
             out_channels= (r_bits?1:0)+(g_bits?1:0)+(b_bits?1:0)+(a_bits?1:0);
@@ -28,13 +28,15 @@ namespace imagium {
             const unsigned pixels_count = width*height;
             addressable_ram * array= nullptr;
             {
-                auto bits_needed= r_bits+g_bits+b_bits+a_bits;
+                auto bits_needed= infer_power_of_2_bits_needed_from_bits(r_bits+g_bits+b_bits+a_bits);
                 uint how_many= width*height;
                 if(!options.pack_channels) {
                     bits_needed=std::max<bits>({r_bits, g_bits, b_bits, a_bits});
+                    // round to next byte storage unit, this is important, so the packing
+                    // array will not compress
+                    bits_needed=infer_power_of_2_bytes_needed_from_bits(bits_needed)*8;
                     how_many=width*height*out_channels;
                 }
-                bits_needed=infer_power_of_2_bits_needed_from_bits(bits_needed);
                 array=factory_PackedArray::getArray(how_many, bits_needed);
             }
 
@@ -58,12 +60,16 @@ namespace imagium {
                 }
             }
 
+            const str include_str= "#include <cstdint>\n\n// this file was created by Imagium CLI \n\n";
             const str rendered_string= array->toString(options.output_name);
-            const str comment= generate_comment(width, height, array->bit_per_element(), array->bit_per_storage(),
-                                                        r_bits, g_bits, b_bits, a_bits, options.pack_channels);
-            const str result_string= comment + "\n" + rendered_string;
-            byte_array result {result_string.begin(), result_string.end()};
-            return result;
+            const str comment= generate_comment(width, height, array->bits_per_element(), array->bits_per_storage_type(),
+                                                r_bits, g_bits, b_bits, a_bits, options.pack_channels);
+            const str result_string= include_str + comment + "\n" + rendered_string;
+            byte_array result_array {result_string.begin(), result_string.end()};
+            uint bytes=(array->storageCount() * array->bits_per_storage_type())/8;
+            result export_{result_array, bytes};
+
+            return export_;
         };
 
         uint64_t pack_bits_in_number(const color_t &color) const {

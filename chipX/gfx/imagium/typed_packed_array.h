@@ -25,8 +25,10 @@ namespace imagium {
             _data.resize(size);
         }
 
-        uint bit_per_element() const override { return  _element_size_bits; }
-        uint bit_per_storage() const override { return  array_storage_element_bits; }
+        uint bits_per_element() const override { return  _element_size_bits; }
+        uint bits_per_storage_type() const override { return  array_storage_element_bits; }
+        uint elementsCount() const override { return  _pixels_count; }
+        uint storageCount() const override { return  _data.size(); }
 
         void write(unsigned index, uint64_t value) override {
             // mask the value to the lower pixel storage bits window
@@ -69,7 +71,7 @@ namespace imagium {
                     var += ", ";
                 }
             }
-            var += "}";
+            var += "};";
             return var;
         }
     };

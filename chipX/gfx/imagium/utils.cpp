@@ -6,7 +6,6 @@
 
 namespace imagium {
     std::vector<unsigned char> * loadFileAsByteArray(const std::string &file_name) {
-        std::cout << file_name << std::endl;
         std::ifstream ifs(file_name, std::ios::binary);
         ifs.seekg(0, std::ios::end);
         auto isGood = ifs.good();
@@ -26,7 +25,7 @@ namespace imagium {
         return list;
     }
 
-    void split(std::string s, std::string delimiter, std::vector<std::string> &list) {
+    void split(std::string s, const std::string& delimiter, std::vector<std::string> &list) {
         size_t pos = 0;
         std::string token;
         while ((pos = s.find(delimiter)) != std::string::npos) {

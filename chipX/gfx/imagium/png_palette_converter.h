@@ -16,7 +16,7 @@ namespace imagium {
     public:
         png_palette_converter()= default;
 
-        byte_array write(byte_array * data, const options & options) const override {
+        result write(byte_array * data, const options & options) const override {
             uint width, height, input_channels=4, bits_depth=8, bits_output;
             bits r_bits=options.r, g_bits=options.g, b_bits=options.b, a_bits=options.a;
             uint out_channels= (r_bits?1:0)+(g_bits?1:0)+(b_bits?1:0)+(a_bits?1:0);
@@ -37,13 +37,13 @@ namespace imagium {
             addressable_ram * index_array= nullptr, *palette_array=nullptr;
 
             { // palette
-                auto bits_needed= r_bits+g_bits+b_bits+a_bits;
+                auto bits_needed= infer_power_of_2_bits_needed_from_bits(r_bits+g_bits+b_bits+a_bits);
                 uint how_many= palette_number_of_pixels;
                 if(!options.pack_channels) {
                     bits_needed=std::max<bits>({r_bits, g_bits, b_bits, a_bits});
-                    how_many=width*height*out_channels;
+                    bits_needed=infer_power_of_2_bytes_needed_from_bits(bits_needed)*8;
+                    how_many=palette_number_of_pixels*out_channels;
                 }
-                bits_needed=infer_power_of_2_bits_needed_from_bits(bits_needed);
                 palette_array=factory_PackedArray::getArray(how_many, bits_needed);
 
                 for (unsigned ix = 0, jx=0; ix < palette_number_of_pixels; ++ix, jx+=input_channels) {
@@ -76,21 +76,28 @@ namespace imagium {
             }
             str all;
             { // generate strings
+                const str include_str= "#include <cstdint>\n\n// this file was created by Imagium CLI \n\n";
 
                 const str palette_string= palette_array->toString(options.output_name + "_palette");
                 const str palette_comment= generate_comment(palette_number_of_pixels, 1,
-                        palette_array->bit_per_element(), palette_array->bit_per_storage(),
-                        r_bits, g_bits, b_bits, a_bits, options.pack_channels);
+                                                            palette_array->bits_per_element(),
+                                                            palette_array->bits_per_storage_type(),
+                                                            r_bits, g_bits, b_bits, a_bits, options.pack_channels);
                 const str indexed_string= index_array->toString(options.output_name);
                 const str index_comment= generate_comment(width, height,
-                        index_array->bit_per_element(), index_array->bit_per_storage(),
-                        index_array->bit_per_element(), 0, 0, 0, true);
-                all=palette_comment + "\n" + palette_string + "\n\n" +
+                                                          index_array->bits_per_element(),
+                                                          index_array->bits_per_storage_type(),
+                                                          index_array->bits_per_element(), 0, 0, 0,
+                                                          true);
+                all=include_str+palette_comment + "\n" + palette_string + "\n\n" +
                         index_comment + "\n" + indexed_string + "\n";
 
             }
-            byte_array result{all.begin(), all.end()};
-            return result;
+            byte_array result_arr{all.begin(), all.end()};
+            uint bytes=((index_array->storageCount() * index_array->bits_per_storage_type()) / 8) +
+                        ((palette_array->storageCount() * palette_array->bits_per_storage_type()) / 8);
+            result export_{result_arr, bytes};
+            return export_;
         };
 
         static
