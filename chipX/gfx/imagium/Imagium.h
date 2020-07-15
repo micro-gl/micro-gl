@@ -5,7 +5,6 @@
 #include <converter.h>
 #include <regular_converter.h>
 #include <png_palette_converter.h>
-#include <map>
 
 namespace imagium {
     class Imagium {

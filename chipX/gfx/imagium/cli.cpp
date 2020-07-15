@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
         {"VOID_KEY", "./assets/uv_256.png"},
         {"format", "true_color"},
 //        {"rgba", "8|8|8|0"},
-        {"rgba", "8|0|0|8"},
+        {"rgba", "8|0|0|0"},
 //        {"rgba", "5|6|5|0"},
         {"pack", "false"},
 //        {"pack", "true"},
@@ -54,8 +54,9 @@ int main(int argc, char *argv[]) {
 //        {"palette", "16"},
 //        {"rgba", "5|6|5|0"},
     }}};
-#elif
-    auto bundle=bundle::fromTokens(argc, argv);
+
+#else
+    auto bundle_=bundle::fromTokens(argc, argv);
 #endif
     auto files= bundle_.getValueAsString("VOID_KEY", "");
     if(files.empty()) {

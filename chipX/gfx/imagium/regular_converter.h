@@ -51,10 +51,10 @@ namespace imagium {
                 } else {
                     unsigned idx2=ix*out_channels;
                     unsigned acc=0;
-                    if(r_bits!=0)     array->write(idx2+acc++, color.r);
-                    if(g_bits!=0)     array->write(idx2+acc++, color.g);
-                    if(b_bits!=0)     array->write(idx2+acc++, color.b);
-                    if(a_bits!=0)     array->write(idx2+acc++, color.a);
+                    if(r_bits!=0) array->write(idx2+acc++, color.r);
+                    if(g_bits!=0) array->write(idx2+acc++, color.g);
+                    if(b_bits!=0) array->write(idx2+acc++, color.b);
+                    if(a_bits!=0) array->write(idx2+acc++, color.a);
                 }
             }
 
