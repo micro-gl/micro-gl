@@ -12,25 +12,29 @@ namespace imagium {
     class typed_packed_array : public addressable_ram {
         std::vector<number> _data;
         const uint _pixels_count;
-        const uint _pixel_storage_size_bits = 0; // power of 2
-        const unsigned buffer_element_size_bits = sizeof(number) * 8;
+        const uint _element_size_bits = 0; // power of 2
+        const unsigned array_storage_element_bits = sizeof(number) * 8;
         number _mask;
     public:
-        explicit typed_packed_array(uint pixels, uint pixel_storage_size_bits) : _pixels_count{pixels},
-                                                                                 _pixel_storage_size_bits{pixel_storage_size_bits}
-                                                                                           {
-            _mask = (uint64_t (1) << _pixel_storage_size_bits) - 1;
-            uint size = std::ceil(float(_pixel_storage_size_bits * _pixels_count) / buffer_element_size_bits);
+        explicit typed_packed_array(uint pixels, uint element_size_bits) :
+                _pixels_count{pixels}, _element_size_bits{element_size_bits}
+                    {
+            _mask = (uint64_t (1) << _element_size_bits) - 1;
+            uint size = std::ceil(float(_element_size_bits * _pixels_count)
+                                  / array_storage_element_bits);
             _data.resize(size);
         }
+
+        uint bit_per_element() const override { return  _element_size_bits; }
+        uint bit_per_storage() const override { return  array_storage_element_bits; }
 
         void write(unsigned index, uint64_t value) override {
             // mask the value to the lower pixel storage bits window
             number value_masked = number(value) & _mask;
             // index of containing element inside the elements array
-            unsigned int idx2 = (index * _pixel_storage_size_bits) / buffer_element_size_bits;
+            unsigned int idx2 = (index * _element_size_bits) / array_storage_element_bits;
             // distance in bits from beginning of storage window to beginning of block
-            unsigned int D = (index * _pixel_storage_size_bits) - idx2 * buffer_element_size_bits;
+            unsigned int D = (index * _element_size_bits) - idx2 * array_storage_element_bits;
             // get the element to update
             number element_to_change = _data[idx2];
             // create a mask to extract zero the place where the pixel should lay
@@ -51,14 +55,15 @@ namespace imagium {
             throw std::runtime_error{"implement me !!!"};
         }
 
-
         str toString(const str &name) const override {
-            const str type_name = infer_type_needed_for_bits(buffer_element_size_bits);
+            const str type_name = infer_type_needed_for_bits(array_storage_element_bits);
             const str space = " ";
+            int break_line_every=200;
             str var = type_name + space + name + "[" + std::to_string(_data.size()) + "]= {";
             const auto buffer_size = _data.size();
             for (unsigned long ix = 0; ix < buffer_size; ++ix) {
                 const auto hex_str = intToHexString<number>(_data[ix]);
+                if(ix%break_line_every==0) var += "\n    ";
                 var += hex_str;
                 if (ix < buffer_size - 1) { // not last one
                     var += ", ";

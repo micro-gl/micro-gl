@@ -9,6 +9,8 @@ namespace imagium {
     public:
         virtual void write(unsigned index, uint64_t value) = 0;
         virtual uint64_t operator[](int index) const = 0;
+        virtual uint bit_per_element() const = 0;
+        virtual uint bit_per_storage() const = 0;
         virtual str toString(const str &name) const = 0;
     };
 

@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <utility>
 #include <utils.h>
+#include <algorithm>
 
 namespace imagium {
 
@@ -16,7 +17,7 @@ namespace imagium {
         str image_format;
         int r=-1, g=-1, b=-1, a=-1;
         bool pack_channels=true;
-        int palette=-1;
+        bool use_palette=false;
         str converter="";
         str output_name="test";
         str files_path;
@@ -25,14 +26,24 @@ namespace imagium {
     public:
         options()= default;
         explicit options(bundle & bundle) : _bundle{std::move(bundle)} {
+            str default_output_name;
+            files_path=_bundle.getValueAsString("VOID_KEY", "nada.nada");
+            const auto last_of = files_path.find_last_of('.');
+            image_format = files_path.substr(last_of+1);
+            {
+                size_t ff= files_path.find_last_of('\\');
+                size_t bb= files_path.find_last_of('/');
+                ff= (ff==std::string::npos) ? 0 : ff+1;
+                bb= (bb==std::string::npos) ? 0 : bb+1;
+                const auto ss=std::max({ff,bb,0UL});
+                default_output_name = files_path.substr(ss, last_of-ss);
+            }
             converter= _bundle.getValueAsString("converter", "");
-            image_format = _bundle.getValueAsString("image_format", "unknown_image_format");
-            output_name= _bundle.getValueAsString("o", "no_name");
-            files_path=_bundle.getValueAsString("files", "");
-            pack_channels=_bundle.getValueAsBoolean("pack",  true);
-            palette=_bundle.getValueAsInteger("palette",  -1);
+            output_name= _bundle.getValueAsString("o", default_output_name);
+            pack_channels=!_bundle.hasKey("unpack");
+            use_palette=_bundle.hasKey("indexed");
             auto rgba = _bundle.getValueAsString("rgba", "8|8|8|8");
-            strings delimited= split(rgba, "|");
+            strings delimited= split(rgba, "-");
             delimited.resize(4, "0");
             r= delimited[0].empty() ? 0 : std::stoi(delimited[0]);
             g= delimited[1].empty() ? 0 : std::stoi(delimited[1]);
@@ -41,6 +52,5 @@ namespace imagium {
         }
 
         bundle & extraOptions() { return _bundle; }
-
     };
 }

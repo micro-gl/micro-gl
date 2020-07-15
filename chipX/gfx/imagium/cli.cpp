@@ -2,7 +2,7 @@
 #include <iostream>
 using namespace imagium;
 
-#define DEBUG 1
+#define DEBUG 0
 
 const char* info =R"foo(usage:
   imagium [image file] [options]
@@ -12,64 +12,82 @@ description:
   embed them in your program in the pixel format of your liking
 
 options include:
-  -rgba                    value: `R|G|B|A` (literally)
-                           values are bits per channel
-                           example: 8|8|8|8 or 5|6|5|0 or 3|0|0|0 etc..
-                           note: 0 bits for a channel will completely discard the channel
+  -rgba         value: R-G-B-A (literally)
+                values are bits per channel
+                example: 8|8|8|8 or 5|6|5|0 or 3|0|0|0 etc..
+                note: 0 bits for a channel will completely discard the channel
 
-  -palette                 value: ( 2 | 4 | 16 | 256 )
-                           amount of colors in palette
-                           notes: your image has to have a palette embedded
+  -unpack       if not set, packs pixel inside a power of 2 number type = {pix1, pix2, ...}
+                if set, packs each channel separately inside a power of 2 number type = {r,g,b,a, r,g,b,a ...}
 
-  -pack                    value: ( false | true )
-                           if true, packs pixel inside a power of 2 number type = {pix1, pix2, ...}
-                           if false, packs each channel separately inside a power of 2 number type = {r,g,b,a, r,g,b,a ...}
+                notes: defaults to `true`, `false`, is desirable for 8|8|8|0 rgb config, where
+                you will get the buffer = {r,g,b, r,g,b, .....} which is more optimal than packed.
 
-                           notes: defaults to `true`, `false`, is desirable for 8|8|8|0 rgb config, where
-                           you will get the buffer = {r,g,b, r,g,b, .....} which is more optimal than packed.
+  -indexed      create indexed data with embedded palette of the image
 
-  -converter (optional)    value: converter-name
-                           choose a specific converter that you know of. by default,
-                           imagium will infer the correct one.
-                           example: regular_converter
+  -o            (optional) output name, if not set, will try to use file name
+
+  -converter    (optional) value: converter-name
+                choose a specific converter that you know of. by default,
+                imagium will infer the correct one.
+                example: regular_converter
+  -h            show help
 
 example:
-  imagium foo.png -rgba 5|6|5 -pack true
+  imagium foo.png -rgba 5-6-5 -pack true
 )foo";
 
 
 int main(int argc, char *argv[]) {
-    std::cout<< info <<std::endl;
 #if (DEBUG==1)
-    auto bundle_ = bundle{{{
+    auto bundle_ = bundle{{
 //        {"VOID_KEY", "./assets/uv_256_16_colors.png"},
         {"VOID_KEY", "./assets/uv_256.png"},
-        {"format", "true_color"},
-//        {"rgba", "8|8|8|0"},
-        {"rgba", "8|0|0|0"},
+//        {"rgba", "8|0|0|0"},
 //        {"rgba", "5|6|5|0"},
-        {"pack", "false"},
-//        {"pack", "true"},
+        {"rgba", "5|2|2"},
+//        {"unpack", ""},
 //        {"converter", "png_palette_converter"},
-//        {"palette", "16"},
+        {"o", "hello"},
+    }};
+#elif (DEBUG==2)
+    // test indexed mode
+    auto bundle_ = bundle{{
+        {"VOID_KEY", "./assets/uv_256_16_colors.png"},
+        {"rgba", "8|8|8|0"},
+        {"indexed", ""},
 //        {"rgba", "5|6|5|0"},
-    }}};
-
+//        {"unpack", ""},
+        }};
 #else
     auto bundle_=bundle::fromTokens(argc, argv);
 #endif
-    auto files= bundle_.getValueAsString("VOID_KEY", "");
-    if(files.empty()) {
-        std::cerr << "no file specified !!!" << std::endl;
+    if(bundle_.hasKey("h") || bundle_.size()<=1) {
+        std::cout << info << std::endl;
+        return 0;
+    }
+    if(bundle_.getValueAsString("VOID_KEY", "").empty()) {
+        std::cout << "Error: no file specified !!!" << std::endl;
+        return 0;
     }
 
-    bundle_.putValue("image_format", files.substr(files.size()-3));
-    bundle_.putValue("files", files);
-    auto * data=imagium::loadFileAsByteArray(files);
-    imagium::Imagium lib{};
-    imagium::options options{bundle_};
-    byte_array result= lib.produce(data, options);
-    str test(reinterpret_cast<char *>(result.data()), result.size());
-    int a=0;
+    byte_array result;
+    try {
+        std::cout << "Imagium" << std::endl;
+        imagium::Imagium lib{};
+        imagium::options options{bundle_};
+        auto * data=imagium::loadFileAsByteArray(options.files_path);
+        result = lib.produce(data, options);
+        str test(reinterpret_cast<char *>(result.data()), result.size());
+        std::ofstream out(options.output_name + ".h");
+        out << test;
+        out.close();
+        std::cout << "created :: " << options.output_name + ".h" << std::endl;
+    }
+    catch (const std::exception& e){
+        std::cout << "Imagium error: " + str{e.what()} << std::endl;
+        return 1;
+    }
+
 }
 

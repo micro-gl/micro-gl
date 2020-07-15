@@ -15,7 +15,7 @@ namespace imagium {
             return bundle{token_parser::parse(argc, argv)};
         }
 
-        explicit bundle(dictionary && dic) : _dic{std::move(dic)} { }
+        explicit bundle(dictionary dic) : _dic{std::move(dic)} { }
         explicit bundle(dictionary & dic) : _dic{(dic)} { }
         bundle(bundle &&bundle) noexcept : _dic{std::move(bundle._dic)} { }
         bundle(bundle & bundle) = default;
@@ -56,6 +56,14 @@ namespace imagium {
         void removeKey(Key key) {
             const auto it= _dic.find(key);
             _dic.erase(it);
+        }
+
+        uint size() {
+            return _dic.size();
+        }
+
+        void clear() {
+            _dic.clear();
         }
 
     private:

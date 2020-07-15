@@ -28,6 +28,8 @@ namespace imagium {
 
         byte_array produce(const str & converter_tag, byte_array * data, const options & options) {
             const converter * worker= instantiateWorkerByTag<>(converter_tag);
+            if(worker==nullptr)
+                throw std::runtime_error("could not find a matching converter for this data !!! ");
             return worker->write(data, options);
         }
 
@@ -35,8 +37,8 @@ namespace imagium {
             str tag=options.converter;
             if(tag.empty()) {
                 tag="regular_converter";
-                if(options.palette>0)
-                    tag="palette_converter";
+                if(options.use_palette)
+                    tag=options.image_format+"_palette_converter";
             }
             return produce(tag, data, options);
         }

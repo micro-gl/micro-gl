@@ -59,7 +59,10 @@ namespace imagium {
             }
 
             const str rendered_string= array->toString(options.output_name);
-            byte_array result {rendered_string.begin(), rendered_string.end()};
+            const str comment= generate_comment(width, height, array->bit_per_element(), array->bit_per_storage(),
+                                                        r_bits, g_bits, b_bits, a_bits, options.pack_channels);
+            const str result_string= comment + "\n" + rendered_string;
+            byte_array result {result_string.begin(), result_string.end()};
             return result;
         };
 
@@ -69,6 +72,27 @@ namespace imagium {
                              (color.b << color.bits_a()) +
                              (color.a << 0);
             return storage;
+        }
+
+        static
+        str generate_comment(int w, int h, bits element_bits, bits storage_bits,
+                             bits r, bits g, bits b, bits a, bool isPacked) {
+            str result;
+            char arr[250];
+            if(isPacked) {
+                uint elements_per_storage=storage_bits/element_bits;
+                sprintf(arr, "// %dx%d pixels in this array. each pixel is bit packed (%d|%d|%d|%d) "
+                             "inside %d bits block, \n// laid in a %d bits of array storage. "
+                             "Each array element contains %d pixels", w,h,r,g,b,a, element_bits,
+                        storage_bits, elements_per_storage);
+            } else {
+                sprintf(arr, "// %dx%d pixels in this array. each channel of pixel is un-packed "
+                             "(%d|%d|%d|%d) inside %d bits block of array storage. "
+                             "\n// [r,g,b,a, r,g,b,a , .....], note 0 bit channels are removed",
+                        w,h, r,g,b,a, storage_bits);
+            }
+            result=str{arr};
+            return result;
         }
 
     };

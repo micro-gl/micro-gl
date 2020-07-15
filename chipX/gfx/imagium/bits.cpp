@@ -13,7 +13,7 @@ namespace imagium {
         return "uint64_t";
     }
 
-    bits infer_bits_used_from_value(unsigned val) {
+    bits infer_bits_used_from_unsigned_byte_value(ubyte val) {
         if(val<1) return 0;
         else if(val<2) return 1;
         else if(val<4) return 2;
@@ -22,7 +22,6 @@ namespace imagium {
         else if(val<32) return 5;
         else if(val<64) return 6;
         else if(val<128) return 7;
-        else if(val<256) return 8;
         return 8;
     }
 

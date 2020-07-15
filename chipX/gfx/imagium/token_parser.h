@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <vector>
 #include <map>
+#include <iostream>
 
 class token_parser {
 private:
@@ -20,18 +21,23 @@ public:
         int index=1;
         str waiting_key="VOID_KEY";
         str aggregate_values;
+
         while(index<argc) {
             const str token=str{argv[index]};
             const bool is_key= isKey(token);
             if(is_key) {
+                //std::cout << waiting_key << " = " << aggregate_values << std::endl;
                 dic[waiting_key]=aggregate_values;
                 waiting_key=token.substr(1);
                 aggregate_values="";
             } else { // is a value
-                aggregate_values += " " + token;
+                str space=aggregate_values.empty() ? "" : " ";
+                aggregate_values += space + token;
             }
             index++;
         }
+        dic[waiting_key]=aggregate_values;
+        // std::cout << waiting_key << " = " << aggregate_values << std::endl;
         return dic;
     }
 
