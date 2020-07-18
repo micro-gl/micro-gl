@@ -14,6 +14,7 @@ protected:
     int _width = 0, _height = 0;
     CODER _coder;
     buffer<buffer_element_type> _buffer;
+    // todo:: add a sub window feature, only involves translating x and y coords or a fixed index ?
 
 public:
     static constexpr bool hasNativeAlphaChannel() { return CODER::alpha_bits()!=0; }

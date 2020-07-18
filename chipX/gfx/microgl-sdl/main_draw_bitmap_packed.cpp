@@ -137,6 +137,7 @@ void init_sdl(int width, int height) {
     tex_4.updateBitmap(bitmap_packed_4);
     tex_4_fill.updateBitmap(bitmap_packed_4_fill);
 
+    bitmap_packed_1->pixelAt(0);
 //    color_t col{};
 //    coder::BPP_4_RGB<5,5,5> rgb{};
 //    color::intensity<float> inten{};

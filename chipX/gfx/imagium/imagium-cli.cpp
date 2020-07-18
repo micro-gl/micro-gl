@@ -14,7 +14,7 @@ description:
 options include:
   -rgba         value: R-G-B-A (literally)
                 values are bits per channel
-                example: 8|8|8|8 or 5|6|5|0 or 3|0|0|0 etc..
+                example: 8-8-8-8 or 5-6-5-0 or 3-0-0-0 etc..
                 note: 0 bits for a channel will completely discard the channel
   -unpack       if set, unpacks each channel separately inside a power of 2 number type = {r,g,b,a, r,g,b,a ...}
                 if not set (default), packs all channels inside a power of 2 number type = {pix1, pix2, ...}
@@ -29,7 +29,8 @@ options include:
   -h            show help
 
 example:
-  imagium foo.png -rgba 5-6-5 -pack true
+  imagium foo.png -rgba 5-6-5
+  imagium foo_with_16_color_palette.png -rgba 5-6-5 -indexed
 )foo";
 
 

@@ -8,17 +8,19 @@ set(CMAKE_CXX_FLAGS_RELEASE "-fno-rtti -fstrict-aliasing -O3 -s -flto -Wstrict-a
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+add_subdirectory(libs/freetype-2.10.0)
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/libs/lodepng")
+include_directories("/libs/freetype-2.10.0/include")
 
 set(SOURCES
         libs/lodepng/lodepng.cpp
         libs/stb_image/stb_image.cpp
-        Imagium.cpp types.cpp bits.cpp utils.cpp)
+        types.cpp bits.cpp utils.cpp)
 set(TARGET_LIB ${PROJECT_NAME})
 set(TARGET_CLI ${PROJECT_NAME}-cli)
-
-add_executable(${TARGET_CLI} ${SOURCES} imagium-cli.cpp)
+link_libraries(freetype)
+add_executable(${TARGET_CLI} ${SOURCES} fontium-cli.cpp)
 add_library(${TARGET_LIB} ${SOURCES})
 add_custom_command(TARGET ${TARGET_CLI} POST_BUILD COMMAND
         ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets
