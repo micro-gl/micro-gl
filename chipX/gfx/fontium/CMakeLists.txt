@@ -14,9 +14,20 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/lodepng")
 include_directories("/libs/freetype-2.10.0/include")
 
 set(SOURCES
+        src/fontbuilder.cpp
+        src/fontrenderer.cpp
+        src/abstractlayouter.cpp
+        src/layouters/boxlayouter.cpp
+        src/layouters/boxlayouteroptimized.cpp
+        src/layouters/gridlayouter.cpp
+        src/layouters/gridlinelayouter.cpp
+        src/layouters/linelayouter.cpp
+        src/abstractexporter.cpp
+        src/exporters/sparrowexporter.cpp
         libs/lodepng/lodepng.cpp
         libs/stb_image/stb_image.cpp
         types.cpp bits.cpp utils.cpp)
+
 set(TARGET_LIB ${PROJECT_NAME})
 set(TARGET_CLI ${PROJECT_NAME}-cli)
 link_libraries(freetype)

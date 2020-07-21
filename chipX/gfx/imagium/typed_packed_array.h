@@ -20,6 +20,7 @@ namespace imagium {
                 _pixels_count{pixels}, _element_size_bits{element_size_bits}
                     {
             _mask = (uint64_t (1) << _element_size_bits) - 1;
+            // todo:: this might be a problem, what about pitch ?
             uint size = std::ceil(float(_element_size_bits * _pixels_count)
                                   / array_storage_element_bits);
             _data.resize(size);

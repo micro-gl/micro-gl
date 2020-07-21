@@ -71,7 +71,7 @@ private:
     void append_kerning(uint symbol,const uint* other,int amount);
     float   m_scale;
 signals:
-    void imagesChanged();
+        void imagesChanged();
     void imagesChanged(const QVector<LayoutChar>&);
 public slots:
 private slots:
