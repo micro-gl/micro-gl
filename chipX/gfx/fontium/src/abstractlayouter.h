@@ -16,7 +16,7 @@ private:
     virtual void processing_hook(QVector<LayoutChar>& chars);
 
 public:
-    explicit AbstractLayouter(const LayoutConfig*  $config);
+    explicit AbstractLayouter(const LayoutConfig* $config);
     LayoutResult & layout(const vector<LayoutChar>& input); //DoPlace
 
 protected:

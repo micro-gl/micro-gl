@@ -7,8 +7,11 @@ struct RenderedChar {
     int offsetX, offsetY, w, h, advance;
     Img *img;
     std::map<int32_t,int> kerning;
-    RenderedChar(uint symbol, int x, int y, int w, int h, int a, Img* img) :
+    RenderedChar(int32_t symbol, int x, int y, int w, int h, int a, Img* img) :
             symbol(symbol), offsetX(x), offsetY(y), w{w}, h{h}, advance(a), img(img) {}
+    ~RenderedChar() {
+        delete img;
+    }
 };
 
 struct RenderedMetrics {

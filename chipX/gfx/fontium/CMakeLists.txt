@@ -10,6 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 add_subdirectory(libs/freetype-2.10.0)
 include_directories("${PROJECT_SOURCE_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/src/")
 include_directories("${PROJECT_SOURCE_DIR}/libs/lodepng")
 include_directories("/libs/freetype-2.10.0/include")
 
@@ -22,7 +23,6 @@ set(SOURCES
         src/layouters/gridlayouter.cpp
         src/layouters/gridlinelayouter.cpp
         src/layouters/linelayouter.cpp
-        src/abstractexporter.cpp
         src/exporters/sparrowexporter.cpp
         libs/lodepng/lodepng.cpp
         libs/stb_image/stb_image.cpp

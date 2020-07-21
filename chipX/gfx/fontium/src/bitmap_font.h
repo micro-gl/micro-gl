@@ -1,6 +1,5 @@
 #pragma once
 
-#include <libs/freetype-2.10.0/src/psaux/pstypes.h>
 #include "common_types.h"
 #include "FontRendererResult.h"
 #include "LayoutResult.h"
@@ -25,6 +24,7 @@ struct Symbol {
 };
 
 struct bitmap_font {
+    Img * img;
     str texture_file;
     int tex_width;
     int tex_height;
@@ -33,16 +33,17 @@ struct bitmap_font {
     RenderedMetrics metrics;
     FT_Face face;
     float scale;
-    vector<Symbol> chars;
+    std::vector<Symbol> chars;
 
     static
-    bitmap_font from(str file,
+    bitmap_font from(Img * img, str file,
                      const LayoutResult* layoutResult,
                      FontRendererResult* rendered,
                      const FontConfig * fontConfig,
                      const LayoutConfig * layoutConfig) {
         bitmap_font result{};
 
+        result.img = img;
         result.texture_file = std::move(file);
         result.metrics = rendered->metrics;
         result.font_config = fontConfig;
