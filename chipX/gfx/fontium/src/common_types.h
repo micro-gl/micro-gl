@@ -31,7 +31,8 @@ namespace fontium {
 
     public:
         Img(uint w, uint h, uint channels = 1) : _w{w}, _h{h}, _channels{channels} {
-            _data = new ubyte[_channels * _w * _h]{0};
+            if(w*h)
+                _data = new ubyte[_channels * _w * _h]{0};
         }
 
         ~Img() {

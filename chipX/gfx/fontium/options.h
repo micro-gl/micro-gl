@@ -30,12 +30,14 @@ namespace fontium {
             // input
             input_font_path=_bundle.getValueAsString("VOID_KEY", "");
             // output
-            output_export_name=_bundle.getValueAsString("output.name", "no_name");
+            output_export_name=_bundle.getValueAsString("output.name",
+                    filename(input_font_path));
             output_export_type=_bundle.getValueAsString("output.export", "sparrow");
             // font config
             fontConfig.size = _bundle.getValueAsInteger("font.size", 14);
             fontConfig.dpi = _bundle.getValueAsInteger("font.dpi", 72);
             fontConfig.bold = _bundle.getValueAsInteger("font.bold", 0);
+            fontConfig.face_index = _bundle.getValueAsInteger("font.face_index", 0);
             fontConfig.italic = _bundle.getValueAsInteger("font.italic", 0);
             fontConfig.line_spacing = _bundle.getValueAsInteger("font.line_spacing", 0);
             fontConfig.char_spacing = _bundle.getValueAsInteger("font.char_spacing", 0);

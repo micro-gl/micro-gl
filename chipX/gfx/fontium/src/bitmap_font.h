@@ -26,7 +26,9 @@ namespace fontium {
 
     struct bitmap_font {
         Img *img;
-        str texture_file;
+        str image_file_name;
+        str name;
+        str family, style;
         int tex_width;
         int tex_height;
         const FontConfig *font_config;
@@ -44,7 +46,7 @@ namespace fontium {
             bitmap_font result{};
 
             result.img = img;
-            result.texture_file = std::move(file);
+            result.image_file_name = std::move(file);
             result.metrics = rendered.metrics;
             result.font_config = &fontConfig;
             result.layout_config = &layoutConfig;

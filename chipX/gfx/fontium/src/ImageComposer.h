@@ -26,7 +26,7 @@ namespace fontium {
                 int y = lc.y + config.offset_top;
                 final->copy(*ren.img, x, y);
             }
-
+            return final;
         }
 
     };

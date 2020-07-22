@@ -22,4 +22,4 @@ add_executable(${TARGET_CLI} ${SOURCES} imagium-cli.cpp)
 add_library(${TARGET_LIB} ${SOURCES})
 add_custom_command(TARGET ${TARGET_CLI} POST_BUILD COMMAND
         ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets
-        $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets)
+        $<TARGET_FILE_DIR:${TARGET_CLI}>/assets)

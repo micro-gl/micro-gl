@@ -8,11 +8,12 @@
 #include <math.h>
 
 namespace fontium {
-    FontRenderer::FontRenderer(const bytearray *font, const FontConfig *config) : m_config(config) {
+    FontRenderer::FontRenderer(const bytearray *font, const FontConfig *config)
+                    : _font{font}, m_config(config) {
         m_ft_library = 0;
         m_ft_face = 0;
         m_scale = 1.0f;
-        _font = font;
+
         int error = FT_Init_FreeType(&m_ft_library);
         if (error) {
             std::cerr << "FT_Init_FreeType error " << error;
@@ -33,7 +34,7 @@ namespace fontium {
         const FT_Bitmap *bm = &(slot->bitmap);
         int w = bm->width;
         int h = bm->rows;
-        Img *img = new Img(w, h, 4);
+        Img *img = new Img(w, h, 1);
         const uchar *src = bm->buffer;
         if (bm->pixel_mode == FT_PIXEL_MODE_GRAY) {
             for (int row = 0; row < h; row++, src += bm->pitch) {
@@ -65,22 +66,13 @@ namespace fontium {
                     uint index = (row * w) / 8;
                     int num = 7;
                     switch (w % 8) {
-                        case 7:
-                            (*img)[index][0] = (s & (1 << (num--))) ? 255 : 0;
-                        case 6:
-                            (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
-                        case 5:
-                            (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
-                        case 4:
-                            (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
-                        case 3:
-                            (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
-                        case 2:
-                            (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
-                        case 1:
-                            (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
-                        case 0:
-                            break;
+                        case 7: (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
+                        case 6: (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
+                        case 5: (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
+                        case 4: (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
+                        case 3: (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
+                        case 2: (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
+                        case 1: (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
                     }
                 }
 
@@ -95,7 +87,7 @@ namespace fontium {
 //    return true;
     }
 
-    void FontRenderer::append_kerning_to_char(RenderedChar &rendered_char, const uint *other, int amount) {
+    void FontRenderer::append_kerning_to_char(RenderedChar &rendered_char, const int32_t *other, int amount) {
         FT_Vector kerning;
         int32_t symbol = rendered_char.symbol;
         FT_UInt left = FT_Get_Char_Index(m_ft_face, symbol);
@@ -126,7 +118,7 @@ namespace fontium {
         if (!m_ft_library) return;
         int error = FT_New_Memory_Face(
                 m_ft_library,
-                reinterpret_cast<const FT_Byte *>(_font.data()), _font.size(),
+                reinterpret_cast<const FT_Byte *>(_font->data()), _font->size(),
                 m_config->face_index, &m_ft_face);
         if (error) {
             std::cerr << "FT_New_Memory_Face error " << error;
@@ -205,7 +197,7 @@ namespace fontium {
         ucs4chars.push_back(0);
         int error = 0;
         bool antialiased=m_config->antialiasing!=Antialiasing::None;
-        for (int i = 0; i + 1 < ucs4chars.size(); i++) {
+        for (unsigned i = 0; i + 1 < ucs4chars.size(); i++) {
             int symbol = ucs4chars[i];
             int glyph_index = FT_Get_Char_Index(m_ft_face, symbol);
             if (glyph_index == 0 && !m_config->render_missing)
@@ -264,12 +256,14 @@ namespace fontium {
             if (use_kerning) {
                 append_kerning_to_char(rendered,
 //                        reinterpret_cast< uint *>(&ucs4chars.front()),
-                                       reinterpret_cast<const uint *>(ucs4chars.data()),
+                                       reinterpret_cast<const int32_t *>(ucs4chars.data()),
                                        ucs4chars.size() - 1);
             }
 
             result.chars[symbol] = rendered;
         }
+        result.family= std::string(face()->family_name);
+        result.style= std::string(face()->style_name);
 
         return result;
     }

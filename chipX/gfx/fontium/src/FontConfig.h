@@ -5,18 +5,18 @@
 namespace fontium {
 
     enum Hinting {
-        Disable,
-        Default,
-        ForceFreetypeAuto,
-        DisableFreetypeAuto
+        Disable=0,
+        Default=1,
+        ForceFreetypeAuto=2,
+        DisableFreetypeAuto=3
     };
 
     enum Antialiasing {
-        None,
-        Normal,
-        Light,
-        LCDH,
-        LCDV
+        None=0,
+        Normal=1,
+        Light=2,
+        LCDH=3,
+        LCDV=4
     };
 
     struct FontConfig {
@@ -66,10 +66,8 @@ namespace fontium {
             return Antialiasing::Normal;
         }
 
-        str path;
-        str filename;
-        str family;
-        str style;
+//        str path;
+//        str filename;
         str characters;
         int face_index;
         int size;

@@ -12,7 +12,8 @@ namespace fontium {
         LayoutFactory() = delete;
 
         static
-        AbstractLayout *create(const str &name, const LayoutConfig *config) {
+        AbstractLayout *create(const LayoutConfig *config) {
+            str name= config->type;
             if (name == "box")
                 return new BoxLayouter(config);
             if (name == "box_optimal")

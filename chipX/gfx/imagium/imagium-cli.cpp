@@ -73,11 +73,13 @@ int main(int argc, char *argv[]) {
         imagium::options options{bundle_};
         auto * data=imagium::loadFileAsByteArray(options.files_path);
         auto result = lib.produce(data, options);
-        str test(reinterpret_cast<char *>(result.data.data()), result.data.size());
+        str test(reinterpret_cast<char *>(result.data.data()),
+                result.data.size());
         std::ofstream out(options.output_name + ".h");
         out << test;
         out.close();
-        std::cout << "created :: " << options.output_name + ".h, " << result.size_bytes/1024 << "kb" <<std::endl;
+        std::cout << "created :: " << options.output_name << ".h, "
+                  << result.size_bytes/1024 << "kb" << std::endl;
     }
     catch (const std::exception& e){
         std::cout << "Imagium error: " + str{e.what()} << std::endl;

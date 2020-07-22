@@ -9,7 +9,7 @@ namespace fontium {
 
         static
         AbstractExporter *create(const str &name) {
-            if (name == "sparrowexporter")
+            if (name == "sparrow")
                 return new SparrowExporter();
 
             return nullptr;

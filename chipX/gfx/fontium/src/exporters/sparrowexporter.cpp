@@ -12,17 +12,39 @@ namespace fontium {
         stream result;
         stream kernings;
 
-        result << "<font face=\"" << data.font_config->family << "\" size=\"" << data.font_config->size << "\" />"
-               << NL;
-        result << T1 << "<common lineHeight=\"" << data.metrics.height << "\" />" << NL;
-        result << T1 << "<pages>" << NL;
-        result << T2 << "<page id=\"0\" file=\"" << data.texture_file << "\"/>" << NL;
-        result << T1 << "</pages>";
-        result << T1 << "<chars count=\"" << data.chars.size() << "\">" << NL;
+        result << "<font>" << NL;
 
+        // info
+        result << T1 << "<info ";
+        result << "face=\"" << data.family << M << S;
+        result << "size=\"" <<data.font_config->size << M << S;
+        result << "bold=\"" << (data.font_config->bold?1:0) << M << S;
+        result << "italic=\"" << (data.font_config->italic?1:0) << M << S;
+        result << "stretchH=\"" << (data.font_config->scale_height) << M << S;
+        result << "smooth=\"" << (data.font_config->antialiasing ? 1 : 0) << M << S;
+        result << "padding=\"" << (data.layout_config->offset_top) << ","
+               << data.layout_config->offset_right << "," << data.layout_config->offset_bottom
+               << "," << data.layout_config->offset_left << M << S;
+        result << "spacing=\"" << (data.font_config->char_spacing) << ","
+               << data.font_config->line_spacing << M << S << "/>" << NL;
+
+        // common
+        result << T1 << "<common ";
+        result << "lineHeight=\"" << data.metrics.height << M << S;
+        result << "scaleW=\"" << data.tex_width << M << S;
+        result << "scaleH=\"" << data.tex_height << M << S;
+        result << "pages=\"1\" packed=\"0\" />" << NL;
+
+        // pages
+        result << T1 << "<pages>" << NL;
+        result << T2 << "<page id=\"0\" file=\"" << data.image_file_name << "\"/>" << NL;
+        result << T1 << "</pages>" << NL;
+
+        // chars
+        result << T1 << "<chars count=\"" << data.chars.size() << "\">" << NL;
         for (const Symbol &c :data.chars) {
-            str letter = c.id == 32 ? "space" : std::string{char(c.id)};
             result << T2 << "<char" << S;
+            result << "id=\"" << c.id << M << S;
             result << "x=\"" << c.placeX << M << S;
             result << "y=\"" << c.placeY << M << S;
             result << "width=\"" << c.placeW << M << S;
@@ -30,8 +52,7 @@ namespace fontium {
             result << "xOffset=\"" << c.offsetX << M << S;
             result << "yOffset=\"" << data.metrics.height - c.offsetY << M << S;
             result << "xadvance=\"" << c.advance << M << S;
-            result << "page=\"0\" chnl=\"0\"" << S;
-            result << "letter=\"" << letter << M << S;
+            result << "page=\"0\" chnl=\"15\"" << S;
             result << "/>" + NL;
         }
         result << T1 << "</chars>" + NL;
@@ -58,6 +79,10 @@ namespace fontium {
 
     str SparrowExporter::tag() {
         return "sparrow";
+    }
+
+    str SparrowExporter::fileExtension() {
+        return "xml";
     }
 
 }

@@ -10,7 +10,7 @@ namespace fontium {
         explicit SparrowExporter() = default;
 
         str apply(bitmap_font &data) override;
-
+        str fileExtension() override;
         str tag() override;
     };
 

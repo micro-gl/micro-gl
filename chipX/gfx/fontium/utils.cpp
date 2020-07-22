@@ -36,4 +36,14 @@ namespace fontium {
         list.push_back(s);
     }
 
+    std::string filename(const std::string & path) {
+        const auto last_of = path.find_last_of('.');
+        size_t ff= path.find_last_of('\\');
+        size_t bb= path.find_last_of('/');
+        ff= (ff==std::string::npos) ? 0 : ff+1;
+        bb= (bb==std::string::npos) ? 0 : bb+1;
+        const auto ss=std::max({ff, bb, 0UL});
+        return path.substr(ss, last_of-ss);
+    }
+
 }

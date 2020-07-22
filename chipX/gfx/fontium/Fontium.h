@@ -18,7 +18,6 @@ namespace fontium {
             FontConfig* _fontConfig=nullptr;
             LayoutConfig* _layoutConfig=nullptr;
             bytearray* _font=nullptr;
-            str _layout_engine, _name="no_name";
 
         public:
             Builder() {
@@ -39,11 +38,6 @@ namespace fontium {
                 return *this;
             }
 
-            Builder & layout(str val) {
-                _layout_engine=std::move(val);
-                return *this;
-            }
-
             Fontium * build() {
                 return new Fontium(*this);
             }
@@ -59,19 +53,20 @@ namespace fontium {
         bytearray* _font=nullptr;
         AbstractLayout * _layout= nullptr;
 
-        Fontium(const Builder & builder) {
+        explicit Fontium(const Builder & builder) {
             _font_config=builder._fontConfig;
             _layout_config=builder._layoutConfig;
             _font=builder._font;
-            _layout = LayoutFactory::create(builder._layout_engine,
-                                            _layout_config);
+            _layout = LayoutFactory::create(_layout_config);
         }
 
+    public:
         bitmap_font process(str name) {
             FontRenderer fontRenderer{_font, _font_config};
             FontRendererResult fontRendererResult = fontRenderer.render(1.0f);
             // collect base chars to prepare for layout
-            std::vector<LayoutChar> ll{fontRendererResult.chars.size()};
+            std::vector<LayoutChar> ll{};
+            ll.reserve(fontRendererResult.chars.size());
             for(const auto & entry: fontRendererResult.chars) {
                 const auto & r = entry.second;
                 ll.emplace_back(r.symbol, r.offsetX, r.offsetY, r.w, r.h);
@@ -81,7 +76,14 @@ namespace fontium {
                                               layoutConfig(), fontRendererResult);
             auto bm_font = bitmap_font::from(img, name, layout_result,
                                              fontRendererResult,
-                                             fontConfig(), layoutConfig());
+                                             fontConfig(),
+                                             layoutConfig());
+            bm_font.name= name;
+            bm_font.family= fontRendererResult.family;
+            bm_font.style= fontRendererResult.style;
+
+            fontRendererResult.dispose();
+
             return bm_font;
         }
 

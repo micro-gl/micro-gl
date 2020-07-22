@@ -1,12 +1,14 @@
 #include <Fontium.h>
 #include <options.h>
+#include <ExportFactory.h>
+#include <lodepng.h>
 #include <iostream>
 
 using namespace fontium;
-#define DEBUG 0
+#define DEBUG 1
 
 const char* info =R"foo(usage:
-  fontium [font file] [options]
+  fontium <font path> [options]
 
 description:
   fontium creates bitmap fonts with custom export formats for
@@ -37,10 +39,11 @@ options include:
   -font.line_spacing          integer, add height to export's gylph metrics baseline, default 0
   -font.bold                  [0, 10] - boldness, , default 0
   -font.italic                [-20, 20] - italicness,  default 0
+  -font.face_index            the face index to load,  default 0
 
 * output options
   -output.export              { sparrow, c_array }, default to sparrow
-  -output.name                name of the export files, default to 'no-name'
+  -output.name                name of the export files, default to <font-name>
 
 * misc
   -h                          show help
@@ -52,66 +55,85 @@ example:
 
 int main(int argc, char *argv[]) {
 
-    Fontium::Builder builder{};
-    Fontium * fontium = builder
-        .layoutConfig(nullptr)
-        .fontConfig(nullptr)
-        .font(nullptr).build();
+#if (DEBUG==1)
+    auto bundle_ = bundle{{
+        {"VOID_KEY", "./assets/digital-7.ttf"},
+        {"font.size", "15"},
+        {"output.export", "sparrow"},
+        {"output.name", "tomer"},
+    }};
+#elif (DEBUG==2)
+    auto bundle_ = bundle{{
+        {"VOID_KEY", "./assets/digital-7.ttf"},
+        {"font.size", "15"},
+        {"output.export", "sparrow"},
+        {"output.name", "tomer"},
+    }};
+#else
+    auto bundle_=bundle::fromTokens(argc, argv);
+#endif
+    if(bundle_.hasKey("h")) {
+        std::cout << info << std::endl;
+        return 0;
+    }
+    if(bundle_.getValueAsString("VOID_KEY", "").empty()) {
+        std::cout << "Error: no file specified !!!" << std::endl;
+        return 0;
+    }
 
+    try {
+        std::cout << "Fontium CLI" << std::endl;
 
-//    FT_Library  library;
-//    int error = FT_Init_FreeType( &library );
-//    if ( error )
-//    {
-//    }
-//#if (DEBUG==1)
-//    auto bundle_ = bundle{{
-//        {"VOID_KEY", "./assets/uv_256.png"},
-//        {"rgba", "2|0|0|0"},
-////        {"rgba", "5|6|5|0"},
-////        {"rgba", "5|2|2"},
-//        {"unpack", ""},
-////        {"converter", "png_palette_converter"},
-//        {"o", "hello"},
-//    }};
-//#elif (DEBUG==2)
-//    // test indexed mode
-//    auto bundle_ = bundle{{
-//        {"VOID_KEY", "./assets/uv_256_16_colors.png"},
-////        {"rgba", "8|8|8|0"},
-//        {"rgba", "8|0|0|0"},
-//        {"indexed", ""},
-////        {"rgba", "5|6|5|0"},
-//        {"unpack", ""},
-//        }};
-//#else
-//    auto bundle_=bundle::fromTokens(argc, argv);
-//#endif
-//    if(bundle_.hasKey("h") || bundle_.size()<=1) {
-//        std::cout << info << std::endl;
-//        return 0;
-//    }
-//    if(bundle_.getValueAsString("VOID_KEY", "").empty()) {
-//        std::cout << "Error: no file specified !!!" << std::endl;
-//        return 0;
-//    }
-//
-//    try {
-//        std::cout << "Imagium CLI" << std::endl;
-//        fontium::Fontium lib{};
-//        fontium::options options{bundle_};
-//        auto * data=fontium::loadFileAsByteArray(options.files_path);
-////        auto result = lib.produce(data, options);
-////        str test(reinterpret_cast<char *>(result.data.data()), result.data.size());
-////        std::ofstream out(options.output_name + ".h");
-////        out << test;
-////        out.close();
-////        std::cout << "created :: " << options.output_name + ".h, " << result.size_bytes/1024 << "kb" <<std::endl;
-//    }
-//    catch (const std::exception& e){
-//        std::cout << "Imagium error: " + str{e.what()} << std::endl;
-//        return 1;
-//    }
+        // extract bundle into options
+        Fontium::Builder builder{};
+        fontium::options options{bundle_};
+        auto * font=fontium::loadFileAsByteArray(options.input_font_path);
+        str basename= options.output_export_name;
+        str image_file_name= basename + ".png";
+        Fontium * fontium = builder
+                .layoutConfig(&options.layoutConfig)
+                .fontConfig(&options.fontConfig)
+                .font(font).build();
+        auto bm_font = fontium->process(basename);
+        bm_font.image_file_name= image_file_name;
+        auto * exporter = ExportFactory::create(options.output_export_type);
+        str result = exporter->apply(bm_font);
+        str data_file_name= basename + "." + exporter->fileExtension();
+        std::ofstream out(data_file_name);
+        out << result;
+        out.close();
+        std::cout << std::endl <<  "created data file :: " << data_file_name <<std::endl;
+
+        // png
+        lodepng::State state;
+        // input color type
+        state.info_raw.colortype = LCT_GREY;
+        state.info_raw.bitdepth = 8;
+        // output color type
+        state.info_png.color.colortype = LCT_GREY;
+        state.info_png.color.bitdepth = 8;
+        // without this, it would ignore the output color type specified above and choose an optimal one instead
+        state.encoder.auto_convert = 0;
+
+        //encode and save
+        std::vector<unsigned char> buffer;
+        unsigned error = lodepng::encode(buffer, bm_font.img->data(),
+                bm_font.img->width(),
+                bm_font.img->height(),
+                state);
+        if(error) {
+            std::cout << "encoder error " << error << ": "<< lodepng_error_text(error) << std::endl;
+        }
+        else {
+            lodepng::save_file(buffer, image_file_name);
+            std::cout << "created image file :: " << image_file_name <<std::endl;
+        }
+
+    }
+    catch (const std::exception& e){
+        std::cout << "Imagium error: " + str{e.what()} << std::endl;
+        return 1;
+    }
 
 }
 

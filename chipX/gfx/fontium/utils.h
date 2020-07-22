@@ -17,6 +17,7 @@ namespace fontium {
 
     std::vector<std::string> split(std::string s, std::string delimiter);
     void split(std::string s, const std::string& delimiter, std::vector<std::string> & list);
+    std::string filename(const std::string & path);
 
     template <class T,class U> U* Int2Hex(T lnumber, U* buffer)
     {

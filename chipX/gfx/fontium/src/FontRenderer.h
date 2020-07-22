@@ -8,9 +8,10 @@
 #include "ImageComposer.h"
 #include "utils.h"
 
-struct FontConfig;
 
 namespace fontium {
+    struct FontConfig;
+
     class FontRenderer {
     public:
         explicit FontRenderer(const bytearray *font, const FontConfig *config);
@@ -25,7 +26,7 @@ namespace fontium {
         const FontConfig *m_config;
         FT_Library m_ft_library;
         FT_Face m_ft_face;
-        bytearray *_font;
+        const bytearray *_font;
 
         void applySize();
 
@@ -33,7 +34,7 @@ namespace fontium {
 
         RenderedChar copy_current_glyph(uint symbol);
 
-        void append_kerning_to_char(RenderedChar &rendered_char, const uint *other, int amount);
+        void append_kerning_to_char(RenderedChar &rendered_char, const int32_t *other, int amount);
 
         float m_scale;
     };
