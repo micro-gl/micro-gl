@@ -1,7 +1,8 @@
 #include <Fontium.h>
+#include <options.h>
 #include <iostream>
 
-//using namespace fontium;
+using namespace fontium;
 #define DEBUG 0
 
 const char* info =R"foo(usage:

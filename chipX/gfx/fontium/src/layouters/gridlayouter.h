@@ -2,13 +2,14 @@
 
 #include "src/AbstractLayout.h"
 
-class GridLayouter : public AbstractLayout
-{
-public:
-    explicit GridLayouter(const LayoutConfig*  $config) : AbstractLayout($config) {
-    };
-protected:
-    void internal_layout(const QVector<LayoutChar> &chars) override;
+namespace fontium {
+    class GridLayouter : public AbstractLayout {
+    public:
+        explicit GridLayouter(const LayoutConfig *$config) : AbstractLayout($config) {
+        };
+    protected:
+        void internal_layout(const QVector<LayoutChar> &chars) override;
 
-    virtual void calculateSize(int maxW, int maxH, size_t count);
-};
+        virtual void calculateSize(int maxW, int maxH, size_t count);
+    };
+}

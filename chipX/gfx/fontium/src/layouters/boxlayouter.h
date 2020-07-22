@@ -2,11 +2,13 @@
 
 #include "src/AbstractLayout.h"
 
-class BoxLayouter : public AbstractLayout
-{
-public:
-    explicit BoxLayouter(const LayoutConfig*  $config) : AbstractLayout($config) {
-    }
+namespace fontium {
+    class BoxLayouter : public AbstractLayout {
+    public:
+        explicit BoxLayouter(const LayoutConfig *$config) : AbstractLayout($config) {
+        }
 
-    void internal_layout(const QVector<LayoutChar>& chars) override;
-};
+        void internal_layout(const QVector<LayoutChar> &chars) override;
+    };
+
+}

@@ -2,58 +2,86 @@
 
 #include "common_types.h"
 
-struct FontConfig
-{
-    static FontConfig getDefault() {
-        FontConfig config;
-        config.size=0;
-        config.hinting = HintingMethod::HintingDefault;
-        config.render_missing = false;
-        config.antialiased = true;
-        config.antialiasing = AAMethod::AAliasingNormal;
-        config.bold = 0;
-        config.scale_width=100.0f;
-        config.scale_height=100.0f;
-        config.line_spacing=0;
-        config.char_spacing=0;
-        config.dpi=96;
-        config.characters= " !\"#$%&'()*+,-./0123456789:;<=>?@"
-                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
-                            "abcdefghijklmnopqrstuvwxyz{|}~";
-        return config;
-    }
+namespace fontium {
 
-    enum HintingMethod {
-        HintingDisable,
-        HintingDefault,
-        HintingForceFreetypeAuto,
-        HintingDisableFreetypeAuto
+    enum Hinting {
+        Disable,
+        Default,
+        ForceFreetypeAuto,
+        DisableFreetypeAuto
     };
 
-    enum AAMethod {
+    enum Antialiasing {
         None,
-        AAliasingNormal,
-        AAliasingLight,
-        AAliasingLCDhor,
-        AAliasingLCDvert
+        Normal,
+        Light,
+        LCDH,
+        LCDV
     };
 
-    str path;
-    str filename;
-    str family;
-    str style;
-    str characters;
-    int face_index;
-    int size;
-    HintingMethod    hinting;
-    bool    render_missing;
-    bool    antialiased;
-    AAMethod     antialiasing;
-    int    bold;
-    int    italic;
-    float   scale_width;
-    float   scale_height;
-    int char_spacing;
-    int line_spacing;
-    int dpi;
-};
+    struct FontConfig {
+        static FontConfig getDefault() {
+            FontConfig config;
+            config.size = 0;
+            config.hinting = Hinting::Default;
+            config.render_missing = false;
+            config.antialiasing = Antialiasing::Normal;
+            config.bold = 0;
+            config.scale_width = 100.0f;
+            config.scale_height = 100.0f;
+            config.line_spacing = 0;
+            config.char_spacing = 0;
+            config.dpi = 96;
+            config.characters = " !\"#$%&'()*+,-./0123456789:;<=>?@"
+                                "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
+                                "abcdefghijklmnopqrstuvwxyz{|}~";
+            return config;
+        }
+
+        static
+        Hinting stringToHintingEnum(const str & val) {
+            if(val=="Disable")
+                return Hinting::Disable;
+            if(val=="Default")
+                return Hinting::Default;
+            if(val=="ForceFreetypeAuto")
+                return Hinting::ForceFreetypeAuto;
+            if(val=="DisableFreetypeAuto")
+                return Hinting::DisableFreetypeAuto;
+            return Hinting::Default;
+        }
+
+        static
+        Antialiasing stringToAAEnum(const str & val) {
+            if(val=="Normal")
+                return Antialiasing::Normal;
+            if(val=="None")
+                return Antialiasing::None;
+            if(val=="Light")
+                return Antialiasing::Light;
+            if(val=="LCDH")
+                return Antialiasing::LCDH;
+            if(val=="LCDV")
+                return Antialiasing::LCDV;
+            return Antialiasing::Normal;
+        }
+
+        str path;
+        str filename;
+        str family;
+        str style;
+        str characters;
+        int face_index;
+        int size;
+        Hinting hinting;
+        bool render_missing;
+        Antialiasing antialiasing;
+        int bold;
+        int italic;
+        float scale_width;
+        float scale_height;
+        int char_spacing;
+        int line_spacing;
+        int dpi;
+    };
+}

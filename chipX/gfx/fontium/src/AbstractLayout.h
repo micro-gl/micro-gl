@@ -3,27 +3,35 @@
 #include "common_types.h"
 #include "LayoutResult.h"
 
-struct LayoutConfig;
 
-class AbstractLayout
-{
-private:
-    const LayoutConfig*   m_config;
-    LayoutResult m_result;
-    std::vector<LayoutChar>    m_chars;
-    int m_compact_w;
-    int m_compact_h;
-    virtual void processing_hook(QVector<LayoutChar>& chars);
+namespace fontium {
+    struct LayoutConfig;
 
-public:
-    explicit AbstractLayout(const LayoutConfig* $config);
-    LayoutResult & layout(const vector<LayoutChar>& input); //DoPlace
+    class AbstractLayout {
+    private:
+        const LayoutConfig *m_config;
+        LayoutResult m_result;
+        std::vector<LayoutChar> m_chars;
+        int m_compact_w;
+        int m_compact_h;
 
-protected:
-    void resize(int w,int h);
-    int width() const;
-    int height() const;
-    void place(const LayoutChar&);
-    virtual void internal_layout(const QVector<LayoutChar>& input) = 0;
-};
+        virtual void processing_hook(QVector<LayoutChar> &chars);
 
+    public:
+        explicit AbstractLayout(const LayoutConfig *$config);
+
+        LayoutResult &layout(const vector<LayoutChar> &input); //DoPlace
+
+    protected:
+        void resize(int w, int h);
+
+        int width() const;
+
+        int height() const;
+
+        void place(const LayoutChar &);
+
+        virtual void internal_layout(const QVector<LayoutChar> &input) = 0;
+    };
+
+}

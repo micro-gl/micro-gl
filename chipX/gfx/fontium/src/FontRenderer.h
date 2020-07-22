@@ -8,25 +8,34 @@
 #include "ImageComposer.h"
 #include "utils.h"
 
-class FontConfig;
+struct FontConfig;
 
-class FontRenderer
-{
-public:
-    explicit FontRenderer(const bytearray * font, const FontConfig* config);
-    ~FontRenderer();
-    FT_Face face() const { return m_ft_face; }
-    FontRendererResult render(float scale);
+namespace fontium {
+    class FontRenderer {
+    public:
+        explicit FontRenderer(const bytearray *font, const FontConfig *config);
 
-private:
-    const FontConfig* m_config;
-    FT_Library m_ft_library;
-    FT_Face m_ft_face;
-    bytearray * _font;
+        ~FontRenderer();
 
-    void applySize();
-    void selectFace();
-    RenderedChar copy_current_glyph(uint symbol);
-    void append_kerning_to_char(RenderedChar & rendered_char, const uint* other, int amount);
-    float   m_scale;
-};
+        FT_Face face() const { return m_ft_face; }
+
+        FontRendererResult render(float scale);
+
+    private:
+        const FontConfig *m_config;
+        FT_Library m_ft_library;
+        FT_Face m_ft_face;
+        bytearray *_font;
+
+        void applySize();
+
+        void selectFace();
+
+        RenderedChar copy_current_glyph(uint symbol);
+
+        void append_kerning_to_char(RenderedChar &rendered_char, const uint *other, int amount);
+
+        float m_scale;
+    };
+
+}
