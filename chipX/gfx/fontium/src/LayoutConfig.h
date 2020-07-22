@@ -4,7 +4,7 @@
 
 struct LayoutConfig
 {
-    str     layouter;
+    str     type;
     bool    one_pixel_offset;
     bool    pot_image;
     int     size_increment;

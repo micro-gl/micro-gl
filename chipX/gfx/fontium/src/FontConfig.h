@@ -10,11 +10,10 @@ struct FontConfig
         config.hinting = HintingMethod::HintingDefault;
         config.render_missing = false;
         config.antialiased = true;
-        config.aamethod = AAMethod::AAliasingNormal;
+        config.antialiasing = AAMethod::AAliasingNormal;
         config.bold = 0;
-        config.size=0;
-        config.width=100.0f;
-        config.height=100.0f;
+        config.scale_width=100.0f;
+        config.scale_height=100.0f;
         config.line_spacing=0;
         config.char_spacing=0;
         config.dpi=96;
@@ -32,6 +31,7 @@ struct FontConfig
     };
 
     enum AAMethod {
+        None,
         AAliasingNormal,
         AAliasingLight,
         AAliasingLCDhor,
@@ -48,11 +48,11 @@ struct FontConfig
     HintingMethod    hinting;
     bool    render_missing;
     bool    antialiased;
-    AAMethod     aamethod;
+    AAMethod     antialiasing;
     int    bold;
     int    italic;
-    float   width;
-    float   height;
+    float   scale_width;
+    float   scale_height;
     int char_spacing;
     int line_spacing;
     int dpi;

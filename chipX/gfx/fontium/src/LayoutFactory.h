@@ -12,17 +12,17 @@ public:
 
     static
     AbstractLayout * create(const str & name, const LayoutConfig * config) {
-        if(name=="boxlayouter")
+        if(name=="box")
             return new BoxLayouter(config);
-        if(name=="boxlayouteroptimized")
+        if(name=="box_optimal")
             return new BoxLayouterOptimized(config);
-        if(name=="gridlayouter")
+        if(name=="grid")
             return new GridLayouter(config);
-        if(name=="gridlinelayouter")
+        if(name=="gridline")
             return new GridLineLayouter(config);
-        if(name=="linelayouter")
+        if(name=="line")
             return new LineLayouter(config);
 
-        return nullptr;
+        return new BoxLayouter(config);
     }
 };

@@ -3,7 +3,7 @@
 #include "common_types.h"
 #include "LayoutResult.h"
 
-class LayoutConfig;
+struct LayoutConfig;
 
 class AbstractLayout
 {

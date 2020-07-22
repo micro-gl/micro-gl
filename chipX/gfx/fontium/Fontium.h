@@ -4,8 +4,8 @@
 #include <bitmap_font.h>
 #include "FontRenderer.h"
 #include "LayoutConfig.h"
-#include "layouterfactory.h"
-#include "exporterfactory.h"
+#include "LayoutFactory.h"
+#include "ImageComposer.h"
 
 class Fontium {
 public:
@@ -16,9 +16,10 @@ public:
         FontConfig* _fontConfig=nullptr;
         LayoutConfig* _layoutConfig=nullptr;
         bytearray* _font=nullptr;
+        str _layout_engine, _name="no_name";
+
     public:
         Builder() {
-
         }
 
         Builder & fontConfig(FontConfig* fontConfig) {
@@ -36,27 +37,35 @@ public:
             return *this;
         }
 
+        Builder & layout(str val) {
+            _layout_engine=std::move(val);
+            return *this;
+        }
+
         Fontium * build() {
             return new Fontium(*this);
         }
     };
 
     Fontium()= delete;
-    ~Fontium();
+    ~Fontium()= default;
 
 protected:
 private:
     FontConfig*     _font_config;
     LayoutConfig*   _layout_config;
     bytearray* _font=nullptr;
-    bitmap_font _result;
+    AbstractLayout * _layout= nullptr;
+
     Fontium(const Builder & builder) {
         _font_config=builder._fontConfig;
         _layout_config=builder._layoutConfig;
         _font=builder._font;
+        _layout = LayoutFactory::create(builder._layout_engine,
+                _layout_config);
     }
 
-    bitmap_font & process(str name) {
+    bitmap_font process(str name) {
         FontRenderer fontRenderer{_font, _font_config};
         FontRendererResult fontRendererResult = fontRenderer.render(1.0f);
         // collect base chars to prepare for layout
@@ -65,20 +74,25 @@ private:
             const auto & r = entry.second;
             ll.emplace_back(r.symbol, r.offsetX, r.offsetY, r.w, r.h);
         }
+        auto layout_result = layoutEngine().layout(ll);
+        Img * img= ImageComposer::compose(layout_result,
+                layoutConfig(), fontRendererResult);
+        auto bm_font = bitmap_font::from(img, name, layout_result,
+                fontRendererResult,
+                fontConfig(), layoutConfig());
+        return bm_font;
     }
 
+    LayoutConfig & layoutConfig() {
+        return *_layout_config;
+    }
 
+    FontConfig & fontConfig() {
+        return *_font_config;
+    }
 
-
-//    FontRenderer*   m_font_renderer;
-////    LayoutData*     m_layout_data;
-//    AbstractLayout* m_layouter;
-//    LayouterFactory*    m_layouter_factory;
-//    OutputConfig*   m_output_config;
-//    ExporterFactory* m_exporter_factory;
-//    ImageWriterFactory* m_image_writer_factory;
-//    AbstractImageWriter* m_image_writer;
-//
-//    void doExport(bool x2);
+    AbstractLayout & layoutEngine() {
+        return *_layout;
+    }
 
 };

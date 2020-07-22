@@ -7,7 +7,7 @@ public:
     ExportFactory()= delete;
 
     static
-    AbstractExporter * create(const str & name, const LayoutConfig * config) {
+    AbstractExporter * create(const str & name) {
         if(name=="sparrowexporter")
             return new SparrowExporter();
 

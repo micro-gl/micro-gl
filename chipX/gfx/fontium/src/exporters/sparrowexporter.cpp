@@ -53,3 +53,7 @@ str SparrowExporter::apply(bitmap_font& data) {
 
     return result.str();
 }
+
+str SparrowExporter::tag() {
+    return "sparrow";
+}

@@ -5,32 +5,47 @@
 #define DEBUG 0
 
 const char* info =R"foo(usage:
-  fontium [image file] [options]
+  fontium [font file] [options]
 
 description:
-  imagium reshapes images and exports them into software arrays, so you can
-  embed them in your program in the pixel format of your liking
+  fontium creates bitmap fonts with custom export formats for
+  TrueType, CFF, WOFF, OpenType, SFNT, PCF, FNT, BDF, PFR fonts
 
 options include:
-  -rgba         value: R-G-B-A (literally)
-                values are bits per channel
-                example: 8|8|8|8 or 5|6|5|0 or 3|0|0|0 etc..
-                note: 0 bits for a channel will completely discard the channel
-  -unpack       if set, unpacks each channel separately inside a power of 2 number type = {r,g,b,a, r,g,b,a ...}
-                if not set (default), packs all channels inside a power of 2 number type = {pix1, pix2, ...}
-                notes: defaults to `true`, `false`, is desirable for 8|8|8|0 rgb config, where
-                you will get the buffer = {r,g,b, r,g,b, .....} which is more optimal than packed.
-  -indexed      create indexed data with embedded palette of the image
-  -o            (optional) output name, if not set, will try to use file name
-  -converter    (optional) value: converter-name
-                choose a specific converter that you know of. by default,
-                imagium will infer the correct one.
-                example: regular_converter
-  -h            show help
+* layout options
+  -layout.type                { box, box_optimal, grid, gridline, line }, default=box
+  -layout.one_pixel_offset    if set, adds at least one pixel separation between glyphs, default to true
+  -layout.pot_image           if set, create power of 2 image, default false
+  -layout.offset_left         integer, sets the left padding, default 0
+  -layout.offset_top          integer, sets the top padding, default 0
+  -layout.offset_right        integer, sets the right padding, default 0
+  -layout.offset_bottom       integer, sets the bottom padding, default 0
+
+* font options
+  -font.size                  size of font in points, default 14
+  -font.dpi                   dots per inch, usually { 72, 96, 100, 110, 120, 128 }, default 72
+  -font.characters            (string) the characters, by default will use
+                                    " !\"#$%&'()*+,-./0123456789:;<=>?@"
+                                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
+                                    "abcdefghijklmnopqrstuvwxyz{|}~"
+  -font.antialiasing          { None, Normal, Light, LCDH, LCDV }, default Normal
+  -font.hinting               { Disable, Default, ForceFreetypeAuto, DisableFreetypeAuto }, default to Default
+  -font.scale_width           percentages, scale horizontally every glyph, default is 100
+  -font.scale_height          percentages, scale vertically every glyph, default is 100
+  -font.char_spacing          integer, add spacing to each glyph advance in export, default 0
+  -font.line_spacing          integer, add height to export's gylph metrics baseline, default 0
+  -font.bold                  [0, 10] - boldness, , default 0
+  -font.italic                [-20, 20] - italicness,  default 0
+
+* output options
+  -output.export              { sparrow, c_array }, default to sparrow
+  -output.name                name of the export files, default to 'no-name'
+
+* misc
+  -h                          show help
 
 example:
-  imagium foo.png -rgba 5-6-5
-  imagium foo_with_16_color_palette.png -rgba 5-6-5 -indexed
+  fontium minecraft.ttf -font.size 12 -output.export sparrow -output.name minecraft
 )foo";
 
 

@@ -31,26 +31,25 @@ struct bitmap_font {
     const FontConfig* font_config;
     const LayoutConfig* layout_config;
     RenderedMetrics metrics;
-    FT_Face face;
     float scale;
     std::vector<Symbol> chars;
 
     static
     bitmap_font from(Img * img, str file,
-                     const LayoutResult* layoutResult,
-                     FontRendererResult* rendered,
-                     const FontConfig * fontConfig,
-                     const LayoutConfig * layoutConfig) {
+                     const LayoutResult& layoutResult,
+                     FontRendererResult& rendered,
+                     const FontConfig & fontConfig,
+                     const LayoutConfig & layoutConfig) {
         bitmap_font result{};
 
         result.img = img;
         result.texture_file = std::move(file);
-        result.metrics = rendered->metrics;
-        result.font_config = fontConfig;
-        result.layout_config = layoutConfig;
-        result.metrics.height+=fontConfig->line_spacing;
+        result.metrics = rendered.metrics;
+        result.font_config = &fontConfig;
+        result.layout_config = &layoutConfig;
+        result.metrics.height+=fontConfig.line_spacing;
 
-        for ( const LayoutChar& lc : layoutResult->placed) {
+        for ( const LayoutChar& lc : layoutResult.placed) {
             Symbol symb;
             symb.id = lc.symbol;
             symb.placeX = lc.x;
@@ -58,17 +57,17 @@ struct bitmap_font {
             symb.placeW = lc.w;
             symb.placeH = lc.h;
 
-            const RenderedChar& rc = rendered->chars[symb.id];
+            const RenderedChar& rc = rendered.chars[symb.id];
 
-            symb.offsetX = rc.offsetX-layoutConfig->offset_left;
-            symb.offsetY = rc.offsetY+layoutConfig->offset_top;
-            symb.advance = rc.advance + fontConfig->char_spacing;
+            symb.offsetX = rc.offsetX-layoutConfig.offset_left;
+            symb.offsetY = rc.offsetY+layoutConfig.offset_top;
+            symb.advance = rc.advance + fontConfig.char_spacing;
             symb.kerning = rc.kerning;
 
             result.chars.push_back(symb);
         }
-        result.tex_width = layoutResult->width;
-        result.tex_height = layoutResult->height;
+        result.tex_width = layoutResult.width;
+        result.tex_height = layoutResult.height;
 
         return result;
     }

@@ -10,4 +10,5 @@ public:
     explicit SparrowExporter() = default;
 
     str apply(bitmap_font & data) override;
+    str tag() override;
 };

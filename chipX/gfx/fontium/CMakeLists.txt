@@ -15,7 +15,6 @@ include_directories("${PROJECT_SOURCE_DIR}/libs/lodepng")
 include_directories("/libs/freetype-2.10.0/include")
 
 set(SOURCES
-        src/fontbuilder.cpp
         src/FontRenderer.cpp
         src/AbstractLayout.cpp
         src/layouters/boxlayouter.cpp
@@ -23,15 +22,18 @@ set(SOURCES
         src/layouters/gridlayouter.cpp
         src/layouters/gridlinelayouter.cpp
         src/layouters/linelayouter.cpp
-        src/exporters/sparrowexporter.cpp
         libs/lodepng/lodepng.cpp
         libs/stb_image/stb_image.cpp
         types.cpp bits.cpp utils.cpp)
 
+set(SOURCES_LIB ${SOURCES}
+        src/exporters/sparrowexporter.cpp
+        fontium-cli.cpp)
+
 set(TARGET_LIB ${PROJECT_NAME})
 set(TARGET_CLI ${PROJECT_NAME}-cli)
 link_libraries(freetype)
-add_executable(${TARGET_CLI} ${SOURCES} fontium-cli.cpp src/LayoutFactory.h)
+add_executable(${TARGET_CLI} ${SOURCES_LIB})
 add_library(${TARGET_LIB} ${SOURCES})
 add_custom_command(TARGET ${TARGET_CLI} POST_BUILD COMMAND
         ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets
