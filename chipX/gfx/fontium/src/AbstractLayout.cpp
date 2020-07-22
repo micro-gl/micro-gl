@@ -15,10 +15,12 @@ namespace fontium {
         vector<LayoutChar> input_copied = input;
         {
             // give blocks more area
-            for (unsigned ix = 0; ix < m_chars.size(); ix++) {
+            for (unsigned ix = 0; ix < input_copied.size(); ix++) {
                 if (m_config->one_pixel_offset) {
-                    input_copied[ix].w++;
-                    input_copied[ix].h++;
+                    input_copied[ix].w+=1;
+                    input_copied[ix].h+=1;
+//                    input_copied[ix].x-=1;
+//                    input_copied[ix].y-=1;
                 }
                 input_copied[ix].w += m_config->offset_left + m_config->offset_right;
                 input_copied[ix].h += m_config->offset_top + m_config->offset_bottom;

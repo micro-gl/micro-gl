@@ -10,6 +10,6 @@ namespace fontium {
         };
 
     protected:
-        void internal_layout(const QVector<LayoutChar> &input) override;
+        void internal_layout(const vector<LayoutChar> &input) override;
     };
 }

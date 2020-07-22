@@ -50,7 +50,7 @@ public:
     void setData(LayoutData* data);
 private:
     const LayoutConfig*   m_config;
-    LayoutData* m_data;
+    LayoutData* m_data; //result
     QVector<LayoutChar>    m_chars;
     int m_compact_w;
     int m_compact_h;

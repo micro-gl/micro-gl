@@ -11,7 +11,6 @@ namespace fontium {
     private:
         const LayoutConfig *m_config;
         LayoutResult m_result;
-        std::vector<LayoutChar> m_chars;
         int m_compact_w;
         int m_compact_h;
 

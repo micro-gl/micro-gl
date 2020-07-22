@@ -69,7 +69,7 @@ namespace fontium {
             ll.reserve(fontRendererResult.chars.size());
             for(const auto & entry: fontRendererResult.chars) {
                 const auto & r = entry.second;
-                ll.emplace_back(r.symbol, r.offsetX, r.offsetY, r.w, r.h);
+                ll.emplace_back(r.symbol, r.offsetX, -r.offsetY, r.w, r.h);
             }
             auto layout_result = layoutEngine().layout(ll);
             Img * img= ImageComposer::compose(layout_result,

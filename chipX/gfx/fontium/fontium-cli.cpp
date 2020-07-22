@@ -15,15 +15,6 @@ description:
   TrueType, CFF, WOFF, OpenType, SFNT, PCF, FNT, BDF, PFR fonts
 
 options include:
-* layout options
-  -layout.type                { box, box_optimal, grid, gridline, line }, default=box
-  -layout.one_pixel_offset    if set, adds at least one pixel separation between glyphs, default to true
-  -layout.pot_image           if set, create power of 2 image, default false
-  -layout.offset_left         integer, sets the left padding, default 0
-  -layout.offset_top          integer, sets the top padding, default 0
-  -layout.offset_right        integer, sets the right padding, default 0
-  -layout.offset_bottom       integer, sets the bottom padding, default 0
-
 * font options
   -font.size                  size of font in points, default 14
   -font.dpi                   dots per inch, usually { 72, 96, 100, 110, 120, 128 }, default 72
@@ -40,6 +31,15 @@ options include:
   -font.bold                  [0, 10] - boldness, , default 0
   -font.italic                [-20, 20] - italicness,  default 0
   -font.face_index            the face index to load,  default 0
+
+* layout options
+  -layout.type                { box, box_optimal, grid, gridline, line }, default=box
+  -layout.one_pixel_offset    ( false | true) if set, adds at least one pixel separation between glyphs, default to true
+  -layout.pot_image           ( false | true) if set, create power of 2 image, default false
+  -layout.offset_left         integer, sets the left padding, default 0
+  -layout.offset_top          integer, sets the top padding, default 0
+  -layout.offset_right        integer, sets the right padding, default 0
+  -layout.offset_bottom       integer, sets the bottom padding, default 0
 
 * output options
   -output.export              { sparrow, c_array }, default to sparrow
@@ -58,9 +58,14 @@ int main(int argc, char *argv[]) {
 #if (DEBUG==1)
     auto bundle_ = bundle{{
         {"VOID_KEY", "./assets/digital-7.ttf"},
-        {"font.size", "15"},
+        {"font.size", "48"},
+        {"font.antialiasing", "None"},
+        {"font.hinting", "Disabled"},
+//        {"layout.one_pixel_offset", "false"},
+        {"layout.type", "box"},
         {"output.export", "sparrow"},
         {"output.name", "tomer"},
+//        {"h", ""},
     }};
 #elif (DEBUG==2)
     auto bundle_ = bundle{{
@@ -112,7 +117,8 @@ int main(int argc, char *argv[]) {
         // output color type
         state.info_png.color.colortype = LCT_GREY;
         state.info_png.color.bitdepth = 8;
-        // without this, it would ignore the output color type specified above and choose an optimal one instead
+        // without this, it would ignore the output color type specified
+        // above and choose an optimal one instead
         state.encoder.auto_convert = 0;
 
         //encode and save
