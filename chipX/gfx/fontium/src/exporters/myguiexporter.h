@@ -31,7 +31,7 @@
 #ifndef MYGUIEXPORTER_H
 #define MYGUIEXPORTER_H
 
-#include "../abstractexporter.h"
+#include "src/AbstractExporter.h"
 
 class MyGUIExporter : public AbstractExporter
 {

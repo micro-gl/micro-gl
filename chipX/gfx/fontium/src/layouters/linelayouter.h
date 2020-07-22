@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../abstractlayouter.h"
+#include "src/AbstractLayout.h"
 
-class LineLayouter : public AbstractLayouter
+class LineLayouter : public AbstractLayout
 {
 public:
     explicit LineLayouter(const LayoutConfig*  $config) :
-                                AbstractLayouter($config) {
+            AbstractLayout($config) {
     };
 
 protected:

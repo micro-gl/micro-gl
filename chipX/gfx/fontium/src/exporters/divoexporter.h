@@ -31,7 +31,7 @@
 #ifndef DIVOEXPORTER_H
 #define DIVOEXPORTER_H
 
-#include "../abstractexporter.h"
+#include "src/AbstractExporter.h"
 
 class DivoExporter : public AbstractExporter
 {

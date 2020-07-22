@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../abstractlayouter.h"
+#include "src/AbstractLayout.h"
 
-class GridLayouter : public AbstractLayouter
+class GridLayouter : public AbstractLayout
 {
 public:
-    explicit GridLayouter(const LayoutConfig*  $config) : AbstractLayouter($config) {
+    explicit GridLayouter(const LayoutConfig*  $config) : AbstractLayout($config) {
     };
 protected:
     void internal_layout(const QVector<LayoutChar> &chars) override;

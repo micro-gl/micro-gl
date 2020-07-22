@@ -29,7 +29,7 @@
  */
 
 #include "divoexporter.h"
-#include "../fontconfig.h"
+#include "src/FontConfig.h"
 #include <QtXml>
 
 DivoExporter::DivoExporter(QObject *parent) :

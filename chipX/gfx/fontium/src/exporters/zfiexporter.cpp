@@ -1,5 +1,5 @@
 #include "zfiexporter.h"
-#include "../fontconfig.h"
+#include "src/FontConfig.h"
 #include "../layoutdata.h"
 
 ZFIExporter::ZFIExporter(QObject *parent) :

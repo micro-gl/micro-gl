@@ -59,7 +59,7 @@
 //
 //    FontRenderer*   m_font_renderer;
 ////    LayoutData*     m_layout_data;
-//    AbstractLayouter* m_layouter;
+//    AbstractLayout* m_layouter;
 //    LayouterFactory*    m_layouter_factory;
 //    OutputConfig*   m_output_config;
 //    ExporterFactory* m_exporter_factory;

@@ -16,8 +16,8 @@ include_directories("/libs/freetype-2.10.0/include")
 
 set(SOURCES
         src/fontbuilder.cpp
-        src/fontrenderer.cpp
-        src/abstractlayouter.cpp
+        src/FontRenderer.cpp
+        src/AbstractLayout.cpp
         src/layouters/boxlayouter.cpp
         src/layouters/boxlayouteroptimized.cpp
         src/layouters/gridlayouter.cpp
@@ -31,7 +31,7 @@ set(SOURCES
 set(TARGET_LIB ${PROJECT_NAME})
 set(TARGET_CLI ${PROJECT_NAME}-cli)
 link_libraries(freetype)
-add_executable(${TARGET_CLI} ${SOURCES} fontium-cli.cpp)
+add_executable(${TARGET_CLI} ${SOURCES} fontium-cli.cpp src/LayoutFactory.h)
 add_library(${TARGET_LIB} ${SOURCES})
 add_custom_command(TARGET ${TARGET_CLI} POST_BUILD COMMAND
         ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets

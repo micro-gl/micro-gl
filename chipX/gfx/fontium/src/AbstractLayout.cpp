@@ -1,11 +1,11 @@
-#include "abstractlayouter.h"
-#include "layoutconfig.h"
+#include "AbstractLayout.h"
+#include "LayoutConfig.h"
 
-AbstractLayouter::AbstractLayouter(const LayoutConfig* config) {
+AbstractLayout::AbstractLayout(const LayoutConfig* config) {
     m_config = config;
 }
 
-LayoutResult & AbstractLayouter::layout(const vector<LayoutChar>& input) {
+LayoutResult & AbstractLayout::layout(const vector<LayoutChar>& input) {
     m_result.placed.clear();
     m_compact_w = 0;
     m_compact_h = 0;
@@ -29,7 +29,7 @@ LayoutResult & AbstractLayouter::layout(const vector<LayoutChar>& input) {
     return m_result;
 }
 
-void AbstractLayouter::processing_hook(QVector<LayoutChar> &)
+void AbstractLayout::processing_hook(QVector<LayoutChar> &)
 {
 }
 
@@ -44,7 +44,7 @@ static unsigned int nextpot(unsigned int val) {
     return val;
 }
 
-void AbstractLayouter::resize(int w,int h) {
+void AbstractLayout::resize(int w, int h) {
     if (m_config) {
         if (m_config->one_pixel_offset) {
             w+=2; h+=2;
@@ -66,21 +66,21 @@ void AbstractLayouter::resize(int w,int h) {
     m_result.height=h;
 }
 
-int AbstractLayouter::width() const {
+int AbstractLayout::width() const {
     int w = m_result.width;
     if (m_config->one_pixel_offset)
         w-=2;
     return w;
 }
 
-int AbstractLayouter::height() const {
+int AbstractLayout::height() const {
     int h = m_result.height;
     if (m_config->one_pixel_offset)
         h-=2;
     return h;
 }
 
-void AbstractLayouter::place(const LayoutChar& c) {
+void AbstractLayout::place(const LayoutChar& c) {
     LayoutChar out = c;
     if ((out.x + out.w)>m_compact_w)
         m_compact_w = out.x + out.w;

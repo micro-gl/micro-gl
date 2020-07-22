@@ -3,7 +3,7 @@
 #include "common_types.h"
 #include "FontRendererResult.h"
 #include "LayoutResult.h"
-#include "layoutconfig.h"
+#include "LayoutConfig.h"
 
 class ImageComposer {
 public:

@@ -5,7 +5,7 @@
 
 class LayoutConfig;
 
-class AbstractLayouter
+class AbstractLayout
 {
 private:
     const LayoutConfig*   m_config;
@@ -16,7 +16,7 @@ private:
     virtual void processing_hook(QVector<LayoutChar>& chars);
 
 public:
-    explicit AbstractLayouter(const LayoutConfig* $config);
+    explicit AbstractLayout(const LayoutConfig* $config);
     LayoutResult & layout(const vector<LayoutChar>& input); //DoPlace
 
 protected:

@@ -1,6 +1,6 @@
 
-#include "fontrenderer.h"
-#include "fontconfig.h"
+#include "FontRenderer.h"
+#include "FontConfig.h"
 
 #include FT_OUTLINE_H
 #include FT_TRUETYPE_TABLES_H

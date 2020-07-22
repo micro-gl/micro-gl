@@ -1,7 +1,7 @@
 #ifndef JSONFONTEXPORTER_H
 #define JSONFONTEXPORTER_H
 
-#include "../abstractexporter.h"
+#include "src/AbstractExporter.h"
 
 class JSONFontExporter : public AbstractExporter
 {

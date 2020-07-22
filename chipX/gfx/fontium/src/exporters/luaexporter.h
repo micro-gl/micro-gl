@@ -31,7 +31,7 @@
 #ifndef LUAEXPORTER_H
 #define LUAEXPORTER_H
 
-#include "../abstractexporter.h"
+#include "src/AbstractExporter.h"
 
 class LuaExporter : public AbstractExporter
 {

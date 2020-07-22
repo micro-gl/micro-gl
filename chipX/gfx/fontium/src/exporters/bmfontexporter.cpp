@@ -1,5 +1,5 @@
 #include "bmfontexporter.h"
-#include "../fontconfig.h"
+#include "src/FontConfig.h"
 
 BMFontExporter::BMFontExporter(QObject *parent) :
     AbstractExporter(parent)

@@ -29,9 +29,9 @@
  */
 
 #include "myguiexporter.h"
-#include "../fontconfig.h"
+#include "src/FontConfig.h"
 #include "../layoutdata.h"
-#include "../layoutconfig.h"
+#include "src/LayoutConfig.h"
 #include <QDomDocument>
 #include FT_TRUETYPE_TABLES_H
 

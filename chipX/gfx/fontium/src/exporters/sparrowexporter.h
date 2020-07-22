@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../abstractexporter.h"
+#include "src/AbstractExporter.h"
 
 // Exporter for Sparrow Framework
 // http://www.sparrow-framework.org/

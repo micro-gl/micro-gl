@@ -1,9 +1,9 @@
 #pragma once
 
-#include <fontconfig.h>
+#include <FontConfig.h>
 #include <bitmap_font.h>
-#include "fontrenderer.h"
-#include "layoutconfig.h"
+#include "FontRenderer.h"
+#include "LayoutConfig.h"
 #include "layouterfactory.h"
 #include "exporterfactory.h"
 
@@ -59,13 +59,20 @@ private:
     bitmap_font & process(str name) {
         FontRenderer fontRenderer{_font, _font_config};
         FontRendererResult fontRendererResult = fontRenderer.render(1.0f);
-
+        // collect base chars to prepare for layout
+        std::vector<LayoutChar> ll{fontRendererResult.chars.size()};
+        for(const auto & entry: fontRendererResult.chars) {
+            const auto & r = entry.second;
+            ll.emplace_back(r.symbol, r.offsetX, r.offsetY, r.w, r.h);
+        }
     }
+
+
 
 
 //    FontRenderer*   m_font_renderer;
 ////    LayoutData*     m_layout_data;
-//    AbstractLayouter* m_layouter;
+//    AbstractLayout* m_layouter;
 //    LayouterFactory*    m_layouter_factory;
 //    OutputConfig*   m_output_config;
 //    ExporterFactory* m_exporter_factory;

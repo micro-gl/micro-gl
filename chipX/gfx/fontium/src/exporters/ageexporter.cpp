@@ -1,5 +1,5 @@
 #include "ageexporter.h"
-#include "../fontconfig.h"
+#include "src/FontConfig.h"
 #include "../layoutdata.h"
 
 struct AGEHeader

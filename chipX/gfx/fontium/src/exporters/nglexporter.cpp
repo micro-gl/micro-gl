@@ -29,7 +29,7 @@
  */
 
 #include "nglexporter.h"
-#include "../fontconfig.h"
+#include "src/FontConfig.h"
 #include "../layoutdata.h"
 #include <QDomDocument>
 

@@ -1,5 +1,5 @@
 #include "jsonfontexporter.h"
-#include "../fontconfig.h"
+#include "src/FontConfig.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>

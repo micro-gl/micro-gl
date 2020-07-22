@@ -1,7 +1,7 @@
 #ifndef ZFIEXPORTER_H
 #define ZFIEXPORTER_H
 
-#include "../abstractexporter.h"
+#include "src/AbstractExporter.h"
 
 typedef struct
 {

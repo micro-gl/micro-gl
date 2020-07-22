@@ -3,8 +3,8 @@
 #include "common_types.h"
 #include "FontRendererResult.h"
 #include "LayoutResult.h"
-#include "fontconfig.h"
-#include "layoutconfig.h"
+#include "FontConfig.h"
+#include "LayoutConfig.h"
 
 struct FontConfig;
 struct LayoutConfig;
