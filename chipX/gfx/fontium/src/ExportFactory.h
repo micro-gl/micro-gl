@@ -1,6 +1,6 @@
 #pragma once
 
-#include <exporters/sparrowexporter.h>
+#include <exporters/BMFExporter.h>
 
 namespace fontium {
     class ExportFactory {
@@ -9,10 +9,15 @@ namespace fontium {
 
         static
         AbstractExporter *create(const str &name) {
-            if (name == "sparrow")
-                return new SparrowExporter();
+            AbstractExporter * exporter = nullptr;
+            if (name == "bmf")
+                exporter= new BMFExporter();
 
-            return nullptr;
+            if(exporter==nullptr) {
+                throw std::runtime_error{"could not find exporter for :: " + name};
+            }
+
+            return exporter;
         }
     };
 }

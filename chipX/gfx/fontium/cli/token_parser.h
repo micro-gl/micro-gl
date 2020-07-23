@@ -6,11 +6,12 @@
 #include <map>
 #include <iostream>
 
+using str=std::string;
+using tokens=std::vector<str>;
+using dictionary=std::map<str, str>;
+
 class token_parser {
 private:
-    using str=std::string;
-    using tokens=std::vector<str>;
-    using dictionary=std::map<str, str>;
 
 public:
     token_parser()= delete;

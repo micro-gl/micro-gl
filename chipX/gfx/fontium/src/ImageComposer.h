@@ -3,7 +3,7 @@
 #include "common_types.h"
 #include "FontRendererResult.h"
 #include "LayoutResult.h"
-#include "LayoutConfig.h"
+#include <fontium/LayoutConfig.h>
 
 namespace fontium {
     class ImageComposer {

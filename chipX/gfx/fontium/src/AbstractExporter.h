@@ -2,7 +2,7 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include "bitmap_font.h"
+#include <fontium/bitmap_font.h>
 
 namespace fontium {
     class AbstractExporter {

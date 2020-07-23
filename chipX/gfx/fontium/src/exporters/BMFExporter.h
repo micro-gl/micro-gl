@@ -5,9 +5,9 @@
 namespace fontium {
 // Exporter for Sparrow Framework
 // http://www.sparrow-framework.org/
-    class SparrowExporter : public AbstractExporter {
+    class BMFExporter : public AbstractExporter {
     public:
-        explicit SparrowExporter() = default;
+        explicit BMFExporter() = default;
 
         str apply(bitmap_font &data) override;
         str fileExtension() override;

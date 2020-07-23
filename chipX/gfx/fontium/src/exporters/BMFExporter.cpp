@@ -1,8 +1,8 @@
 #include <sstream>
-#include "sparrowexporter.h"
+#include "BMFExporter.h"
 
 namespace fontium {
-    str SparrowExporter::apply(bitmap_font &data) {
+    str BMFExporter::apply(bitmap_font &data) {
         using stream = std::stringstream;
         str M = str{'\"'};
         str NL = str{'\n'};
@@ -77,11 +77,11 @@ namespace fontium {
         return result.str();
     }
 
-    str SparrowExporter::tag() {
-        return "sparrow";
+    str BMFExporter::tag() {
+        return "bmf";
     }
 
-    str SparrowExporter::fileExtension() {
+    str BMFExporter::fileExtension() {
         return "xml";
     }
 

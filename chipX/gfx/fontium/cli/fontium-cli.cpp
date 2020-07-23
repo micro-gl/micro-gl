@@ -1,8 +1,9 @@
-#include <Fontium.h>
-#include <options.h>
 #include <ExportFactory.h>
 #include <lodepng.h>
 #include <iostream>
+#include "include/fontium/Fontium.h"
+#include "cli/options.h"
+#include "cli/utils.h"
 
 using namespace fontium;
 #define DEBUG 2
@@ -42,20 +43,21 @@ options include:
   -layout.offset_bottom       integer, sets the bottom padding, default 0
 
 * output options
-  -output.export              { sparrow, c_array }, default to sparrow
+  -output.export              { bmf (Angel Code), c_array }, default to sparrow
   -output.name                name of the export files, default to <font-name>
 
 * misc
   -h                          show help
 
 example:
-  fontium minecraft.ttf -font.size 12 -output.export sparrow -output.name minecraft
+  fontium minecraft.ttf -font.size 12 -output.export bmf -output.name minecraft
 )foo";
 
 
 int main(int argc, char *argv[]) {
 
 #if (DEBUG==1)
+    // test true type fonts
     auto bundle_ = bundle{{
         {"VOID_KEY", "./assets/digital-7.ttf"},
         {"font.size", "48"},
@@ -70,6 +72,7 @@ int main(int argc, char *argv[]) {
 //        {"h", ""},
     }};
 #elif (DEBUG==2)
+    // test bdf / pcf fonts
     auto bundle_ = bundle{{
 //          {"VOID_KEY", "./assets/bitbuntu-full.bdf"},
 //          {"VOID_KEY", "./assets/creep.bdf"},
@@ -77,14 +80,9 @@ int main(int argc, char *argv[]) {
           {"VOID_KEY", "./assets/TerminusBold-16.bdf"},
 //          {"VOID_KEY", "./assets/dweep.pcf"},
           {"font.size", "48"},
-//          {"font.characters", "\""},
           {"font.antialiasing", "None"},
-          {"font.hinting", "Disabled"},
-//          {"layout.one_pixel_offset", "false"},
           {"layout.type", "box"},
-//          {"layout.type", "line"},
-          {"output.export", "sparrow"},
-//        {"h", ""},
+          {"output.export", "bmf"},
     }};
 #else
     auto bundle_=bundle::fromTokens(argc, argv);
@@ -104,7 +102,7 @@ int main(int argc, char *argv[]) {
         // extract bundle into options
         Fontium::Builder builder{};
         fontium::options options{bundle_};
-        auto * font=fontium::loadFileAsByteArray(options.input_font_path);
+        auto * font=loadFileAsByteArray(options.input_font_path);
         str basename= options.output_export_name;
         str image_file_name= basename + ".png";
         Fontium * fontium = builder
@@ -149,7 +147,7 @@ int main(int argc, char *argv[]) {
 
     }
     catch (const std::exception& e){
-        std::cout << "Imagium error: " + str{e.what()} << std::endl;
+        std::cout << std::endl << "Fontium error:" << std::endl << "   " <<  str{e.what()} << std::endl;
         return 1;
     }
 

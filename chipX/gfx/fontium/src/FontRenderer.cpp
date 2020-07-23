@@ -1,7 +1,7 @@
 
 #include <stdexcept>
 #include "FontRenderer.h"
-#include "FontConfig.h"
+#include <fontium/FontConfig.h>
 
 #include FT_OUTLINE_H
 #include FT_TRUETYPE_TABLES_H

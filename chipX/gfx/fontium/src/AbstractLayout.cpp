@@ -1,5 +1,5 @@
 #include "AbstractLayout.h"
-#include "LayoutConfig.h"
+#include <fontium/LayoutConfig.h>
 
 namespace fontium {
     AbstractLayout::AbstractLayout(const LayoutConfig *config) {

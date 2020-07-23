@@ -2,14 +2,12 @@
 
 #include <string>
 #include <map>
-#include <types.h>
-#include <bundle.h>
 #include <cstdlib>
 #include <utility>
-#include <utils.h>
-#include <algorithm>
-#include <FontConfig.h>
-#include <LayoutConfig.h>
+#include "bundle.h"
+#include "utils.h"
+#include <fontium/FontConfig.h>
+#include <fontium/LayoutConfig.h>
 
 namespace fontium {
 
@@ -32,7 +30,7 @@ namespace fontium {
             // output
             output_export_name=_bundle.getValueAsString("output.name",
                     filename(input_font_path));
-            output_export_type=_bundle.getValueAsString("output.export", "sparrow");
+            output_export_type=_bundle.getValueAsString("output.export", "bmf");
             // font config
             fontConfig.size = _bundle.getValueAsInteger("font.size", 14);
             fontConfig.dpi = _bundle.getValueAsInteger("font.dpi", 72);
