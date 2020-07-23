@@ -62,6 +62,7 @@ namespace fontium {
 
     public:
         bitmap_font process(str name) {
+
             FontRenderer fontRenderer{_font, _font_config};
             FontRendererResult fontRendererResult = fontRenderer.render(1.0f);
             // collect base chars to prepare for layout

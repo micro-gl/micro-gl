@@ -2454,9 +2454,10 @@
       /* check each font driver for an appropriate format */
       cur   = library->modules;
       limit = cur + library->num_modules;
-
+int tomer=0;
       for ( ; cur < limit; cur++ )
       {
+          tomer++;
         /* not all modules are font drivers, so check... */
         if ( FT_MODULE_IS_DRIVER( cur[0] ) )
         {

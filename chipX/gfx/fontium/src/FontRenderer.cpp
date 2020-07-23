@@ -1,4 +1,5 @@
 
+#include <stdexcept>
 #include "FontRenderer.h"
 #include "FontConfig.h"
 
@@ -32,13 +33,13 @@ namespace fontium {
     RenderedChar FontRenderer::copy_current_glyph(uint symbol) {
         const FT_GlyphSlot slot = m_ft_face->glyph;
         const FT_Bitmap *bm = &(slot->bitmap);
-        int w = bm->width;
-        int h = bm->rows;
+        uint w = bm->width;
+        uint h = bm->rows;
         Img *img = new Img(w, h, 1);
         const uchar *src = bm->buffer;
         if (bm->pixel_mode == FT_PIXEL_MODE_GRAY) {
-            for (int row = 0; row < h; row++, src += bm->pitch) {
-                for (int col = 0; col < w; col++) {
+            for (uint row = 0; row < h; row++, src += bm->pitch) {
+                for (uint col = 0; col < w; col++) {
                     {
                         uint index = row * w + col;
                         uchar s = src[col];
@@ -47,21 +48,22 @@ namespace fontium {
                 }
             }
         } else if (bm->pixel_mode == FT_PIXEL_MODE_MONO) {
-            for (int row = 0; row < h; row++, src += bm->pitch) {
+            uint row_w=w/8;
+            for (uint row = 0; row < h; row++, src+=bm->pitch) {
                 uint index = row * w;
                 auto *row_start = (*img)[index];
-                for (int col = 0; col < w / 8; col++) { // unroll segments
-                    uchar s = src[col];
-                    (*row_start++) = (s & (1 << 7)) ? 255 : 0;
-                    (*row_start++) = (s & (1 << 6)) ? 255 : 0;
-                    (*row_start++) = (s & (1 << 5)) ? 255 : 0;
-                    (*row_start++) = (s & (1 << 4)) ? 255 : 0;
-                    (*row_start++) = (s & (1 << 3)) ? 255 : 0;
-                    (*row_start++) = (s & (1 << 3)) ? 255 : 0;
-                    (*row_start++) = (s & (1 << 2)) ? 255 : 0;
-                    (*row_start++) = (s & (1 << 0)) ? 255 : 0;
+                for (uint col = 0; col < row_w; col++) { // unroll segments
+                    uint s = src[col];
+                    (*row_start++) = (s & (uint(1) << 7)) ? 255 : 0;
+                    (*row_start++) = (s & (uint(1) << 6)) ? 255 : 0;
+                    (*row_start++) = (s & (uint(1) << 5)) ? 255 : 0;
+                    (*row_start++) = (s & (uint(1) << 4)) ? 255 : 0;
+                    (*row_start++) = (s & (uint(1) << 3)) ? 255 : 0;
+                    (*row_start++) = (s & (uint(1) << 2)) ? 255 : 0;
+                    (*row_start++) = (s & (uint(1) << 1)) ? 255 : 0;
+                    (*row_start++) = (s & (uint(1) << 0)) ? 255 : 0;
                 }
-                { // handle residual
+                {   // handle residual and padding
                     uchar s = src[w / 8];
                     uint index = (row * w) / 8;
                     int num = 7;
@@ -75,16 +77,11 @@ namespace fontium {
                         case 1: (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
                     }
                 }
-
             }
 
         }
 
         return RenderedChar(symbol, slot->bitmap_left, slot->bitmap_top, w, h, slot->advance.x / 64, img);
-//    m_rendered.chars[symbol]=RenderedChar(symbol, slot->bitmap_left, slot->bitmap_top, slot->advance.x/64, img);
-//    m_chars.push_back(LayoutChar(symbol,slot->bitmap_left,-slot->bitmap_top,w,h));
-//
-//    return true;
     }
 
     void FontRenderer::append_kerning_to_char(RenderedChar &rendered_char, const int32_t *other, int amount) {
@@ -121,24 +118,26 @@ namespace fontium {
                 reinterpret_cast<const FT_Byte *>(_font->data()), _font->size(),
                 m_config->face_index, &m_ft_face);
         if (error) {
-            std::cerr << "FT_New_Memory_Face error " << error;
+            throw std::runtime_error("FT_New_Memory_Face " +std::to_string(error) );
         } else {
             error = FT_Select_Charmap(
                     m_ft_face,               /* target face object */
                     FT_ENCODING_UNICODE);
             if (error) {
-                std::cerr << "FT_Select_CharMap error " << error;
+                throw std::runtime_error("FT_Select_CharMap " +std::to_string(error) );
             }
         }
     }
 
 
     void FontRenderer::applySize() {
+
         if (!m_ft_face) return;
         bool fixedsize = (FT_FACE_FLAG_SCALABLE & m_ft_face->face_flags) == 0;
         int size = m_config->size;
         if (fixedsize) {
             // todo:: return here for pcf/bdf
+            return;
             std::cerr << "fixed size not impemented";
         } else {
             int size_x = static_cast<int>(m_config->scale_width * size * 64.0f / 100.0f);
@@ -235,6 +234,7 @@ namespace fontium {
                     flags = flags | FT_LOAD_NO_AUTOHINT;
                     break;
                 default:
+                    flags = flags | FT_LOAD_DEFAULT;
                     break;
             }
 

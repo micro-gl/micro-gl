@@ -5,7 +5,7 @@
 #include <iostream>
 
 using namespace fontium;
-#define DEBUG 1
+#define DEBUG 2
 
 const char* info =R"foo(usage:
   fontium <font path> [options]
@@ -59,20 +59,32 @@ int main(int argc, char *argv[]) {
     auto bundle_ = bundle{{
         {"VOID_KEY", "./assets/digital-7.ttf"},
         {"font.size", "48"},
+        {"font.characters", "\""},
         {"font.antialiasing", "None"},
-        {"font.hinting", "Disabled"},
-//        {"layout.one_pixel_offset", "false"},
+//        {"font.hinting", "Disabled"},
+        {"layout.one_pixel_offset", "false"},
         {"layout.type", "box"},
+//        {"layout.type", "line"},
         {"output.export", "sparrow"},
         {"output.name", "tomer"},
 //        {"h", ""},
     }};
 #elif (DEBUG==2)
     auto bundle_ = bundle{{
-        {"VOID_KEY", "./assets/digital-7.ttf"},
-        {"font.size", "15"},
-        {"output.export", "sparrow"},
-        {"output.name", "tomer"},
+//          {"VOID_KEY", "./assets/bitbuntu-full.bdf"},
+//          {"VOID_KEY", "./assets/creep.bdf"},
+//          {"VOID_KEY", "./assets/creep2-16.bdf"},
+          {"VOID_KEY", "./assets/TerminusBold-16.bdf"},
+//          {"VOID_KEY", "./assets/dweep.pcf"},
+          {"font.size", "48"},
+//          {"font.characters", "\""},
+          {"font.antialiasing", "None"},
+          {"font.hinting", "Disabled"},
+//          {"layout.one_pixel_offset", "false"},
+          {"layout.type", "box"},
+//          {"layout.type", "line"},
+          {"output.export", "sparrow"},
+//        {"h", ""},
     }};
 #else
     auto bundle_=bundle::fromTokens(argc, argv);
