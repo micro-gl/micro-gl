@@ -41,7 +41,7 @@ mkdir cmake_build
 cd cmake_build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target imagium
-// libfontium file should be in your folder
+// libimagium file should be in your folder
 
 ```
 
