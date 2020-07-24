@@ -14,7 +14,7 @@ the hood, it uses `freetype 2`
 
 ### supported export formats for `fontium-cli`
 this only applies for the `fontium-cli`  
-the generated image is `png` format and the following data formats will be added  
+the generated image is `png` format and the following data formats can be selected  
 - **BMF** (Angel-Code's format, which is used in many frameworks)
 - **C header file** with code
 - many others I found from fontbuilder software and I add when I have time
@@ -24,23 +24,28 @@ you can use the lib as follows
 ```c++
 #include <fontium/Fontium.h>
 
+// input data
 using bytearray = std::vector<unsigned char>;
 FontConfig fontConfig = FontConfig::getDefault();
 LayoutConfig layoutConfig = LayoutConfig::getDefault();
+
 // here you can load font data into the bytearray from disk or memory
 bytearray font{};
+
 // change some config
 fontConfig.size= 16;
 fontConfig.antialiasing= Antialiasing::Normal;
 fontConfig.characters= "abcd,ABCD";
 layoutConfig.layout_type=LayoutType::box;
+
 // create the bitmap font, which contains a single channel frame buffer
 // and layout data and font data of each glyph
 bitmap_font bm_font = Fontium::create(
-        "bitmap font name",
-        font,
-        fontConfig,
-        layoutConfig);
+                                "bitmap font name",
+                                font,
+                                fontConfig,
+                                layoutConfig);
+
 ```
 
 building can be done with `cmake`
