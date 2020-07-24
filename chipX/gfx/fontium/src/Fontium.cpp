@@ -1,17 +1,14 @@
 #include <fontium/Fontium.h>
 
 namespace fontium {
-    Fontium::Fontium(const Fontium::Builder &builder) {
-        _font_config=builder._fontConfig;
-        _layout_config=builder._layoutConfig;
-        _font=builder._font;
-        _layout = LayoutFactory::create(_layout_config);
-    }
 
-    bitmap_font Fontium::process(const str &name) {
+    bitmap_font Fontium::create(const std::string & name,
+                                bytearray &font,
+                                FontConfig &font_config,
+                                LayoutConfig &layout_config) {
 
-        FontRenderer fontRenderer{_font, _font_config};
-        FontRendererResult fontRendererResult = fontRenderer.render(1.0f);
+        FontRenderer fontRenderer{font, font_config.face_index};
+        FontRendererResult fontRendererResult = fontRenderer.render(font_config, 1.0f);
         // collect base chars to prepare for layout
         std::vector<LayoutChar> ll{};
         ll.reserve(fontRendererResult.chars.size());
@@ -19,33 +16,23 @@ namespace fontium {
             const auto & r = entry.second;
             ll.emplace_back(r.symbol, r.offsetX, -r.offsetY, r.w, r.h);
         }
-        auto layout_result = layoutEngine().layout(ll);
+        auto * layout= LayoutFactory::create(layout_config);
+        auto layout_result = layout->layout(ll);
         Img * img= ImageComposer::compose(layout_result,
-                                          layoutConfig(),
+                                          layout_config,
                                           fontRendererResult);
         auto bm_font = bitmap_font::from(img, name, layout_result,
                                          fontRendererResult,
-                                         fontConfig(),
-                                         layoutConfig());
+                                         font_config,
+                                         layout_config);
         bm_font.name= name;
         bm_font.family= fontRendererResult.family;
         bm_font.style= fontRendererResult.style;
 
         fontRendererResult.dispose();
 
+        delete layout;
         return bm_font;
-    }
-
-    LayoutConfig &Fontium::layoutConfig() {
-        return *_layout_config;
-    }
-
-    FontConfig &Fontium::fontConfig() {
-        return *_font_config;
-    }
-
-    AbstractLayout &Fontium::layoutEngine() {
-        return *_layout;
     }
 
 }

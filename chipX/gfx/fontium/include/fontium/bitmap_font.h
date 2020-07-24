@@ -6,13 +6,11 @@
 #include "FontConfig.h"
 #include "LayoutConfig.h"
 
-struct FontConfig;
-struct LayoutConfig;
-struct FontRendererResult;
-struct LayoutResult;
 
 namespace fontium {
-    struct Symbol {
+    struct LayoutConfig;
+
+    struct glyph {
         uint id;
         int placeX;
         int placeY;
@@ -26,16 +24,16 @@ namespace fontium {
 
     struct bitmap_font {
         Img *img;
+        std::vector<glyph> glyphs;
         str image_file_name;
         str name;
         str family, style;
         int tex_width;
         int tex_height;
-        const FontConfig *font_config;
-        const LayoutConfig *layout_config;
         RenderedMetrics metrics;
         float scale;
-        std::vector<Symbol> chars;
+        const FontConfig *font_config;
+        const LayoutConfig *layout_config;
 
         static
         bitmap_font from(Img *img, str file,
@@ -53,21 +51,21 @@ namespace fontium {
             result.metrics.height += fontConfig.line_spacing;
 
             for (const LayoutChar &lc : layoutResult.placed) {
-                Symbol symb;
-                symb.id = lc.symbol;
-                symb.placeX = lc.x;
-                symb.placeY = lc.y;
-                symb.placeW = lc.w;
-                symb.placeH = lc.h;
+                glyph g;
+                g.id = lc.symbol;
+                g.placeX = lc.x;
+                g.placeY = lc.y;
+                g.placeW = lc.w;
+                g.placeH = lc.h;
 
-                const RenderedChar &rc = rendered.chars[symb.id];
+                const RenderedChar &rc = rendered.chars[g.id];
 
-                symb.offsetX = rc.offsetX - layoutConfig.offset_left;
-                symb.offsetY = rc.offsetY + layoutConfig.offset_top;
-                symb.advance = rc.advance + fontConfig.char_spacing;
-                symb.kerning = rc.kerning;
+                g.offsetX = rc.offsetX - layoutConfig.offset_left;
+                g.offsetY = rc.offsetY + layoutConfig.offset_top;
+                g.advance = rc.advance + fontConfig.char_spacing;
+                g.kerning = rc.kerning;
 
-                result.chars.push_back(symb);
+                result.glyphs.push_back(g);
             }
             result.tex_width = layoutResult.width;
             result.tex_height = layoutResult.height;

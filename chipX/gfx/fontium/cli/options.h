@@ -48,7 +48,8 @@ namespace fontium {
             fontConfig.hinting = FontConfig::stringToHintingEnum(
                     _bundle.getValueAsString("font.hinting", "Default"));
             // layout config
-            layoutConfig.type = _bundle.getValueAsString("layout.type", "sparrow");
+            layoutConfig.layout_type = LayoutConfig::stringToLayoutTypeEnum(
+                    _bundle.getValueAsString("layout.type", "box"));
             layoutConfig.size_increment = _bundle.getValueAsInteger("layout.size_increment", 0);
             layoutConfig.offset_left = _bundle.getValueAsInteger("layout.offset_left", 0);
             layoutConfig.offset_top = _bundle.getValueAsInteger("layout.offset_top", 0);

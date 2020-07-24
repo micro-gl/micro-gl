@@ -1,4 +1,3 @@
-
 #include <stdexcept>
 #include "FontRenderer.h"
 #include <fontium/FontConfig.h>
@@ -6,22 +5,31 @@
 #include FT_OUTLINE_H
 #include FT_TRUETYPE_TABLES_H
 
-#include <math.h>
+#include <cmath>
 
 namespace fontium {
-    FontRenderer::FontRenderer(const bytearray *font, const FontConfig *config)
-                    : _font{font}, m_config(config) {
-        m_ft_library = 0;
-        m_ft_face = 0;
-        m_scale = 1.0f;
-
-        int error = FT_Init_FreeType(&m_ft_library);
-        if (error) {
-            std::cerr << "FT_Init_FreeType error " << error;
-            m_ft_library = 0;
-        }
+    void FontRenderer::throw_exception(const std::string & which, int code) {
+        str text = "freetype - " + which + ", error code " + std::to_string(code);
+        throw std::runtime_error(text);
     }
 
+    FontRenderer::FontRenderer(const bytearray &font, int faceIndex) {
+        m_ft_library = nullptr;
+        m_ft_face = nullptr;
+
+        int error = FT_Init_FreeType(&m_ft_library);
+        if (error) throw_exception("FT_Init_FreeType", error);
+        error = FT_New_Memory_Face(
+                m_ft_library,
+                reinterpret_cast<const FT_Byte *>(font.data()), font.size(),
+                faceIndex, &m_ft_face);
+        if (error) 
+            throw_exception("FT_New_Memory_Face", error);
+        
+        error = FT_Select_Charmap(m_ft_face, FT_ENCODING_UNICODE);
+        if (error) 
+            throw_exception("FT_Select_CharMap", error);
+    }
 
     FontRenderer::~FontRenderer() {
         if (m_ft_face)
@@ -65,7 +73,6 @@ namespace fontium {
                 }
                 {   // handle residual and padding
                     uchar s = src[w / 8];
-                    uint index = (row * w) / 8;
                     int num = 7;
                     switch (w % 8) {
                         case 7: (*row_start++) = (s & (1 << (num--))) ? 255 : 0;
@@ -107,66 +114,31 @@ namespace fontium {
         }
     }
 
-    void FontRenderer::selectFace() {
-        if (m_ft_face) {
-            FT_Done_Face(m_ft_face);
-            m_ft_face = 0;
-        }
-        if (!m_ft_library) return;
-        int error = FT_New_Memory_Face(
-                m_ft_library,
-                reinterpret_cast<const FT_Byte *>(_font->data()), _font->size(),
-                m_config->face_index, &m_ft_face);
-        if (error) {
-            throw std::runtime_error("FT_New_Memory_Face " +std::to_string(error) );
-        } else {
-            error = FT_Select_Charmap(
-                    m_ft_face,               /* target face object */
-                    FT_ENCODING_UNICODE);
-            if (error) {
-                throw std::runtime_error("FT_Select_CharMap " +std::to_string(error) );
-            }
-        }
-    }
-
-
-    void FontRenderer::applySize() {
-
-        if (!m_ft_face) return;
-        bool fixedsize = (FT_FACE_FLAG_SCALABLE & m_ft_face->face_flags) == 0;
-        int size = m_config->size;
-        if (fixedsize) {
-            // todo:: return here for pcf/bdf
-            return;
-            std::cerr << "fixed size not impemented";
-        } else {
-            int size_x = static_cast<int>(m_config->scale_width * size * 64.0f / 100.0f);
-            int size_y = static_cast<int>(m_config->scale_height * size * 64.0f / 100.0f);
-            int error = FT_Set_Char_Size(m_ft_face,
-                                         FT_F26Dot6(size_x),
-                                         FT_F26Dot6(size_y), m_config->dpi * m_scale,
-                                         m_config->dpi * m_scale);
-            //int error = FT_Set_Pixel_Sizes(m_ft_face,size_x/64,size_y/64);
-            if (error) {
-                std::cerr << "FT_Set_Char_Size error " << error;
-            }
-        }
-    }
-
-    FontRendererResult FontRenderer::render(float scale) {
-        m_scale = scale;
-        selectFace();
-        applySize();
+    FontRendererResult FontRenderer::render(const FontConfig &config, float scale) {
 
         if (!m_ft_face)
-            return {};
+            throw std::runtime_error("FontRenderer - tried to render a face that was not loaded");
+
+        // apply size
+        const bool fixedsize = (FT_FACE_FLAG_SCALABLE & m_ft_face->face_flags)==0;
+        if (!fixedsize) {
+            int size_x = static_cast<int>(config.scale_width * config.size * 64.0f / 100.0f);
+            int size_y = static_cast<int>(config.scale_height * config.size * 64.0f / 100.0f);
+            int error = FT_Set_Char_Size(m_ft_face,
+                                         FT_F26Dot6(size_x),
+                                         FT_F26Dot6(size_y), config.dpi * scale,
+                                         config.dpi * scale);
+            //int error = FT_Set_Pixel_Sizes(m_ft_face,size_x/64,size_y/64);
+            if (error) throw_exception("FT_Set_Char_Size", error);
+        }
 
         FontRendererResult result{};
-        std::cout << " begin rasterize_font ";
+        std::cout << "    rasterizing font ";
 
-        if (m_config->italic != 0) {
+        // apply italic
+        if (config.italic != 0) {
             FT_Matrix matrix;
-            const float angle = (-M_PI * m_config->italic) / 180.0f;
+            const float angle = (-M_PI * config.italic) / 180.0f;
             matrix.xx = (FT_Fixed) (cos(angle) * 0x10000L);
             matrix.xy = (FT_Fixed) (-sin(angle) * 0x10000L);
             matrix.yx = (FT_Fixed) (0/*sin( angle )*/ * 0x10000L);
@@ -188,25 +160,23 @@ namespace fontium {
             result.metrics.height = m_ft_face->height;
         }
 
-
+        // start rasterizing glyphs
         bool use_kerning = FT_HAS_KERNING(m_ft_face);
-
-//    QVector<uint> ucs4chars = m_config->characters().toUcs4();
-        auto ucs4chars = utf_8_to_32(m_config->characters);
+        auto ucs4chars = utf_8_to_32(config.characters);
         ucs4chars.push_back(0);
         int error = 0;
-        bool antialiased=m_config->antialiasing!=Antialiasing::None;
+        bool antialiased=config.antialiasing!=Antialiasing::None;
         for (unsigned i = 0; i + 1 < ucs4chars.size(); i++) {
             int symbol = ucs4chars[i];
             int glyph_index = FT_Get_Char_Index(m_ft_face, symbol);
-            if (glyph_index == 0 && !m_config->render_missing)
+            if (glyph_index == 0 && !config.render_missing)
                 continue;
 
             FT_Int32 flags = FT_LOAD_DEFAULT;
             if (!antialiased) {
                 flags = flags | FT_LOAD_MONOCHROME | FT_LOAD_TARGET_MONO;
             } else {
-                switch (m_config->antialiasing) {
+                switch (config.antialiasing) {
                     case Antialiasing::Normal:
                         flags |= FT_LOAD_TARGET_NORMAL;
                         break;
@@ -223,7 +193,7 @@ namespace fontium {
                         break;
                 }
             }
-            switch (m_config->hinting) {
+            switch (config.hinting) {
                 case Hinting::Disable:
                     flags = flags | FT_LOAD_NO_HINTING | FT_LOAD_NO_AUTOHINT;
                     break;
@@ -241,8 +211,8 @@ namespace fontium {
             error = FT_Load_Glyph(m_ft_face, glyph_index, flags);
             if (error)
                 continue;
-            if (m_config->bold != 0) {
-                FT_Pos strength = m_config->size * m_config->bold;
+            if (config.bold != 0) {
+                FT_Pos strength = config.size * config.bold;
                 if (m_ft_face->glyph->format == FT_GLYPH_FORMAT_OUTLINE)
                     FT_Outline_Embolden(&m_ft_face->glyph->outline, strength);
             }
@@ -255,7 +225,6 @@ namespace fontium {
 
             if (use_kerning) {
                 append_kerning_to_char(rendered,
-//                        reinterpret_cast< uint *>(&ucs4chars.front()),
                                        reinterpret_cast<const int32_t *>(ucs4chars.data()),
                                        ucs4chars.size() - 1);
             }
@@ -267,5 +236,6 @@ namespace fontium {
 
         return result;
     }
+
 
 }

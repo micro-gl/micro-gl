@@ -2,8 +2,7 @@
 #include <fontium/LayoutConfig.h>
 
 namespace fontium {
-    AbstractLayout::AbstractLayout(const LayoutConfig *config) {
-        m_config = config;
+    AbstractLayout::AbstractLayout(const LayoutConfig *config) : m_config{config} {
     }
 
     LayoutResult &AbstractLayout::layout(const vector<LayoutChar> &input) {

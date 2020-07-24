@@ -1,12 +1,12 @@
 #include <ExportFactory.h>
 #include <lodepng.h>
 #include <iostream>
-#include "include/fontium/Fontium.h"
+#include <fontium/Fontium.h>
 #include "cli/options.h"
 #include "cli/utils.h"
 
 using namespace fontium;
-#define DEBUG 2
+#define DEBUG 0
 
 const char* info =R"foo(usage:
   fontium <font path> [options]
@@ -16,7 +16,7 @@ description:
   TrueType, CFF, WOFF, OpenType, SFNT, PCF, FNT, BDF, PFR fonts
 
 options include:
-* font options
+* FONT options
   -font.size                  size of font in points, default 14
   -font.dpi                   dots per inch, usually { 72, 96, 100, 110, 120, 128 }, default 72
   -font.characters            (string) the characters, by default will use
@@ -33,7 +33,7 @@ options include:
   -font.italic                [-20, 20] - italicness,  default 0
   -font.face_index            the face index to load,  default 0
 
-* layout options
+* LAYOUT options
   -layout.type                { box, box_optimal, grid, gridline, line }, default=box
   -layout.one_pixel_offset    ( false | true) if set, adds at least one pixel separation between glyphs, default to true
   -layout.pot_image           ( false | true) if set, create power of 2 image, default false
@@ -42,7 +42,7 @@ options include:
   -layout.offset_right        integer, sets the right padding, default 0
   -layout.offset_bottom       integer, sets the bottom padding, default 0
 
-* output options
+* OUTPUT options
   -output.export              { bmf (Angel Code), c_array }, default to sparrow
   -output.name                name of the export files, default to <font-name>
 
@@ -51,6 +51,9 @@ options include:
 
 example:
   fontium minecraft.ttf -font.size 12 -output.export bmf -output.name minecraft
+
+Author:
+  Tomer Shalev (tomer.shalev@gmail.com)
 )foo";
 
 
@@ -61,14 +64,13 @@ int main(int argc, char *argv[]) {
     auto bundle_ = bundle{{
         {"VOID_KEY", "./assets/digital-7.ttf"},
         {"font.size", "48"},
-        {"font.characters", "\""},
-        {"font.antialiasing", "None"},
+//        {"font.antialiasing", "None"},
 //        {"font.hinting", "Disabled"},
-        {"layout.one_pixel_offset", "false"},
+        {"layout.one_pixel_offset", "true"},
         {"layout.type", "box"},
 //        {"layout.type", "line"},
-        {"output.export", "sparrow"},
-        {"output.name", "tomer"},
+        {"output.export", "bmf"},
+        {"output.name", "tomer2"},
 //        {"h", ""},
     }};
 #elif (DEBUG==2)
@@ -87,12 +89,10 @@ int main(int argc, char *argv[]) {
 #else
     auto bundle_=bundle::fromTokens(argc, argv);
 #endif
-    if(bundle_.hasKey("h")) {
+    const bool show_help = bundle_.hasKey("h") ||
+            bundle_.getValueAsString("VOID_KEY", "").empty();
+    if(show_help) {
         std::cout << info << std::endl;
-        return 0;
-    }
-    if(bundle_.getValueAsString("VOID_KEY", "").empty()) {
-        std::cout << "Error: no file specified !!!" << std::endl;
         return 0;
     }
 
@@ -100,24 +100,29 @@ int main(int argc, char *argv[]) {
         std::cout << "Fontium CLI" << std::endl;
 
         // extract bundle into options
-        Fontium::Builder builder{};
         fontium::options options{bundle_};
         auto * font=loadFileAsByteArray(options.input_font_path);
         str basename= options.output_export_name;
         str image_file_name= basename + ".png";
-        Fontium * fontium = builder
-                .layoutConfig(&options.layoutConfig)
-                .fontConfig(&options.fontConfig)
-                .font(font).build();
-        auto bm_font = fontium->process(basename);
+
+        auto bm_font = Fontium::create(
+                basename,
+                *font,
+                options.fontConfig,
+                options.layoutConfig);
+
         bm_font.image_file_name= image_file_name;
         auto * exporter = ExportFactory::create(options.output_export_type);
         str result = exporter->apply(bm_font);
         str data_file_name= basename + "." + exporter->fileExtension();
+
+        delete exporter;
+        // write data file
         std::ofstream out(data_file_name);
         out << result;
         out.close();
-        std::cout << std::endl <<  "created data file :: " << data_file_name <<std::endl;
+        std::cout << std::endl <<  "    created data file :: " << data_file_name
+                                        << std::endl;
 
         // png
         lodepng::State state;
@@ -138,18 +143,21 @@ int main(int argc, char *argv[]) {
                 bm_font.img->height(),
                 state);
         if(error) {
-            std::cout << "encoder error " << error << ": "<< lodepng_error_text(error) << std::endl;
+            throw std::runtime_error("encoder error " + std::to_string(error) + ": "
+            + lodepng_error_text(error) );
         }
         else {
             lodepng::save_file(buffer, image_file_name);
-            std::cout << "created image file :: " << image_file_name <<std::endl;
+            std::cout << "    created image file :: " << image_file_name <<std::endl;
         }
 
     }
     catch (const std::exception& e){
-        std::cout << std::endl << "Fontium error:" << std::endl << "   " <<  str{e.what()} << std::endl;
+        std::cout << std::endl << "    Fontium error:" << std::endl << "    - "
+                                    << str{e.what()} << std::endl;
         return 1;
     }
 
+    return 0;
 }
 

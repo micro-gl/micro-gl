@@ -22,7 +22,7 @@ namespace fontium {
     struct FontConfig {
         static FontConfig getDefault() {
             FontConfig config;
-            config.size = 0;
+            config.size = 16;
             config.hinting = Hinting::Default;
             config.render_missing = false;
             config.antialiasing = Antialiasing::Normal;
@@ -31,7 +31,7 @@ namespace fontium {
             config.scale_height = 100.0f;
             config.line_spacing = 0;
             config.char_spacing = 0;
-            config.dpi = 96;
+            config.dpi = 72;
             config.characters = " !\"#$%&'()*+,-./0123456789:;<=>?@"
                                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
                                 "abcdefghijklmnopqrstuvwxyz{|}~";

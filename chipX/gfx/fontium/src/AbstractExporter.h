@@ -9,6 +9,7 @@ namespace fontium {
 
     public:
         explicit AbstractExporter() = default;
+        virtual ~AbstractExporter()=default;
 
         const str getErrorString() const { return "m_error_string"; }
 

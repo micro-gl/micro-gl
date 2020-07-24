@@ -41,8 +41,8 @@ namespace fontium {
         result << T1 << "</pages>" << NL;
 
         // chars
-        result << T1 << "<chars count=\"" << data.chars.size() << "\">" << NL;
-        for (const Symbol &c :data.chars) {
+        result << T1 << "<chars count=\"" << data.glyphs.size() << "\">" << NL;
+        for (const glyph &c :data.glyphs) {
             result << T2 << "<char" << S;
             result << "id=\"" << c.id << M << S;
             result << "x=\"" << c.placeX << M << S;
@@ -58,7 +58,7 @@ namespace fontium {
         result << T1 << "</chars>" + NL;
 
         uint kernings_count = 0;
-        for (const Symbol &c :data.chars) {
+        for (const glyph &c :data.glyphs) {
             for (auto const &kerning : c.kerning) {
                 kernings_count++;
                 kernings << T2 << "<kerning" << S;

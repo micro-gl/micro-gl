@@ -9,15 +9,16 @@ namespace fontium {
 
     class AbstractLayout {
     private:
-        const LayoutConfig *m_config;
-        LayoutResult m_result;
-        int m_compact_w;
-        int m_compact_h;
+        const LayoutConfig *m_config=nullptr;
+        LayoutResult m_result{};
+        int m_compact_w=0;
+        int m_compact_h=0;
 
         virtual void processing_hook(QVector<LayoutChar> &chars);
 
     public:
         explicit AbstractLayout(const LayoutConfig *$config);
+        virtual ~AbstractLayout()= default;
 
         LayoutResult &layout(const vector<LayoutChar> &input); //DoPlace
 
