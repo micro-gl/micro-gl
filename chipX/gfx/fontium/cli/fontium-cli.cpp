@@ -1,12 +1,12 @@
-#include <ExportFactory.h>
 #include <lodepng.h>
 #include <iostream>
 #include <fontium/Fontium.h>
+#include <fontium/ExportFactory.h>
 #include "cli/options.h"
 #include "cli/utils.h"
 
 using namespace fontium;
-#define DEBUG 0
+#define DEBUG 1
 
 const char* info =R"foo(usage:
   fontium <font path> [options]
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
         {"layout.type", "box"},
 //        {"layout.type", "line"},
         {"output.export", "bmf"},
-        {"output.name", "tomer2"},
+        {"output.name", "tomer211"},
 //        {"h", ""},
     }};
 #elif (DEBUG==2)

@@ -1,13 +1,11 @@
 #pragma once
 
-//#include "libs/stb_image/stb_image.h"
-#include "libs/lodepng/lodepng.h"
-#include <converter.h>
-#include <typed_packed_array.h>
-#include <bits.h>
-#include <color_t.h>
-#include <utils.h>
-#include <lodepng.h>
+#include "converter.h"
+#include "typed_packed_array.h"
+#include "bits.h"
+#include "color_t.h"
+#include "utils.h"
+#include <lodepng/lodepng.h>
 #include <exception>
 
 namespace imagium {
@@ -16,9 +14,9 @@ namespace imagium {
     public:
         png_palette_converter()= default;
 
-        result write(byte_array * data, const options & options) const override {
-            uint width, height, input_channels=4, bits_depth=8, bits_output;
-            bits r_bits=options.r, g_bits=options.g, b_bits=options.b, a_bits=options.a;
+        result write(byte_array * data, const Config & config) const override {
+            uint width, height, input_channels=4, bits_depth=8;
+            bits r_bits=config.r, g_bits=config.g, b_bits=config.b, a_bits=config.a;
             uint out_channels= (r_bits?1:0)+(g_bits?1:0)+(b_bits?1:0)+(a_bits?1:0);
 
             std::vector<unsigned char> image; //the raw pixels
@@ -39,7 +37,7 @@ namespace imagium {
             { // palette
                 auto bits_needed= infer_power_of_2_bits_needed_from_bits(r_bits+g_bits+b_bits+a_bits);
                 uint how_many= palette_number_of_pixels;
-                if(!options.pack_channels) {
+                if(!config.pack_channels) {
                     bits_needed=std::max<bits>({r_bits, g_bits, b_bits, a_bits});
                     bits_needed=infer_power_of_2_bytes_needed_from_bits(bits_needed)*8;
                     how_many=palette_number_of_pixels*out_channels;
@@ -52,7 +50,7 @@ namespace imagium {
                     uint b=convert_channel(palette[jx+2], bits_depth, b_bits);
                     uint a=convert_channel(palette[jx+3], bits_depth, a_bits);
                     color_t color{r, g, b, a, r_bits, g_bits, b_bits, a_bits};
-                    if(options.pack_channels) {
+                    if(config.pack_channels) {
                         uint64_t val=pack_bits_in_number(color);
                         palette_array->write(ix, val);
                     } else {
@@ -78,12 +76,12 @@ namespace imagium {
             { // generate strings
                 const str include_str= "#include <cstdint>\n\n// this file was created by Imagium CLI \n\n";
 
-                const str palette_string= palette_array->toString(options.output_name + "_palette");
+                const str palette_string= palette_array->toString(config.output_name + "_palette");
                 const str palette_comment= generate_comment(palette_number_of_pixels, 1,
                                                             palette_array->bits_per_element(),
                                                             palette_array->bits_per_storage_type(),
-                                                            r_bits, g_bits, b_bits, a_bits, options.pack_channels);
-                const str indexed_string= index_array->toString(options.output_name);
+                                                            r_bits, g_bits, b_bits, a_bits, config.pack_channels);
+                const str indexed_string= index_array->toString(config.output_name);
                 const str index_comment= generate_comment(width, height,
                                                           index_array->bits_per_element(),
                                                           index_array->bits_per_storage_type(),

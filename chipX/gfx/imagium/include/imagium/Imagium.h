@@ -1,10 +1,9 @@
 #pragma once
 
-#include <options.h>
-#include <utils.h>
-#include <converter.h>
-#include <regular_converter.h>
-#include <png_palette_converter.h>
+#include "Config.h"
+#include "../src/converter.h"
+#include "../src/regular_converter.h"
+#include "../src/png_palette_converter.h"
 
 namespace imagium {
     class Imagium {
@@ -26,21 +25,21 @@ namespace imagium {
                 return pair->second(args...);
         }
 
-        converter::result produce(const str & converter_tag, byte_array * data, const options & options) {
+        converter::result produce(const str & converter_tag, byte_array * data, const Config & config) {
             const converter * worker= instantiateWorkerByTag<>(converter_tag);
             if(worker==nullptr)
                 throw std::runtime_error("could not find a matching converter for this data !!! ");
-            return worker->write(data, options);
+            return worker->write(data, config);
         }
 
-        converter::result produce(byte_array * data, const options & options) {
-            str tag=options.converter;
+        converter::result produce(byte_array * data, const Config & config) {
+            str tag=config.converter;
             if(tag.empty()) {
                 tag="regular_converter";
-                if(options.use_palette)
-                    tag=options.image_format+"_palette_converter";
+                if(config.use_palette)
+                    tag=config.image_format+"_palette_converter";
             }
-            return produce(tag, data, options);
+            return produce(tag, data, config);
         }
     };
 

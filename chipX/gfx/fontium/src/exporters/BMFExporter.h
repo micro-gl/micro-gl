@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/AbstractExporter.h"
+#include <fontium/AbstractExporter.h>
 
 namespace fontium {
 // Exporter for Sparrow Framework

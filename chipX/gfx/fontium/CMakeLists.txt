@@ -19,6 +19,7 @@ set(SOURCES_LIB
         src/utils.cpp
         src/FontRenderer.cpp
         src/AbstractLayout.cpp
+        src/exporters/BMFExporter.cpp
         src/layouters/boxlayouter.cpp
         src/layouters/boxlayouteroptimized.cpp
         src/layouters/gridlayouter.cpp
@@ -28,7 +29,6 @@ set(SOURCES_LIB
         )
 
 set(SOURCES_CLI ${SOURCES_LIB}
-        src/exporters/BMFExporter.cpp
         cli/utils.cpp
         cli/fontium-cli.cpp)
 

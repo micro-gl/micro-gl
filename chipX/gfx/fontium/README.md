@@ -1,10 +1,11 @@
 # Fontium lib & Fontium-CLI
 project contains two components  
 - `fontium` is a c++ library, that creates bitmap fonts with custom layout algorithms.  
-- `fontium-cli` is a command line interface, that uses `fontium` to also create custom  
-export formats so you can embed/use them in your application. Under  
-the hood, it uses `freetype 2`  
-  
+it also has built-in exporters to other formats as strings so you can embed them.
+- `fontium-cli` is a command line interface, that uses `fontium` to also save the  
+bitmap fonts as custom export formats so you can embed/use them in your application.  
+Under the hood, it uses `freetype 2`  
+
 ### supported fonts formats
 `TrueType`, `CFF`, `WOFF`, `OpenType`, `SFNT`, `PCF`, `BDF`, `FNT`, `PFR`  
 - note, for `BDF`, make sure that file has a new line at the end.
@@ -23,6 +24,8 @@ the generated image is `png` format and the following data formats can be select
 you can use the lib as follows
 ```c++
 #include <fontium/Fontium.h>
+
+using namespace fontium;
 
 // input data
 using bytearray = std::vector<unsigned char>;
@@ -45,6 +48,34 @@ bitmap_font bm_font = Fontium::create(
                                 font,
                                 fontConfig,
                                 layoutConfig);
+
+```
+
+to export your `bitmap_font` result into another format, follow
+```c++
+#include <fontium/Fontium.h>
+#include <fontium/ExportFactory.h>
+
+using namespace fontium;
+using str = std::string;
+
+bitmap_font bm_font= ...; // created in previous step
+
+// export as BMF ( Angel Code's format xml)
+str output_export_type = "bmf";
+auto * exporter = ExportFactory::create(output_export_type);
+str result = exporter->apply(bm_font);
+str data_file_name= "font." + exporter->fileExtension();
+
+// write data file
+std::ofstream out(data_file_name);
+out << result;
+out.close();
+std::cout << std::endl << "created data file :: " 
+          << data_file_name << std::endl;
+
+// free memory
+delete exporter;
 
 ```
 

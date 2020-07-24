@@ -1,6 +1,6 @@
 #pragma once
 
-#include <types.h>
+#include "types.h"
 
 namespace imagium {
     channel convert_channel(channel val, bits bits_from, bits bits_to);

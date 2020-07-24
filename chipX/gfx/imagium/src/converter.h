@@ -1,7 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include <types.h>
+#include "types.h"
+#include <imagium/Config.h>
 
 namespace imagium {
 
@@ -15,6 +16,6 @@ namespace imagium {
         converter() = default;
 
 //        virtual std::vector<ubyte> write(byte_array * $data, const options & options) const = 0;
-        virtual result write(byte_array * $data, const options & options) const = 0;
+        virtual result write(byte_array * $data, const Config & options) const = 0;
     };
 }

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "libs/stb_image/stb_image.h"
-#include <converter.h>
-#include <typed_packed_array.h>
-#include <bits.h>
-#include <color_t.h>
-#include <utils.h>
-#include <lodepng.h>
 #include <exception>
+#include "stb_image/stb_image.h"
+#include "converter.h"
+#include "typed_packed_array.h"
+#include "bits.h"
+#include "color_t.h"
+#include "utils.h"
+#include <lodepng/lodepng.h>
 
 namespace imagium {
 
@@ -15,9 +15,9 @@ namespace imagium {
     public:
         regular_converter()= default;
 
-        result write(byte_array * data, const options & options) const override {
+        result write(byte_array * data, const Config & config) const override {
             int width, height, input_channels=4, bits_depth=8, out_channels=0;
-            bits r_bits=options.r, g_bits=options.g, b_bits=options.b, a_bits=options.a;
+            bits r_bits=config.r, g_bits=config.g, b_bits=config.b, a_bits=config.a;
             out_channels= (r_bits?1:0)+(g_bits?1:0)+(b_bits?1:0)+(a_bits?1:0);
             ubyte * image=nullptr;
             {
@@ -30,7 +30,7 @@ namespace imagium {
             {
                 auto bits_needed= infer_power_of_2_bits_needed_from_bits(r_bits+g_bits+b_bits+a_bits);
                 uint how_many= width*height;
-                if(!options.pack_channels) {
+                if(!config.pack_channels) {
                     bits_needed=std::max<bits>({r_bits, g_bits, b_bits, a_bits});
                     // round to next byte storage unit, this is important, so the packing
                     // array will not compress
@@ -47,7 +47,7 @@ namespace imagium {
                 uint a=convert_channel(image[jx+3], bits_depth, a_bits);
                 color_t color{r, g, b, a, r_bits, g_bits, b_bits, a_bits};
 
-                if(options.pack_channels) {
+                if(config.pack_channels) {
                     uint64_t val=pack_bits_in_number(color);
                     array->write(ix, val);
                 } else {
@@ -61,9 +61,9 @@ namespace imagium {
             }
 
             const str include_str= "#include <cstdint>\n\n// this file was created by Imagium CLI \n\n";
-            const str rendered_string= array->toString(options.output_name);
+            const str rendered_string= array->toString(config.output_name);
             const str comment= generate_comment(width, height, array->bits_per_element(), array->bits_per_storage_type(),
-                                                r_bits, g_bits, b_bits, a_bits, options.pack_channels);
+                                                r_bits, g_bits, b_bits, a_bits, config.pack_channels);
             const str result_string= include_str + comment + "\n" + rendered_string;
             byte_array result_array {result_string.begin(), result_string.end()};
             uint bytes=(array->storageCount() * array->bits_per_storage_type())/8;

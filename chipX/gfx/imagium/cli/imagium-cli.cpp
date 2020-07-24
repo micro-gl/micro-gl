@@ -1,11 +1,15 @@
-#include <Imagium.h>
 #include <iostream>
+#include <imagium/Imagium.h>
+#include <imagium/Config.h>
+#include "bundle.h"
+#include "options.h"
+
 using namespace imagium;
 
 #define DEBUG 0
 
 const char* info =R"foo(usage:
-  imagium [image file] [options]
+  imagium <image file> [options]
 
 description:
   imagium reshapes images and exports them into software arrays, so you can
@@ -31,6 +35,9 @@ options include:
 example:
   imagium foo.png -rgba 5-6-5
   imagium foo_with_16_color_palette.png -rgba 5-6-5 -indexed
+
+Author:
+  Tomer Shalev (tomer.shalev@gmail.com)
 )foo";
 
 
@@ -41,7 +48,6 @@ int main(int argc, char *argv[]) {
         {"rgba", "2|0|0|0"},
 //        {"rgba", "5|6|5|0"},
 //        {"rgba", "5|2|2"},
-        {"unpack", ""},
 //        {"converter", "png_palette_converter"},
         {"o", "hello"},
     }};
@@ -70,19 +76,19 @@ int main(int argc, char *argv[]) {
     try {
         std::cout << "Imagium CLI" << std::endl;
         imagium::Imagium lib{};
-        imagium::options options{bundle_};
-        auto * data=imagium::loadFileAsByteArray(options.files_path);
-        auto result = lib.produce(data, options);
+        options options{bundle_};
+        auto * data=loadFileAsByteArray(options.files_path);
+        auto result = lib.produce(data, options.config);
         str test(reinterpret_cast<char *>(result.data.data()),
                 result.data.size());
-        std::ofstream out(options.output_name + ".h");
+        std::ofstream out(options.config.output_name + ".h");
         out << test;
         out.close();
-        std::cout << "created :: " << options.output_name << ".h, "
+        std::cout << "    created :: " << options.config.output_name << ".h, "
                   << result.size_bytes/1024 << "kb" << std::endl;
     }
     catch (const std::exception& e){
-        std::cout << "Imagium error: " + str{e.what()} << std::endl;
+        std::cout << "    Imagium error: " + str{e.what()} << std::endl;
         return 1;
     }
 

@@ -1,4 +1,4 @@
-#include <bits.h>
+#include "bits.h"
 
 namespace imagium {
     channel convert_channel(channel val, bits bits_from, bits bits_to) {

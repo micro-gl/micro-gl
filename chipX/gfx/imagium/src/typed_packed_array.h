@@ -1,10 +1,11 @@
 #pragma once
 
-#include <addressable_ram.h>
-#include <bits.h>
-#include <utils.h>
 #include <cmath>
 #include <exception>
+
+#include "addressable_ram.h"
+#include "bits.h"
+#include "utils.h"
 
 namespace imagium {
     
