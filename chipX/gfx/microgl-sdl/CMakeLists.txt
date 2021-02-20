@@ -1,27 +1,35 @@
 cmake_minimum_required(VERSION 3.12)
 project(microgl-sdl)
+message(\n===========\n${PROJECT_NAME} \n===========\n)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS_RELEASE "-fno-rtti -fno-exceptions -fstrict-aliasing -O3 -s -flto -Wstrict-aliasing -fno-math-errno -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
+set(CMAKE_CXX_FLAGS_RELEASE "-fno-rtti -fno-exceptions \
+                            -fstrict-aliasing -O3 -s -flto \
+                            -Wstrict-aliasing -fno-math-errno \
+                            -ffast-math -fno-threadsafe-statics \
+                            -Wno-unused-parameter")
+
 #set(CMAKE_C_COMPILER "gcc-4.2")
 set(CMAKE_CXX_COMPILER "/usr/bin/g++")
 
 message("using compiler: ${CMAKE_CXX_COMPILER_ID}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-# I added FindSDL2.cmake module so it can find sdl2 in a platform agnostic manner
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+#INCLUDE(FindPkgConfig)
+#PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
 
 find_package(SDL2 REQUIRED)
-#find_package(OpenGL REQUIRED)
-
-# link against these shared libraries
 set(libs ${SDL2_LIBRARY})
 
-#include SDL2 headers and OpenGL Headers
-include_directories(${SDL2_INCLUDE_DIR})
+message("using sdl2: ${SDL2_LIBRARIES}")
+message("using sdl2: ${SDL2_LIBRARY}")
+message("using sdl2: ${SDL2_INCLUDE_DIR}")
+message("using sdl2: ${SDL2_INCLUDE_DIRS}")
 
+#include SDL2 headers and OpenGL Headers
+include_directories("${SDL2_INCLUDE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/src")
 include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
@@ -78,7 +86,8 @@ set(SOURCES
 #        main_draw_bitmap_indexed_palette.cpp
 #        main_lut.cpp
         libs/stb_image/stb_image.cpp
-        src/Resources.cpp data/packed_4.h)
+        src/Resources.cpp
+        )
 
 add_executable(${PROJECT_NAME}
                ${SOURCES}
