@@ -3,6 +3,7 @@
 #include <microgl/buffer.h>
 #include <microgl/crpt.h>
 #include <microgl/PixelCoder.h>
+#include <cstdint>
 
 template <typename IMPL, typename CODER, typename buffer_element_type=typename CODER::Pixel>
 class base_bitmap : public crpt<IMPL> {

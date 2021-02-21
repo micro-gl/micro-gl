@@ -49,7 +49,7 @@ public:
      * asset folder path
      *
      */
-    std::string & getAssetFolder();
+    const std::string & getAssetFolder() const;
 
     /**
      * load an image from path
@@ -59,7 +59,7 @@ public:
      *
      * @return  image_info_t instance
      */
-    image_info_t loadImageFromCompressedPath(const std::string &path, const std::string &name = "");
+    image_info_t loadImageFromCompressedPath(const std::string &path, const std::string &name = "") const;
 
     /**
      * load an image from raw byte array of memory (decode PNG)
@@ -70,7 +70,7 @@ public:
      *
      * @return  image_info_t instance
      */
-    image_info_t loadImageFromCompressedMemory(unsigned char *byte_array, unsigned int length_bytes, const std::string & name);
+    image_info_t loadImageFromCompressedMemory(unsigned char *byte_array, unsigned int length_bytes, const std::string & name) const;
 
     /**
      * load a file from disk as a byte array
@@ -79,7 +79,7 @@ public:
      *
      * @return a vector as a byte array
      */
-    std::vector<unsigned char> * loadFileAsByteArray(const std::string &file_name);
+    std::vector<unsigned char> * loadFileAsByteArray(const std::string &file_name) const;
 
 
 
@@ -96,7 +96,9 @@ public:
     void loadXML(const std::string &file_name, rapidxml::xml_document<> & doc);
 
     template<typename BITMAP>
-    void loadFont(const std::string &name, microgl::text::bitmap_font<BITMAP> &font) {
+    microgl::text::bitmap_font<BITMAP> loadFont(const std::string &name) {
+        microgl::text::bitmap_font<BITMAP> font;
+        stbi_set_flip_vertically_on_load(false);
         rapidxml::xml_document<> d;
         loadXML("fonts/"+name+"/font.fnt", d);
         auto * f= d.first_node("font");
@@ -127,6 +129,8 @@ public:
         auto img_font = loadImageFromCompressedPath("fonts/"+name+"/font.png");
         auto *bmp_font = new BITMAP(img_font.data, img_font.width, img_font.height);
         font._bitmap=bmp_font;
+        stbi_set_flip_vertically_on_load(true);
+        return font;
     }
 protected:
 

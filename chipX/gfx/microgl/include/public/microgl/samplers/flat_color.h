@@ -1,5 +1,4 @@
 #pragma once
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
 
 #include <microgl/sampler.h>
 

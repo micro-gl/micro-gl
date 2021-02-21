@@ -3,7 +3,7 @@
 #include <iostream>
 #include <chrono>
 #include "src/Resources.h"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <microgl/buffer.h>
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>

@@ -283,7 +283,7 @@ public:
 
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias, bool perspective_correct, bool depth_buffer_flag=false,
-            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type=nullptr_t >
+            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type=std::nullptr_t >
     void drawTriangles(shader_base<impl, vertex_attr, varying, number> &shader,
                        int viewport_width, int viewport_height,
                        const vertex_attr *vertex_buffer,
@@ -309,8 +309,7 @@ public:
                                 opacity_t opacity=255);
 
     // single triangles, includes shader based and one very fast fixed pipeline for color and textures
-    template<typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::FastSourceOverOnOpaque, typename number=float>
+    template<typename number=float>
     void drawTriangleWireframe(const color_t &color,
                                const vec2<number> &p0,
                                const vec2<number> &p1,
@@ -342,7 +341,7 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::None<>,
             bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
-            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type=nullptr_t >
+            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type=std::nullptr_t >
     void drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
                       int viewport_width, int viewport_height,
                       vertex_attr v0, vertex_attr v1, vertex_attr v2,
@@ -354,7 +353,7 @@ private:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::None<>,
             bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
-            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type=nullptr_t >
+            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type=std::nullptr_t >
     void drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
                                            int viewport_width, int viewport_height,
                                            const vec4<number> &p0, const vec4<number> &p1, const vec4<number> &p2,

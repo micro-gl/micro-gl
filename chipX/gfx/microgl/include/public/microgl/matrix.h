@@ -1,5 +1,7 @@
 #pragma once
 
+#include <initializer_list>
+
 namespace microgl {
     // this is a column major matrix
     template <typename number, unsigned W, unsigned H>

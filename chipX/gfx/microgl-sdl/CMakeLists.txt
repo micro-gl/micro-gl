@@ -1,100 +1,89 @@
 cmake_minimum_required(VERSION 3.12)
-project(microgl-sdl)
+project(microgl-sdl-examples)
 message(\n===========\n${PROJECT_NAME} \n===========\n)
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG  "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE "-fno-rtti -fno-exceptions \
                             -fstrict-aliasing -O3 -s -flto \
                             -Wstrict-aliasing -fno-math-errno \
                             -ffast-math -fno-threadsafe-statics \
-                            -Wno-unused-parameter")
-
-#set(CMAKE_C_COMPILER "gcc-4.2")
-set(CMAKE_CXX_COMPILER "/usr/bin/g++")
+                            ")
 
 message("using compiler: ${CMAKE_CXX_COMPILER_ID}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-#INCLUDE(FindPkgConfig)
-#PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
-
 find_package(SDL2 REQUIRED)
 set(libs ${SDL2_LIBRARY})
 
-message("using sdl2: ${SDL2_LIBRARIES}")
-message("using sdl2: ${SDL2_LIBRARY}")
-message("using sdl2: ${SDL2_INCLUDE_DIR}")
-message("using sdl2: ${SDL2_INCLUDE_DIRS}")
-
-#include SDL2 headers and OpenGL Headers
-include_directories("${SDL2_INCLUDE_DIR}")
-include_directories("${PROJECT_SOURCE_DIR}")
-include_directories("${PROJECT_SOURCE_DIR}/src")
-include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
-include_directories("${PROJECT_BINARY_DIR}")
-
 set(SOURCES
-#        main_draw_blocks_3d_raster.cpp
-#        main_draw_blocks_rouned_quads.cpp
-#        main_draw_blocks_masks.cpp
-#        main_draw_blocks_quads.cpp
-#        main_draw_blocks_patch.cpp
-#        main_compositing.cpp
-#        main_blend_modes.cpp
-#        main_draw_triangle.cpp
-#        main_draw_rect.cpp
-#        main_draw_quadrilaterals.cpp
-#        main_draw_polygon_sampler.cpp
-#        main_draw_bezier_patch.cpp
-#        main_draw_rounded_rectangle.cpp
-#        main_draw_circles.cpp
-#        main_draw_masks.cpp
-#        main_clear.cpp
-#        main_draw_quad_aa_sub_pixel_experiment.cpp
-#        main_draw_sampler_texture_wrap.cpp
-#        main_draw_sampler_texture.cpp
-#        main_draw_sampler_radial_gradient.cpp
-#        main_draw_sampler_line_gradient.cpp
-#        main_draw_sampler_angular_linear_gradient.cpp
-#        main_draw_sampler_axial_gradient.cpp
-#        main_draw_sampler_gradient_2_colors_fast.cpp
-#        main_draw_sampler_flat_color.cpp
-#        main_matrix_transforms.cpp
-#        main_draw_triangles_matrix_transforms.cpp
-#        main_draw_shaders_2d.cpp
-#        main_draw_shaders_3d.cpp
-#        main_draw_z_buffer.cpp
-#        main_3d_pipeline.cpp
-#        main_3d_camera.cpp
-#        main_bentley_ottmann.cpp
-#        main_complex_to_simple_polygon.cpp
-#        main_complex_to_simple_comps_tree.cpp
-#        main_ear_clipping.cpp
-#        main_monotone_polygon_triangulation.cpp
-#        main_fan_triangulation.cpp
-#        main_complex_to_planar_subdivision.cpp
-#        main_stroke_tessellation.cpp
-#        main_stroke_dash_tessellation.cpp
-#        main_elliptic_arc_divider.cpp
-#        main_path.cpp
-#        main_q_sort.cpp
-#        main_avl_tree.cpp
-#        main_draw_bitmap_fonts.cpp
-        main_draw_bitmap_packed.cpp
-#        main_draw_bitmap_indexed_palette.cpp
-#        main_lut.cpp
-        libs/stb_image/stb_image.cpp
-        src/Resources.cpp
+        example_draw_blocks_3d_raster.cpp
+        example_draw_blocks_rouned_quads.cpp
+        example_draw_blocks_masks.cpp
+        example_draw_blocks_quads.cpp
+        example_draw_blocks_patch.cpp
+        example_compositing.cpp
+        example_blend_modes.cpp
+        example_draw_triangle.cpp
+        example_draw_rect.cpp
+        example_draw_quadrilaterals.cpp
+        example_draw_polygon_sampler.cpp
+        example_draw_bezier_patch.cpp
+        example_draw_rounded_rectangle.cpp
+        example_draw_circles.cpp
+        example_draw_masks.cpp
+        example_clear.cpp
+        example_draw_quad_aa_sub_pixel_experiment.cpp
+        example_draw_sampler_texture_wrap.cpp
+        example_draw_sampler_texture.cpp
+        example_draw_sampler_radial_gradient.cpp
+        example_draw_sampler_line_gradient.cpp
+        example_draw_sampler_angular_linear_gradient.cpp
+        example_draw_sampler_axial_gradient.cpp
+        example_draw_sampler_gradient_2_colors_fast.cpp
+        example_draw_sampler_flat_color.cpp
+        example_matrix_transforms.cpp
+        example_draw_triangles_matrix_transforms.cpp
+        example_draw_shaders_2d.cpp
+        example_draw_shaders_3d.cpp
+        example_draw_z_buffer.cpp
+        example_3d_pipeline.cpp
+        example_3d_camera.cpp
+        example_bentley_ottmann.cpp
+        example_ear_clipping.cpp
+        example_monotone_polygon_triangulation.cpp
+        example_fan_triangulation.cpp
+        example_complex_to_planar_subdivision.cpp
+        example_stroke_tessellation.cpp
+        example_stroke_dash_tessellation.cpp
+        example_elliptic_arc_divider.cpp
+        example_path.cpp
+        example_q_sort.cpp
+        example_avl_tree.cpp
+        example_draw_bitmap_fonts.cpp
+        example_draw_bitmap_packed.cpp
+        example_draw_bitmap_indexed_palette.cpp
+        example_lut.cpp
         )
 
-add_executable(${PROJECT_NAME}
-               ${SOURCES}
-                )
+set(SOURCES_SHARED
+        libs/stb_image/stb_image.cpp
+        src/Resources.cpp
+        src/example.cpp src/example.h)
 
-target_link_libraries(${PROJECT_NAME} ${libs} microgl)
-
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND
-        ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets
-        $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets)
+foreach( testsourcefile ${SOURCES} )
+    # I used a simple string replace, to cut off .cpp.
+    string( REPLACE ".cpp" "" testname ${testsourcefile} )
+    include_directories("${SDL2_INCLUDE_DIR}")
+    include_directories("${PROJECT_SOURCE_DIR}")
+    include_directories("${PROJECT_SOURCE_DIR}/src")
+    include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
+    include_directories("${PROJECT_BINARY_DIR}")
+    add_executable( ${testname} ${testsourcefile} ${SOURCES_SHARED} )
+    # Make sure YourLib is linked to each app
+    target_link_libraries( ${testname} ${libs} microgl )
+    add_custom_command(TARGET ${testname} POST_BUILD COMMAND
+            ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets
+            $<TARGET_FILE_DIR:${testname}>/assets)
+endforeach( testsourcefile ${SOURCES} )

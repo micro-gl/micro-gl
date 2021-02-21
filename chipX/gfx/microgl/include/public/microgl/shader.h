@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
 #pragma once
 
 #include <microgl/crpt.h>
@@ -41,4 +39,3 @@ namespace microgl {
     }
 
 }
-#pragma clang diagnostic pop

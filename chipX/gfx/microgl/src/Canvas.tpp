@@ -608,7 +608,7 @@ void Canvas<BITMAP, options>::drawTrianglesWireframe(const color_t &color,
 }
 
 template<typename BITMAP, uint8_t options>
-template<typename BlendMode, typename PorterDuff, typename number>
+template<typename number>
 void Canvas<BITMAP, options>::drawTriangleWireframe(const color_t &color,
                                              const vec2<number> &p0,
                                              const vec2<number> &p1,
@@ -1397,7 +1397,7 @@ void Canvas<BITMAP, options>::drawBezierPatch(const sampling::sampler<S> & sampl
                p2.x, p2.y, v_a[second_index + I_U], v_a[second_index + I_V],
                p3.x, p3.y, v_a[third_index + I_U],  v_a[third_index + I_V], opacity); //even = !even;
         if(debug)
-            drawTriangleWireframe({0,0,0,255},
+            drawTriangleWireframe<number1>(color_t{0,0,0,255},
                                   {v_a[first_index + I_X], v_a[first_index + I_Y]},
                                   {v_a[second_index + I_X], v_a[second_index + I_Y]},
                                   {v_a[third_index + I_X], v_a[third_index + I_Y]});
@@ -1485,7 +1485,7 @@ void Canvas<BITMAP, options>::drawText(const char * text, microgl::text::bitmap_
                                        int left, int top, int right, int bottom, bool frame,
                                        opacity_t opacity) {
     rect old=clipRect(); updateClipRect(left, top, right, bottom);
-//    microgl::sampling::texture<BITMAP, sampling::texture_filter::NearestNeighboor> texture{font._bitmap};
+//    microgl::sampling::texture<BITMAP_FONT_TYPE, sampling::texture_filter::NearestNeighboor> texture{font._bitmap};
 //    drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(texture,0,0, font._bitmap->width(), font._bitmap->height());return;
     unsigned int text_size=0;
     { const char * iter=text; while(*iter++!= '\0' && ++text_size); }
@@ -1527,6 +1527,7 @@ void Canvas<BITMAP, options>::drawText(const char * text, microgl::text::bitmap_
                 for (int x = b_r.left; x < b_r.right; ++x) {
                     font._bitmap->decode(c.x + x-b_r.left, (c.y + y-b_r.top), font_col);
                     blendColor(font_col, x, y, opacity);
+//                    blendColor({255,0,0,128}, x, y, opacity);
                 }
             }
         }

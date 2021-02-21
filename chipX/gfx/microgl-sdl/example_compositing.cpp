@@ -1,7 +1,5 @@
-#include <iostream>
-#include <chrono>
 #include "src/Resources.h"
-#include <SDL2/SDL.h>
+#include "src/example.h"
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
@@ -17,10 +15,6 @@
 #define TEST_ITERATIONS 100
 #define W 640*1
 #define H 480*1
-
-SDL_Window * window;
-SDL_Renderer * renderer;
-SDL_Texture * texture;
 
 using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<Bitmap24>;

@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
 #pragma once
 
 #include <microgl/base_bitmap.h>
@@ -49,5 +47,3 @@ public:
 
 protected:
 };
-
-#pragma clang diagnostic pop

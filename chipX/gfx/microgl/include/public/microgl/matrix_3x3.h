@@ -151,10 +151,6 @@ namespace microgl {
 
         virtual ~matrix_3x3() = default;
 
-        int operator*(char value) const {
-            return 5;
-        };
-
         vec2<number> operator*(const vec2<number>& point) const {
             vec2<number> res;
             const auto & m = (*this);

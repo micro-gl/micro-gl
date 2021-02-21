@@ -2,7 +2,6 @@
 
 #include <initializer_list>
 #include <microgl/dynamic_array.h>
-//#include <microgl/static_array.h>
 
 template<typename T>
 class chunker {

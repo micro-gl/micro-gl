@@ -1,7 +1,7 @@
 
 #include <iostream>
 #include <chrono>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <microgl/color.h>
 #include <microgl/Canvas.h>
 #include <microgl/matrix_4x4.h>
