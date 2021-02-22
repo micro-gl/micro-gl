@@ -1,6 +1,6 @@
 #include <iostream>
 #include <chrono>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
@@ -24,6 +24,7 @@ using index_t = unsigned int;
 using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<Bitmap24>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
+using Texture= sampling::texture<Bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
 
 Canvas24 * canvas;
 // samplers
@@ -32,7 +33,7 @@ linear_gradient_2_colors<false> gradient2Colors{{255,0,255}, {255,0,0}};
 linear_gradient_2_colors<true> gradient2Colors2{{0,0,255}, {0,0,0}};
 flat_color flatColor{{133,133,133, 255}};
 flat_color flatColorRed{{255,0,0, 255}};
-Texture24 tex_1, tex_2;
+Texture tex_1, tex_2;
 
 void loop();
 void init_sdl(int width, int height);
@@ -46,7 +47,7 @@ void test_1() {
             tex_1, gradient2Colors,
             200+0, 200+0,
             150+t, 10, 255
-            );
+    );
     return;
 //t=0.f;
     canvas->drawRoundedRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
@@ -78,17 +79,17 @@ void init_sdl(int width, int height) {
     sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STATIC, width, height);
 
-    auto img_1 = resources.loadImageFromCompressedPath("charsprites.png");
-//    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
-    auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
-//    auto img_2 = resources.loadImageFromCompressedPath("uv_1024.png");
-//    auto img_2 = resources.loadImageFromCompressedPath("pattern1_512.png");
+    auto img_1 = resources.loadImageFromCompressedPath("images/charsprites.png");
+//    auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
+    auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
+//    auto img_2 = resources.loadImageFromCompressedPath("images/uv_1024.png");
+//    auto img_2 = resources.loadImageFromCompressedPath("images/pattern1_512.png");
 
-    auto bmp_1 = new Bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
     auto bmp_2 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
 
-    tex_1.updateBitmap(bmp_1->convertToBitmap<coder::RGB888_PACKED_32>());
-    tex_2.updateBitmap(bmp_2->convertToBitmap<coder::RGB888_PACKED_32>());
+//    tex_1.updateBitmap(bmp_1->convertToBitmap<coder::RGB888_PACKED_32>());
+    tex_1.updateBitmap(new Bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height));
+//    tex_2.updateBitmap(bmp_2->convertToBitmap<coder::RGB888_PACKED_32>());
 
     gradient.addStop(0.0f, {255,0,0});
     gradient.addStop(0.45f, {255,0,0});

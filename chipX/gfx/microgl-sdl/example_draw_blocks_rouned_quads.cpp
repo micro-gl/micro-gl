@@ -1,6 +1,6 @@
 #include <iostream>
 #include <chrono>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "src/Resources.h"
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
@@ -52,7 +52,7 @@ void render_blocks() {
         for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
             canvas->updateCanvasWindow(ix, iy, bitmap);
             canvas->clear({255,255,255,255});
-            canvas->drawRoundedQuad<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
+            canvas->drawRoundedRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
                     tex_uv,
                     color_grey,
                     10+t, 10+t, 400+t, 400+t, 10, 1);
@@ -88,7 +88,7 @@ void init_sdl(int width, int height) {
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED,
             SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
+    auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
     auto bmp_uv_U8 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
     canvas = new Canvas24(width, height);

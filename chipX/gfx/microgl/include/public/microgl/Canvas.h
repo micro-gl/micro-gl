@@ -92,8 +92,8 @@ public:
     static constexpr bool options_use_division() { return options&CANVAS_OPT_2d_raster_USE_DIVISION; }
 
     struct render_options_t {
-        uint8_t _2d_raster_bits_sub_pixel= options_big_integers() ? 8 : 0;
-        uint8_t _2d_raster_bits_uv= options_big_integers() ? 15 : 10;
+        uint8_t _2d_raster_bits_sub_pixel= options_big_integers() ? 8 : 2;
+        uint8_t _2d_raster_bits_uv= options_big_integers() ? 15 : 9;
         uint8_t _3d_raster_bits_sub_pixel= options_big_integers() ? 8 : 0;
         uint8_t _3d_raster_bits_w= options_big_integers() ? 15 : 12;
     };
@@ -283,7 +283,7 @@ public:
 
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias, bool perspective_correct, bool depth_buffer_flag=false,
-            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type=std::nullptr_t >
+            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type >
     void drawTriangles(shader_base<impl, vertex_attr, varying, number> &shader,
                        int viewport_width, int viewport_height,
                        const vertex_attr *vertex_buffer,

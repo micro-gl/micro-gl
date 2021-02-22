@@ -1,6 +1,6 @@
 #include <iostream>
 #include <chrono>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "src/Resources.h"
 #include <microgl/camera.h>
 #include <microgl/Canvas.h>

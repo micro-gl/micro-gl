@@ -1,9 +1,10 @@
 #include <iostream>
 #include <chrono>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "src/Resources.h"
 #include <microgl/Canvas.h>
 #include <microgl/camera.h>
+#include <microgl/z_buffer.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/texture.h>
@@ -38,8 +39,8 @@ float t=0;
  */
 float z=0;
 
-template <typename number>
-void render_block(int block_x, int block_y, Bitmap24 *bmp, long long * z_buffer, const model_3d<number> & object) {
+template <typename number, typename z_buffer_type>
+void render_block(int block_x, int block_y, Bitmap24 *bmp, z_buffer_type * depth_buffer, const model_3d<number> & object) {
     using l64= long long;
     using vertex = vec3<number>;
     using camera = microgl::camera<number>;
@@ -77,8 +78,7 @@ void render_block(int block_x, int block_y, Bitmap24 *bmp, long long * z_buffer,
     }
 
     // clear z-buffer
-    for (int zx = 0; zx < canvas->width() * canvas->height(); ++zx)
-        z_buffer[zx]=(l64(1)<<62);
+    depth_buffer->clear();
 
     canvas->updateCanvasWindow(block_x, block_y, bmp);
     // draw model_1
@@ -89,7 +89,7 @@ void render_block(int block_x, int block_y, Bitmap24 *bmp, long long * z_buffer,
             object.indices.size(),
             object.type,
             triangles::face_culling::ccw,
-            z_buffer);
+            depth_buffer);
 
 //    return;
     // draw model_2
@@ -101,14 +101,12 @@ void render_block(int block_x, int block_y, Bitmap24 *bmp, long long * z_buffer,
             object.indices.size(),
             object.type,
             triangles::face_culling::ccw,
-            z_buffer);
+            depth_buffer);
 }
 
 
 template <typename number>
 void render_blocks() {
-    using ul64=  long long;
-    //t+=0.01;
     auto model = cube_3d<number>;
     bool debug = 1;
     int block_size = W/2;//W/10;//2;//W/13;
@@ -116,7 +114,7 @@ void render_blocks() {
     int count_blocks_vertical = 1+((H-1)/block_size); // with integer ceil rounding
     auto * bitmap = new Bitmap24(block_size, block_size);
     canvas = new Canvas24(bitmap);
-    auto * z_buffer = new ul64[block_size*block_size]{};
+    z_buffer<16> depth_buffer(canvas->width(), canvas->height());
 
     auto * sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
                                            SDL_TEXTUREACCESS_STREAMING, block_size, block_size);
@@ -127,7 +125,7 @@ void render_blocks() {
         for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
             canvas->updateCanvasWindow(ix, iy, bitmap);
             canvas->clear({255,255,255,255});
-            render_block<number>(ix, iy, bitmap, z_buffer, model);
+            render_block<number>(ix, iy, bitmap, &depth_buffer, model);
             SDL_Rect rect_source {0, 0, block_size, block_size};
             SDL_Rect rect_dest {ix, iy, block_size-debug, block_size-debug};
             SDL_UpdateTexture(sdl_texture,
@@ -140,13 +138,12 @@ void render_blocks() {
 
     SDL_RenderPresent(renderer);
     SDL_DestroyTexture(sdl_texture);
-    delete [] z_buffer;
     delete bitmap;
 }
 
 void render() {
     render_blocks<float>();
-    //render_blocks<Q<16>>();
+//    render_blocks<Q<16>>();
 }
 
 int main() {
@@ -160,7 +157,7 @@ void init_sdl(int width, int height) {
     window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED,
             SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
+    auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
     auto bmp_uv_U8 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
 }

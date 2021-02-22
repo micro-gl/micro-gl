@@ -461,7 +461,7 @@ template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff,
         bool antialias, typename number1, typename number2, typename S>
 void Canvas<BITMAP, options>::drawQuadrilateral(const sampling::sampler<S> & sampler,
-                                                const number1 &v0_x, const number1 & v0_y, const number2 & u0, const number2 & v0,
+                                                const number1 & v0_x, const number1 & v0_y, const number2 & u0, const number2 & v0,
                                                 const number1 & v1_x, const number1 & v1_y, const number2 & u1, const number2 & v1,
                                                 const number1 & v2_x, const number1 & v2_y, const number2 & u2, const number2 & v2,
                                                 const number1 & v3_x, const number1 & v3_y, const number2 & u3, const number2 & v3,
@@ -741,8 +741,8 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
                 rint u_fixed = (w0*rint(u2) + w1*rint(u0) + w2*rint(u1));
                 rint v_fixed = (w0*rint(v2) + w1*rint(v0) + w2*rint(v1));
                 if(perspective_correct) {
-                    rint q_fixed = ((w0*rint(q2))>>sub_pixel_precision) +
-                            ((w1*rint(q0))>>sub_pixel_precision) + ((w2*rint(q1))>>sub_pixel_precision);
+                    rint q_fixed = ((w0*rint(q2))>>0) +
+                            ((w1*rint(q0))>>0) + ((w2*rint(q1))>>0);
                     rint q_compressed=q_fixed>>uv_precision; // this would not render with overflow detection
                     if(q_compressed) { // compression has a pitfall of producing zero
                         u_i = rint(u_fixed)/(q_compressed); v_i = rint(v_fixed)/(q_compressed);
@@ -756,10 +756,8 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
                         v_i = rint_big(rint_big(v_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
                     }
                 }
-                if(antialias) {
-                    u_i = functions::clamp<rint>(u_i, 0, (rint(1)<<uv_precision));
-                    v_i = functions::clamp<rint>(v_i, 0, (rint(1)<<uv_precision));
-                }
+                u_i = functions::clamp<rint>(u_i, 0, (rint(1)<<uv_precision));
+                v_i = functions::clamp<rint>(v_i, 0, (rint(1)<<uv_precision));
                 color_t col_bmp;
                 sampler.sample(u_i, v_i, uv_precision, col_bmp);
                 blendColor<BlendMode, PorterDuff>(col_bmp, index + p.x, blend);
@@ -939,7 +937,7 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     // Barycentric coordinates at minX/minY corner
     vec2<int> p = { bbox.left, bbox.top };
     vec2<int> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
-    l64 half= (int(1)<<(sub_pixel_precision))>>1;
+    l64 half= (int(1)<<(sub_pixel_precision))>>1; // todo: remove l64
     p_fixed = p_fixed + vec2<int> {half, half}; // we sample at the center
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,

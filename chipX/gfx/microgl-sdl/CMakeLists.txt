@@ -4,11 +4,12 @@ message(\n===========\n${PROJECT_NAME} \n===========\n)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS_DEBUG  "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS_RELEASE "-fno-rtti -fno-exceptions \
-                            -fstrict-aliasing -O3 -s -flto \
+set(CMAKE_CXX_FLAGS_RELEASE " -fno-rtti -fno-exceptions \
+                            -fstrict-aliasing -O3 -flto \
                             -Wstrict-aliasing -fno-math-errno \
                             -ffast-math -fno-threadsafe-statics \
-                            ")
+                            -fdata-sections -ffunction-sections \
+                            " CACHE INTERNAL "" FORCE)
 
 message("using compiler: ${CMAKE_CXX_COMPILER_ID}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
@@ -34,7 +35,6 @@ set(SOURCES
         example_draw_circles.cpp
         example_draw_masks.cpp
         example_clear.cpp
-        example_draw_quad_aa_sub_pixel_experiment.cpp
         example_draw_sampler_texture_wrap.cpp
         example_draw_sampler_texture.cpp
         example_draw_sampler_radial_gradient.cpp
@@ -45,11 +45,10 @@ set(SOURCES
         example_draw_sampler_flat_color.cpp
         example_matrix_transforms.cpp
         example_draw_triangles_matrix_transforms.cpp
-        example_draw_shaders_2d.cpp
-        example_draw_shaders_3d.cpp
-        example_draw_z_buffer.cpp
-        example_3d_pipeline.cpp
-        example_3d_camera.cpp
+        example_draw_3d_shaders_ortho.cpp
+        example_draw_3d_shaders.cpp
+        example_draw_3d_z_buffer.cpp
+        example_simple_3d_pipeline.cpp
         example_bentley_ottmann.cpp
         example_ear_clipping.cpp
         example_monotone_polygon_triangulation.cpp
@@ -65,12 +64,14 @@ set(SOURCES
         example_draw_bitmap_packed.cpp
         example_draw_bitmap_indexed_palette.cpp
         example_lut.cpp
+        example_draw_transparent.cpp
         )
 
 set(SOURCES_SHARED
         libs/stb_image/stb_image.cpp
         src/Resources.cpp
-        src/example.cpp src/example.h)
+        src/example.cpp src/example.h
+        )
 
 foreach( testsourcefile ${SOURCES} )
     # I used a simple string replace, to cut off .cpp.

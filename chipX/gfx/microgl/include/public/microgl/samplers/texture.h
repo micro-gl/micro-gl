@@ -40,7 +40,7 @@ namespace microgl {
             void updateBorderColor(const color_t & color) {
                 _border_color=color;
             }
-
+            using base::sample;
             inline void sample(const rint u, const rint v,
                                const uint8_t bits,
                                color_t &output) const {

@@ -1,11 +1,12 @@
 #include <iostream>
 #include <chrono>
 #include "src/Resources.h"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <microgl/Canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/color.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
+#include <microgl/pixel_coders/RGBA8888_ARRAY.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/porter_duff/FastSourceOverOnOpaque.h>
 #include <microgl/porter_duff/None.h>
@@ -25,9 +26,11 @@ SDL_Texture * texture;
 using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<Bitmap24>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
+using Texture32= sampling::texture<Bitmap<coder::RGBA8888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
 
 Canvas24 * canvas;
 Texture24 tex_mask, tex_1, tex_2;
+Texture32 tex_0;
 float t=0;
 Resources resources{};
 using namespace microgl::color;
@@ -36,16 +39,17 @@ void init_sdl(int width, int height);
 
 inline void render() {
     //t+=-0.01;
-    canvas->clear({255,255,255,255});
-    canvas->drawRect<blendmode::Normal, porterduff::None<>>(
-            tex_1,
+    canvas->clear({0,255,255,255});
+    canvas->drawRect<blendmode::Multiply<>, porterduff::FastSourceOverOnOpaque>(
+//            tex_1,
+            tex_0,
             t, t, 300.0f, 300.0f,
             255);
 //    canvas->drawRect<blendmode::Normal, porterduff::None>(
 //            color::colors::RED, -0, -0, 300, 300, 255);
-    canvas->drawMask(masks::chrome_mode::red_channel,
-            tex_mask,
-            t, t, 300.0f, 300.0f);
+//    canvas->drawMask(masks::chrome_mode::red_channel,
+//            tex_mask,
+//            t, t, 300.0f, 300.0f);
 
 
 }
@@ -64,14 +68,17 @@ void init_sdl(int width, int height) {
 
     canvas = new Canvas24(width, height);
 
-    auto img_1 = resources.loadImageFromCompressedPath("charsprites.png");
-    auto img_2 = resources.loadImageFromCompressedPath("uv_256.png");
-    auto img_3 = resources.loadImageFromCompressedPath("bw.png");
+    auto img_0 = resources.loadImageFromCompressedPath("images/a.png");
+    auto img_1 = resources.loadImageFromCompressedPath("images/charsprites.png");
+    auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
+    auto img_3 = resources.loadImageFromCompressedPath("images/bw.png");
 //
+    auto *bmp_0_native = new Bitmap<coder::RGBA8888_ARRAY>(img_0.data, img_0.width, img_0.height);
     auto *bmp_1_native = new Bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
     auto *bmp_2_native = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     auto *bmp_3_native = new Bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
 
+    tex_0.updateBitmap(bmp_0_native);
     tex_1.updateBitmap(bmp_1_native->convertToBitmap<coder::RGB888_PACKED_32>());
     tex_2.updateBitmap(bmp_2_native->convertToBitmap<coder::RGB888_PACKED_32>());
     tex_mask.updateBitmap(bmp_3_native->convertToBitmap<coder::RGB888_PACKED_32>());

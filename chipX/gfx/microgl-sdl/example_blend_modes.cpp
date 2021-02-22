@@ -41,7 +41,7 @@ int main() {
     auto * canvas = new Canvas24(W, H);
 
     auto render = [&]() -> void {
-        canvas->clear({128, 255, 255, 255});
+        canvas->clear({0, 255, 255, 255});
         canvas->drawRect<blendmode::Multiply<false>, porterduff::FastSourceOverOnOpaque>(
 //    canvas->drawRect<blendmode::Normal, porterduff::None<true>>(
 //    canvas->drawRect<blendmode::Overlay<false>, porterduff::None<true>>(

@@ -1,6 +1,6 @@
 #include <iostream>
 #include <chrono>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "src/Resources.h"
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
@@ -83,8 +83,9 @@ void init_sdl(int width, int height) {
     renderer = SDL_CreateRenderer(window, -1, 0);
     sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
             SDL_TEXTUREACCESS_STREAMING, width, height);
-    auto img_2 = resources.loadImageFromCompressedPath("uv_512.png");
-    auto img_3 = resources.loadImageFromCompressedPath("bw.png");
+
+    auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
+    auto img_3 = resources.loadImageFromCompressedPath("images/bw.png");
     auto bmp_uv_U8 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     auto bmp_3_native = new Bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
@@ -125,7 +126,6 @@ void loop() {
         }
 //
         render();
-        SDL_RenderPresent(renderer);
     }
 
     SDL_DestroyWindow(window);
