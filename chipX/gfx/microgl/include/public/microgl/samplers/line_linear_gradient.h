@@ -13,7 +13,7 @@ namespace microgl {
          * @tparam number
          * @tparam N
          */
-        template <typename number, unsigned N=10, enum precision $precision=precision::high, bool useBigIntegers=false>
+        template <typename number, unsigned N=10, enum precision $precision=precision::medium, bool useBigIntegers=false>
         class line_linear_gradient : public sampler<line_linear_gradient<number, N, $precision, useBigIntegers>> {
             using base= sampler<line_linear_gradient<number, N, $precision, useBigIntegers>>;
             using rint_big=int64_t;

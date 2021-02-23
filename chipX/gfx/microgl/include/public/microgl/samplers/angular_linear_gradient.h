@@ -1,6 +1,3 @@
-#pragma once
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
-
 #include <microgl/samplers/line_linear_gradient.h>
 
 namespace microgl {
@@ -9,7 +6,7 @@ namespace microgl {
         /**
          * given an angle, compute the gradient line in the [0,1]x[0,1] box.
          */
-        template <typename number, unsigned N=10, enum precision $precision=precision::high, bool useBigIntegers=false>
+        template <typename number, unsigned N=10, enum precision $precision=precision::medium, bool useBigIntegers=false>
         class angular_linear_gradient : public line_linear_gradient<number, N, $precision, useBigIntegers> {
             using base= line_linear_gradient<number, N, $precision, useBigIntegers>;
             using point= vec2<number>;

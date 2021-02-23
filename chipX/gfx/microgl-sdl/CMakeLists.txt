@@ -27,7 +27,6 @@ set(SOURCES
         example_compositing.cpp
         example_blend_modes.cpp
         example_draw_triangle.cpp
-        example_draw_rect.cpp
         example_draw_quadrilaterals.cpp
         example_draw_polygon_sampler.cpp
         example_draw_bezier_patch.cpp
@@ -37,10 +36,10 @@ set(SOURCES
         example_clear.cpp
         example_draw_sampler_texture_wrap.cpp
         example_draw_sampler_texture.cpp
-        example_draw_sampler_radial_gradient.cpp
-        example_draw_sampler_line_gradient.cpp
-        example_draw_sampler_angular_linear_gradient.cpp
-        example_draw_sampler_axial_gradient.cpp
+        example_draw_sampler_gradient_radial.cpp
+        example_draw_sampler_gradient_line.cpp
+        example_draw_sampler_gradient_angular_linear.cpp
+        example_draw_sampler_gradient_axial.cpp
         example_draw_sampler_gradient_2_colors_fast.cpp
         example_draw_sampler_flat_color.cpp
         example_matrix_transforms.cpp
@@ -65,6 +64,8 @@ set(SOURCES
         example_draw_bitmap_indexed_palette.cpp
         example_lut.cpp
         example_draw_transparent.cpp
+        example_draw_rect_axial.cpp
+        example_draw_rect_transform.cpp
         )
 
 set(SOURCES_SHARED

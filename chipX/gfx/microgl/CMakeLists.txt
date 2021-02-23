@@ -14,7 +14,6 @@ set (CMAKE_CXX_STANDARD 11)
 #                            -fno-rtti -flto -Wstrict-aliasing -fno-math-errno\
 #                             -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
 set(sources
-        include/public/microgl/Canvas.h
         src/PixelCoder.cpp
         src/triangles.cpp
         src/qsort.cpp)

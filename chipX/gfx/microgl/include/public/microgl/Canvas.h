@@ -68,12 +68,18 @@ using namespace microgl::shading;
  * please adjust some of the render options bits in the canvas and make sure you
  * render small geometries at a time
  */
-#define CANVAS_OPT_2d_raster_FORCE_32_BIT CANVAS_OPT_2d_raster_USE_DIVISION | \
-                        CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS | CANVAS_OPT_raster_COMPRESS_BITS
+#define CANVAS_OPT_2d_raster_FORCE_32_BIT (CANVAS_OPT_2d_raster_USE_DIVISION | \
+                        CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS | CANVAS_OPT_raster_COMPRESS_BITS)
 /**
  * default preset, includes usage of big integers
  */
-#define CANVAS_OPT_default CANVAS_OPT_2d_raster_USE_BIG_INT | CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS | CANVAS_OPT_raster_COMPRESS_BITS
+#define CANVAS_OPT_2d_raster_FORCE_64_BIT (CANVAS_OPT_2d_raster_USE_BIG_INT | \
+                            CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS | \
+                            CANVAS_OPT_raster_COMPRESS_BITS)
+/**
+ * default preset, includes usage of big integers
+ */
+#define CANVAS_OPT_default CANVAS_OPT_2d_raster_FORCE_64_BIT
 
 template<typename BITMAP, uint8_t options=CANVAS_OPT_default>
 class Canvas {
@@ -93,7 +99,7 @@ public:
 
     struct render_options_t {
         uint8_t _2d_raster_bits_sub_pixel= options_big_integers() ? 8 : 4;
-        uint8_t _2d_raster_bits_uv= options_big_integers() ? 15 : 9;
+        uint8_t _2d_raster_bits_uv= options_big_integers() ? 15 : 10;
         uint8_t _3d_raster_bits_sub_pixel= options_big_integers() ? 8 : 0;
         uint8_t _3d_raster_bits_w= options_big_integers() ? 15 : 12;
     };

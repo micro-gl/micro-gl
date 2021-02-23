@@ -6,7 +6,7 @@
 namespace microgl {
     namespace sampling {
 
-        template <unsigned degree=0, unsigned N=10, enum precision $precision=precision::high, bool useBigIntegers=false>
+        template <unsigned degree=0, unsigned N=10, enum precision $precision=precision::medium, bool useBigIntegers=false>
         class axial_linear_gradient : public sampler<axial_linear_gradient<degree, N, $precision, useBigIntegers>> {
             using base= sampler<axial_linear_gradient<degree, N, $precision, useBigIntegers>>;
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);

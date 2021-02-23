@@ -4,7 +4,7 @@
 #include <microgl/Q.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
-#include <microgl/samplers/linear_gradient_2_colors.h>
+#include <microgl/samplers/axial_linear_gradient.h>
 
 #define TEST_ITERATIONS 100
 #define W 640*1
@@ -20,9 +20,13 @@ int main() {
     using Texture24= sampling::texture<Bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
     Resources resources{};
     auto * canvas = new Canvas24(W, H);;
-    linear_gradient_2_colors<45> gradient{{255,0,0}, {0,0,255}};
+    axial_linear_gradient<45> gradient;
     using number = float;
 //    using number = Q<12>;
+
+    gradient.addStop(0.0f, {255,0,0});
+    gradient.addStop(0.5f, {0,255,0});
+    gradient.addStop(1.f, {0,0,255});
 
     auto render = [&]() -> void {
         static float t = 0;
@@ -32,4 +36,3 @@ int main() {
 
     example_run(canvas, TEST_ITERATIONS, render);
 }
-
