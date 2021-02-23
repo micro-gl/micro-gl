@@ -24,7 +24,6 @@ set(SOURCES
         example_draw_blocks_masks.cpp
         example_draw_blocks_quads.cpp
         example_draw_blocks_patch.cpp
-        example_compositing.cpp
         example_blend_modes.cpp
         example_draw_triangle.cpp
         example_draw_quadrilaterals.cpp
@@ -43,15 +42,15 @@ set(SOURCES
         example_draw_sampler_gradient_2_colors_fast.cpp
         example_draw_sampler_flat_color.cpp
         example_draw_triangles_matrix_transforms.cpp
-        example_draw_3d_shaders_ortho.cpp
-        example_draw_3d_shaders.cpp
-        example_3d_z_buffer.cpp
+        example_3d_single_triangle_shaders_with_ortho.cpp
+        example_3d_shaders_flat_color.cpp
+        example_3d_sampler_shader_and_z_buffer.cpp
         example_3d_simple_pipeline.cpp
         example_bentley_ottmann.cpp
         example_geometry_ear_clipping.cpp
         example_geometry_monotone_triangulation.cpp
         example_geometry_fan_triangulation.cpp
-        example_complex_to_planar_subdivision.cpp
+        example_geometry_complex_to_planar_subdivision.cpp
         example_geometry_stroke_tessellation.cpp
         example_geometry_stroke_dash_tessellation.cpp
         example_geometry_elliptic_arc_divider.cpp
@@ -65,6 +64,7 @@ set(SOURCES
         example_draw_transparent.cpp
         example_draw_rect_axial.cpp
         example_draw_rect_transform.cpp
+        example_3d_shader_color.cpp
         )
 
 set(SOURCES_SHARED

@@ -642,8 +642,10 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
         functions::swap(u1, u2); functions::swap(v1, v2);
         functions::swap(q1, q2); functions::swap(aa_first_edge, aa_third_edge);
     }
-    const auto area = area_;
-    const auto area_c = area>>sub_pixel_precision;
+    const rint area = area_;
+    const rint area_c = area>>sub_pixel_precision;
+    if(area_c==0) return;
+
     precision bits_used_area=microgl::functions::used_integer_bits(area);
     precision bits_used_max_uv=
             microgl::functions::used_integer_bits(
@@ -745,7 +747,7 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
                 rint u_fixed = (w0_c*rint(u2)) + (w1_c*rint(u0)) + (w2_c*rint(u1));
                 rint v_fixed = (w0_c*rint(v2)) + (w1_c*rint(v0)) + (w2_c*rint(v1));
                 if(perspective_correct) {
-                    rint_big q_fixed = (w0_c*rint(q2)) +
+                    rint q_fixed = (w0_c*rint(q2)) +
                                    (w1_c*rint(q0)) + (w2_c*rint(q1));
                     rint q_compressed=q_fixed>>uv_precision; // this would not render with overflow detection
                     if(q_compressed) { // compression has a pitfall of producing zero
@@ -753,9 +755,14 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
                     }
                 } else {
                     if(divide) { // division is stabler and is un-avoidable most of the time for pure 32 bit mode
-                        u_i = (u_fixed)/area_c; v_i = (v_fixed)/area_c;
+                        rint aaa = w0_c+w1_c+w2_c;
+                        if(aaa){
+                            u_i = (u_fixed)/aaa; v_i = (v_fixed)/aaa;
+                        }
                     } else { // we use a temporary 64 bit and one_area to mimic division, this is FASTER even in 32 bits mode.
 //                        u_fixed=u_fixed>>sub_pixel_precision;v_fixed=v_fixed>>sub_pixel_precision; // compress the bits, still is fine
+                        rint_big u_fixed = rint_big(rint_big(w0)*rint_big(u2) + rint_big(w1)*rint_big(u0)+rint_big(w2)*rint_big(u1) )>>pp;
+                        rint_big v_fixed = rint_big(rint_big(w0)*rint_big(v2) + rint_big(w1)*rint_big(v0)+rint_big(w2)*rint_big(v1) )>>pp;
                         u_i = rint_big(rint_big(u_fixed)*rint_big(one_area))>>(LL-pp);
                         v_i = rint_big(rint_big(v_fixed)*rint_big(one_area))>>(LL-pp);
                     }

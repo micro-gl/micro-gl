@@ -31,12 +31,12 @@ namespace microgl {
         template<typename number>
         class color_shader : public shader_base<color_shader<number>, color_shader_vertex_attributes<number>, color_shader_varying<number>, number> {
         public:
-            matrix_4x4<number> mat;
+            matrix_4x4<number> matrix;
 
             inline vec4<number>
             vertex(const color_shader_vertex_attributes<number> &attributes, color_shader_varying<number> &output) {
                 output.color = attributes.color;
-                auto result= mat * vec4<number>{attributes.point};
+                auto result= matrix * vec4<number>{attributes.point};
                 return result;
             }
 

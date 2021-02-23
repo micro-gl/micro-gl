@@ -24,7 +24,6 @@
 #include <microgl/tesselation/bezier_patch_tesselator.h>
 #include <microgl/cohen_sutherland_clipper.h>
 #include <microgl/homo_triangle_clipper.h>
-#include <microgl/z_buffer.h>
 #include <microgl/functions/minmax.h>
 #include <microgl/functions/clamp.h>
 #include <microgl/functions/swap.h>
@@ -75,7 +74,7 @@ using namespace microgl::shading;
  */
 #define CANVAS_OPT_2d_raster_FORCE_64_BIT (CANVAS_OPT_2d_raster_USE_BIG_INT | \
                             CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS | \
-                            CANVAS_OPT_raster_COMPRESS_BITS)
+                            CANVAS_OPT_raster_COMPRESS_BITS )
 /**
  * default preset, includes usage of big integers
  */
@@ -347,7 +346,7 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::None<>,
             bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
-            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type=std::nullptr_t >
+            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type >
     void drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
                       int viewport_width, int viewport_height,
                       vertex_attr v0, vertex_attr v1, vertex_attr v2,
@@ -359,7 +358,7 @@ private:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::None<>,
             bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
-            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type=std::nullptr_t >
+            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type >
     void drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
                                            int viewport_width, int viewport_height,
                                            const vec4<number> &p0, const vec4<number> &p1, const vec4<number> &p2,

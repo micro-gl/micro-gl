@@ -42,7 +42,7 @@ int main() {
                                    {0,1,0});
         mat4 projection = camera::perspective(math::deg_to_rad(60),
                                               canvas_width, canvas_height, 1, 500);
-//        mat4 projection = camera::perspective(-1,1,-1,1,1,10000);
+        //mat4 projection = camera::perspective(-1,1,-1,1,1,10000);
         mat4 mvp = projection * view * model;
         canvas.clear({255,255,255,255});
         microgl::_3d::pipeline<number, decltype(canvas)>::render (
