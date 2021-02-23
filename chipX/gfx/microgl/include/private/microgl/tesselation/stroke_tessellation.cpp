@@ -147,7 +147,7 @@ namespace microgl {
             poly_inter_result result{};
             vertex result_inter;
             number alpha;
-            // test_texture left walls
+            // left walls
             auto status= finite_segment_intersection_test(a.left, a.top, b.left, b.top,
                                                           result_inter, alpha, alpha);
             if(status==intersection_status::parallel) {
@@ -176,17 +176,20 @@ namespace microgl {
         void b1_(dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
                 const dynamic_array<index> &output_indices){
             if(boundary_buffer && output_indices.size()>=3)
-                boundary_buffer->push_back(triangles::create_boundary_info(false, false, false));
+                boundary_buffer->push_back(triangles::create_boundary_info(
+                        false, false, false));
         }
         void b2_(dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
                 const dynamic_array<index> &output_indices){
             if(boundary_buffer && output_indices.size()>=3)
-                boundary_buffer->push_back(triangles::create_boundary_info(false, false, true));
+                boundary_buffer->push_back(triangles::create_boundary_info(
+                        false, false, true));
         }
         void b3_(dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
                 const dynamic_array<index> &output_indices){
             if(boundary_buffer && output_indices.size()>=3)
-                boundary_buffer->push_back(triangles::create_boundary_info(true, false, true));
+                boundary_buffer->push_back(triangles::create_boundary_info(
+                        true, false, true));
         }
         void reinforce_(dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
                        dynamic_array<index> &output_indices){

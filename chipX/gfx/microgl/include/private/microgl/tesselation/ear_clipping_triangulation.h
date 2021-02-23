@@ -12,6 +12,7 @@ namespace microgl {
         using index = unsigned int;
 
         /**
+         * todo:: add templating on container so others can use vector<> for example
          *
          * 1. we make this O(n^2) by pre computing if a vertex is an ear, and every time we remove
          *    an ear, only recompute for it's two adjacent vertices.

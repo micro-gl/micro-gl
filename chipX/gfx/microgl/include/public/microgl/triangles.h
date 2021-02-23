@@ -79,7 +79,7 @@ namespace microgl {
         void iterate_triangles(const index *indices,
                                const index &size,
                                const enum triangles::indices &type,
-                               const iterator_callback && callback) {
+                               const iterator_callback & callback) {
 #define IND(a) ((indices) ? indices[(a)] : (a))
             switch (type) {
                 case indices::TRIANGLES:

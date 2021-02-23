@@ -42,21 +42,20 @@ set(SOURCES
         example_draw_sampler_gradient_axial.cpp
         example_draw_sampler_gradient_2_colors_fast.cpp
         example_draw_sampler_flat_color.cpp
-        example_matrix_transforms.cpp
         example_draw_triangles_matrix_transforms.cpp
         example_draw_3d_shaders_ortho.cpp
         example_draw_3d_shaders.cpp
-        example_draw_3d_z_buffer.cpp
-        example_simple_3d_pipeline.cpp
+        example_3d_z_buffer.cpp
+        example_3d_simple_pipeline.cpp
         example_bentley_ottmann.cpp
-        example_ear_clipping.cpp
-        example_monotone_polygon_triangulation.cpp
-        example_fan_triangulation.cpp
+        example_geometry_ear_clipping.cpp
+        example_geometry_monotone_triangulation.cpp
+        example_geometry_fan_triangulation.cpp
         example_complex_to_planar_subdivision.cpp
-        example_stroke_tessellation.cpp
-        example_stroke_dash_tessellation.cpp
-        example_elliptic_arc_divider.cpp
-        example_path.cpp
+        example_geometry_stroke_tessellation.cpp
+        example_geometry_stroke_dash_tessellation.cpp
+        example_geometry_elliptic_arc_divider.cpp
+        example_geometry_path.cpp
         example_q_sort.cpp
         example_avl_tree.cpp
         example_draw_bitmap_fonts.cpp

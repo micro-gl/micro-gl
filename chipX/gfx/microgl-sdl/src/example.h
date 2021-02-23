@@ -5,8 +5,9 @@
 #include <SDL.h>
 
 template<typename canvas_type, typename render_callback>
-void example_run(canvas_type * canvas, int TEST_ITERATIONS,
-                 const render_callback & render) {
+void example_run(canvas_type * canvas,
+                 const render_callback & render,
+                 int TEST_ITERATIONS=100) {
     SDL_Window * window;
     SDL_Renderer * renderer;
     SDL_Texture * texture;
@@ -37,7 +38,7 @@ void example_run(canvas_type * canvas, int TEST_ITERATIONS,
     SDL_Event event;
 
     int ms = render_test(TEST_ITERATIONS);
-    std::cout << ms << std::endl;
+    std::cout << TEST_ITERATIONS << " iterations took: " << ms << "ms" << std::endl;
 
     while (!quit) {
         SDL_PollEvent(&event);

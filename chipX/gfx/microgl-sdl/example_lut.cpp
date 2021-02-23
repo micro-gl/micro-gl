@@ -13,6 +13,5 @@ void test_dynamic_lut() {
 int main() {
     test_static_lut();
     test_dynamic_lut();
-
 }
 
