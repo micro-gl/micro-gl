@@ -634,14 +634,16 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
     constexpr bool avoid_overflows=options_avoid_overflow(); // compile time flag
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
-    rint area = functions::orient2d<int, rint_big>(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
-    if(area==0) return;
-    if(area<0) { // convert CCW to CW triangle
-        area=-area;
+    rint area_ = functions::orient2d<int, rint_big>(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
+    if(area_==0) return;
+    if(area_<0) { // convert CCW to CW triangle
+        area_=-area_;
         functions::swap(v1_x, v2_x); functions::swap(v1_y, v2_y);
         functions::swap(u1, u2); functions::swap(v1, v2);
         functions::swap(q1, q2); functions::swap(aa_first_edge, aa_third_edge);
     }
+    const auto area = area_;
+    const auto area_c = area>>sub_pixel_precision;
     precision bits_used_area=microgl::functions::used_integer_bits(area);
     precision bits_used_max_uv=
             microgl::functions::used_integer_bits(
@@ -650,7 +652,7 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
     rint one_area = (rint_big(1)<<LL) / rint_big(area);
     if(avoid_overflows) {
         precision size_of_int_bits = sizeof(rint)<<3, size_of_big_int_bits = sizeof(rint_big)<<3;
-        const bool first_test = bits_used_area + bits_used_max_uv < size_of_int_bits;
+        const bool first_test = bits_used_area + bits_used_max_uv - sub_pixel_precision < size_of_int_bits;
         if(!first_test) return;
         if(!divide) {
             const bool second_test= bits_used_area + bits_used_max_uv - sub_pixel_precision +
@@ -736,26 +738,50 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
             }
             if(should_sample) {
                 rint u_i=0, v_i=0;
+                const auto pp = sub_pixel_precision;
                 // I compress down the weights to save some bits.
                 // bits=(bits_area_used+bits_used_max_uv) - sub_pixel_precision
-                rint u_fixed = (w0*rint(u2) + w1*rint(u0) + w2*rint(u1));
-                rint v_fixed = (w0*rint(v2) + w1*rint(v0) + w2*rint(v1));
+                rint w0_c=w0>>pp, w1_c=w1>>pp, w2_c=w2>>pp;
+                rint u_fixed = (w0_c*rint(u2)) + (w1_c*rint(u0)) + (w2_c*rint(u1));
+                rint v_fixed = (w0_c*rint(v2)) + (w1_c*rint(v0)) + (w2_c*rint(v1));
                 if(perspective_correct) {
-                    rint q_fixed = ((w0*rint(q2))>>0) +
-                            ((w1*rint(q0))>>0) + ((w2*rint(q1))>>0);
+                    rint_big q_fixed = (w0_c*rint(q2)) +
+                                   (w1_c*rint(q0)) + (w2_c*rint(q1));
                     rint q_compressed=q_fixed>>uv_precision; // this would not render with overflow detection
                     if(q_compressed) { // compression has a pitfall of producing zero
-                        u_i = rint(u_fixed)/(q_compressed); v_i = rint(v_fixed)/(q_compressed);
+                        u_i = rint(u_fixed/q_compressed); v_i = rint(v_fixed/q_compressed);
                     }
                 } else {
                     if(divide) { // division is stabler and is un-avoidable most of the time for pure 32 bit mode
-                        u_i = (u_fixed)/area; v_i = (v_fixed)/area;
+                        u_i = (u_fixed)/area_c; v_i = (v_fixed)/area_c;
                     } else { // we use a temporary 64 bit and one_area to mimic division, this is FASTER even in 32 bits mode.
-                        u_fixed=u_fixed>>sub_pixel_precision;v_fixed=v_fixed>>sub_pixel_precision; // compress the bits, still is fine
-                        u_i = rint_big(rint_big(u_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
-                        v_i = rint_big(rint_big(v_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
+//                        u_fixed=u_fixed>>sub_pixel_precision;v_fixed=v_fixed>>sub_pixel_precision; // compress the bits, still is fine
+                        u_i = rint_big(rint_big(u_fixed)*rint_big(one_area))>>(LL-pp);
+                        v_i = rint_big(rint_big(v_fixed)*rint_big(one_area))>>(LL-pp);
                     }
                 }
+//                if(should_sample) {
+//                    rint u_i=0, v_i=0;
+//                    // I compress down the weights to save some bits.
+//                    // bits=(bits_area_used+bits_used_max_uv) - sub_pixel_precision
+//                    rint u_fixed = (w0*rint(u2) + w1*rint(u0) + w2*rint(u1));
+//                    rint v_fixed = (w0*rint(v2) + w1*rint(v0) + w2*rint(v1));
+//                    if(perspective_correct) {
+//                        rint q_fixed = ((w0*rint(q2))>>0) +
+//                                       ((w1*rint(q0))>>0) + ((w2*rint(q1))>>0);
+//                        rint q_compressed=q_fixed>>uv_precision; // this would not render with overflow detection
+//                        if(q_compressed) { // compression has a pitfall of producing zero
+//                            u_i = rint(u_fixed)/(q_compressed); v_i = rint(v_fixed)/(q_compressed);
+//                        }
+//                    } else {
+//                        if(divide) { // division is stabler and is un-avoidable most of the time for pure 32 bit mode
+//                            u_i = (u_fixed)/area; v_i = (v_fixed)/area;
+//                        } else { // we use a temporary 64 bit and one_area to mimic division, this is FASTER even in 32 bits mode.
+//                            u_fixed=u_fixed>>sub_pixel_precision;v_fixed=v_fixed>>sub_pixel_precision; // compress the bits, still is fine
+//                            u_i = rint_big(rint_big(u_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
+//                            v_i = rint_big(rint_big(v_fixed)*rint_big(one_area))>>(LL-sub_pixel_precision);
+//                        }
+//                    }
                 u_i = functions::clamp<rint>(u_i, 0, (rint(1)<<uv_precision));
                 v_i = functions::clamp<rint>(v_i, 0, (rint(1)<<uv_precision));
                 color_t col_bmp;

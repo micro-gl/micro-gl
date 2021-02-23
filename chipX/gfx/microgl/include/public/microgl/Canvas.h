@@ -92,7 +92,7 @@ public:
     static constexpr bool options_use_division() { return options&CANVAS_OPT_2d_raster_USE_DIVISION; }
 
     struct render_options_t {
-        uint8_t _2d_raster_bits_sub_pixel= options_big_integers() ? 8 : 2;
+        uint8_t _2d_raster_bits_sub_pixel= options_big_integers() ? 8 : 4;
         uint8_t _2d_raster_bits_uv= options_big_integers() ? 15 : 9;
         uint8_t _3d_raster_bits_sub_pixel= options_big_integers() ? 8 : 0;
         uint8_t _3d_raster_bits_w= options_big_integers() ? 15 : 12;
