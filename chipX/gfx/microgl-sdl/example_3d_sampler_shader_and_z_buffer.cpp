@@ -1,6 +1,7 @@
 #include "src/Resources.h"
 #include "src/example.h"
 #include <microgl/camera.h>
+#include <microgl/z_buffer.h>
 #include <microgl/Canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
@@ -27,9 +28,10 @@ int main() {
 
     auto img = resources.loadImageFromCompressedPath("images/uv_256.png");
     Texture24 tex{new Bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};
-    z_buffer<16> depth_buffer(canvas->width(), canvas->height());
+    z_buffer<12> depth_buffer(canvas->width(), canvas->height());
 
-    float t = -30.0;
+    float t = -0.0;
+    constexpr bool enable_z_buffer = true;
 
     auto test_shader_texture_3d = [&](const model_3d<number> & object) {
 
@@ -39,19 +41,20 @@ int main() {
         using math = microgl::math;
         using vertex_attribute= sampler_shader_vertex_attribute<number>;
 
-        t-=0.0425;
+//        t-=0.0425;
+        t-=0.425;
 
         // setup mvp matrix
         mat4 model_1 = mat4::transform({
                                                math::deg_to_rad(t / 2),
                                                math::deg_to_rad(t / 2),
                                                math::deg_to_rad(t / 2)},
-                                       {-5,0, 0},
+                                       {-5,0, -t/30.f},
                                        {10,10,10});
         mat4 model_2 = mat4::transform({math::deg_to_rad(t / 1),
                                         math::deg_to_rad(t / 2),
                                         math::deg_to_rad(t / 2)},
-                                       {5,0,0},
+                                       {5,0, -t/30.f},
                                        {10,10,10});
 //        mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
         mat4 view = camera::angleAt({0, 0, 70+ 0 / t}, 0,
@@ -79,7 +82,7 @@ int main() {
 
         depth_buffer.clear();
         // draw model_1
-        canvas->drawTriangles<blendmode::Normal, porterduff::None<>, true, true, true>(
+        canvas->drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer>(
                 shader,
                 canvas->width(), canvas->height(),
                 vertex_buffer.data(),
@@ -92,7 +95,7 @@ int main() {
 
         // draw model_2
         shader.matrix= mvp_2;
-        canvas->drawTriangles<blendmode::Normal, porterduff::None<>, true, true, true>(
+        canvas->drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer>(
                 shader,
                 canvas->width(), canvas->height(),
                 vertex_buffer.data(),

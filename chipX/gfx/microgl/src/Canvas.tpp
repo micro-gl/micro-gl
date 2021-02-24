@@ -912,12 +912,8 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     int v1_x= f(v1_viewport.x, sub_pixel_precision), v1_y= f(v1_viewport.y, sub_pixel_precision);
     int v2_x= f(v2_viewport.x, sub_pixel_precision), v2_y= f(v2_viewport.y, sub_pixel_precision);
     rint area = functions::orient2d<rint, rint_big>(v0_x, v0_y, v1_x, v1_y, v2_x, v2_y, sub_pixel_precision);
-    int w_compress_bits=sub_pixel_precision; // i hope this is not too harsh
     rint one_over_w0_fixed= f(one_over_w0, w_bits), one_over_w1_fixed= f(one_over_w1, w_bits),
                                 one_over_w2_fixed= f(one_over_w2, w_bits);
-    if(options_compress_bits()) // compile time flag
-        w_compress_bits+=microgl::functions::used_integer_bits(microgl::functions::abs_max(
-                {one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed}));
     /// overflow detection
     if(options_avoid_overflow()) { // compile time flag
         precision size_of_int_bits = sizeof(rint)<<3, size_of_big_int_bits = sizeof(rint_big)<<3;
@@ -926,11 +922,6 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
                 {one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed}));
         const bool first_test = bits_used_max_area + bits_used_max_w < size_of_int_bits;
         if(!first_test) return;
-//        if(!divide) {
-//            const bool second_test= bits_used_area + bits_used_max_uv - sub_pixel_precision +
-//                                    (precision_one_over_area+1) < size_of_big_int_bits;
-//            if(!second_test) return;
-//        }
     }
     rint v0_z= rint(v0_viewport.z*zbuff.maxValue()), v1_z= rint(v1_viewport.z*zbuff.maxValue()),
     v2_z=rint(v2_viewport.z*zbuff.maxValue());
@@ -975,35 +966,39 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
     // I still need to explain to myself why it works so well :)
-    rint w0_row = (functions::orient2d<int, rint_big>(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, 0) +
-            bias_w0)>>sub_pixel_precision;
-    rint w1_row = (functions::orient2d<int, rint_big>(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) +
-            bias_w1)>>sub_pixel_precision;
-    rint w2_row = (functions::orient2d<int, rint_big>(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) +
-            bias_w2)>>sub_pixel_precision;
+    rint b0_row = (functions::orient2d<int, rint_big>(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, 0) +
+                   bias_w0)>>sub_pixel_precision;
+    rint b1_row = (functions::orient2d<int, rint_big>(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, 0) +
+                   bias_w1)>>sub_pixel_precision;
+    rint b2_row = (functions::orient2d<int, rint_big>(v2_x, v2_y, v0_x, v0_y, p_fixed.x, p_fixed.y, 0) +
+                   bias_w2)>>sub_pixel_precision;
     // Triangle setup, this needs at least (P+1) bits, since the delta is always <= length
     rint A01 = v0_y-v1_y, A12 = v1_y-v2_y, A20 = v2_y-v0_y;
     rint B01 = v1_x-v0_x, B12 = v2_x-v1_x, B20 = v0_x-v2_x;
     const int pitch= width(); int index = p.y * pitch;
     for (p.y = bbox.top; p.y <= bbox.bottom; p.y++, index+=pitch) {
-        rint w0 = w0_row, w1 = w1_row, w2 = w2_row;
+        rint b0 = b0_row, b1 = b1_row, b2 = b2_row;
         for (p.x = bbox.left; p.x<=bbox.right; p.x++) {
-            const bool in_closure= (w0|w1|w2)>=0;
+            // closure test with full sub pixel precision
+            const bool in_closure= (b0 | b1 | b2) >= 0;
             bool should_sample= in_closure;
             auto opacity_sample = opacity;
-            auto bary = vec4<rint>{w0, w1, w2, area};
+//            auto bary = vec4<rint>{b0, b1, b2, area};
+            rint b0_c = b0>>sub_pixel_precision, b1_c = b1>>sub_pixel_precision, b2_c = b2>>sub_pixel_precision;
+            rint area_c = b0_c + b1_c + b2_c;
+            auto bary = vec4<rint>{b0_c, b1_c, b2_c, area_c};
             if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
-                bary.x= (w0*one_over_w0_fixed)>>w_compress_bits;
-                bary.y= (w1*one_over_w1_fixed)>>w_compress_bits;
-                bary.z= (w2*one_over_w2_fixed)>>w_compress_bits;
+                bary.x= (b0_c * one_over_w0_fixed) >> w_bits;
+                bary.y= (b1_c * one_over_w1_fixed) >> w_bits;
+                bary.z= (b2_c * one_over_w2_fixed) >> w_bits;
                 bary.w=bary.x+bary.y+bary.z;
                 if(bary.w==0) bary={1,1,1,3};
             }
             if(depth_buffer_flag && should_sample) {
                 using z_type=typename depth_buffer_type::type;
                 constexpr bool use_fpu=microgl::traits::is_float_point<number>(); // compile-time flag
-                rint denom=rint(v0_z)*w0+rint(v1_z)*w1+rint(v2_z)*w2;
-                z_type z=use_fpu ? z_type(number(denom)/area) : denom/area;
+                rint denom= rint(v0_z) * b0_c + rint(v1_z) * b1_c + rint(v2_z) * b2_c;
+                z_type z=use_fpu ? z_type(number(denom)/area_c) : denom/area_c;
                 const int z_index = index-_window.index_correction+p.x;
                 if((z>zbuff[z_index])) should_sample=false;
                 else zbuff[z_index]=z;
@@ -1015,9 +1010,9 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
                 auto color = shader.fragment(interpolated_varying);
                 blendColor<BlendMode, PorterDuff>(color, index + p.x, opacity_sample);
             }
-            w0+=A01; w1+=A12; w2+=A20;
+            b0+=A01; b1+=A12; b2+=A20;
         }
-        w0_row+=B01; w1_row+=B12; w2_row+=B20;
+        b0_row+=B01; b1_row+=B12; b2_row+=B20;
     }
 #undef f
 }

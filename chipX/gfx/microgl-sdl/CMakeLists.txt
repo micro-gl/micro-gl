@@ -65,6 +65,7 @@ set(SOURCES
         example_draw_rect_axial.cpp
         example_draw_rect_transform.cpp
         example_3d_shader_color.cpp
+        example_geometry_bezier_curve_divider.cpp
         )
 
 set(SOURCES_SHARED

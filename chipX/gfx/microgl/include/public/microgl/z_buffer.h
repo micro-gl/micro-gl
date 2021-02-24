@@ -10,8 +10,9 @@ private:
     static constexpr int log = Bits <= 8 ? 1 : (Bits <= 16 ? 2 : 4);
 public:
     using type =typename cond<log == 1, uint8_t, typename cond<log == 2, uint16_t, uint32_t>::type>::type;
-private:
+    static constexpr int bits =Bits;
     static constexpr type max_value= (uint64_t(1)<<(Bits))-1;
+private:
     type * _data= nullptr;
     int _w=0, _h=0, _size=0;
 public:
