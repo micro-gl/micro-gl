@@ -29,5 +29,5 @@ int main() {
         canvas->drawRect<blendmode::Normal, porterduff::None<>, false, number>(tex_uv, 0, 0, 400, 400);
     };
 
-    example_run(canvas, TEST_ITERATIONS, render);
+    example_run(canvas, render);
 }

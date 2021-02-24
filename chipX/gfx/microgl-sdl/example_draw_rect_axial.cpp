@@ -30,5 +30,5 @@ int main() {
                 0, 0, 256, 256);
     };
 
-    example_run(canvas, TEST_ITERATIONS, render);
+    example_run(canvas, render);
 }

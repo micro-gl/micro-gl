@@ -48,7 +48,7 @@ int main() {
 
     auto * canvas = new Canvas24(W, H);
 
-    auto img_2 = resources.loadImageFromCompressedPath("images/uv_1024.png");
+    auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
     Texture24 tex_uv{new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
 
     auto test_bezier = [&](vec3<number>* mesh, unsigned U, unsigned V) {
@@ -56,7 +56,7 @@ int main() {
 //            color_grey,
                 tex_uv,
                 matrix_3x3<number>::identity(),
-                mesh, U, V, 20, 20,
+                mesh, U, V, 40, 40,
                 0,1,1,0,
                 255);
         delete [] mesh;

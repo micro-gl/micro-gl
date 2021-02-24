@@ -49,6 +49,5 @@ int main() {
     };
 
     example_run(canvas,
-                TEST_ITERATIONS,
                 render);
 }

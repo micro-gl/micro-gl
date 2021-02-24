@@ -58,7 +58,7 @@ int main() {
                 255);
     };
 
-//    example_run(canvas, TEST_ITERATIONS, render_flat);
-//    example_run(canvas, TEST_ITERATIONS, render_tex);
-    example_run(canvas, TEST_ITERATIONS, render_tex_aa);
+//    example_run(canvas, render_flat);
+//    example_run(canvas, render_tex);
+    example_run(canvas, render_tex_aa);
 }

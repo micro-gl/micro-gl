@@ -30,6 +30,6 @@ int main() {
         canvas->drawRect<blendmode::Normal, porterduff::None<>, false, number>(gradient, t, t, 400, 400);
     };
 
-    example_run(canvas, TEST_ITERATIONS, render);
+    example_run(canvas, render);
 }
 

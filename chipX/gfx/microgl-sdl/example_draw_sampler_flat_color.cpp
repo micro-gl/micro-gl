@@ -28,5 +28,5 @@ int main() {
                 color_sampler, t, t, 400, 400);
     };
 
-    example_run(canvas, TEST_ITERATIONS, render);
+    example_run(canvas, render);
 }

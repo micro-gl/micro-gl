@@ -39,12 +39,12 @@ int main() {
         canvas->clear({255,255,255,255});
         canvas->drawRoundedRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
                 tex_uv,
-            gradient2Colors,
+                gradient2Colors,
 //                flatColor,
                 10+t, 10+t, 400+t, 400+t,
                 50, 10);
     };
 
-    example_run(canvas, TEST_ITERATIONS, render);
+    example_run(canvas, render);
 }
 
