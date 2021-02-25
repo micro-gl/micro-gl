@@ -37,7 +37,7 @@ namespace microgl {
                 coder::convert_color(
                         input, converted_color,
                         R, G, B, A,
-                        from::red_bits(), from::green_bits(), from::blue_bits(), from::alpha_bits());
+                        from::r(), from::g(), from::b(), from::a());
                 _coder_from.encode(converted_color, output);
             }
 
@@ -46,7 +46,7 @@ namespace microgl {
                 _coder_from.decode(input, converted_color);
                 coder::convert_color(
                         converted_color, output,
-                        from::red_bits(), from::green_bits(), from::blue_bits(), from::alpha_bits(),
+                        from::r(), from::g(), from::b(), from::a(),
                         R, G, B, A);
             };
 

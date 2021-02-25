@@ -3,6 +3,7 @@
 #include <microgl/color.h>
 #include <microgl/intensity.h>
 #include "crpt.h"
+#include <cstdint>
 
 namespace microgl {
     namespace coder {
@@ -55,6 +56,11 @@ namespace microgl {
         class PixelCoder : public crpt<IMPL> {
         public:
             using Pixel=P;
+            static constexpr uint8_t r = R_BITS;
+            static constexpr uint8_t g = G_BITS;
+            static constexpr uint8_t b = B_BITS;
+            static constexpr uint8_t a = A_BITS;
+
             PixelCoder()= default;
             void encode(const color_t &input, P &output) const {
                 this->derived().encode(input, output);
@@ -77,10 +83,10 @@ namespace microgl {
                 convert_color(int_color, output, R_BITS, G_BITS, B_BITS, A_BITS);
             }
 
-            static constexpr channel red_bits() { return R_BITS; }
-            static constexpr channel green_bits() { return G_BITS; }
-            static constexpr channel blue_bits() { return B_BITS; }
-            static constexpr channel alpha_bits() { return A_BITS; }
+//            static constexpr channel r() { return R_BITS; }
+//            static constexpr channel g() { return G_BITS; }
+//            static constexpr channel b() { return B_BITS; }
+//            static constexpr channel a() { return A_BITS; }
 
             static
             void update_channel_bit(color_t &color) {
@@ -92,12 +98,12 @@ namespace microgl {
 
             template <typename number>
             void convert(const intensity<number> &input, color_t &output) const {
-                convert_color(input, output, red_bits(), green_bits(), blue_bits(), alpha_bits());
+                convert_color(input, output, r, g, b, a);
             }
 
             template <typename number>
             void convert(const color_t &input, intensity<number> &output) const {
-                convert_color(input, output, red_bits(), green_bits(), blue_bits(), alpha_bits());
+                convert_color(input, output, r, g, b, a);
             }
 
             template<typename CODER2>
@@ -105,8 +111,8 @@ namespace microgl {
                 // convert input color of my space into a color in coder2 space
                 coder::convert_color(
                         input, output,
-                        red_bits(), green_bits(), blue_bits(), alpha_bits(),
-                        coder2.red_bits(), coder2.green_bits(), coder2.blue_bits(), coder2.alpha_bits());
+                        r, g, b, a,
+                        coder2.r, coder2.g, coder2.b, coder2.a);
             }
 
             template<typename CODER2>

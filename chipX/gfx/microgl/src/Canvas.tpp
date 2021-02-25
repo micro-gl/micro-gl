@@ -110,12 +110,12 @@ inline void Canvas<BITMAP, options>::blendColor(const color_t &val, int index, o
         // if we don't own a native alpha channel, check if the color has a suggestion for alpha channel.
         // I use it because of enabling masks for a canvas that does not have an alpha channel.
         // I really want to get rid of this
-        bits alpha_bits = pixel_coder::alpha_bits() | val.a_bits;
+        bits alpha_bits = pixel_coder::a | val.a_bits;
         if(alpha_bits) blended.a = src.a;
         else { blended.a= 255; alpha_bits=8; } // no alpha channel ? let's create one with 8 bits
         if(is_source_over && blended.a==0) return;
-        constexpr bool hasNativeAlphaChannel = pixel_coder::alpha_bits()!=0;
-        constexpr unsigned int max_alpha_value = hasNativeAlphaChannel ? (1 << pixel_coder::alpha_bits()) - 1 : (255);
+        constexpr bool hasNativeAlphaChannel = pixel_coder::a != 0;
+        constexpr unsigned int max_alpha_value = hasNativeAlphaChannel ? (1 << pixel_coder::a) - 1 : (255);
         // fix alpha bits depth in case we don't natively
         // support alpha, this is correct because we want to
         // support compositing even if the surface is opaque.
@@ -130,9 +130,9 @@ inline void Canvas<BITMAP, options>::blendColor(const color_t &val, int index, o
         // if we are normal then do nothing
         if(!skip_blending && backdrop.a!=0) { //  or backdrop alpha is zero is also valid
             BlendMode::blend(backdrop, src, blended,
-                             coder().red_bits(),
-                             coder().green_bits(),
-                             coder().blue_bits());
+                             coder().r,
+                             coder().g,
+                             coder().b);
             // if backdrop alpha!= max_alpha let's first composite the blended color, this is
             // an intermidiate step before Porter-Duff
             if(backdrop.a < max_alpha_value) {
@@ -183,8 +183,8 @@ inline void Canvas<BITMAP, options>::drawPixel(const Pixel & val, int index) {
 template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias,
         typename number1, typename number2, typename S1, typename S2>
-void Canvas<BITMAP, options>::drawCircle(const sampling::sampler<S1> & sampler_fill,
-                                  const sampling::sampler<S2> & sampler_stroke,
+void Canvas<BITMAP, options>::drawCircle(const sampler<S1> & sampler_fill,
+                                  const sampler<S2> & sampler_stroke,
                                   const number1 &centerX, const number1 &centerY,
                                   const number1 &radius, const number1 &stroke_size, opacity_t opacity,
                                   const number2 &u0, const number2 &v0,
@@ -198,8 +198,8 @@ void Canvas<BITMAP, options>::drawCircle(const sampling::sampler<S1> & sampler_f
 
 template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S1, typename S2>
-void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
-                                     const sampling::sampler<S2> & sampler_stroke,
+void Canvas<BITMAP, options>::drawRoundedRect(const sampler<S1> & sampler_fill,
+                                     const sampler<S2> & sampler_stroke,
                                      const number1 & left, const number1 & top,
                                      const number1 & right, const number1 & bottom,
                                      const number1 & radius, const number1 & stroke_size,
@@ -218,8 +218,8 @@ void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & samp
 
 template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
-void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
-                                     const sampling::sampler<S2> & sampler_stroke,
+void Canvas<BITMAP, options>::drawRoundedRect(const sampler<S1> & sampler_fill,
+                                     const sampler<S2> & sampler_stroke,
                                      int left, int top,
                                      int right, int bottom,
                                      int radius, int stroke_size,
@@ -343,7 +343,7 @@ void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & samp
 
 template<typename BITMAP, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
-void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
+void Canvas<BITMAP, options>::drawRect(const sampler<S> & sampler,
                                        const number1 left, const number1 top,
                                        const number1 right, const number1 bottom,
                                        opacity_t opacity,
@@ -361,7 +361,7 @@ void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
 
 template<typename BITMAP, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
-void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
+void Canvas<BITMAP, options>::drawRect(const sampler<S> & sampler,
                                        const matrix_3x3<number1> &transform,
                                        const number1 left, const number1 top,
                                        const number1 right, const number1 bottom,
@@ -378,7 +378,7 @@ void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
 
 template<typename BITMAP, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename S>
-void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
+void Canvas<BITMAP, options>::drawRect(const sampler<S> & sampler,
                                        int left, int top,
                                        int right, int bottom,
                                        int u0, int v0,
@@ -465,7 +465,7 @@ void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
 template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff,
         bool antialias, typename number1, typename number2, typename S>
-void Canvas<BITMAP, options>::drawQuadrilateral(const sampling::sampler<S> & sampler,
+void Canvas<BITMAP, options>::drawQuadrilateral(const sampler<S> & sampler,
                                                 const number1 & v0_x, const number1 & v0_y, const number2 & u0, const number2 & v0,
                                                 const number1 & v1_x, const number1 & v1_y, const number2 & u1, const number2 & v1,
                                                 const number1 & v2_x, const number1 & v2_y, const number2 & u2, const number2 & v2,
@@ -520,7 +520,7 @@ void Canvas<BITMAP, options>::drawQuadrilateral(const sampling::sampler<S> & sam
 
 template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
-void Canvas<BITMAP, options>::drawTriangles(const sampling::sampler<S> &sampler,
+void Canvas<BITMAP, options>::drawTriangles(const sampler<S> &sampler,
                                      const matrix_3x3<number1> &transform,
                                      const vec2<number1> *vertices,
                                      const vec2<number2> *uvs,
@@ -627,7 +627,7 @@ void Canvas<BITMAP, options>::drawTriangleWireframe(const color_t &color,
 
 template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, typename S>
-void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
+void Canvas<BITMAP, options>::drawTriangle(const sampler<S> &sampler,
                                   int v0_x, int v0_y, int u0, int v0, int q0,
                                   int v1_x, int v1_y, int u1, int v1, int q1,
                                   int v2_x, int v2_y, int u2, int v2, int q2,
@@ -810,7 +810,7 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
 
 template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
-void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> & sampler,
+void Canvas<BITMAP, options>::drawTriangle(const sampler<S> & sampler,
                                     const number1 &v0_x, const number1 &v0_y, const number2 &u0, const number2 &v0,
                                     const number1 &v1_x, const number1 &v1_y, const number2 &u1, const number2 &v1,
                                     const number1 &v2_x, const number1 &v2_y, const number2 &u2, const number2 &v2,
@@ -1025,7 +1025,7 @@ void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl
 template<typename BITMAP, uint8_t options>
 template <typename number1, typename number2, typename S>
 void Canvas<BITMAP, options>::drawMask(const masks::chrome_mode &mode,
-                                const sampling::sampler<S> & sampler,
+                                const S & sampler,
                                 const number1 left, const number1 top,
                                 const number1 right, const number1 bottom,
                                 const number2 u0, const number2 v0,
@@ -1044,7 +1044,7 @@ void Canvas<BITMAP, options>::drawMask(const masks::chrome_mode &mode,
 template<typename BITMAP, uint8_t options>
 template <typename S>
 void Canvas<BITMAP, options>::drawMask(const masks::chrome_mode &mode,
-                                const sampling::sampler<S> & sampler,
+                                const S & sampler,
                                 const int left, const int top,
                                 const int right, const int bottom,
                                 int u0, int v0,
@@ -1082,7 +1082,7 @@ void Canvas<BITMAP, options>::drawMask(const masks::chrome_mode &mode,
     const int dx= bbox_r_c.left-bbox_r.left, dy= bbox_r_c.top-bbox_r.top;
     const int u_start= u0+(du>>1)+dx*du, pitch= width();
     int index= bbox_r_c.top * pitch;
-    const bits alpha_bits = this->coder().alpha_bits() ? this->coder().alpha_bits() : 8;
+    const bits alpha_bits = this->coder().a ? this->coder().a : 8;
     const channel max_alpha_value = (uint16_t(1)<<alpha_bits) - 1;
     for (int y=bbox_r_c.top, v=v0+(du>>1)+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
         for (int x=bbox_r_c.left, u=u_start; x<=bbox_r_c.right; x++, u+=du) {
@@ -1090,33 +1090,33 @@ void Canvas<BITMAP, options>::drawMask(const masks::chrome_mode &mode,
             channel a=0;
             switch (mode) {
                 case masks::chrome_mode::red_channel:
-                    a = coder::convert_channel_correct(col_bmp.r, sampler.red_bits(), alpha_bits);
+                    a = coder::convert_channel_correct(col_bmp.r, sampler.r, alpha_bits);
                     break;
                 case masks::chrome_mode::red_channel_inverted:
-                    a = max_alpha_value - coder::convert_channel_correct(col_bmp.r, sampler.red_bits(), alpha_bits);
+                    a = max_alpha_value - coder::convert_channel_correct(col_bmp.r, sampler.r, alpha_bits);
                     break;
                 case masks::chrome_mode::alpha_channel:
-                    a = coder::convert_channel_correct(col_bmp.a, sampler.alpha_bits(), alpha_bits);
+                    a = coder::convert_channel_correct(col_bmp.a, sampler.a, alpha_bits);
                     break;
                 case masks::chrome_mode::alpha_channel_inverted:
-                    a = max_alpha_value - coder::convert_channel_correct(col_bmp.a, sampler.alpha_bits(), alpha_bits);
+                    a = max_alpha_value - coder::convert_channel_correct(col_bmp.a, sampler.a, alpha_bits);
                     break;
                 case masks::chrome_mode::green_channel:
-                    a = coder::convert_channel_correct(col_bmp.g, sampler.green_bits(), alpha_bits);
+                    a = coder::convert_channel_correct(col_bmp.g, sampler.g, alpha_bits);
                     break;
                 case masks::chrome_mode::green_channel_inverted:
-                    a = max_alpha_value - coder::convert_channel_correct(col_bmp.g, sampler.green_bits(), alpha_bits);
+                    a = max_alpha_value - coder::convert_channel_correct(col_bmp.g, sampler.g, alpha_bits);
                     break;
                 case masks::chrome_mode::blue_channel:
-                    a = coder::convert_channel_correct(col_bmp.b, sampler.blue_bits(), alpha_bits);
+                    a = coder::convert_channel_correct(col_bmp.b, sampler.b, alpha_bits);
                     break;
                 case masks::chrome_mode::blue_channel_inverted:
-                    a = max_alpha_value - coder::convert_channel_correct(col_bmp.b, sampler.blue_bits(), alpha_bits);
+                    a = max_alpha_value - coder::convert_channel_correct(col_bmp.b, sampler.b, alpha_bits);
                     break;
             }
             col_bmp.r=0, col_bmp.g=0, col_bmp.b=0, col_bmp.a=a,
-            col_bmp.r_bits=this->coder().red_bits(), col_bmp.g_bits=this->coder().green_bits(),
-            col_bmp.b_bits=this->coder().blue_bits(), col_bmp.a_bits=alpha_bits;
+            col_bmp.r_bits=this->coder().r, col_bmp.g_bits=this->coder().g,
+            col_bmp.b_bits=this->coder().b, col_bmp.a_bits=alpha_bits;
             // re-encode for a different canvas
             blendColor<blendmode::Normal, porterduff::DestinationIn<true>>(col_bmp, index + x, opacity);
         }
@@ -1125,7 +1125,7 @@ void Canvas<BITMAP, options>::drawMask(const masks::chrome_mode &mode,
 
 template<typename BITMAP, uint8_t options>
 template <microgl::polygons::hints hint, typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1, typename number2, typename S>
-void Canvas<BITMAP, options>::drawPolygon(const sampling::sampler<S> &sampler,
+void Canvas<BITMAP, options>::drawPolygon(const sampler<S> &sampler,
                                    const matrix_3x3<number1> &transform,
                                    const vec2<number1> *points,
                                    index size, opacity_t opacity,
@@ -1194,7 +1194,7 @@ void Canvas<BITMAP, options>::drawPolygon(const sampling::sampler<S> &sampler,
 
 template<typename BITMAP, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1, typename number2, typename S>
-void Canvas<BITMAP, options>::drawPathStroke(const sampling::sampler<S> &sampler,
+void Canvas<BITMAP, options>::drawPathStroke(const sampler<S> &sampler,
                                       const matrix_3x3<number1> &transform,
                                       tessellation::path<number1> & path,
                                       const number1 & stroke_width,
@@ -1228,7 +1228,7 @@ void Canvas<BITMAP, options>::drawPathStroke(const sampling::sampler<S> &sampler
 
 template<typename BITMAP, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1, typename number2, typename S>
-void Canvas<BITMAP, options>::drawPathFill(const sampling::sampler<S> &sampler,
+void Canvas<BITMAP, options>::drawPathFill(const sampler<S> &sampler,
                                     const matrix_3x3<number1> &transform,
                                     tessellation::path<number1> & path,
                                     const tessellation::fill_rule &rule,
@@ -1394,7 +1394,7 @@ Canvas<BITMAP, options>::drawWuLinePath(const color_t &color,
 
 template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1, typename number2, typename S>
-void Canvas<BITMAP, options>::drawBezierPatch(const sampling::sampler<S> & sampler,
+void Canvas<BITMAP, options>::drawBezierPatch(const sampler<S> & sampler,
                                        const matrix_3x3<number1> &transform,
                                        const vec3<number1> *mesh,
                                        const unsigned uOrder, const unsigned vOrder,
@@ -1448,7 +1448,7 @@ void Canvas<BITMAP, options>::fxaa(int left, int top, int right, int bottom) {
     const l64 LUMA_THRESHOLD_BITS = 5; // to be used as 1/2^5
 
     const char p = 10;
-    const char t = p - coder().green_bits();
+    const char t = p - coder().g();
     const l64 ONE = l64(1) << p;
     const l64 FXAA_REDUCE_MIN = ONE >> FXAA_REDUCE_MIN_BITS;
     const l64 FXAA_SPAN_MAX = FXAA_SPAN_PIXELS_MAX << p;

@@ -18,10 +18,10 @@ using namespace microgl::sampling;
 int main() {
     using index_t = unsigned int;
     using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-    using Bitmap24_ARRAY= Bitmap<coder::RGBA8888_ARRAY>;
-    using Bitmap24_PACKED= Bitmap<coder::RGBA8888_PACKED_32>;
+    using Bitmap32_ARRAY= Bitmap<coder::RGBA8888_ARRAY>;
+    using Bitmap32_PACKED= Bitmap<coder::RGBA8888_PACKED_32>;
     using Canvas24= Canvas<Bitmap24>;
-    using font32= microgl::text::bitmap_font<Bitmap24_ARRAY>;
+    using font32= microgl::text::bitmap_font<Bitmap32_ARRAY>;
 
     Resources resources{};
 
@@ -29,7 +29,7 @@ int main() {
     font32 font;
 
 //    font = resources.loadFont<Bitmap24_ARRAY>("minecraft-20");
-    font = resources.loadFont<Bitmap24_ARRAY>("digital_7-20");
+    font = resources.loadFont<Bitmap32_ARRAY>("digital_7-20");
 //    font = resources.loadFont<Bitmap24_ARRAY>("roboto-thin-28");
 //    font = resources.loadFont<Bitmap24_ARRAY>("roboto-thin-14");
 //    font = resources.loadFont<Bitmap24_ARRAY>("mont-med-16");

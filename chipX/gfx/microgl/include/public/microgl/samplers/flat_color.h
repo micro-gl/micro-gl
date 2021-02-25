@@ -5,8 +5,9 @@
 namespace microgl {
     namespace sampling {
 
-        class flat_color : public sampler<flat_color> {
-            using base= sampler<flat_color>;
+        template<channel r=8, channel g=8, channel b=8, channel a=0>
+        class flat_color : public sampler<r,g,b,a, flat_color<r,g,b,a>> {
+            using base= sampler<r,g,b,a, flat_color<r,g,b,a>>;
 
         public:
             explicit flat_color()= default;

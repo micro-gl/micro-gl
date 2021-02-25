@@ -34,14 +34,14 @@ using namespace microgl::color;
 
 int main() {
     using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>>;
-    sampling::flat_color color_grey{{122,122,122,255}};
+    sampling::flat_color<> color_grey{{122,122,122,255}};
     Resources resources{};
 
     auto * canvas = new Canvas24(W, H);
 
     auto render = [&]() -> void {
         canvas->clear({0, 255, 255, 255});
-        canvas->drawRect<blendmode::Multiply<false>, porterduff::FastSourceOverOnOpaque>(
+        canvas->drawRect<blendmode::Multiply<true>, porterduff::FastSourceOverOnOpaque>(
 //    canvas->drawRect<blendmode::Normal, porterduff::None<true>>(
 //    canvas->drawRect<blendmode::Overlay<false>, porterduff::None<true>>(
 //    canvas->drawRect<blendmode::PinLight, porterduff::None<true>>(

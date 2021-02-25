@@ -7,12 +7,17 @@
 namespace microgl {
     namespace sampling {
 
-        template<typename IMPL>
+        template<channel R_BITS, channel G_BITS, channel B_BITS, channel A_BITS, typename IMPL>
         class sampler : public crpt<IMPL> {
+        protected:
+            using base_type = sampler;
         public:
+            static constexpr uint8_t r = R_BITS;
+            static constexpr uint8_t g = G_BITS;
+            static constexpr uint8_t b = B_BITS;
+            static constexpr uint8_t a = A_BITS;
+
             sampler()= default;
-            sampler(bits red_bits,bits green_bits,bits blue_bits,bits alpha_bits) :
-                        _red_bits{red_bits}, _green_bits{green_bits}, _blue_bits{blue_bits}, _alpha_bits{alpha_bits} {}
 
             inline void sample(const int u, const int v,
                                const uint8_t bits, color_t &output) const {
@@ -28,14 +33,6 @@ namespace microgl {
                 this->derived().sample(u_fixed, v_fixed, bits, output);
             }
 
-            // todo:: this should be deprecated, does not make logic
-            bits red_bits() const { return _red_bits; }
-            bits green_bits() const { return _green_bits; }
-            bits blue_bits() const { return _blue_bits; }
-            bits alpha_bits() const { return _alpha_bits; }
-
-        protected:
-            bits _red_bits=8, _green_bits=8, _blue_bits=8, _alpha_bits=8;
         };
 
     }

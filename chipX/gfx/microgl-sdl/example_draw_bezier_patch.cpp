@@ -43,7 +43,7 @@ int main() {
 //    using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>>;
     using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
     using Texture24= sampling::texture<Bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
-    sampling::flat_color color_grey{{222,222,222,255}};
+    sampling::flat_color<> color_grey{{222,222,222,255}};
     Resources resources{};
 
     auto * canvas = new Canvas24(W, H);
@@ -56,7 +56,7 @@ int main() {
 //            color_grey,
                 tex_uv,
                 matrix_3x3<number>::identity(),
-                mesh, U, V, 40, 40,
+                mesh, U, V, 20, 20,
                 0,1,1,0,
                 255);
         delete [] mesh;

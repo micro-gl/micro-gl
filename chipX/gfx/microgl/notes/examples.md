@@ -2330,7 +2330,7 @@ void Canvas<P, CODER>::fxaa2(int left, int top, int right, int bottom) {
     const l64 LUMA_THRESHOLD_BITS = 5; // to be used as 1/2^5
 
     const char p = 12;
-    const char t = p - coder().green_bits();
+    const char t = p - coder().g();
     const l64 ONE = l64(1) << p;
     const l64 FXAA_REDUCE_MIN = ONE >> FXAA_REDUCE_MIN_BITS;
     const l64 FXAA_SPAN_MAX = FXAA_SPAN_PIXELS_MAX << p;

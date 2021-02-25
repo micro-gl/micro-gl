@@ -18,8 +18,8 @@ protected:
     // todo:: add a sub window feature, only involves translating x and y coords or a fixed index ?
 
 public:
-    static constexpr bool hasNativeAlphaChannel() { return CODER::alpha_bits()!=0; }
-    static constexpr bool nativeAlphaChannelBits() { return hasNativeAlphaChannel() ? CODER::alpha_bits() : 8; }
+    static constexpr bool hasNativeAlphaChannel() { return CODER::a() != 0; }
+    static constexpr bool nativeAlphaChannelBits() { return hasNativeAlphaChannel() ? CODER::a() : 8; }
     static constexpr int maxNativeAlphaChannelValue() { return (1u<<nativeAlphaChannelBits())-1; }
 
     base_bitmap(int w, int h) : base_bitmap(new uint8_t[sizeof(buffer_element_type) * w * h], w, h) {}

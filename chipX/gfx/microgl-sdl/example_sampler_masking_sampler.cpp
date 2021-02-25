@@ -21,10 +21,11 @@ float t=0;
 int main() {
     coder::coder_converter<coder::RGB888_ARRAY, coder::RGB888_PACKED_32> a{};
     using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>>;
-    using Texture24= sampling::texture<Bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
-    using Texture32= sampling::texture<Bitmap<coder::RGBA8888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
-    using Texture8= sampling::texture<Bitmap<coder::RGB8>, sampling::texture_filter::NearestNeighboor>;
-    using MaskingSampler= sampling::mask_sampler<Texture24, Texture24, masks::chrome_mode::red_channel>;
+    using Texture24= sampling::texture<Bitmap<coder::RGB888_ARRAY>>;
+    using Texture32= sampling::texture<Bitmap<coder::RGBA8888_ARRAY>>;
+    using MaskingSampler1= sampling::mask_sampler<masks::chrome_mode::red_channel, Texture24, Texture24>;
+    using MaskingSampler2= sampling::mask_sampler<masks::chrome_mode::alpha_channel_inverted, Texture24, Texture32>;
+
 //    using number = Q<12>;
     using number = float;
 
@@ -36,12 +37,14 @@ int main() {
     Texture24 tex_uv{new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
     Texture32 tex_mask_1{new Bitmap<coder::RGBA8888_ARRAY>(img_mask_1.data, img_mask_1.width, img_mask_1.height)};
     Texture24 tex_mask_2{new Bitmap<coder::RGB888_ARRAY>(img_mask_2.data, img_mask_2.width, img_mask_2.height)};
-    MaskingSampler ms{tex_uv, tex_mask_2};
+    MaskingSampler1 ms{tex_uv, tex_mask_2};
+    MaskingSampler2 ms2{tex_uv, tex_mask_1};
 
     auto render = [&]() -> void {
         canvas->clear({255,255,255,255});
         canvas->drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
-                ms,
+//                ms,
+                ms2,
                 0, 0, 300, 300);
     };
 

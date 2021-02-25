@@ -120,6 +120,18 @@ private:
     window_t _window;
     render_options_t _options;
 public:
+    static constexpr bool hasNativeAlphaChannel() { return pixel_coder::a != 0;}
+
+    // this forces strict samplers in the following manner:
+    // 1. outside samplers must agree on bits depth of RGB channels
+    // 2. if the canvas has alpha channel, then the sampler must have the same alpha bits
+    // 3. if the canvas does has alpha channel, then the sampler is allowed any alpha bits it has
+    // ** this is used to allow the blender to do alpha composition even for canvases that do not
+    //    support native alpha channel. we use multiplied alpha result for that
+    template<class impl>
+    using sampler = sampling::sampler<pixel_coder::r, pixel_coder::g, pixel_coder::b,
+                                hasNativeAlphaChannel() ? pixel_coder::a : impl::a, impl>;
+
     explicit Canvas(bitmap * $bmp);
     Canvas(int width, int height);
 
@@ -193,8 +205,8 @@ public:
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1, typename number2=number1, typename S1, typename S2>
-    void drawCircle(const sampling::sampler<S1> & sampler_fill,
-                    const sampling::sampler<S2> & sampler_stroke,
+    void drawCircle(const sampler<S1> & sampler_fill,
+                    const sampler<S2> & sampler_stroke,
                     const number1 &centerX, const number1 &centerY,
                     const number1 &radius, const number1 &stroke_size, opacity_t opacity=255,
                     const number2 &u0=number2(0), const number2 &v0=number2(1),
@@ -203,8 +215,8 @@ public:
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1, typename number2=number1, typename S1, typename S2>
-    void drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
-                         const sampling::sampler<S2> & sampler_stroke,
+    void drawRoundedRect(const sampler<S1> & sampler_fill,
+                         const sampler<S2> & sampler_stroke,
                          const number1 &left, const number1 &top,
                          const number1 &right, const number1 &bottom,
                          const number1 &radius, const number1 &stroke_size,
@@ -216,8 +228,8 @@ private:
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename S1, typename S2>
-    void drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
-                         const sampling::sampler<S2> & sampler_stroke,
+    void drawRoundedRect(const sampler<S1> & sampler_fill,
+                         const sampler<S2> & sampler_stroke,
                          int left, int top,
                          int right, int bottom,
                          int radius, int stroke_size,
@@ -228,7 +240,7 @@ private:
 private:
     template <typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename S>
-    void drawRect(const sampling::sampler<S> &sampler,
+    void drawRect(const sampler<S> &sampler,
                   int left, int top,
                   int right, int bottom,
                   int u0, int v0,
@@ -240,7 +252,7 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
             typename number1=float, typename number2=number1, typename S>
-    void drawRect(const sampling::sampler<S> &sampler,
+    void drawRect(const sampler<S> &sampler,
                   number1 left, number1 top,
                   number1 right, number1 bottom,
                   opacity_t opacity = 255,
@@ -250,7 +262,7 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
             typename number1=float, typename number2=number1, typename S>
-    void drawRect(const sampling::sampler<S> &sampler,
+    void drawRect(const sampler<S> &sampler,
                   const matrix_3x3<number1> &transform,
                   number1 left, number1 top,
                   number1 right, number1 bottom,
@@ -261,7 +273,7 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=number1, typename S>
-    void drawQuadrilateral(const sampling::sampler<S> &sampler,
+    void drawQuadrilateral(const sampler<S> &sampler,
                            const number1 & v0_x, const number1 & v0_y, const number2 & u0, const number2 & v0,
                            const number1 & v1_x, const number1 & v1_y, const number2 & u1, const number2 & v1,
                            const number1 & v2_x, const number1 & v2_y, const number2 & u2, const number2 & v2,
@@ -274,7 +286,7 @@ public:
 
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=float, typename S>
-    void drawTriangles(const sampling::sampler<S> & sampler,
+    void drawTriangles(const sampler<S> & sampler,
                        const matrix_3x3<number1> &transform,
                        const vec2<number1> *vertices= nullptr,
                        const vec2<number2> *uvs=nullptr,
@@ -326,7 +338,7 @@ private:
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool perspective_correct=false,
             typename S>
-    void drawTriangle(const sampling::sampler<S> &sample,
+    void drawTriangle(const sampler<S> &sample,
                       int v0_x, int v0_y, int u0, int v0, int q0,
                       int v1_x, int v1_y, int u1, int v1, int q1,
                       int v2_x, int v2_y, int u2, int v2, int q2,
@@ -337,7 +349,7 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=number1, typename S>
-    void drawTriangle(const sampling::sampler<S> &sample,
+    void drawTriangle(const sampler<S> &sample,
                       const number1 &v0_x, const number1 &v0_y, const number2 &u0, const number2 &v0,
                       const number1 &v1_x, const number1 &v1_y, const number2 &u1, const number2 &v1,
                       const number1 &v2_x, const number1 &v2_y, const number2 &u2, const number2 &v2,
@@ -371,7 +383,7 @@ public:
     // Masks
     template <typename number1, typename number2=number1, typename S>
     void drawMask(const masks::chrome_mode &mode,
-                  const sampling::sampler<S> &sampler,
+                  const S &sampler,
                   number1 left, number1 top,
                   number1 right, number1 bottom,
                   number2 u0=number2(0), number2 v0=number2(1),
@@ -381,7 +393,7 @@ public:
 private:
     template <typename S>
     void drawMask(const masks::chrome_mode &mode,
-                  const sampling::sampler<S> &sampler,
+                  const S &sampler,
                   int left, int top,
                   int right, int bottom,
                   int u0, int v0,
@@ -392,7 +404,7 @@ private:
 public:
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool debug=false, typename number1, typename number2=number1, typename S>
-    void drawBezierPatch(const sampling::sampler<S> &sampler,
+    void drawBezierPatch(const sampler<S> &sampler,
                          const matrix_3x3<number1> &transform,
                          const vec3<number1> *mesh,
                          unsigned uOrder, unsigned vOrder,
@@ -405,7 +417,7 @@ public:
     template <microgl::polygons::hints hint=polygons::hints::SIMPLE, typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false, bool debug=false,
             typename number1=float, typename number2=number1, typename S>
-    void drawPolygon(const sampling::sampler<S> &sampler,
+    void drawPolygon(const sampler<S> &sampler,
                      const matrix_3x3<number1> &transform,
                      const vec2<number1> * points,
                      index size, opacity_t opacity=255,
@@ -431,7 +443,7 @@ public:
 
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool debug=false, typename number1=float, typename number2=float, typename S>
-    void drawPathStroke(const sampling::sampler<S> &sampler,
+    void drawPathStroke(const sampler<S> &sampler,
                         const matrix_3x3<number1> &transform,
                         tessellation::path<number1> &path,
                         const number1 &stroke_width=number1(1),
@@ -445,7 +457,7 @@ public:
 
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool debug=false, typename number1=float, typename number2=float, typename S>
-    void drawPathFill(const sampling::sampler<S> &sampler,
+    void drawPathFill(const sampler<S> &sampler,
                       const matrix_3x3<number1> &transform,
                       tessellation::path<number1> &path,
                       const tessellation::fill_rule &rule=tessellation::fill_rule::non_zero,

@@ -40,7 +40,7 @@ namespace microgl {
                 sampler_shader_varying<number>, number> {
         public:
             matrix_4x4<number> matrix;
-            sampling::sampler<S> *sampler= nullptr;
+            S *sampler= nullptr;
 
             inline vec4<number>
             vertex(const sampler_shader_vertex_attribute<number> &attributes, sampler_shader_varying<number> &output) {

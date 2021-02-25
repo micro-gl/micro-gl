@@ -16,17 +16,21 @@ namespace microgl {
                 texture_filter filter=texture_filter::NearestNeighboor,
                 texture_wrap wrap_u=texture_wrap::None,
                 texture_wrap wrap_v=texture_wrap::None>
-        class texture : public sampler<texture<Bitmap, filter, wrap_u, wrap_v>> {
-            using base= sampler<texture<Bitmap, filter, wrap_u, wrap_v>>;
+    class texture : public sampler<Bitmap::Coder::r, Bitmap::Coder::g,
+                                       Bitmap::Coder::b, Bitmap::Coder::a,
+                                       texture<Bitmap, filter, wrap_u, wrap_v>> {
+        private:
+            using base= sampler<Bitmap::Coder::r, Bitmap::Coder::g,
+                                Bitmap::Coder::b, Bitmap::Coder::a,
+                                texture<Bitmap, filter, wrap_u, wrap_v>>;
             using rint= int;
+
         public:
+            using base::sample;
             texture() : texture{nullptr} {};
             explicit texture(Bitmap * bitmap) :
-                    base{bitmap->coder().red_bits(),
-                         bitmap->coder().green_bits(),
-                         bitmap->coder().blue_bits(),
-                         bitmap->coder().alpha_bits()},
-                    _border_color{0,0,0, channel((1<<bitmap->coder().alpha_bits())-1)},
+                    base{},
+                    _border_color{0,0,0, channel((1<<bitmap->coder().a)-1)},
                     _bmp{bitmap} {};
 
             void updateBitmap(Bitmap * bitmap) {
@@ -40,7 +44,7 @@ namespace microgl {
             void updateBorderColor(const color_t & color) {
                 _border_color=color;
             }
-            using base::sample;
+
             inline void sample(const rint u, const rint v,
                                const uint8_t bits,
                                color_t &output) const {
@@ -143,7 +147,7 @@ namespace microgl {
             }
 
         private:
-            color_t _border_color {0,0,0,(1<<Bitmap::Coder::alpha_bits())-1};
+            color_t _border_color {0,0,0, (1<<Bitmap::Coder::a()) - 1};
             Bitmap * _bmp= nullptr;
         };
 
