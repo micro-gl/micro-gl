@@ -9,6 +9,7 @@ namespace microgl {
         public:
             using PixelCoder::decode;
             using PixelCoder::encode;
+
             inline void encode(const color_t &input, uint32_t &output) const {
                 output = (input.r << 16) + (input.g << 8) + input.b;
             }

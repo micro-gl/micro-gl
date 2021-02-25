@@ -95,8 +95,9 @@ inline void Canvas<BITMAP, options>::blendColor(const color_t &val, int index, o
     // multiply result with alpha
     color_t result;
     Pixel output;
-    const bool none_compositing = microgl::traits::is_same<PorterDuff, porterduff::None<>>::value;
-    const bool skip_blending =microgl::traits::is_same<BlendMode, blendmode::Normal>::value;
+    constexpr bool is_source_over = microgl::traits::is_same<PorterDuff, porterduff::FastSourceOverOnOpaque>::value;
+    constexpr bool none_compositing = microgl::traits::is_same<PorterDuff, porterduff::None<>>::value;
+    constexpr bool skip_blending =microgl::traits::is_same<BlendMode, blendmode::Normal>::value;
     const bool skip_all= skip_blending && none_compositing && opacity == 255;
     if(!skip_all){
         color_t backdrop, blended;
@@ -112,6 +113,7 @@ inline void Canvas<BITMAP, options>::blendColor(const color_t &val, int index, o
         bits alpha_bits = pixel_coder::alpha_bits() | val.a_bits;
         if(alpha_bits) blended.a = src.a;
         else { blended.a= 255; alpha_bits=8; } // no alpha channel ? let's create one with 8 bits
+        if(is_source_over && blended.a==0) return;
         constexpr bool hasNativeAlphaChannel = pixel_coder::alpha_bits()!=0;
         constexpr unsigned int max_alpha_value = hasNativeAlphaChannel ? (1 << pixel_coder::alpha_bits()) - 1 : (255);
         // fix alpha bits depth in case we don't natively
@@ -137,6 +139,10 @@ inline void Canvas<BITMAP, options>::blendColor(const color_t &val, int index, o
                 // if((backdrop.a ^ _max_alpha_value)) {
                 int max_alpha = max_alpha_value;
                 unsigned int comp = max_alpha - backdrop.a;
+                // this is of-course a not accurate interpolation, we should
+                // divide by 255. bit shifting is like dividing by 256 and is FASTER.
+                // you will pay a price when bit count is low, this is where the error
+                // is very noticeable.
                 blended.r = (comp * src.r + backdrop.a * blended.r) >> alpha_bits;
                 blended.g = (comp * src.g + backdrop.a * blended.g) >> alpha_bits;
                 blended.b = (comp * src.b + backdrop.a * blended.b) >> alpha_bits;
@@ -159,8 +165,7 @@ inline void Canvas<BITMAP, options>::blendColor(const color_t &val, int index, o
         result = val;
 
     coder().encode(result, output);
-    _bitmap_canvas->writeAt(index, output); // not using drawPixel to avoid extra subtraction
-    //drawPixel(output, index);
+    _bitmap_canvas->writeAt(index, output);
 }
 
 template<typename BITMAP, uint8_t options>

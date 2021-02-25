@@ -8,8 +8,9 @@ namespace microgl {
 
         class RGB888_ARRAY : public PixelCoder<vec3<uint8_t>, 8,8,8,0, RGB888_ARRAY> {
         public:
-            using PixelCoder::decode;
-            using PixelCoder::encode;
+            using base = PixelCoder<vec3<uint8_t>, 8,8,8,0, RGB888_ARRAY>;
+            using base::decode;
+            using base::encode;
 
             inline void encode(const color_t &input, vec3<uint8_t> &output) const {
                 output.x = input.r, output.y = input.g, output.z = input.b;

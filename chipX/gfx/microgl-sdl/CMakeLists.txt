@@ -3,7 +3,7 @@ project(microgl-sdl-examples)
 message(\n===========\n${PROJECT_NAME} \n===========\n)
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS_DEBUG  "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG  ${CMAKE_CXX_FLAGS_DEBUG})
 set(CMAKE_CXX_FLAGS_RELEASE " -fno-rtti -fno-exceptions \
                             -fstrict-aliasing -O3 -flto \
                             -Wstrict-aliasing -fno-math-errno \
@@ -66,6 +66,8 @@ set(SOURCES
         example_draw_rect_transform.cpp
         example_3d_shader_color.cpp
         example_geometry_bezier_curve_divider.cpp
+        example_coder_converter.cpp
+        example_sampler_masking_sampler.cpp
         )
 
 set(SOURCES_SHARED
