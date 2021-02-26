@@ -1,18 +1,11 @@
 cmake_minimum_required(VERSION 3.14)
 project(microgl)
+
 enable_language(CXX)
 set (CMAKE_CXX_STANDARD 11)
 
-#if(NOT CMAKE_BUILD_TYPE)
-#    set(CMAKE_BUILD_TYPE Release)
-#endif()
+message("===============\n${PROJECT_NAME} project \n===============")
 
-#message(${CMAKE_BUILD_TYPE})
-#use this - should warn on inline functions that were not inlined -Winline
-#set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -v")
-#set(CMAKE_CXX_FLAGS_RELEASE "-fno-exceptions -fstrict-aliasing -Os -s \
-#                            -fno-rtti -flto -Wstrict-aliasing -fno-math-errno\
-#                             -ffast-math -fno-threadsafe-statics -Wno-unused-parameter")
 set(sources
         src/PixelCoder.cpp
         src/triangles.cpp
@@ -24,19 +17,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(${PROJECT_NAME}
         PUBLIC
         ${PROJECT_SOURCE_DIR}/include/public
-        ${PROJECT_SOURCE_DIR}/include/private
         )
-
-# private include directory
-#target_include_directories(${PROJECT_NAME}
-#        PRIVATE
-#        ${PROJECT_SOURCE_DIR}/src
-#        .
-#        ${PROJECT_SOURCE_DIR}/include/public
-#        ${PROJECT_SOURCE_DIR}/include/public/microgl
-#        ${PROJECT_SOURCE_DIR}/include/private/microgl
-#        ${PROJECT_SOURCE_DIR}/include/private
-#        )
-
-#include_directories(${PROJECT_SOURCE_DIR}/include)
 

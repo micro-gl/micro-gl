@@ -23,7 +23,9 @@
 namespace microgl {
 
     namespace tessellation {
-#define abs_(a) ((a)<0 ? -(a) : (a))
+#define abs__(a) ((a)<0 ? -(a) : (a))
+#define min__(a, b) ((a)<(b) ? (a) : (b))
+#define max__(a, b) ((a)>(b) ? (a) : (b))
 
         enum class fill_rule {
             non_zero, even_odd
@@ -46,8 +48,6 @@ namespace microgl {
         template <typename number>
         class planarize_division {
         private:
-#define min__(a, b) ((a)<(b) ? (a) : (b))
-#define max__(a, b) ((a)>(b) ? (a) : (b))
             using vertex = microgl::vec2<number>;
             using index = unsigned int;
             using half_edge = half_edge_t<number>;
@@ -215,6 +215,8 @@ namespace microgl {
                         return point_class_with_trapeze::right_wall;
                     else if(index==3)
                         return point_class_with_trapeze::top_wall;
+                    else
+                        return point_class_with_trapeze::unknown;
                 }
                 static int indexOfClass(point_class_with_trapeze cls) {
                     switch (cls) {
@@ -250,7 +252,6 @@ namespace microgl {
                     return !isInClosure();
                 }
             };
-
 
         public:
             static
@@ -434,3 +435,7 @@ namespace microgl {
 }
 
 #include "planarize_division.cpp"
+
+#undef abs__
+#undef min__
+#undef max__
