@@ -24,7 +24,7 @@ int main() {
 
     using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>>;
     Resources resources{};
-    sampling::flat_color red{{255, 0, 0, 255}};
+    sampling::flat_color<> red{{255, 0, 0, 255}};
 
     auto * canvas = new Canvas24 (W, H);
 

@@ -19,8 +19,8 @@ namespace microgl {
                 // this is to avoid branching as well
                 // here output alpha is always = 1.0, therefore we can optimize,
                 // there is no difference between pre to un multiplied result.
-                const unsigned int max_val = (1<<alpha_bits)-1;
-                const unsigned int comp = max_val - s.a;
+                constexpr uint16_t max_val = uint16_t(1<<8)-1;
+                const uint16_t comp = max_val - s.a;
 //                unsigned int comp = s.a ^max_val; // flipping bits equals (max_val - s.a)
                 output.r = (s.a * s.r + comp * b.r) >> alpha_bits;
                 output.g = (s.a * s.g + comp * b.g) >> alpha_bits;

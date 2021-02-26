@@ -1098,7 +1098,7 @@ namespace microgl {
             for (index ix = 0; ix < size; ++ix)
                 compute_face_windings(faces[ix]);
 
-            const bool requested_boundary_info=false;//boundary_buffer!=nullptr;
+            const bool requested_boundary_info=boundary_buffer!=nullptr;
             index visible_trapezes_count=0;
             output_indices_type = boundary_buffer ? triangles::indices::TRIANGLES_WITH_BOUNDARY :
                                   triangles::indices::TRIANGLES;

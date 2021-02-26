@@ -10,6 +10,10 @@ class base_bitmap : public crpt<IMPL> {
 public:
     using Pixel=typename CODER::Pixel;
     using Coder=CODER;
+    static constexpr uint8_t r = Coder::r;
+    static constexpr uint8_t g = Coder::g;
+    static constexpr uint8_t b = Coder::b;
+    static constexpr uint8_t a = Coder::a;
 
 protected:
     int _width = 0, _height = 0;
@@ -18,8 +22,8 @@ protected:
     // todo:: add a sub window feature, only involves translating x and y coords or a fixed index ?
 
 public:
-    static constexpr bool hasNativeAlphaChannel() { return CODER::a() != 0; }
-    static constexpr bool nativeAlphaChannelBits() { return hasNativeAlphaChannel() ? CODER::a() : 8; }
+    static constexpr bool hasNativeAlphaChannel() { return CODER::a != 0; }
+    static constexpr bool nativeAlphaChannelBits() { return hasNativeAlphaChannel() ? CODER::a : 8; }
     static constexpr int maxNativeAlphaChannelValue() { return (1u<<nativeAlphaChannelBits())-1; }
 
     base_bitmap(int w, int h) : base_bitmap(new uint8_t[sizeof(buffer_element_type) * w * h], w, h) {}

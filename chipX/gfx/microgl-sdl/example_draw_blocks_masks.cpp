@@ -21,10 +21,10 @@ using namespace microgl::sampling;
 using index_t = unsigned int;
 using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
 using Canvas24= Canvas<Bitmap24>;
-using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::Bilinear>;
+using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 Texture24 tex_uv, tex_mask;
 Canvas24 * canvas;
-sampling::flat_color color_grey{{122,122,122,255}};
+sampling::flat_color<> color_grey{{122,122,122,255}};
 void loop();
 void init_sdl(int width, int height);
 

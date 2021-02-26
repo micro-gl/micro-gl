@@ -130,7 +130,12 @@ public:
     //    support native alpha channel. we use multiplied alpha result for that
     template<class impl>
     using sampler = sampling::sampler<pixel_coder::r, pixel_coder::g, pixel_coder::b,
-                                hasNativeAlphaChannel() ? pixel_coder::a : impl::a, impl>;
+            hasNativeAlphaChannel() ? pixel_coder::a : impl::a,
+            impl>;
+    template<class impl, typename vertex_attr, typename varying, typename number>
+    using shader = shader_base<pixel_coder::r, pixel_coder::g, pixel_coder::b,
+            hasNativeAlphaChannel() ? pixel_coder::a : impl::a,
+            impl, vertex_attr, varying, number>;
 
     explicit Canvas(bitmap * $bmp);
     Canvas(int width, int height);
@@ -191,10 +196,12 @@ public:
 
     // integer blenders
     template<typename BlendMode=blendmode::Normal,
-             typename PorterDuff=porterduff::FastSourceOverOnOpaque>
+             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
+            uint8_t a_src>
     void blendColor(const color_t &val, int x, int y, opacity_t opacity);
     template<typename BlendMode=blendmode::Normal,
-             typename PorterDuff=porterduff::FastSourceOverOnOpaque>
+             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
+             uint8_t a_src>
     inline void blendColor(const color_t &val, int index, opacity_t opacity);
 
     void drawPixel(const Pixel &val, int x, int y);
@@ -301,7 +308,7 @@ public:
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias, bool perspective_correct, bool depth_buffer_flag=false,
             typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type >
-    void drawTriangles(shader_base<impl, vertex_attr, varying, number> &shader,
+    void drawTriangles(shader<impl, vertex_attr, varying, number> &shader,
                        int viewport_width, int viewport_height,
                        const vertex_attr *vertex_buffer,
                        const index *indices,
@@ -359,7 +366,7 @@ public:
             typename PorterDuff=porterduff::None<>,
             bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
             typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type >
-    void drawTriangle(shader_base<impl, vertex_attr, varying, number> &shader,
+    void drawTriangle(shader<impl, vertex_attr, varying, number> &shader,
                       int viewport_width, int viewport_height,
                       vertex_attr v0, vertex_attr v1, vertex_attr v2,
                       opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
@@ -371,7 +378,7 @@ private:
             typename PorterDuff=porterduff::None<>,
             bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
             typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type >
-    void drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
+    void drawTriangle_shader_homo_internal(shader<impl, vertex_attr, varying, number> &$shader,
                                            int viewport_width, int viewport_height,
                                            const vec4<number> &p0, const vec4<number> &p1, const vec4<number> &p2,
                                            varying &varying_v0, varying &varying_v1, varying &varying_v2,
@@ -466,7 +473,7 @@ public:
                       number2 u0=number2(0), number2 v0=number2(1),
                       number2 u1=number2(1), number2 v1=number2(0));
 
-    template<typename BITMAP_FONT_TYPE>
+    template<bool tint=true, typename BITMAP_FONT_TYPE>
     void drawText(const char *text, microgl::text::bitmap_font<BITMAP_FONT_TYPE> &font, const color_t & color,
             microgl::text::text_format & format,
             int left, int top, int right, int bottom, bool frame, opacity_t opacity=255);

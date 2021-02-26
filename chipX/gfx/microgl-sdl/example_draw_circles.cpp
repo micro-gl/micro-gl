@@ -26,7 +26,7 @@ int main() {
     fast_radial_gradient<number> gradient{0.5, 0.5, 0.75};
     linear_gradient_2_colors<120> gradient2Colors{{255,0,255},
                                                   {255,0,0}};
-    flat_color flatColor{{133,133,133, 255}};
+    flat_color<> flatColor{{133,133,133, 255}};
     Resources resources{};
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
     auto * canvas = new Canvas24(W, H);;

@@ -1,6 +1,3 @@
-#pragma once
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
-
 #include <microgl/sampler.h>
 #include <microgl/micro_gl_traits.h>
 
@@ -13,9 +10,9 @@ namespace microgl {
          * a sqrt function which I avoid, therefore my interpolation function is closer
          * to a quadratic function interpolation to calculate interpolation factor
          */
-        template <typename number, unsigned N=10, enum precision $precision=precision::medium, bool useBigIntegers=false>
-        class fast_radial_gradient : public sampler<fast_radial_gradient<number, N, $precision, useBigIntegers>> {
-            using base= sampler<fast_radial_gradient<number, N, $precision, useBigIntegers>>;
+        template <typename number, unsigned N=10, uint8_t r=8, uint8_t g=8, uint8_t b=8, uint8_t a=0, enum precision $precision=precision::medium, bool useBigIntegers=false>
+        class fast_radial_gradient : public sampler<r,g,b,a, fast_radial_gradient<number, N, r,g,b,a, $precision, useBigIntegers>> {
+            using base= sampler<r,g,b,a, fast_radial_gradient<number, N, r,g,b,a, $precision, useBigIntegers>>;
             using rint_big=int64_t;
             using rint= typename microgl::traits::conditional<useBigIntegers, int64_t, int32_t>::type;
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
@@ -43,7 +40,7 @@ namespace microgl {
             stop_t _stops[N];
             rint _cx=HALF, _cy=HALF, _radius=HALF;
         public:
-            fast_radial_gradient() : base{8, 8, 8, 8} {}
+            fast_radial_gradient() : base{} {}
             fast_radial_gradient(const number &cx, const number &cy, const number &radius) :
                     fast_radial_gradient() {
                 setNewRadial(cx, cy, radius);
@@ -64,11 +61,11 @@ namespace microgl {
                 stop.start_squared= (distance * distance) >> p_bits;
                 stop.color= color;
                 if(index>0) {
-                    rint a= (rint_big(_stops[index].where)*_radius)>>p_bits;
-                    rint b= (rint_big(_stops[index-1].where)*_radius)>>p_bits;
-                    a = (a*a)>>p_bits;
-                    b = (b*b)>>p_bits;
-                    rint l=a-b;
+                    rint a_= (rint_big(_stops[index].where)*_radius)>>p_bits;
+                    rint b_= (rint_big(_stops[index-1].where)*_radius)>>p_bits;
+                    a_ = (a_*a_)>>p_bits;
+                    b_ = (b_*b_)>>p_bits;
+                    rint l=a_-b_;
                     rint l_inverse= (rint_big(1)<<p_bits_double)/l;
                     _stops[index].length_inverse= l_inverse;
                     _stops[index].length= l;

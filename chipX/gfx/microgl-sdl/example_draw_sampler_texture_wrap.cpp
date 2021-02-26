@@ -16,7 +16,7 @@ float t=0;
 int main() {
     using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
     using Texture24= sampling::texture<Bitmap<coder::RGB888_ARRAY>,
-                                        sampling::texture_filter::NearestNeighboor,
+                                        sampling::texture_filter::NearestNeighboor, false,
                                         sampling::texture_wrap::Clamp,
                                         sampling::texture_wrap::Repeat>;
     using number = Q<12>;

@@ -35,6 +35,7 @@ namespace microgl {
 
         template<typename number, typename S>
         class sampler_shader : public shader_base<
+                S::r, S::g, S::b, S::a,
                 sampler_shader<number, S>,
                 sampler_shader_vertex_attribute<number>,
                 sampler_shader_varying<number>, number> {

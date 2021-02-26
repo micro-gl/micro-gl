@@ -59,7 +59,7 @@ int main() {
         mat4 mvp_1= projection*view*model_1;
 
         // setup shader
-        flat_color_shader<number> shader;
+        flat_color_shader<number, 8,8,8,0> shader;
         shader.matrix= mvp_1;
         shader.color= {0,255,255,255};
 
@@ -91,4 +91,3 @@ int main() {
 
     example_run(canvas, render);
 }
-

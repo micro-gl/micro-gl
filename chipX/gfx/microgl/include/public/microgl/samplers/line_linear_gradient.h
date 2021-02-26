@@ -13,9 +13,9 @@ namespace microgl {
          * @tparam number
          * @tparam N
          */
-        template <typename number, unsigned N=10, enum precision $precision=precision::medium, bool useBigIntegers=false>
-        class line_linear_gradient : public sampler<line_linear_gradient<number, N, $precision, useBigIntegers>> {
-            using base= sampler<line_linear_gradient<number, N, $precision, useBigIntegers>>;
+        template <typename number, unsigned N=10, bits R=8, bits G=8, bits B=8, bits A=8, enum precision $precision=precision::medium, bool useBigIntegers=false>
+        class line_linear_gradient : public sampler<R,G,B,A, line_linear_gradient<number, N, R,G,B,A, $precision, useBigIntegers>> {
+            using base= sampler<R,G,B,A, line_linear_gradient<number, N, R,G,B,A, $precision, useBigIntegers>>;
             using rint_big=int64_t;
             using rint= typename microgl::traits::conditional<useBigIntegers, int64_t, int32_t>::type;
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
@@ -72,7 +72,7 @@ namespace microgl {
             stop_t _stops[N];
 
         public:
-            line_linear_gradient() : base{8, 8, 8, 8} {}
+            line_linear_gradient() : base{} {}
             line_linear_gradient(const vec2<number> & start, const vec2<number> & end) :
                     line_linear_gradient() {
                 setNewLine(start, end);

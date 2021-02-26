@@ -25,7 +25,7 @@ int main() {
 
     using Canvas24 = Canvas<Bitmap<coder::RGB888_PACKED_32>>;
     auto *canvas = new Canvas24(W, H);
-    sampling::flat_color color_red{{255, 0, 0, 255}};
+    sampling::flat_color<> color_red{{255, 0, 0, 255}};
 
     auto render_polygon = [&](const dynamic_array<vec2<number>> &polygon) {
         using index = unsigned int;

@@ -27,7 +27,7 @@ using Canvas24= Canvas<Bitmap24>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::Bilinear>;
 Texture24 tex_uv;
 Canvas24 * canvas;
-sampling::flat_color color_grey{{0,0,122,255}};
+sampling::flat_color<> color_grey{{0,0,122,255}};
 void loop();
 void init_sdl(int width, int height);
 float t=0;

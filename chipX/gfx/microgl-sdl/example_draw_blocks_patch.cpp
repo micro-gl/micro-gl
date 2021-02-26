@@ -24,7 +24,7 @@ using Canvas24= Canvas<Bitmap24>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::Bilinear>;
 Texture24 tex_uv;
 Canvas24 * canvas;
-sampling::flat_color color_grey{{122,122,122,255}};
+sampling::flat_color<> color_grey{{122,122,122,255}};
 void loop();
 void init_sdl(int width, int height);
 
@@ -61,7 +61,7 @@ template <typename number>
 void render_blocks() {
     bool debug = 1;
     const auto mesh= bi_cubic_1<number>();
-    int block_size = W/1;//2;//W/13;
+    int block_size = W/4;//2;//W/13;
     int count_blocks_horizontal = 1+((W-1)/block_size); // with integer ceil rounding
     int count_blocks_vertical = 1+((H-1)/block_size); // with integer ceil rounding
     auto * bitmap = new Bitmap24(block_size, block_size);

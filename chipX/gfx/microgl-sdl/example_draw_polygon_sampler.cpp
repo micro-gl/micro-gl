@@ -41,7 +41,7 @@ int main() {
 
     linear_gradient_2_colors<90> gradient2Colors{{255,0,255},
                                                 {255,0,0}};
-    flat_color flatColor{{133,133,133, 255}};
+    flat_color<> flatColor{{133,133,133, 255}};
 
     auto * canvas = new Canvas24(W, H);
     Resources resources{};

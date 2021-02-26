@@ -7,7 +7,7 @@
 namespace microgl {
     namespace shading {
 
-        template<typename impl, typename vertex_attr, typename varying, typename number>
+        template<uint8_t R, uint8_t G, uint8_t B, uint8_t A, typename impl, typename vertex_attr, typename varying, typename number>
         class shader_base : public crpt<impl> {
         protected:
             using vertex3= vec3<number>;
@@ -16,7 +16,12 @@ namespace microgl {
             using gl_FragCoord= vec4<number>;
             gl_FragCoord _frag_coord;
         public:
-//            const vertex4 &barycentric() {
+            static constexpr uint8_t r = R;
+            static constexpr uint8_t g = G;
+            static constexpr uint8_t b = B;
+            static constexpr uint8_t a = A;
+
+            //            const vertex4 &barycentric() {
 //                return _bary;
 //            }
 //

@@ -17,7 +17,7 @@ int main() {
     using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
     using Canvas24= Canvas<Bitmap24>;
     auto * canvas = new Canvas24(W, H);
-    sampling::flat_color color_red{{255,0,0,255}};
+    sampling::flat_color<> color_red{{255,0,0,255}};
 
     vertex vertices[4] = {{0,0},
                           {100,0},
@@ -38,6 +38,7 @@ int main() {
         mat rotation = mat::rotation(t_number_angle);
         mat rotation_pivot = mat::rotation(t_number_angle, 50, 50,
                                            number_scale, number_scale / 2);
+
         mat translate = mat::translate(100.0f, 100);
         mat scale = mat::scale(number_scale, number_scale);
         mat shear_x = mat::shear_x(float(t));

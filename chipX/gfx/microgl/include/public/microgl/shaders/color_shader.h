@@ -28,8 +28,8 @@ namespace microgl {
             microgl::color::color_t color;
         };
 
-        template<typename number>
-        class color_shader : public shader_base<color_shader<number>, color_shader_vertex_attributes<number>, color_shader_varying<number>, number> {
+        template<typename number, uint8_t r, uint8_t g, uint8_t b, uint8_t a>
+        class color_shader : public shader_base<r,g,b,a, color_shader<number, r,g,b,a>, color_shader_vertex_attributes<number>, color_shader_varying<number>, number> {
         public:
             matrix_4x4<number> matrix;
 

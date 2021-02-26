@@ -113,8 +113,8 @@ int main() {
     using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
     using Canvas24= Canvas<Bitmap24>;
     using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
-    sampling::flat_color color_red{{255,0,0,255}};
-    sampling::flat_color color_black{{0,0,0,255}};
+    sampling::flat_color<> color_red{{255,0,0,255}};
+    sampling::flat_color<> color_black{{0,0,0,255}};
     auto * canvas = new Canvas24(W, H);
     float t = 0;
 

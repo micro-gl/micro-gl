@@ -15,9 +15,9 @@ namespace microgl {
             }
 
             inline void decode(const uint32_t &input, color_t &output) const {
-                output.r = (input & 0xFF0000) >> 16;
-                output.g = (input & 0x00FF00) >> 8;
-                output.b = (input & 0x0000FF);
+                output.r = (input & 0x00FF0000) >> 16;
+                output.g = (input & 0x0000FF00) >> 8;
+                output.b = (input & 0x000000FF);
             };
 
         };

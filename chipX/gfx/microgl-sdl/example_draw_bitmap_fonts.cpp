@@ -25,24 +25,25 @@ int main() {
 
     Resources resources{};
 
-    Canvas24 * canvas = new Canvas24(W, H);;
+    auto * canvas = new Canvas24(W, H);;
     font32 font;
 
-//    font = resources.loadFont<Bitmap24_ARRAY>("minecraft-20");
+//    font = resources.loadFont<Bitmap32_ARRAY>("minecraft-20");
     font = resources.loadFont<Bitmap32_ARRAY>("digital_7-20");
-//    font = resources.loadFont<Bitmap24_ARRAY>("roboto-thin-28");
-//    font = resources.loadFont<Bitmap24_ARRAY>("roboto-thin-14");
-//    font = resources.loadFont<Bitmap24_ARRAY>("mont-med-16");
-//    font = resources.loadFont<Bitmap24_ARRAY>("test");
+//    font = resources.loadFont<Bitmap32_ARRAY>("roboto-thin-28");
+//    font = resources.loadFont<Bitmap32_ARRAY>("roboto-thin-14");
+//    font = resources.loadFont<Bitmap32_ARRAY>("mont-med-16");
+//    font = resources.loadFont<Bitmap32_ARRAY>("test");
 
     auto render = [&]() -> void {
 //        font.offsetX=5;
 //        font.offsetY=5;
-//        font.padding=5;
+        font.padding=5;
         text::text_format format;
 //    font.lineHeight=19;
+        format.letterSpacing=0;
         format.leading=5;
-        format.fontSize=-1;
+//        format.fontSize=100;
 //    format.horizontalAlign=text::hAlign::right;
         format.horizontalAlign=text::hAlign::left;
 //    format.horizontalAlign=text::hAlign::center;

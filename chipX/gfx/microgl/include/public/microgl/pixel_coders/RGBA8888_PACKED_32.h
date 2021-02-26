@@ -16,7 +16,7 @@ namespace microgl {
                 output.r = (input & 0xFF000000) >> 24;
                 output.g = (input & 0x00FF0000) >> 16;
                 output.b = (input & 0x0000FF00) >> 8;
-                output.a = 0;//(input & 0x000000FF);
+                output.a = (input & 0x000000FF);
             };
 
         };

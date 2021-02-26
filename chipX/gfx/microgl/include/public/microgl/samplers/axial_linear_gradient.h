@@ -6,9 +6,9 @@
 namespace microgl {
     namespace sampling {
 
-        template <unsigned degree=0, unsigned N=10, enum precision $precision=precision::medium, bool useBigIntegers=false>
-        class axial_linear_gradient : public sampler<axial_linear_gradient<degree, N, $precision, useBigIntegers>> {
-            using base= sampler<axial_linear_gradient<degree, N, $precision, useBigIntegers>>;
+        template <unsigned degree=0, unsigned N=10, bits R=8, bits G=8, bits B=8, bits A=8, enum precision $precision=precision::medium, bool useBigIntegers=false>
+        class axial_linear_gradient : public sampler<R,G,B,A, axial_linear_gradient<degree, N, R,G,B,A, $precision, useBigIntegers>> {
+            using base= sampler<R,G,B,A, axial_linear_gradient<degree, N, R,G,B,A, $precision, useBigIntegers>>;
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
             static constexpr precision_t p_bits_double= p_bits<<1;
             using rint_big=int64_t;
@@ -30,7 +30,7 @@ namespace microgl {
 
         public:
 
-            axial_linear_gradient() : base{8, 8, 8, 8} {};
+            axial_linear_gradient() : base{} {};
 
             template <typename number>
             void addStop(const number & where, const color_t &color) {

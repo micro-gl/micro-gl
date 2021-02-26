@@ -14,38 +14,60 @@ namespace microgl {
 
         template <typename Bitmap,
                 texture_filter filter=texture_filter::NearestNeighboor,
+                bool tint=false,
                 texture_wrap wrap_u=texture_wrap::None,
                 texture_wrap wrap_v=texture_wrap::None>
     class texture : public sampler<Bitmap::Coder::r, Bitmap::Coder::g,
                                        Bitmap::Coder::b, Bitmap::Coder::a,
-                                       texture<Bitmap, filter, wrap_u, wrap_v>> {
+                                       texture<Bitmap, filter, tint, wrap_u, wrap_v>> {
         private:
-            using base= sampler<Bitmap::Coder::r, Bitmap::Coder::g,
-                                Bitmap::Coder::b, Bitmap::Coder::a,
-                                texture<Bitmap, filter, wrap_u, wrap_v>>;
-            using rint= int;
+        using base= sampler<Bitmap::Coder::r, Bitmap::Coder::g,
+                            Bitmap::Coder::b, Bitmap::Coder::a,
+                            texture<Bitmap, filter, tint, wrap_u, wrap_v>>;
+        using rint= int;
 
+        void tint_color(color_t & color, const color_t & color_tint) const {
+            constexpr uint8_t r_ = base::r;
+            constexpr uint8_t g_ = base::g;
+            constexpr uint8_t b_ = base::b;
+            constexpr uint8_t a_ = base::a;
+            color.r = (uint16_t (color.r)*color_tint.r)>>r_;
+            color.g = (uint16_t (color.g)*color_tint.g)>>g_;
+            color.b = (uint16_t (color.b)*color_tint.b)>>b_;
+            color.a = (uint16_t (color.a)*color_tint.a)>>a_;
+        }
+
+        static constexpr uint8_t r_max_val = (1<<base::r) - 1;
+        static constexpr uint8_t g_max_val = (1<<base::g) - 1;
+        static constexpr uint8_t b_max_val = (1<<base::b) - 1;
+        static constexpr uint8_t a_max_val = (1<<base::a) - 1;
         public:
-            using base::sample;
-            texture() : texture{nullptr} {};
-            explicit texture(Bitmap * bitmap) :
-                    base{},
-                    _border_color{0,0,0, channel((1<<bitmap->coder().a)-1)},
-                    _bmp{bitmap} {};
+        using base::sample;
+        texture() : texture{nullptr, {r_max_val,g_max_val,b_max_val, a_max_val} } {};
+        texture(Bitmap * bitmap) : texture{bitmap, {r_max_val,g_max_val,b_max_val, a_max_val} } {};
+        texture(Bitmap * bitmap, const color_t &tint_color) :
+                base{},
+                _color_tint{tint_color},
+                _border_color{0,0,0, channel(a_max_val)},
+                _bmp{bitmap} {};
 
-            void updateBitmap(Bitmap * bitmap) {
-                _bmp=bitmap;
-            }
+        void updateBitmap(Bitmap * bitmap) {
+            _bmp=bitmap;
+        }
 
-            Bitmap & bitmap() {
-                return *_bmp;
-            }
+        Bitmap & bitmap() {
+            return *_bmp;
+        }
 
-            void updateBorderColor(const color_t & color) {
-                _border_color=color;
-            }
+        void updateBorderColor(const color_t & color) {
+            _border_color=color;
+        }
 
-            inline void sample(const rint u, const rint v,
+        void updateTintColor(const color_t & color) {
+            _color_tint=color;
+        }
+
+        inline void sample(const rint u, const rint v,
                                const uint8_t bits,
                                color_t &output) const {
                 rint u_=u, v_=v;
@@ -97,6 +119,7 @@ namespace microgl {
                 const rint y = (rint(_bmp->height()-1)*(v)+half) >> bits;
                 const int index_bmp = y*_bmp->width() + x;
                 _bmp->decode(index_bmp, output);
+                if(tint) tint_color(output, _color_tint);
 //                output={0,0,0,255};
             }
 
@@ -144,10 +167,13 @@ namespace microgl {
                 output.g = (rint(a.g) * (max - ty) + rint(b.g) * ty) >> bits;
                 output.b = (rint(a.b) * (max - ty) + rint(b.b) * ty) >> bits;
                 output.a = (rint(a.a) * (max - ty) + rint(b.a) * ty) >> bits;
+
+                if(tint) tint_color(output, _color_tint);
             }
 
         private:
-            color_t _border_color {0,0,0, (1<<Bitmap::Coder::a()) - 1};
+            color_t _border_color {0,0,0, a_max_val};
+            color_t _color_tint ;
             Bitmap * _bmp= nullptr;
         };
 

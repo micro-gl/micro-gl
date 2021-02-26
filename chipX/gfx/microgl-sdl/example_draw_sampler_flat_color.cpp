@@ -20,7 +20,7 @@ int main() {
     using number = float;
 
     auto * canvas = new Canvas24(W, H);;
-    flat_color color_sampler{{255,122,0}};
+    flat_color<> color_sampler{{255,122,0}};
 
     auto render = [&]() -> void {
         canvas->clear({255,255,255,255});
