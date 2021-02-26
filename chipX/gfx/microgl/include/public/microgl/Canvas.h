@@ -129,13 +129,11 @@ public:
     // ** this is used to allow the blender to do alpha composition even for canvases that do not
     //    support native alpha channel. we use multiplied alpha result for that
     template<class impl>
-    using sampler = sampling::sampler<pixel_coder::r, pixel_coder::g, pixel_coder::b,
-            hasNativeAlphaChannel() ? pixel_coder::a : impl::a,
-            impl>;
+    using sampler = sampling::sampler<pixel_coder::r, pixel_coder::g, pixel_coder::b, impl::a, impl>;
+
     template<class impl, typename vertex_attr, typename varying, typename number>
-    using shader = shader_base<pixel_coder::r, pixel_coder::g, pixel_coder::b,
-            hasNativeAlphaChannel() ? pixel_coder::a : impl::a,
-            impl, vertex_attr, varying, number>;
+    using shader = shader_base<pixel_coder::r, pixel_coder::g, pixel_coder::b, impl::a,
+                                impl, vertex_attr, varying, number>;
 
     explicit Canvas(bitmap * $bmp);
     Canvas(int width, int height);

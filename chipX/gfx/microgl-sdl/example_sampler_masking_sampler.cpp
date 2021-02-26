@@ -12,14 +12,13 @@
 #define TEST_ITERATIONS 100
 #define W 640*1
 #define H 640*1
-//todo:: implement
+
 using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
 float t=0;
 
 int main() {
-    coder::coder_converter<coder::RGB888_ARRAY, coder::RGB888_PACKED_32> a{};
     using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>>;
     using Texture24= sampling::texture<Bitmap<coder::RGB888_ARRAY>>;
     using Texture32= sampling::texture<Bitmap<coder::RGBA8888_ARRAY>>;
