@@ -88,7 +88,6 @@ if(SDL2_FOUND)
         # I used a simple string replace, to cut off .cpp.
         string( REPLACE ".cpp" "" testname ${testsourcefile} )
         include_directories("${SDL2_INCLUDE_DIR}")
-        #    include_directories("../../..")
         include_directories("${PROJECT_SOURCE_DIR}/src")
         include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
         include_directories("${PROJECT_BINARY_DIR}")

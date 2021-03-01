@@ -6,6 +6,21 @@ can run on any 32 bits computer without FPU or GPU.
 
 check out our website at [micro-gl.github.io](micro-gl.github.io)
 
+## install *microGL* with *CMake*
+
+```bash
+$ cd path/to/microgl
+$ mkdir cmake-build-release
+$ cd cmake-build-release
+
+# use this to install globally (usually /usr/local/ on *nix)
+$ cmake -DCMAKE_BUILD_TYPE=Release ..
+# use this to install at a folder you want
+$ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/path/for/install ..
+
+$ cmake --build . --target install
+```
+
 ## running examples
 first make sure you have 
  - [SDL2](https://www.libsdl.org/) installed at your system.  

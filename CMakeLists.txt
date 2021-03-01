@@ -11,12 +11,29 @@ set(sources
         src/triangles.cpp
         src/qsort.cpp)
 
-add_library(${PROJECT_NAME} ${sources})
-#set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+
+add_library(${PROJECT_NAME} STATIC ${sources})
+add_library(${PROJECT_NAME}-shared SHARED ${sources})
+
 # expose public include directory
 target_include_directories(${PROJECT_NAME}
         PUBLIC
         ${PROJECT_SOURCE_DIR}/include/public
         )
 
+target_include_directories(${PROJECT_NAME}-shared
+        PUBLIC
+        ${PROJECT_SOURCE_DIR}/include/public
+        )
+
+# Don't make the install target depend on the all target.
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
+install(TARGETS microgl microgl-shared LIBRARY DESTINATION "lib"
+                                       ARCHIVE DESTINATION "lib"
+                                       RUNTIME DESTINATION "bin")
+install(DIRECTORY include/public/microgl DESTINATION include)
+
+# add the targets examples project
 add_subdirectory(examples)
