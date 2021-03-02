@@ -7,6 +7,8 @@ namespace microgl {
 
         class RGBA5551_PACKED_16 : public PixelCoder<uint16_t, 5,5,5,1, RGBA5551_PACKED_16> {
         public:
+            using PixelCoder::decode;
+            using PixelCoder::encode;
 
             inline void encode(const color_t &input, uint16_t &output) {
                 output = ((input.r & 0x1F) << 11) + ((input.g & 0x1F) << 6) + ((input.b & 0x1F) << 1) + (input.a & 0x1);

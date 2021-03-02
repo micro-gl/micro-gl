@@ -1,4 +1,4 @@
-## micro{gl}
+# micro{gl}
 <hr/>
 
 fast, super slim (mostly headers files only) `c++11` graphics library, that  
