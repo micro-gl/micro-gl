@@ -1,7 +1,6 @@
 # micro{gl}
-<hr/>
 
-fast, super slim (mostly headers files only) `c++11` graphics library, that  
+fast, super slim, headers files only `C++11` graphics library, that  
 can run on any 32 bits computer without FPU or GPU.
 
 check out our website at [micro-gl.github.io](micro-gl.github.io)

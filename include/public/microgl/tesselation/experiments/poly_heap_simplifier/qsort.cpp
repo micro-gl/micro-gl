@@ -1,4 +1,5 @@
 #include <microgl/qsort.h>
+#include <microgl/triangles.h>
 
 /*
  * A merge sort implementation, simplified from_sampler the qsort implementation

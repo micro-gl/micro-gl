@@ -4,6 +4,7 @@
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
 #include <microgl/tesselation/ear_clipping_triangulation.h>
+#include <microgl/triangles.h>
 
 #define TEST_ITERATIONS 1
 #define W 640*1

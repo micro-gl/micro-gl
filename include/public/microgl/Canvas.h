@@ -481,4 +481,4 @@ public:
             int left, int top, int right, int bottom, bool frame, opacity_t opacity=255);
 };
 
-#include "../../src/Canvas.tpp"
+#include "Canvas.tpp"

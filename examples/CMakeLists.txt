@@ -82,7 +82,7 @@ if(SDL2_FOUND)
             libs/stb_image/stb_image.cpp
             src/Resources.cpp
             src/example.cpp src/example.h
-            )
+            test.cpp)
 
     foreach( testsourcefile ${SOURCES} )
         # I used a simple string replace, to cut off .cpp.
