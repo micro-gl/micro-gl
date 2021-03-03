@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
 #pragma once
 
 #include <microgl/base_bitmap.h>
@@ -11,7 +9,7 @@ class PackedBitmap : public base_bitmap<PackedBitmap<BPP, CODER, reverse_element
     using byte=unsigned char;
     static constexpr bool is_1_2_4_8 = BPP==1||BPP==2||BPP==4||BPP==8;
     typename std::enable_if<is_1_2_4_8, bool>::type fails_if_else;
-    typename std::enable_if<microgl::traits::is_same<typename CODER::Pixel, byte>::value, bool>::type fails_if_not_pixel_8_bit;
+    typename std::enable_if<microgl::traits::is_same<typename CODER::pixel, byte>::value, bool>::type fails_if_not_pixel_8_bit;
     static constexpr byte M = 3;
     static constexpr byte BPE = byte(1)<<M; // always 8 bits, 1 byte
     static constexpr byte K=(BPP==1 ? 0 : (BPP==2 ? 1 : (BPP==4 ? 2 : (BPP==8 ? 3 : 4))));
@@ -79,5 +77,3 @@ public:
     }
 
 };
-
-#pragma clang diagnostic pop

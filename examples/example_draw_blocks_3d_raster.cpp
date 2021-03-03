@@ -26,7 +26,7 @@ using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
 using Canvas24= canvas<Bitmap24>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::Bilinear>;
 Texture24 tex_uv;
-Canvas24 * canvas;
+Canvas24 * canva;
 sampling::flat_color<> color_grey{{0,0,122,255}};
 void loop();
 void init_sdl(int width, int height);
@@ -58,8 +58,8 @@ void render_block(int block_x, int block_y, Bitmap24 *bmp, z_buffer_type * depth
                                    {5,0,0}, {10,10,10});
 //    mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
     mat4 view = camera::angleAt({0, 0, 70}, 0, math::deg_to_rad(0),0);
-    mat4 projection = camera::perspective(math::deg_to_rad(60), canvas->width(), canvas->height(), 1, 500);
-//    mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2, -canvas->height()/2, canvas->height()/2, 1, 1000);
+    mat4 projection = camera::perspective(math::deg_to_rad(60), canva->width(), canva->height(), 1, 500);
+//    mat4 projection= camera::orthographic(-canva->width()/2, canva->width()/2, -canva->height()/2, canva->height()/2, 1, 1000);
     mat4 mvp_1= projection*view*model_1;
     mat4 mvp_2= projection*view*model_2;
 
@@ -80,9 +80,9 @@ void render_block(int block_x, int block_y, Bitmap24 *bmp, z_buffer_type * depth
     // clear z-buffer
     depth_buffer->clear();
 
-    canvas->updateCanvasWindow(block_x, block_y, bmp);
+    canva->updateCanvasWindow(block_x, block_y, bmp);
     // draw model_1
-    canvas->drawTriangles<blendmode::Normal, porterduff::None<>, false, true, true>(
+    canva->drawTriangles<blendmode::Normal, porterduff::None<>, false, true, true>(
             shader, W, H,
             vertex_buffer.data(),
             object.indices.data(),
@@ -94,7 +94,7 @@ void render_block(int block_x, int block_y, Bitmap24 *bmp, z_buffer_type * depth
 //    return;
     // draw model_2
     shader.matrix= mvp_2;
-    canvas->drawTriangles<blendmode::Normal, porterduff::None<>, false, true, true>(
+    canva->drawTriangles<blendmode::Normal, porterduff::None<>, false, true, true>(
             shader, W, H,
             vertex_buffer.data(),
             object.indices.data(),
@@ -113,25 +113,25 @@ void render_blocks() {
     int count_blocks_horizontal = 1+((W-1)/block_size); // with integer ceil rounding
     int count_blocks_vertical = 1+((H-1)/block_size); // with integer ceil rounding
     auto * bitmap = new Bitmap24(block_size, block_size);
-    canvas = new Canvas24(bitmap);
-    z_buffer<16> depth_buffer(canvas->width(), canvas->height());
+    canva = new Canvas24(bitmap);
+    z_buffer<16> depth_buffer(canva->width(), canva->height());
 
     auto * sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
                                            SDL_TEXTUREACCESS_STREAMING, block_size, block_size);
 
-    canvas->updateClipRect(0, 0, W, H);
+    canva->updateClipRect(0, 0, W, H);
     SDL_RenderClear(renderer);
     for (int iy = 0; iy < block_size*count_blocks_vertical; iy+=block_size) {
         for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
-            canvas->updateCanvasWindow(ix, iy, bitmap);
-            canvas->clear({255,255,255,255});
+            canva->updateCanvasWindow(ix, iy, bitmap);
+            canva->clear({255,255,255,255});
             render_block<number>(ix, iy, bitmap, &depth_buffer, model);
             SDL_Rect rect_source {0, 0, block_size, block_size};
             SDL_Rect rect_dest {ix, iy, block_size-debug, block_size-debug};
             SDL_UpdateTexture(sdl_texture,
                               &rect_source,
-                              &canvas->pixels()[0],
-                              (canvas->width()) * canvas->sizeofPixel());
+                              &canva->pixels()[0],
+                              (canva->width()) * canva->sizeofPixel());
             SDL_RenderCopy(renderer, sdl_texture, &rect_source, &rect_dest);
         }
     }

@@ -23,7 +23,7 @@ using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
 using Canvas24= canvas<Bitmap24>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::Bilinear>;
 Texture24 tex_uv;
-Canvas24 * canvas;
+Canvas24 * canvas_;
 sampling::flat_color<> color_grey{{0,0,122,255}};
 void loop();
 void init_sdl(int width, int height);
@@ -46,13 +46,13 @@ void render_blocks() {
     auto * sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STREAMING, block_size, block_size);
 
-    canvas->updateClipRect(0, 0, W, H);
+    canvas_->updateClipRect(0, 0, W, H);
     SDL_RenderClear(renderer);
     for (int iy = 0; iy < block_size*count_blocks_vertical; iy+=block_size) {
         for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
-            canvas->updateCanvasWindow(ix, iy, bitmap);
-            canvas->clear({255,255,255,255});
-            canvas->drawRoundedRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
+            canvas_->updateCanvasWindow(ix, iy, bitmap);
+            canvas_->clear({255,255,255,255});
+            canvas_->drawRoundedRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
                     tex_uv,
                     color_grey,
                     10+t, 10+t, 400+t, 400+t, 10, 1);
@@ -61,8 +61,8 @@ void render_blocks() {
             SDL_Rect rect_dest {ix, iy, block_size-debug, block_size-debug};
             SDL_UpdateTexture(sdl_texture,
                               &rect_source,
-                              &canvas->pixels()[0],
-                              (canvas->width()) * canvas->sizeofPixel());
+                              &canvas_->pixels()[0],
+                              (canvas_->width()) * canvas_->sizeofPixel());
             SDL_RenderCopy(renderer, sdl_texture, &rect_source, &rect_dest);
         }
     }
@@ -91,7 +91,7 @@ void init_sdl(int width, int height) {
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
     auto bmp_uv_U8 = new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
-    canvas = new Canvas24(width, height);
+    canvas_ = new Canvas24(width, height);
 }
 
 int render_test(int N) {

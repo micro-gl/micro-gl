@@ -22,7 +22,7 @@ namespace microgl {
 
         private:
             using base = pixel_coder<typename from_sampler::pixel, rgba_, coder_rgba<from_sampler, rgba_>>;
-            using pixel_from = typename from_sampler::Pixel;
+            using pixel_from = typename from_sampler::pixel;
             from_sampler _coder_from;
         public:
             using base::decode;

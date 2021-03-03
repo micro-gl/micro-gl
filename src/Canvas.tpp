@@ -415,11 +415,11 @@ void canvas<BITMAP, options>::drawRoundedRect(const sampler<S1> & sampler_fill,
             }
             if (sample_fill) {
                 sampler_fill.sample(u>>boost_u, v>>boost_v, uv_p, color);
-                blendColor<BlendMode, PorterDuff, S1::a>(color, (index+x_r), blend_fill);
+                blendColor<BlendMode, PorterDuff, S1::rgba::a>(color, (index+x_r), blend_fill);
             }
             if (sample_stroke) {
                 sampler_stroke.sample(u>>boost_u, v>>boost_v, uv_p, color);
-                blendColor<BlendMode, PorterDuff, S2::a>(color, (index+x_r), blend_stroke);
+                blendColor<BlendMode, PorterDuff, S2::rgba::a>(color, (index+x_r), blend_stroke);
             }
         }
     }
@@ -882,7 +882,7 @@ void canvas<BITMAP, options>::drawTriangle(const sampler<S> &sampler,
                 v_i = functions::clamp<rint>(v_i, 0, (rint(1)<<uv_precision));
                 color_t col_bmp;
                 sampler.sample(u_i, v_i, uv_precision, col_bmp);
-                blendColor<BlendMode, PorterDuff, S::a>(col_bmp, index + p.x, blend);
+                blendColor<BlendMode, PorterDuff, S::rgba::a>(col_bmp, index + p.x, blend);
             }
             w0+=A01; w1+=A12; w2+=A20;
             if(antialias) { w0_h+=A01_h; w1_h+=A12_h; w2_h+=A20_h; }
@@ -1631,10 +1631,10 @@ void canvas<BITMAP, options>::drawText(const char * text, microgl::text::bitmap_
         }
     }
     else { // the sampler above gives amazing results for unscaled graphics, but I  to go for the most accurate version
-        constexpr uint8_t r_ = BITMAP_FONT_TYPE::r;
-        constexpr uint8_t g_ = BITMAP_FONT_TYPE::g;
-        constexpr uint8_t b_ = BITMAP_FONT_TYPE::b;
-        constexpr uint8_t a_ = BITMAP_FONT_TYPE::a;
+        constexpr uint8_t r_ = BITMAP_FONT_TYPE::rgba::r;
+        constexpr uint8_t g_ = BITMAP_FONT_TYPE::rgba::g;
+        constexpr uint8_t b_ = BITMAP_FONT_TYPE::rgba::b;
+        constexpr uint8_t a_ = BITMAP_FONT_TYPE::rgba::a;
         for (unsigned ix = 0; ix < count; ++ix) {
             const auto & l= result.locations[ix];
             const auto & c= *l.character;

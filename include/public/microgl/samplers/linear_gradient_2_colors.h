@@ -1,12 +1,11 @@
 #pragma once
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
 
 #include <microgl/sampler.h>
 
 namespace microgl {
     namespace sampling {
 
-        template <unsigned degree=90, typename rgba_=void, bool useBigIntegers=false>
+        template <unsigned degree=90, typename rgba_=rgba_t<8,8,8,0>, bool useBigIntegers=false>
         class linear_gradient_2_colors : public sampler<rgba_, linear_gradient_2_colors<degree, rgba_, useBigIntegers>> {
             using base= sampler<rgba_, linear_gradient_2_colors<degree, rgba_, useBigIntegers>>;
             using rint_big=int64_t;

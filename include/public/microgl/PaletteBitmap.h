@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
 #pragma once
 
 #include <microgl/base_bitmap.h>
@@ -20,9 +18,9 @@ class PaletteBitmap : public base_bitmap<PaletteBitmap<PALETTE_SIZE, CODER, reve
 public:
     using base::pixelAt;
     using base::writeAt;
-    using Pixel=typename base::Pixel;
+    using pixel=typename base::pixel;
 
-    Pixel palette[PALETTE_SIZE];
+    pixel palette[PALETTE_SIZE];
 
     static
     int pad_to(int val, int bits, int align_bits=8) {
@@ -33,20 +31,20 @@ public:
     }
 
     PaletteBitmap(int w, int h) : PaletteBitmap{new uint8_t[(w*h)>>T], nullptr, w, h} {};
-    PaletteBitmap(uint8_t* $indices, const Pixel *palette, int w, int h) : base {$indices, (w*h)>>T, w, h} {
+    PaletteBitmap(uint8_t* $indices, const pixel *palette, int w, int h) : base {$indices, (w*h)>>T, w, h} {
         updatePalette(palette);
     };
     PaletteBitmap(uint8_t* $indices, const void *palette, int w, int h) :
-                            PaletteBitmap{$indices, reinterpret_cast<const Pixel *>(palette), w, h} {};
+                            PaletteBitmap{$indices, reinterpret_cast<const pixel *>(palette), w, h} {};
     ~PaletteBitmap() = default;
 
-    void updatePaletteValue(const byte& index, const Pixel & value) {
+    void updatePaletteValue(const byte& index, const pixel & value) {
         palette[index]=value;
     }
 
     unsigned paletteSize() { return PALETTE_SIZE; }
 
-    void updatePalette(const Pixel *palette) {
+    void updatePalette(const pixel *palette) {
         for (unsigned ix = 0; ix < PALETTE_SIZE; ++ix) updatePaletteValue(ix, palette[ix]);
     }
 
@@ -60,11 +58,11 @@ public:
         return masked;
     }
 
-    Pixel pixelAt(int index) const {
+    pixel pixelAt(int index) const {
         return palette[extract_pixel_index(index)];
     }
 
-    int locate_index_color_of_pixel_in_palette(const Pixel & pixel) {
+    int locate_index_color_of_pixel_in_palette(const pixel & pixel) {
         for (int ix = 0; ix < int(PALETTE_SIZE); ++ix) {
             if (palette[ix] == pixel)
                 return ix;
@@ -72,7 +70,7 @@ public:
         return -1;
     }
 
-    void writeAt(int index1, const Pixel &value) {
+    void writeAt(int index1, const pixel &value) {
         // warning:: very slow method
         byte color = locate_index_color_of_pixel_in_palette(value);
         byte mm=M, kk=K, tt=T, mask=MASK; // debug
@@ -90,7 +88,7 @@ public:
         this->_buffer._data[idx2] = element; // record
     }
 
-    void fill(const Pixel &value) {
+    void fill(const pixel &value) {
         // fast fill
         byte masked=locate_index_color_of_pixel_in_palette(value);
         byte byte_rendered=0;
@@ -101,5 +99,3 @@ public:
     }
 
 };
-
-#pragma clang diagnostic pop

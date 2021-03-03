@@ -23,7 +23,7 @@ using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
 using Canvas24= canvas<Bitmap24>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 Texture24 tex_uv, tex_mask;
-Canvas24 * canvas;
+Canvas24 * canvas_;
 sampling::flat_color<> color_grey{{122,122,122,255}};
 void loop();
 void init_sdl(int width, int height);
@@ -38,23 +38,23 @@ void render_blocks() {
     auto * sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STREAMING, block_size, block_size);
 
-    canvas->updateClipRect(0, 0, W, H);
+    canvas_->updateClipRect(0, 0, W, H);
     SDL_RenderClear(renderer);
     for (int iy = 0; iy < block_size*count_blocks_vertical; iy+=block_size) {
         for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
-            canvas->updateCanvasWindow(ix, iy, bitmap);
-            canvas->clear({255,255,255,255});
-            canvas->drawRect<blendmode::Normal, porterduff::None<>, false, number>(
+            canvas_->updateCanvasWindow(ix, iy, bitmap);
+            canvas_->clear({255,255,255,255});
+            canvas_->drawRect<blendmode::Normal, porterduff::None<>, false, number>(
                     tex_uv,10, 10, 400, 400);
-            canvas->drawMask<number, number>(masks::chrome_mode::red_channel,
+            canvas_->drawMask<number, number>(masks::chrome_mode::red_channel,
                              tex_mask,10, 10, 400.0f, 400.0f);
 
             SDL_Rect rect_source {0, 0, block_size, block_size};
             SDL_Rect rect_dest {ix, iy, block_size-debug, block_size-debug};
             SDL_UpdateTexture(sdl_texture,
                               &rect_source,
-                              &canvas->pixels()[0],
-                              (canvas->width()) * canvas->sizeofPixel());
+                              &canvas_->pixels()[0],
+                              (canvas_->width()) * canvas_->sizeofPixel());
             SDL_RenderCopy(renderer, sdl_texture, &rect_source, &rect_dest);
         }
     }
@@ -90,7 +90,7 @@ void init_sdl(int width, int height) {
     auto bmp_3_native = new bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
     tex_mask.updateBitmap(bmp_3_native->convertToBitmap<coder::RGB888_PACKED_32>());
-    canvas = new Canvas24(width, height);
+    canvas_ = new Canvas24(width, height);
 }
 
 int render_test(int N) {

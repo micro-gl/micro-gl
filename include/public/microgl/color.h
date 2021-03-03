@@ -26,9 +26,7 @@ namespace microgl {
         }
 
         template <typename number, typename rgba>
-        void convert_color(const intensity<number> &input, color_t &output,
-                           const bits &output_r_bits, const bits &output_g_bits,
-                           const bits &output_b_bits, const bits &output_a_bits) {
+        void convert_color(const intensity<number> &input, color_t &output) {
             output.r = channel(input.r * number((1u << rgba::r) - 1));
             output.g = channel(input.g * number((1u << rgba::g) - 1));
             output.b = channel(input.b * number((1u << rgba::b) - 1));

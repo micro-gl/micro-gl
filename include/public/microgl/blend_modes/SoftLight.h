@@ -6,7 +6,7 @@ namespace microgl {
     namespace blendmode {
 
         template <bool fast =true>
-        class SoftLight : public BlendModeBase<SoftLight<fast>> {
+        class SoftLight : public blend_mode_base<SoftLight<fast>> {
         public:
 
             template<uint8_t bits>

@@ -35,7 +35,7 @@ int main() {
                 0, 0, 256, 256);
     };
 
-    auto res = color::convert_channel_correct<10, 5>(1023);
+    auto res = convert_channel_correct<10, 5>(1023);
     std::cout<< int(res) << std::endl;
 
 

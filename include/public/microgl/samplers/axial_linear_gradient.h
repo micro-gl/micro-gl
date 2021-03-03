@@ -5,7 +5,7 @@
 namespace microgl {
     namespace sampling {
 
-        template <unsigned degree=0, unsigned N=10, typename rgba_=void, enum precision $precision=precision::medium, bool useBigIntegers=false>
+        template <unsigned degree=0, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>, enum precision $precision=precision::medium, bool useBigIntegers=false>
         class axial_linear_gradient : public sampler<rgba_, axial_linear_gradient<degree, N, rgba_, $precision, useBigIntegers>> {
             using base= sampler<rgba_, axial_linear_gradient<degree, N, rgba_, $precision, useBigIntegers>>;
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);

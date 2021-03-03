@@ -14,7 +14,7 @@ namespace microgl {
         using bits = uint8_t;
 
         template<typename pixel_, typename rgba_, typename impl>
-        class pixel_coder : crpt<impl> {
+        class pixel_coder : public crpt<impl> {
         public:
             using pixel= pixel_;
             using rgba= rgba_;
