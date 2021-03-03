@@ -18,9 +18,11 @@ namespace microgl {
                 texture_wrap wrap_u=texture_wrap::None,
                 texture_wrap wrap_v=texture_wrap::None>
         class texture : public sampler<typename Bitmap::rgba, texture<Bitmap, filter, tint, wrap_u, wrap_v>> {
+        public:
+            using base= sampler<typename Bitmap::rgba, texture<Bitmap, filter, tint, wrap_u, wrap_v>>;
+            using base::sample;
         private:
-        using base= sampler<typename Bitmap::rgba, texture<Bitmap, filter, tint, wrap_u, wrap_v>>;
-        using rint= int;
+            using rint= int;
 
         void tint_color(color_t & color, const color_t & color_tint) const {
             constexpr uint8_t r_ = base::rgba::r;

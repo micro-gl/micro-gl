@@ -123,10 +123,12 @@ inline void canvas<BITMAP, options>::blendColor(const color_t &val, int index, o
 
         // if we are normal then do nothing
         if(!skip_blending && backdrop.a!=0) { //  or backdrop alpha is zero is also valid
-            BlendMode::blend(backdrop, src, blended,
-                             pixel_coder::rgba::r,
-                             pixel_coder::rgba::g,
-                             pixel_coder::rgba::b);
+            BlendMode::template blend<pixel_coder::rgba::r,
+                                      pixel_coder::rgba::g,
+                                      pixel_coder::rgba::b>(backdrop, src, blended);
+//                             pixel_coder::rgba::r,
+//                             pixel_coder::rgba::g,
+//                             pixel_coder::rgba::b);
             // if backdrop alpha!= max_alpha let's first composite the blended color, this is
             // an intermediate step before Porter-Duff
             if(backdrop.a < alpha_max_value) {
@@ -1096,7 +1098,7 @@ void canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader<impl, ver
                 // because other wise this would have wasted bits for Q types although it would have been more elegant.
                 interpolated_varying.interpolate(varying_v0, varying_v1, varying_v2, bary);
                 auto color = $shader.fragment(interpolated_varying);
-                blendColor<BlendMode, PorterDuff, shader_type::a>(color, index + p.x, opacity_sample);
+                blendColor<BlendMode, PorterDuff, shader_type::rgba::a>(color, index + p.x, opacity_sample);
             }
             b0+=A01; b1+=A12; b2+=A20;
         }
@@ -1173,28 +1175,28 @@ void canvas<BITMAP, options>::drawMask(const masks::chrome_mode &mode,
             channel a=0;
             switch (mode) {
                 case masks::chrome_mode::red_channel:
-                    a = color::convert_channel_correct<S::rgba::r, alpha_bits>(col_bmp.r);
+                    a = convert_channel_correct<S::rgba::r, alpha_bits>(col_bmp.r);
                     break;
                 case masks::chrome_mode::red_channel_inverted:
-                    a = max_alpha_value - color::convert_channel_correct<S::rgba::r, alpha_bits>(col_bmp.r);
+                    a = max_alpha_value - convert_channel_correct<S::rgba::r, alpha_bits>(col_bmp.r);
                     break;
                 case masks::chrome_mode::alpha_channel:
-                    a = color::convert_channel_correct<S::rgba::a, alpha_bits>(col_bmp.a);
+                    a = convert_channel_correct<S::rgba::a, alpha_bits>(col_bmp.a);
                     break;
                 case masks::chrome_mode::alpha_channel_inverted:
-                    a = max_alpha_value - color::convert_channel_correct<S::rgba::a, alpha_bits>(col_bmp.a);
+                    a = max_alpha_value - convert_channel_correct<S::rgba::a, alpha_bits>(col_bmp.a);
                     break;
                 case masks::chrome_mode::green_channel:
-                    a = color::convert_channel_correct<S::rgba::g, alpha_bits>(col_bmp.g);
+                    a = convert_channel_correct<S::rgba::g, alpha_bits>(col_bmp.g);
                     break;
                 case masks::chrome_mode::green_channel_inverted:
-                    a = max_alpha_value - color::convert_channel_correct<S::rgba::g, alpha_bits>(col_bmp.g);
+                    a = max_alpha_value - convert_channel_correct<S::rgba::g, alpha_bits>(col_bmp.g);
                     break;
                 case masks::chrome_mode::blue_channel:
-                    a = color::convert_channel_correct<S::rgba::b, alpha_bits>(col_bmp.b);
+                    a = convert_channel_correct<S::rgba::b, alpha_bits>(col_bmp.b);
                     break;
                 case masks::chrome_mode::blue_channel_inverted:
-                    a = max_alpha_value - color::convert_channel_correct<S::rgba::b, alpha_bits>(col_bmp.b);
+                    a = max_alpha_value - convert_channel_correct<S::rgba::b, alpha_bits>(col_bmp.b);
                     break;
             }
             col_bmp.r=0, col_bmp.g=0, col_bmp.b=0, col_bmp.a=a,
@@ -1366,7 +1368,7 @@ void canvas<BITMAP, options>::drawWuLine(const color_t &color,
                                          const int x0, const int y0,
                                          const int x1, const int y1,
                                          precision bits, const opacity_t opacity) {
-    constexpr uint8_t a_bits = hasNativeAlphaChannel() ? pixel_coder::a : 8;
+    constexpr uint8_t a_bits = hasNativeAlphaChannel() ? pixel_coder::rgba::a : 8;
     // we assume that the line is in the closure (interior+boundary) of the canvas window
     int X0 = x0, Y0 = y0, X1 = x1, Y1=y1;
     color_t color_input=color;

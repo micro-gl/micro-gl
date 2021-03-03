@@ -8,18 +8,13 @@ namespace microgl {
         class Normal : public BlendModeBase<Normal> {
         public:
 
+            template<uint8_t R, uint8_t G, uint8_t B>
             static inline void blend(const color_t &b,
                                      const color_t &s,
-                                     color_t &output,
-                                     const uint8_t r_bits,
-                                     const uint8_t g_bits,
-                                     const uint8_t b_bits) {
+                                     color_t &output) {
                 output.r = s.r;
                 output.g = s.g;
                 output.b = s.b;
-            }
-            static inline const char *type() {
-                return "Normal";
             }
 
         };

@@ -2,6 +2,7 @@
 
 #include <microgl/color.h>
 #include <microgl/crpt.h>
+#include <microgl/convert_channel.h>
 
 namespace microgl {
     namespace blendmode {
@@ -14,19 +15,17 @@ namespace microgl {
 #define MAX_VAL_BITS(a) ((1<<(bits)) - 1)
 
 
-        template<typename IMPL>
-        class BlendModeBase : public crpt<IMPL> {
+        template<typename impl>
+        class BlendModeBase : public crpt<impl> {
         protected:
         public:
 
+            template<uint8_t R, uint8_t G, uint8_t B>
             static inline void blend(const color_t &b,
                                      const color_t &s,
-                                     color_t &output,
-                                     const uint8_t r_bits,
-                                     const uint8_t g_bits,
-                                     const uint8_t b_bits) {
+                                     color_t &output) {
 
-                IMPL::blend(b, s, output, r_bits, g_bits, b_bits);
+                impl::template blend<R, G, B>(b, s, output);
             }
 
 //            static inline void blend(const color_f_t &b,
@@ -36,9 +35,9 @@ namespace microgl {
 //                impl::blend(b, s, output);
 //            }
 
-            static inline const char *type() {
-                return IMPL::type();
-            }
+//            static inline const char *type() {
+//                return IMPL::type();
+//            }
 
         };
 

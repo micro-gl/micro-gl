@@ -121,7 +121,7 @@ private:
     window_t _window;
     render_options_t _options;
 public:
-    static constexpr bool hasNativeAlphaChannel() { return pixel_coder::a != 0;}
+    static constexpr bool hasNativeAlphaChannel() { return pixel_coder::rgba::a != 0;}
 
     // this forces strict samplers in the following manner:
     // 1. outside samplers must agree on bits depth of RGB channels
@@ -136,7 +136,7 @@ public:
     using sampler = sampling::sampler<dangling_rgba<typename impl::rgba>, impl>;
 
     template<class impl, typename vertex_attr, typename varying, typename number>
-    using shader = shader_base<pixel_coder::rgba::r, pixel_coder::rgba::g, pixel_coder::rgba::b, impl::a,
+    using shader = shader_base<dangling_rgba<typename impl::rgba>,
                                 impl, vertex_attr, varying, number>;
 
     explicit canvas(bitmap * $bmp);

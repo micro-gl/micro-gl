@@ -14,7 +14,7 @@ set(sources
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-add_library(${PROJECT_NAME} STATIC ${sources} include/public/microgl/rgba_t.h include/public/microgl/pixel_coder.h)
+add_library(${PROJECT_NAME} STATIC ${sources} include/public/microgl/rgba_t.h include/public/microgl/pixel_coder.h include/public/microgl/convert_channel.h)
 add_library(${PROJECT_NAME}-shared SHARED ${sources})
 
 # expose public include directory

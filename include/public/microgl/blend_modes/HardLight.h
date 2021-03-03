@@ -5,22 +5,17 @@
 namespace microgl {
     namespace blendmode {
 
-        template <bool fast=true, bool use_FPU=true>
+        template <bool fast=true, bool use_FPU=false>
         class HardLight : public BlendModeBase<HardLight<fast, use_FPU>> {
         public:
 
+            template<uint8_t R, uint8_t G, uint8_t B>
             static inline void blend(const color_t &b,
                                      const color_t &s,
-                                     color_t &output,
-                                     const uint8_t r_bits,
-                                     const uint8_t g_bits,
-                                     const uint8_t b_bits) {
-                Overlay<fast, use_FPU>::blend(s, b, output, r_bits, g_bits, b_bits);
+                                     color_t &output) {
+                Overlay<fast, use_FPU>::template blend<R, G, B>(s, b, output);
             }
 
-            static inline const char *type() {
-                return "HardLight";
-            }
         };
 
     }

@@ -8,12 +8,10 @@ namespace microgl {
         class Difference : public BlendModeBase<Difference> {
         public:
 
+            template<uint8_t R, uint8_t G, uint8_t B>
             static inline void blend(const color_t &b,
                                      const color_t &s,
-                                     color_t &output,
-                                     const uint8_t r_bits,
-                                     const uint8_t g_bits,
-                                     const uint8_t b_bits) {
+                                     color_t &output) {
                 int r_=b.r - s.r;
                 int g_=b.g - s.g;
                 int b_=b.b - s.b;
@@ -22,9 +20,6 @@ namespace microgl {
                 output.b =b_<0 ? -b_ : b_;
             }
 
-            static inline const char *type() {
-                return "Difference";
-            }
         };
 
     }

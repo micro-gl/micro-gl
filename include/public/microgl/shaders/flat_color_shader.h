@@ -19,8 +19,8 @@ namespace microgl {
             vec3<number> point;
         };
 
-        template<typename number, uint8_t r, uint8_t g, uint8_t b, uint8_t a>
-        class flat_color_shader : public shader_base<r,g,b,a,flat_color_shader<number,r,g,b,a>,
+        template<typename number, typename rgba_>
+        class flat_color_shader : public shader_base<rgba_, flat_color_shader<number, rgba_>,
                 flat_color_shader_vertex_attributes<number>, flat_color_shader_varying, number> {
         public:
             color_t color;

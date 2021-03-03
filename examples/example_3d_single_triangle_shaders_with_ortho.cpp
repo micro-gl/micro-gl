@@ -32,7 +32,7 @@ int main() {
     Texture24 tex{new bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};
 
     auto test_shader_color_2d = [&]() {
-        color_shader<number, 8,8,8,0> shader;
+        color_shader<number, rgba_t<8,8,8,0>> shader;
         shader.matrix= camera<number>::orthographic(0, W, 0, H, 0, 100);
 
         color_shader_vertex_attributes<number> v0, v1, v2;
@@ -47,7 +47,7 @@ int main() {
     };
 
     auto test_shader_flat_color_2d = [&]() {
-        flat_color_shader<number, 8,8,8,0> shader;
+        flat_color_shader<number, rgba_t<8,8,8,0>> shader;
         color_t color{255,0,0,255};
         shader.matrix= camera<number>::orthographic(0, W, 0, H, 0, 100);
         shader.color= color;

@@ -5,38 +5,34 @@
 namespace microgl {
     namespace blendmode {
 
-        template <bool fast=true, bool use_FPU=true>
+        template <bool fast=true, bool use_FPU=false>
         class Overlay : public BlendModeBase<Overlay<fast, use_FPU>> {
         public:
 
-            static inline
-            uint blend_Overlay(cuint b, cuint s, const bits bits) {
-                cuint max = (uint(1)<<bits)-1;
+            template<uint8_t bits>
+            static inline uint blend_Overlay(cuint b, cuint s) {
+                constexpr cuint max = (uint(1)<<bits)-1;
                 if(fast)
                     return 2 * b < max ? ((2 * b * s) >> bits) : (max - ((2 * (max - b) * (max - s)) >> bits));
                 else if(use_FPU)
                     return 2.0f * float(b) < float(max) ? 2.0f * float(b) * float(s)/float(max) :
                                         (float(max) - ((2.0f * (float(max) - float(b)) * (float(max) - float(s)))/float(max)));
                 else
-                    return 2 * b < max ? ((2 * b * s)/max) : (max - ((2 * (max - b) * (max - s))/max));
+                    return 2 * b < max ? ((2 * mc<bits>(b, s))) : (max - 2*mc<bits>(max-b, max-s));
             }
 
+            template<uint8_t R, uint8_t G, uint8_t B>
             static inline void blend(const color_t &b,
                                      const color_t &s,
-                                     color_t &output,
-                                     const uint8_t r_bits,
-                                     const uint8_t g_bits,
-                                     const uint8_t b_bits) {
+                                     color_t &output) {
 
-                output.r = blend_Overlay(b.r, s.r, r_bits);
-                output.g = blend_Overlay(b.g, s.g, g_bits);
-                output.b = blend_Overlay(b.b, s.b, b_bits);
+                output.r = blend_Overlay<R>(b.r, s.r);
+                output.g = blend_Overlay<G>(b.g, s.g);
+                output.b = blend_Overlay<B>(b.b, s.b);
             }
 
-            static inline const char *type() {
-                return "Overlay";
-            }
         };
 
     }
+
 }
