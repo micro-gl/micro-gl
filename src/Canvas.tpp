@@ -1173,33 +1173,31 @@ void canvas<BITMAP, options>::drawMask(const masks::chrome_mode &mode,
             channel a=0;
             switch (mode) {
                 case masks::chrome_mode::red_channel:
-                    a = coder::convert_channel_correct(col_bmp.r, sampler.r, alpha_bits);
+                    a = color::convert_channel_correct<S::rgba::r, alpha_bits>(col_bmp.r);
                     break;
                 case masks::chrome_mode::red_channel_inverted:
-                    a = max_alpha_value - coder::convert_channel_correct(col_bmp.r, sampler.r, alpha_bits);
+                    a = max_alpha_value - color::convert_channel_correct<S::rgba::r, alpha_bits>(col_bmp.r);
                     break;
                 case masks::chrome_mode::alpha_channel:
-                    a = coder::convert_channel_correct(col_bmp.a, sampler.a, alpha_bits);
+                    a = color::convert_channel_correct<S::rgba::a, alpha_bits>(col_bmp.a);
                     break;
                 case masks::chrome_mode::alpha_channel_inverted:
-                    a = max_alpha_value - coder::convert_channel_correct(col_bmp.a, sampler.a, alpha_bits);
+                    a = max_alpha_value - color::convert_channel_correct<S::rgba::a, alpha_bits>(col_bmp.a);
                     break;
                 case masks::chrome_mode::green_channel:
-                    a = coder::convert_channel_correct(col_bmp.g, sampler.g, alpha_bits);
+                    a = color::convert_channel_correct<S::rgba::g, alpha_bits>(col_bmp.g);
                     break;
                 case masks::chrome_mode::green_channel_inverted:
-                    a = max_alpha_value - coder::convert_channel_correct(col_bmp.g, sampler.g, alpha_bits);
+                    a = max_alpha_value - color::convert_channel_correct<S::rgba::g, alpha_bits>(col_bmp.g);
                     break;
                 case masks::chrome_mode::blue_channel:
-                    a = coder::convert_channel_correct(col_bmp.b, sampler.b, alpha_bits);
+                    a = color::convert_channel_correct<S::rgba::b, alpha_bits>(col_bmp.b);
                     break;
                 case masks::chrome_mode::blue_channel_inverted:
-                    a = max_alpha_value - coder::convert_channel_correct(col_bmp.b, sampler.b, alpha_bits);
+                    a = max_alpha_value - color::convert_channel_correct<S::rgba::b, alpha_bits>(col_bmp.b);
                     break;
             }
             col_bmp.r=0, col_bmp.g=0, col_bmp.b=0, col_bmp.a=a,
-            col_bmp.r_bits=this->coder().r, col_bmp.g_bits=this->coder().g,
-            col_bmp.b_bits=this->coder().b, col_bmp.a_bits=alpha_bits;
             // re-encode for a different canvas
             blendColor<blendmode::Normal, porterduff::DestinationIn<true>, alpha_bits>(col_bmp, index + x, opacity);
         }

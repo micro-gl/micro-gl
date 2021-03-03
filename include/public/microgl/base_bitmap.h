@@ -2,7 +2,7 @@
 
 #include <microgl/buffer.h>
 #include <microgl/crpt.h>
-#include <microgl/PixelCoder.h>
+#include <microgl/color.h>
 #include <cstdint>
 
 template <typename impl, typename pixel_coder_, typename buffer_element_type=typename pixel_coder_::pixel>

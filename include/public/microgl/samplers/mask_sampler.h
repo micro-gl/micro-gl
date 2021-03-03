@@ -4,17 +4,16 @@
 #include <microgl/masks.h>
 
 namespace microgl {
-    extern channel coder::convert_channel_correct(channel input, bits input_bits, bits output_bits);
 
     namespace sampling {
         template<masks::chrome_mode chrome, class sampler_from, class sampler_mask>
-        class mask_sampler : public sampler<typename sampler_from::rgba_, mask_sampler<chrome, sampler_from, sampler_mask>> {
-                using base= sampler<typename sampler_from::rgba_, mask_sampler<chrome, sampler_from, sampler_mask>>;
+        class mask_sampler : public sampler<typename sampler_from::rgba, mask_sampler<chrome, sampler_from, sampler_mask>> {
+                using base= sampler<typename sampler_from::rgba, mask_sampler<chrome, sampler_from, sampler_mask>>;
                 using cr = masks::chrome_mode;
         public:
             sampler_from _s_from;
             sampler_mask _s_mask;
-            static constexpr uint8_t alpha_bits= sampler_from::a!=0 ? sampler_from::a : 8;
+            static constexpr uint8_t alpha_bits= sampler_from::rgba::a!=0 ? sampler_from::rgba::a : 8;
             static constexpr uint8_t max_alpha_value=(uint16_t(1)<<alpha_bits) - 1;
             static constexpr bool r_test=((chrome==cr::red_channel || chrome==cr::red_channel_inverted) && alpha_bits==sampler_mask::rgba::r);
             static constexpr bool g_test=((chrome==cr::green_channel || chrome==cr::green_channel_inverted) && alpha_bits==sampler_mask::rgba::g);
@@ -41,36 +40,28 @@ namespace microgl {
                     case masks::chrome_mode::red_channel_inverted:
                         if (not_requires_conversion) alpha=mask_color.r;
                         else {
-                            alpha = coder::convert_channel_correct(mask_color.r,
-                                                                   _s_mask.r,
-                                                                   alpha_bits);
+                            alpha = color::convert_channel_correct<sampler_mask::rgba::r, alpha_bits>(mask_color.r);
                         }
                         break;
                     case masks::chrome_mode::green_channel:
                     case masks::chrome_mode::green_channel_inverted:
                         if (not_requires_conversion) alpha=mask_color.g;
                         else {
-                            alpha = coder::convert_channel_correct(mask_color.g,
-                                                                   _s_mask.g,
-                                                                   alpha_bits);
+                            alpha = color::convert_channel_correct<sampler_mask::rgba::g, alpha_bits>(mask_color.g);
                         }
                         break;
                     case masks::chrome_mode::blue_channel:
                     case masks::chrome_mode::blue_channel_inverted:
                         if (not_requires_conversion) alpha=mask_color.b;
                         else {
-                            alpha = coder::convert_channel_correct(mask_color.b,
-                                                                   _s_mask.b,
-                                                                   alpha_bits);
+                            alpha = color::convert_channel_correct<sampler_mask::rgba::b, alpha_bits>(mask_color.b);
                         }
                         break;
                     case masks::chrome_mode::alpha_channel:
                     case masks::chrome_mode::alpha_channel_inverted:
                         if (not_requires_conversion) alpha=mask_color.a;
                         else {
-                            alpha = coder::convert_channel_correct(mask_color.a,
-                                                                   _s_mask.a,
-                                                                   alpha_bits);
+                            alpha = color::convert_channel_correct<sampler_mask::rgba::a, alpha_bits>(mask_color.a);
                         }
                         break;
                 }
@@ -81,7 +72,7 @@ namespace microgl {
                 output.g=color_main.g;
                 output.b=color_main.b;
                 output.a=(uint16_t(color_main.a)*alpha)>>alpha_bits;
-                output.a_bits=alpha_bits;
+//                output.a_bits=alpha_bits;
             }
 
         };
