@@ -1,11 +1,11 @@
 #pragma once
 
-#include <microgl/BlendMode.h>
+#include <microgl/blend_mode_base.h>
 
 namespace microgl {
     namespace blendmode {
 
-        class ColorDodge : public BlendModeBase<ColorDodge> {
+        class ColorDodge : public blend_mode_base<ColorDodge> {
         private:
 
             template<uint8_t bits>

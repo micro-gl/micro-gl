@@ -1,11 +1,11 @@
 #pragma once
 
-#include <microgl/BlendMode.h>
+#include <microgl/blend_mode_base.h>
 
 namespace microgl {
     namespace blendmode {
 
-        class ColorBurn : public BlendModeBase<ColorBurn> {
+        class ColorBurn : public blend_mode_base<ColorBurn> {
         private:
             static inline
             uint blend_ColorBurn(cuint b, cuint s, const bits bits) {

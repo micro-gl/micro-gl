@@ -56,7 +56,7 @@ namespace microgl {
             template<typename CODER2>
             void convert(const color_t &input, color_t &output, const CODER2 &coder2) const {
                 // convert input color of my space into a color in coder2 space
-                convert_color<rgba_t, CODER2::rgba>(input, output);
+                convert_color<rgba, typename CODER2::rgba>(input, output);
             }
 
             template<typename CODER2>

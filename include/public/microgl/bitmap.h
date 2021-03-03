@@ -24,7 +24,7 @@ public:
         microgl::color::color_t color_bmp_1, color_bmp_2;
         for (int index = 0; index < size; ++index) {
             this->decode(index, color_bmp_1);
-            this->coder().convert(color_bmp_1, color_bmp_2, bmp.coder());
+            this->coder().template convert<CODER2>(color_bmp_1, color_bmp_2, bmp.coder());
             bmp.writeColor(index, color_bmp_2);
         }
     }

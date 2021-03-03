@@ -1,11 +1,11 @@
 #pragma once
 
-#include <microgl/BlendMode.h>
+#include <microgl/blend_mode_base.h>
 
 namespace microgl {
     namespace blendmode {
 
-        class Divide : public BlendModeBase<Divide> {
+        class Divide : public blend_mode_base<Divide> {
         private:
 
             template<uint8_t bits>

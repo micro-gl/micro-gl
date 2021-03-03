@@ -1,13 +1,13 @@
 #pragma once
 
-#include <microgl/BlendMode.h>
+#include <microgl/blend_mode_base.h>
 #include <microgl/convert_channel.h>
 
 namespace microgl {
     namespace blendmode {
 
         template <bool fast=true>
-        class Multiply : public BlendModeBase<Multiply<fast>> {
+        class Multiply : public blend_mode_base<Multiply<fast>> {
         public:
 
             template<uint8_t R, uint8_t G, uint8_t B>

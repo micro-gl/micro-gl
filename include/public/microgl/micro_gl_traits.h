@@ -34,6 +34,9 @@ namespace microgl {
                                     BITS<=32, uint32_t , uint64_t >::type>::type>::type;
         };
 
+        template<uint8_t bits>
+        using uint_t = typename unsigned_type_infer<bits>::type;
+
         template<uint8_t BITS>
         struct signed_type_infer {
             static constexpr uint8_t bits = BITS;
@@ -44,6 +47,9 @@ namespace microgl {
                             typename microgl::traits::conditional<
                                     BITS<=32, int32_t , int64_t >::type>::type>::type;
         };
+
+        template<uint8_t bits>
+        using int_t = typename signed_type_infer<bits>::type;
 
     }
 

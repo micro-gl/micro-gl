@@ -1,12 +1,12 @@
 #pragma once
 
-#include <microgl/BlendMode.h>
+#include <microgl/blend_mode_base.h>
 
 namespace microgl {
     namespace blendmode {
 
         template <bool fast=true>
-        class Exclusion : public BlendModeBase<Exclusion<fast>> {
+        class Exclusion : public blend_mode_base<Exclusion<fast>> {
         private:
 
             template<uint8_t bits>

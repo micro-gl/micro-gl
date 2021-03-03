@@ -1,11 +1,11 @@
 #pragma once
 
-#include <microgl/BlendMode.h>
+#include <microgl/blend_mode_base.h>
 
 namespace microgl {
     namespace blendmode {
 
-        class LinearDodge : public BlendModeBase<LinearDodge> {
+        class LinearDodge : public blend_mode_base<LinearDodge> {
         public:
 
             static inline

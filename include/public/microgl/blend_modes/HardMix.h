@@ -5,7 +5,7 @@
 namespace microgl {
     namespace blendmode {
 
-        class HardMix : public BlendModeBase<HardMix> {
+        class HardMix : public blend_mode_base<HardMix> {
         private:
 
             template<uint8_t bits>

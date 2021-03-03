@@ -16,7 +16,7 @@ namespace microgl {
 
 
         template<typename impl>
-        class BlendModeBase : public crpt<impl> {
+        class blend_mode_base : public crpt<impl> {
         protected:
         public:
 
@@ -27,17 +27,6 @@ namespace microgl {
 
                 impl::template blend<R, G, B>(b, s, output);
             }
-
-//            static inline void blend(const color_f_t &b,
-//                                     const color_f_t &s,
-//                                     color_f_t &output) {
-//
-//                impl::blend(b, s, output);
-//            }
-
-//            static inline const char *type() {
-//                return IMPL::type();
-//            }
 
         };
 

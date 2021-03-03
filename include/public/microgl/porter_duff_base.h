@@ -1,6 +1,7 @@
 #pragma once
 
 #include <microgl/color.h>
+#include <microgl/convert_channel.h>
 
 using namespace microgl::color;
 
@@ -13,32 +14,82 @@ namespace microgl {
         // co = αs x Fa x Cs + αb x Fb x Cb
         // according to PDF spec, page 322, if we use source-over
         // result is NOT alpha pre-multiplied color
-        template <bool fast, bool multiplied_alpha_result, bool use_fpu>
+
+        /**
+         * this is a stable version
+         * @tparam bits
+         * @tparam multiplied_alpha_result
+         * @tparam use_fpu
+         * @param Fa
+         * @param Fb
+         * @param b
+         * @param s
+         * @param output
+         */
+        template <uint8_t bits, bool multiplied_alpha_result, bool use_fpu>
+        void apply_porter_duff_stable(int Fa, int Fb,
+                               const color_t &b,
+                               const color_t &s,
+                               color_t &output) {
+            cuint as = s.a; // 128
+            cuint ab = b.a; // 255
+
+            cuint as_Fa = mc<bits>(as, Fa); // 128 * 255
+            cuint ab_Fb = mc<bits>(ab, Fb); // 255 * (255 - 128) = 255 * 127
+            cuint combined = as_Fa + ab_Fb; // 128 * 255 + 255 * 127 // may be (bits+1)
+
+            output.r = mc<bits>(as_Fa, s.r) + mc<bits>(ab_Fb, b.r);
+            output.g = mc<bits>(as_Fa, s.g) + mc<bits>(ab_Fb, b.g);
+            output.b = mc<bits>(as_Fa, s.b) + mc<bits>(ab_Fb, b.b);
+            output.a =combined;
+
+            // if desired result should be un multiplied
+            if (!multiplied_alpha_result) {
+                output.r = use_fpu ? (cuint) (float(output.r) / float(combined)) : (output.r / combined);
+                output.g = use_fpu ? (cuint) (float(output.g) / float(combined)) : (output.g / combined);
+                output.b = use_fpu ? (cuint) (float(output.b) / float(combined)) : (output.b / combined);
+            }
+
+        }
+
+        /**
+         * this is a less stable version, but is much faster
+         * @tparam bits
+         * @tparam fast
+         * @tparam multiplied_alpha_result
+         * @tparam use_fpu
+         * @param Fa
+         * @param Fb
+         * @param b
+         * @param s
+         * @param output
+         */
+        template <uint8_t bits, bool fast, bool multiplied_alpha_result, bool use_fpu>
         void apply_porter_duff(int Fa, int Fb,
                                const color_t &b,
                                const color_t &s,
-                               color_t &output,
-                               const unsigned int alpha_bits) {
+                               color_t &output) {
             cuint as = s.a; // 128
             cuint ab = b.a;  // 255
-            cuint max = (1<<alpha_bits)-1;
+            constexpr cuint max = (1<<bits)-1;
             // these are less than 16 bits
             cuint as_Fa = as * Fa; // 128 * 255
             cuint ab_Fb = ab * Fb; // 255 * (255 - 128) = 255 * 127
             cuint combined = as_Fa + ab_Fb; // 128 * 255 + 255 * 127 // may be 17 bits
             if(fast)
-                output.a =combined>>alpha_bits;
+                output.a =combined>>bits;
             else {
                 output.a= use_fpu ? cuint(float(combined)/float(max)) : (combined/max);
             }
             // this is multiplied alpha channels
+            // these might get to 24 bits
             cuint r_channel = as_Fa * s.r + ab_Fb * b.r;
             cuint g_channel = as_Fa * s.g + ab_Fb * b.g;
             cuint b_channel = as_Fa * s.b + ab_Fb * b.b;
             // if desired result should be un multiplied
             if (multiplied_alpha_result) {
                 if(fast) {
-                    cuint alpha_bits_double = alpha_bits << 1;
+                    constexpr cuint alpha_bits_double = bits << 1;
                     output.r = r_channel >> alpha_bits_double;
                     output.g = g_channel >> alpha_bits_double;
                     output.b = b_channel >> alpha_bits_double;
@@ -60,20 +111,15 @@ namespace microgl {
             }
         }
 
-        template<typename IMPL>
-        class PorterDuffBase {
+        template<typename impl>
+        class porter_duff_base {
         public:
 
-            template <bool multiplied_alpha_result=true, bool use_FPU=false>
+            template <uint8_t bits, bool multiplied_alpha_result=true, bool use_FPU=false>
             inline static void
             composite(const color_t &b, const color_t &s, color_t &output, const unsigned int alpha_bits) {
 
-                IMPL::composite<multiplied_alpha_result, use_FPU>(b, s, output, alpha_bits);
-            }
-
-        protected:
-            inline static const char *type() {
-                return IMPL::type();
+                impl::template composite<bits, multiplied_alpha_result, use_FPU>(b, s, output);
             }
 
         };

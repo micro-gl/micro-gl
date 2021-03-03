@@ -152,14 +152,14 @@ inline void canvas<BITMAP, options>::blendColor(const color_t &val, int index, o
         blended.a = hasSrcAlphaChannel ? src.a : alpha_max_value;
 
         // I fixed opacity is always 8 bits no matter what the alpha depth of the native canvas
-        if(opacity < 255) blended.a =  (int(blended.a) * int(opacity)*int(257))>>16; // blinn method
+        if(opacity < 255) blended.a =  (int(blended.a) * int(opacity)*int(257) + 257)>>16; // blinn method
 
         // finally alpha composite with Porter-Duff equations,
         // this should be zero-cost for None option with compiler optimizations
         // if we do not own a native alpha channel, then please keep the composited result
         // with premultiplied alpha, this is why we composite for None option, because it performs
         // alpha multiplication
-        PorterDuff::template composite<premultiply_result>(backdrop, blended, result, alpha_bits);
+        PorterDuff::template composite<alpha_bits, premultiply_result>(backdrop, blended, result);
     } else
         result = src;
 
@@ -1167,7 +1167,7 @@ void canvas<BITMAP, options>::drawMask(const masks::chrome_mode &mode,
     const int dx= bbox_r_c.left-bbox_r.left, dy= bbox_r_c.top-bbox_r.top;
     const int u_start= u0+(du>>1)+dx*du, pitch= width();
     int index= bbox_r_c.top * pitch;
-    constexpr bits alpha_bits = pixel_coder::a ? pixel_coder::a : 8;
+    constexpr bits alpha_bits = pixel_coder::rgba::a ? pixel_coder::rgba::a : 8;
     constexpr channel max_alpha_value = (uint16_t(1)<<alpha_bits) - 1;
     for (int y=bbox_r_c.top, v=v0+(du>>1)+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
         for (int x=bbox_r_c.left, u=u_start; x<=bbox_r_c.right; x++, u+=du) {

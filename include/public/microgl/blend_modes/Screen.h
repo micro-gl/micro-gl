@@ -1,12 +1,12 @@
 #pragma once
 
-#include <microgl/BlendMode.h>
+#include <microgl/blend_mode_base.h>
 
 namespace microgl {
     namespace blendmode {
 
         template <bool fast=true, bool use_FPU=false>
-        class Screen : public BlendModeBase<Screen<fast, use_FPU>> {
+        class Screen : public blend_mode_base<Screen<fast, use_FPU>> {
 
         public:
 
