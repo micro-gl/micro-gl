@@ -6,7 +6,7 @@
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
-#include <microgl/Bitmap.h>
+#include <microgl/bitmap.h>
 #include <microgl/samplers/texture.h>
 
 #define TEST_ITERATIONS 100
@@ -20,10 +20,10 @@ SDL_Texture * texture;
 int main() {
     using number = float;
 
-    using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= Canvas<Bitmap24>;
+    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
+    using Canvas24= canvas<Bitmap24>;
     using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
-    using Texture32= sampling::texture<Bitmap<coder::RGBA8888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
+    using Texture32= sampling::texture<bitmap<coder::RGBA8888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
 
     auto * canvas = new Canvas24 (W, H);
     Texture24 tex_mask, tex_1;
@@ -35,9 +35,9 @@ int main() {
     auto img_1 = resources.loadImageFromCompressedPath("images/charsprites.png");
     auto img_3 = resources.loadImageFromCompressedPath("images/bw.png");
 //
-    auto *bmp_0_native = new Bitmap<coder::RGBA8888_ARRAY>(img_0.data, img_0.width, img_0.height);
-    auto *bmp_1_native = new Bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
-    auto *bmp_3_native = new Bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
+    auto *bmp_0_native = new bitmap<coder::RGBA8888_ARRAY>(img_0.data, img_0.width, img_0.height);
+    auto *bmp_1_native = new bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
+    auto *bmp_3_native = new bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
 
     tex_0.updateBitmap(bmp_0_native);
     tex_1.updateBitmap(bmp_1_native->convertToBitmap<coder::RGB888_PACKED_32>());

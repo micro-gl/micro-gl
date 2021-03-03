@@ -1,5 +1,4 @@
 #pragma once
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
 
 #include <microgl/shader.h>
 #include <microgl/sampler.h>
@@ -63,5 +62,3 @@ namespace microgl {
     }
 
 }
-
-#pragma clang diagnostic pop

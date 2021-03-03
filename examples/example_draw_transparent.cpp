@@ -9,7 +9,7 @@
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
 #include <microgl/blend_modes/Multiply.h>
-#include <microgl/Bitmap.h>
+#include <microgl/bitmap.h>
 #include <microgl/samplers/texture.h>
 
 #define TEST_ITERATIONS 100
@@ -22,9 +22,9 @@ SDL_Texture * texture;
 
 
 int main() {
-    using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>>;
-    using Texture24= sampling::texture<Bitmap<coder::RGB888_ARRAY>>;
-    using Texture32= sampling::texture<Bitmap<coder::RGBA8888_ARRAY>>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
+    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>>;
+    using Texture32= sampling::texture<bitmap<coder::RGBA8888_ARRAY>>;
 
     Resources resources{};
     float t=0;
@@ -33,8 +33,8 @@ int main() {
     auto img_1 = resources.loadImageFromCompressedPath("images/charsprites.png");
 //
     auto * canvas = new Canvas24(W, H);
-    Texture24 tex_1{new Bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height)};
-    Texture32 tex_0{new Bitmap<coder::RGBA8888_ARRAY>(img_0.data, img_0.width, img_0.height)};
+    Texture24 tex_1{new bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height)};
+    Texture32 tex_0{new bitmap<coder::RGBA8888_ARRAY>(img_0.data, img_0.width, img_0.height)};
 
     auto render = [&]() -> void {
         canvas->clear({0,255,255});

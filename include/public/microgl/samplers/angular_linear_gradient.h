@@ -6,9 +6,9 @@ namespace microgl {
         /**
          * given an angle, compute the gradient line in the [0,1]x[0,1] box.
          */
-        template <typename number, unsigned N=10, bits R=8, bits G=8, bits B=8, bits A=8, enum precision $precision=precision::medium, bool useBigIntegers=false>
-        class angular_linear_gradient : public line_linear_gradient<number, N, R,G,B,A, $precision, useBigIntegers> {
-            using base= line_linear_gradient<number, N, R,G,B,A, $precision, useBigIntegers>;
+        template <typename number, unsigned N=10, typename rgba_, enum precision $precision=precision::medium, bool useBigIntegers=false>
+        class angular_linear_gradient : public line_linear_gradient<number, N, rgba_, $precision, useBigIntegers> {
+            using base= line_linear_gradient<number, N, rgba_, $precision, useBigIntegers>;
             using point= vec2<number>;
 
             point intersect(const point &a, const point &b,

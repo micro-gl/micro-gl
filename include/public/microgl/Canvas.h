@@ -10,12 +10,13 @@
 #include <microgl/porter_duff/DestinationIn.h>
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
-#include <microgl/Bitmap.h>
+#include <microgl/bitmap.h>
 #include <microgl/shader.h>
 #include <microgl/sampler.h>
 #include <microgl/triangles.h>
 #include <microgl/polygons.h>
 #include <microgl/masks.h>
+#include <microgl/rgba_t.h>
 #include <microgl/math.h>
 #include <microgl/tesselation/path.h>
 #include <microgl/tesselation/monotone_polygon_triangulation.h>
@@ -80,10 +81,10 @@ using namespace microgl::shading;
  */
 #define CANVAS_OPT_default CANVAS_OPT_2d_raster_FORCE_64_BIT
 
-template<typename BITMAP, uint8_t options=CANVAS_OPT_default>
-class Canvas {
+template<typename bitmap_, uint8_t options=CANVAS_OPT_default>
+class canvas {
 public:
-    using bitmap= BITMAP;
+    using bitmap= bitmap_;
     using rect = rect_t<int>;
     struct window_t {
         rect canvas_rect;
@@ -108,9 +109,9 @@ private:
     using precision = unsigned char;
     using opacity_t = unsigned char;
     using l64= long long;
-    using canvas= Canvas<bitmap, options>;
-    using Pixel= typename BITMAP::Pixel;
-    using pixel_coder= typename BITMAP::Coder;
+    using canvas_t= canvas<bitmap_, options>;
+    using pixel= typename bitmap_::pixel;
+    using pixel_coder= typename bitmap_::pixel_coder;
     // rasterizer integers
     using rint_big = int64_t;
     using rint =typename microgl::traits::conditional<
@@ -128,15 +129,18 @@ public:
     // 3. if the canvas does has alpha channel, then the sampler is allowed any alpha bits it has
     // ** this is used to allow the blender to do alpha composition even for canvases that do not
     //    support native alpha channel. we use multiplied alpha result for that
+    template<class RGBA>
+    using dangling_rgba = microgl::rgba_t<pixel_coder::rgba::r, pixel_coder::rgba::g, pixel_coder::rgba::b, RGBA::a>;
+
     template<class impl>
-    using sampler = sampling::sampler<pixel_coder::r, pixel_coder::g, pixel_coder::b, impl::a, impl>;
+    using sampler = sampling::sampler<dangling_rgba<typename impl::rgba>, impl>;
 
     template<class impl, typename vertex_attr, typename varying, typename number>
-    using shader = shader_base<pixel_coder::r, pixel_coder::g, pixel_coder::b, impl::a,
+    using shader = shader_base<pixel_coder::rgba::r, pixel_coder::rgba::g, pixel_coder::rgba::b, impl::a,
                                 impl, vertex_attr, varying, number>;
 
-    explicit Canvas(bitmap * $bmp);
-    Canvas(int width, int height);
+    explicit canvas(bitmap * $bmp);
+    canvas(int width, int height);
 
     void updateClipRect(int l, int t, int r, int b) {
         _window.clip_rect = {l, t, r, b};
@@ -179,9 +183,9 @@ public:
     int width() const;
     int height() const;
     unsigned int sizeofPixel() const;
-    Pixel * pixels() const;
-    Pixel &getPixel(int x, int y) const ;
-    Pixel &getPixel(int index) const ;
+    pixel * pixels() const;
+    pixel &getPixel(int x, int y) const ;
+    pixel &getPixel(int index) const ;
     void getPixelColor(int index, color_t & output) const;
     void getPixelColor(int x, int y, color_t & output) const;
 
@@ -202,8 +206,8 @@ public:
              uint8_t a_src>
     inline void blendColor(const color_t &val, int index, opacity_t opacity);
 
-    void drawPixel(const Pixel &val, int x, int y);
-    void drawPixel(const Pixel &val, int index);
+    void drawPixel(const pixel &val, int x, int y);
+    void drawPixel(const pixel &val, int index);
 
     // circles
 

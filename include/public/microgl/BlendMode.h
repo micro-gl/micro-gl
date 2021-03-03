@@ -33,7 +33,7 @@ namespace microgl {
 //                                     const color_f_t &s,
 //                                     color_f_t &output) {
 //
-//                IMPL::blend(b, s, output);
+//                impl::blend(b, s, output);
 //            }
 
             static inline const char *type() {

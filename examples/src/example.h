@@ -14,7 +14,7 @@ void example_run(canvas_type * canvas,
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    window = SDL_CreateWindow("SDL2 Pixel Drawing",
+    window = SDL_CreateWindow("SDL2 pixel_ Drawing",
                               SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED,
                               canvas->width(), canvas->height(), 0);
@@ -75,7 +75,7 @@ void example_run(canvas_type * canvas, data_type &data, int TEST_ITERATIONS,
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    window = SDL_CreateWindow("SDL2 Pixel Drawing",
+    window = SDL_CreateWindow("SDL2 pixel_ Drawing",
                               SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED,
                               canvas->width(), canvas->height(), 0);

@@ -20,8 +20,8 @@ int main() {
 //    using number = Q<12>;
     using number = float;
 
-    using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
-    using Texture24= sampling::texture<Bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
+    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
 
     fast_radial_gradient<number> gradient{0.5, 0.5, 0.75};
     linear_gradient_2_colors<120> gradient2Colors{{255,0,255},
@@ -30,7 +30,7 @@ int main() {
     Resources resources{};
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
     auto * canvas = new Canvas24(W, H);;
-    Texture24 tex_uv{new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
+    Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
 
     gradient.addStop(0.0f, {255,0,0});
     gradient.addStop(0.45f, {255,0,0});

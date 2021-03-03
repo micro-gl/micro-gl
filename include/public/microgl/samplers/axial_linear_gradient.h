@@ -1,14 +1,13 @@
 #pragma once
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
 
 #include <microgl/sampler.h>
 
 namespace microgl {
     namespace sampling {
 
-        template <unsigned degree=0, unsigned N=10, bits R=8, bits G=8, bits B=8, bits A=8, enum precision $precision=precision::medium, bool useBigIntegers=false>
-        class axial_linear_gradient : public sampler<R,G,B,A, axial_linear_gradient<degree, N, R,G,B,A, $precision, useBigIntegers>> {
-            using base= sampler<R,G,B,A, axial_linear_gradient<degree, N, R,G,B,A, $precision, useBigIntegers>>;
+        template <unsigned degree=0, unsigned N=10, typename rgba_=void, enum precision $precision=precision::medium, bool useBigIntegers=false>
+        class axial_linear_gradient : public sampler<rgba_, axial_linear_gradient<degree, N, rgba_, $precision, useBigIntegers>> {
+            using base= sampler<rgba_, axial_linear_gradient<degree, N, rgba_, $precision, useBigIntegers>>;
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
             static constexpr precision_t p_bits_double= p_bits<<1;
             using rint_big=int64_t;

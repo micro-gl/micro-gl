@@ -6,9 +6,9 @@
 namespace microgl {
     namespace sampling {
 
-        template <unsigned degree=90, uint8_t r=8, uint8_t g=8, uint8_t b=8, uint8_t a=0, bool useBigIntegers=false>
-        class linear_gradient_2_colors : public sampler<r,g,b,a, linear_gradient_2_colors<degree, r,g,b,a, useBigIntegers>> {
-            using base= sampler<r,g,b,a, linear_gradient_2_colors<degree, r,g,b,a, useBigIntegers>>;
+        template <unsigned degree=90, typename rgba_=void, bool useBigIntegers=false>
+        class linear_gradient_2_colors : public sampler<rgba_, linear_gradient_2_colors<degree, rgba_, useBigIntegers>> {
+            using base= sampler<rgba_, linear_gradient_2_colors<degree, rgba_, useBigIntegers>>;
             using rint_big=int64_t;
             using rint= typename microgl::traits::conditional<useBigIntegers, int64_t, int32_t>::type;
 

@@ -15,15 +15,15 @@ using index_t = unsigned int;
 float t=0;
 
 int main() {
-    using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>, 0>;
-    using Texture24= sampling::texture<Bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, 0>;
+    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
 //    using number = Q<12>;
     using number = float;
 
     Resources resources{};
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
     auto * canvas = new Canvas24(W, H);;
-    Texture24 tex_uv{new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
+    Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
     flat_color<> color_sampler{{255,122,0}};
 
     auto render_flat = [&]() -> void {

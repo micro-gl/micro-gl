@@ -47,7 +47,7 @@
 # SDL2_LIBRARY to override this selection or set the CMake environment
 # CMAKE_INCLUDE_PATH to modify the search paths.
 #
-# Note that the header path has changed from SDL2/SDL.h to just SDL.h
+# Note that the header path has changed from_sampler SDL2/SDL.h to just SDL.h
 # This needed to change because "proper" SDL convention
 # is #include "SDL.h", not <SDL2/SDL.h>. This is done for portability
 # reasons because not all systems place things in SDL2/ (see FreeBSD).

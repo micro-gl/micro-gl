@@ -22,7 +22,7 @@ int main() {
     using number = float;
 //    using number = Q<12>;
 
-    using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     Resources resources{};
     sampling::flat_color<> red{{255, 0, 0, 255}};
 

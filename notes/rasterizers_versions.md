@@ -2,7 +2,7 @@
 ```c++
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
+void canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     int v0_x, int v0_y,
                                     int v1_x, int v1_y,
                                     int v2_x, int v2_y,
@@ -309,7 +309,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
-void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
+void canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     const number v0_x, const number v0_y,
                                     const number v1_x, const number v1_y,
                                     const number v2_x, const number v2_y,
@@ -328,7 +328,7 @@ void Canvas<P, CODER>::drawTriangle(const color_f_t &color,
 ```c++
 template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff, typename S>
-void Canvas<P, CODER>::drawRect(const sampling::sampler<S> & sampler,
+void canvas<P, CODER>::drawRect(const sampling::sampler<S> & sampler,
                                 const int left, const int top,
                                 const int right, const int bottom,
                                 int u0, int v0,
@@ -372,7 +372,7 @@ void Canvas<P, CODER>::drawRect(const sampling::sampler<S> & sampler,
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, typename S>
-void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
+void canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
                                     int v0_x, int v0_y, int u0, int v0, int q0,
                                     int v1_x, int v1_y, int u1, int v1, int q1,
                                     int v2_x, int v2_y, int u2, int v2, int q2,
@@ -544,14 +544,14 @@ void Canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
 ```c++
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
-void Canvas<P, CODER>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
+void canvas<P, CODER>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
                                        const sampling::sampler<S2> & sampler_stroke,
                                        int left, int top,
                                        int right, int bottom,
                                        int radius, int stroke_size,
                                        l64 u0, l64 v0, l64 u1, l64 v1,
                                        precision sub_pixel_precision, precision uv_p,
-                                       Canvas::opacity_t opacity) {
+                                       canvas::opacity_t opacity) {
     const precision p = sub_pixel_precision;
     const l64 step = (l64(1)<<p);
     const l64 half = step>>1;
@@ -664,7 +664,7 @@ void Canvas<P, CODER>::drawRoundedRect(const sampling::sampler<S1> & sampler_fil
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename impl, typename vertex_attr, typename varying, typename number>
-void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
+void canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
                                                          const vec4<number> &p0,  const vec4<number> &p1,  const vec4<number> &p2,
                                                          varying &varying_v0, varying &varying_v1, varying &varying_v2,
                                                          opacity_t opacity, const triangles::face_culling & culling,
@@ -893,9 +893,9 @@ void Canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
 ```
 
 ```c++
-template<typename BITMAP, uint8_t options>
+template<typename bitmap_, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, typename S>
-void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
+void canvas<bitmap_, options>::drawTriangle(const sampling::sampler<S> &sampler,
                                   int v0_x, int v0_y, int u0, int v0, int q0,
                                   int v1_x, int v1_y, int u1, int v1, int q1,
                                   int v2_x, int v2_y, int u2, int v2, int q2,
@@ -1079,9 +1079,9 @@ void Canvas<BITMAP, options>::drawTriangle(const sampling::sampler<S> &sampler,
 }
 ```
 ```c++
-template<typename BITMAP, uint8_t options>
+template<typename bitmap_, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename S>
-void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
+void canvas<bitmap_, options>::drawRect(const sampling::sampler<S> & sampler,
                               int left, int top,
                               int right, int bottom,
                               int u0, int v0,
@@ -1104,7 +1104,7 @@ void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
     const int du = (u1-u0)/(bbox_r.right-bbox_r.left-0);
     const int dv = (v1-v0)/(bbox_r.bottom-bbox_r.top-0);
     const int dx= bbox_r_c.left-bbox_r.left, dy= bbox_r_c.top-bbox_r.top;
-    u0+=du>>1; v0+=dv>>1; // sample from the middle always for best results
+    u0+=du>>1; v0+=dv>>1; // sample from_sampler the middle always for best results
     const int u_start= u0+dx*du;
     const int pitch= width();
     if(antialias) {
@@ -1165,16 +1165,16 @@ void Canvas<BITMAP, options>::drawRect(const sampling::sampler<S> & sampler,
 }
 ```
 ```c++
-template<typename BITMAP, uint8_t options>
+template<typename bitmap_, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
-void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
+void canvas<bitmap_, options>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
                                      const sampling::sampler<S2> & sampler_stroke,
                                      int left, int top,
                                      int right, int bottom,
                                      int radius, int stroke_size,
                                      l64 u0, l64 v0, l64 u1, l64 v1,
                                      precision sub_pixel_precision, precision uv_p,
-                                     Canvas::opacity_t opacity) {
+                                     canvas::opacity_t opacity) {
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
     const precision p = sub_pixel_precision;
@@ -1283,10 +1283,10 @@ void Canvas<BITMAP, options>::drawRoundedRect(const sampling::sampler<S1> & samp
 ```
 
 ```c++
-template<typename BITMAP, uint8_t options>
+template<typename bitmap_, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename impl, typename vertex_attr, typename varying, typename number>
-void Canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
+void canvas<bitmap_, options>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
                                                          int viewport_width, int viewport_height,
                                                          const vec4<number> &p0,  const vec4<number> &p1,  const vec4<number> &p2,
                                                          varying &varying_v0, varying &varying_v1, varying &varying_v2,

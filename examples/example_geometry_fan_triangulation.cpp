@@ -23,7 +23,7 @@ int main() {
     using number = float;
 //    using number = Q<12>;
 
-    using Canvas24 = Canvas<Bitmap<coder::RGB888_PACKED_32>>;
+    using Canvas24 = canvas<bitmap<coder::RGB888_PACKED_32>>;
     auto *canvas = new Canvas24(W, H);
     sampling::flat_color<> color_red{{255, 0, 0, 255}};
 

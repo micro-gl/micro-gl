@@ -98,7 +98,7 @@ namespace microgl {
                 number1 b3 = t * t * t;
 
                 // first of all we will need to evaluate 4 curves in the u
-                // direction. The points from those will be stored in this
+                // direction. The points from_sampler those will be stored in this
                 // temporary array
                 for (index ix = 0; ix < 4; ++ix) {
                     index idx=ix*4;
@@ -137,7 +137,7 @@ namespace microgl {
                 number1 b2 = t * t;
 
                 // first of all we will need to evaluate 4 curves in the u
-                // direction. The points from those will be stored in this
+                // direction. The points from_sampler those will be stored in this
                 // temporary array
                 for (index ix = 0; ix < 3; ++ix) {
                     index idx=ix*3;

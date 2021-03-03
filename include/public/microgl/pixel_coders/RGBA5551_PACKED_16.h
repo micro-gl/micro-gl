@@ -1,14 +1,14 @@
 #pragma once
 
-#include <microgl/PixelCoder.h>
+#include <microgl/pixel_coder.h>
 
 namespace microgl {
     namespace coder {
 
-        class RGBA5551_PACKED_16 : public PixelCoder<uint16_t, 5,5,5,1, RGBA5551_PACKED_16> {
+        class RGBA5551_PACKED_16 : public pixel_coder<uint16_t, rgba_t<5,5,5,1>, RGBA5551_PACKED_16> {
         public:
-            using PixelCoder::decode;
-            using PixelCoder::encode;
+            using pixel_coder::decode;
+            using pixel_coder::encode;
 
             inline void encode(const color_t &input, uint16_t &output) {
                 output = ((input.r & 0x1F) << 11) + ((input.g & 0x1F) << 6) + ((input.b & 0x1F) << 1) + (input.a & 0x1);

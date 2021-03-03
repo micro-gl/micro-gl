@@ -7,15 +7,11 @@
 namespace microgl {
     namespace sampling {
 
-        template<channel R_BITS, channel G_BITS, channel B_BITS, channel A_BITS, typename IMPL>
-        class sampler : public crpt<IMPL> {
+        template<typename rgba_, typename impl>
+        class sampler : public crpt<impl> {
         protected:
-            using base_type = sampler;
         public:
-            static constexpr uint8_t r = R_BITS;
-            static constexpr uint8_t g = G_BITS;
-            static constexpr uint8_t b = B_BITS;
-            static constexpr uint8_t a = A_BITS;
+            using rgba = rgba_;
 
             sampler()= default;
 

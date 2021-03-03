@@ -339,7 +339,7 @@ namespace ds {
         }
 
         // make this iterative with a stack
-        Node* remove(Node* p, const Key &k, Node * removedNode= nullptr) // deleting k key from p tree
+        Node* remove(Node* p, const Key &k, Node * removedNode= nullptr) // deleting k key from_sampler p tree
         {
             if( !p )
                 return nullptr;

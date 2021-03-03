@@ -15,9 +15,9 @@ using namespace microgl::sampling;
 using index_t = unsigned int;
 
 int main() {
-    using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= Canvas<Bitmap24, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
-    using Texture24= sampling::texture<Bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
+    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
+    using Canvas24= canvas<Bitmap24, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
+    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
     Resources resources{};
     auto * canvas = new Canvas24(W, H);;
     axial_linear_gradient<45> gradient;

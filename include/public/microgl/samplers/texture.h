@@ -17,32 +17,29 @@ namespace microgl {
                 bool tint=false,
                 texture_wrap wrap_u=texture_wrap::None,
                 texture_wrap wrap_v=texture_wrap::None>
-    class texture : public sampler<Bitmap::Coder::r, Bitmap::Coder::g,
-                                       Bitmap::Coder::b, Bitmap::Coder::a,
-                                       texture<Bitmap, filter, tint, wrap_u, wrap_v>> {
+        class texture : public sampler<typename Bitmap::rgba, texture<Bitmap, filter, tint, wrap_u, wrap_v>> {
         private:
-        using base= sampler<Bitmap::Coder::r, Bitmap::Coder::g,
-                            Bitmap::Coder::b, Bitmap::Coder::a,
-                            texture<Bitmap, filter, tint, wrap_u, wrap_v>>;
+        using base= sampler<typename Bitmap::rgba, texture<Bitmap, filter, tint, wrap_u, wrap_v>>;
         using rint= int;
 
         void tint_color(color_t & color, const color_t & color_tint) const {
-            constexpr uint8_t r_ = base::r;
-            constexpr uint8_t g_ = base::g;
-            constexpr uint8_t b_ = base::b;
-            constexpr uint8_t a_ = base::a;
+            constexpr uint8_t r_ = base::rgba::r;
+            constexpr uint8_t g_ = base::rgba::g;
+            constexpr uint8_t b_ = base::rgba::b;
+            constexpr uint8_t a_ = base::rgba::a;
             color.r = (uint16_t (color.r)*color_tint.r)>>r_;
             color.g = (uint16_t (color.g)*color_tint.g)>>g_;
             color.b = (uint16_t (color.b)*color_tint.b)>>b_;
             color.a = (uint16_t (color.a)*color_tint.a)>>a_;
         }
 
-        static constexpr uint8_t r_max_val = (1<<base::r) - 1;
-        static constexpr uint8_t g_max_val = (1<<base::g) - 1;
-        static constexpr uint8_t b_max_val = (1<<base::b) - 1;
-        static constexpr uint8_t a_max_val = (1<<base::a) - 1;
+        static constexpr uint8_t r_max_val = (1u<<base::rgba::r) - 1;
+        static constexpr uint8_t g_max_val = (1u<<base::rgba::g) - 1;
+        static constexpr uint8_t b_max_val = (1u<<base::rgba::b) - 1;
+        static constexpr uint8_t a_max_val = (1u<<base::rgba::a) - 1;
+
         public:
-        using base::sample;
+
         texture() : texture{nullptr, {r_max_val,g_max_val,b_max_val, a_max_val} } {};
         texture(Bitmap * bitmap) : texture{bitmap, {r_max_val,g_max_val,b_max_val, a_max_val} } {};
         texture(Bitmap * bitmap, const color_t &tint_color) :

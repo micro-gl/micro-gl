@@ -1,7 +1,7 @@
 #include <microgl/qsort.h>
 
 /*
- * A merge sort implementation, simplified from the qsort implementation
+ * A merge sort implementation, simplified from_sampler the qsort implementation
  * by Mike Haertel, which is a part of the GNU C Library.
  * Added context pointer, safety checks and return value.
  */

@@ -1,20 +1,20 @@
 #pragma once
 
-#include <microgl/PixelCoder.h>
+#include <microgl/pixel_coder.h>
 #include <microgl/lut_bits.h>
 
 namespace microgl {
     namespace coder {
 
         template <channel BPP, channel R, channel G, channel B>
-        class BPP_RGB : public PixelCoder<uint8_t, R, G, B, 0, BPP_RGB<BPP,R,G,B>> {
+        class BPP_RGB : public pixel_coder<uint8_t, rgba_t<R, G, B, 0>, BPP_RGB<BPP,R,G,B>> {
         private:
             // dynamic look-up tables
             microgl::lut::dynamic_lut_bits<BPP, R> _lut_r;
             microgl::lut::dynamic_lut_bits<BPP, G> _lut_g;
             microgl::lut::dynamic_lut_bits<BPP, B> _lut_b;
         public:
-            using base= PixelCoder<uint8_t, R, G, B, 0, BPP_RGB<BPP,R,G,B>>;
+            using base= pixel_coder<uint8_t, rgba_t<R, G, B, 0>, BPP_RGB<BPP,R,G,B>>;
             using base::decode;
             using base::encode;
 

@@ -33,8 +33,8 @@ dynamic_array<vec2<number>> poly_diamond() {
 }
 
 int main() {
-    using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= Canvas<Bitmap24>;
+    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
+    using Canvas24= canvas<Bitmap24>;
     using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
     using namespace microgl;
     using namespace microgl::sampling;

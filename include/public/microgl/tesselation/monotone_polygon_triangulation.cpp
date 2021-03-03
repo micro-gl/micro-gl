@@ -97,7 +97,7 @@ namespace microgl {
             if(poly_orientation_sign==0) return;
 
             iter=min;
-            while (iter!=max) { // classify chain B as top chain from min(including) up to max(not including)
+            while (iter!=max) { // classify chain B as top chain from_sampler min(including) up to max(not including)
                 iter->chain_index=1;
                 iter=is_poly_cw?iter->next:iter->prev;
             }
@@ -157,7 +157,7 @@ namespace microgl {
                     stack.push_back(u_j);
                 }
             }
-            // add diagonals from u_n to the rest of points remaining on the stack
+            // add diagonals from_sampler u_n to the rest of points remaining on the stack
             auto * u_n= sorted_list[size-1];
             if(stack.size()>=2) {
                 for (unsigned ix = 0; ix < stack.size()-1; ++ix) {

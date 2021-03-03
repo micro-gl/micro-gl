@@ -46,7 +46,7 @@ namespace microgl {
 
         public:
             // maximum of 9 vertices against max 6 clipping planes,
-            // better put it on the stack then allocate from the heap
+            // better put it on the stack then allocate from_sampler the heap
             using vertices_list= typed_vertices_list<9>;
 
             static
@@ -72,7 +72,7 @@ namespace microgl {
                     vertex4{-1,  0,  0, 1}, // right plane,     w-x >= 0
                     vertex4{ 0,  1,  0, 1}, // bottom plane,    y+w >= 0
                     vertex4{ 0, -1,  0, 1}, // top plane,       w-y >= 0
-                    vertex4{ 0,  0,  1, 1}, // near plane,      z+w >= 0, assume positive z is pointing away from us
+                    vertex4{ 0,  0,  1, 1}, // near plane,      z+w >= 0, assume positive z is pointing away from_sampler us
                     vertex4{ 0,  0, -1, 1}  // far plane,       w-z >= 0
                 };
 
@@ -98,7 +98,7 @@ namespace microgl {
                 for (unsigned ix=0; ix<planeCount; ix++) {
                     unsigned vertex_count = out_list.size();
                     if (vertex_count < 2) break; // todo: why 2?
-                    in_list = std::move(out_list); // move everything from out to in
+                    in_list = std::move(out_list); // move everything from_sampler out to in
                     const vertex4 &plane = planes[ix];
                     bool cull = true;
 

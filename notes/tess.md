@@ -50,7 +50,7 @@ namespace microgl {
             auto * edge_1_twin = pool.get_edge();
             auto * edge_2_twin = pool.get_edge();
             auto * edge_3_twin = pool.get_edge();
-            // connect edges to vertices, CCW from left-top vertex
+            // connect edges to vertices, CCW from_sampler left-top vertex
             edge_0->origin = v0; edge_0_twin->origin = v1;
             edge_1->origin = v1; edge_1_twin->origin = v2;
             edge_2->origin = v2; edge_2_twin->origin = v3;
@@ -144,7 +144,7 @@ namespace microgl {
                     edge_last = e;
                 }
 
-                // hook the last edge, from last vertex into first vertex
+                // hook the last edge, from_sampler last vertex into first vertex
                 // of the current polygon
                 if(edge_last) {
                     auto * e_last_twin = pool.get_edge();
@@ -419,7 +419,7 @@ namespace microgl {
         auto planarize_division<number>::try_split_edge_at(const vertex& point,
                                                            half_edge *edge,
                                                            dynamic_pool & pool) -> half_edge * {
-            // let's shorten both edge and it's twin,each from it's side
+            // let's shorten both edge and it's twin,each from_sampler it's side
             // main frame does not have twins because are needed.
             //  ------edge----->
             //        ===
@@ -560,7 +560,7 @@ namespace microgl {
                 list_ref=list_ref->next;
             }
 
-            // clear the ref from vertex to face
+            // clear the ref from_sampler vertex to face
             edge->origin->conflict_face = nullptr;
         }
          */
@@ -585,7 +585,7 @@ namespace microgl {
                 // insert edge into head of conflict list
                 current_ref->next = f->conflict_list;
                 f->conflict_list = current_ref;
-                // pointer from edge to conflicting face
+                // pointer from_sampler edge to conflicting face
                 e->conflict_face=f;
             }
         }
@@ -939,7 +939,7 @@ namespace microgl {
             // given that vertex v is on a past vertical wall (left/right) boundary, we want to check 2 things:
             // 1. the vertical top/bottom edge that adjacent to it, is single(not divided) in it's adjacent trapezes
             // 2. has winding==0
-            // 3. horizontal (top/bottom) wall that touches it from both side is almost a line
+            // 3. horizontal (top/bottom) wall that touches it from_sampler both side is almost a line
             // if all the above happens then we can remove that edge and maintain a variant of the contraction principle.
             // now, try to test if we can shrink the top or bottom or both edges adjacent to the vertex
             // how we do it: examine upwards/downwards half edge
@@ -999,7 +999,7 @@ namespace microgl {
                     //     |
                     // c'__b'__a'
                     // now test how much is a-b-c looks like a line
-                    // we do it by calculating the distance from vertex c to line (a,b)
+                    // we do it by calculating the distance from_sampler vertex c to line (a,b)
                     // the illustration above is for top_edge= v-->b
                     const auto & a = candidate_edge->next->twin->origin->coords;
                     const auto & b = candidate_edge->twin->origin->coords;
@@ -1377,7 +1377,7 @@ namespace microgl {
 
             // if we got here, vertex (a) is in the closure and vertex (b) is outside/exterior.
             // the strategy:
-            // - try to round now the edge from interior to a wall boundary is they pass a certain threshold
+            // - try to round now the edge from_sampler interior to a wall boundary is they pass a certain threshold
             // - compute intersections against walls and pick the correct one
             // first test if we have b cases
             bool a_is_on_boundary= a_class!=point_class_with_trapeze::strictly_inside;
@@ -1639,7 +1639,7 @@ namespace microgl {
             auto * edge_1_twin = pool.get_edge();
             auto * edge_2_twin = pool.get_edge();
             auto * edge_3_twin = pool.get_edge();
-            // connect edges to vertices, CCW from left-top vertex
+            // connect edges to vertices, CCW from_sampler left-top vertex
             edge_0->origin = v0; edge_0_twin->origin = v1;
             edge_1->origin = v1; edge_1_twin->origin = v2;
             edge_2->origin = v2; edge_2_twin->origin = v3;
@@ -1733,7 +1733,7 @@ namespace microgl {
                     edge_last = e;
                 }
 
-                // hook the last edge, from last vertex into first vertex
+                // hook the last edge, from_sampler last vertex into first vertex
                 // of the current polygon
                 if(edge_last) {
                     auto * e_last_twin = pool.get_edge();
@@ -2011,7 +2011,7 @@ namespace microgl {
         auto planarize_division<number>::try_split_edge_at(const vertex& point,
                                                            half_edge *edge,
                                                            dynamic_pool & pool) -> half_edge * {
-            // let's shorten both edge and it's twin,each from it's side
+            // let's shorten both edge and it's twin,each from_sampler it's side
             // main frame does not have twins because are needed.
             //  ------edge----->
             //        ===
@@ -2153,7 +2153,7 @@ namespace microgl {
                 // insert edge into head of conflict list
                 current_ref->next = f->conflict_list;
                 f->conflict_list = current_ref;
-                // pointer from edge to conflicting face
+                // pointer from_sampler edge to conflicting face
                 e->conflict_face=f;
             }
         }
@@ -2527,7 +2527,7 @@ namespace microgl {
             // given that vertex v is on a past vertical wall (left/right) boundary, we want to check 2 things:
             // 1. the vertical top/bottom edge that adjacent to it, is single(not divided) in it's adjacent trapezes
             // 2. has winding==0
-            // 3. horizontal (top/bottom) wall that touches it from both side is almost a line
+            // 3. horizontal (top/bottom) wall that touches it from_sampler both side is almost a line
             // if all the above happens then we can remove that edge and maintain a variant of the contraction principle.
             // now, try to test if we can shrink the top or bottom or both edges adjacent to the vertex
             // how we do it: examine upwards/downwards half edge
@@ -2587,7 +2587,7 @@ namespace microgl {
                     //     |
                     // c'__b'__a'
                     // now test how much is a-b-c looks like a line
-                    // we do it by calculating the distance from vertex c to line (a,b)
+                    // we do it by calculating the distance from_sampler vertex c to line (a,b)
                     // the illustration above is for top_edge= v-->b
                     const auto & a = candidate_edge->next->twin->origin->coords;
                     const auto & b = candidate_edge->twin->origin->coords;
@@ -2964,7 +2964,7 @@ namespace microgl {
 
             // if we got here, vertex (a) is in the closure and vertex (b) is outside/exterior.
             // the strategy:
-            // - try to round now the edge from interior to a wall boundary is they pass a certain threshold
+            // - try to round now the edge from_sampler interior to a wall boundary is they pass a certain threshold
             // - compute intersections against walls and pick the correct one
             // first test if we have b cases
             bool a_is_on_boundary= a_class!=point_class_with_trapeze::strictly_inside;

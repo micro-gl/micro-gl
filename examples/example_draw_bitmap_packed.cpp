@@ -19,9 +19,9 @@ using namespace microgl::sampling;
 
 int main() {
     using index_t = unsigned int;
-    using Bitmap24_Packed= Bitmap<microgl::coder::RGB888_PACKED_32>;
+    using Bitmap24_Packed= bitmap<microgl::coder::RGB888_PACKED_32>;
     using BitmapPacked= PackedBitmap<BITS, coder::BPP_RGB<BITS, 8,8,8>, true>;
-    using Canvas24= Canvas<Bitmap24_Packed>;
+    using Canvas24= canvas<Bitmap24_Packed>;
     using Texture24= sampling::texture<Bitmap24_Packed, sampling::texture_filter::NearestNeighboor>;
     using TexPacked= sampling::texture<BitmapPacked>;
 

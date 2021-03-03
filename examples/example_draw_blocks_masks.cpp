@@ -19,8 +19,8 @@ Resources resources{};
 using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
-using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-using Canvas24= Canvas<Bitmap24>;
+using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= canvas<Bitmap24>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
 Texture24 tex_uv, tex_mask;
 Canvas24 * canvas;
@@ -78,7 +78,7 @@ int main() {
 void init_sdl(int width, int height) {
     SDL_Init(SDL_INIT_VIDEO);
 
-    window = SDL_CreateWindow("SDL2 Pixel Drawing", SDL_WINDOWPOS_UNDEFINED,
+    window = SDL_CreateWindow("SDL2 pixel_ Drawing", SDL_WINDOWPOS_UNDEFINED,
             SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     renderer = SDL_CreateRenderer(window, -1, 0);
     sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
@@ -86,8 +86,8 @@ void init_sdl(int width, int height) {
 
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
     auto img_3 = resources.loadImageFromCompressedPath("images/bw.png");
-    auto bmp_uv_U8 = new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
-    auto bmp_3_native = new Bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
+    auto bmp_uv_U8 = new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
+    auto bmp_3_native = new bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
     tex_mask.updateBitmap(bmp_3_native->convertToBitmap<coder::RGB888_PACKED_32>());
     canvas = new Canvas24(width, height);

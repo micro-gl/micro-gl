@@ -5,25 +5,22 @@
 #include <microgl/PixelCoder.h>
 #include <cstdint>
 
-template <typename IMPL, typename CODER, typename buffer_element_type=typename CODER::Pixel>
-class base_bitmap : public crpt<IMPL> {
+template <typename impl, typename pixel_coder_, typename buffer_element_type=typename pixel_coder_::pixel>
+class base_bitmap : public crpt<impl> {
 public:
-    using Pixel=typename CODER::Pixel;
-    using Coder=CODER;
-    static constexpr uint8_t r = Coder::r;
-    static constexpr uint8_t g = Coder::g;
-    static constexpr uint8_t b = Coder::b;
-    static constexpr uint8_t a = Coder::a;
+    using pixel_coder=pixel_coder_;
+    using pixel=typename pixel_coder::pixel;
+    using rgba=typename pixel_coder::rgba;
 
 protected:
     int _width = 0, _height = 0;
-    CODER _coder;
+    pixel_coder _coder;
     buffer<buffer_element_type> _buffer;
     // todo:: add a sub window feature, only involves translating x and y coords or a fixed index ?
 
 public:
-    static constexpr bool hasNativeAlphaChannel() { return CODER::a != 0; }
-    static constexpr bool nativeAlphaChannelBits() { return hasNativeAlphaChannel() ? CODER::a : 8; }
+    static constexpr bool hasNativeAlphaChannel() { return pixel_coder::rgba::a != 0; }
+    static constexpr bool nativeAlphaChannelBits() { return hasNativeAlphaChannel() ? pixel_coder::rgba::a : 8; }
     static constexpr int maxNativeAlphaChannelValue() { return (1u<<nativeAlphaChannelBits())-1; }
 
     base_bitmap(int w, int h) : base_bitmap(new uint8_t[sizeof(buffer_element_type) * w * h], w, h) {}
@@ -36,16 +33,16 @@ public:
     int width() const { return _width; }
     int height() const { return _height; }
     int size() const { return _buffer.size();}
-    Pixel * data() { return _buffer._data; }
+    pixel * data() { return _buffer._data; }
 
     int locate(int x, int y) const { return y*this->_width + x; }
-    Pixel pixelAt(int x, int y) const { return this->pixelAt(y*this->_width + x); }
-    Pixel pixelAt(int index) const { return this->derived().pixelAt(index); }
-    void writeAt(int x, int y, const Pixel &value) { this->writeAt(y*this->_width + x, value); }
-    void writeAt(int index, const Pixel &value) { this->derived().writeAt(index, value); }
-    void fill(const Pixel &value) { this->derived().fill(value); }
+    pixel pixelAt(int x, int y) const { return this->pixelAt(y*this->_width + x); }
+    pixel pixelAt(int index) const { return this->derived().pixelAt(index); }
+    void writeAt(int x, int y, const pixel &value) { this->writeAt(y*this->_width + x, value); }
+    void writeAt(int index, const pixel &value) { this->derived().writeAt(index, value); }
+    void fill(const pixel &value) { this->derived().fill(value); }
     // replace with just CODER ?
-    const CODER &coder() const { return _coder; }
+    const pixel_coder &coder() const { return _coder; }
 
     void decode(int x, int y, microgl::color::color_t &output) const{
         _coder.decode(pixelAt(x, y), output);
@@ -66,7 +63,7 @@ public:
     }
 
     void writeColor(int index, const microgl::color::color_t &color) {
-        Pixel output;
+        pixel output;
         _coder.encode(color, output);
         writeAt(index, output);
     }
@@ -77,7 +74,7 @@ public:
 
     template <typename number>
     void writeColor(int index, const microgl::color::intensity<number> &color) {
-        Pixel output;
+        pixel output;
         _coder.encode(color, output);
         writeAt(index, output);
     }

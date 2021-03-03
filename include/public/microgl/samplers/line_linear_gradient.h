@@ -1,5 +1,4 @@
 #pragma once
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
 
 #include <microgl/sampler.h>
 #include <microgl/vec2.h>
@@ -13,9 +12,9 @@ namespace microgl {
          * @tparam number
          * @tparam N
          */
-        template <typename number, unsigned N=10, bits R=8, bits G=8, bits B=8, bits A=8, enum precision $precision=precision::medium, bool useBigIntegers=false>
-        class line_linear_gradient : public sampler<R,G,B,A, line_linear_gradient<number, N, R,G,B,A, $precision, useBigIntegers>> {
-            using base= sampler<R,G,B,A, line_linear_gradient<number, N, R,G,B,A, $precision, useBigIntegers>>;
+        template <typename number, unsigned N=10, typename rgba_= void, enum precision $precision=precision::medium, bool useBigIntegers=false>
+        class line_linear_gradient : public sampler<rgba_, line_linear_gradient<number, N, rgba_, $precision, useBigIntegers>> {
+            using base= sampler<rgba_, line_linear_gradient<number, N, rgba_, $precision, useBigIntegers>>;
             using rint_big=int64_t;
             using rint= typename microgl::traits::conditional<useBigIntegers, int64_t, int32_t>::type;
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);

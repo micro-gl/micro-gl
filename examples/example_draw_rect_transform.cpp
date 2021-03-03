@@ -18,13 +18,13 @@ using namespace microgl::sampling;
 using index_t = unsigned int;
 
 int main() {
-    using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= Canvas<Bitmap24, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
-    using Texture24= sampling::texture<Bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
+    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
+    using Canvas24= canvas<Bitmap24, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
+    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
 
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
     auto * canvas = new Canvas24(W, H);;
-    Texture24 tex_uv{new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
+    Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
     using number = float;
     float t =0;
 

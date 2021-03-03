@@ -4,7 +4,7 @@ template<typename BlendMode, typename PorterDuff,
          bool antialias,
          typename P2, typename CODER2>
 void
-Canvas<P, CODER>::drawTriangle(Bitmap<P2, CODER2> & bmp,
+canvas<P, CODER>::drawTriangle(bitmap<P2, CODER2> & bmp,
                                int v0_x, int v0_y, float u0, float v0,
                                int v1_x, int v1_y, float u1, float v1,
                                int v2_x, int v2_y, float u2, float v2,
@@ -187,7 +187,7 @@ template<typename BlendMode, typename PorterDuff,
         bool antialias,
         typename P2, typename CODER2>
 void
-Canvas<P, CODER>::drawQuadrilateral(const Bitmap<P2, CODER2> & bmp,
+canvas<P, CODER>::drawQuadrilateral(const bitmap<P2, CODER2> & bmp,
                                int v0_x, int v0_y, float u0, float v0,
                                int v1_x, int v1_y, float u1, float v1,
                                int v2_x, int v2_y, float u2, float v2,
@@ -397,7 +397,7 @@ template<typename BlendMode, typename PorterDuff,
         bool antialias,
         typename P2, typename CODER2>
 void
-Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
+canvas<P, CODER>::drawTriangle(const bitmap<P2, CODER2> & bmp,
                                int v0_x, int v0_y, float u0, float v0,
                                int v1_x, int v1_y, float u1, float v1,
                                int v2_x, int v2_y, float u2, float v2,
@@ -594,7 +594,7 @@ template<typename BlendMode, typename PorterDuff,
         bool antialias, bool perspective_correct,
         typename P2, typename CODER2>
 void
-Canvas<P, CODER>::drawTriangle(const Bitmap<P2, CODER2> & bmp,
+canvas<P, CODER>::drawTriangle(const bitmap<P2, CODER2> & bmp,
                                const fixed_signed v0_x, const fixed_signed v0_y, float u0, float v0, float q0,
                                const fixed_signed v1_x, const fixed_signed v1_y, float u1, float v1, float q1,
                                const fixed_signed v2_x, const fixed_signed v2_y, float u2, float v2, float q2,
@@ -900,7 +900,7 @@ Older circle without sub-pixel correction
 ```
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawCircle(const color_f_t & color,
+void canvas<P, CODER>::drawCircle(const color_f_t & color,
                                   int centerX, int centerY,
                                   int radius,
                                   uint8_t opacity_t) {
@@ -960,7 +960,7 @@ void Canvas<P, CODER>::drawCircle(const color_f_t & color,
 Old antialias for circle I found
 ```
 template<typename P, typename CODER>
-void Canvas<P, CODER>::drawCircle(const color_f_t & color,
+void canvas<P, CODER>::drawCircle(const color_f_t & color,
                            int centerX, int centerY,
                            int radius) {
     uint8_t nSubpixelsX ,nSubpixelsY;
@@ -1014,7 +1014,7 @@ lines
 
 ```
 template<typename P, typename CODER>
-void Canvas<P, CODER>::drawWuLine(const color_f_t &color, int x0, int y0, int x1, int y1) {
+void canvas<P, CODER>::drawWuLine(const color_f_t &color, int x0, int y0, int x1, int y1) {
     int X0 = x0, Y0 = y0, X1 = x1, Y1=y1;
     color_t color_input{};
 
@@ -1162,7 +1162,7 @@ template<typename BlendMode, typename PorterDuff,
         typename Sampler,
         typename P2, typename CODER2>
 void
-Canvas<P, CODER>::drawTriangle2(const Bitmap<P2, CODER2> & bmp,
+canvas<P, CODER>::drawTriangle2(const bitmap<P2, CODER2> & bmp,
                                const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
                                const fixed_signed v1_x, const fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
                                const fixed_signed v2_x, const fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
@@ -1448,7 +1448,7 @@ template<typename BlendMode, typename PorterDuff,
         typename Sampler,
         typename P2, typename CODER2>
 void
-Canvas<P, CODER>::drawTriangleFast(const Bitmap<P2, CODER2> & bmp,
+canvas<P, CODER>::drawTriangleFast(const bitmap<P2, CODER2> & bmp,
                                const float v0_x, const float v0_y, float u0, float v0,
                                const float v1_x, const float v1_y, float u1, float v1,
                                const float v2_x, const float v2_y, float u2, float v2,
@@ -1487,7 +1487,7 @@ template<typename BlendMode, typename PorterDuff,
         typename Sampler,
         typename P2, typename CODER2>
 void
-Canvas<P, CODER>::drawTriangleFast(const Bitmap<P2, CODER2> & bmp,
+canvas<P, CODER>::drawTriangleFast(const bitmap<P2, CODER2> & bmp,
                                const fixed_signed v0_x, const fixed_signed v0_y, fixed_signed u0, fixed_signed v0, fixed_signed q0,
                                const fixed_signed v1_x, const fixed_signed v1_y, fixed_signed u1, fixed_signed v1, fixed_signed q1,
                                const fixed_signed v2_x, const fixed_signed v2_y, fixed_signed u2, fixed_signed v2, fixed_signed q2,
@@ -1852,7 +1852,7 @@ Canvas<P, CODER>::drawTriangleFast(const Bitmap<P2, CODER2> & bmp,
             15, 10, 13, 8, 12,  4, 3, 5, 10,  8,  4, 2, 7, 2, 7, 6
     };
 
-/* based on CLZ emulation for non-zero arguments, from
+/* based on CLZ emulation for non-zero arguments, from_sampler
  * http://stackoverflow.com/questions/23856596/counting-leading-zeros-in-a-32-bit-unsigned-integer-with-best-algorithm-in-c-pro
  */
     inline uint8_t shift_for_msb_of_sqrt(uint32_t x) {
@@ -1955,10 +1955,10 @@ Canvas<P, CODER>::drawTriangleFast(const Bitmap<P2, CODER2> & bmp,
 // rounded rectangle
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawRoundedRect(const color_f_t &color,
+void canvas<P, CODER>::drawRoundedRect(const color_f_t &color,
                                        int left, int top,
                                        int right, int bottom, int radius,
-                                       precision sub_pixel_precision,  Canvas::opacity_t opacity) {
+                                       precision sub_pixel_precision,  canvas::opacity_t opacity) {
 
     color_t col_bmp{};
     const precision p = sub_pixel_precision;
@@ -2090,7 +2090,7 @@ void Canvas<P, CODER>::drawRoundedRect(const color_f_t &color,
 ```c++
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
-void Canvas<P, CODER>::drawCircleOLD(const color_f_t & color,
+void canvas<P, CODER>::drawCircleOLD(const color_f_t & color,
                                   const int centerX,
                                   const int centerY,
                                   const int radius,
@@ -2149,14 +2149,14 @@ void Canvas<P, CODER>::drawCircleOLD(const color_f_t & color,
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
-void Canvas<P, CODER>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
+void canvas<P, CODER>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
                                        const sampling::sampler<S2> & sampler_stroke,
                                        int left, int top,
                                        int right, int bottom,
                                        int radius, int stroke_size,
                                        l64 u0, l64 v0, l64 u1, l64 v1,
                                        precision sub_pixel_precision, precision uv_p,
-                                       Canvas::opacity_t opacity) {
+                                       canvas::opacity_t opacity) {
     opacity=255;
     const precision p = sub_pixel_precision;
     const l64 stroke = stroke_size;//(10<<p)/1;
@@ -2320,7 +2320,7 @@ void Canvas<P, CODER>::drawRoundedRect(const sampling::sampler<S1> & sampler_fil
 ```c++
 
 template<typename P, typename CODER>
-void Canvas<P, CODER>::fxaa2(int left, int top, int right, int bottom) {
+void canvas<P, CODER>::fxaa2(int left, int top, int right, int bottom) {
 //    left=160;top=160;right=left+300;bottom=top+300;
 //return;
     // this is the config in an optimized manner

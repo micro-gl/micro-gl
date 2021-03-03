@@ -17,10 +17,10 @@ using namespace microgl::sampling;
 // todo:: add font color
 int main() {
     using index_t = unsigned int;
-    using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-    using Bitmap32_ARRAY= Bitmap<coder::RGBA8888_ARRAY>;
-    using Bitmap32_PACKED= Bitmap<coder::RGBA8888_PACKED_32>;
-    using Canvas24= Canvas<Bitmap24>;
+    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
+    using Bitmap32_ARRAY= bitmap<coder::RGBA8888_ARRAY>;
+    using Bitmap32_PACKED= bitmap<coder::RGBA8888_PACKED_32>;
+    using Canvas24= canvas<Bitmap24>;
     using font32= microgl::text::bitmap_font<Bitmap32_ARRAY>;
 
     Resources resources{};

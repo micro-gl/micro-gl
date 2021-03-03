@@ -10,9 +10,9 @@
 #define H 480*1
 
 int main() {
-//    using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
-    using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_64_BIT>;
-    using Texture24= sampling::texture<Bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::Bilinear>;
+//    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_64_BIT>;
+    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::Bilinear>;
     auto * canvas = new Canvas24(W, H);
     Texture24 tex_1, tex_2;
     Resources resources{};
@@ -21,8 +21,8 @@ int main() {
 //    auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
 
-    tex_1.updateBitmap(new Bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height));
-    tex_2.updateBitmap(new Bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height));
+    tex_1.updateBitmap(new bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height));
+    tex_2.updateBitmap(new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height));
 
     auto render = [&]() -> void {
         using number = float;

@@ -49,7 +49,7 @@ namespace microgl {
                         break;
                     } else {
                         // failed both tests, so calculate the line segment to clip
-                        // from an outside point to an intersection with clip edge
+                        // from_sampler an outside point to an intersection with clip edge
                         number x, y;
 
                         // At least one endpoint is outside the clip rectangle; pick it.

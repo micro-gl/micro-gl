@@ -110,7 +110,7 @@ namespace microgl {
                             boundary_buffer->push_back(info);
                             ind += 3;
                         }
-                        // prune the point from the polygon
+                        // prune the point from_sampler the polygon
                         point->prev->next = point->next;
                         point->next->prev = point->prev;
                         auto* anchor_prev=point->prev, * anchor_next=point->next;

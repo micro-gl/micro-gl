@@ -28,7 +28,7 @@ storing and accessing 32bit pixels is faster than 8 bit values, much faster.
 ```
 
 ```
-if we copy from same bitmap formats without blending/compositing, than it is
+if we copy from_sampler same bitmap formats without blending/compositing, than it is
 10% of the running with composting etc... so use it for optimization.
 
 I witnessed 220 vs 25 fill rate

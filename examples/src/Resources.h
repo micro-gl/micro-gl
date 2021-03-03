@@ -52,7 +52,7 @@ public:
     const std::string & getAssetFolder() const;
 
     /**
-     * load an image from path
+     * load an image from_sampler path
      *
      * @param path relative to assets folder
      * @param name name of the image
@@ -62,7 +62,7 @@ public:
     image_info_t loadImageFromCompressedPath(const std::string &path, const std::string &name = "") const;
 
     /**
-     * load an image from raw byte array of memory (decode PNG)
+     * load an image from_sampler raw byte array of memory (decode PNG)
      *
      * @param byte_array byte array of the image
      * @param path length_bytes size
@@ -73,7 +73,7 @@ public:
     image_info_t loadImageFromCompressedMemory(unsigned char *byte_array, unsigned int length_bytes, const std::string & name) const;
 
     /**
-     * load a file from disk as a byte array
+     * load a file from_sampler disk as a byte array
      *
      * @param file_name the file path
      *

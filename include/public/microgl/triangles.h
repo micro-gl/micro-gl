@@ -12,7 +12,7 @@ namespace microgl {
             // are expended into
             TRIANGLES_FAN,
             // every second element is a boundary info element
-            // starting from the fourth element
+            // starting from_sampler the fourth element
             TRIANGLES_FAN_WITH_BOUNDARY,
             // triangle strip
             TRIANGLES_STRIP,

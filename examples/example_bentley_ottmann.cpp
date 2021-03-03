@@ -21,8 +21,8 @@ SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * texture;
 
-using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-using Canvas24= Canvas<Bitmap24>;
+using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
+using Canvas24= canvas<Bitmap24>;
 using namespace experiments;
 Canvas24 * canvas;
 microgl::sampling::flat_color color_RED {{255,0,0,255}};

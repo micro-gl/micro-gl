@@ -21,14 +21,14 @@ int main() {
 //    using number = Q<15>;
 //    using number = Q<16>;
 
-//    using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>>;
-    using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
-    using Texture24= sampling::texture<Bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
+//    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
+    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
     auto * canvas = new Canvas24(W, H);
     Resources resources{};
 
     auto img = resources.loadImageFromCompressedPath("images/uv_256.png");
-    Texture24 tex{new Bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};
+    Texture24 tex{new bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};
 
     float t = -30.0;
 

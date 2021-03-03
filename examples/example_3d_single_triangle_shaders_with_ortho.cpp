@@ -21,15 +21,15 @@ int main() {
     using number = float;
 //    using number = Q<12>;
 
-    using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= Canvas<Bitmap24>;
-    using Texture24= sampling::texture<Bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
+    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
+    using Canvas24= canvas<Bitmap24>;
+    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
     Resources resources{};
 
     auto img = resources.loadImageFromCompressedPath("images/uv_256.png");
 
     auto * canvas = new Canvas24(W, H);
-    Texture24 tex{new Bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};
+    Texture24 tex{new bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};
 
     auto test_shader_color_2d = [&]() {
         color_shader<number, 8,8,8,0> shader;

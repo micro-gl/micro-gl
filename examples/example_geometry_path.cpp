@@ -120,8 +120,8 @@ int main() {
 //    using number = Q<12>;
 //    using number = Q<4>;
 
-    using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= Canvas<Bitmap24>;
+    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
+    using Canvas24= canvas<Bitmap24>;
     using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
     sampling::flat_color<> color_red {{255,0,255,255}};
     sampling::flat_color<> color_green {{22,22,22,255}};

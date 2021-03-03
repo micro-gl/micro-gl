@@ -410,7 +410,7 @@ namespace microgl {
 
             if(closePath) {
                 // close path requires some special things, like adjusting the first segment
-                // some indices from the last segment
+                // some indices from_sampler the last segment
                 const auto count= output_indices.size();
                 output_indices[first_left_index+0]=output_indices[count-2];
                 output_indices[first_left_index+1]=output_indices[count-2];

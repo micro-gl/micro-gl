@@ -2,7 +2,7 @@
 
 #include <microgl/text/bitmap_glyph.h>
 #include <microgl/text/text_format.h>
-#include <microgl/Bitmap.h>
+#include <microgl/bitmap.h>
 
 namespace microgl {
     namespace text {
@@ -28,7 +28,7 @@ namespace microgl {
                     bitmap_glyph{CHAR_MISSING, 0, 0, 0, 0, 0, 0, 0};
             int count_internal = 0;
         public:
-            /** The name of the font as it was parsed from the font file. */
+            /** The name of the font as it was parsed from_sampler the font file. */
             char name[20]={};
             /** The native size of the font. */
             int nativeSize=0;
@@ -49,7 +49,7 @@ namespace microgl {
             int padding = 0;
             int glyphs_count = 0;
             int width=0, height=0;
-//            Bitmap<P, Coder> *_bitmap = nullptr;
+//            bitmap<P, pixel_coder_> *_bitmap = nullptr;
             BITMAP *_bitmap = nullptr;
             bitmap_glyph gylphs[MAX_CHARS];
 

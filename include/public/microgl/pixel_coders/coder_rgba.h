@@ -1,31 +1,29 @@
 #pragma once
 
-#include <microgl/PixelCoder.h>
+#include <microgl/pixel_coder.h>
 
 namespace microgl {
     namespace coder {
 
         /**
-         * a coder that rescales it's rgba values. it is advised to use a custom one,
+         * a coder that rescales it's rgba_t values. it is advised to use a custom one,
          * that can be done more efficiently or make sure you data almost always requires
          * the same pixel coding
          *
-         * @tparam from a pixel_coder
+         * @tparam from_sampler a pixel_coder
          * @tparam R
          * @tparam G
          * @tparam B
          * @tparam A
          */
-        template<class from, channel R, channel G, channel B, channel A>
+        template<class from_sampler, typename rgba_>
         class coder_rgba :
-                public PixelCoder<typename from::Pixel, R, G, B, A,
-                        coder_rgba<from, R, G, B, A>> {
+                public pixel_coder<typename from_sampler::pixel, rgba_, coder_rgba<from_sampler, rgba_>> {
 
         private:
-            using base = PixelCoder<typename from::Pixel, R, G, B, A,
-                    coder_rgba<from, R, G, B, A>>;
-            using pixel_from = typename from::Pixel;
-            from _coder_from;
+            using base = pixel_coder<typename from_sampler::pixel, rgba_, coder_rgba<from_sampler, rgba_>>;
+            using pixel_from = typename from_sampler::Pixel;
+            from_sampler _coder_from;
         public:
             using base::decode;
             using base::encode;
@@ -34,20 +32,16 @@ namespace microgl {
 
             inline void encode(const color_t &input, pixel_from &output) const {
                 color_t converted_color{};
-                coder::convert_color(
-                        input, converted_color,
-                        R, G, B, A,
-                        from::r(), from::g(), from::b(), from::a());
+                color::convert_color<base::rgba, from_sampler::rgba>(
+                        input, converted_color);
                 _coder_from.encode(converted_color, output);
             }
 
             inline void decode(const pixel_from &input, color_t &output) const {
                 color_t converted_color;
                 _coder_from.decode(input, converted_color);
-                coder::convert_color(
-                        converted_color, output,
-                        from::r(), from::g(), from::b(), from::a(),
-                        R, G, B, A);
+                coder::convert_color<from_sampler::rgba, base::rgba>(
+                        converted_color, output);
             };
 
         };

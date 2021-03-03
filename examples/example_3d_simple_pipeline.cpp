@@ -16,7 +16,7 @@ int main() {
 //    using number = Q<10>;
 //    using number = Q<15>;
 
-    using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     Canvas24 canvas(W, H);
 
     auto render_template = [&](const model_3d<number> & object) {

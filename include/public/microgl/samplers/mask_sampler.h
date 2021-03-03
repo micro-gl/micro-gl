@@ -8,18 +8,18 @@ namespace microgl {
 
     namespace sampling {
         template<masks::chrome_mode chrome, class sampler_from, class sampler_mask>
-        class mask_sampler : public sampler<sampler_from::r,sampler_from::g,sampler_from::b,sampler_from::a, mask_sampler<chrome, sampler_from, sampler_mask>> {
-                using base= sampler<sampler_from::r,sampler_from::g,sampler_from::b,sampler_from::a, mask_sampler<chrome, sampler_from, sampler_mask>>;
+        class mask_sampler : public sampler<typename sampler_from::rgba_, mask_sampler<chrome, sampler_from, sampler_mask>> {
+                using base= sampler<typename sampler_from::rgba_, mask_sampler<chrome, sampler_from, sampler_mask>>;
                 using cr = masks::chrome_mode;
         public:
             sampler_from _s_from;
             sampler_mask _s_mask;
             static constexpr uint8_t alpha_bits= sampler_from::a!=0 ? sampler_from::a : 8;
             static constexpr uint8_t max_alpha_value=(uint16_t(1)<<alpha_bits) - 1;
-            static constexpr bool r_test=((chrome==cr::red_channel || chrome==cr::red_channel_inverted) && alpha_bits==sampler_mask::r);
-            static constexpr bool g_test=((chrome==cr::green_channel || chrome==cr::green_channel_inverted) && alpha_bits==sampler_mask::g);
-            static constexpr bool b_test=((chrome==cr::blue_channel || chrome==cr::blue_channel_inverted) && alpha_bits==sampler_mask::b);
-            static constexpr bool a_test=((chrome==cr::alpha_channel || chrome==cr::alpha_channel_inverted) && alpha_bits==sampler_mask::a);
+            static constexpr bool r_test=((chrome==cr::red_channel || chrome==cr::red_channel_inverted) && alpha_bits==sampler_mask::rgba::r);
+            static constexpr bool g_test=((chrome==cr::green_channel || chrome==cr::green_channel_inverted) && alpha_bits==sampler_mask::rgba::g);
+            static constexpr bool b_test=((chrome==cr::blue_channel || chrome==cr::blue_channel_inverted) && alpha_bits==sampler_mask::rgba::b);
+            static constexpr bool a_test=((chrome==cr::alpha_channel || chrome==cr::alpha_channel_inverted) && alpha_bits==sampler_mask::rgba::a);
             static constexpr bool not_requires_conversion=r_test||g_test||b_test||a_test;
             static constexpr bool is_inverted=chrome==cr::red_channel_inverted || chrome==cr::green_channel_inverted ||
                     chrome==cr::blue_channel_inverted || chrome==cr::alpha_channel_inverted;

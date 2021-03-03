@@ -9,8 +9,8 @@
 #define H 480*1
 
 int main() {
-    using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= Canvas<Bitmap24>;
+    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
+    using Canvas24= canvas<Bitmap24>;
 
     auto * canvas = new Canvas24(W, H);
 

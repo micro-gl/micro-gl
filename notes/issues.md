@@ -1,7 +1,7 @@
 #### some notes
 
 #### float points
-- integer divisions are slower than float point divisions by an order of 3 from my tests.
+- integer divisions are slower than float point divisions by an order of 3 from_sampler my tests.
 - integers arithmetics are far accurate and float points are not so
 - integers multiplications are a bit faster (5-10%) than float point multiplications
 
@@ -34,7 +34,7 @@ struct color {number r,g,b,a;}
 ```
 *What are the pros and cons of using this space*
 1. we can be agnostic of specific colors spaces in all phases of the engine except the loading/storing of a pixel phase- HUGE PRO
-2. to convert from colors space into general space requires a division - HUGE CON
+2. to convert from_sampler colors space into general space requires a division - HUGE CON
 3. conversion to specific colors spaces is a matter of 4 multiplications which is easy - PRO
 4. it is easier to implememnt many graphics constructs like shaders in general color space, although we can
    get around this with smart [0, 1] interpolation

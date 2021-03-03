@@ -83,11 +83,6 @@ namespace microgl {
                 convert_color(int_color, output, R_BITS, G_BITS, B_BITS, A_BITS);
             }
 
-//            static constexpr channel r() { return R_BITS; }
-//            static constexpr channel g() { return G_BITS; }
-//            static constexpr channel b() { return B_BITS; }
-//            static constexpr channel a() { return A_BITS; }
-
             static
             void update_channel_bit(color_t &color) {
                 color.r_bits = R_BITS;

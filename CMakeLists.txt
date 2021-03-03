@@ -7,14 +7,14 @@ set (CMAKE_CXX_STANDARD 11)
 message("===============\n${PROJECT_NAME} project \n===============")
 
 set(sources
-        src/PixelCoder.cpp
+#        src/PixelCoder.cpp
         src/triangles.cpp
         src/qsort.cpp)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-add_library(${PROJECT_NAME} STATIC ${sources})
+add_library(${PROJECT_NAME} STATIC ${sources} include/public/microgl/rgba_t.h include/public/microgl/pixel_coder.h)
 add_library(${PROJECT_NAME}-shared SHARED ${sources})
 
 # expose public include directory

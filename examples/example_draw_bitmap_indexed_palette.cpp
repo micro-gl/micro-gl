@@ -15,8 +15,8 @@
 #define H 640*1
 
 int main() {
-    using Bitmap24= Bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= Canvas<Bitmap24>;
+    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
+    using Canvas24= canvas<Bitmap24>;
     using PaletteBitmap= PaletteBitmap<PALETTE_SIZE, coder::RGBA8888_ARRAY, false>;
     using TexPalette= sampling::texture<PaletteBitmap>;
 

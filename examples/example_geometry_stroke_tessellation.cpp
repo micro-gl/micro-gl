@@ -106,7 +106,7 @@ int main() {
 //    using number = Q<12>;
 //    using number = Q<4>;
 
-    using Canvas24= Canvas<Bitmap<coder::RGB888_PACKED_32>>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     sampling::flat_color<> color_red{{255,0,0,255}};
     auto * canvas = new Canvas24(W, H);
 
