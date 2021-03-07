@@ -28,12 +28,12 @@ int main() {
 
     auto render_flat = [&]() -> void {
         canvas->clear({255,255,255,255});
-        canvas->drawTriangle<blendmode::Normal, porterduff::None<true>>(
-                color_sampler,
-                10.0f, 10.0f, 0.0f, 0.0f,
-                400.0f, 10.0f, 1.0f, 0.0f,
-                400.0f, 400.0f, 1.0f, 1.0f,
-                255);
+//        canvas->drawTriangle<blendmode::Normal, porterduff::None<true>>(
+//                color_sampler,
+//                10.0f, 10.0f, 0.0f, 0.0f,
+//                400.0f, 10.0f, 1.0f, 0.0f,
+//                400.0f, 400.0f, 1.0f, 1.0f,
+//                255);
     };
 
     auto render_tex = [&]() -> void {
@@ -50,12 +50,12 @@ int main() {
     auto render_tex_aa = [&]() -> void {
 //        t+=0.01f;
         canvas->clear({255,255,255,255});
-        canvas->drawTriangle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
-                tex_uv,
-                10.0,10.0, 0.0, 1.0,
-                500.0+t,10.0, 1.0, 1.0,
-                500.0+t,500.0, 1.0, 0.0,
-                255);
+//        canvas->drawTriangle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+//                tex_uv,
+//                10.0,10.0, 0.0, 1.0,
+//                500.0+t,10.0, 1.0, 1.0,
+//                500.0+t,500.0, 1.0, 0.0,
+//                255);
     };
 
 //    example_run(canvas, render_flat);

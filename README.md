@@ -20,6 +20,8 @@ $ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/path/for/install ..
 $ cmake --build . --target install
 ```
 
+* or simply copy the `/include` folder into your project or path
+
 ## running examples
 first make sure you have 
  - [SDL2](https://www.libsdl.org/) installed at your system.  

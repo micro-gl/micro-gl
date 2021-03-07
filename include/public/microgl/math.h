@@ -10,7 +10,10 @@ namespace microgl {
         using cfr = const float &;
         template <unsigned N>
         using cqr = const Q<N> &;
-        using l64= int64_t ;//long long;
+//        using l64= int64_t ;//long long;
+        using l64= long long;
+        using ul64= unsigned long long;
+        using u32= unsigned int;
 
     public:
 #define PI        3.14159265358979323846264338327950288
@@ -196,10 +199,10 @@ namespace microgl {
 
     private:
         static
-        uint32_t sqrt_64(uint64_t a_nInput) {
-            uint64_t op  = a_nInput;
-            uint64_t res = 0;
-            uint64_t one = uint64_t(1u) << 62; // The second-to-top bit is set: use 1u << 14 for uint16_t type; use 1uL<<30 for uint32_t type
+        u32 sqrt_64(ul64 a_nInput) {
+            ul64 op  = a_nInput;
+            ul64 res = 0;
+            ul64 one = ul64(1u) << 62; // The second-to-top bit is set: use 1u << 14 for uint16_t type; use 1uL<<30 for uint32_t type
 
             // "one" starts at the highest power of four <= than the argument.
             while (one > op)

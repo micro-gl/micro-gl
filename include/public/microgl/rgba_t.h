@@ -19,6 +19,8 @@ namespace microgl {
         static constexpr uint8_t a = A;
 
         rgba_t() = delete;
+        rgba_t(const rgba_t &) = delete;
+        rgba_t& operator=(const rgba_t &) = delete;
         ~rgba_t() = delete;
     };
 }

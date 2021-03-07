@@ -4,13 +4,13 @@ message(\n===========\n${PROJECT_NAME} \n===========\n)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS_DEBUG  ${CMAKE_CXX_FLAGS_DEBUG})
-set(CMAKE_CXX_FLAGS_RELEASE " -fno-rtti -fno-exceptions \
+set(CMAKE_CXX_FLAGS_RELEASE " -fno-rtti -fno-exceptions -fno-unwind-tables \
                             -fstrict-aliasing -O3 -flto \
                             -Wstrict-aliasing -fno-math-errno \
                             -ffast-math -fno-threadsafe-statics \
                             -fdata-sections -ffunction-sections \
                             " CACHE INTERNAL "" FORCE)
-
+#-nostdlib
 message("using compiler: ${CMAKE_CXX_COMPILER_ID}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -76,6 +76,7 @@ if(SDL2_FOUND)
             example_coder_converter.cpp
             example_sampler_masking_sampler.cpp
             example_new_alpha.cpp
+            example_mem.cpp
             )
 
     set(SOURCES_SHARED
