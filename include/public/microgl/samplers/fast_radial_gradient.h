@@ -10,7 +10,7 @@ namespace microgl {
          * a sqrt function which I avoid, therefore my interpolation function is closer
          * to a quadratic function interpolation to calculate interpolation factor
          */
-        template <typename number, unsigned N=10, typename rgba_=void, enum precision $precision=precision::medium, bool useBigIntegers=false>
+        template <typename number, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>, enum precision $precision=precision::medium, bool useBigIntegers=false>
         class fast_radial_gradient : public sampler<rgba_, fast_radial_gradient<number, N,rgba_, $precision, useBigIntegers>> {
             using base= sampler<rgba_, fast_radial_gradient<number, N, rgba_, $precision, useBigIntegers>>;
             using rint_big=int64_t;

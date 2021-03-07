@@ -23,12 +23,7 @@ int main() {
 
 //    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
-    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
     auto * canvas = new Canvas24(W, H);
-    Resources resources{};
-
-    auto img = resources.loadImageFromCompressedPath("images/uv_256.png");
-    Texture24 tex{new bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};
 
     float t = -30.0;
 
@@ -38,7 +33,6 @@ int main() {
         using camera = microgl::camera<number>;
         using mat4 = matrix_4x4<number>;
         using math = microgl::math;
-        using vertex_attribute= flat_color_shader_vertex_attributes<number>;
 
         t-=0.0425;
 
@@ -59,14 +53,16 @@ int main() {
         mat4 mvp_1= projection*view*model_1;
 
         // setup shader
-        flat_color_shader<number, rgba_t<8,8,8,0>> shader;
+        using Shader = flat_color_shader<number, rgba_t<8,8,8,0>>;
+        using vertex_attributes = Shader::vertex_attributes;
+        Shader shader;
         shader.matrix= mvp_1;
         shader.color= {0,255,255,255};
 
         // model to vertex buffers
-        dynamic_array<vertex_attribute> vertex_buffer{object.vertices.size()};
+        dynamic_array<vertex_attributes> vertex_buffer{object.vertices.size()};
         for (unsigned ix = 0; ix < object.vertices.size(); ++ix) {
-            vertex_attribute v{};
+            vertex_attributes v{};
             v.point= object.vertices[ix];
             vertex_buffer.push_back(v);
         }

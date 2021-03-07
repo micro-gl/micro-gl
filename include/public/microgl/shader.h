@@ -7,6 +7,15 @@
 namespace microgl {
     namespace shading {
 
+        template<class shader>
+        using vertex_attributes = typename shader::vertex_attributes;
+
+        template<class shader>
+        using varying = typename shader::varying;
+
+        template<class shader>
+        using shader_number = typename shader::number;
+
         template<typename rgba_, typename impl, typename vertex_attr, typename varying, typename number>
         class shader_base : public crpt<impl> {
         protected:

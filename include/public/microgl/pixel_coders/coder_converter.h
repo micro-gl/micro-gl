@@ -8,14 +8,15 @@ namespace microgl {
         /**
          * a pixel coder that converts from_sampler one coder to another
          *
-         * @tparam from_sampler
+         * @tparam from_coder
          * @tparam to
+         *
          */
-        template<class from_sampler, class to_sampler>
+        template<class from_coder, class to_coder>
         class coder_converter :
-                        public coder_rgba<from_sampler, typename to_sampler::rgba> {
+                        public coder_rgba<from_coder, typename to_coder::rgba> {
         private:
-            using base = coder_rgba<from_sampler, typename to_sampler::rgba>;
+            using base = coder_rgba<from_coder, typename to_coder::rgba>;
 
         public:
             using base::decode;

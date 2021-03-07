@@ -14,7 +14,7 @@ namespace microgl {
                     r{$r}, g{$g}, b{$b}, a{$a} {};
             color_t(const color_t &val) :
                         color_t(val.r, val.g, val.b, val.a){};
-            channel r=0, g=0, b=0, a=0;
+            channel r=0, g=0, b=0, a=255;
         };
 
         template<typename rgba_from, typename rgba_to>

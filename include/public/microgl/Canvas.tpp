@@ -149,7 +149,8 @@ inline void canvas<BITMAP, options>::blendColor(const color_t &val, int index, o
         blended.a = hasSrcAlphaChannel ? src.a : alpha_max_value;
 
         // I fixed opacity is always 8 bits no matter what the alpha depth of the native canvas
-        if(opacity < 255) blended.a =  (int(blended.a) * int(opacity)*int(257) + 257)>>16; // blinn method
+        if(opacity < 255)
+            blended.a =  (int(blended.a) * int(opacity)*int(257) + 257)>>16; // blinn method
 
         // finally alpha composite with Porter-Duff equations,
         // this should be zero-cost for None option with compiler optimizations
@@ -345,6 +346,7 @@ void canvas<BITMAP, options>::drawRect(const sampler<S> & sampler,
                                        opacity_t opacity,
                                        const number2 u0, const number2 v0,
                                        const number2 u1, const number2 v1) {
+//    static_assert(true, "");
     const precision p_sub = renderingOptions()._2d_raster_bits_sub_pixel,
             p_uv = renderingOptions()._2d_raster_bits_uv;
     drawRect<BlendMode, PorterDuff, antialias, S > (sampler,
@@ -569,16 +571,16 @@ void canvas<BITMAP, options>::drawTriangles(const sampler<S> &sampler,
 
 template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
-        typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type>
-void canvas<BITMAP, options>::drawTriangles(shader<impl, vertex_attr, varying, number> &shader,
+        typename Shader, typename depth_buffer_type>
+void canvas<BITMAP, options>::drawTriangles(Shader &shader,
                                             int viewport_width, int viewport_height,
-                                            const vertex_attr *vertex_buffer,
+                                            const  vertex_attributes<Shader> *vertex_buffer,
                                             const index *indices,
                                             const index size,
                                             const enum indices type,
                                             const triangles::face_culling & culling,
                                             depth_buffer_type *depth_buffer, const opacity_t opacity,
-                                            const number& depth_range_near, const number& depth_range_far) {
+                                            const shader_number<Shader>& depth_range_near, const shader_number<Shader>& depth_range_far) {
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
           [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
               const index &edge_0_id, const index &edge_1_id, const index &edge_2_id) {
@@ -805,23 +807,28 @@ void canvas<BITMAP, options>::drawTriangle(const sampler<S> & sampler,
 
 template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
-        typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type>
-void canvas<BITMAP, options>::drawTriangle(shader<impl, vertex_attr, varying, number> &shader,
+        typename Shader, typename depth_buffer_type>
+void canvas<BITMAP, options>::drawTriangle(Shader &shader,
                                            int viewport_width, int viewport_height,
-                                           vertex_attr v0, vertex_attr v1, vertex_attr v2,
+                                           vertex_attributes<Shader> v0,
+                                           vertex_attributes<Shader> v1,
+                                           vertex_attributes<Shader> v2,
                                            const opacity_t opacity, const triangles::face_culling & culling,
                                            depth_buffer_type *depth_buffer,
-                                           const number& depth_range_near, const number& depth_range_far) {
+                                           const shader_number<Shader>& depth_range_near,
+                                           const shader_number<Shader>& depth_range_far) {
 #define f microgl::math::to_fixed
     // this and drawTriangle_shader_homo_internal is the programmable 3d pipeline
     // compute varying and positions per vertex for interpolation
+    using varying = shading::varying<Shader>;
+    using shader_number = shading::shader_number<Shader>;
     varying varying_v0, varying_v1, varying_v2;
     varying varying_v0_clip, varying_v1_clip, varying_v2_clip;
     auto v0_homo_space = shader.vertex(v0, varying_v0);
     auto v1_homo_space = shader.vertex(v1, varying_v1);
     auto v2_homo_space = shader.vertex(v2, varying_v2);
     // compute clipping in homogeneous 4D space
-    using clipper= microgl::clipping::homo_triangle_clipper<number>;
+    using clipper= microgl::clipping::homo_triangle_clipper<shader_number>;
     typename clipper::vertices_list result_clipping;
     const bool outside= !clipper::compute(v0_homo_space, v1_homo_space, v2_homo_space, result_clipping);
     if(outside) return;
@@ -842,7 +849,7 @@ void canvas<BITMAP, options>::drawTriangle(shader<impl, vertex_attr, varying, nu
         varying_v1_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_1_fixed);
         varying_v2_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_2_fixed);
         drawTriangle_shader_homo_internal<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag,
-        impl, vertex_attr, varying, number>(
+                Shader, shader_number>(
                 shader, viewport_width, viewport_height,
                 p0, p1, p2,
                 varying_v0_clip, varying_v1_clip, varying_v2_clip,
@@ -853,20 +860,24 @@ void canvas<BITMAP, options>::drawTriangle(shader<impl, vertex_attr, varying, nu
 
 template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
-        typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type>
-void canvas<BITMAP, options>::drawTriangle_shader_homo_internal(shader<impl, vertex_attr, varying, number> & $shader,
-                                                                int viewport_width, int viewport_height,
-                                                                const vec4<number> &p0, const vec4<number> &p1, const vec4<number> &p2,
-                                                                varying &varying_v0, varying &varying_v1, varying &varying_v2,
-                                                                opacity_t opacity, const triangles::face_culling & culling,
-                                                                depth_buffer_type * depth_buffer,
-                                                                number depth_range_near, number depth_range_far) {
+        typename Shader, typename number, typename depth_buffer_type>
+void canvas<BITMAP, options>::drawTriangle_shader_homo_internal(
+                            Shader & $shader,
+                            int viewport_width, int viewport_height,
+                            const vec4<number> &p0, const vec4<number> &p1, const vec4<number> &p2,
+                            varying<Shader> varying_v0,
+                            varying<Shader> varying_v1,
+                            varying<Shader> varying_v2,
+                            opacity_t opacity, const triangles::face_culling & culling,
+                            depth_buffer_type * depth_buffer,
+                            number depth_range_near, number depth_range_far) {
     /*
      * given triangle coords in a homogeneous coords, a $shader, and corresponding interpolated varying
      * vertex attributes. we pass varying because somewhere in the pipeline we might have clipped things
      * in homogeneous space and therefore had to update/correct the vertex attributes.
      */
-    using shader_type = shader<impl, vertex_attr, varying, number>;
+    using shader_type = Shader;
+    using varying = typename Shader::varying;
     auto & zbuff=*depth_buffer;
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;

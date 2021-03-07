@@ -10,20 +10,20 @@ namespace microgl {
          * that can be done more efficiently or make sure you data almost always requires
          * the same pixel coding
          *
-         * @tparam from_sampler a pixel_coder
+         * @tparam from_coder a pixel_coder
          * @tparam R
          * @tparam G
          * @tparam B
          * @tparam A
          */
-        template<class from_sampler, typename rgba_>
+        template<class from_coder, typename rgba_>
         class coder_rgba :
-                public pixel_coder<typename from_sampler::pixel, rgba_, coder_rgba<from_sampler, rgba_>> {
+                public pixel_coder<typename from_coder::pixel, rgba_, coder_rgba<from_coder, rgba_>> {
 
         private:
-            using base = pixel_coder<typename from_sampler::pixel, rgba_, coder_rgba<from_sampler, rgba_>>;
-            using pixel_from = typename from_sampler::pixel;
-            from_sampler _coder_from;
+            using base = pixel_coder<typename from_coder::pixel, rgba_, coder_rgba<from_coder, rgba_>>;
+            using pixel_from = typename from_coder::pixel;
+            from_coder _coder_from;
         public:
             using base::decode;
             using base::encode;
@@ -32,7 +32,7 @@ namespace microgl {
 
             inline void encode(const color_t &input, pixel_from &output) const {
                 color_t converted_color{};
-                color::convert_color<base::rgba, from_sampler::rgba>(
+                color::convert_color<base::rgba, from_coder::rgba>(
                         input, converted_color);
                 _coder_from.encode(converted_color, output);
             }
@@ -40,7 +40,7 @@ namespace microgl {
             inline void decode(const pixel_from &input, color_t &output) const {
                 color_t converted_color;
                 _coder_from.decode(input, converted_color);
-                coder::convert_color<from_sampler::rgba, base::rgba>(
+                color::convert_color<from_coder::rgba, base::rgba>(
                         converted_color, output);
             };
 

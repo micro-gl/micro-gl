@@ -29,7 +29,7 @@ int main() {
         using camera = microgl::camera<number>;
         using mat4 = matrix_4x4<number>;
         using math = microgl::math;
-        using vertex_attribute= color_shader_vertex_attributes<number>;
+//        using vertex_attribute= color_shader_vertex_attributes<number>;
 
         t-=0.0425;
 
@@ -50,13 +50,15 @@ int main() {
         mat4 mvp_1= projection*view*model_1;
 
         // setup shader
-        color_shader<number, rgba_t<8,8,8,0>> shader;
+        using shader_ = color_shader<number, rgba_t<8,8,8,0>>;
+        using vertex_attributes = shader_::vertex_attributes;
+        shader_ shader;
         shader.matrix= mvp_1;
 
         // model to vertex buffers
-        dynamic_array<vertex_attribute> vertex_buffer{object.vertices.size()};
+        dynamic_array<vertex_attributes> vertex_buffer{object.vertices.size()};
         for (unsigned ix = 0; ix < object.vertices.size(); ++ix) {
-            vertex_attribute v{};
+            shader_::vertex_attributes v{};
             channel r= (ix%3)==0 ? 255:0;
             channel g= (ix%3)==1 ? 255:0;
             channel b= (ix%3)==2 ? 255:0;
