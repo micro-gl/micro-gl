@@ -59,9 +59,9 @@ int main() {
         dynamic_array<vertex_attributes> vertex_buffer{object.vertices.size()};
         for (unsigned ix = 0; ix < object.vertices.size(); ++ix) {
             shader_::vertex_attributes v{};
-            channel r= (ix%3)==0 ? 255:0;
-            channel g= (ix%3)==1 ? 255:0;
-            channel b= (ix%3)==2 ? 255:0;
+            channel_t r= (ix%3)==0 ? 255:0;
+            channel_t g= (ix%3)==1 ? 255:0;
+            channel_t b= (ix%3)==2 ? 255:0;
             v.point= object.vertices[ix];
             v.color={r,g,b,255};
             vertex_buffer.push_back(v);
