@@ -16,6 +16,9 @@ namespace microgl {
         template<class shader>
         using shader_number = typename shader::number;
 
+        template<class shader>
+        using shader_rgba = typename shader::rgba;
+
         template<typename rgba_, typename impl, typename vertex_attr, typename varying, typename number>
         class shader_base : public crpt<impl> {
         protected:

@@ -33,6 +33,8 @@ int main() {
         using camera = microgl::camera<number>;
         using mat4 = matrix_4x4<number>;
         using math = microgl::math;
+        using Shader = flat_color_shader<number, rgba_t<8,8,8,0>>;
+        using vertex_attributes = Shader::vertex_attributes;
 
         t-=0.0425;
 
@@ -53,8 +55,6 @@ int main() {
         mat4 mvp_1= projection*view*model_1;
 
         // setup shader
-        using Shader = flat_color_shader<number, rgba_t<8,8,8,0>>;
-        using vertex_attributes = Shader::vertex_attributes;
         Shader shader;
         shader.matrix= mvp_1;
         shader.color= {0,255,255,255};

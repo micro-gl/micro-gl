@@ -631,6 +631,7 @@ void canvas<BITMAP, options>::drawTriangle(const sampler<S> &sampler,
                                            int v2_x, int v2_y, int u2, int v2, int q2,
                                            const opacity_t opacity, const precision sub_pixel_precision,
                                            const precision uv_precision, bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
+
     constexpr precision precision_one_over_area=15;
     constexpr precision P_AA = 16;
     constexpr bool divide=options_use_division(); // compile time flag
@@ -817,6 +818,7 @@ void canvas<BITMAP, options>::drawTriangle(Shader &shader,
                                            depth_buffer_type *depth_buffer,
                                            const shader_number<Shader>& depth_range_near,
                                            const shader_number<Shader>& depth_range_far) {
+    static_assert_rgb<typename pixel_coder::rgba, shader_rgba<Shader>>();
 #define f microgl::math::to_fixed
     // this and drawTriangle_shader_homo_internal is the programmable 3d pipeline
     // compute varying and positions per vertex for interpolation
