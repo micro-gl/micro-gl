@@ -46,7 +46,8 @@ void render_block(int block_x, int block_y, Bitmap24 *bmp, z_buffer_type * depth
     using camera = microgl::camera<number>;
     using mat4 = matrix_4x4<number>;
     using math = microgl::math;
-    using vertex_attribute= sampler_shader_vertex_attribute<number>;
+    using Shader= sampler_shader<number, Texture24>;
+    using vertex_attributes= vertex_attributes<Shader>;
 
 //    z-=0.0004;
     z-=0.425;
@@ -64,14 +65,14 @@ void render_block(int block_x, int block_y, Bitmap24 *bmp, z_buffer_type * depth
     mat4 mvp_2= projection*view*model_2;
 
     // setup shader
-    sampler_shader<number, Texture24> shader;
+   Shader shader;
     shader.matrix= mvp_1;
     shader.sampler= &tex_uv;
 
     // model to vertex buffers
-    dynamic_array<vertex_attribute> vertex_buffer{object.vertices.size()};
+    dynamic_array<vertex_attributes> vertex_buffer{object.vertices.size()};
     for (unsigned ix = 0; ix < object.vertices.size(); ++ix) {
-        vertex_attribute v{};
+        vertex_attributes v{};
         v.point= object.vertices[ix];
         v.uv= object.uvs[ix];
         vertex_buffer.push_back(v);
