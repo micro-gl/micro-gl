@@ -248,8 +248,8 @@ private:
 
 private:
     template <typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, typename S>
-    void drawRect(const sampler<S> &sampler,
+            bool antialias=false, typename Sampler>
+    void drawRect(const Sampler &sampler,
                   int left, int top,
                   int right, int bottom,
                   int u0, int v0,
@@ -260,8 +260,8 @@ private:
 public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
-            typename number1=float, typename number2=number1, typename S>
-    void drawRect(const sampler<S> &sampler,
+            typename number1=float, typename number2=number1, typename Sampler>
+    void drawRect(const Sampler &sampler,
                   number1 left, number1 top,
                   number1 right, number1 bottom,
                   opacity_t opacity = 255,
@@ -270,8 +270,8 @@ public:
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
-            typename number1=float, typename number2=number1, typename S>
-    void drawRect(const sampler<S> &sampler,
+            typename number1=float, typename number2=number1, typename Sampler>
+    void drawRect(const Sampler &sampler,
                   const matrix_3x3<number1> &transform,
                   number1 left, number1 top,
                   number1 right, number1 bottom,
@@ -281,8 +281,8 @@ public:
 
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, typename number1=float, typename number2=number1, typename S>
-    void drawQuadrilateral(const sampler<S> &sampler,
+            bool antialias=false, typename number1=float, typename number2=number1, class Shader>
+    void drawQuadrilateral(const Shader &sampler,
                            const number1 & v0_x, const number1 & v0_y, const number2 & u0, const number2 & v0,
                            const number1 & v1_x, const number1 & v1_y, const number2 & u1, const number2 & v1,
                            const number1 & v2_x, const number1 & v2_y, const number2 & u2, const number2 & v2,
@@ -347,8 +347,8 @@ private:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool perspective_correct=false,
-            typename S>
-    void drawTriangle(const sampler<S> &sample,
+            typename Sampler>
+    void drawTriangle(const Sampler &sample,
                       int v0_x, int v0_y, int u0, int v0, int q0,
                       int v1_x, int v1_y, int u1, int v1, int q1,
                       int v2_x, int v2_y, int u2, int v2, int q2,

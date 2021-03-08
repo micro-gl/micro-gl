@@ -7,15 +7,25 @@ namespace microgl {
 
     namespace sampling {
 
-        template<masks::chrome_mode chrome, class sampler_from, class sampler_mask>
-        class mask_sampler : public sampler<typename sampler_from::rgba, mask_sampler<chrome, sampler_from, sampler_mask>> {
-                using base= sampler<typename sampler_from::rgba, mask_sampler<chrome, sampler_from, sampler_mask>>;
-                using cr = masks::chrome_mode;
+        /**
+         * a sampler that masks a bitmap
+         *
+         * @tparam chrome the chrome channel config for mask sampler
+         * @tparam sampler_from a sampler you want to mask
+         * @tparam sampler_mask a sampler that acts as a mask
+         * @tparam alpha_fallback this sampler inherits the alpha bits of sampler_from,
+         *                        and in case it doesn't have an alpha channel (rgba::a=0),
+         *                        we can make an alpha channel with `alpha_fallback` bits
+         */
+        template<masks::chrome_mode chrome, class sampler_from, class sampler_mask, uint8_t alpha_fallback=8>
+        struct mask_sampler {
+            using cr = masks::chrome_mode;
+            using rgba = rgba_dangling_a<sampler_rgba<sampler_from>, alpha_fallback>;
 
-        public:
+        private:
             sampler_from _s_from;
             sampler_mask _s_mask;
-            static constexpr uint8_t alpha_bits= sampler_from::rgba::a!=0 ? sampler_from::rgba::a : 8;
+            static constexpr uint8_t alpha_bits= rgba::a;
             static constexpr uint8_t max_alpha_value=(uint16_t(1)<<alpha_bits) - 1;
             static constexpr bool r_test=((chrome==cr::red_channel || chrome==cr::red_channel_inverted) &&
                     alpha_bits==sampler_mask::rgba::r);
@@ -29,13 +39,15 @@ namespace microgl {
             static constexpr bool is_inverted=chrome==cr::red_channel_inverted || chrome==cr::green_channel_inverted ||
                     chrome==cr::blue_channel_inverted || chrome==cr::alpha_channel_inverted;
 
+        public:
             mask_sampler(const sampler_from & from,
                          const sampler_mask & mask) :
                             _s_from{from}, _s_mask{mask} {
             }
 
             inline void sample(const int u, const int v,
-                               const unsigned bits, color_t &output) const {
+                               const unsigned bits,
+                               color_t &output) const {
                 color_t color_main{}, mask_color{};
                 _s_from.sample(u, v, bits, color_main);
                 _s_mask.sample(u, v, bits, mask_color);

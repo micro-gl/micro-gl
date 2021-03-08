@@ -13,7 +13,9 @@ namespace microgl {
          * @tparam N
          */
         template <typename number, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>, enum precision $precision=precision::medium, bool useBigIntegers=false>
-        class line_linear_gradient : public sampler<rgba_, line_linear_gradient<number, N, rgba_, $precision, useBigIntegers>> {
+        struct line_linear_gradient {
+            using rgba = rgba_;
+        private:
             using base= sampler<rgba_, line_linear_gradient<number, N, rgba_, $precision, useBigIntegers>>;
             using rint_big=int64_t;
             using rint= typename microgl::traits::conditional<useBigIntegers, int64_t, int32_t>::type;
@@ -71,7 +73,7 @@ namespace microgl {
             stop_t _stops[N];
 
         public:
-            line_linear_gradient() : base{} {}
+            line_linear_gradient()=default;
             line_linear_gradient(const vec2<number> & start, const vec2<number> & end) :
                     line_linear_gradient() {
                 setNewLine(start, end);

@@ -6,7 +6,8 @@ namespace microgl {
         /**
          * given an angle, compute the gradient line in the [0,1]x[0,1] box.
          */
-        template <typename number, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>, enum precision $precision=precision::medium, bool useBigIntegers=false>
+        template <typename number, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>,
+                enum precision $precision=precision::medium, bool useBigIntegers=false>
         class angular_linear_gradient : public line_linear_gradient<number, N, rgba_, $precision, useBigIntegers> {
             using base= line_linear_gradient<number, N, rgba_, $precision, useBigIntegers>;
             using point= vec2<number>;

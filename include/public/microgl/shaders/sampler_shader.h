@@ -43,7 +43,8 @@ namespace microgl {
             inline color::color_t
             fragment(const varying &input) {
                 color_t output;
-                sampler->sample(input.uv.x, input.uv.y, microgl::precision::high, output);
+                sampling::sample(*sampler, input.uv.x, input.uv.y,
+                                 microgl::precision::high, output);
                 return output;
             }
 

@@ -40,14 +40,14 @@ if(SDL2_FOUND)
             example_draw_circles.cpp
             example_draw_masks.cpp
             example_clear.cpp
-            example_draw_sampler_texture_wrap.cpp
-            example_draw_sampler_texture.cpp
-            example_draw_sampler_gradient_radial.cpp
-            example_draw_sampler_gradient_line.cpp
-            example_draw_sampler_gradient_angular_linear.cpp
-            example_draw_sampler_gradient_axial.cpp
-            example_draw_sampler_gradient_2_colors_fast.cpp
-            example_draw_sampler_flat_color.cpp
+            example_sampler_texture_wrap.cpp
+            example_sampler_texture.cpp
+            example_sampler_gradient_radial.cpp
+            example_sampler_gradient_line.cpp
+            example_sampler_gradient_angular_linear.cpp
+            example_sampler_gradient_axial.cpp
+            example_sampler_gradient_2_colors_fast.cpp
+            example_sampler_flat_color.cpp
             example_draw_triangles_matrix_transforms.cpp
             example_3d_single_triangle_shaders_with_ortho.cpp
             example_3d_shaders_flat_color.cpp

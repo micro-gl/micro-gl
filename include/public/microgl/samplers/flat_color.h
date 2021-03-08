@@ -6,10 +6,8 @@ namespace microgl {
     namespace sampling {
 
         template<typename rgba_=rgba_t<8,8,8,0>>
-        class flat_color : public sampler<rgba_, flat_color<rgba_>> {
-            using base= sampler<rgba_, flat_color<rgba_>>;
-
-        public:
+        struct flat_color {
+            using rgba = rgba_;
             explicit flat_color()= default;
             explicit flat_color(const color_t & $color) : color{$color} {}
 

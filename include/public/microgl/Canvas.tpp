@@ -339,17 +339,17 @@ void canvas<BITMAP, options>::drawRoundedRect(const sampler<S1> & sampler_fill,
 }
 
 template<typename BITMAP, uint8_t options>
-template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
-void canvas<BITMAP, options>::drawRect(const sampler<S> & sampler,
+template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename Sampler>
+void canvas<BITMAP, options>::drawRect(const Sampler & sampler,
                                        const number1 left, const number1 top,
                                        const number1 right, const number1 bottom,
                                        opacity_t opacity,
                                        const number2 u0, const number2 v0,
                                        const number2 u1, const number2 v1) {
-//    static_assert(true, "");
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
     const precision p_sub = renderingOptions()._2d_raster_bits_sub_pixel,
             p_uv = renderingOptions()._2d_raster_bits_uv;
-    drawRect<BlendMode, PorterDuff, antialias, S > (sampler,
+    drawRect<BlendMode, PorterDuff, antialias, Sampler> (sampler,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
             microgl::math::to_fixed(right, p_sub), microgl::math::to_fixed(bottom, p_sub),
             microgl::math::to_fixed(u0, p_uv), microgl::math::to_fixed(v0, p_uv),
@@ -358,8 +358,8 @@ void canvas<BITMAP, options>::drawRect(const sampler<S> & sampler,
 }
 
 template<typename BITMAP, uint8_t options>
-template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename S>
-void canvas<BITMAP, options>::drawRect(const sampler<S> & sampler,
+template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename Sampler>
+void canvas<BITMAP, options>::drawRect(const Sampler & sampler,
                                        const matrix_3x3<number1> &transform,
                                        const number1 left, const number1 top,
                                        const number1 right, const number1 bottom,
@@ -368,15 +368,15 @@ void canvas<BITMAP, options>::drawRect(const sampler<S> & sampler,
                                        const number2 u1, const number2 v1) {
     vec2<number1> p0{left, top}, p1{left, bottom}, p2{right, bottom}, p3{right, top};
     if(!transform.isIdentity()) {p0=transform*p0; p1=transform*p1; p2=transform*p2; p3=transform*p3;}
-    drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, S>(sampler,
-                                                                        p0.x,p0.y,u0,v0, p1.x,p1.y,u0,v1, p2.x,p2.y,u1,v1, opacity, true, true, false);
-    drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, S>(sampler,
-                                                                        p2.x,p2.y,u1,v1, p3.x,p3.y,u1,v0, p0.x,p0.y,u0,v0, opacity, true, true, false);
+    drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(sampler,
+                                        p0.x,p0.y,u0,v0, p1.x,p1.y,u0,v1, p2.x,p2.y,u1,v1, opacity, true, true, false);
+    drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(sampler,
+                                        p2.x,p2.y,u1,v1, p3.x,p3.y,u1,v0, p0.x,p0.y,u0,v0, opacity, true, true, false);
 }
 
 template<typename BITMAP, uint8_t options>
-template <typename BlendMode, typename PorterDuff, bool antialias, typename S>
-void canvas<BITMAP, options>::drawRect(const sampler<S> & sampler,
+template <typename BlendMode, typename PorterDuff, bool antialias, typename Sampler>
+void canvas<BITMAP, options>::drawRect(const Sampler & sampler,
                                        int left, int top,
                                        int right, int bottom,
                                        int u0, int v0,
@@ -443,7 +443,7 @@ void canvas<BITMAP, options>::drawRect(const sampler<S> & sampler,
                 else if(y==bbox_r_c.top && !clipped_top) blend= blend_top;
                 else if(y==bbox_r_c.bottom && !clipped_bottom) blend= blend_bottom;
                 sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
-                blendColor<BlendMode, PorterDuff, S::rgba::a>(col_bmp, index + x, blend);
+                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + x, blend);
             }
         }
     }
@@ -452,7 +452,7 @@ void canvas<BITMAP, options>::drawRect(const sampler<S> & sampler,
         for (int y=bbox_r_c.top, v=v0+(dv>>1)+dy*dv; y<bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
             for (int x=bbox_r_c.left, u=u0+(du>>1)+dx*du; x<bbox_r_c.right; x++, u+=du) {
                 sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
-                blendColor<BlendMode, PorterDuff, S::rgba::a>(col_bmp, index + x, opacity);
+                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + x, opacity);
             }
         }
     }
@@ -462,8 +462,8 @@ void canvas<BITMAP, options>::drawRect(const sampler<S> & sampler,
 
 template<typename BITMAP, uint8_t options>
 template<typename BlendMode, typename PorterDuff,
-        bool antialias, typename number1, typename number2, typename S>
-void canvas<BITMAP, options>::drawQuadrilateral(const sampler<S> & sampler,
+        bool antialias, typename number1, typename number2, class Shader>
+void canvas<BITMAP, options>::drawQuadrilateral(const Shader & sampler,
                                                 const number1 & v0_x, const number1 & v0_y, const number2 & u0, const number2 & v0,
                                                 const number1 & v1_x, const number1 & v1_y, const number2 & u1, const number2 & v1,
                                                 const number1 & v2_x, const number1 & v2_y, const number2 & u2, const number2 & v2,
@@ -501,12 +501,12 @@ void canvas<BITMAP, options>::drawQuadrilateral(const sampler<S> & sampler,
     number2 u2_q2 = u2*q2, v2_q2 = v2*q2;
     number2 u3_q3 = u3*q3, v3_q3 = v3*q3;
     // perspective correct version
-    drawTriangle<BlendMode, PorterDuff, antialias, true, S>(sampler,
+    drawTriangle<BlendMode, PorterDuff, antialias, true, Shader>(sampler,
             f(v0_x, pixel_p), f(v0_y, pixel_p), f(u0_q0, uv_p), f(v0_q0, uv_p), f(q0, uv_p),
             f(v1_x, pixel_p), f(v1_y, pixel_p), f(u1_q1, uv_p), f(v1_q1, uv_p), f(q1, uv_p),
             f(v2_x, pixel_p), f(v2_y, pixel_p), f(u2_q2, uv_p), f(v2_q2, uv_p), f(q2, uv_p),
             opacity, pixel_p, uv_p, true, true, false);
-    drawTriangle<BlendMode, PorterDuff, antialias, true, S>(sampler,
+    drawTriangle<BlendMode, PorterDuff, antialias, true, Shader>(sampler,
             f(v2_x, pixel_p), f(v2_y, pixel_p), f(u2_q2, uv_p), f(v2_q2, uv_p), f(q2, uv_p),
             f(v3_x, pixel_p), f(v3_y, pixel_p), f(u3_q3, uv_p), f(v3_q3, uv_p), f(q3, uv_p),
             f(v0_x, pixel_p), f(v0_y, pixel_p), f(u0_q0, uv_p), f(v0_q0, uv_p), f(q0, uv_p),
@@ -624,14 +624,14 @@ void canvas<BITMAP, options>::drawTriangleWireframe(const color_t &color,
 
 
 template<typename BITMAP, uint8_t options>
-template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, typename S>
-void canvas<BITMAP, options>::drawTriangle(const sampler<S> &sampler,
+template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, typename Sampler>
+void canvas<BITMAP, options>::drawTriangle(const Sampler &sampler,
                                            int v0_x, int v0_y, int u0, int v0, int q0,
                                            int v1_x, int v1_y, int u1, int v1, int q1,
                                            int v2_x, int v2_y, int u2, int v2, int q2,
                                            const opacity_t opacity, const precision sub_pixel_precision,
                                            const precision uv_precision, bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
     constexpr precision precision_one_over_area=15;
     constexpr precision P_AA = 16;
     constexpr bool divide=options_use_division(); // compile time flag
@@ -775,7 +775,7 @@ void canvas<BITMAP, options>::drawTriangle(const sampler<S> &sampler,
                 v_i = functions::clamp<rint>(v_i, 0, (rint(1)<<uv_precision));
                 color_t col_bmp;
                 sampler.sample(u_i, v_i, uv_precision, col_bmp);
-                blendColor<BlendMode, PorterDuff, S::rgba::a>(col_bmp, index + p.x, blend);
+                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + p.x, blend);
             }
             w0+=A01; w1+=A12; w2+=A20;
             if(antialias) { w0_h+=A01_h; w1_h+=A12_h; w2_h+=A20_h; }

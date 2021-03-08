@@ -17,37 +17,30 @@ namespace microgl {
                 bool tint=false,
                 texture_wrap wrap_u=texture_wrap::None,
                 texture_wrap wrap_v=texture_wrap::None>
-        class texture : public sampler<typename Bitmap::rgba, texture<Bitmap, filter, tint, wrap_u, wrap_v>> {
-        public:
-            using base= sampler<typename Bitmap::rgba, texture<Bitmap, filter, tint, wrap_u, wrap_v>>;
-            using base::sample;
+        struct texture {
+            using rgba = typename Bitmap::rgba;
 
         private:
             using rint= int;
 
         void tint_color(color_t & color, const color_t & color_tint) const {
-            constexpr uint8_t r_ = base::rgba::r;
-            constexpr uint8_t g_ = base::rgba::g;
-            constexpr uint8_t b_ = base::rgba::b;
-            constexpr uint8_t a_ = base::rgba::a;
             // todo: this is fast and inaccurate, flag on convert_channel methods
-            color.r = (uint16_t (color.r)*color_tint.r)>>r_;
-            color.g = (uint16_t (color.g)*color_tint.g)>>g_;
-            color.b = (uint16_t (color.b)*color_tint.b)>>b_;
-            color.a = (uint16_t (color.a)*color_tint.a)>>a_;
+            color.r = (uint16_t (color.r)*color_tint.r)>>rgba::r;
+            color.g = (uint16_t (color.g)*color_tint.g)>>rgba::g;
+            color.b = (uint16_t (color.b)*color_tint.b)>>rgba::b;
+            color.a = (uint16_t (color.a)*color_tint.a)>>rgba::a;
         }
 
-        static constexpr uint8_t r_max_val = (1u<<base::rgba::r) - 1;
-        static constexpr uint8_t g_max_val = (1u<<base::rgba::g) - 1;
-        static constexpr uint8_t b_max_val = (1u<<base::rgba::b) - 1;
-        static constexpr uint8_t a_max_val = (1u<<base::rgba::a) - 1;
+        static constexpr uint8_t r_max_val = (1u<<rgba::r) - 1;
+        static constexpr uint8_t g_max_val = (1u<<rgba::g) - 1;
+        static constexpr uint8_t b_max_val = (1u<<rgba::b) - 1;
+        static constexpr uint8_t a_max_val = (1u<<rgba::a) - 1;
 
         public:
 
         texture() : texture{nullptr, {r_max_val,g_max_val,b_max_val, a_max_val} } {};
         texture(Bitmap * bitmap) : texture{bitmap, {r_max_val,g_max_val,b_max_val, a_max_val} } {};
         texture(Bitmap * bitmap, const color_t &tint_color) :
-                base{},
                 _color_tint{tint_color},
                 _border_color{0,0,0, channel(a_max_val)},
                 _bmp{bitmap} {};
