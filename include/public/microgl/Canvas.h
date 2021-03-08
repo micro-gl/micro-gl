@@ -135,9 +135,9 @@ public:
     template<class impl>
     using sampler = sampling::sampler<dangling_rgba<typename impl::rgba>, impl>;
 
-    template<class impl, typename vertex_attr, typename varying, typename number>
-    using shader = shader_base<dangling_rgba<typename impl::rgba>,
-                                impl, vertex_attr, varying, number>;
+//    template<class impl, typename vertex_attr, typename varying, typename number>
+//    using shader = shader_base<dangling_rgba<typename impl::rgba>,
+//                                impl, vertex_attr, varying, number>;
 
     explicit canvas(bitmap * $bmp);
     canvas(int width, int height);
@@ -309,17 +309,18 @@ public:
 
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias, bool perspective_correct, bool depth_buffer_flag=false,
-            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type >
-    void drawTriangles(shader<impl, vertex_attr, varying, number> &shader,
+            typename Shader, typename depth_buffer_type >
+    void drawTriangles(Shader &shader,
                        int viewport_width, int viewport_height,
-                       const vertex_attr *vertex_buffer,
+                       const vertex_attributes<Shader> *vertex_buffer,
                        const index *indices,
                        index size,
                        enum indices type,
                        const triangles::face_culling & culling= triangles::face_culling::none,
                        depth_buffer_type *depth_buffer=(nullptr),
                        opacity_t opacity=255,
-                       const number& depth_range_near=number(0), const number& depth_range_far=number(1));
+                       const shader_number<Shader>& depth_range_near=shader_number<Shader>(0),
+                       const shader_number<Shader>& depth_range_far=shader_number<Shader>(1));
 
     void fxaa(int left, int top, int right, int bottom);
 
@@ -367,23 +368,28 @@ public:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::None<>,
             bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
-            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type >
-    void drawTriangle(shader<impl, vertex_attr, varying, number> &shader,
+            typename Shader, typename depth_buffer_type >
+    void drawTriangle(Shader &shader,
                       int viewport_width, int viewport_height,
-                      vertex_attr v0, vertex_attr v1, vertex_attr v2,
+                      vertex_attributes<Shader> v0,
+                      vertex_attributes<Shader> v1,
+                      vertex_attributes<Shader> v2,
                       opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
                       depth_buffer_type * depth_buffer=nullptr,
-                      const number& depth_range_near=number(0), const number& depth_range_far=number(1));
+                      const shader_number<Shader>& depth_range_near=shader_number<Shader>(0),
+                      const shader_number<Shader>& depth_range_far=shader_number<Shader>(1));
 
 private:
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::None<>,
             bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
-            typename impl, typename vertex_attr, typename varying, typename number, typename depth_buffer_type >
-    void drawTriangle_shader_homo_internal(shader<impl, vertex_attr, varying, number> &$shader,
+            typename Shader, typename number, typename depth_buffer_type >
+    void drawTriangle_shader_homo_internal(Shader &$shader,
                                            int viewport_width, int viewport_height,
                                            const vec4<number> &p0, const vec4<number> &p1, const vec4<number> &p2,
-                                           varying &varying_v0, varying &varying_v1, varying &varying_v2,
+                                           varying<Shader> varying_v0,
+                                           varying<Shader> varying_v1,
+                                           varying<Shader> varying_v2,
                                            opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
                                            depth_buffer_type * depth_buffer=nullptr,
                                            number depth_range_near=number(0), number depth_range_far=number(1));

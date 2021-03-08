@@ -14,7 +14,8 @@ namespace microgl {
             explicit flat_color(const color_t & $color) : color{$color} {}
 
             inline void sample(const int u, const int v,
-                               const unsigned bits, color_t &output) const {
+                               const unsigned bits,
+                               color_t &output) const {
                 // we only copy channel values and not bit information
                 output.r=color.r;
                 output.g=color.g;

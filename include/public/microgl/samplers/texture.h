@@ -21,6 +21,7 @@ namespace microgl {
         public:
             using base= sampler<typename Bitmap::rgba, texture<Bitmap, filter, tint, wrap_u, wrap_v>>;
             using base::sample;
+
         private:
             using rint= int;
 
@@ -29,6 +30,7 @@ namespace microgl {
             constexpr uint8_t g_ = base::rgba::g;
             constexpr uint8_t b_ = base::rgba::b;
             constexpr uint8_t a_ = base::rgba::a;
+            // todo: this is fast and inaccurate, flag on convert_channel methods
             color.r = (uint16_t (color.r)*color_tint.r)>>r_;
             color.g = (uint16_t (color.g)*color_tint.g)>>g_;
             color.b = (uint16_t (color.b)*color_tint.b)>>b_;

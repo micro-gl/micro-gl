@@ -6,7 +6,7 @@ namespace microgl {
     using namespace microgl::traits;
 
     template<uint8_t bits_from, uint8_t bits_to>
-    uint_t<bits_to> convert_channel_correct(const uint_t<bits_from> &input) {
+    inline uint_t<bits_to> convert_channel_correct(const uint_t<bits_from> &input) {
         if (bits_from == bits_to) return input;
         if(bits_to==0) return 0;
         if(bits_from==0) return 0;
@@ -37,7 +37,7 @@ namespace microgl {
     }
 
     template<uint8_t bits>
-    uint_t<bits> mul_channels_correct(
+    inline uint_t<bits> mul_channels_correct(
             const uint_t<bits> & a,
             const uint_t<bits> & b) {
 
@@ -68,14 +68,14 @@ namespace microgl {
     }
 
     template<uint8_t bits>
-    uint_t<bits> mc(
+    inline uint_t<bits> mc(
             const uint_t<bits> & a,
             const uint_t<bits> & b) {
         return mul_channels_correct<bits>(a,b);
     }
 
     template<uint8_t bits_a, uint8_t bits_b, uint_t<bits_b> b>
-    uint_t<bits_a-bits_b+1> div(
+    inline uint_t<bits_a-bits_b+1> div(
             const uint_t<bits_a> & a) {
         using uint_b = uint_t<bits_b>;
         constexpr uint8_t p = bits_b + 12;
