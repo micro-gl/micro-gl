@@ -66,7 +66,7 @@ template<typename BITMAP, uint8_t options>
 template <typename number>
 void canvas<BITMAP, options>::clear(const intensity<number> &color) {
     pixel output;
-    _bitmap_canvas->coder().encode(color, output);
+    microgl::coder::encode<number>(color, output, coder());
     _bitmap_canvas->fill(output);
 }
 
@@ -1421,7 +1421,8 @@ void canvas<BITMAP, options>::drawBezierPatch(const Sampler & sampler,
         vertex p2=vertex{v_a[second_index + I_X], v_a[second_index + I_Y]};
         vertex p3=vertex{v_a[third_index + I_X], v_a[third_index + I_Y]};
         p1= transform * p1;p2= transform * p2;p3= transform * p3;
-        drawTriangle<BlendMode, PorterDuff, antialias, false, Sampler>(sampler,
+        drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(
+                sampler,
                p1.x, p1.y, v_a[first_index + I_U],  v_a[first_index + I_V],
                p2.x, p2.y, v_a[second_index + I_U], v_a[second_index + I_V],
                p3.x, p3.y, v_a[third_index + I_U],  v_a[third_index + I_V], opacity); //even = !even;

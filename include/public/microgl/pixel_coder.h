@@ -11,14 +11,14 @@ namespace microgl {
         using namespace microgl::color;
         using namespace microgl::traits;
         using channel = uint8_t;
-        using bits = uint8_t;
+//        using bits = uint8_t;
 
         template <typename number, class Coder>
         void inline
         encode(const intensity<number> &input, typename Coder::pixel &output,
                const Coder & $coder) {
             color_t int_color{};
-            convert_intensity_to_color<number, Coder::rgba>(input, int_color);
+            convert_intensity_to_color<number, typename Coder::rgba>(input, int_color);
             $coder.encode(int_color, output);
         }
 

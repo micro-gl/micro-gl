@@ -5,6 +5,7 @@
 #include <microgl/matrix_3x3.h>
 #include <microgl/rect.h>
 #include <microgl/color.h>
+#include <microgl/pixel_coder.h>
 #include <microgl/micro_gl_traits.h>
 #include <microgl/porter_duff/FastSourceOverOnOpaque.h>
 #include <microgl/porter_duff/DestinationIn.h>
