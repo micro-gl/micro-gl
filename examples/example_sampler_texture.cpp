@@ -34,7 +34,7 @@ int main() {
         canvas->drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
 //                tex_uv,
                 tex_uv_32,
-                0, 0, 400, 400);
+                0, 0, 300, 300);
     };
 
     example_run(canvas, render);

@@ -49,8 +49,8 @@ int main() {
     auto render = [&]() -> void {
         static float t =0;
 
-//        using number = float;
-        using number = Q<15>;
+        using number = float;
+//        using number = Q<15>;
 
 //        auto polygon = poly_hole<number>();
         auto polygon = poly_diamond<number>();

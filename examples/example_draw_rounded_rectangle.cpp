@@ -41,7 +41,7 @@ int main() {
                 tex_uv,
                 gradient2Colors,
 //                flatColor,
-                10+t, 10+t, 400+t, 400+t,
+                10+t, 10+t, 300+t, 300+t,
                 50, 10);
     };
 

@@ -26,28 +26,28 @@ if(SDL2_FOUND)
     message(${PROJECT_SOURCE_DIR})
 
     set(SOURCES
-            example_draw_blocks_3d_raster.cpp
-            example_draw_blocks_rouned_quads.cpp
-            example_draw_blocks_masks.cpp
-            example_draw_blocks_quads.cpp
-            example_draw_blocks_patch.cpp
+            example_blocks_3d_raster.cpp
+            example_blocks_rouned_quads.cpp
+            example_blocks_masks.cpp
+            example_blocks_quads.cpp
+            example_blocks_patch.cpp
             example_blend_modes.cpp
             example_draw_triangle.cpp
             example_draw_quadrilaterals.cpp
-            example_draw_polygon_sampler.cpp
+            example_draw_polygon.cpp
             example_draw_bezier_patch.cpp
             example_draw_rounded_rectangle.cpp
             example_draw_circles.cpp
             example_draw_masks.cpp
             example_clear.cpp
-            example_draw_sampler_texture_wrap.cpp
-            example_draw_sampler_texture.cpp
-            example_draw_sampler_gradient_radial.cpp
-            example_draw_sampler_gradient_line.cpp
-            example_draw_sampler_gradient_angular_linear.cpp
-            example_draw_sampler_gradient_axial.cpp
-            example_draw_sampler_gradient_2_colors_fast.cpp
-            example_draw_sampler_flat_color.cpp
+            example_sampler_texture_wrap.cpp
+            example_sampler_texture.cpp
+            example_sampler_gradient_radial.cpp
+            example_sampler_gradient_line.cpp
+            example_sampler_gradient_angular_linear.cpp
+            example_sampler_gradient_axial.cpp
+            example_sampler_gradient_2_colors_fast.cpp
+            example_sampler_flat_color.cpp
             example_draw_triangles_matrix_transforms.cpp
             example_3d_single_triangle_shaders_with_ortho.cpp
             example_3d_shaders_flat_color.cpp

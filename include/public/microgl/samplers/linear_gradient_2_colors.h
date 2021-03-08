@@ -6,15 +6,14 @@ namespace microgl {
     namespace sampling {
 
         template <unsigned degree=90, typename rgba_=rgba_t<8,8,8,0>, bool useBigIntegers=false>
-        class linear_gradient_2_colors : public sampler<rgba_, linear_gradient_2_colors<degree, rgba_, useBigIntegers>> {
-            using base= sampler<rgba_, linear_gradient_2_colors<degree, rgba_, useBigIntegers>>;
-            using rint_big=int64_t;
+        struct linear_gradient_2_colors {
+            using rgba = rgba_;
             using rint= typename microgl::traits::conditional<useBigIntegers, int64_t, int32_t>::type;
 
         public:
             linear_gradient_2_colors() : linear_gradient_2_colors({0,0,0,0}, {0,0,0,0}) {}
             linear_gradient_2_colors(const color_t& color_1, const color_t& color_2) :
-                    base{}, color1{color_1}, color2{color_2} {};
+                    color1{color_1}, color2{color_2} {};
 
             color_t color1= {255,0,0};
             color_t color2= {0,0,255};

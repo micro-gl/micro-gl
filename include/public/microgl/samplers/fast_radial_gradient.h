@@ -11,8 +11,9 @@ namespace microgl {
          * to a quadratic function interpolation to calculate interpolation factor
          */
         template <typename number, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>, enum precision $precision=precision::medium, bool useBigIntegers=false>
-        class fast_radial_gradient : public sampler<rgba_, fast_radial_gradient<number, N,rgba_, $precision, useBigIntegers>> {
-            using base= sampler<rgba_, fast_radial_gradient<number, N, rgba_, $precision, useBigIntegers>>;
+        struct fast_radial_gradient {
+            using rgba = rgba_;
+        private:
             using rint_big=int64_t;
             using rint= typename microgl::traits::conditional<useBigIntegers, int64_t, int32_t>::type;
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
@@ -40,7 +41,7 @@ namespace microgl {
             stop_t _stops[N];
             rint _cx=HALF, _cy=HALF, _radius=HALF;
         public:
-            fast_radial_gradient() : base{} {}
+            fast_radial_gradient()=default;
             fast_radial_gradient(const number &cx, const number &cy, const number &radius) :
                     fast_radial_gradient() {
                 setNewRadial(cx, cy, radius);

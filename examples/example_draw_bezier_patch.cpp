@@ -40,9 +40,9 @@ int main() {
     using number = float;
 //    using number = Q<16>;
 
-//    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
-    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
-    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
+//    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
+    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::Bilinear>;
     sampling::flat_color<> color_grey{{222,222,222,255}};
     Resources resources{};
 
@@ -50,13 +50,13 @@ int main() {
 
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
     Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
-
+    constexpr int samples = 20;
     auto test_bezier = [&](vec3<number>* mesh, unsigned U, unsigned V) {
         canvas->drawBezierPatch<blendmode::Normal, porterduff::None<>, false, false, number, number>(
 //            color_grey,
                 tex_uv,
                 matrix_3x3<number>::identity(),
-                mesh, U, V, 20, 20,
+                mesh, U, V, samples, samples,
                 0,1,1,0,
                 255);
         delete [] mesh;
