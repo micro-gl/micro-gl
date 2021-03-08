@@ -4,12 +4,12 @@
 
 namespace microgl {
     /**
-     * generic rgba_t container
+     * generic static rgba info container
      *
-     * @tparam R
-     * @tparam G
-     * @tparam B
-     * @tparam A
+     * @tparam R red bits
+     * @tparam G green bits
+     * @tparam B blue bits
+     * @tparam A alpha bits
      */
     template<uint8_t R, uint8_t G, uint8_t B, uint8_t A>
     struct rgba_t {

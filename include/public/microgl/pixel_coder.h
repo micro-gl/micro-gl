@@ -13,6 +13,23 @@ namespace microgl {
         using channel = uint8_t;
         using bits = uint8_t;
 
+        template <typename number, class Coder>
+        void inline
+        encode(const intensity<number> &input, typename Coder::pixel &output,
+               const Coder & $coder) {
+            color_t int_color{};
+            convert_intensity_to_color<number, Coder::rgba>(input, int_color);
+            $coder.encode(int_color, output);
+        }
+
+        template <typename number, class Coder>
+        void decode(const typename Coder::pixel &input, intensity<number> &output,
+                    const Coder & $coder) {
+            color_t int_color{};
+            $coder.decode(input, int_color);
+            convert_color_to_intensity<number, typename Coder::rgba>(int_color, output);
+        }
+
         template<typename pixel_, typename rgba_, typename impl>
         class pixel_coder : public crpt<impl> {
         public:
@@ -31,39 +48,36 @@ namespace microgl {
 
             template <typename number>
             void encode(const intensity<number> &input, pixel &output) const {
-                color_t int_color{};
-                convert_color<number, rgba>(input, int_color);
-                encode(int_color, output);
+                coder::encode<number>(input, output, *this);
             }
 
             template <typename number>
             void decode(const pixel &input, intensity<number> &output) const {
-                color_t int_color{};
-                decode(input, int_color);
-                convert_color<number, rgba>(int_color, output);
+                coder::decode<number>(input, output, *this);
             }
 
             template <typename number>
             void convert(const intensity<number> &input, color_t &output) const {
-                convert_color<number, rgba>(input, output);
+                color::convert_intensity_to_color<number, rgba>(input, output);
             }
 
             template <typename number>
             void convert(const color_t &input, intensity<number> &output) const {
-                convert_color<number, rgba>(input, output);
+                color::convert_color_to_intensity<number, rgba>(input, output);
             }
 
             template<typename CODER2>
-            void convert(const color_t &input, color_t &output, const CODER2 &coder2) const {
+            void convert(const color_t &input, color_t &output) const {
                 // convert input color of my space into a color in coder2 space
-                convert_color<rgba, typename CODER2::rgba>(input, output);
+                color::convert_color<rgba, typename CODER2::rgba>(input, output);
             }
 
             template<typename CODER2>
             void convert(const pixel &input, typename CODER2::pixel &output, const CODER2 &coder2) const {
-                color_t input_decoded{};
+                color_t input_decoded{}, output_converted;
                 decode(input, input_decoded);
-                coder2.encode(input_decoded, output);
+                convert<CODER2>(input_decoded, output_converted);
+                coder2.encode(output_converted, output);
             }
 
         };

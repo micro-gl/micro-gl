@@ -1,7 +1,7 @@
 #pragma once
 
 #include <microgl/blend_mode_base.h>
-#include <microgl/convert_channel.h>
+#include <microgl/channel.h>
 
 namespace microgl {
     namespace blendmode {

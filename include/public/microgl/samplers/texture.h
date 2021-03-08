@@ -42,7 +42,7 @@ namespace microgl {
         texture(Bitmap * bitmap) : texture{bitmap, {r_max_val,g_max_val,b_max_val, a_max_val} } {};
         texture(Bitmap * bitmap, const color_t &tint_color) :
                 _color_tint{tint_color},
-                _border_color{0,0,0, channel(a_max_val)},
+                _border_color{0,0,0, channel_t(a_max_val)},
                 _bmp{bitmap} {};
 
         void updateBitmap(Bitmap * bitmap) {

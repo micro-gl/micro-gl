@@ -2,7 +2,7 @@
 
 #include <microgl/color.h>
 #include <microgl/crpt.h>
-#include <microgl/convert_channel.h>
+#include <microgl/channel.h>
 
 namespace microgl {
     namespace blendmode {
