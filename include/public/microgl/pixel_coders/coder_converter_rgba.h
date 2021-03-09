@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/pixel_coder.h>
+#include <microgl/color.h>
 
 namespace microgl {
     namespace coder {
@@ -8,31 +8,28 @@ namespace microgl {
         /**
          * a coder that rescales it's rgba_t values. it is advised to use a custom one,
          * that can be done more efficiently or make sure you data almost always requires
-         * the same pixel coding
+         * the same pixel coding. this can be sped up with a lookup table. Also, no division occurs
+         * as I exchange division with multiplication and shifting at compile time.
          *
          * @tparam from_coder a pixel_coder
-         * @tparam R
-         * @tparam G
-         * @tparam B
-         * @tparam A
+         * @tparam rgba_ output {@rgba_t} info interface
          */
         template<class from_coder, typename rgba_>
-        class coder_rgba :
-                public pixel_coder<typename from_coder::pixel, rgba_, coder_rgba<from_coder, rgba_>> {
+        struct coder_converter_rgba {
+
+            using rgba = rgba_;
+            using pixel = typename from_coder::pixel;
 
         private:
-            using base = pixel_coder<typename from_coder::pixel, rgba_, coder_rgba<from_coder, rgba_>>;
             using pixel_from = typename from_coder::pixel;
             from_coder _coder_from;
         public:
-            using base::decode;
-            using base::encode;
 
-            coder_rgba() = default;
+            coder_converter_rgba() = default;
 
             inline void encode(const color_t &input, pixel_from &output) const {
                 color_t converted_color{};
-                color::convert_color<base::rgba, from_coder::rgba>(
+                color::convert_color<rgba , typename from_coder::rgba>(
                         input, converted_color);
                 _coder_from.encode(converted_color, output);
             }
@@ -40,7 +37,7 @@ namespace microgl {
             inline void decode(const pixel_from &input, color_t &output) const {
                 color_t converted_color;
                 _coder_from.decode(input, converted_color);
-                color::convert_color<from_coder::rgba, base::rgba>(
+                color::convert_color<typename from_coder::rgba, rgba>(
                         converted_color, output);
             };
 
