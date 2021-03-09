@@ -1,27 +1,11 @@
 #pragma once
 
-#include <microgl/pixel_coder.h>
+#include <microgl/pixel_coders/RGBA_PACKED.h>
 
 namespace microgl {
     namespace coder {
 
-        class ARGB1555_PACKED_16 : public pixel_coder<uint16_t, rgba_t<5,5,5,1>, ARGB1555_PACKED_16> {
-        public:
-            using pixel_coder::decode;
-            using pixel_coder::encode;
+        using ARGB1555_PACKED_16 = RGBA_PACKED<5,5,5,1, 1,2,3,0>;
 
-            inline void encode(const color_t &input, uint16_t &output) {
-                output =
-                        ((input.a & 0x1) << 15) + ((input.r & 0x1F) << 10) + ((input.g & 0x1F) << 5) + (input.b & 0x1F);
-            }
-
-            inline void decode(const uint16_t &input, color_t &output) {
-                output.a = (input & 0b1000000000000000) >> 15;
-                output.r = (input & 0b0111110000000000) >> 10;
-                output.g = (input & 0b0000001111100000) >> 5;
-                output.b = (input & 0b0000000000011111);
-            };
-
-        };
     }
 }

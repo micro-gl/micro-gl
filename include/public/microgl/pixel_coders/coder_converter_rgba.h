@@ -8,7 +8,8 @@ namespace microgl {
         /**
          * a coder that rescales it's rgba_t values. it is advised to use a custom one,
          * that can be done more efficiently or make sure you data almost always requires
-         * the same pixel coding
+         * the same pixel coding. this can be sped up with a lookup table. Also, no division occurs
+         * as I exchange division with multiplication and shifting at compile time.
          *
          * @tparam from_coder a pixel_coder
          * @tparam rgba_ output {@rgba_t} info interface

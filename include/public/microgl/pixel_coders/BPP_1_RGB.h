@@ -4,15 +4,8 @@
 
 namespace microgl {
     namespace coder {
-        template <channel R, channel G, channel B>
-        class BPP_1_RGB : public BPP_RGB<1, R,G,B> {
-        private:
-            using base=BPP_RGB<1, R,G,B>;
-        public:
-            using base::decode;
-            using base::encode;
 
-            BPP_1_RGB() : base{} {}
-        };
+        template <channel R, channel G, channel B>
+        using BPP_1_RGB = BPP_RGB<1, R,G,B>;
     }
 }

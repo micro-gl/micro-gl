@@ -107,11 +107,11 @@ inline void canvas<BITMAP, options>::blendColor(const color_t &val, int index, o
     static_assert(src_a_bits==canvas_a_bits, "src_a_bits!=canvas_a_bits");
 
     const color_t & src = val;
-    color_t result;
-    pixel output;
+    static color_t result{};
+    static pixel output{};
 
     if(!skip_all) {
-        color_t backdrop, blended;
+        static color_t backdrop{}, blended{};
         // normal blend and none composite do not require a backdrop
         if(!(skip_blending && none_compositing))
             this->_bitmap_canvas->decode(index, backdrop); // not using getPixelColor to avoid extra subtraction

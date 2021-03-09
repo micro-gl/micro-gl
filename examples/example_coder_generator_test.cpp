@@ -32,6 +32,7 @@ void test_packed_coder() {
     Coder coder;
     color_t color_input= infer_max_color<r,g,b,a>(), color_output{0,0,0,0};
     typename Coder::pixel output;
+
     coder.encode(color_input, output);
     coder.decode(output, color_output);
     assertm(color_equals(color_input, color_output), "test_packed_coder failed");

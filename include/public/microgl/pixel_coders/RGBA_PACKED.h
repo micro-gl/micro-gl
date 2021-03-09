@@ -22,7 +22,7 @@ namespace microgl {
          * @tparam bi position of blue channel
          * @tparam ai position of alpha channel
          */
-        template<u8 r, u8 g, u8 b, u8 a, u8 ri=0, u8 gi=1, u8 bi=2, u8 ai=3>
+        template<u8 r, u8 g, u8 b, u8 a=0, u8 ri=0, u8 gi=1, u8 bi=2, u8 ai=3>
         struct RGBA_PACKED {
             using rgba = rgba_t<r,g,b,a>;
             using pixel = uint_t<r+g+b+a>;

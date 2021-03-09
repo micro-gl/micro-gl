@@ -20,7 +20,9 @@ void example_run(canvas_type * canvas,
                               canvas->width(), canvas->height(), 0);
 
     renderer = SDL_CreateRenderer(window, -1, 0);
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
+    texture = SDL_CreateTexture(renderer,
+//                                SDL_PIXELFORMAT_RGB24,
+                                SDL_PIXELFORMAT_RGB888,
                                 SDL_TEXTUREACCESS_STATIC,
                                 canvas->width(), canvas->height());
 
