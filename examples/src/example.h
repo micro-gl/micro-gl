@@ -4,6 +4,10 @@
 #include <chrono>
 #include <SDL.h>
 
+#include <cassert>
+// Use (void) to silent unused warnings.
+#define assertm(exp, msg) assert((msg, exp))
+
 template<typename canvas_type, typename render_callback>
 void example_run(canvas_type * canvas,
                  const render_callback & render,

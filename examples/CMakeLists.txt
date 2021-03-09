@@ -27,9 +27,9 @@ if(SDL2_FOUND)
 
     set(SOURCES
             example_blocks_3d_raster.cpp
-            example_blocks_rouned_quads.cpp
+            example_blocks_rounded_rect.cpp
             example_blocks_masks.cpp
-            example_blocks_quads.cpp
+            example_blocks_rect.cpp
             example_blocks_patch.cpp
             example_blend_modes.cpp
             example_draw_triangle.cpp
@@ -73,12 +73,11 @@ if(SDL2_FOUND)
             example_draw_rect_transform.cpp
             example_3d_shader_color.cpp
             example_geometry_bezier_curve_divider.cpp
-            example_coder_converter.cpp
+            test_coder_converter.cpp
             example_sampler_masking_sampler.cpp
             example_new_alpha.cpp
             example_mem.cpp
-            example_coder_generator.cpp
-            example_coder_generator_test.cpp
+            test_coder_generator.cpp
             )
 
     set(SOURCES_SHARED

@@ -13,15 +13,7 @@ namespace microgl {
          *
          */
         template<class from_coder, class to_coder>
-        class coder_converter :
-                        public coder_converter_rgba<from_coder, typename to_coder::rgba> {
-        private:
-            using base = coder_converter_rgba<from_coder, typename to_coder::rgba>;
+        using coder_converter = coder_converter_rgba<from_coder, typename to_coder::rgba>;
 
-        public:
-            using base::decode;
-            using base::encode;
-            coder_converter() : base{} {};
-        };
     }
 }

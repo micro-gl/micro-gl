@@ -1,11 +1,6 @@
-#include "src/Resources.h"
+#include "src/example.h"
 #include <microgl/pixel_coders/RGBA_PACKED.h>
 #include <microgl/pixel_coders/RGBA_UNPACKED.h>
-
-#include <cassert>
-
-// Use (void) to silent unused warnings.
-#define assertm(exp, msg) assert((msg, exp))
 
 #define TEST_ITERATIONS 100
 #define W 640*1
@@ -50,15 +45,12 @@ void test_unpacked_coder() {
 }
 
 int main() {
-    using RGB888_PACKED_32 = coder::RGBA_PACKED<8,8,8,0>;
-    using RGB888_PACKED_16 = coder::RGBA_PACKED<8,8,0,0>;
-    using RGB888_ARRAY = coder::RGBA_UNPACKED<8,8,8,0>;
-    using RGBA8888_ARRAY = coder::RGBA_UNPACKED<8,8,8,8>;
-
     test_packed_coder<5,6,5,8, 2,1,3,0>();
     test_packed_coder<5,6,5,8, 0,1,2,3>();
     test_packed_coder<2,3,2,1, 0,1,2,3>();
     test_packed_coder<2,3,2,1, 0,1,2,3>();
 
     test_unpacked_coder<5,6,5,8>();
+
+    std::cout << "all tests have passed" << std::endl;
 }
