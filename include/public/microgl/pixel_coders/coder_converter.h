@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/pixel_coders/coder_rgba.h>
+#include <microgl/pixel_coders/coder_converter_rgba.h>
 
 namespace microgl {
     namespace coder {
@@ -14,9 +14,9 @@ namespace microgl {
          */
         template<class from_coder, class to_coder>
         class coder_converter :
-                        public coder_rgba<from_coder, typename to_coder::rgba> {
+                        public coder_converter_rgba<from_coder, typename to_coder::rgba> {
         private:
-            using base = coder_rgba<from_coder, typename to_coder::rgba>;
+            using base = coder_converter_rgba<from_coder, typename to_coder::rgba>;
 
         public:
             using base::decode;

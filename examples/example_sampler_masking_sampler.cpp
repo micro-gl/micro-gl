@@ -6,7 +6,7 @@
 #include <microgl/pixel_coders/RGBA8888_ARRAY.h>
 #include <microgl/pixel_coders/RGB8.h>
 #include <microgl/pixel_coders/coder_converter.h>
-#include <microgl/pixel_coders/coder_rgba.h>
+#include <microgl/pixel_coders/coder_converter_rgba.h>
 #include <microgl/samplers/mask_sampler.h>
 #include <microgl/samplers/flat_color.h>
 

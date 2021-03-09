@@ -77,6 +77,8 @@ if(SDL2_FOUND)
             example_sampler_masking_sampler.cpp
             example_new_alpha.cpp
             example_mem.cpp
+            example_coder_generator.cpp
+            example_coder_generator_test.cpp
             )
 
     set(SOURCES_SHARED

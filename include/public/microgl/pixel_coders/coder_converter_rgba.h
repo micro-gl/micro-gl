@@ -11,24 +11,21 @@ namespace microgl {
          * the same pixel coding
          *
          * @tparam from_coder a pixel_coder
-         * @tparam R
-         * @tparam G
-         * @tparam B
-         * @tparam A
+         * @tparam rgba_ output {@rgba_t} info interface
          */
         template<class from_coder, typename rgba_>
-        class coder_rgba :
-                public pixel_coder<typename from_coder::pixel, rgba_, coder_rgba<from_coder, rgba_>> {
+        class coder_converter_rgba :
+                public pixel_coder<typename from_coder::pixel, rgba_, coder_converter_rgba<from_coder, rgba_>> {
 
         private:
-            using base = pixel_coder<typename from_coder::pixel, rgba_, coder_rgba<from_coder, rgba_>>;
+            using base = pixel_coder<typename from_coder::pixel, rgba_, coder_converter_rgba<from_coder, rgba_>>;
             using pixel_from = typename from_coder::pixel;
             from_coder _coder_from;
         public:
             using base::decode;
             using base::encode;
 
-            coder_rgba() = default;
+            coder_converter_rgba() = default;
 
             inline void encode(const color_t &input, pixel_from &output) const {
                 color_t converted_color{};
