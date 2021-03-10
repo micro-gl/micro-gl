@@ -26,9 +26,6 @@ namespace microgl {
                 output.b = blend_channel(b.b, s.b, b_bits);
             }
 
-            static inline const char *type() {
-                return "LinearDodge";
-            }
         };
 
     }

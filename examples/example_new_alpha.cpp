@@ -46,9 +46,9 @@ int main() {
 
     auto render = [&]() -> void {
         canvas->clear({255,255,255,255});
-        canvas->drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
+//        canvas->drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
 //        canvas->drawRect<blendmode::Normal, porterduff::None<false>, false, number>(
-//        canvas->drawRect<blendmode::Normal, porterduff::SourceOver<true>, false, number>(
+        canvas->drawRect<blendmode::Normal, porterduff::SourceOver<true>, false, number>(
 //        canvas->drawRect<blendmode::Normal, porterduff::XOR<true>, false, number>(
 //        canvas->drawRect<blendmode::Normal, porterduff::Clear<true>, false, number>(
 //        canvas->drawRect<blendmode::Normal, porterduff::Copy<true>, false, number>(

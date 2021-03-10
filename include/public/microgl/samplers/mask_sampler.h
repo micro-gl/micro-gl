@@ -8,7 +8,7 @@ namespace microgl {
     namespace sampling {
 
         /**
-         * a sampler that masks a bitmap
+         * a sampler that masks a sampler with another sampler
          *
          * @tparam chrome the chrome channel config for mask sampler
          * @tparam sampler_from a sampler you want to mask
@@ -89,6 +89,7 @@ namespace microgl {
                 output.r=color_main.r;
                 output.g=color_main.g;
                 output.b=color_main.b;
+                // todo: add a precise division
                 output.a=(uint16_t(color_main.a)*alpha)>>alpha_bits;
             }
 

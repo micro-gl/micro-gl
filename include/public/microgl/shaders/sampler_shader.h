@@ -13,7 +13,6 @@ namespace microgl {
             using rgba = typename S::rgba;
             using number = number_;
 
-
             struct vertex_attributes {
                 vec3<number> point;
                 vec2<number> uv;

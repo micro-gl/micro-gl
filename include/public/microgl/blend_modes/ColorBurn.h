@@ -29,9 +29,6 @@ namespace microgl {
                 output.b = blend_ColorBurn(b.b, s.b, b_bits);
             }
 
-            static inline const char *type() {
-                return "ColorBurn";
-            }
         };
 
     }

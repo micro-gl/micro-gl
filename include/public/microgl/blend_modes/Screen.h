@@ -32,9 +32,6 @@ namespace microgl {
                 output.b = blend_channel<B>(b.b, s.b);
             }
 
-            static inline const char *type() {
-                return "Screen";
-            }
         };
 
     }

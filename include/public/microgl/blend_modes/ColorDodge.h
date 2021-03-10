@@ -29,9 +29,6 @@ namespace microgl {
                 output.b = blend_ColorDodge<B>(b.b, s.b);
             }
 
-            static inline const char *type() {
-                return "ColorDodge";
-            }
         };
 
     }

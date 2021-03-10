@@ -124,22 +124,6 @@ private:
 public:
     static constexpr bool hasNativeAlphaChannel() { return pixel_coder::rgba::a != 0;}
 
-    // this forces strict samplers in the following manner:
-    // 1. outside samplers must agree on bits depth of RGB channels
-    // 2. if the canvas has alpha channel, then the sampler must have the same alpha bits
-    // 3. if the canvas does has alpha channel, then the sampler is allowed any alpha bits it has
-    // ** this is used to allow the blender to do alpha composition even for canvases that do not
-    //    support native alpha channel. we use multiplied alpha result for that
-    template<class RGBA>
-    using dangling_rgba = microgl::rgba_t<pixel_coder::rgba::r, pixel_coder::rgba::g, pixel_coder::rgba::b, RGBA::a>;
-
-    template<class impl>
-    using sampler = sampling::sampler<dangling_rgba<typename impl::rgba>, impl>;
-
-//    template<class impl, typename vertex_attr, typename varying, typename number>
-//    using shader = shader_base<dangling_rgba<typename impl::rgba>,
-//                                impl, vertex_attr, varying, number>;
-
     explicit canvas(bitmap * $bmp);
     canvas(int width, int height);
 

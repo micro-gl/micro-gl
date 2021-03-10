@@ -12,7 +12,8 @@ namespace microgl {
          * @tparam number
          * @tparam N
          */
-        template <typename number, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>, enum precision $precision=precision::medium, bool useBigIntegers=false>
+        template <typename number, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>,
+                 enum precision $precision=precision::medium, bool useBigIntegers=false>
         struct line_linear_gradient {
             using rgba = rgba_;
         private:

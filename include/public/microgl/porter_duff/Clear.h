@@ -13,7 +13,6 @@ namespace microgl {
             inline static void composite(const color_t &b,
                                          const color_t &s,
                                          color_t &output) {
-                constexpr unsigned int max_val =(1<<bits)-1;
                 apply_porter_duff<bits, fast, multiplied_alpha_result, use_FPU>(0, 0,
                                                                           b, s, output);
             }

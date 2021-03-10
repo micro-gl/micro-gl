@@ -27,27 +27,26 @@ namespace microgl {
          * @param output
          */
         template <uint8_t bits, bool multiplied_alpha_result, bool use_fpu>
-        void apply_porter_duff_stable(int Fa, int Fb,
+        void apply_porter_duff_stable(uint8_t Fa, uint8_t Fb,
                                const color_t &b,
                                const color_t &s,
                                color_t &output) {
-            cuint as = s.a; // 128
-            cuint ab = b.a; // 255
+            auto as = s.a; // 128
+            auto ab = b.a; // 255
 
-            cuint as_Fa = mc<bits>(as, Fa); // 128 * 255
-            cuint ab_Fb = mc<bits>(ab, Fb); // 255 * (255 - 128) = 255 * 127
-            cuint combined = as_Fa + ab_Fb; // 128 * 255 + 255 * 127 // may be (bits+1)
+            auto as_Fa = mc<bits>(as, Fa); // 128 * 255
+            auto ab_Fb = mc<bits>(ab, Fb); // 255 * (255 - 128) = 255 * 127
 
             output.r = mc<bits>(as_Fa, s.r) + mc<bits>(ab_Fb, b.r);
             output.g = mc<bits>(as_Fa, s.g) + mc<bits>(ab_Fb, b.g);
             output.b = mc<bits>(as_Fa, s.b) + mc<bits>(ab_Fb, b.b);
-            output.a =combined;
+            output.a = as_Fa + ab_Fb; // 128 * 255 + 255 * 127 // may be (bits+1)
 
             // if desired result should be un multiplied
             if (!multiplied_alpha_result) {
-                output.r = use_fpu ? (cuint) (float(output.r) / float(combined)) : (output.r / combined);
-                output.g = use_fpu ? (cuint) (float(output.g) / float(combined)) : (output.g / combined);
-                output.b = use_fpu ? (cuint) (float(output.b) / float(combined)) : (output.b / combined);
+                output.r = use_fpu ? (cuint) (float(output.r) / float(output.a)) : (output.r / output.a);
+                output.g = use_fpu ? (cuint) (float(output.g) / float(output.a)) : (output.g / output.a);
+                output.b = use_fpu ? (cuint) (float(output.b) / float(output.a)) : (output.b / output.a);
             }
 
         }
@@ -117,7 +116,7 @@ namespace microgl {
 
             template <uint8_t bits, bool multiplied_alpha_result=true, bool use_FPU=false>
             inline static void
-            composite(const color_t &b, const color_t &s, color_t &output, const unsigned int alpha_bits) {
+            composite(const color_t &b, const color_t &s, color_t &output) {
 
                 impl::template composite<bits, multiplied_alpha_result, use_FPU>(b, s, output);
             }

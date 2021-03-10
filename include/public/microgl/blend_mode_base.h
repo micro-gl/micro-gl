@@ -12,9 +12,6 @@ namespace microgl {
         using cuint = const unsigned int;
         using cint = const int;
 
-#define MAX_VAL_BITS(a) ((1<<(bits)) - 1)
-
-
         template<typename impl>
         class blend_mode_base : public crpt<impl> {
         protected:
