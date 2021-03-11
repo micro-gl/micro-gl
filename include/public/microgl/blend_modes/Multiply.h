@@ -1,6 +1,5 @@
 #pragma once
 
-#include <microgl/blend_mode_base.h>
 #include <microgl/channel.h>
 
 namespace microgl {
