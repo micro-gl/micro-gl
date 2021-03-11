@@ -6,9 +6,7 @@ namespace microgl {
     namespace blendmode {
 
         template <bool fast=true, bool use_FPU=false>
-        class Screen : public blend_mode_base<Screen<fast, use_FPU>> {
-
-        public:
+        struct Screen {
 
             template<uint8_t bits>
             static inline

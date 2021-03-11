@@ -1,12 +1,10 @@
 #pragma once
 
-#include <microgl/blend_mode_base.h>
-
 namespace microgl {
     namespace blendmode {
 
         template <bool fast =true>
-        class SoftLight : public blend_mode_base<SoftLight<fast>> {
+        class SoftLight {
         public:
 
             template<uint8_t bits>

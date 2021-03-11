@@ -6,8 +6,7 @@ namespace microgl {
     namespace blendmode {
 
         template <bool fast=true, bool use_FPU=false>
-        class HardLight : public blend_mode_base<HardLight<fast, use_FPU>> {
-        public:
+        struct HardLight {
 
             template<uint8_t R, uint8_t G, uint8_t B>
             static inline void blend(const color_t &b,

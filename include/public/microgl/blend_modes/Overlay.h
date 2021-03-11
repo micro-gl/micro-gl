@@ -6,8 +6,7 @@ namespace microgl {
     namespace blendmode {
 
         template <bool fast=true, bool use_FPU=false>
-        class Overlay : public blend_mode_base<Overlay<fast, use_FPU>> {
-        public:
+        struct Overlay {
 
             template<uint8_t bits>
             static inline uint blend_Overlay(cuint b, cuint s) {

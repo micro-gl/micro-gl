@@ -6,7 +6,7 @@
 namespace microgl {
     namespace blendmode {
 
-        class PinLight : public blend_mode_base<PinLight> {
+        class PinLight {
         private:
             static inline uint blend_Darken(cuint b, cuint s) {
                 return b < s ? b : s;

@@ -5,11 +5,10 @@
 namespace microgl {
     namespace porterduff {
 
-        template <bool fast=true>
-        class SourceAtop : public porter_duff_base<SourceAtop<fast>> {
-        public:
+        template <bool fast=true, bool use_FPU=true>
+        struct SourceAtop {
 
-            template <uint8_t bits, bool multiplied_alpha_result=true, bool use_FPU=true>
+            template <uint8_t bits, bool multiplied_alpha_result=true>
             inline static void composite(const color_t &b,
                                          const color_t &s,
                                          color_t &output) {

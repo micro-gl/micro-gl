@@ -75,7 +75,7 @@ if(SDL2_FOUND)
             example_geometry_bezier_curve_divider.cpp
             test_coder_converter.cpp
             example_sampler_masking_sampler.cpp
-            example_new_alpha.cpp
+            example_compositing.cpp
             example_mem.cpp
             test_coder_generator.cpp
             )

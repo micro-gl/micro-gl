@@ -41,7 +41,7 @@ int main() {
 
     auto render = [&]() -> void {
         canvas->clear({0, 255, 255, 255});
-        canvas->drawRect<blendmode::Multiply<true>, porterduff::FastSourceOverOnOpaque>(
+//        canvas->drawRect<blendmode::Multiply<true>, porterduff::FastSourceOverOnOpaque>(
 //        canvas->drawRect<blendmode::Normal, porterduff::None<true>>(
 //        canvas->drawRect<blendmode::Overlay<false>, porterduff::None<true>>(
 //        canvas->drawRect<blendmode::PinLight, porterduff::None<true>>(
@@ -57,7 +57,7 @@ int main() {
 //        canvas->drawRect<blendmode::VividLight, porterduff::None<true>>(
 //        canvas->drawRect<blendmode::HardMix, porterduff::None<true>>(
 //        canvas->drawRect<blendmode::LinearLight, porterduff::None<true>>(
-//        canvas->drawRect<blendmode::SoftLight<true>, porterduff::None<true>>(
+        canvas->drawRect<blendmode::SoftLight<true>, porterduff::None<true>>(
                 color_grey,
                 -0, -0, 300, 300,
                 255);

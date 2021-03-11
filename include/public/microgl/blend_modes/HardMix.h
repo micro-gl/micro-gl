@@ -1,11 +1,9 @@
 #pragma once
 
-#include <microgl/blend_modes/VividLight.h>
-
 namespace microgl {
     namespace blendmode {
 
-        class HardMix : public blend_mode_base<HardMix> {
+        class HardMix {
         private:
 
             template<uint8_t bits>

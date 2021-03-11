@@ -1,11 +1,9 @@
 #pragma once
 
-#include <microgl/blend_mode_base.h>
-
 namespace microgl {
     namespace blendmode {
 
-        class VividLight : public blend_mode_base<VividLight> {
+        class VividLight {
         private:
             static inline
             uint blend_ColorBurn(cuint b, cuint s, const bits bits) {
