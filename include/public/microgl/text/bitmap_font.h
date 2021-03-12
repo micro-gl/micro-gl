@@ -2,7 +2,7 @@
 
 #include <microgl/text/bitmap_glyph.h>
 #include <microgl/text/text_format.h>
-#include <microgl/bitmap.h>
+#include <microgl/bitmaps/bitmap.h>
 
 namespace microgl {
     namespace text {

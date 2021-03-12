@@ -30,8 +30,8 @@ public:
         return val+extra;
     }
 
-    PaletteBitmap(int w, int h) : PaletteBitmap{new uint8_t[(w*h)>>T], nullptr, w, h} {};
-    PaletteBitmap(uint8_t* $indices, const pixel *palette, int w, int h) : base {$indices, (w*h)>>T, w, h} {
+    PaletteBitmap(int w, int h) : PaletteBitmap{new uint8_t[(w*h + ((1<<T)-1))>>T], nullptr, w, h} {};
+    PaletteBitmap(uint8_t* $indices, const pixel *palette, int w, int h) : base {$indices, (w*h+ + ((1<<T)-1))>>T, w, h} {
         updatePalette(palette);
     };
     PaletteBitmap(uint8_t* $indices, const void *palette, int w, int h) :

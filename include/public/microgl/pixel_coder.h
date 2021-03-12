@@ -61,13 +61,13 @@ namespace microgl {
          * @tparam impl the type of the derived class
          */
         template<typename pixel_, typename rgba_, typename impl>
-        class pixel_coder : public crpt<impl> {
+        class pixel_coder_base : public crpt<impl> {
         public:
             using pixel= pixel_;
             using rgba= rgba_;
 
-            pixel_coder()=default;
-            ~pixel_coder()=default;
+            pixel_coder_base()=default;
+            ~pixel_coder_base()=default;
 
             /**
              * this will invoke encode at your derived class

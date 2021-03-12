@@ -3,7 +3,7 @@
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGBA8888_ARRAY.h>
 #include <microgl/samplers/texture.h>
-#include <microgl/PaletteBitmap.h>
+#include <microgl/bitmaps/PaletteBitmap.h>
 #include "data/bitmap_1_palette_256_colors.h"
 #include "data/bitmap_1_palette_16_colors.h"
 #include "data/bitmap_1_palette_4_colors.h"

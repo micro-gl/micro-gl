@@ -9,7 +9,7 @@
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
 #include <microgl/blend_modes/Multiply.h>
-#include <microgl/bitmap.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/samplers/texture.h>
 
 #define TEST_ITERATIONS 100

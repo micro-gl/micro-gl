@@ -11,7 +11,7 @@
 #include <microgl/porter_duff/DestinationIn.h>
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
-#include <microgl/bitmap.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/shader.h>
 #include <microgl/sampler.h>
 #include <microgl/triangles.h>

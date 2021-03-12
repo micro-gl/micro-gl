@@ -26,7 +26,6 @@ public:
             this->decode(index, color_bmp_1);
 //            this->coder().template convert<CODER2>(color_bmp_1, color_bmp_2);
             microgl::color::convert_color<typename base::rgba, typename CODER2::rgba>(color_bmp_1, color_bmp_2);
-
             bmp.writeColor(index, color_bmp_2);
         }
     }
