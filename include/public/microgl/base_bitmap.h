@@ -36,10 +36,12 @@ public:
     static constexpr bool nativeAlphaChannelBits() { return hasNativeAlphaChannel() ? pixel_coder::rgba::a : 8; }
     static constexpr int maxNativeAlphaChannelValue() { return (1u<<nativeAlphaChannelBits())-1; }
 
-    base_bitmap(int w, int h) : base_bitmap(new uint8_t[sizeof(buffer_element_type) * w * h], w, h) {}
-    base_bitmap(uint8_t *$pixels, int w, int h) : base_bitmap(reinterpret_cast<buffer_element_type *>($pixels), w*h, w, h) {}
-    base_bitmap(buffer_element_type *$pixels, int size, int w, int h) :
-            _width{w}, _height{h}, _coder{}, _buffer($pixels, size) {
+//    base_bitmap(int w, int h) : base_bitmap(new uint8_t[sizeof(buffer_element_type) * w * h], w, h) {}
+//    base_bitmap(uint8_t *$pixels, int w, int h) : base_bitmap(reinterpret_cast<buffer_element_type *>($pixels), w*h, w, h) {}
+    base_bitmap(int w, int h) : base_bitmap(new buffer_element_type[w * h], w * h, w, h) {}
+    base_bitmap(void *$pixels, int w, int h) : base_bitmap(reinterpret_cast<buffer_element_type *>($pixels), w*h, w, h) {}
+    base_bitmap(void *$pixels, int size, int w, int h) :
+            _width{w}, _height{h}, _coder{}, _buffer(reinterpret_cast<buffer_element_type *>($pixels), size) {
     }
     ~base_bitmap() { _width =_height=0; }
 

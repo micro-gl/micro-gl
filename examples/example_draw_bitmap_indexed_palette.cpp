@@ -18,7 +18,7 @@ int main() {
     using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
     using Canvas24= canvas<Bitmap24>;
     using PaletteBitmap= PaletteBitmap<PALETTE_SIZE, coder::RGBA8888_ARRAY, false>;
-    using TexPalette= sampling::texture<PaletteBitmap>;
+    using TexPalette= sampling::texture<PaletteBitmap, sampling::texture_filter::NearestNeighboor>;
 
     auto * canvas = new Canvas24(W, H);;
     TexPalette tex;

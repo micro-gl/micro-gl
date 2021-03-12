@@ -22,7 +22,6 @@ int main() {
     using Bitmap24_Packed= bitmap<microgl::coder::RGB888_PACKED_32>;
     using BitmapPacked= PackedBitmap<BITS, coder::BPP_RGB<BITS, 8,8,8>, true>;
     using Canvas24= canvas<Bitmap24_Packed>;
-    using Texture24= sampling::texture<Bitmap24_Packed, sampling::texture_filter::NearestNeighboor>;
     using TexPacked= sampling::texture<BitmapPacked>;
 
     auto * canvas = new Canvas24(W, H);
@@ -49,6 +48,7 @@ int main() {
         canvas->clear(color_t{255,0,0});
         canvas->drawRect<blendmode::Normal, porterduff::None<>, false>(
                 texPacked,
+//                texPackedFill,
                 0, 0,
                 texPacked.bitmap().width()<<1, texPacked.bitmap().height()<<1,
                 255,
