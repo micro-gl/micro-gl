@@ -133,13 +133,40 @@ private:
 public:
     static constexpr bool hasNativeAlphaChannel() { return pixel_coder::rgba::a != 0;}
 
+    /**
+     * ctor of canvas that receives a bitmap reference
+     *
+     * @param $bmp a bitmap reference
+     */
     explicit canvas(bitmap_type * $bmp);
+    /**
+     * ctor of canvas that allocate a bitmap internally
+     * @param width     width of canvas
+     * @param height    height of canvas
+     */
     canvas(int width, int height);
 
+    /**
+     * update the clipping rectangle of the canvas
+     *
+     * @param l left distance to x=0
+     * @param t top distance to y=0
+     * @param r right distance to x=0
+     * @param b bottom distance to y=0
+     */
     void updateClipRect(int l, int t, int r, int b) {
         _window.clip_rect = {l, t, r, b};
     }
 
+    /**
+     * where to position the bitmap relative to the canvas, this feature
+     * can help with block rendering, where the bitmap is smaller than the canvas
+     * diensions.
+     *
+     * @param left relative to x=0
+     * @param top relative to y=0
+     * @param $bmp (Optional) the bitmap reference
+     */
     void updateCanvasWindow(int left, int top, bitmap_type * $bmp=nullptr) {
         auto c_w = $bmp ? $bmp->width() : _window.canvas_rect.width();
         auto c_h = $bmp ? $bmp->height() : _window.canvas_rect.height();
@@ -151,57 +178,114 @@ public:
             _window.clip_rect= _window.canvas_rect;
     }
 
+    /**
+     * given that we know the canvas size and the clip rect, calculate
+     * the sub rectangle (intersection), where drawing is visible
+     *
+     * @return a rectangle
+     */
     rect calculateEffectiveDrawRect() {
         rect r = _window.canvas_rect.intersect(_window.clip_rect);
         r.bottom-=1;r.right-=1;
         return r;
     }
 
+    /**
+     * get the clipping rectangle
+     * @return rect reference
+     */
     const rect & clipRect() const {
         return _window.clip_rect;
     }
 
+    /**
+     * when using the canvas window feature, index should be offset.
+     * @return the offset
+     */
     inline
     int indexCorrection() const {
         return _window.index_correction;
     }
 
+    /**
+     * get the canvas rectangle, should be (0, 0, width, height), unless
+     * the sub windowing feature was used.
+     * @return a rectangle
+     */
     const rect & canvasWindowRect() const {
         return _window.canvas_rect;
     }
 
+    /**
+     * get the rendering options
+     * @return options object
+     */
     render_options_t & renderingOptions() {
         return _options;
     }
 
+    // get canvas width
     int width() const;
+    // get canvas height
     int height() const;
+    // get size of pixel
     unsigned int sizeofPixel() const;
+    // get the pixels array from the underlying bitmap
     pixel * pixels() const;
+    // get a pixel by position
     pixel &getPixel(int x, int y) const ;
     pixel &getPixel(int index) const ;
+    // decode pixel color by position
     void getPixelColor(int index, color_t & output) const;
     void getPixelColor(int x, int y, color_t & output) const;
 
+    /**
+     * get the pixel coder reference of the underlying bitmap
+     * @return pixel_coder
+     */
     const pixel_coder & coder() const;
+    /**
+     * get the underlying bitmap pointer
+     */
     bitmap_type * bitmapCanvas() const;
 
+    /**
+     * clear the canvas with a color intensity
+     * @tparam number the number type of the intensity
+     * @param color the color intensity
+     */
     template <typename number>
     void clear(const intensity<number> &color);
+    /**
+     * clear the canvas with a color of the same type of the canvas
+     */
     void clear(const color_t &color);
 
     // integer blenders
-    template<typename BlendMode=blendmode::Normal,
-             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            uint8_t a_src>
-    void blendColor(const color_t &val, int x, int y, opacity_t opacity);
+    /**
+     * blend and composite a given color at position to the backdrop of the canvas
+     *
+     * @tparam BlendMode the blend mode type
+     * @tparam PorterDuff the alpha compositing type
+     * @tparam a_src the bits of the alpha channel of the color
+     * @param val the color to blend
+     * @param index the position of where to compose in the canvas
+     * @param opacity 8 bit opacity [0..255]
+     */
     template<typename BlendMode=blendmode::Normal,
              typename PorterDuff=porterduff::FastSourceOverOnOpaque,
              uint8_t a_src>
     inline void blendColor(const color_t &val, int index, opacity_t opacity);
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
+            uint8_t a_src>
+    void blendColor(const color_t &val, int x, int y, opacity_t opacity);
 
-    void drawPixel(const pixel &val, int x, int y);
+    /**
+     * draw an already encoded pixel at position
+     */
     void drawPixel(const pixel &val, int index);
+    void drawPixel(const pixel &val, int x, int y);
 
     // circles
 

@@ -45,7 +45,7 @@ int main() {
         canvas->clear({255,255,255,255});
         canvas->drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
                 color_red,
-                0, 0, 400, 400);
+                0, 0, 300, 300);
         canvas->drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
 //                ms,
                 ms2,
