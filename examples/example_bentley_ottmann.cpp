@@ -5,7 +5,7 @@
 #include "src/Resources.h"
 #include <SDL.h>
 #include <microgl/buffer.h>
-#include <microgl/Canvas.h>
+#include <microgl/canvas.h>
 #include <microgl/vec2.h>
 #include <microgl/color.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>

@@ -82,11 +82,23 @@ using namespace microgl::shading;
  */
 #define CANVAS_OPT_default CANVAS_OPT_2d_raster_FORCE_64_BIT
 
-template<typename bitmap_, uint8_t options=CANVAS_OPT_default>
+/**
+ * the main canvas object:
+ * - holds minimal state
+ * - holds a bitmap reference
+ *
+ * @tparam bitmap_type the bitmap type
+ * @tparam options the options bitset
+ */
+template<typename bitmap_type, uint8_t options=CANVAS_OPT_default>
 class canvas {
 public:
-    using bitmap= bitmap_;
     using rect = rect_t<int>;
+    using canvas_t = canvas<bitmap_type, options>;
+    using bitmap_t = bitmap_type;
+    using pixel = typename bitmap_type::pixel;
+    using pixel_coder = typename bitmap_type::pixel_coder;
+
     struct window_t {
         rect canvas_rect;
         rect clip_rect;
@@ -110,28 +122,25 @@ private:
     using precision = unsigned char;
     using opacity_t = unsigned char;
     using l64= long long;
-    using canvas_t= canvas<bitmap_, options>;
-    using pixel= typename bitmap_::pixel;
-    using pixel_coder= typename bitmap_::pixel_coder;
     // rasterizer integers
     using rint_big = int64_t;
     using rint =typename microgl::traits::conditional<
             options_big_integers(), rint_big, int32_t >::type;
 
-    bitmap * _bitmap_canvas = nullptr;
+    bitmap_type * _bitmap_canvas = nullptr;
     window_t _window;
     render_options_t _options;
 public:
     static constexpr bool hasNativeAlphaChannel() { return pixel_coder::rgba::a != 0;}
 
-    explicit canvas(bitmap * $bmp);
+    explicit canvas(bitmap_type * $bmp);
     canvas(int width, int height);
 
     void updateClipRect(int l, int t, int r, int b) {
         _window.clip_rect = {l, t, r, b};
     }
 
-    void updateCanvasWindow(int left, int top, bitmap * $bmp=nullptr) {
+    void updateCanvasWindow(int left, int top, bitmap_type * $bmp=nullptr) {
         auto c_w = $bmp ? $bmp->width() : _window.canvas_rect.width();
         auto c_h = $bmp ? $bmp->height() : _window.canvas_rect.height();
         _window.canvas_rect = {left, top, left + c_w - 0, top + c_h - 0};
@@ -175,7 +184,7 @@ public:
     void getPixelColor(int x, int y, color_t & output) const;
 
     const pixel_coder & coder() const;
-    bitmap * bitmapCanvas() const;
+    bitmap_type * bitmapCanvas() const;
 
     template <typename number>
     void clear(const intensity<number> &color);
@@ -472,4 +481,4 @@ public:
             int left, int top, int right, int bottom, bool frame, opacity_t opacity=255);
 };
 
-#include "Canvas.tpp"
+#include "canvas.tpp"
