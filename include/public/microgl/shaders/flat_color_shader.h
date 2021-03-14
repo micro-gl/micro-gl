@@ -9,6 +9,7 @@ namespace microgl {
         struct flat_color_shader {
             using number = number_;
             using rgba = rgba_;
+            using gl_position= vec4<number>;
 
             struct vertex_attributes {
                 vec3<number> point;
@@ -25,7 +26,7 @@ namespace microgl {
             color_t color;
             matrix_4x4<number> matrix;
 
-            inline vec4<number>
+            inline gl_position
             vertex(const vertex_attributes &attributes, varying &output) {
                 return matrix * vec4<number>{attributes.point};
             }

@@ -26,7 +26,7 @@ int main() {
     auto test_shader_texture_3d = [&](const model_3d<number> & object) {
 
         using vertex = vec3<number>;
-        using camera = microgl::camera<number>;
+        using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
         using math = microgl::math;
 //        using vertex_attribute= color_shader_vertex_attributes<number>;
@@ -40,12 +40,12 @@ int main() {
                                                math::deg_to_rad(t / 2)},
                                        {-5,0, 0},
                                        {10,10,10});
-//        mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
-        mat4 view = camera::angleAt({0, 0, 70+ 0 / t}, 0,
+//        mat4 view = camera::lookAt<number>({0, 0, 30}, {0,0, 0}, {0,1,0});
+        mat4 view = camera::angleAt<number>({0, 0, 70+ 0 / t}, 0,
                                     math::deg_to_rad(0), 0);
-        mat4 projection = camera::perspective(math::deg_to_rad(60),
+        mat4 projection = camera::perspective<number>(math::deg_to_rad(60),
                                               canvas->width(), canvas->height(), 20, 100);
-//        mat4 projection= camera::orthographic(-canvas->width()/2, canvas->width()/2,
+//        mat4 projection= camera::orthographic<number>(-canvas->width()/2, canvas->width()/2,
 //                                              -canvas->height()/2, canvas->height()/2, 1, 500);
         mat4 mvp_1= projection*view*model_1;
 

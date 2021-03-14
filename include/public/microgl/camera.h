@@ -4,27 +4,25 @@
 #include <microgl/math.h>
 #include <microgl/vec4.h>
 
-
 namespace microgl {
-    template <typename number>
-    class camera {
-    private:
-        using const_ref = const number &;
-        using vertex3 = vec3<number>;
-        using vertex4 = vec4<number>;
-        using mat4 = matrix_4x4<number> ;
-        using index = unsigned int;
-    public:
 
+    class camera {
+    public:
+        camera()=delete;
+        camera(const camera &)=delete;
+        camera & operator=(const camera &)=delete;
+        ~camera()=delete;
+
+        template <typename number>
         static
-        vertex3 viewport(const vertex4 &ndc, index width, index height) {
+        vec3<number> viewport(const vec3<number> &ndc, unsigned width, unsigned height) {
             // given NDC= Normalized Device Coordinates, then transform them into
             // raster/canvas/viewport coords. We assume, that NDC coords are [-1,1] range.
             // todo:; currently I assume no z clipping has occured
             // z value is mapped to [0,1] range
             // convert to raster space
-            const_ref zero=number(0), one = number(1), two=number(2);
-            vertex3 result{};
+            const number zero=number(0), one = number(1), two=number(2);
+            vec3<number> result{};
             result.x = ((ndc.x + one)*width)/two;
             result.y = number(height) - (((ndc.y + one)*number(height))/two);
             result.z = (ndc.z + one)/two;
@@ -59,10 +57,12 @@ namespace microgl {
          *  [ --+-- ]   =  [ ----+--------- ]    (T denotes 1x3 translation)
          *  [ 0 | 1 ]      [  0  |     1    ]    (R^T denotes R-transpose)
         */
+        template <typename number>
         static
-        mat4 angleAt(const vertex3 &position,
-                     const_ref pitch, const_ref yaw, const_ref roll) {
-            mat4 mat;
+        matrix_4x4<number> angleAt(const vec3<number> &position,
+                                   const number & pitch, const number & yaw, const number & roll) {
+            using vertex3 = vec3<number>;
+            matrix_4x4<number> mat;
             vertex3 vec;
             // rotation angle about X-axis (pitch)
             number sx = microgl::math::sin(pitch);
@@ -104,10 +104,14 @@ namespace microgl {
         // |r2  r6  r10 0|   |0  0  1 -z|   |r2  r6  r10 r2*-x + r6*-y + r10*-z|
         // |0   0   0   1|   |0  0  0  1|   |0   0   0   1                     |
         ///////////////////////////////////////////////////////////////////////////////
+        template <typename number>
         static
-        mat4 lookAt(const vertex3 & position, const vertex3& target, const vertex3& up)
+        matrix_4x4<number> lookAt(const vec3<number> & position,
+                                  const vec3<number>& target,
+                                  const vec3<number>& up)
         {
-            mat4 result{};
+            using vertex3 = vec3<number>;
+            matrix_4x4<number> result{};
 
             // 3 axis of rotation matrix for scene
             vertex3 z_axis = (position-target).normalize(); // forward
@@ -128,6 +132,7 @@ namespace microgl {
             return result;
         }
 
+        template <typename number>
         static
         matrix_4x4<number> perspective(const number &horizontal_fov_radians,
                                        const number & screen_width, const number & screen_height,
@@ -135,6 +140,7 @@ namespace microgl {
             return perspective(horizontal_fov_radians, screen_width/screen_height, near, far);
         }
 
+        template <typename number>
         static
         matrix_4x4<number> perspective(const number &horizontal_fov_radians,
                                        const number & aspect_ratio,
@@ -160,6 +166,7 @@ namespace microgl {
             return perspective(l,r,b,t,near,far);
         }
 
+        template <typename number>
         static
         matrix_4x4<number> perspective(const number &l, const number & r,
                                        const number & b, const number & t,
@@ -178,6 +185,7 @@ namespace microgl {
             return m;
         }
 
+        template <typename number>
         static
         matrix_4x4<number> orthographic(const number &l, const number & r,
                                         const number & b, const number & t,

@@ -30,7 +30,7 @@ public:
     using pixel=typename base::pixel;
 
 private:
-    pixel * palette;
+    pixel * palette = nullptr;
 public:
 
     static
@@ -61,8 +61,15 @@ public:
                                                 new pixel[PALETTE_SIZE], w, h} {};
     ~PaletteBitmap() = default;
 
+    /**
+     * get the palette size
+     */
     unsigned paletteSize() { return PALETTE_SIZE; }
 
+    /**
+     * update the current palette with another
+     * @param $palette pixel palette
+     */
     void updatePalette(pixel * $palette) {
         palette = $palette;
     }
