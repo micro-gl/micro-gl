@@ -20,7 +20,7 @@ int main() {
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
     Resources resources{};
     auto * canvas = new Canvas24(W, H);;
-    line_linear_gradient<float> gradient{{0,1}, {1, 0}};
+    line_linear_gradient<float> gradient{{0,1}, {2, 0}};
     using number = float;
 //    using number = Q<12>;
 

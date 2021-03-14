@@ -38,7 +38,7 @@ int main() {
     Texture24 tex_mask_2{new bitmap<coder::RGB888_ARRAY>(img_mask_2.data, img_mask_2.width, img_mask_2.height)};
     MaskingSampler1 ms{tex_uv, tex_mask_2};
     MaskingSampler2 ms2{tex_uv, tex_mask_1};
-    sampling::flat_color<> color_red{{255, 0, 0}};
+    sampling::flat_color<> color_red{{255, 255, 0}};
     sampling::flat_color<rgba_t<8,8,8,8>> color_red_trans{{255, 0, 0, 128}};
 
     auto render = [&]() -> void {
