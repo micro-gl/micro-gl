@@ -31,7 +31,7 @@ void init_sdl(int width, int height);
 template <typename number>
 void render_blocks() {
     bool debug = 1;
-    int block_size = W/2;//W/10;//2;//W/13;
+    int block_size = W/4;//W/10;//2;//W/13;
     int count_blocks_horizontal = 1+((W-1)/block_size); // with integer ceil rounding
     int count_blocks_vertical = 1+((H-1)/block_size); // with integer ceil rounding
     auto * bitmap = new Bitmap24(block_size, block_size);

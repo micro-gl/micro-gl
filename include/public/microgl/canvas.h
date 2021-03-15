@@ -56,14 +56,14 @@ using namespace microgl::shading;
  */
 #define CANVAS_OPT_raster_COMPRESS_BITS uint8_t(0b00001000)
 /**
- * the 2d rasterizer can detect overflow of uv mapping, the detection
+ * the 2d and 3d rasterizer can detect overflow of uv mapping, the detection
  * feature is great for debugging the rasterizer. this flag enables detection
  * and if so, exits the rendering. This is helpful for when using a 32 bit mode,
  * where overflows are likely to happen
  */
 #define CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS uint8_t(0b00000100)
 /**
- * use a true 32 bit mode in the 2d rasterizer, this means regular 32 bit integers
+ * use a true 32 bit mode in the 2d and 3d rasterizer, this means regular 32 bit integers
  * and also the usage of division in order to reduce overflow and also detecting
  * and exiting on overflows as they are likely to happen in 32 bit mode, if so,
  * please adjust some of the render options bits in the canvas and make sure you
