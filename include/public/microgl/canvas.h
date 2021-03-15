@@ -109,7 +109,11 @@ public:
     static constexpr bool options_big_integers() { return options&CANVAS_OPT_2d_raster_USE_BIG_INT; }
     static constexpr bool options_avoid_overflow() { return options&CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS; }
     static constexpr bool options_use_division() { return options&CANVAS_OPT_2d_raster_USE_DIVISION; }
+    static constexpr bool hasNativeAlphaChannel() { return pixel_coder::rgba::a != 0;}
 
+    /**
+     * rendering options of rasterizer
+     */
     struct render_options_t {
         uint8_t _2d_raster_bits_sub_pixel= options_big_integers() ? 8 : 4;
         uint8_t _2d_raster_bits_uv= options_big_integers() ? 15 : 10;
@@ -131,7 +135,6 @@ private:
     window_t _window;
     render_options_t _options;
 public:
-    static constexpr bool hasNativeAlphaChannel() { return pixel_coder::rgba::a != 0;}
 
     /**
      * ctor of canvas that receives a bitmap reference

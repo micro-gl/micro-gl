@@ -60,9 +60,9 @@ int main() {
         polygon[3].y = 300 -  t;
         canvas->clear({255,255,255,255});
         canvas->drawPolygon<
-                polygons::hints::CONVEX,
+//                polygons::hints::CONVEX,
 //                polygons::hints::CONCAVE,
-//            polygons::hints::SIMPLE,
+            polygons::hints::SIMPLE,
 //            polygons::hints::COMPLEX,
                 blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, false>(
                 gradient2Colors,
