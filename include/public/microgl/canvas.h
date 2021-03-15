@@ -292,6 +292,29 @@ public:
 
     // circles
 
+    /**
+     * Draw a circle shape with fill and stroke
+     *
+     * @tparam BlendMode        the blend mode struct
+     * @tparam PorterDuff       the alpha compositing struct
+     * @tparam antialias        antialiasing flag
+     * @tparam number1          number type of position
+     * @tparam number2          number type of uv coords
+     * @tparam Sampler1         sampler type for fill
+     * @tparam Sampler2         sampler type for stroke
+     *
+     * @param sampler_fill      fill sampler reference
+     * @param sampler_stroke    stroke sampler reference
+     * @param centerX           the center x-coord of the circle
+     * @param centerY           the center y-coord of the circle
+     * @param radius            the radius of the circle
+     * @param stroke_size       the stroke size in pixels
+     * @param opacity           opacity [0..255]
+     * @param u0                uv coord
+     * @param v0                uv coord
+     * @param u1                uv coord
+     * @param v1                uv coord
+     */
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
             typename number1, typename number2=number1, typename Sampler1, typename Sampler2>
@@ -302,6 +325,31 @@ public:
                     const number2 &u0=number2(0), const number2 &v0=number2(1),
                     const number2 &u1=number2(1), const number2 &v1=number2(0));
 
+    /**
+     * Draw a rounded rectangle
+     *
+     * @tparam BlendMode        the blend mode struct
+     * @tparam PorterDuff       the alpha compositing struct
+     * @tparam antialias        antialiasing flag
+     * @tparam number1          number type of position
+     * @tparam number2          number type of uv coords
+     * @tparam Sampler1         sampler type for fill
+     * @tparam Sampler2         sampler type for stroke
+     *
+     * @param sampler_fill      fill sampler reference
+     * @param sampler_stroke    stroke sampler reference
+     * @param left              left distance
+     * @param top               top distance
+     * @param right             right distance
+     * @param bottom            bottom distance
+     * @param radius            radius of corners
+     * @param stroke_size       stroke size in pixels
+     * @param opacity           opacity [0..255]
+     * @param u0                uv coord
+     * @param v0                uv coord
+     * @param u1                uv coord
+     * @param v1                uv coord
+     */
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false, typename number1,
             typename number2=number1, typename Sampler1, typename Sampler2>
@@ -315,6 +363,11 @@ public:
                          const number2 &u1= number2(1), const number2 &v1= number2(0));
 
 private:
+    /**
+     * internal method, that draws rounded rectangle after conversion to fixed pooints
+     * @param sub_pixel_precision   number of bits for position precision
+     * @param uv_precision          number of bits for uv precision
+     */
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename Sampler1, typename Sampler2>
@@ -327,7 +380,11 @@ private:
                          precision sub_pixel_precision, precision uv_precision,
                          opacity_t opacity= 255);
 
-private:
+    /**
+     * internal method, that draws rectangle after conversion to fixed pooints
+     * @param sub_pixel_precision   number of bits for position precision
+     * @param uv_precision          number of bits for uv precision
+     */
     template <typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename Sampler>
     void drawRect(const Sampler &sampler,
@@ -339,6 +396,29 @@ private:
                   opacity_t opacity);
 
 public:
+
+    /**
+     * Draw axis aligned rectangle
+     * @tparam BlendMode        the blend mode struct
+     * @tparam PorterDuff       the alpha compositing struct
+     * @tparam antialias        antialiasing flag
+     * @tparam number1          number type of position
+     * @tparam number2          number type of uv coords
+     * @tparam Sampler1         sampler type for fill
+     * @tparam Sampler2         sampler type for stroke
+     *
+     * @param sampler           fill sampler reference
+     * @param left              left distance
+     * @param top               top distance
+     * @param right             right distance
+     * @param bottom            bottom distance
+     * @param radius            radius of corners
+     * @param opacity           opacity [0..255]
+     * @param u0                uv coord
+     * @param v0                uv coord
+     * @param u1                uv coord
+     * @param v1                uv coord
+     */
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
             typename number1=float, typename number2=number1, typename Sampler>
@@ -349,6 +429,29 @@ public:
                   number2 u0= number2(0), number2 v0= number2(1),
                   number2 u1= number2(1), number2 v1= number2(0));
 
+    /**
+     * Draw rectangle with transformation
+     * @tparam BlendMode        the blend mode struct
+     * @tparam PorterDuff       the alpha compositing struct
+     * @tparam antialias        antialiasing flag
+     * @tparam number1          number type of position
+     * @tparam number2          number type of uv coords
+     * @tparam Sampler1         sampler type for fill
+     * @tparam Sampler2         sampler type for stroke
+     *
+     * @param sampler           fill sampler reference
+     * @param transform         a 3x3 matrix for transform
+     * @param left              left distance
+     * @param top               top distance
+     * @param right             right distance
+     * @param bottom            bottom distance
+     * @param radius            radius of corners
+     * @param opacity           opacity [0..255]
+     * @param u0                uv coord
+     * @param v0                uv coord
+     * @param u1                uv coord
+     * @param v1                uv coord
+     */
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
             typename number1=float, typename number2=number1, typename Sampler>
@@ -360,6 +463,40 @@ public:
                   number2 u0= number2(0), number2 v0= number2(1),
                   number2 u1= number2(1), number2 v1= number2(0));
 
+    /**
+     * Draw a quadrilateral
+     *
+     * @tparam BlendMode        the blend mode struct
+     * @tparam PorterDuff       the alpha compositing struct
+     * @tparam antialias        antialiasing flag
+     * @tparam number1          number type of position
+     * @tparam number2          number type of uv coords
+     * @tparam Sampler1         sampler type for fill
+     * @tparam Sampler2         sampler type for stroke
+     *
+     * @param sampler           fill sampler reference
+     * @param v0_x              1st point x value
+     * @param v0_y              1st point y value
+     * @param u0                1st point u value
+     * @param v0                1st point v value
+     *
+     * @param v1_x              2nd point x value
+     * @param v1_y              2nd point y value
+     * @param u1                2nd point u value
+     * @param v1                2nd point v value
+     *
+     * @param v2_x              3rd point x value
+     * @param v2_y              3rd point y value
+     * @param u2                3rd point u value
+     * @param v2                3rd point v value
+     *
+     * @param v3_x              4th point x value
+     * @param v3_y              4th point y value
+     * @param u3                4th point u value
+     * @param v3                4th point v value
+     *
+     * @param opacity           opacity [0..255]
+     */
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=number1, class Sampler>
@@ -374,6 +511,42 @@ public:
 
     // Triangle batches
 
+    /**
+     * Draw 2d triangle batches. Given:
+     * - vertex buffer, indices buffer, indices type, draw triangles.
+     * - uvs are optional, and if are nullptr, the method will compute them alone.
+     * - indices buffer are optional, and if are nullptr, the method will use vertex buffer as is.
+     *
+     * Supported batch strategies are:
+     * - TRIANGLES - every 3 indices for a triangle
+     * - FAN - the first index forms with every 2 other indices
+     * - STRIP - the best for low memory when possible
+     *
+     * Indices array point to the vertex array and is an important concept, when you want
+     * to draw a subset of vertices, or to construct triangles from a set of vertices
+     *
+     * @tparam BlendMode        the blend mode struct
+     * @tparam PorterDuff       the alpha compositing struct
+     * @tparam antialias        antialiasing flag
+     * @tparam number1          number type of position
+     * @tparam number2          number type of uv coords
+     * @tparam Sampler1         sampler type for fill
+     * @tparam Sampler2         sampler type for stroke
+     *
+     * @param sampler           fill sampler reference
+     * @param transform         3x3 matrix transformation
+     * @param vertices          pointer to points array
+     * @param uvs               (Optional) pointer to uv array
+     * @param indices           (Optional) pointer to indices array
+     * @param boundary_buffer   (Optional) pointer to boundary buffer, used in quick anti-aliasing
+     * @param size              size of indices buffer
+     * @param type              type of indices buffer {TRIANGLES, FAN, TRIANGLES_STRIP}
+     * @param opacity           opacity [0..255]
+     * @param u0                uv coord
+     * @param v0                uv coord
+     * @param u1                uv coord
+     * @param v1                uv coord
+     */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=float, typename Sampler>
     void drawTriangles(const Sampler & sampler,
@@ -388,6 +561,40 @@ public:
                        const number2 &u0=number2(0), const number2 &v0=number2(1),
                        const number2 &u1=number2(1), const number2 &v1=number2(0));
 
+    /**
+     * Draw 3d triangle batches. Given:
+     * - vertex buffer, indices buffer, indices type, draw triangles.
+     * - indices buffer are optional, and if are nullptr, the method will use vertex buffer as is.
+     *
+     * Supported batch strategies are:
+     * - TRIANGLES - every 3 indices for a triangle
+     * - FAN - the first index forms with every 2 other indices
+     * - STRIP - the best for low memory when possible
+     *
+     * Indices array point to the vertex array and is an important concept, when you want
+     * to draw a subset of vertices, or to construct triangles from a set of vertices
+     *
+     * @tparam BlendMode            the blend mode struct
+     * @tparam PorterDuff           the alpha compositing struct
+     * @tparam antialias            enable/disable anti-aliasing, currently NOT supported
+     * @tparam perspective_correct  enable/disable z-correction
+     * @tparam depth_buffer_flag    enable/disable z-buffer
+     * @tparam Shader               the type of the shader
+     * @tparam depth_buffer_type    The type of the z-buffer
+     *
+     * @param shader                the shader reference
+     * @param viewport_width        viewport width
+     * @param viewport_height       viewport height
+     * @param vertex_buffer         vertex buffer array pointer
+     * @param indices               (Optional) indices buffer array
+     * @param size                  size of indices
+     * @param type                  type of indices buffer {TRIANGLES, FAN, TRIANGLES_STRIP}
+     * @param culling               face culling enum {cw, ccw, none}
+     * @param depth_buffer          (optional) depth buffer pointer
+     * @param opacity               opacity [0..255]
+     * @param depth_range_near      z-depth near range
+     * @param depth_range_far       z-depth far range
+     */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias, bool perspective_correct, bool depth_buffer_flag=false,
             typename Shader, typename depth_buffer_type >
@@ -405,6 +612,21 @@ public:
 
     void fxaa(int left, int top, int right, int bottom);
 
+    /**
+     * Draw a wireframe lines using wu-lines algorithm
+     *
+     * @tparam BlendMode            the blend mode struct
+     * @tparam PorterDuff           the alpha compositing struct
+     * @tparam antialias            enable/disable anti-aliasing, currently NOT supported
+     * @tparam number               the number type of positions
+     * @param color                 the color
+     * @param transform             the 3x3 matrix transform
+     * @param vertices              the vertices array pointer
+     * @param indices               (Optional) the indices buffer pointer
+     * @param size                  the size of the indices
+     * @param type                  type of indices buffer {TRIANGLES, FAN, TRIANGLES_STRIP}
+     * @param opacity               opacity [0..255]
+     */
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number=float>
@@ -417,6 +639,15 @@ public:
                                 opacity_t opacity=255);
 
     // single triangles, includes shader based and one very fast fixed pipeline for color and textures
+    /**
+     * Draw a single wireframe triangle
+     * @tparam number   the number type of position
+     * @param color     the color
+     * @param p0        1st vertex
+     * @param p1        2nd vertex
+     * @param p2        3rd vertex
+     * @param opacity   opacity [0..255]
+     */
     template<typename number=float>
     void drawTriangleWireframe(const color_t &color,
                                const vec2<number> &p0,
@@ -425,6 +656,12 @@ public:
                                opacity_t opacity=255);
 
 private:
+    /**
+     * Internal triangle drawing
+     *
+     * @param sub_pixel_precision   bit counts for position precision
+     * @param uv_precision          bits count for uv precision
+     */
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool perspective_correct=false,
@@ -437,6 +674,37 @@ private:
                       bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
 public:
+    /**
+     * Draw a triangle with sampler
+     *
+     * @tparam BlendMode            the blend mode struct
+     * @tparam PorterDuff           the alpha compositing struct
+     * @tparam antialias            enable/disable anti-aliasing, currently NOT supported
+     * @tparam number1              vertices number type
+     * @tparam number2              uv coords number type
+     * @tparam Sampler              sampler type
+     *
+     * @param sample                sampler reference
+     * @param v0_x                  1st point x
+     * @param v0_y                  1st point y
+     * @param u0                    1st point u
+     * @param v0                    1st point v
+     *
+     * @param v1_x                  2nd point x
+     * @param v1_y                  2nd point y
+     * @param u1                    2nd point u
+     * @param v1                    2nd point v
+     *
+     * @param v2_x                  3rd point x
+     * @param v2_y                  3rd point y
+     * @param u2                    3rd point u
+     * @param v2                    3rd point v
+     *
+     * @param opacity               opacity [0..255]
+     * @param aa_first_edge         antialias 1st edge
+     * @param aa_second_edge        antialias 2nd edge
+     * @param aa_third_edge         antialias 3rd edge
+     */
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename number1=float, typename number2=number1, typename Sampler>
@@ -446,6 +714,29 @@ public:
                       const number1 &v2_x, const number1 &v2_y, const number2 &u2, const number2 &v2,
                       opacity_t opacity = 255, bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
+    /**
+     * Draw a triangle with 3d shader
+     *
+     * @tparam BlendMode            the blend mode struct
+     * @tparam PorterDuff           the alpha compositing struct
+     * @tparam antialias            enable/disable anti-aliasing, currently NOT supported
+     * @tparam perspective_correct  enable/disable z-correction
+     * @tparam depth_buffer_flag    enable/disable z-buffer
+     * @tparam Shader               the type of the shader
+     * @tparam depth_buffer_type    The type of the z-buffer
+     *
+     * @param shader                the shader reference
+     * @param viewport_width        viewport width
+     * @param viewport_height       viewport height
+     * @param v0                    1st vertex shader attributes
+     * @param v1                    2nd vertex shader attributes
+     * @param v2                    3rd vertex shader attributes
+     * @param opacity               opacity [0..255]
+     * @param culling               face culling enum {cw, ccw, none}
+     * @param depth_buffer          (optional) depth buffer pointer
+     * @param depth_range_near      z-depth near range
+     * @param depth_range_far       z-depth far range
+     */
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::None<>,
             bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
@@ -461,6 +752,32 @@ public:
                       const shader_number<Shader>& depth_range_far=shader_number<Shader>(1));
 
 private:
+    /**
+     * Internal draw triangle with shader
+     * @tparam BlendMode            the blend mode struct
+     * @tparam PorterDuff           the alpha compositing struct
+     * @tparam antialias            enable/disable anti-aliasing, currently NOT supported
+     * @tparam perspective_correct  enable/disable z-correction
+     * @tparam depth_buffer_flag    enable/disable z-buffer
+     * @tparam Shader               the type of the shader
+     * @tparam number               the number type of the varying attributes
+     * @tparam depth_buffer_type    The type of the z-buffer
+     *
+     * @param $shader               shader reference
+     * @param viewport_width        viewport width
+     * @param viewport_height       viewport height
+     * @param p0                    1st triangle position in clip space
+     * @param p1                    2nd triangle position in clip space
+     * @param p2                    3rd triangle position in clip space
+     * @param varying_v0            1st varying attributes
+     * @param varying_v1            2nd varying attributes
+     * @param varying_v2            3rd varying attributes
+     * @param opacity               opacity [0..255]
+     * @param culling               face culling enum {cw, ccw, none}
+     * @param depth_buffer          (optional) depth buffer pointer
+     * @param depth_range_near      z-depth near range
+     * @param depth_range_far       z-depth far range
+     */
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::None<>,
             bool antialias=true, bool perspective_correct=false, bool depth_buffer_flag=false,
@@ -477,9 +794,28 @@ private:
 
 public:
     // Masks
-    template <typename number1, typename number2=number1, typename S>
+    /**
+     * Draw a mask on the canvas
+     *
+     * @tparam number1  number type of positions
+     * @tparam number2  number type of uv coords
+     * @tparam Sampler  sampler type
+     *
+     * @param mode      the mode/channel to use from the sampler as mask
+     * @param sampler   the sampler reference
+     * @param left      the left position
+     * @param top       the top position
+     * @param right     the right position
+     * @param bottom    the bottom position
+     * @param u0        uv coord
+     * @param v0        uv coord
+     * @param u1        uv coord
+     * @param v1        uv coord
+     * @param opacity   opacity [0..255]
+     */
+    template <typename number1, typename number2=number1, typename Sampler>
     void drawMask(const masks::chrome_mode &mode,
-                  const S &sampler,
+                  const Sampler &sampler,
                   number1 left, number1 top,
                   number1 right, number1 bottom,
                   number2 u0=number2(0), number2 v0=number2(1),
@@ -487,9 +823,15 @@ public:
                   opacity_t opacity = 255);
 
 private:
-    template <typename S>
+    /**
+     * Internal Draw a mask on the canvas
+     *
+     * @param sub_pixel_precision   bit count for position precision
+     * @param uv_precision          bit count for uv coords precision
+     */
+    template <typename Sampler>
     void drawMask(const masks::chrome_mode &mode,
-                  const S &sampler,
+                  const Sampler &sampler,
                   int left, int top,
                   int right, int bottom,
                   int u0, int v0,
@@ -498,6 +840,30 @@ private:
                   opacity_t opacity = 255);
 
 public:
+    /**
+     * Draw a Quadratic or Cubic bezier patch
+     *
+     * @tparam BlendMode    the blend mode struct
+     * @tparam PorterDuff   the alpha compositing struct
+     * @tparam antialias    enable/disable anti-aliasing, currently NOT supported
+     * @tparam debug        enable debug mode ?
+     * @tparam number1      number type for vertices
+     * @tparam number2      number type for uv coords
+     * @tparam Sampler      type of sampler
+     *
+     * @param sampler       sampler reference
+     * @param transform     3x3 matrix transform
+     * @param mesh          4*4=16 or 3*3=9 patch
+     * @param uOrder        3 or 4 (quadratic vs cubic)
+     * @param vOrder        3 or 4 (quadratic vs cubic)
+     * @param uSamples      the number of samples to take along U axis
+     * @param vSamples      the number of samples to take along V axis
+     * @param u0            uv coord
+     * @param v0            uv coord
+     * @param u1            uv coord
+     * @param v1            uv coord
+     * @param opacity       opacity [0..255]
+     */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool debug=false, typename number1, typename number2=number1, typename Sampler>
     void drawBezierPatch(const Sampler &sampler,
@@ -510,6 +876,28 @@ public:
                          opacity_t opacity=255);
 
     // polygons
+    /**
+     * Draw a polygon
+     *
+     * @tparam hint         the type of polygon {SIMPLE, CONCAVE, X_MONOTONE, Y_MONOTONE, CONVEX, COMPLEX, SELF_INTERSECTING}
+     * @tparam BlendMode    the blend mode struct
+     * @tparam PorterDuff   the alpha compositing struct
+     * @tparam antialias    enable/disable anti-aliasing, currently NOT supported
+     * @tparam debug        enable debug mode ?
+     * @tparam number1      number type for vertices
+     * @tparam number2      number type for uv coords
+     * @tparam Sampler      type of sampler
+     *
+     * @param sampler       sampler reference
+     * @param transform     3x3 matrix transform
+     * @param points        vertex array pointer
+     * @param size          size of vertex array
+     * @param opacity       opacity [0..255]
+     * @param u0            uv coord
+     * @param v0            uv coord
+     * @param u1            uv coord
+     * @param v1            uv coord
+     */
     template <microgl::polygons::hints hint=polygons::hints::SIMPLE, typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false, bool debug=false,
             typename number1=float, typename number2=number1, typename Sampler>
@@ -520,23 +908,80 @@ public:
                      number2 u0=number2(0), number2 v0=number2(1),
                      number2 u1=number2(1), number2 v1=number2(0));
 private:
+    /**
+     * Internal WU-lines drawing
+     * @param color     color
+     * @param x0        1st point x
+     * @param y0        1st point y
+     * @param x1        2nd point x
+     * @param y1        2nd point y
+     * @param bits      precision for position
+     * @param opacity   opacity [0..255]
+     */
     void drawWuLine(const color_t & color,
                     int x0, int y0, int x1, int y1,
                     precision bits = 0, opacity_t opacity=255);
 
 public:
     // Wu lines
+    /**
+     * Draw a Wu-line between two points
+     *
+     * @tparam number   number type of positions
+     *
+     * @param color     the color
+     * @param x0        1st point x
+     * @param y0        1st point y
+     * @param x1        2nd point x
+     * @param y1        2nd point y
+     * @param opacity   opacity [0..255]
+     */
     template<typename number>
     void drawWuLine(const color_t & color,
                     const number &x0, const number &y0, const number &x1, const number &y1,
                     opacity_t opacity=255);
 
+    /**
+     * Draw a Wu-line path
+     * @tparam number       number type for positions
+     *
+     * @param color         the color
+     * @param points        the points array pointer
+     * @param size          the size of the points array
+     * @param closed_path   is the path closed ?
+     */
     template <typename number>
     void drawWuLinePath(const color_t & color,
                         const vec2<number> *points,
                         unsigned int size = 4,
                         bool closed_path = false);
 
+    /**
+     * Draw vector Path stroke
+     *
+     * @tparam BlendMode            the blend mode struct
+     * @tparam PorterDuff           the alpha compositing struct
+     * @tparam antialias            enable/disable anti-aliasing, currently NOT supported
+     * @tparam debug                debug mode ?
+     * @tparam number1              number type of path
+     * @tparam number2              number type of uv coords
+     * @tparam Sampler              Sampler type
+     *
+     * @param sampler               sampler reference
+     * @param transform             3x3 matrix for transform
+     * @param path                  the path reference
+     * @param stroke_width          stroke width in pixels
+     * @param cap                   stroke cap enum {butt, round, square}
+     * @param line_join             stroke line join {none, miter, miter_clip, round, bevel}
+     * @param miter_limit           the miter limit
+     * @param stroke_dash_array     stroke dash pattern
+     * @param stroke_dash_offset    stroke dash offset
+     * @param opacity               opacity [0..255]
+     * @param u0                    uv coord
+     * @param v0                    uv coord
+     * @param u1                    uv coord
+     * @param v1                    uv coord
+     */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool debug=false, typename number1=float, typename number2=float, typename Sampler>
     void drawPathStroke(const Sampler &sampler,
@@ -551,6 +996,28 @@ public:
                         number2 u0=number2(0), number2 v0=number2(1),
                         number2 u1=number2(1), number2 v1=number2(0));
 
+    /**
+     * Draw a vector graphics path fill
+     *
+     * @tparam BlendMode        the blend mode struct
+     * @tparam PorterDuff       the alpha compositing struct
+     * @tparam antialias        enable/disable anti-aliasing, currently NOT supported
+     * @tparam debug            debug mode ?
+     * @tparam number1          number type of path
+     * @tparam number2          number type of uv coords
+     * @tparam Sampler          Sampler type
+     *
+     * @param sampler           sampler reference
+     * @param transform         3x3 matrix for transform
+     * @param path              the path reference
+     * @param rule              fill rule {non_zero, even_odd}
+     * @param quality           quality of tessellation {fine, better, prettier_with_extra_vertices}
+     * @param opacity           opacity [0..255]
+     * @param u0                uv coord
+     * @param v0                uv coord
+     * @param u1                uv coord
+     * @param v1                uv coord
+     */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool debug=false, typename number1=float, typename number2=float, typename Sampler>
     void drawPathFill(const Sampler &sampler,
@@ -562,6 +1029,23 @@ public:
                       number2 u0=number2(0), number2 v0=number2(1),
                       number2 u1=number2(1), number2 v1=number2(0));
 
+    /**
+     * Draw Bitmap Fonts Text
+     *
+     * @tparam tint enable font tinting ?
+     * @tparam BITMAP_FONT_TYPE the type of the font bitmap
+     *
+     * @param text char array string of text to draw
+     * @param font the bitmap font reference
+     * @param color the color if tinting was enabled
+     * @param format text format
+     * @param left left position
+     * @param top top position
+     * @param right right position
+     * @param bottom bottom position
+     * @param frame draw a frame ?
+     * @param opacity opacity [0..255]
+     */
     template<bool tint=true, typename BITMAP_FONT_TYPE>
     void drawText(const char *text, microgl::text::bitmap_font<BITMAP_FONT_TYPE> &font, const color_t & color,
             microgl::text::text_format & format,
