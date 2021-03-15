@@ -10,10 +10,10 @@
 #define H 480*1
 
 int main() {
-//    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
-    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_64_BIT>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
+//    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_64_BIT>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
-    auto * canvas = new Canvas24(W, H);
+    Canvas24 canvas(W, H);
     Texture24 tex_1, tex_2;
     Resources resources{};
 
@@ -32,9 +32,9 @@ int main() {
         float G = 400;
         d+=1.01;
 
-        canvas->clear(intensity<number>{1, 1, 1, 1});
+        canvas.clear(intensity<number>{1, 1, 1, 1});
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
-        canvas->drawQuadrilateral<blendmode::Normal, porterduff::None<>, false, number>(
+        canvas.drawQuadrilateral<blendmode::Normal, porterduff::None<>, false, number>(
 //                tex_1,
                 tex_2,
                 0.0f,               0.0f,     0.0f, 1.0f,
@@ -45,7 +45,7 @@ int main() {
 
     };
 
-    example_run(canvas,
+    example_run(&canvas,
                 render);
 
 }

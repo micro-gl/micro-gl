@@ -98,6 +98,7 @@ public:
     using bitmap_t = bitmap_type;
     using pixel = typename bitmap_type::pixel;
     using pixel_coder = typename bitmap_type::pixel_coder;
+    using rgba = typename pixel_coder::rgba;
 
     struct window_t {
         rect canvas_rect;
@@ -412,7 +413,6 @@ public:
      * @param top               top distance
      * @param right             right distance
      * @param bottom            bottom distance
-     * @param radius            radius of corners
      * @param opacity           opacity [0..255]
      * @param u0                uv coord
      * @param v0                uv coord
@@ -445,7 +445,6 @@ public:
      * @param top               top distance
      * @param right             right distance
      * @param bottom            bottom distance
-     * @param radius            radius of corners
      * @param opacity           opacity [0..255]
      * @param u0                uv coord
      * @param v0                uv coord

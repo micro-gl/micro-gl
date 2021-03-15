@@ -38,7 +38,7 @@ int main() {
     auto render = [&]() -> void {
         canvas->clear({255,255,255,255});
         canvas->drawRoundedRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
-                tex_uv,
+                gradient,
                 gradient2Colors,
 //                flatColor,
                 10+t, 10+t, 300+t, 300+t,
