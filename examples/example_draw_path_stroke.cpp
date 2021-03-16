@@ -31,9 +31,12 @@ dynamic_array<vec2<number>> box(float left, float top, float right, float bottom
 template <typename number>
 path<number> path_star() {
     path<number> path{};
-    path.lineTo({150, 150}).lineTo({450, 150})
-            .lineTo({200,450}).lineTo({300,50})
-            .lineTo({400,450}).closePath();
+    path.lineTo({150, 150})
+        .lineTo({450, 150})
+        .lineTo({200,450})
+        .lineTo({300,50})
+        .lineTo({400,450})
+        .closePath();
     return path;
 }
 
@@ -143,8 +146,8 @@ int main() {
 //            tessellation::stroke_line_join::miter,
 //            tessellation::stroke_line_join::miter_clip,
             tessellation::stroke_line_join::round,
-                4, {0, 0}, 0,
-//                4, {50, 20}, t,
+//                4, {0, 0}, 0,
+                4, {50, 20}, t,
                 255
         );
     };

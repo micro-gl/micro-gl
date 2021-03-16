@@ -1231,7 +1231,7 @@ void canvas<bitmap_type, options>::drawPathFill(const Sampler &sampler,
                                            opacity_t opacity,
                                            const number2 u0, const number2 v0,
                                            const number2 u1, const number2 v1) {
-    const auto & buffers= path.tessellateFill(rule, quality);
+    const auto & buffers= path.tessellateFill(rule, quality, antialias, debug);
     if(buffers.output_vertices.size()==0) return;
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(
             sampler, transform,

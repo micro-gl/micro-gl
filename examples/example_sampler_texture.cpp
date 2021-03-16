@@ -24,7 +24,7 @@ int main() {
 
     Resources resources{};
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
-    auto img_1 = resources.loadImageFromCompressedPath("images/a.png");
+    auto img_1 = resources.loadImageFromCompressedPath("images/dog_32bit.png");
     auto * canvas = new Canvas24(W, H);;
     Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
     Texture32 tex_uv_32{new bitmap<coder::RGBA8888_ARRAY>(img_1.data, img_1.width, img_1.height)};

@@ -30,8 +30,8 @@ int main() {
 
     Resources resources{};
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
-    auto img_mask_1 = resources.loadImageFromCompressedPath("images/a.png");
-    auto img_mask_2 = resources.loadImageFromCompressedPath("images/bw2.png");
+    auto img_mask_1 = resources.loadImageFromCompressedPath("images/dog_32bit.png");
+    auto img_mask_2 = resources.loadImageFromCompressedPath("images/bw_8bits.png");
     auto * canvas = new Canvas24(W, H);
     Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
     Texture32 tex_mask_1{new bitmap<coder::RGBA8888_ARRAY>(img_mask_1.data, img_mask_1.width, img_mask_1.height)};

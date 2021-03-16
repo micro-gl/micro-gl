@@ -31,9 +31,13 @@ dynamic_array<vec2<number>> box(float left, float top, float right, float bottom
 template <typename number>
 path<number> path_star() {
     path<number> path{};
-    path.lineTo({150, 150}).lineTo({450, 150})
-            .lineTo({200,450}).lineTo({300,50})
-            .lineTo({400,450}).closePath();
+    path.lineTo({150, 150})
+        .quadraticCurveTo({450, 0}, {450, 150})
+//        .lineTo({450, 150})
+        .lineTo({200,450})
+        .lineTo({300,50})
+        .lineTo({400,450})
+        .closePath();
     return path;
 }
 
@@ -115,35 +119,33 @@ path<number> path_test() {
 }
 
 int main() {
-    using number = float;
-//    using number = double;
+//    using number = float;
+    using number = double;
 //    using number = Q<12>;
 //    using number = Q<4>;
 
     using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
     using Canvas24= canvas<Bitmap24>;
-    using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
     sampling::flat_color<> color_red {{255,0,255,255}};
-    sampling::flat_color<> color_green {{22,22,22,255}};
-    auto * canvas = new Canvas24(W, H);
+    Canvas24 canvas(W, H);
 
     auto render_path = [&](path<number> path) {
-        canvas->clear({255, 255, 255, 255});
-        canvas->drawPathFill<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, true>(
+        canvas.clear({255, 255, 255, 255});
+        canvas.drawPathFill<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, false>(
                 color_red,
                 matrix_3x3<number>::identity(),
                 path,
                 tessellation::fill_rule::even_odd,
                 tessellation::tess_quality::prettier_with_extra_vertices,
 //            tessellation::tess_quality::better,
-                50
+                250
         );
 
     };
 
     auto render = [&]() {
-//        render_path(path_star<number>());
-        render_path(path_star_2<number>());
+        render_path(path_star<number>());
+//        render_path(path_star_2<number>());
 //        render_path(path_rects<number>());
 //        render_path(path_arc<number>());
 
@@ -158,7 +160,7 @@ int main() {
 
     };
 
-    example_run(canvas, render);
+    example_run(&canvas, render);
 }
 
 

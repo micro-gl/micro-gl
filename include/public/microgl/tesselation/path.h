@@ -134,9 +134,9 @@ namespace microgl {
                 return *this;
             }
 
-            auto cubicBezierCurveTo(const vertex &cp1, const vertex &cp2, const vertex &last,
+            path & cubicBezierCurveTo(const vertex &cp1, const vertex &cp2, const vertex &last,
                                     CurveDivisionAlgorithm bezier_curve_divider=
-                                            CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium) -> path & {
+                                            CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small)  {
                 vertex bezier[4] = {lastPointOfCurrentSubPath(), cp1, cp2, last};
                 dynamic_array<vertex> output{32};
                 curve_divider<number>::compute(bezier, output, bezier_curve_divider, CurveType::Cubic);
@@ -148,7 +148,7 @@ namespace microgl {
 
             auto quadraticCurveTo(const vertex &cp, const vertex &last,
                     CurveDivisionAlgorithm bezier_curve_divider=
-                            CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium)
+                            CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small)
                     -> path & {
                 vertex bezier[3] = {lastPointOfCurrentSubPath(), cp, last};
                 dynamic_array<vertex> output{32};
@@ -198,23 +198,23 @@ namespace microgl {
             }
 
             struct buffers {
-                dynamic_array<vertex> DEBUG_output_trapezes;
-                dynamic_array<vertex> output_vertices;
-                dynamic_array<index> output_indices;
-                dynamic_array<triangles::boundary_info> output_boundary;
-                triangles::indices output_indices_type;
+                dynamic_array<vertex> DEBUG_output_trapezes{};
+                dynamic_array<vertex> output_vertices{};
+                dynamic_array<index> output_indices{};
+                dynamic_array<triangles::boundary_info> output_boundary{};
+                triangles::indices output_indices_type{};
                 explicit buffers()= default;
                 buffers(buffers && val) noexcept {
-                    move(val); output_indices_type=triangles::indices::TRIANGLES_STRIP;
+                    move(val);
                 }
-                buffers &operator=(buffers && val) noexcept {
+                buffers & operator=(buffers && val) noexcept {
                     move(val); return *this;
                 }
-                buffers &move(buffers && val) {
-                    DEBUG_output_trapezes=std::move(val.DEBUG_output_trapezes);
-                    output_vertices=std::move(val.output_vertices);
-                    output_indices=std::move(val.output_indices);
-                    output_boundary=std::move(val.output_boundary);
+                void move(buffers & val) {
+                    DEBUG_output_trapezes=traits::move(val.DEBUG_output_trapezes);
+                    output_vertices=traits::move(val.output_vertices);
+                    output_indices=traits::move(val.output_indices);
+                    output_boundary=traits::move(val.output_boundary);
                     output_indices_type=val.output_indices_type;
                 }
                 void drain() {
@@ -272,7 +272,9 @@ namespace microgl {
 
         public:
             buffers & tessellateFill(const fill_rule &rule=fill_rule::non_zero,
-                                     const tess_quality &quality=tess_quality::better) {
+                                     const tess_quality &quality=tess_quality::better,
+                                     bool compute_boundary_buffer = true,
+                                     bool debug_trapezes = false) {
                 fill_cache_info info{rule, quality};
                 const bool was_computed=(info==_latest_fill_cache_info) &&
                         _tess_fill.output_vertices.size()!=0;
@@ -285,10 +287,8 @@ namespace microgl {
                             _tess_fill.output_vertices,
                             _tess_fill.output_indices_type,
                             _tess_fill.output_indices,
-                            &_tess_fill.output_boundary,
-                            &_tess_fill.DEBUG_output_trapezes);
-//                            nullptr,
-//                            nullptr);
+                            compute_boundary_buffer ? &_tess_fill.output_boundary : nullptr,
+                            debug_trapezes ? &_tess_fill.DEBUG_output_trapezes : nullptr);
                 }
                 return _tess_fill;
             }
@@ -298,7 +298,8 @@ namespace microgl {
                                        const stroke_line_join &line_join=stroke_line_join::bevel,
                                        const int miter_limit=4,
                                        const std::initializer_list<int> & stroke_dash_array={},
-                                       int stroke_dash_offset=0) {
+                                       int stroke_dash_offset=0,
+                                       bool compute_boundary_buffer=true) {
                 stroke_cache_info info{stroke_width, cap, line_join, miter_limit,
                                        stroke_dash_array, stroke_dash_offset};
                 const bool was_computed=(info==_latest_stroke_cache_info) &&
@@ -323,8 +324,7 @@ namespace microgl {
                                 _tess_stroke.output_vertices,
                                 _tess_stroke.output_indices,
                                 _tess_stroke.output_indices_type,
-//                                nullptr);
-                                &_tess_stroke.output_boundary);
+                                compute_boundary_buffer ? &_tess_stroke.output_boundary: nullptr);
                     }
                 }
                 return _tess_stroke;

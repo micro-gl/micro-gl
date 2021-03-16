@@ -85,7 +85,7 @@ void init_sdl(int width, int height) {
             SDL_TEXTUREACCESS_STREAMING, width, height);
 
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
-    auto img_3 = resources.loadImageFromCompressedPath("images/bw.png");
+    auto img_3 = resources.loadImageFromCompressedPath("images/bw_24bits.png");
     auto bmp_uv_U8 = new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     auto bmp_3_native = new bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());

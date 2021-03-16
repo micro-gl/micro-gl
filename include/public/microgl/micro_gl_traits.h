@@ -51,6 +51,19 @@ namespace microgl {
         template<uint8_t bits>
         using int_t = typename signed_type_infer<bits>::type;
 
+        template< class T > struct remove_reference      {typedef T type;};
+        template< class T > struct remove_reference<T&>  {typedef T type;};
+        template< class T > struct remove_reference<T&&> {typedef T type;};
+
+        template <class _Tp>
+        inline constexpr
+        typename remove_reference<_Tp>::type&&
+        move(_Tp&& __t) noexcept
+        {
+            typedef typename remove_reference<_Tp>::type _Up;
+            return static_cast<_Up&&>(__t);
+        }
+
     }
 
 }

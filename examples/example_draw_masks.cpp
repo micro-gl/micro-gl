@@ -13,48 +13,39 @@
 #define W 640*1
 #define H 480*1
 
-SDL_Window * window;
-SDL_Renderer * renderer;
-SDL_Texture * texture;
 
 int main() {
+    using namespace microgl::sampling;
+    using Canvas24  = canvas<bitmap<coder::RGB888_PACKED_32>>;
+    using Texture24 = texture<bitmap<coder::RGB888_ARRAY>>;
+    using Texture32 = texture<bitmap<coder::RGBA8888_ARRAY>>;
     using number = float;
 
-    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= canvas<Bitmap24>;
-    using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
-    using Texture32= sampling::texture<bitmap<coder::RGBA8888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
+    bool draw_first_mask = true;
 
     Canvas24 canvas(W, H);
-    Texture24 tex_mask, tex_1;
-    Texture32 tex_0;
-    float t=0;
     Resources resources{};
 
-    auto img_0 = resources.loadImageFromCompressedPath("images/a.png");
+    auto img_0 = resources.loadImageFromCompressedPath("images/dog_32bit.png");
     auto img_1 = resources.loadImageFromCompressedPath("images/charsprites.png");
-    auto img_3 = resources.loadImageFromCompressedPath("images/bw.png");
-//
-    auto *bmp_0_native = new bitmap<coder::RGBA8888_ARRAY>(img_0.data, img_0.width, img_0.height);
-    auto *bmp_1_native = new bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height);
-    auto *bmp_3_native = new bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
+    auto img_3 = resources.loadImageFromCompressedPath("images/bw_8bits.png");
 
-    tex_0.updateBitmap(bmp_0_native);
-    tex_1.updateBitmap(bmp_1_native->convertToBitmap<coder::RGB888_PACKED_32>());
-    tex_mask.updateBitmap(bmp_3_native->convertToBitmap<coder::RGB888_PACKED_32>());
+    Texture24 tex_1{new bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height)};
+    Texture24 tex_mask{new bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height)};
+    Texture32 tex_mask_2{new bitmap<coder::RGBA8888_ARRAY>(img_0.data, img_0.width, img_0.height)};
 
     auto render = [&]() {
 
         canvas.clear({255,255,255,255});
         canvas.drawRect<blendmode::Normal, porterduff::None<>>(
-            tex_1,
-            t, t, 300.0f, 300.0f,
-            255);
-        canvas.drawMask(masks::chrome_mode::red_channel,
-//                tex_0,
-                tex_mask,
-                t, t, 300.0f, 300.0f);
+                        tex_1,0.0f, 0.0f, 300.0f, 300.0f);
 
+        if(draw_first_mask)
+            canvas.drawMask(masks::chrome_mode::alpha_channel,
+                            tex_mask_2,0.0f, 0.0f, 300.0f, 300.0f);
+        else
+            canvas.drawMask(masks::chrome_mode::red_channel,
+                            tex_mask,0.0f, 0.0f, 300.0f, 300.0f);
 
     };
 

@@ -29,7 +29,7 @@ int main() {
     Resources resources{};
     float t=0;
 
-    auto img_0 = resources.loadImageFromCompressedPath("images/a.png");
+    auto img_0 = resources.loadImageFromCompressedPath("images/dog_32bit.png");
     auto img_1 = resources.loadImageFromCompressedPath("images/charsprites.png");
 //
     auto * canvas = new Canvas24(W, H);

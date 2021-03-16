@@ -19,6 +19,14 @@ public:
             this->push_back(container[ix]);
     }
 
+    dynamic_array(const dynamic_array<T> && container)  noexcept {
+        _data = container._data;
+        _current = container._current;
+        _cap = container._cap;
+        container._data=nullptr;
+        container.clear();
+    }
+
     explicit dynamic_array(index capacity = 0) {
         _cap = capacity;
         if(_cap > 0)
@@ -27,10 +35,6 @@ public:
 
     ~dynamic_array() {
         drain();
-//        delete [] _data;
-//        _data = nullptr;
-//        _cap = 0;
-//        _current = 0;
     }
 
     T* data()  {
@@ -42,9 +46,11 @@ public:
     }
 
     dynamic_array<T> & operator=(const dynamic_array<T> &container) {
-        this->clear();
-        for(index ix = 0; ix < container.size(); ix++)
-            this->push_back(container[ix]);
+        if(this!= &container) {
+            this->clear();
+            for(index ix = 0; ix < container.size(); ix++)
+                this->push_back(container[ix]);
+        }
         return (*this);
     }
 
@@ -94,9 +100,15 @@ public:
     }
 
     int push_back(const T & v)  {
-        if(int(_current)>int(_cap-1))
+        if(int(_current)>int(_cap-1)) {
+            // copy the value, edge case if v belongs
+            // to the dynamic array
+            const T vv = v;
             alloc_(true);
-        _data[_current++] = v;
+            _data[_current++] = vv;
+        } else {
+            _data[_current++] = v;
+        }
         return _current-1;
     }
 
