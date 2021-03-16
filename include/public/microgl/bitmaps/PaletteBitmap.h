@@ -2,6 +2,15 @@
 
 #include <microgl/base_bitmap.h>
 
+/**
+ * a bitmap that uses a palette of pixels of size 2, 4, 16, 256. This way,
+ * the pixels array serves as indices, that can be packed as 1,2,4,8 bits
+ * respectively. This is memory eficient.
+ *
+ * @tparam PALETTE_SIZE 2, 4, 16, 256 size
+ * @tparam CODER the pixel coder for the palette
+ * @tparam reverse_elements_pos_in_byte can help with endian-ness issues
+ */
 template <unsigned PALETTE_SIZE, typename CODER, bool reverse_elements_pos_in_byte=false>
 class PaletteBitmap : public base_bitmap<PaletteBitmap<PALETTE_SIZE, CODER, reverse_elements_pos_in_byte>, CODER, uint8_t> {
     using base=base_bitmap<PaletteBitmap<PALETTE_SIZE, CODER, reverse_elements_pos_in_byte>, CODER, uint8_t>;
@@ -20,7 +29,9 @@ public:
     using base::writeAt;
     using pixel=typename base::pixel;
 
-    pixel palette[PALETTE_SIZE];
+private:
+    pixel * palette = nullptr;
+public:
 
     static
     int pad_to(int val, int bits, int align_bits=8) {
@@ -30,22 +41,37 @@ public:
         return val+extra;
     }
 
-    PaletteBitmap(int w, int h) : PaletteBitmap{new uint8_t[(w*h)>>T], nullptr, w, h} {};
-    PaletteBitmap(uint8_t* $indices, const pixel *palette, int w, int h) : base {$indices, (w*h)>>T, w, h} {
-        updatePalette(palette);
+    /**
+     * construct a bitmap with a given indices array and pixel palette.
+     * @param $indices the indices array
+     * @param palette the palette
+     * @param w the bitmap width
+     * @param h the bitmap height
+     */
+    PaletteBitmap(void* $indices, void *palette, int w, int h) :
+                base{$indices, (w*h + ((1<<T)-1))>>T, w, h},
+                palette{reinterpret_cast<pixel *>(palette)} {
     };
-    PaletteBitmap(uint8_t* $indices, const void *palette, int w, int h) :
-                            PaletteBitmap{$indices, reinterpret_cast<const pixel *>(palette), w, h} {};
+    /**
+     * construct a bitmap, allocate indices array.
+     * @param w the bitmap width
+     * @param h the bitmap height
+     */
+    PaletteBitmap(int w, int h) : PaletteBitmap{new uint8_t[(w*h + ((1<<T)-1))>>T],
+                                                new pixel[PALETTE_SIZE], w, h} {};
     ~PaletteBitmap() = default;
 
-    void updatePaletteValue(const byte& index, const pixel & value) {
-        palette[index]=value;
-    }
-
+    /**
+     * get the palette size
+     */
     unsigned paletteSize() { return PALETTE_SIZE; }
 
-    void updatePalette(const pixel *palette) {
-        for (unsigned ix = 0; ix < PALETTE_SIZE; ++ix) updatePaletteValue(ix, palette[ix]);
+    /**
+     * update the current palette with another
+     * @param $palette pixel palette
+     */
+    void updatePalette(pixel * $palette) {
+        palette = $palette;
     }
 
     byte extract_pixel_index(unsigned int index1) const {

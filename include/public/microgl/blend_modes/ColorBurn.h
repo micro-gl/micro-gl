@@ -1,15 +1,15 @@
 #pragma once
 
-#include <microgl/blend_mode_base.h>
-
 namespace microgl {
     namespace blendmode {
 
-        class ColorBurn : public blend_mode_base<ColorBurn> {
+        class ColorBurn {
         private:
+
+            template<uint8_t bits>
             static inline
-            uint blend_ColorBurn(cuint b, cuint s, const bits bits) {
-                cuint max = (uint(1) << bits) - 1;
+            uint blend_ColorBurn(cuint b, cuint s) {
+                constexpr cuint max = (uint(1) << bits) - 1;
                 if(s==0) return s;
                 cuint bb = max - ((max - b)*max) / s;
                 return bb<0 ? 0 : bb;
@@ -17,21 +17,16 @@ namespace microgl {
 
         public:
 
+            template<uint8_t R, uint8_t G, uint8_t B>
             static inline void blend(const color_t &b,
                                      const color_t &s,
-                                     color_t &output,
-                                     const uint8_t r_bits,
-                                     const uint8_t g_bits,
-                                     const uint8_t b_bits) {
+                                     color_t &output) {
 
-                output.r = blend_ColorBurn(b.r, s.r, r_bits);
-                output.g = blend_ColorBurn(b.g, s.g, g_bits);
-                output.b = blend_ColorBurn(b.b, s.b, b_bits);
+                output.r = blend_ColorBurn<R>(b.r, s.r);
+                output.g = blend_ColorBurn<G>(b.g, s.g);
+                output.b = blend_ColorBurn<B>(b.b, s.b);
             }
 
-            static inline const char *type() {
-                return "ColorBurn";
-            }
         };
 
     }

@@ -17,12 +17,6 @@ private:
 
     dynamic_array<T> _data;
     dynamic_array<index> _locations;
-//    static_array<T, 512> _data;
-//    static_array<index, 512> _locations;
-
-//    C<T, Rest> _data{};
-//    C<index, Rest...> _locations{0};
-//    C<T, Rest...> aasa;
 
 public:
     struct chunk {

@@ -1,12 +1,9 @@
 #pragma once
 
-#include <microgl/blend_mode_base.h>
-
 namespace microgl {
     namespace blendmode {
 
-        class LinearBurn : public blend_mode_base<LinearBurn> {
-        public:
+        struct LinearBurn {
 
             template<uint8_t bits>
             static inline

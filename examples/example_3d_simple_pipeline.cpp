@@ -1,4 +1,4 @@
-#include <microgl/Canvas.h>
+#include <microgl/canvas.h>
 #include <microgl/matrix_4x4.h>
 #include <microgl/camera.h>
 #include <microgl/pipeline.h>
@@ -21,7 +21,7 @@ int main() {
 
     auto render_template = [&](const model_3d<number> & object) {
         using vertex = vec3<number>;
-        using camera = microgl::camera<number>;
+        using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
         using math = microgl::math;
 
@@ -36,13 +36,13 @@ int main() {
                                        math::deg_to_rad(0/2)},
                                      {0,0,-300+z},
                                      {10,10,10});
-//        mat4 view = camera::lookAt({0, 0, -z}, {0,0, -z-1}, {0,1,0});
-        mat4 view = camera::lookAt({0, 0, 100},
+//        mat4 view = camera::lookAt<number>({0, 0, -z}, {0,0, -z-1}, {0,1,0});
+        mat4 view = camera::lookAt<number>({0, 0, 100},
                                    {0,0, 0},
                                    {0,1,0});
-        mat4 projection = camera::perspective(math::deg_to_rad(60),
+        mat4 projection = camera::perspective<number>(math::deg_to_rad(60),
                                               canvas_width, canvas_height, 1, 500);
-        //mat4 projection = camera::perspective(-1,1,-1,1,1,10000);
+        //mat4 projection = camera::perspective<number>(-1,1,-1,1,1,10000);
         mat4 mvp = projection * view * model;
         canvas.clear({255,255,255,255});
         microgl::_3d::pipeline<number, decltype(canvas)>::render (

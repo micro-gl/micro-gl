@@ -5,9 +5,12 @@
 namespace microgl {
     namespace sampling {
 
-        template <unsigned degree=0, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>, enum precision $precision=precision::medium, bool useBigIntegers=false>
+        template <unsigned degree=0, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>,
+                  enum precision $precision=precision::medium, bool useBigIntegers=false>
         struct axial_linear_gradient {
             using rgba = rgba_;
+
+        private:
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
             static constexpr precision_t p_bits_double= p_bits<<1;
             using rint_big=int64_t;

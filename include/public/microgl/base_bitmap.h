@@ -3,9 +3,22 @@
 #include <microgl/buffer.h>
 #include <microgl/crpt.h>
 #include <microgl/color.h>
+#include <microgl/pixel_coder.h>
 #include <cstdint>
 
-template <typename impl, typename pixel_coder_, typename buffer_element_type=typename pixel_coder_::pixel>
+/**
+ * a base bitmap type, use it with crpt design pattern for extension.
+ * Bitmap is a general type that :
+ * 1. references an array of pixels
+ * 2. has a pixel coder
+ * 3. has interface to read/write pixels
+ *
+ * @tparam impl implemenation type of derived class
+ * @tparam pixel_coder_ the pixel coder type of the bitmap
+ * @tparam buffer_element_type the type of the elements stored in the pixel array
+ */
+template <typename impl, typename pixel_coder_,
+          typename buffer_element_type=typename pixel_coder_::pixel>
 class base_bitmap : public crpt<impl> {
 public:
     using pixel_coder=pixel_coder_;
@@ -23,10 +36,12 @@ public:
     static constexpr bool nativeAlphaChannelBits() { return hasNativeAlphaChannel() ? pixel_coder::rgba::a : 8; }
     static constexpr int maxNativeAlphaChannelValue() { return (1u<<nativeAlphaChannelBits())-1; }
 
-    base_bitmap(int w, int h) : base_bitmap(new uint8_t[sizeof(buffer_element_type) * w * h], w, h) {}
-    base_bitmap(uint8_t *$pixels, int w, int h) : base_bitmap(reinterpret_cast<buffer_element_type *>($pixels), w*h, w, h) {}
-    base_bitmap(buffer_element_type *$pixels, int size, int w, int h) :
-            _width{w}, _height{h}, _coder{}, _buffer($pixels, size) {
+//    base_bitmap(int w, int h) : base_bitmap(new uint8_t[sizeof(buffer_element_type) * w * h], w, h) {}
+//    base_bitmap(uint8_t *$pixels, int w, int h) : base_bitmap(reinterpret_cast<buffer_element_type *>($pixels), w*h, w, h) {}
+    base_bitmap(int w, int h) : base_bitmap(new buffer_element_type[w * h], w * h, w, h) {}
+    base_bitmap(void *$pixels, int w, int h) : base_bitmap(reinterpret_cast<buffer_element_type *>($pixels), w*h, w, h) {}
+    base_bitmap(void *$pixels, int size, int w, int h) :
+            _width{w}, _height{h}, _coder{}, _buffer(reinterpret_cast<buffer_element_type *>($pixels), size) {
     }
     ~base_bitmap() { _width =_height=0; }
 
@@ -54,12 +69,12 @@ public:
 
     template <typename number>
     void decode(int x, int y, microgl::color::intensity<number> &output) const {
-        _coder.decode(pixelAt(x, y), output);
+        microgl::coder::decode<number, pixel_coder>(pixelAt(x, y), output, coder());
     }
 
     template <typename number>
     void decode(int index, microgl::color::intensity<number> &output) const {
-        _coder.decode(pixelAt(index), output);
+        microgl::coder::decode<number, pixel_coder>(pixelAt(index), output, coder());
     }
 
     void writeColor(int index, const microgl::color::color_t &color) {
@@ -75,13 +90,13 @@ public:
     template <typename number>
     void writeColor(int index, const microgl::color::intensity<number> &color) {
         pixel output;
-        _coder.encode(color, output);
+        microgl::coder::encode<number, pixel_coder>(color, output, coder());
         writeAt(index, output);
     }
 
     template <typename number>
     void writeColor(int x, int y, const microgl::color::intensity<number> &color) {
-        writeColor(y*_width + x, color);
+        writeColor<number>(y*_width + x, color);
     }
 
 };

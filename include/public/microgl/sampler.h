@@ -7,9 +7,26 @@
 namespace microgl {
     namespace sampling {
 
+        /**
+         * extract the rgba info of a sampler
+         */
         template<class sampler>
         using sampler_rgba = typename sampler::rgba;
 
+        /**
+         * sample uv coords from sampler with a different number system.
+         * This is handy because samplers work in quantized space to be more
+         * efficient and sometimes it is not convenient.
+         *
+         * @tparam Sampler the sampler type
+         * @tparam number the number type
+         *
+         * @param sampler the sampler reference
+         * @param u the u coord
+         * @param v the v coord
+         * @param p precision can be {low, medium, high, amazing}
+         * @param output output color
+         */
         template<class Sampler, typename number>
         inline void sample(const Sampler & sampler,
                            const number &u, const number &v,
@@ -21,13 +38,20 @@ namespace microgl {
             sampler.sample(u_fixed, v_fixed, bits, output);
         }
 
+        /**
+         * a base sampler container, includes a utility methods and crpt
+         * routing for compile time polymorphism
+         *
+         * @tparam rgba_ the rgba_t info type
+         * @tparam impl the type of the derived class
+         */
         template<typename rgba_, typename impl>
-        class sampler : public crpt<impl> {
+        class base_sampler : public crpt<impl> {
         protected:
         public:
             using rgba = rgba_;
 
-            sampler()= default;
+            base_sampler()= default;
 
             inline void sample(const int u, const int v,
                                const uint8_t bits, color_t &output) const {

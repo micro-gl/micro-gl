@@ -4,27 +4,25 @@
 #include <microgl/math.h>
 #include <microgl/vec4.h>
 
-
 namespace microgl {
-    template <typename number>
-    class camera {
-    private:
-        using const_ref = const number &;
-        using vertex3 = vec3<number>;
-        using vertex4 = vec4<number>;
-        using mat4 = matrix_4x4<number> ;
-        using index = unsigned int;
-    public:
 
+    class camera {
+    public:
+        camera()=delete;
+        camera(const camera &)=delete;
+        camera & operator=(const camera &)=delete;
+        ~camera()=delete;
+
+        template <typename number>
         static
-        vertex3 viewport(const vertex4 &ndc, index width, index height) {
+        vec3<number> viewport(const vec3<number> &ndc, unsigned width, unsigned height) {
             // given NDC= Normalized Device Coordinates, then transform them into
             // raster/canvas/viewport coords. We assume, that NDC coords are [-1,1] range.
             // todo:; currently I assume no z clipping has occured
             // z value is mapped to [0,1] range
             // convert to raster space
-            const_ref zero=number(0), one = number(1), two=number(2);
-            vertex3 result{};
+            const number zero=number(0), one = number(1), two=number(2);
+            vec3<number> result{};
             result.x = ((ndc.x + one)*width)/two;
             result.y = number(height) - (((ndc.y + one)*number(height))/two);
             result.z = (ndc.z + one)/two;
@@ -58,11 +56,21 @@ namespace microgl {
          *  [ R | T ]-1    [ R^T | -R^T * T ]    (R denotes 3x3 rotation matrix)
          *  [ --+-- ]   =  [ ----+--------- ]    (T denotes 1x3 translation)
          *  [ 0 | 1 ]      [  0  |     1    ]    (R^T denotes R-transpose)
-        */
-        static
-        mat4 angleAt(const vertex3 &position,
-                     const_ref pitch, const_ref yaw, const_ref roll) {
-            mat4 mat;
+         *
+         * @tparam number the number type
+         *
+         * @tparam position 3d position of camera
+         * @tparam pitch    x-axis rotation
+         * @tparam yaw      y-axis rotation
+         * @tparam roll     z-axis rotation
+        **/
+        template <typename number>
+        static matrix_4x4<number> angleAt(const vec3<number> & position,
+                                          const number & pitch,
+                                          const number & yaw,
+                                          const number & roll) {
+            using vertex3 = vec3<number>;
+            matrix_4x4<number> mat;
             vertex3 vec;
             // rotation angle about X-axis (pitch)
             number sx = microgl::math::sin(pitch);
@@ -93,21 +101,33 @@ namespace microgl {
         }
 
 
-        ///////////////////////////////////////////////////////////////////////////////
-        // set transform matrix equivalent to gluLookAt() VIEW MATRIX
-        // 1. Mt: Translate scene to camera position inversely, (-x, -y, -z)
-        // 2. Mr: Rotate scene inversly so camera looks at the scene
-        // 3. Find matrix = Mr * Mt
-        //       Mr               Mt
-        // |r0  r4  r8  0|   |1  0  0 -x|   |r0  r4  r8  r0*-x + r4*-y + r8 *-z|
-        // |r1  r5  r9  0| * |0  1  0 -y| = |r1  r5  r9  r1*-x + r5*-y + r9 *-z|
-        // |r2  r6  r10 0|   |0  0  1 -z|   |r2  r6  r10 r2*-x + r6*-y + r10*-z|
-        // |0   0   0   1|   |0  0  0  1|   |0   0   0   1                     |
-        ///////////////////////////////////////////////////////////////////////////////
-        static
-        mat4 lookAt(const vertex3 & position, const vertex3& target, const vertex3& up)
+        /**
+         * set view matrix equivalent to gluLookAt() VIEW MATRIX
+         *
+         * 1. Mt: Translate scene to camera position inversely, (-x, -y, -z)
+         * 2. Mr: Rotate scene inversly so camera looks at the scene
+         * 3. Find matrix = Mr * Mt
+         *
+         *       Mr               Mt
+         * |r0  r4  r8  0|   |1  0  0 -x|   |r0  r4  r8  r0*-x + r4*-y + r8 *-z|
+         * |r1  r5  r9  0| * |0  1  0 -y| = |r1  r5  r9  r1*-x + r5*-y + r9 *-z|
+         * |r2  r6  r10 0|   |0  0  1 -z|   |r2  r6  r10 r2*-x + r6*-y + r10*-z|
+         * |0   0   0   1|   |0  0  0  1|   |0   0   0   1                     |
+         *
+         * @tparam number   the number type
+         *
+         * @param position  3d position of camera
+         * @param target    look at 3d position
+         * @param up        the vector pointing up
+         * @return
+         */
+        template <typename number>
+        static matrix_4x4<number> lookAt(const vec3<number> & position,
+                                         const vec3<number>& target,
+                                         const vec3<number>& up)
         {
-            mat4 result{};
+            using vertex3 = vec3<number>;
+            matrix_4x4<number> result{};
 
             // 3 axis of rotation matrix for scene
             vertex3 z_axis = (position-target).normalize(); // forward
@@ -128,6 +148,20 @@ namespace microgl {
             return result;
         }
 
+        /**
+         * compute perspective projection matrix
+         *
+         * @tparam number                   number type
+         *
+         * @param horizontal_fov_radians    horizontal angle of the camera frustum
+         * @param screen_width              surface width
+         * @param screen_height             surface height
+         * @param near                      near plane
+         * @param far                       far plane
+         *
+         * @return matrix_4x4<number> result
+         */
+        template <typename number>
         static
         matrix_4x4<number> perspective(const number &horizontal_fov_radians,
                                        const number & screen_width, const number & screen_height,
@@ -135,8 +169,21 @@ namespace microgl {
             return perspective(horizontal_fov_radians, screen_width/screen_height, near, far);
         }
 
+        /**
+         * compute perspective projection matrix
+         *
+         * @tparam number                   number type
+         *
+         * @param horizontal_fov_radians    horizontal angle of the camera frustum
+         * @param aspect_ratio              aspect ratio of the surface
+         * @param near                      near plane
+         * @param far                       far plane
+         *
+         * @return matrix_4x4<number> result
+         */
+        template <typename number>
         static
-        matrix_4x4<number> perspective(const number &horizontal_fov_radians,
+        matrix_4x4<number> perspective(const number & horizontal_fov_radians,
                                        const number & aspect_ratio,
                                        const number & near, const number & far) {
             matrix_4x4<number> mat{};
@@ -160,8 +207,23 @@ namespace microgl {
             return perspective(l,r,b,t,near,far);
         }
 
+        /**
+         * compute perspective projection matrix
+         *
+         * @tparam number   number type
+         *
+         * @param l         left plane
+         * @param r         right plane
+         * @param b         bottom plane
+         * @param t         top plane
+         * @param n         near plane
+         * @param f         far plane
+         *
+         * @return matrix_4x4<number> result
+         */
+        template <typename number>
         static
-        matrix_4x4<number> perspective(const number &l, const number & r,
+        matrix_4x4<number> perspective(const number & l, const number & r,
                                        const number & b, const number & t,
                                        const number & n, const number & f) {
             matrix_4x4<number> m{};
@@ -178,8 +240,23 @@ namespace microgl {
             return m;
         }
 
+        /**
+         * compute orthographic projection
+         *
+         * @tparam number number type
+         *
+         * @param l         left plane
+         * @param r         right plane
+         * @param b         bottom plane
+         * @param t         top plane
+         * @param n         near plane
+         * @param f         far plane
+         *
+         * @return matrix_4x4<number> result
+         */
+        template <typename number>
         static
-        matrix_4x4<number> orthographic(const number &l, const number & r,
+        matrix_4x4<number> orthographic(const number & l, const number & r,
                                         const number & b, const number & t,
                                         const number & n, const number & f) {
             // map [l,r]->[-1,1], [b,t]->[-1,1], [-n,-far]->[-1,1]

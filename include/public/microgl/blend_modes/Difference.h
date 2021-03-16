@@ -1,12 +1,9 @@
 #pragma once
 
-#include <microgl/blend_mode_base.h>
-
 namespace microgl {
     namespace blendmode {
 
-        class Difference : public blend_mode_base<Difference> {
-        public:
+        struct Difference {
 
             template<uint8_t R, uint8_t G, uint8_t B>
             static inline void blend(const color_t &b,

@@ -5,8 +5,7 @@
 namespace microgl {
     namespace blendmode {
 
-        class LinearLight : public blend_mode_base<LinearLight> {
-        public:
+        struct LinearLight {
 
             template<uint8_t bits>
             static inline

@@ -1,6 +1,6 @@
 #include "src/Resources.h"
 #include "src/example.h"
-#include <microgl/Canvas.h>
+#include <microgl/canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/pixel_coders/RGBA8888_ARRAY.h>
@@ -30,22 +30,22 @@ int main() {
 
     Resources resources{};
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
-    auto img_mask_1 = resources.loadImageFromCompressedPath("images/a.png");
-    auto img_mask_2 = resources.loadImageFromCompressedPath("images/bw2.png");
+    auto img_mask_1 = resources.loadImageFromCompressedPath("images/dog_32bit.png");
+    auto img_mask_2 = resources.loadImageFromCompressedPath("images/bw_8bits.png");
     auto * canvas = new Canvas24(W, H);
     Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
     Texture32 tex_mask_1{new bitmap<coder::RGBA8888_ARRAY>(img_mask_1.data, img_mask_1.width, img_mask_1.height)};
     Texture24 tex_mask_2{new bitmap<coder::RGB888_ARRAY>(img_mask_2.data, img_mask_2.width, img_mask_2.height)};
     MaskingSampler1 ms{tex_uv, tex_mask_2};
     MaskingSampler2 ms2{tex_uv, tex_mask_1};
-    sampling::flat_color<> color_red{{255, 0, 0}};
+    sampling::flat_color<> color_red{{255, 255, 0}};
     sampling::flat_color<rgba_t<8,8,8,8>> color_red_trans{{255, 0, 0, 128}};
 
     auto render = [&]() -> void {
         canvas->clear({255,255,255,255});
         canvas->drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
                 color_red,
-                0, 0, 400, 400);
+                0, 0, 300, 300);
         canvas->drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
 //                ms,
                 ms2,

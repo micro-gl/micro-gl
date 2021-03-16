@@ -1,6 +1,6 @@
 #include "src/Resources.h"
 #include "src/example.h"
-#include <microgl/Canvas.h>
+#include <microgl/canvas.h>
 #include <microgl/z_buffer.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
@@ -36,7 +36,7 @@ int main() {
         using vertex_attributes = Shader::vertex_attributes;
 
         Shader shader;
-        shader.matrix= camera<number>::orthographic(0, W, 0, H, 0, 100);
+        shader.matrix= camera::orthographic<number>(0, W, 0, H, 0, 100);
 
         vertex_attributes v0, v1, v2;
         v0.point= {10.0,10.0, 0};  v0.color= {255,0,0,255};
@@ -54,7 +54,7 @@ int main() {
         using vertex_attributes = Shader::vertex_attributes;
         Shader shader;
         color_t color{255,0,0,255};
-        shader.matrix= camera<number>::orthographic(0, W, 0, H, 0, 100);
+        shader.matrix= camera::orthographic<number>(0, W, 0, H, 0, 100);
         shader.color= color;
         vertex_attributes v0, v1, v2;
         v0.point= {10.0,10.0, 0};
@@ -73,7 +73,7 @@ int main() {
         using vertex_attributes = Shader::vertex_attributes;
         Shader shader;
 
-        shader.matrix= camera<number>::orthographic(0, W, 0, H, 0, 10);
+        shader.matrix= camera::orthographic<number>(0, W, 0, H, 0, 10);
         shader.sampler= &tex;
 
         vertex_attributes v0{}, v1{}, v2{};

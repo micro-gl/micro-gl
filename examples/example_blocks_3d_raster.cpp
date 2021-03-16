@@ -2,7 +2,7 @@
 #include <chrono>
 #include <SDL.h>
 #include "src/Resources.h"
-#include <microgl/Canvas.h>
+#include <microgl/canvas.h>
 #include <microgl/camera.h>
 #include <microgl/z_buffer.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
@@ -43,7 +43,7 @@ template <typename number, typename z_buffer_type>
 void render_block(int block_x, int block_y, Bitmap24 *bmp, z_buffer_type * depth_buffer, const model_3d<number> & object) {
     using l64= long long;
     using vertex = vec3<number>;
-    using camera = microgl::camera<number>;
+    using camera = microgl::camera;
     using mat4 = matrix_4x4<number>;
     using math = microgl::math;
     using Shader= sampler_shader<number, Texture24>;
@@ -57,10 +57,10 @@ void render_block(int block_x, int block_y, Bitmap24 *bmp, z_buffer_type * depth
                                    {-5,0,0}, {10,10,10});
     mat4 model_2 = mat4::transform({ math::deg_to_rad(z/1), math::deg_to_rad(z/2), math::deg_to_rad(z/2)},
                                    {5,0,0}, {10,10,10});
-//    mat4 view = camera::lookAt({0, 0, 30}, {0,0, 0}, {0,1,0});
-    mat4 view = camera::angleAt({0, 0, 70}, 0, math::deg_to_rad(0),0);
-    mat4 projection = camera::perspective(math::deg_to_rad(60), canva->width(), canva->height(), 1, 500);
-//    mat4 projection= camera::orthographic(-canva->width()/2, canva->width()/2, -canva->height()/2, canva->height()/2, 1, 1000);
+//    mat4 view = camera::lookAt<number>({0, 0, 30}, {0,0, 0}, {0,1,0});
+    mat4 view = camera::angleAt<number>({0, 0, 70}, 0, math::deg_to_rad(0),0);
+    mat4 projection = camera::perspective<number>(math::deg_to_rad(60), canva->width(), canva->height(), 1, 500);
+//    mat4 projection= camera::orthographic<number>(-canva->width()/2, canva->width()/2, -canva->height()/2, canva->height()/2, 1, 1000);
     mat4 mvp_1= projection*view*model_1;
     mat4 mvp_2= projection*view*model_2;
 

@@ -1,6 +1,6 @@
 #include "src/Resources.h"
 #include "src/example.h"
-#include <microgl/Canvas.h>
+#include <microgl/canvas.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/pixel_coders/RGBA8888_ARRAY.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
@@ -9,7 +9,7 @@
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
 #include <microgl/blend_modes/Multiply.h>
-#include <microgl/bitmap.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/samplers/texture.h>
 
 #define TEST_ITERATIONS 100
@@ -29,7 +29,7 @@ int main() {
     Resources resources{};
     float t=0;
 
-    auto img_0 = resources.loadImageFromCompressedPath("images/a.png");
+    auto img_0 = resources.loadImageFromCompressedPath("images/dog_32bit.png");
     auto img_1 = resources.loadImageFromCompressedPath("images/charsprites.png");
 //
     auto * canvas = new Canvas24(W, H);

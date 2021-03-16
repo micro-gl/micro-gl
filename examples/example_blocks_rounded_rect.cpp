@@ -2,7 +2,7 @@
 #include <chrono>
 #include <SDL.h>
 #include "src/Resources.h"
-#include <microgl/Canvas.h>
+#include <microgl/canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/texture.h>

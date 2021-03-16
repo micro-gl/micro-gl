@@ -18,7 +18,7 @@ void example_run(canvas_type * canvas,
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    window = SDL_CreateWindow("SDL2 pixel_ Drawing",
+    window = SDL_CreateWindow("Micro{gl} Example",
                               SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED,
                               canvas->width(), canvas->height(), 0);

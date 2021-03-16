@@ -1,9 +1,9 @@
 #include "src/example.h"
-#include <microgl/Canvas.h>
+#include <microgl/canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGBA8888_ARRAY.h>
 #include <microgl/samplers/texture.h>
-#include <microgl/PaletteBitmap.h>
+#include <microgl/bitmaps/PaletteBitmap.h>
 #include "data/bitmap_1_palette_256_colors.h"
 #include "data/bitmap_1_palette_16_colors.h"
 #include "data/bitmap_1_palette_4_colors.h"
@@ -18,7 +18,7 @@ int main() {
     using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
     using Canvas24= canvas<Bitmap24>;
     using PaletteBitmap= PaletteBitmap<PALETTE_SIZE, coder::RGBA8888_ARRAY, false>;
-    using TexPalette= sampling::texture<PaletteBitmap>;
+    using TexPalette= sampling::texture<PaletteBitmap, sampling::texture_filter::NearestNeighboor>;
 
     auto * canvas = new Canvas24(W, H);;
     TexPalette tex;

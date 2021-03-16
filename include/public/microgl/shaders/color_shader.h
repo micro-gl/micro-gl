@@ -8,17 +8,23 @@ namespace microgl {
 
         template<typename number_, typename rgba_>
         struct color_shader {
+            // the main number type
             using number = number_;
+            // the rgba info
             using rgba = rgba_;
+            using gl_position= vec4<number>;
 
+            // per vertex attributes
             struct vertex_attributes {
                 vec3<number> point;
                 microgl::color::color_t color;
             };
 
+            // varying attributes
             struct varying {
                 microgl::color::color_t color{255,0,0};
 
+                // you must implement the interpolation function
                 void interpolate(const varying &varying_a,
                                  const varying &varying_b,
                                  const varying &varying_c,
@@ -30,15 +36,20 @@ namespace microgl {
                 }
             };
 
+            // this is a uniform global
             matrix_4x4<number> matrix;
 
-            inline vec4<number>
+            // vertex shader
+            inline gl_position
             vertex(const vertex_attributes &attributes, varying &output) {
+                // pass varying on to the pixel shader so they can be interpolated
                 output.color = attributes.color;
-                auto result= matrix * vec4<number>{attributes.point};
-                return result;
+
+                // tag the transformed position
+                return matrix * gl_position{attributes.point};
             }
 
+            // pixel shader
             inline color::color_t
             fragment(const varying &input) {
                 return input.color;

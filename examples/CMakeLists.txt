@@ -39,6 +39,8 @@ if(SDL2_FOUND)
             example_draw_rounded_rectangle.cpp
             example_draw_circles.cpp
             example_draw_masks.cpp
+            example_draw_path.cpp
+            example_draw_path_stroke.cpp
             example_clear.cpp
             example_sampler_texture_wrap.cpp
             example_sampler_texture.cpp
@@ -61,7 +63,6 @@ if(SDL2_FOUND)
             example_geometry_stroke_tessellation.cpp
             example_geometry_stroke_dash_tessellation.cpp
             example_geometry_elliptic_arc_divider.cpp
-            example_geometry_path.cpp
             example_q_sort.cpp
             example_avl_tree.cpp
             example_draw_bitmap_fonts.cpp
@@ -75,7 +76,7 @@ if(SDL2_FOUND)
             example_geometry_bezier_curve_divider.cpp
             test_coder_converter.cpp
             example_sampler_masking_sampler.cpp
-            example_new_alpha.cpp
+            example_compositing.cpp
             example_mem.cpp
             test_coder_generator.cpp
             )

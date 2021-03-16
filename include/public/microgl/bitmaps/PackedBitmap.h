@@ -3,6 +3,14 @@
 #include <microgl/base_bitmap.h>
 #include <microgl/micro_gl_traits.h>
 
+/**
+ * packed bitmap is a memory efficient bitmap, that encodes pixels as group of bits
+ * of size 1, 2, 4, 8 bits. This is good for single channel storage like text.
+ *
+ * @tparam BPP bits per pixel (1|2|4|8)
+ * @tparam CODER the pixel coder to decode the pixels
+ * @tparam reverse_elements_pos_in_byte this can help with endian-ness issues
+ */
 template <unsigned BPP, typename CODER, bool reverse_elements_pos_in_byte=false>
 class PackedBitmap : public base_bitmap<PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte>, CODER, uint8_t> {
     using base=base_bitmap<PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte>, CODER, uint8_t>;
@@ -17,6 +25,7 @@ class PackedBitmap : public base_bitmap<PackedBitmap<BPP, CODER, reverse_element
     static constexpr byte MASK=(BPP==1 ? 0b00000001 : (BPP==2 ? 0b00000011 : (BPP==4 ? 0b00001111 : 0b11111111)));
 
 public:
+    using pixel = typename base::pixel;
     using base::pixelAt;
     using base::writeAt;
 
@@ -28,8 +37,21 @@ public:
         return val+extra;
     }
 
-    PackedBitmap(int w, int h) : PackedBitmap{new uint8_t[(w*h)>>T], w, h} {};
-    PackedBitmap(uint8_t* $pixels, int w, int h) : base {$pixels, (w*h)>>T, w, h} {}; // todo:: padding/rounding ?
+    /**
+     * construct a bitmap with a given pixel array
+     *
+     * @param $pixels the pixels array
+     * @param w the bitmap width
+     * @param h the bitmap height
+     */
+    PackedBitmap(void* $pixels, int w, int h) : base {$pixels, (w*h + ((1<<T)-1))>>T, w, h} {}; // todo:: padding/rounding ?
+    /**
+     * construct a bitmap and allocate a pixel array
+     *
+     * @param w the bitmap width
+     * @param h the bitmap height
+     */
+    PackedBitmap(int w, int h) : PackedBitmap{new uint8_t[(w*h + ((1<<T)-1))>>T], w, h} {};
     ~PackedBitmap() = default;
 
     uint8_t extract_pixel(unsigned int index1) const {

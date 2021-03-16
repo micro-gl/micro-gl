@@ -6,7 +6,7 @@ namespace microgl {
     namespace blendmode {
 
         template <bool fast=true>
-        class Exclusion : public blend_mode_base<Exclusion<fast>> {
+        class Exclusion {
         private:
 
             template<uint8_t bits>

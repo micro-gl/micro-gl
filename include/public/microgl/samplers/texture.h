@@ -23,47 +23,47 @@ namespace microgl {
         private:
             using rint= int;
 
-        void tint_color(color_t & color, const color_t & color_tint) const {
-            // todo: this is fast and inaccurate, flag on convert_channel methods
-            color.r = (uint16_t (color.r)*color_tint.r)>>rgba::r;
-            color.g = (uint16_t (color.g)*color_tint.g)>>rgba::g;
-            color.b = (uint16_t (color.b)*color_tint.b)>>rgba::b;
-            color.a = (uint16_t (color.a)*color_tint.a)>>rgba::a;
-        }
+            void tint_color(color_t & color, const color_t & color_tint) const {
+                // todo: this is fast and inaccurate, flag on convert_channel methods
+                color.r = (uint16_t (color.r)*color_tint.r)>>rgba::r;
+                color.g = (uint16_t (color.g)*color_tint.g)>>rgba::g;
+                color.b = (uint16_t (color.b)*color_tint.b)>>rgba::b;
+                color.a = (uint16_t (color.a)*color_tint.a)>>rgba::a;
+            }
 
-        static constexpr uint8_t r_max_val = (1u<<rgba::r) - 1;
-        static constexpr uint8_t g_max_val = (1u<<rgba::g) - 1;
-        static constexpr uint8_t b_max_val = (1u<<rgba::b) - 1;
-        static constexpr uint8_t a_max_val = (1u<<rgba::a) - 1;
+            static constexpr uint8_t r_max_val = (1u<<rgba::r) - 1;
+            static constexpr uint8_t g_max_val = (1u<<rgba::g) - 1;
+            static constexpr uint8_t b_max_val = (1u<<rgba::b) - 1;
+            static constexpr uint8_t a_max_val = (1u<<rgba::a) - 1;
 
         public:
 
-        texture() : texture{nullptr, {r_max_val,g_max_val,b_max_val, a_max_val} } {};
-        texture(Bitmap * bitmap) : texture{bitmap, {r_max_val,g_max_val,b_max_val, a_max_val} } {};
-        texture(Bitmap * bitmap, const color_t &tint_color) :
-                _color_tint{tint_color},
-                _border_color{0,0,0, channel_t(a_max_val)},
-                _bmp{bitmap} {};
+            texture() : texture{nullptr, {r_max_val,g_max_val,b_max_val, a_max_val} } {};
+            texture(Bitmap * bitmap) : texture{bitmap, {r_max_val,g_max_val,b_max_val, a_max_val} } {};
+            texture(Bitmap * bitmap, const color_t &tint_color) :
+                    _color_tint{tint_color},
+                    _border_color{0,0,0, channel_t(a_max_val)},
+                    _bmp{bitmap} {};
 
-        void updateBitmap(Bitmap * bitmap) {
-            _bmp=bitmap;
-        }
+            void updateBitmap(Bitmap * bitmap) {
+                _bmp=bitmap;
+            }
 
-        Bitmap & bitmap() {
-            return *_bmp;
-        }
+            Bitmap & bitmap() {
+                return *_bmp;
+            }
 
-        void updateBorderColor(const color_t & color) {
-            _border_color=color;
-        }
+            void updateBorderColor(const color_t & color) {
+                _border_color=color;
+            }
 
-        void updateTintColor(const color_t & color) {
-            _color_tint=color;
-        }
+            void updateTintColor(const color_t & color) {
+                _color_tint=color;
+            }
 
-        inline void sample(const rint u, const rint v,
-                               const uint8_t bits,
-                               color_t &output) const {
+            inline void sample(const rint u, const rint v,
+                                   const uint8_t bits,
+                                   color_t &output) const {
                 rint u_=u, v_=v;
                 switch(wrap_u) {
                     case texture_wrap::Clamp : {

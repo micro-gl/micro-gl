@@ -6,8 +6,7 @@ namespace microgl {
     namespace porterduff {
 
         template <bool fast=true>
-        class None : public porter_duff_base<None<fast>> {
-        public:
+        struct None {
 
             template <uint8_t bits, bool multiplied_alpha_result=true>
             inline static void composite(const color_t &b,
