@@ -41,7 +41,7 @@ int main() {
 //    using number = Q<16>;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
-    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::Bilinear>;
+    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
     sampling::flat_color<> color_grey{{222,222,222,255}};
     Resources resources{};
 
@@ -67,6 +67,6 @@ int main() {
         test_bezier(bi_cubic_1<number>(), 4, 4);
     };
 
-    example_run(canvas,
+    example_run(&canvas,
                 render);
 }
