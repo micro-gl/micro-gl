@@ -43,8 +43,7 @@ int main() {
                                                 {255,0,0}};
     flat_color<> flatColor{{133,133,133, 255}};
 
-    auto * canvas = new Canvas24(W, H);
-    Resources resources{};
+    Canvas24 canvas(W, H);
 
     auto render = [&]() -> void {
         static float t =0;
@@ -58,12 +57,12 @@ int main() {
         t+=.015f;
         polygon[3].x = 100 +  t;
         polygon[3].y = 300 -  t;
-        canvas->clear({255,255,255,255});
-        canvas->drawPolygon<
+        canvas.clear({255,255,255,255});
+        canvas.drawPolygon<
 //                polygons::hints::CONVEX,
 //                polygons::hints::CONCAVE,
             polygons::hints::SIMPLE,
-//            polygons::hints::COMPLEX,
+                // polygons::hints::SELF_INTERSECTING,
                 blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, false>(
                 gradient2Colors,
 //                flatColor,
@@ -74,7 +73,7 @@ int main() {
 
     };
 
-    example_run(canvas,
+    example_run(&canvas,
                 render);
 
 }

@@ -25,7 +25,7 @@ int main() {
     using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
     using Texture32= sampling::texture<bitmap<coder::RGBA8888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
 
-    auto * canvas = new Canvas24 (W, H);
+    Canvas24 canvas(W, H);
     Texture24 tex_mask, tex_1;
     Texture32 tex_0;
     float t=0;
@@ -45,18 +45,18 @@ int main() {
 
     auto render = [&]() {
 
-        canvas->clear({255,255,255,255});
-        canvas->drawRect<blendmode::Normal, porterduff::None<>>(
+        canvas.clear({255,255,255,255});
+        canvas.drawRect<blendmode::Normal, porterduff::None<>>(
             tex_1,
-                t, t, 300.0f, 300.0f,
-                255);
-        canvas->drawMask(masks::chrome_mode::alpha_channel,
-                tex_0,
-//                tex_mask,
+            t, t, 300.0f, 300.0f,
+            255);
+        canvas.drawMask(masks::chrome_mode::red_channel,
+//                tex_0,
+                tex_mask,
                 t, t, 300.0f, 300.0f);
 
 
     };
 
-    example_run(canvas, render);
+    example_run(&canvas, render);
 }
