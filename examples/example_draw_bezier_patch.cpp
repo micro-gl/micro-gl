@@ -41,18 +41,18 @@ int main() {
 //    using number = Q<16>;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
-//    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::Bilinear>;
     sampling::flat_color<> color_grey{{222,222,222,255}};
     Resources resources{};
 
-    auto * canvas = new Canvas24(W, H);
+    Canvas24 canvas(W, H);
 
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
     Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
     constexpr int samples = 20;
     auto test_bezier = [&](vec3<number>* mesh, unsigned U, unsigned V) {
-        canvas->drawBezierPatch<blendmode::Normal, porterduff::None<>, false, false, number, number>(
+        canvas.clear({255,255,255,255});
+        canvas.drawBezierPatch<blendmode::Normal, porterduff::None<>, false, false, number, number>(
 //            color_grey,
                 tex_uv,
                 matrix_3x3<number>::identity(),
@@ -63,7 +63,6 @@ int main() {
     };
 
     auto render = [&]() -> void {
-        canvas->clear({255,255,255,255});
 
         test_bezier(bi_cubic_1<number>(), 4, 4);
     };
