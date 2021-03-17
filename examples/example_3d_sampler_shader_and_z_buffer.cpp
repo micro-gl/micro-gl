@@ -23,12 +23,12 @@ int main() {
 //    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
-    auto * canvas = new Canvas24(W, H);
+    Canvas24 canvas(W, H);
     Resources resources{};
 
     auto img = resources.loadImageFromCompressedPath("images/uv_256.png");
     Texture24 tex{new bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};
-    z_buffer<12> depth_buffer(canvas->width(), canvas->height());
+    z_buffer<12> depth_buffer(canvas.width(), canvas.height());
 
     float t = -0.0;
     constexpr bool enable_z_buffer = true;
@@ -44,22 +44,18 @@ int main() {
         t-=0.425;
 
         // setup mvp matrix
-        mat4 model_1 = mat4::transform({
-                                               math::deg_to_rad(t / 2),
-                                               math::deg_to_rad(t / 2),
-                                               math::deg_to_rad(t / 2)},
-                                       {-5,0, -t/30.f},
-                                       {10,10,10});
-        mat4 model_2 = mat4::transform({math::deg_to_rad(t / 1),
-                                        math::deg_to_rad(t / 2),
-                                        math::deg_to_rad(t / 2)},
-                                       {5,0, -t/30.f},
-                                       {10,10,10});
-//        mat4 view = camera::lookAt<number>({0, 0, 30}, {0,0, 0}, {0,1,0});
-        mat4 view = camera::angleAt<number>({0, 0, 70+ 0 / t}, 0,
-                                    math::deg_to_rad(0), 0);
+        number radians = math::deg_to_rad(t / 2);
+        vertex rotation = {radians, radians, radians};
+        vertex translation = {-5,0, -t/30.f};
+        vertex scale = {10,10,10};
+
+        mat4 model_1 = mat4::transform(rotation, translation, scale);
+        mat4 model_2 = mat4::transform(rotation*2, translation + vertex{10,0,0}, scale);
+        mat4 view = camera::lookAt<number>({0, 0, 70}, {0,0, 0}, {0,1,0});
+//        mat4 view = camera::angleAt<number>({0, 0, 70+ 0 / t}, 0,
+//                                            math::deg_to_rad(0), 0);
         mat4 projection = camera::perspective<number>(math::deg_to_rad(60),
-                                              canvas->width(), canvas->height(), 20, 100);
+                                                      canvas.width(), canvas.height(), 20, 100);
 //        mat4 projection= camera::orthographic<number>(-canvas->width()/2, canvas->width()/2,
 //                                              -canvas->height()/2, canvas->height()/2, 1, 500);
         mat4 mvp_1= projection*view*model_1;
@@ -81,11 +77,12 @@ int main() {
             vertex_buffer.push_back(v);
         }
 
+        canvas.clear({255,255,255,255});
         depth_buffer.clear();
         // draw model_1
-        canvas->drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer>(
+        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer>(
                 shader,
-                canvas->width(), canvas->height(),
+                canvas.width(), canvas.height(),
                 vertex_buffer.data(),
                 object.indices.data(),
                 object.indices.size(),
@@ -96,9 +93,9 @@ int main() {
 
         // draw model_2
         shader.matrix= mvp_2;
-        canvas->drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer>(
+        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer>(
                 shader,
-                canvas->width(), canvas->height(),
+                canvas.width(), canvas.height(),
                 vertex_buffer.data(),
                 object.indices.data(),
                 object.indices.size(),
@@ -109,11 +106,9 @@ int main() {
     };
 
     auto render = [&]() {
-        canvas->clear({255,255,255,255});
-        canvas->updateClipRect(0,0,W,H);
         test_shader_texture_3d(cube_3d<number>);
     };
 
-    example_run(canvas, render);
+    example_run(&canvas, render);
 }
 

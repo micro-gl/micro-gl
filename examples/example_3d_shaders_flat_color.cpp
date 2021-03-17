@@ -4,8 +4,6 @@
 #include <microgl/canvas.h>
 #include <microgl/z_buffer.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/pixel_coders/RGB888_ARRAY.h>
-#include <microgl/shaders/sampler_shader.h>
 #include <microgl/shaders/flat_color_shader.h>
 #include <microgl/samplers/texture.h>
 #include "data/model_3d_cube.h"
@@ -21,9 +19,8 @@ int main() {
 //    using number = Q<15>;
 //    using number = Q<16>;
 
-//    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
-    auto * canvas = new Canvas24(W, H);
+    Canvas24 canvas(W, H);
 
     float t = -30.0;
 
@@ -39,20 +36,18 @@ int main() {
         t-=0.0425;
 
         // setup mvp matrix
-        mat4 model_1 = mat4::transform({
-                                               math::deg_to_rad(t / 2),
-                                               math::deg_to_rad(t / 2),
-                                               math::deg_to_rad(t / 2)},
-                                       {-5,0, 0},
-                                       {10,10,10});
-//        mat4 view = camera::lookAt<number>({0, 0, 30}, {0,0, 0}, {0,1,0});
-        mat4 view = camera::angleAt<number>({0, 0, 70+ 0 / t}, 0,
-                                    math::deg_to_rad(0), 0);
+        number radians = math::deg_to_rad(t / 2);
+        vertex rotation = {radians, radians, radians};
+        vertex translation = {-5,0, 0};
+        vertex scale = {10,10,10};
+        mat4 model = mat4::transform(rotation, translation, scale);
+        mat4 view = camera::lookAt<number>({0, 0, 70}, {0,0, 0}, {0,1,0});
+//        mat4 view = camera::angleAt<number>({0, 0, 70}, 0,0, 0);
         mat4 projection = camera::perspective<number>(math::deg_to_rad(60),
-                                              canvas->width(), canvas->height(), 20, 100);
+                                              canvas.width(), canvas.height(), 20, 100);
 //        mat4 projection= camera::orthographic<number>(-canvas->width()/2, canvas->width()/2,
 //                                              -canvas->height()/2, canvas->height()/2, 1, 500);
-        mat4 mvp_1= projection*view*model_1;
+        mat4 mvp_1= projection*view*model;
 
         // setup shader
         Shader shader;
@@ -68,9 +63,10 @@ int main() {
         }
 
         // draw model_1
-        canvas->drawTriangles<blendmode::Normal, porterduff::None<>, true, true, false>(
+        canvas.clear({255,255,255,255});
+        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, true, true, false>(
                 shader,
-                canvas->width(), canvas->height(),
+                canvas.width(), canvas.height(),
                 vertex_buffer.data(),
                 object.indices.data(),
                 object.indices.size(),
@@ -80,10 +76,8 @@ int main() {
     };
 
     auto render = [&]() {
-        canvas->clear({255,255,255,255});
-        canvas->updateClipRect(0,0,W,H);
         test_shader_texture_3d(cube_3d<number>);
     };
 
-    example_run(canvas, render);
+    example_run(&canvas, render);
 }
