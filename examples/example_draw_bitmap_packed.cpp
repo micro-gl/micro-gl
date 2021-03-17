@@ -23,7 +23,7 @@ int main() {
     using Canvas24= canvas<bitmap<microgl::coder::RGB888_PACKED_32>>;
     using TexPacked= sampling::texture<BitmapPacked>;
 
-    auto * canvas = new Canvas24(W, H);
+    Canvas24 canvas(W, H);
 
 #if (BITS==1)
     auto * bitmap_packed = new BitmapPacked{font_map_1_bpp, 152, 128};
@@ -44,8 +44,8 @@ int main() {
 
     auto render = [&]() -> void {
 
-        canvas->clear(color_t{255,0,0});
-        canvas->drawRect<blendmode::Normal, porterduff::None<>, false>(
+        canvas.clear(color_t{255,0,0});
+        canvas.drawRect<blendmode::Normal, porterduff::None<>, false>(
                 texPacked,
 //                texPackedFill,
                 0, 0,
@@ -55,6 +55,6 @@ int main() {
                 1,1);
     };
 
-    example_run(canvas,
+    example_run(&canvas,
                 render);
 }

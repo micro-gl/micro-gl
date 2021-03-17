@@ -67,7 +67,8 @@ namespace microgl {
             }
 
             inline void sample(const int u, const int v,
-                               const unsigned bits, color_t &output) const {
+                               const unsigned bits,
+                               color_t &output) const {
                 base::sample(u, v, bits, output);
             }
 

@@ -26,8 +26,8 @@ int main() {
 
     //    font = resources.loadFont<Bitmap32_ARRAY>("minecraft-20");
 //    font = resources.loadFont<Bitmap32_ARRAY>("digital_7-20");
-//    font = resources.loadFont<Bitmap32_ARRAY>("roboto-thin-28");
-    font = resources.loadFont<Bitmap32_ARRAY>("roboto-thin-14");
+    font = resources.loadFont<Bitmap32_ARRAY>("roboto-thin-28");
+//    font = resources.loadFont<Bitmap32_ARRAY>("roboto-thin-14");
 //    font = resources.loadFont<Bitmap32_ARRAY>("mont-med-16");
 //    font = resources.loadFont<Bitmap32_ARRAY>("test");
 

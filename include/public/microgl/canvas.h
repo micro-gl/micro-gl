@@ -80,7 +80,7 @@ using namespace microgl::shading;
 /**
  * default preset, includes usage of big integers
  */
-#define CANVAS_OPT_default CANVAS_OPT_2d_raster_FORCE_64_BIT
+#define CANVAS_OPT_default CANVAS_OPT_2d_raster_FORCE_32_BIT
 
 /**
  * the main canvas object:
