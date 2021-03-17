@@ -39,6 +39,8 @@ int main() {
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
         using math = microgl::math;
+        using Shader = sampler_shader<number, Texture24>;
+        using vertex_attributes = Shader::vertex_attributes;
 
 //        t-=0.0425;
         t-=0.425;
@@ -62,8 +64,6 @@ int main() {
         mat4 mvp_2= projection*view*model_2;
 
         // setup shader
-        using Shader = sampler_shader<number, Texture24>;
-        using vertex_attributes = Shader::vertex_attributes;
         Shader shader;
         shader.matrix= mvp_1;
         shader.sampler= &tex;
