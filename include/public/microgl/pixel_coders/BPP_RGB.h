@@ -19,9 +19,9 @@ namespace microgl {
             using rgba = rgba_t<R, G, B, 0>;
             using pixel = uint8_t;
         private:
-            constexpr static bool same_r = R==rgba::r;
-            constexpr static bool same_g = G==rgba::g;
-            constexpr static bool same_b = B==rgba::b;
+            constexpr static bool same_r = BPP==rgba::r;
+            constexpr static bool same_g = BPP==rgba::g;
+            constexpr static bool same_b = BPP==rgba::b;
 
             // dynamic look-up tables
             microgl::lut::dynamic_lut_bits<BPP, R, false, same_r> _lut_r;

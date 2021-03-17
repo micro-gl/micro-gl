@@ -38,10 +38,12 @@ namespace microgl {
             };
             struct empty_lut {
                 type &operator[](const unsigned index) const {
-                    return 0;
+                    static type dummy{0};
+                    return dummy;
                 }
                 type &operator[](const unsigned index) {
-                    return 0;
+                    static type dummy{0};
+                    return dummy;
                 }
             };
 
