@@ -1509,14 +1509,12 @@ void canvas<bitmap_type, options>::fxaa(int left, int top, int right, int bottom
 
 #include <microgl/samplers/texture.h>
 template<typename bitmap_type, uint8_t options>
-template<bool tint, typename BITMAP_FONT_TYPE>
-void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bitmap_font<BITMAP_FONT_TYPE> &font,
+template<bool tint, bool smooth, typename bitmap_font_type>
+void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bitmap_font<bitmap_font_type> &font,
                                        const color_t & color, microgl::text::text_format & format,
                                        int left, int top, int right, int bottom, bool frame,
                                        opacity_t opacity) {
     rect old=clipRect(); updateClipRect(left, top, right, bottom);
-//    microgl::sampling::texture<BITMAP_FONT_TYPE, sampling::texture_filter::NearestNeighboor> texture{font._bitmap};
-//    drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(texture,0,0, font._bitmap->width(), font._bitmap->height());return;
     unsigned int text_size=0;
     { const char * iter=text; while(*iter++!= '\0' && ++text_size); }
     microgl::text::char_location loc_buffer[text_size];
@@ -1525,18 +1523,19 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
     const int s=result.scale, PP=result.precision;
     const bool has_scaled=s!=1<<PP;
     if(has_scaled){ // we use the sampler for scaled
-        using tex = microgl::sampling::texture<BITMAP_FONT_TYPE, sampling::texture_filter::NearestNeighboor, tint>;
-        tex texture{font._bitmap, color};
+        constexpr auto filter = smooth ? sampling::texture_filter::Bilinear : sampling::texture_filter::NearestNeighboor;
+        using tex = microgl::sampling::texture<bitmap_font_type, filter, tint>;
+        tex texture{font.bitmap, color};
         const int UVP=renderingOptions()._2d_raster_bits_uv;
         int u0, v0, u1, v1;
         for (unsigned ix = 0; ix < count; ++ix) {
             const auto & l= result.locations[ix];
-            u0=(l.character->x<<UVP)/font._bitmap->width();
-            u1=((l.character->x+l.character->width)<<UVP)/font._bitmap->width();
-            v0=((font._bitmap->height()-l.character->y)<<UVP)/font._bitmap->height();
-            v1=((font._bitmap->height()-l.character->y-l.character->height)<<UVP)/font._bitmap->height();
-            v0=((l.character->y)<<UVP)/font._bitmap->height();
-            v1=((l.character->y+l.character->height)<<UVP)/font._bitmap->height();
+            u0=(l.character->x<<UVP)/font.bitmap->width();
+            u1=((l.character->x+l.character->width)<<UVP)/font.bitmap->width();
+            v0= ((font.bitmap->height() - l.character->y) << UVP) / font.bitmap->height();
+            v1= ((font.bitmap->height() - l.character->y - l.character->height) << UVP) / font.bitmap->height();
+            v0=((l.character->y)<<UVP)/font.bitmap->height();
+            v1=((l.character->y+l.character->height)<<UVP)/font.bitmap->height();
             int ll= l.x; ll+=left<<PP; int tt= l.y; tt+=top<<PP;
             int rr= ll + ((l.character->width*s)); int bb= tt + ((l.character->height*s));
             drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, decltype(texture)>(
@@ -1545,10 +1544,10 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
         }
     }
     else { // the sampler above gives amazing results for unscaled graphics, but I  to go for the most accurate version
-        constexpr uint8_t r_ = BITMAP_FONT_TYPE::rgba::r;
-        constexpr uint8_t g_ = BITMAP_FONT_TYPE::rgba::g;
-        constexpr uint8_t b_ = BITMAP_FONT_TYPE::rgba::b;
-        constexpr uint8_t a_ = BITMAP_FONT_TYPE::rgba::a;
+        constexpr uint8_t r_ = bitmap_font_type::rgba::r;
+        constexpr uint8_t g_ = bitmap_font_type::rgba::g;
+        constexpr uint8_t b_ = bitmap_font_type::rgba::b;
+        constexpr uint8_t a_ = bitmap_font_type::rgba::a;
         for (unsigned ix = 0; ix < count; ++ix) {
             const auto & l= result.locations[ix];
             const auto & c= *l.character;
@@ -1560,15 +1559,14 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
             color_t font_col;
             for (int y = b_r.top; y < b_r.bottom; ++y) {
                 for (int x = b_r.left; x < b_r.right; ++x) {
-                    font._bitmap->decode(c.x + x-b_r.left, (c.y + y-b_r.top), font_col);
+                    font.bitmap->decode(c.x + x - b_r.left, (c.y + y - b_r.top), font_col);
                     if(tint) {
-                        font_col.r = (uint16_t (font_col.r)*color.r)>>r_;
-                        font_col.g = (uint16_t (font_col.g)*color.g)>>g_;
-                        font_col.b = (uint16_t (font_col.b)*color.b)>>b_;
-                        font_col.a = (uint16_t (font_col.a)*color.a)>>a_;
+                        font_col.r = channel::mc<r_>(font_col.r, color.r);
+                        font_col.g = channel::mc<g_>(font_col.g, color.g);
+                        font_col.b = channel::mc<b_>(font_col.b, color.b);
+                        font_col.a = channel::mc<a_>(font_col.a, color.a);
                     }
                     blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_>(font_col, x, y, opacity);
-//                    blendColor({255,0,0,128}, x, y, opacity);
                 }
             }
         }

@@ -10,8 +10,9 @@ namespace microgl {
          * @tparam type the type of element of the LUT
          * @tparam size the size of the table
          * @tparam heap create the lut on stack or heap
+         * @tparam mute mute, no data is spent
          */
-        template <typename type, unsigned size, bool heap=false>
+        template <typename type, unsigned size, bool heap=false, bool mute=false>
         struct dynamic_lut {
         private:
             struct stack_lut {
@@ -35,7 +36,16 @@ namespace microgl {
                     return _data[index];
                 }
             };
-            typename microgl::traits::conditional<heap, heap_lut, stack_lut>::type lut;
+            struct empty_lut {
+                type &operator[](const unsigned index) const {
+                    return 0;
+                }
+                type &operator[](const unsigned index) {
+                    return 0;
+                }
+            };
+
+            typename conditional<heap, heap_lut, typename conditional<!mute, stack_lut, empty_lut>::type>::type lut;
         public:
             explicit dynamic_lut() : lut{} {}
 

@@ -128,7 +128,7 @@ public:
         // load bitmap
         auto img_font = loadImageFromCompressedPath("fonts/"+name+"/font.png");
         auto *bmp_font = new BITMAP(img_font.data, img_font.width, img_font.height);
-        font._bitmap=bmp_font;
+        font.bitmap=bmp_font;
         stbi_set_flip_vertically_on_load(true);
         return font;
     }

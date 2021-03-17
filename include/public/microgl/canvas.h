@@ -1032,7 +1032,8 @@ public:
      * Draw Bitmap Fonts Text
      *
      * @tparam tint enable font tinting ?
-     * @tparam BITMAP_FONT_TYPE the type of the font bitmap
+     * @tparam smooth enable font smooth interpolation if font has scaled ?
+     * @tparam bitmap_font_type the type of the font bitmap
      *
      * @param text char array string of text to draw
      * @param font the bitmap font reference
@@ -1045,10 +1046,10 @@ public:
      * @param frame draw a frame ?
      * @param opacity opacity [0..255]
      */
-    template<bool tint=true, typename BITMAP_FONT_TYPE>
-    void drawText(const char *text, microgl::text::bitmap_font<BITMAP_FONT_TYPE> &font, const color_t & color,
-            microgl::text::text_format & format,
-            int left, int top, int right, int bottom, bool frame, opacity_t opacity=255);
+    template<bool tint=true, bool smooth=false, typename bitmap_font_type>
+    void drawText(const char *text, microgl::text::bitmap_font<bitmap_font_type> &font, const color_t & color,
+                  microgl::text::text_format & format,
+                  int left, int top, int right, int bottom, bool frame, opacity_t opacity=255);
 };
 
 #include "canvas.tpp"

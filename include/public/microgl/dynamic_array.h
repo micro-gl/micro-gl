@@ -19,7 +19,7 @@ public:
             this->push_back(container[ix]);
     }
 
-    dynamic_array(const dynamic_array<T> && container)  noexcept {
+    dynamic_array(dynamic_array<T> && container)  noexcept {
         _data = container._data;
         _current = container._current;
         _cap = container._cap;
