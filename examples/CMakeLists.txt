@@ -79,6 +79,7 @@ if(SDL2_FOUND)
             example_compositing.cpp
             example_mem.cpp
             test_coder_generator.cpp
+            test_resource.cpp
             )
 
     set(SOURCES_SHARED

@@ -43,7 +43,6 @@ public:
         microgl::color::color_t color_bmp_1, color_bmp_2;
         for (int index = 0; index < size; ++index) {
             this->decode(index, color_bmp_1);
-//            this->coder().template convert<CODER2>(color_bmp_1, color_bmp_2);
             microgl::color::convert_color<typename base::rgba, typename CODER2::rgba>(
                     color_bmp_1, color_bmp_2);
             bmp.writeColor(index, color_bmp_2);
@@ -63,6 +62,16 @@ public:
      * @param h height of bitmap
      */
     bitmap(void *$pixels, int w, int h) : base{$pixels, w, h} {}
+    bitmap(const bitmap & bmp) : base{bmp} {}
+    bitmap(bitmap && bmp)  noexcept : base(microgl::traits::move(bmp)) {}
+    bitmap & operator=(const bitmap & bmp) {
+        base::operator=(bmp);
+        return *this;
+    }
+    bitmap & operator=(bitmap && bmp) noexcept {
+        base::operator=(microgl::traits::move(bmp));
+        return *this;
+    }
     ~bitmap() = default;
 
     pixel pixelAt(int index) const {

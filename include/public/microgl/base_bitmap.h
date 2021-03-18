@@ -4,7 +4,7 @@
 #include <microgl/crpt.h>
 #include <microgl/color.h>
 #include <microgl/pixel_coder.h>
-#include <cstdint>
+#include <microgl/micro_gl_traits.h>
 
 /**
  * a base bitmap type, use it with crpt design pattern for extension.
@@ -13,7 +13,7 @@
  * 2. has a pixel coder
  * 3. has interface to read/write pixels
  *
- * @tparam impl implemenation type of derived class
+ * @tparam impl implementation type of derived class
  * @tparam pixel_coder_ the pixel coder type of the bitmap
  * @tparam buffer_element_type the type of the elements stored in the pixel array
  */
@@ -33,18 +33,33 @@ protected:
 
 public:
     static constexpr bool hasNativeAlphaChannel() { return pixel_coder::rgba::a != 0; }
-    static constexpr bool nativeAlphaChannelBits() { return hasNativeAlphaChannel() ? pixel_coder::rgba::a : 8; }
+    static constexpr bool nativeAlphaChannelBits() { return hasNativeAlphaChannel() ? pixel_coder::rgba::a : 0; }
     static constexpr int maxNativeAlphaChannelValue() { return (1u<<nativeAlphaChannelBits())-1; }
 
-//    base_bitmap(int w, int h) : base_bitmap(new uint8_t[sizeof(buffer_element_type) * w * h], w, h) {}
-//    base_bitmap(uint8_t *$pixels, int w, int h) : base_bitmap(reinterpret_cast<buffer_element_type *>($pixels), w*h, w, h) {}
-    base_bitmap(int w, int h) : base_bitmap(new buffer_element_type[w * h], w * h, w, h) {}
-    base_bitmap(void *$pixels, int w, int h) : base_bitmap(reinterpret_cast<buffer_element_type *>($pixels), w*h, w, h) {}
-    base_bitmap(void *$pixels, int size, int w, int h) :
-            _width{w}, _height{h}, _coder{}, _buffer(reinterpret_cast<buffer_element_type *>($pixels), size) {
+    base_bitmap(int w, int h) : base_bitmap(new buffer_element_type[w * h], w * h, w, h, true) {}
+    base_bitmap(void *$pixels, int w, int h) : base_bitmap($pixels, w*h, w, h, false) {}
+    base_bitmap(void *$pixels, int size, int w, int h, bool owner=false) :
+            _width{w}, _height{h}, _coder{},
+            _buffer(reinterpret_cast<buffer_element_type *>($pixels), size, owner) {
     }
-    ~base_bitmap() { _width =_height=0; }
+    base_bitmap(const base_bitmap & bmp) : _buffer{bmp._buffer}, _width{bmp.width()}, _height{bmp.height()} {
+    }
+    base_bitmap(base_bitmap && bmp)  noexcept : _buffer{microgl::traits::move(bmp._buffer)}, _width{bmp.width()}, _height{bmp.height()} {
+    }
+    base_bitmap & operator=(const base_bitmap & bmp) {
+        _width=bmp.width(); _height=bmp.height();
+        _buffer = bmp._buffer;
+        return *this;
+    }
+    base_bitmap & operator=(base_bitmap && bmp)  noexcept {
+        _width=bmp.width(); _height=bmp.height();
+        _buffer = microgl::traits::move(bmp._buffer);
+        return *this;
+    }
+    virtual ~base_bitmap() = default;
 
+    // does the underlying pixel buffer own the data ?
+    bool isOwner() { return _buffer.owner; }
     int width() const { return _width; }
     int height() const { return _height; }
     int size() const { return _buffer.size();}
@@ -56,7 +71,7 @@ public:
     void writeAt(int x, int y, const pixel &value) { this->writeAt(y*this->_width + x, value); }
     void writeAt(int index, const pixel &value) { this->derived().writeAt(index, value); }
     void fill(const pixel &value) { this->derived().fill(value); }
-    // replace with just CODER ?
+
     const pixel_coder &coder() const { return _coder; }
 
     void decode(int x, int y, microgl::color::color_t &output) const{

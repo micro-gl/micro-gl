@@ -29,12 +29,8 @@ public:
     using base::pixelAt;
     using base::writeAt;
 
-    static
-    int pad_to(int val, int bits, int align) {
-        int I=(val*bits)%align;
-        int R=8-I;
-        int extra=R/bits;
-        return val+extra;
+    static int round(int val) {
+        return (val + ((1<<T)-1))>>T;
     }
 
     /**
@@ -44,14 +40,25 @@ public:
      * @param w the bitmap width
      * @param h the bitmap height
      */
-    PackedBitmap(void* $pixels, int w, int h) : base {$pixels, (w*h + ((1<<T)-1))>>T, w, h} {}; // todo:: padding/rounding ?
+    PackedBitmap(void* $pixels, int w, int h, bool owner=false) :
+                                            base {$pixels, round(w*h), w, h, owner} {};
     /**
      * construct a bitmap and allocate a pixel array
      *
      * @param w the bitmap width
      * @param h the bitmap height
      */
-    PackedBitmap(int w, int h) : PackedBitmap{new uint8_t[(w*h + ((1<<T)-1))>>T], w, h} {};
+    PackedBitmap(int w, int h) : PackedBitmap{new uint8_t[round(w*h)], w, h, true} {};
+    PackedBitmap(const PackedBitmap & bmp) : base{bmp} {}
+    PackedBitmap(PackedBitmap && bmp)  noexcept : base(microgl::traits::move(bmp)) {}
+    PackedBitmap & operator=(const PackedBitmap & bmp) {
+        base::operator=(bmp);
+        return *this;
+    }
+    PackedBitmap & operator=(PackedBitmap && bmp) noexcept {
+        base::operator=(microgl::traits::move(bmp));
+        return *this;
+    }
     ~PackedBitmap() = default;
 
     uint8_t extract_pixel(unsigned int index1) const {

@@ -31,15 +31,28 @@ public:
 
 private:
     pixel * palette = nullptr;
-public:
 
-    static
-    int pad_to(int val, int bits, int align_bits=8) {
-        int I= (val*bits) % align_bits;
-        int R=align_bits-I;
-        int extra=R/bits;
-        return val+extra;
+    void move_from(PaletteBitmap & bmp) {
+        owns_palette = bmp.owns_palette;
+        bmp.owns_palette=false;
+        palette = bmp.palette;
+        bmp.palette= nullptr;
     }
+
+    void copy_from(const PaletteBitmap & bmp) {
+        if(owns_palette) delete [] palette;
+        owns_palette = true;
+        palette = new pixel[PALETTE_SIZE];
+        for (int ix = 0; ix < PALETTE_SIZE; ++ix)
+            palette[ix] = bmp.palette[ix];
+    }
+
+    static int round(int val) {
+        return (val + ((1<<T)-1))>>T;
+    }
+
+public:
+    bool owns_palette = false;
 
     /**
      * construct a bitmap with a given indices array and pixel palette.
@@ -48,29 +61,50 @@ public:
      * @param w the bitmap width
      * @param h the bitmap height
      */
-    PaletteBitmap(void* $indices, void *palette, int w, int h) :
-                base{$indices, (w*h + ((1<<T)-1))>>T, w, h},
-                palette{reinterpret_cast<pixel *>(palette)} {
+    PaletteBitmap(void* $indices, void * $palette, int w, int h, bool owner=false) :
+                base{$indices, round(w*h), w, h, owner},
+                palette{reinterpret_cast<pixel *>($palette)} {
     };
     /**
      * construct a bitmap, allocate indices array.
      * @param w the bitmap width
      * @param h the bitmap height
      */
-    PaletteBitmap(int w, int h) : PaletteBitmap{new uint8_t[(w*h + ((1<<T)-1))>>T],
-                                                new pixel[PALETTE_SIZE], w, h} {};
-    ~PaletteBitmap() = default;
+    PaletteBitmap(int w, int h) : PaletteBitmap{new uint8_t[round(w*h)],
+                                                new pixel[PALETTE_SIZE], w, h, true} {};
+
+    PaletteBitmap(const PaletteBitmap & bmp) : base{bmp} {
+        copy_from(bmp);
+    }
+    PaletteBitmap(PaletteBitmap && bmp)  noexcept : base(microgl::traits::move(bmp)) {
+        move_from(bmp);
+    }
+    PaletteBitmap & operator=(const PaletteBitmap & bmp) {
+        if(this==&bmp) return *this;
+        base::operator=(bmp);
+        copy_from(bmp);
+        return *this;
+    }
+    PaletteBitmap & operator=(PaletteBitmap && bmp) noexcept {
+        base::operator=(microgl::traits::move(bmp));
+        move_from(bmp);
+        return *this;
+    }
+    ~PaletteBitmap() {
+        if(owns_palette) delete [] palette;
+    }
 
     /**
      * get the palette size
      */
-    unsigned paletteSize() { return PALETTE_SIZE; }
+    constexpr unsigned paletteSize() const { return PALETTE_SIZE; }
 
     /**
      * update the current palette with another
      * @param $palette pixel palette
      */
-    void updatePalette(pixel * $palette) {
+    void updatePalette(pixel * $palette, bool owner=false) {
+        owns_palette=owner;
         palette = $palette;
     }
 

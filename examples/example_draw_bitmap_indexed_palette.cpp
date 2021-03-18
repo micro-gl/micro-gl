@@ -10,7 +10,6 @@
 #include "data/bitmap_1_palette_2_colors.h"
 
 #define PALETTE_SIZE 256 // 2, 4, 16, 256
-#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 640*1
 
