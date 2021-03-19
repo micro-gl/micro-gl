@@ -10,15 +10,17 @@
 
 template <typename number>
 dynamic_array<vec2<number>> box(float left, float top, float right, float bottom, bool ccw=false) {
+    using il = std::initializer_list<vec2<number>>;
+
     if(!ccw)
-        return {
+        return il{
                 {left,top},
                 {right,top},
                 {right,bottom},
                 {left,bottom},
         };
 
-    return{
+    return il{
             {left,top},
             {left,bottom},
             {right,bottom},
@@ -28,9 +30,10 @@ dynamic_array<vec2<number>> box(float left, float top, float right, float bottom
 
 template <typename number>
 chunker<vec2<number>> poly_inter_star() {
+    using il = std::initializer_list<vec2<number>>;
     chunker<vec2<number>> A;
 
-    A.push_back_and_cut({
+    A.push_back_and_cut(il{
                                 {150, 150},
                                 {450,150},
                                 {200,450},
@@ -40,12 +43,13 @@ chunker<vec2<number>> poly_inter_star() {
 
     return A;
 }
-
+#include <vector>
 template <typename number>
 chunker<vec2<number>> poly_inter_star_2() {
+    using il = std::initializer_list<vec2<number>>;
     chunker<vec2<number>> A;
 
-    A.push_back_and_cut({
+    A.push_back_and_cut(il{
                                 {150, 150},
                                 {450,150},
                                 {200,450},
@@ -53,7 +57,7 @@ chunker<vec2<number>> poly_inter_star_2() {
                                 {400,450},
                         });
 
-    A.push_back_and_cut({
+    A.push_back_and_cut(il{
                                 {150/2, 150/2},
                                 {450/2,150/2},
                                 {200/2,450/2},
@@ -61,7 +65,7 @@ chunker<vec2<number>> poly_inter_star_2() {
                                 {400/2,450/2},
                         });
 
-    A.push_back_and_cut({
+    A.push_back_and_cut(il{
                                 {150/10, 150/10},
                                 {450/10,150/10},
                                 {200/10,450/10},
@@ -96,9 +100,9 @@ int main() {
     using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
     using Canvas24= canvas<Bitmap24>;
     sampling::flat_color<> color_red {{255,0,255,255}};
-    auto * canvas = new Canvas24(W, H);
+    Canvas24 canvas(W, H);
 
-    auto render_polygon = [&](chunker<vec2<number>> pieces) {
+    auto render_polygon = [&](const chunker<vec2<number>>& pieces) {
         using index = unsigned int;
         using psd = microgl::tessellation::planarize_division<number>;
 
@@ -114,7 +118,7 @@ int main() {
                      vertices, type, indices,
                      &boundary, &trapezes);
 
-        canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+        canvas.drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
                 color_red,
                 matrix_3x3<number>::identity(),
                 vertices.data(),
@@ -123,9 +127,9 @@ int main() {
                 boundary.data(),
                 indices.size(),
                 type,
-                50);
+                255);
 
-        canvas->drawTrianglesWireframe({0,0,0,255},
+        canvas.drawTrianglesWireframe({0,0,0,255},
                                        matrix_3x3<number>::identity(),
                                        vertices.data(),
                                        indices.data(),
@@ -134,7 +138,7 @@ int main() {
                                        40);
 
         for (index ix = 0; ix < trapezes.size(); ix+=4) {
-            canvas->drawWuLinePath({0,0,0,255},
+            canvas.drawWuLinePath({0,0,0,255},
                                    &trapezes[ix], 4, true);
         }
 
@@ -142,12 +146,12 @@ int main() {
 
     auto render = [&]() -> void {
 
-        canvas->clear({255, 255, 255, 255});
+        canvas.clear({255, 255, 255, 255});
 
 //        render_polygon(poly_inter_star<number>());
-        render_polygon(poly_inter_star_2<number>());
-//        render_polygon(box_1<number>());
+//        render_polygon(poly_inter_star_2<number>());
+        render_polygon(box_1<number>());
     };
 
-    example_run(canvas, render);
+    example_run(&canvas, render);
 }

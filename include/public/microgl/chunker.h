@@ -2,6 +2,7 @@
 
 #include <initializer_list>
 #include <microgl/dynamic_array.h>
+#include <microgl/micro_gl_traits.h>
 
 template<typename T>
 class chunker {
@@ -109,8 +110,8 @@ public:
     }
 
     chunker_ref operator=(chunker<T> && chunker) {
-        _data = std::move(chunker._data);
-        _locations = std::move(chunker._locations);
+        _data = traits::move(chunker._data);
+        _locations = traits::move(chunker._locations);
         return (*this);
     }
 

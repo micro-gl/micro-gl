@@ -63,12 +63,12 @@ if(SDL2_FOUND)
             example_geometry_stroke_tessellation.cpp
             example_geometry_stroke_dash_tessellation.cpp
             example_geometry_elliptic_arc_divider.cpp
-            example_q_sort.cpp
+            test_q_sort.cpp
             example_avl_tree.cpp
             example_draw_bitmap_fonts.cpp
             example_draw_bitmap_packed.cpp
             example_draw_bitmap_indexed_palette.cpp
-            example_lut.cpp
+            test_lut.cpp
             example_draw_transparent.cpp
             example_draw_rect_axial.cpp
             example_draw_rect_transform.cpp
@@ -77,9 +77,10 @@ if(SDL2_FOUND)
             test_coder_converter.cpp
             example_sampler_masking_sampler.cpp
             example_compositing.cpp
-            example_mem.cpp
+            test_mem.cpp
             test_coder_generator.cpp
             test_resource.cpp
+            test_containers.cpp
             )
 
     set(SOURCES_SHARED

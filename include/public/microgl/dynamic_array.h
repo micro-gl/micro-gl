@@ -9,11 +9,18 @@ class dynamic_array {
 public:
     using index = unsigned int;
 
-    dynamic_array(const std::initializer_list<T> &list) : dynamic_array(list.size()) {
-        for(auto it = list.begin(); it!=list.end(); it++)
-            this->push_back(*it);
+    template<typename Iterable>
+    dynamic_array(const Iterable &list) : dynamic_array(index(list.size())) {
+        for (const auto & item : list) {
+            push_back(item);
+        }
     }
 
+//    dynamic_array(const std::initializer_list<T> &list) : dynamic_array(list.size()) {
+//        for(auto it = list.begin(); it!=list.end(); it++)
+//            this->push_back(*it);
+//    }
+//
     dynamic_array(const dynamic_array<T> &container) : dynamic_array(container.size()) {
         for(index ix = 0; ix < container.size(); ix++)
             this->push_back(container[ix]);

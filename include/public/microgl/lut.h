@@ -47,7 +47,7 @@ namespace microgl {
                 }
             };
 
-            typename conditional<heap, heap_lut, typename conditional<!mute, stack_lut, empty_lut>::type>::type lut;
+            typename traits::conditional<heap, heap_lut, typename traits::conditional<!mute, stack_lut, empty_lut>::type>::type lut;
         public:
             explicit dynamic_lut() : lut{} {}
 

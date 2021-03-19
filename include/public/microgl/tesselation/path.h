@@ -1,6 +1,7 @@
 #pragma once
 
 #include <microgl/triangles.h>
+#include <microgl/micro_gl_traits.h>
 #include <microgl/tesselation/curve_divider.h>
 #include <microgl/tesselation/elliptic_arc_divider.h>
 #include <microgl/tesselation/stroke_tessellation.h>
@@ -48,7 +49,7 @@ namespace microgl {
                 return *this;
             }
             path &operator=(path && $path) noexcept {
-                _paths_vertices=std::move($path._paths_vertices);
+                _paths_vertices=traits::move($path._paths_vertices);
                 return *this;
             }
 
