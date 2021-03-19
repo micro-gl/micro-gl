@@ -5,6 +5,7 @@
 #include <microgl/color.h>
 #include <microgl/pixel_coder.h>
 #include <microgl/micro_gl_traits.h>
+#include <microgl/stdint.h>
 
 /**
  * a base bitmap type, use it with crpt design pattern for extension.

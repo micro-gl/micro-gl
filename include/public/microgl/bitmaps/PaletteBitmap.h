@@ -1,7 +1,7 @@
 #pragma once
 
 #include <microgl/base_bitmap.h>
-
+#include <cstdint>
 /**
  * a bitmap that uses a palette of pixels of size 2, 4, 16, 256. This way,
  * the pixels array serves as indices, that can be packed as 1,2,4,8 bits

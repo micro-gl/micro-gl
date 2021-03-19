@@ -1,7 +1,6 @@
 #pragma once
 
 #include <microgl/base_bitmap.h>
-#include <microgl/micro_gl_traits.h>
 
 /**
  * packed bitmap is a memory efficient bitmap, that encodes pixels as group of bits
