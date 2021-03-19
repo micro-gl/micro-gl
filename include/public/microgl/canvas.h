@@ -35,6 +35,7 @@
 using namespace microgl::triangles;
 using namespace microgl::polygons;
 using namespace microgl::shading;
+using namespace microgl::coder;
 
 /**
  * use big integers for 2d rasterizer, this implies a 64 bits place holders

@@ -43,7 +43,7 @@ chunker<vec2<number>> poly_inter_star() {
 
     return A;
 }
-#include <vector>
+
 template <typename number>
 chunker<vec2<number>> poly_inter_star_2() {
     using il = std::initializer_list<vec2<number>>;
@@ -97,9 +97,9 @@ int main() {
 //    using number = Q<15>;
 //    using number = Q<16>;
 
-    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= canvas<Bitmap24>;
+    using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
     sampling::flat_color<> color_red {{255,0,255,255}};
+
     Canvas24 canvas(W, H);
 
     auto render_polygon = [&](const chunker<vec2<number>>& pieces) {
@@ -118,7 +118,8 @@ int main() {
                      vertices, type, indices,
                      &boundary, &trapezes);
 
-        canvas.drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+        canvas.clear({255, 255, 255, 255});
+        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, false>(
                 color_red,
                 matrix_3x3<number>::identity(),
                 vertices.data(),
@@ -145,12 +146,11 @@ int main() {
     };
 
     auto render = [&]() -> void {
+//        static auto polygons = poly_inter_star<number>();
+        static auto polygons = poly_inter_star_2<number>();
+//        static auto polygons = box_1<number>();
 
-        canvas.clear({255, 255, 255, 255});
-
-        render_polygon(poly_inter_star<number>());
-//        render_polygon(poly_inter_star_2<number>());
-//        render_polygon(box_1<number>());
+        render_polygon(polygons);
     };
 
     example_run(&canvas, render);

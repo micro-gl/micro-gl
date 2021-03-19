@@ -11,24 +11,6 @@ using microgl::tessellation::path;
 float t = 0;
 
 template <typename number>
-dynamic_array<vec2<number>> box(float left, float top, float right, float bottom, bool ccw=false) {
-    if(!ccw)
-        return {
-                {left,top},
-                {right,top},
-                {right,bottom},
-                {left,bottom},
-        };
-
-    return{
-            {left,top},
-            {left,bottom},
-            {right,bottom},
-            {right,top},
-    };
-};
-
-template <typename number>
 path<number> path_star() {
 
     path<number> path{};
@@ -124,9 +106,9 @@ int main() {
 //    using number = Q<12>;
 //    using number = Q<4>;
 
-    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= canvas<Bitmap24>;
+    using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
     sampling::flat_color<> color_red {{255,0,255,255}};
+
     Canvas24 canvas(W, H);
 
     auto render_path = [&](path<number> & path) {

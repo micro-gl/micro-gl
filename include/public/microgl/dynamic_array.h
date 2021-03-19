@@ -10,9 +10,8 @@ public:
 
     template<class Iterable>
     dynamic_array(const Iterable &list) : dynamic_array(index(list.size())) {
-        for (const auto & item : list) {
+        for (const auto & item : list)
             push_back(item);
-        }
     }
 
     dynamic_array(const dynamic_array<T> &container) : dynamic_array(container.size()) {
@@ -168,6 +167,9 @@ public:
     index capacity() const  {
         return _cap;
     }
+
+    const T* begin() const {return _data;}
+    const T* end()   const {return _data + size();}
 
 private:
     T *_data = nullptr;

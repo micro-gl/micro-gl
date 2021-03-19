@@ -73,8 +73,8 @@ public:
     }
 
     template<class Iterable>
-    void push_back(const Iterable & container) {
-        for (const auto & item : container)
+    void push_back(const Iterable & list) {
+        for (const auto & item : list)
             _data.push_back(item);
     }
 
