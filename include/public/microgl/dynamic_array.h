@@ -1,26 +1,20 @@
 #pragma once
 
-#include <initializer_list>
-
 template<typename T>
 class dynamic_array {
     using dynamic_array_ref = dynamic_array<T> &;
     using const_dynamic_array_ref = const dynamic_array<T> &;
 public:
     using index = unsigned int;
+    using type = T;
 
-    template<typename Iterable>
+    template<class Iterable>
     dynamic_array(const Iterable &list) : dynamic_array(index(list.size())) {
         for (const auto & item : list) {
             push_back(item);
         }
     }
 
-//    dynamic_array(const std::initializer_list<T> &list) : dynamic_array(list.size()) {
-//        for(auto it = list.begin(); it!=list.end(); it++)
-//            this->push_back(*it);
-//    }
-//
     dynamic_array(const dynamic_array<T> &container) : dynamic_array(container.size()) {
         for(index ix = 0; ix < container.size(); ix++)
             this->push_back(container[ix]);
@@ -34,10 +28,13 @@ public:
         container.clear();
     }
 
-    explicit dynamic_array(index capacity = 0) {
+    dynamic_array(unsigned capacity = 0) {
         _cap = capacity;
         if(_cap > 0)
             _data = new T[_cap];
+    }
+
+    dynamic_array(signed capacity) : dynamic_array{unsigned(capacity)} {
     }
 
     ~dynamic_array() {
@@ -62,8 +59,7 @@ public:
     }
 
     dynamic_array<T> & operator=(dynamic_array<T> &&container) noexcept {
-        if(_data)
-            delete [] _data;
+        if(_data) delete [] _data;
         _data = container._data;
         _current = container._current;
         _cap = container._cap;

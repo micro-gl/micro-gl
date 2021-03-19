@@ -1,23 +1,24 @@
 #pragma once
 
-#include <initializer_list>
 #include <microgl/dynamic_array.h>
 #include <microgl/micro_gl_traits.h>
 
 template<typename T>
 class chunker {
     using index = unsigned int;
+    using type = T;
+    using container_data_type = dynamic_array<type>;
+    using container_index_type = dynamic_array<index>;
+
 private:
     using type_ref = T &;
     using type_pointer= T *;
     using const_type_pointer= const T *;
     using chunker_ref = chunker<T> &;
     using const_chunker_ref = const chunker<T> &;
-    using dynamic_array_ref = dynamic_array<T> &;
-    using const_dynamic_array_ref = const dynamic_array<T> &;
 
-    dynamic_array<T> _data;
-    dynamic_array<index> _locations;
+    container_data_type _data;
+    container_index_type _locations;
 
 public:
     struct chunk {
@@ -26,16 +27,16 @@ public:
 //        index offset;
     };
 
-    chunker(const_chunker_ref chunker) {
-        _data = chunker._data;
-        _locations = chunker._locations;
+    chunker(const_chunker_ref val) {
+        _data = val._data;
+        _locations = val._locations;
     }
 
+    chunker(chunker<T> && val) noexcept {
+        _data = traits::move(val._data);
+        _locations = traits::move(val._locations);
+    }
     explicit chunker(unsigned initial_capacity=0) : _data(initial_capacity), _locations() {
-        _locations.push_back(0);
-    }
-
-    chunker(const std::initializer_list<T> &list) : _data{list}, _locations() {
         _locations.push_back(0);
     }
 
@@ -71,27 +72,15 @@ public:
         }
     }
 
-    void push_back(const_dynamic_array_ref container) {
-        _data.push_back(container);
+    template<class Iterable>
+    void push_back(const Iterable & container) {
+        for (const auto & item : container)
+            _data.push_back(item);
     }
 
-    void push_back(const std::initializer_list<T> &list) {
-        for(auto it = list.begin(); it != list.end(); ++it)
-            _data.push_back(*it);
-    }
-
-    void push_back_and_cut(const std::initializer_list<T> &list) {
-        push_back(list);
-        cut_chunk();
-    }
-
-    void push_back_and_cut(dynamic_array_ref container) {
-        _data.push_back(container);
-        cut_chunk();
-    }
-
-    void push_back_and_cut(const_dynamic_array_ref container) {
-        _data.push_back(container);
+    template<class Iterable>
+    void push_back_and_cut(const Iterable & container) {
+        push_back<Iterable>(container);
         cut_chunk();
     }
 
@@ -109,7 +98,7 @@ public:
         return (*this);
     }
 
-    chunker_ref operator=(chunker<T> && chunker) {
+    chunker_ref operator=(chunker<T> && chunker)  noexcept {
         _data = traits::move(chunker._data);
         _locations = traits::move(chunker._locations);
         return (*this);

@@ -148,9 +148,9 @@ int main() {
 
         canvas.clear({255, 255, 255, 255});
 
-//        render_polygon(poly_inter_star<number>());
+        render_polygon(poly_inter_star<number>());
 //        render_polygon(poly_inter_star_2<number>());
-        render_polygon(box_1<number>());
+//        render_polygon(box_1<number>());
     };
 
     example_run(&canvas, render);

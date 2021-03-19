@@ -126,8 +126,9 @@ namespace microgl {
             identity();
         };
 
-        matrix_4x4(const std::initializer_list<number> &list) :
-                            base__(list) {}
+        template<class Iterable>
+        matrix_4x4(const Iterable & list) : base__{list} {
+        }
 
         matrix_4x4(const_type_ref fill_value) :
                 base__(fill_value) {}

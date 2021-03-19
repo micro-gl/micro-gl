@@ -1,7 +1,5 @@
 #pragma once
 
-#include <initializer_list>
-
 namespace microgl {
     // this is a column major matrix
     template <typename number, unsigned W, unsigned H>
@@ -14,17 +12,18 @@ namespace microgl {
         using const_type_ref = const number &;
 
         number _data[W * H];
-        static const index _cols = W;
-        static const index _rows = H;
-        static const index _size = W * H;
+        static constexpr index _cols = W;
+        static constexpr index _rows = H;
+        static constexpr index _size = W * H;
 
     public:
         explicit matrix() = default;
 
-        matrix(const std::initializer_list<number> &list) {
+        template<class Iterable>
+        matrix(const Iterable & list) {
             index ix = 0;
-            for(auto it = list.begin(); it!=list.end() && ix < size(); it++)
-                _data[ix++] = *it;
+            for (const auto & item : list)
+                _data[ix++] = number(item);
         }
 
         explicit
@@ -40,7 +39,7 @@ namespace microgl {
         template <typename T2>
         matrix(const matrix<T2, W, H> mat) {
             for(index ix = 0; ix < _size; ix++)
-                _data[ix] = mat[ix];
+                _data[ix] = number(mat[ix]);
         }
 
         virtual ~matrix() = default;

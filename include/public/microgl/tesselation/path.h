@@ -206,12 +206,12 @@ namespace microgl {
                 triangles::indices output_indices_type{};
                 explicit buffers()= default;
                 buffers(buffers && val) noexcept {
-                    move(val);
+                    move_from(val);
                 }
                 buffers & operator=(buffers && val) noexcept {
-                    move(val); return *this;
+                    move_from(val); return *this;
                 }
-                void move(buffers & val) {
+                void move_from(buffers & val) {
                     DEBUG_output_trapezes=traits::move(val.DEBUG_output_trapezes);
                     output_vertices=traits::move(val.output_vertices);
                     output_indices=traits::move(val.output_indices);
