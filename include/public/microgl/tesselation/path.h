@@ -101,9 +101,10 @@ namespace microgl {
                 return *this;
             }
 
-            auto linesTo(const std::initializer_list<vertex> &list) -> path & {
-                for(auto it = list.begin(); it != list.end(); ++it)
-                    lineTo(*it);
+            template<class Iterable>
+            auto linesTo(const Iterable & list) -> path & {
+                for (const auto & item : list)
+                    lineTo(item);
                 return *this;
             }
             auto lineTo(const vertex & point, number threshold=number(1)) -> path & {

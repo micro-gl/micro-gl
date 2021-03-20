@@ -27,13 +27,13 @@ public:
         container.clear();
     }
 
-    dynamic_array(unsigned capacity = 0) {
+    explicit dynamic_array(unsigned capacity = 0) {
         _cap = capacity;
         if(_cap > 0)
             _data = new T[_cap];
     }
 
-    dynamic_array(signed capacity) : dynamic_array{unsigned(capacity)} {
+    explicit dynamic_array(signed capacity) : dynamic_array{unsigned(capacity)} {
     }
 
     ~dynamic_array() {

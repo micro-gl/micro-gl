@@ -9,5 +9,6 @@ int main() {
 
     container c {il{1,2,3,4,5}};
     container d {c};
+    container e {4};
 }
 

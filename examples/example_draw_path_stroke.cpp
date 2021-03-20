@@ -3,30 +3,11 @@
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
 
-#define TEST_ITERATIONS 1
 #define W 640*1
 #define H 640*1
 
 using microgl::tessellation::path;
 float t = 0;
-
-template <typename number>
-dynamic_array<vec2<number>> box(float left, float top, float right, float bottom, bool ccw=false) {
-    if(!ccw)
-        return {
-                {left,top},
-                {right,top},
-                {right,bottom},
-                {left,bottom},
-        };
-
-    return{
-            {left,top},
-            {left,bottom},
-            {right,bottom},
-            {right,top},
-    };
-};
 
 template <typename number>
 path<number> path_star() {
@@ -103,14 +84,16 @@ path<number> path_rects() {
 
 template <typename number>
 path<number> path_test() {
+    using il = std::initializer_list<vec2<number>>;
+
     path<number> path{};
     int div=32;
 //    t+=0.01;
     t=137.999039f;
-    path.linesTo({{100,100}, {300,100}, {300, 300}, {100,300}});
+    path.linesTo(il{{100,100}, {300,100}, {300, 300}, {100,300}});
     vec2<number> start{22.0f, 150.0f-0.002323204};
     path.moveTo(start);
-    path.linesTo({start, {300,120.002323204-t}, {300, 300}, {100,300}});
+    path.linesTo(il{start, {300,120.002323204-t}, {300, 300}, {100,300}});
     path.moveTo({200, 200});
     path.lineTo({300,10});
 
@@ -123,18 +106,16 @@ int main() {
 //    using number = Q<12>;
 //    using number = Q<4>;
 
-    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= canvas<Bitmap24>;
-    using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
+    using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
     sampling::flat_color<> color_red {{255,0,255,255}};
     sampling::flat_color<> color_green {{22,22,22,255}};
-    auto * canvas = new Canvas24(W, H);
+    Canvas24 canvas(W, H);
 
-    auto render_path = [&](path<number> path) {
+    auto render_path = [&](path<number> & path) {
         t+=0.125f;
 
-        canvas->clear({255, 255, 255, 255});
-        canvas->drawPathStroke<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+        canvas.clear({255, 255, 255, 255});
+        canvas.drawPathStroke<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
                 color_green,
                 matrix_3x3<number>::identity(),
                 path,
@@ -153,22 +134,15 @@ int main() {
     };
 
     auto render = [&]() {
-        render_path(path_star<number>());
-//        render_path(path_rects<number>());
-//        render_path(path_arc<number>());
+//        static auto path = path_star<number>();
+//        static auto path = path_rects<number>();
+//        static auto path = path_arc<number>();
+        static auto path = path_test<number>();
 
-//        render_path(path_arc<number>());
-
-//        render_path(path_arc<number>());
-//        render_path(path_arc<number>());
-//        render_path(path_arc<number>());
-//        render_path(path_arc<number>());
-//        render_path(path_arc<number>());
-//        render_path(path_test<number>());
-
+        render_path(path);
     };
 
-    example_run(canvas, render);
+    example_run(&canvas, render);
 }
 
 
