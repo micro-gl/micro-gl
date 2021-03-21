@@ -344,11 +344,11 @@ void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill
 template<typename bitmap_type, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename Sampler>
 void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
-                                       const number1 left, const number1 top,
-                                       const number1 right, const number1 bottom,
+                                       const number1 & left, const number1 & top,
+                                       const number1 & right, const number1 & bottom,
                                        opacity_t opacity,
-                                       const number2 u0, const number2 v0,
-                                       const number2 u1, const number2 v1) {
+                                       const number2 & u0, const number2 & v0,
+                                       const number2 & u1, const number2 & v1) {
     static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
     const precision p_sub = renderingOptions()._2d_raster_bits_sub_pixel,
             p_uv = renderingOptions()._2d_raster_bits_uv;
@@ -364,11 +364,11 @@ template<typename bitmap_type, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename Sampler>
 void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
                                        const matrix_3x3<number1> &transform,
-                                       const number1 left, const number1 top,
-                                       const number1 right, const number1 bottom,
+                                       const number1 & left, const number1 & top,
+                                       const number1 & right, const number1 & bottom,
                                        opacity_t opacity,
-                                       const number2 u0, const number2 v0,
-                                       const number2 u1, const number2 v1) {
+                                       const number2 & u0, const number2 & v0,
+                                       const number2 & u1, const number2 & v1) {
     static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
     vec2<number1> p0{left, top}, p1{left, bottom}, p2{right, bottom}, p3{right, top};
     if(!transform.isIdentity()) {p0=transform*p0; p1=transform*p1; p2=transform*p2; p3=transform*p3;}

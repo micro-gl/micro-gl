@@ -15,8 +15,9 @@ int main() {
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
     using Texture32= sampling::texture<bitmap<coder::RGBA8888_ARRAY>>;
-//    using number = Q<12>;
-    using number = float;
+    using number = Q<12>;
+    using number_uv = Q<12>;
+//    using number = float;
 
     Resources resources{};
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
@@ -27,10 +28,12 @@ int main() {
 
     auto render = [&]() -> void {
         canvas.clear({255,255,255,255});
-        canvas.drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
+        canvas.drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number, number_uv>(
 //                tex_uv,
                 tex_uv_32,
-                0, 0, 300, 300);
+                0, 0, 300, 300,
+                255,
+                number_uv{0},number_uv{1},number_uv{1},number_uv{0});
     };
 
     example_run(&canvas, render);

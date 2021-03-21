@@ -76,7 +76,9 @@ int main() {
     };
 
     auto render = [&]() {
-        test_shader_texture_3d(cube_3d<number>);
+        static auto model = cube_3d<number>;
+
+        test_shader_texture_3d(model);
     };
 
     example_run(&canvas, render);

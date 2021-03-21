@@ -20,7 +20,6 @@ int main() {
 //    using number = Q<15>;
 //    using number = Q<16>;
 
-//    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
     Canvas24 canvas(W, H);
@@ -106,7 +105,9 @@ int main() {
     };
 
     auto render = [&]() {
-        test_shader_texture_3d(cube_3d<number>);
+        static auto model = cube_3d<number>;
+
+        test_shader_texture_3d(model);
     };
 
     example_run(&canvas, render);

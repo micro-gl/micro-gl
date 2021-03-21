@@ -7,7 +7,6 @@
 #include "data/model_3d_cube.h"
 #include "src/example.h"
 
-#define TEST_ITERATIONS 1
 #define W 640*1
 #define H 480*1
 
@@ -59,7 +58,9 @@ int main() {
     };
 
     auto render = [&](){
-        render_template(tree_3d<number>);
+        static auto model = tree_3d<number>;
+
+        render_template(model);
     };
 
     example_run(&canvas, render);

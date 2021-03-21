@@ -14,7 +14,7 @@ using index_t = unsigned int;
 float t=0;
 
 int main() {
-    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, 0>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
 //    using number = Q<12>;
     using number = float;
@@ -41,8 +41,8 @@ int main() {
         canvas.drawTriangle<blendmode::Normal, porterduff::None<>>(
                 tex_uv,
                 10.0   ,10.0, 0.0, 1.0,
-                500.0+0,10.0, 1.0, 1.0,
-                500.0+0,500.0, 1.0, 0.0,
+                250.0+0,10.0, 1.0, 1.0,
+                250.0+0,250.0, 1.0, 0.0,
                 255);
     };
 

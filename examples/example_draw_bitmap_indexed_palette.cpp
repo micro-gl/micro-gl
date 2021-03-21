@@ -19,7 +19,7 @@ int main() {
     using PaletteBitmap= PaletteBitmap<PALETTE_SIZE, coder::RGBA8888_ARRAY, false>;
     using TexPalette= sampling::texture<PaletteBitmap, sampling::texture_filter::NearestNeighboor>;
 
-    auto * canvas = new Canvas24(W, H);;
+    Canvas24 canvas(W, H);;
     TexPalette tex;
 
 #if (PALETTE_SIZE==2)
@@ -38,8 +38,8 @@ int main() {
 
     auto render = [&]() -> void {
 
-        canvas->clear(color_t{0,0,0});
-        canvas->drawRect<blendmode::Normal, porterduff::None<>, false>(
+        canvas.clear(color_t{0,0,0});
+        canvas.drawRect<blendmode::Normal, porterduff::None<>, false>(
                 tex,
                 0, 0, 400, 400, //tex.bitmap().width()>>0, tex.bitmap().height()>>0,
                 255,
@@ -48,6 +48,6 @@ int main() {
 
     };
 
-    example_run(canvas,
+    example_run(&canvas,
                 render);
 }

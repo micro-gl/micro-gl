@@ -12,8 +12,9 @@ float t = 0;
 
 template <typename number>
 dynamic_array<vec2<number>> curve_cubic_1() {
+    using il=std::initializer_list<vec2<number>>;
     using vertex=vec2<number>;
-    return {{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}};
+    return il{{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}};
 }
 
 
@@ -44,11 +45,9 @@ int main() {
                 output.data(), output.size(),
                 false);
 
-        for (int ix = 0; ix < output.size(); ++ix) {
-            const auto & p = output[ix];
+        for (auto & p : output) {
             canvas.drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
                     red, red, p.x, p.y, number{5}, number{0});
-
         }
     };
 

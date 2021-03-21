@@ -422,13 +422,13 @@ public:
      */
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
-            typename number1=float, typename number2=number1, typename Sampler>
+            typename number1, typename number2=number1, typename Sampler>
     void drawRect(const Sampler &sampler,
-                  number1 left, number1 top,
-                  number1 right, number1 bottom,
+                  const number1 & left, const number1 & top,
+                  const number1 & right, const number1 & bottom,
                   opacity_t opacity = 255,
-                  number2 u0= number2(0), number2 v0= number2(1),
-                  number2 u1= number2(1), number2 v1= number2(0));
+                  const number2 & u0= number2(0), const number2 & v0= number2(1),
+                  const number2 & u1= number2(1), const number2 & v1= number2(0));
 
     /**
      * Draw rectangle with transformation
@@ -457,11 +457,11 @@ public:
             typename number1=float, typename number2=number1, typename Sampler>
     void drawRect(const Sampler &sampler,
                   const matrix_3x3<number1> &transform,
-                  number1 left, number1 top,
-                  number1 right, number1 bottom,
+                  const number1 & left, const number1 & top,
+                  const number1 & right, const number1 & bottom,
                   opacity_t opacity = 255,
-                  number2 u0= number2(0), number2 v0= number2(1),
-                  number2 u1= number2(1), number2 v1= number2(0));
+                  const number2 & u0= number2(0), const number2 & v0= number2(1),
+                  const number2 & u1= number2(1), const number2 & v1= number2(0));
 
     /**
      * Draw a quadrilateral

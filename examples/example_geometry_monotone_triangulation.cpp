@@ -10,27 +10,30 @@
 
 template <typename number>
 dynamic_array<vec2<number>> poly_rect() {
+    using il = std::initializer_list<vec2<number>>;
     using vertex=vec2<number>;
     vertex p0 = {100,100};
     vertex p1 = {300, 100};
     vertex p2 = {300, 300};
     vertex p3 = {100, 300};
-    return {p0, p1, p2, p3};
+    return il{p0, p1, p2, p3};
 }
 
 template <typename number>
 dynamic_array<vec2<number>> poly_tri() {
+    using il = std::initializer_list<vec2<number>>;
     using vertex=vec2<number>;
     vertex p0 = {100,100};
     vertex p3 = {300, 100};
     vertex p4 = {100, 300};
 
-    return {p0, p3, p4};
+    return il{p0, p3, p4};
 }
 
 template <typename number>
 dynamic_array<vec2<number>> poly_1_x_monotone() {
-    return {
+    using il = std::initializer_list<vec2<number>>;
+    return il{
             {50,100},
             {100,50},
             {150,100},
@@ -52,7 +55,8 @@ dynamic_array<vec2<number>> poly_1_x_monotone() {
 
 template <typename number>
 dynamic_array<vec2<number>> poly_1_y_monotone() {
-    return {
+    using il = std::initializer_list<vec2<number>>;
+    return il{
             {100, 50},
             {50, 100},
             {100, 150},
@@ -74,7 +78,8 @@ dynamic_array<vec2<number>> poly_1_y_monotone() {
 
 template <typename number>
 dynamic_array<vec2<number>> poly_2_x_monotone() {
-    return {
+    using il = std::initializer_list<vec2<number>>;
+    return il{
             {50,200},
             {50,100},
             {100,150},
@@ -91,7 +96,8 @@ dynamic_array<vec2<number>> poly_2_x_monotone() {
 
 template <typename number>
 dynamic_array<vec2<number>> poly_2_y_monotone() {
-    return {
+    using il = std::initializer_list<vec2<number>>;
+    return il{
             {200,50},
             {100,50},
             {150,100},
@@ -115,16 +121,16 @@ int main() {
     using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
     sampling::flat_color<> color_red{{255,0,0,255}};
     sampling::flat_color<> color_black{{0,0,0,255}};
-    auto * canvas = new Canvas24(W, H);
+    Canvas24 canvas(W, H);
     float t = 0;
 
-    auto render_polygon = [&](dynamic_array<vec2<number>> polygon, bool x_monotone_or_y) {
+    auto render_polygon = [&](const dynamic_array<vec2<number>> & polygon, bool x_monotone_or_y) {
         using index = unsigned int;
         using mat = matrix_3x3<number>;
 
 //    polygon[1].x = 140 + 20 +  t;
 
-        canvas->clear({255,255,255,255});
+        canvas.clear({255,255,255,255});
 
         using mpt = tessellation::monotone_polygon_triangulation<number>;
 
@@ -140,20 +146,21 @@ int main() {
                      type
         );
 
-        mat transform = matrix_3x3<number>::scale(1,2);
+        mat transform = matrix_3x3<number>::scale(1,1);
         // draw triangles batch
-        canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
-                color_red,transform,
+        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, false>(
+                color_red,
+                transform,
                 polygon.data(),
                 (vec2<number> *)nullptr,
                 indices.data(),
                 boundary_buffer.data(),
                 indices.size(),
                 type,
-                122);
+                255);
 
         // draw triangulation
-        canvas->drawTrianglesWireframe(
+        canvas.drawTrianglesWireframe(
                 {0,0,0,255},
                 transform,
                 polygon.data(),
@@ -164,12 +171,13 @@ int main() {
     };
 
     auto render = [&]() {
-//        render_polygon(poly_1_x_monotone<number>(), true);
-//        render_polygon(poly_1_y_monotone<number>(), false);
-        render_polygon(poly_2_x_monotone<number>(), true);
-//        render_polygon(poly_2_y_monotone<number>(), false);
+        static auto poly = poly_1_x_monotone<number>();
+//        static auto poly = poly_2_y_monotone<number>();
+
+        render_polygon(poly, true);
+//        render_polygon(poly, false);
     };
 
-    example_run(canvas, render);
+    example_run(&canvas, render);
 
 }
