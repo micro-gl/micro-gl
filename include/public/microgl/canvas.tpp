@@ -654,11 +654,11 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
     const rint area = area_;
     const rint area_c = area>>sub_pixel_precision;
     if(area_c==0) return;
-
+    int uvs_array[9]{u0,v0,q0, u1,v1,q1, u2,v2,q2};
     precision bits_used_area=microgl::functions::used_integer_bits(area);
     precision bits_used_max_uv=
             microgl::functions::used_integer_bits(
-                    microgl::functions::abs_max({u0,v0,q0, u1,v1,q1, u2,v2,q2}));
+                    microgl::functions::abs_max(uvs_array, 9));
     const precision LL = bits_used_area + precision_one_over_area;
     rint one_area = (rint_big(1)<<LL) / rint_big(area);
     if(avoid_overflows) {
@@ -755,7 +755,7 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
                 rint w0_c=w0>>pp, w1_c=w1>>pp, w2_c=w2>>pp;
                 rint u_fixed = (w0_c*rint(u2)) + (w1_c*rint(u0)) + (w2_c*rint(u1));
                 rint v_fixed = (w0_c*rint(v2)) + (w1_c*rint(v0)) + (w2_c*rint(v1));
-                if(perspective_correct) {
+                if(perspective_correct) { // compile-time branching
                     rint q_fixed = (w0_c*rint(q2)) +
                                    (w1_c*rint(q0)) + (w2_c*rint(q1));
                     rint q_compressed=q_fixed>>uv_precision; // this would not render with overflow detection
@@ -763,7 +763,7 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
                         u_i = rint(u_fixed/q_compressed); v_i = rint(v_fixed/q_compressed);
                     }
                 } else {
-                    if(divide) { // division is stabler and is un-avoidable most of the time for pure 32 bit mode
+                    if(divide) { // compile-time branching: division is stabler and is un-avoidable most of the time for pure 32 bit mode
                         rint aaa = w0_c+w1_c+w2_c;
                         if(aaa){
                             u_i = (u_fixed)/aaa; v_i = (v_fixed)/aaa;
@@ -915,10 +915,11 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
                                 one_over_w2_fixed= f(one_over_w2, w_bits);
     /// overflow detection
     if(options_avoid_overflow()) { // compile time flag
+        rint w_array[3] {one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed};
         precision size_of_int_bits = sizeof(rint)<<3, size_of_big_int_bits = sizeof(rint_big)<<3;
         auto bits_used_max_area=microgl::functions::used_integer_bits(area);
         auto bits_used_max_w=microgl::functions::used_integer_bits(microgl::functions::abs_max(
-                {one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed}));
+                w_array, 3));
         const bool first_test = bits_used_max_area + bits_used_max_w < size_of_int_bits;
         if(!first_test) return;
     }

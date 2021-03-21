@@ -50,7 +50,7 @@ int main() {
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
     Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
     constexpr int samples = 20;
-    auto test_bezier = [&](vec3<number>* mesh, unsigned U, unsigned V) {
+    auto test_bezier = [&](vec3<number>* mesh, const unsigned U, const unsigned V) {
         canvas.clear({255,255,255,255});
         canvas.drawBezierPatch<blendmode::Normal, porterduff::None<>, false, false, number, number>(
 //            color_grey,

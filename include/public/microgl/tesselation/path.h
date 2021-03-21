@@ -91,7 +91,6 @@ namespace microgl {
             auto closePath() -> path & {
                 if(sizeOfCurrentSubPath()==0) return *this;
                 // move the pen to the first vertex of the sub-path and
-                const vertex first_point = firstPointOfCurrentSubPath();
                 const vertex last_point = lastPointOfCurrentSubPath();
                 // if two last points equal the first one, it is a close path signal
                 _paths_vertices.push_back(last_point);
