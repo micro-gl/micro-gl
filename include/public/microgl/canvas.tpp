@@ -1187,7 +1187,7 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
 
 template<typename bitmap_type, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1,
-        typename number2, typename Sampler>
+        typename number2, typename Sampler, class Iterable>
 void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
                                              const matrix_3x3<number1> &transform,
                                              tessellation::path<number1> & path,
@@ -1195,12 +1195,13 @@ void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
                                              const tessellation::stroke_cap &cap,
                                              const tessellation::stroke_line_join &line_join,
                                              const int miter_limit,
-                                             const std::initializer_list<int> & stroke_dash_array,
+                                             const Iterable & stroke_dash_array,
                                              int stroke_dash_offset,
                                              opacity_t opacity,
                                              const number2 u0, const number2 v0,
                                              const number2 u1, const number2 v1) {
-    const auto & buffers= path.tessellateStroke(stroke_width, cap, line_join, miter_limit, stroke_dash_array, stroke_dash_offset);
+    const auto & buffers= path.template tessellateStroke<Iterable>(
+            stroke_width, cap, line_join, miter_limit, stroke_dash_array, stroke_dash_offset);
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(
             sampler, transform,
             buffers.output_vertices.data(),
@@ -1212,7 +1213,7 @@ void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
             opacity,
             u0, v0, u1, v1);
     if(debug)
-        drawTrianglesWireframe({0,0,0,255}, transform,
+        drawTrianglesWireframe({0, 0, 0, 255}, transform,
                                buffers.output_vertices.data(),
                                buffers.output_indices.data(),
                                buffers.output_indices.size(),

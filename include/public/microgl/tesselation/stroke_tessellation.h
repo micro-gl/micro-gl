@@ -44,13 +44,15 @@ namespace microgl {
             };
 
         public:
+
+            template<class iterable>
             static
             void compute_with_dashes(const number &stroke_width,
                                      bool closePath,
                                      const stroke_cap &cap,
                                      const stroke_line_join &line_join,
                                      const number &miter_limit,
-                                     const std::initializer_list<int> & stroke_dash_array,
+                                     const iterable & stroke_dash_array,
                                      int stroke_dash_offset,
                                      const vertex *points,
                                      index size,

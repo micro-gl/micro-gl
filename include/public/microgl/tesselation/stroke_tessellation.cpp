@@ -200,14 +200,16 @@ namespace microgl {
 #define abs__(x) ((x<0)?(-x):(x))
 #define min__(a,b) ((a<b)?(a):(b))
 #define max__(a, b) ((a)>(b) ? (a) : (b))
+
         template<typename number>
+        template<class iterable>
         void stroke_tessellation<number>::compute_with_dashes(
                 const number &stroke_width,
                  bool closePath,
                 const stroke_cap &cap,
                 const stroke_line_join &line_join,
                 const number &miter_limit,
-                const std::initializer_list<int> & stroke_dash_array,
+                const iterable & stroke_dash_array,
                 const int stroke_dash_offset,
                 const vertex *points,
                 const index size,

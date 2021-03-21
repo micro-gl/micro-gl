@@ -25,19 +25,20 @@ path<number> path_star() {
 
 template <typename number>
 path<number> path_star_2() {
+    using il = std::initializer_list<vec2<number>>;
     path<number> path{};
-    path.linesTo({{150, 150},
+    path.linesTo(il{{150, 150},
                   {450,150},
                   {200,450},
                   {300,50},
                   {400,450}})
             .moveTo({150/2, 150/2})
-            .linesTo({{450/2,150/2},
+            .linesTo(il{{450/2,150/2},
                       {200/2,450/2},
                       {300/2,50/2},
                       {400/2,450/2}})
             .moveTo({150/10, 150/10})
-            .linesTo({{450/10,150/10},
+            .linesTo(il{{450/10,150/10},
                       {200/10,450/10},
                       {300/10,50/10},
                       {400/10,450/10}})

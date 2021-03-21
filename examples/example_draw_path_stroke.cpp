@@ -23,19 +23,20 @@ path<number> path_star() {
 
 template <typename number>
 path<number> path_star_2() {
+    using il = std::initializer_list<vec2<number>>;
     path<number> path{};
-    path.linesTo({{150, 150},
+    path.linesTo(il{{150, 150},
                   {450,150},
                   {200,450},
                   {300,50},
                   {400,450}})
             .moveTo({150/2, 150/2})
-            .linesTo({{450/2,150/2},
+            .linesTo(il{{450/2,150/2},
                       {200/2,450/2},
                       {300/2,50/2},
                       {400/2,450/2}})
             .moveTo({150/10, 150/10})
-            .linesTo({{450/10,150/10},
+            .linesTo(il{{450/10,150/10},
                       {200/10,450/10},
                       {300/10,50/10},
                       {400/10,450/10}})
@@ -75,8 +76,7 @@ t+=0.82f;
 template <typename number>
 path<number> path_rects() {
     path<number> path{};
-    path
-        .rect(50, 50, 250, 250, false)
+    path.rect(50, 50, 250, 250, false)
         .rect(50, 250, 550, 50, true)
         .rect(50, 450, 50, 50, true);
     return path;
@@ -107,6 +107,7 @@ int main() {
 //    using number = Q<4>;
 
     using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
+    using il = std::initializer_list<int>;
     sampling::flat_color<> color_red {{255,0,255,255}};
     sampling::flat_color<> color_green {{22,22,22,255}};
     Canvas24 canvas(W, H);
@@ -128,16 +129,17 @@ int main() {
 //            tessellation::stroke_line_join::miter_clip,
             tessellation::stroke_line_join::round,
 //                4, {0, 0}, 0,
-                4, {50, 20}, t,
+                4, il{50, 20}, t,
                 255
         );
     };
 
     auto render = [&]() {
-//        static auto path = path_star<number>();
+        static auto path = path_star<number>();
+//        static auto path = path_star_2<number>();
 //        static auto path = path_rects<number>();
 //        static auto path = path_arc<number>();
-        static auto path = path_test<number>();
+//        static auto path = path_test<number>();
 
         render_path(path);
     };

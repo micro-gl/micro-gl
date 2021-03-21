@@ -983,7 +983,8 @@ public:
      * @param v1                    uv coord
      */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, bool debug=false, typename number1=float, typename number2=float, typename Sampler>
+            bool antialias=false, bool debug=false, typename number1=float, typename number2=float,
+            typename Sampler, class Iterable>
     void drawPathStroke(const Sampler &sampler,
                         const matrix_3x3<number1> &transform,
                         tessellation::path<number1> &path,
@@ -991,7 +992,7 @@ public:
                         const tessellation::stroke_cap &cap=tessellation::stroke_cap::butt,
                         const tessellation::stroke_line_join &line_join=tessellation::stroke_line_join::bevel,
                         int miter_limit=4,
-                        const std::initializer_list<int> & stroke_dash_array={},
+                        const Iterable & stroke_dash_array={},
                         int stroke_dash_offset=0, opacity_t opacity=255,
                         number2 u0=number2(0), number2 v0=number2(1),
                         number2 u1=number2(1), number2 v1=number2(0));
