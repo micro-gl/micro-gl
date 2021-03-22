@@ -10,8 +10,8 @@
 #include "data/model_3d_cube.h"
 
 #define TEST_ITERATIONS 1
-#define W 640*1
-#define H 640*1
+#define W 640
+#define H 480
 
 int main() {
     using number = float;
@@ -20,7 +20,7 @@ int main() {
 //    using number = Q<15>;
 //    using number = Q<16>;
 
-    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
     Canvas24 canvas(W, H);
     Resources resources{};
@@ -42,12 +42,12 @@ int main() {
         using vertex_attributes = Shader::vertex_attributes;
 
 //        t-=0.0425;
-        t-=0.425;
+        t-=0.1425;
 
         // setup mvp matrix
         number radians = math::deg_to_rad(t / 2);
         vertex rotation = {radians, radians, radians};
-        vertex translation = {-5,0, -t/30.f};
+        vertex translation = {-5,0, -t/10.f};
         vertex scale = {10,10,10};
 
         mat4 model_1 = mat4::transform(rotation, translation, scale);
@@ -56,7 +56,7 @@ int main() {
 //        mat4 view = camera::angleAt<number>({0, 0, 70+ 0 / t}, 0,
 //                                            math::deg_to_rad(0), 0);
         mat4 projection = camera::perspective<number>(math::deg_to_rad(60),
-                                                      canvas.width(), canvas.height(), 20, 100);
+                                                      W, H, 10.f, 100);
 //        mat4 projection= camera::orthographic<number>(-canvas->width()/2, canvas->width()/2,
 //                                              -canvas->height()/2, canvas->height()/2, 1, 500);
         mat4 mvp_1= projection*view*model_1;

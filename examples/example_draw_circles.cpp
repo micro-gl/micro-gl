@@ -18,7 +18,7 @@ int main() {
 //    using number = Q<12>;
     using number = float;
 
-    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_32_BIT>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
 
     fast_radial_gradient<number> gradient{0.5, 0.5, 0.75};

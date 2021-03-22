@@ -10,7 +10,7 @@
 using namespace microgl::sampling;
 
 int main() {
-    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_32_BIT>;
     using number = float;
 //    using number = Q<12>;
 

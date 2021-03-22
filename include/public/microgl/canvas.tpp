@@ -663,7 +663,7 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
     rint one_area = (rint_big(1)<<LL) / rint_big(area);
     if(avoid_overflows) {
         precision size_of_int_bits = sizeof(rint)<<3, size_of_big_int_bits = sizeof(rint_big)<<3;
-        const bool first_test = bits_used_area + bits_used_max_uv - sub_pixel_precision < size_of_int_bits;
+        const bool first_test = bits_used_area + bits_used_max_uv - sub_pixel_precision - 2 < size_of_int_bits;
         if(!first_test) return;
         if(!divide) {
             const bool second_test= bits_used_area + bits_used_max_uv - sub_pixel_precision +
@@ -920,7 +920,8 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
         auto bits_used_max_area=microgl::functions::used_integer_bits(area);
         auto bits_used_max_w=microgl::functions::used_integer_bits(microgl::functions::abs_max(
                 w_array, 3));
-        const bool first_test = bits_used_max_area + bits_used_max_w < size_of_int_bits;
+        if(!perspective_correct) bits_used_max_w=0;
+        const bool first_test = bits_used_max_area + bits_used_max_w - sub_pixel_precision - 1 < size_of_int_bits;
         if(!first_test) return;
     }
     rint v0_z= rint(v0_viewport.z*zbuff.maxValue()), v1_z= rint(v1_viewport.z*zbuff.maxValue()),

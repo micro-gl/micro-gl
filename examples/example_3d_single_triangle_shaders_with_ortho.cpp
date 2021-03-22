@@ -44,7 +44,7 @@ int main() {
         v1.point= {400.0,200.0, 0}; v1.color= {0,255,0,255};
         v2.point= {10.0,400.0, 0};  v2.color= {0,0,255,255};
 
-        canvas.drawTriangle<blendmode::Normal, porterduff::None<>, false>(
+        canvas.drawTriangle<blendmode::Normal, porterduff::None<>, false, false, false>(
                 shader,
                 W/2, H/2,
                 v0, v1, v2,
@@ -64,7 +64,7 @@ int main() {
         v1.point= {500.0,10.0, 0};
         v2.point= {500.0,500.0, 0};
         t+=0.0001;
-        canvas.drawTriangle<blendmode::Normal, porterduff::None<>, false>(
+        canvas.drawTriangle<blendmode::Normal, porterduff::None<>, false, false, false>(
                 shader,
                 W, H,
                 v0, v1, v2,
@@ -87,7 +87,7 @@ int main() {
         v1.point= {500.0,10.0, 0};  v1.uv= {1.0f, 0.0f};
         v2.point= {500.0,500.0, 0}; v2.uv= {1.0f, 1.0f};
         t+=0.001f;
-        canvas.drawTriangle<blendmode::Normal, porterduff::None<>, false>(
+        canvas.drawTriangle<blendmode::Normal, porterduff::None<>, false, false, false>(
                 shader, W, H, v0, v1, v2, 255,
                 triangles::face_culling::none,
                 (z_buffer<0> *)nullptr);
@@ -98,8 +98,8 @@ int main() {
         canvas.clear({255,255,255,255});
 
 //        test_shader_color_2d();
-//        test_shader_texture_2d();
-        test_shader_flat_color_2d();
+        test_shader_texture_2d();
+//        test_shader_flat_color_2d();
     };
 
     example_run(&canvas, render);

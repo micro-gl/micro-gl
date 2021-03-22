@@ -42,27 +42,27 @@ using namespace microgl::coder;
  * for all or most calculations inside the rasterizer. bigger integers imply
  * overflow is harder to come by
  */
-#define CANVAS_OPT_2d_raster_USE_BIG_INT uint8_t(0b00000001)
+#define CANVAS_OPT_USE_BIG_INT uint8_t(0b00000001)
 /**
  * inside the 2d rasterizer, use division for uv-mapping, this reduces
  * the number of bits used BUT is slower. Generally this HAS to be used
  * on a forced 32 bit rasterizer, in case you want a pure 32 bit integers
  * only during rasterization. Do not use it when in BIG INT mode.
  */
-#define CANVAS_OPT_2d_raster_USE_DIVISION uint8_t(0b00000010)
+#define CANVAS_OPT_USE_DIVISION uint8_t(0b00000010)
 /**
  * inside the rasterizers, allow some bit compression in-order to minimize
  * overflow in 32 bit mode. disable it if 3d rendering for example starts
  * to jitter.
  */
-#define CANVAS_OPT_raster_COMPRESS_BITS uint8_t(0b00001000)
+#define CANVAS_OPT_COMPRESS_BITS uint8_t(0b00001000)
 /**
  * the 2d and 3d rasterizer can detect overflow of uv mapping, the detection
  * feature is great for debugging the rasterizer. this flag enables detection
  * and if so, exits the rendering. This is helpful for when using a 32 bit mode,
  * where overflows are likely to happen
  */
-#define CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS uint8_t(0b00000100)
+#define CANVAS_OPT_AVOID_RENDER_WITH_OVERFLOWS uint8_t(0b00000100)
 /**
  * use a true 32 bit mode in the 2d and 3d rasterizer, this means regular 32 bit integers
  * and also the usage of division in order to reduce overflow and also detecting
@@ -70,18 +70,23 @@ using namespace microgl::coder;
  * please adjust some of the render options bits in the canvas and make sure you
  * render small geometries at a time
  */
-#define CANVAS_OPT_2d_raster_FORCE_32_BIT (CANVAS_OPT_2d_raster_USE_DIVISION | \
-                        CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS | CANVAS_OPT_raster_COMPRESS_BITS)
+#define CANVAS_OPT_32_BIT (CANVAS_OPT_USE_DIVISION | CANVAS_OPT_COMPRESS_BITS | \
+                            CANVAS_OPT_AVOID_RENDER_WITH_OVERFLOWS)
+/**
+ * 32 bit mode without overflow detection
+ */
+#define CANVAS_OPT_32_BIT_FREE (CANVAS_OPT_USE_DIVISION | CANVAS_OPT_COMPRESS_BITS)
+
 /**
  * default preset, includes usage of big integers
  */
-#define CANVAS_OPT_2d_raster_FORCE_64_BIT (CANVAS_OPT_2d_raster_USE_BIG_INT | \
-                            CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS | \
-                            CANVAS_OPT_raster_COMPRESS_BITS )
+#define CANVAS_OPT_64_BIT (CANVAS_OPT_USE_BIG_INT | \
+                            CANVAS_OPT_AVOID_RENDER_WITH_OVERFLOWS | \
+                            CANVAS_OPT_COMPRESS_BITS )
 /**
  * default preset, includes usage of big integers
  */
-#define CANVAS_OPT_default CANVAS_OPT_2d_raster_FORCE_32_BIT
+#define CANVAS_OPT_default CANVAS_OPT_32_BIT_FREE
 
 /**
  * the main canvas object:
@@ -107,10 +112,10 @@ public:
         int index_correction=0;
     };
 
-    static constexpr bool options_compress_bits() { return options&CANVAS_OPT_raster_COMPRESS_BITS; }
-    static constexpr bool options_big_integers() { return options&CANVAS_OPT_2d_raster_USE_BIG_INT; }
-    static constexpr bool options_avoid_overflow() { return options&CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS; }
-    static constexpr bool options_use_division() { return options&CANVAS_OPT_2d_raster_USE_DIVISION; }
+    static constexpr bool options_compress_bits() { return options & CANVAS_OPT_COMPRESS_BITS; }
+    static constexpr bool options_big_integers() { return options & CANVAS_OPT_USE_BIG_INT; }
+    static constexpr bool options_avoid_overflow() { return options & CANVAS_OPT_AVOID_RENDER_WITH_OVERFLOWS; }
+    static constexpr bool options_use_division() { return options & CANVAS_OPT_USE_DIVISION; }
     static constexpr bool hasNativeAlphaChannel() { return pixel_coder::rgba::a != 0;}
 
     /**
