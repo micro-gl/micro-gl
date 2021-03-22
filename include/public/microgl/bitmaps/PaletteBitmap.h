@@ -17,7 +17,7 @@ class PaletteBitmap : public base_bitmap<PaletteBitmap<PALETTE_SIZE, CODER, reve
     using byte=unsigned char;
     static constexpr byte BPI = PALETTE_SIZE==2 ? 1 : (PALETTE_SIZE==4 ? 2 : (PALETTE_SIZE==16 ? 4 : (PALETTE_SIZE==256 ? 8 : 0)));
     static constexpr bool is_1_2_4_8_bits = BPI!=0;
-    typename std::enable_if<is_1_2_4_8_bits, bool>::type fails_if_not_2_4_16_256_colors;
+    typename microgl::traits::enable_if<is_1_2_4_8_bits, bool>::type fails_if_not_2_4_16_256_colors;
     static constexpr byte M = 3; // always <= 3
     static constexpr byte BPE = byte(1)<<M; // always 8 bits, 1 byte
     static constexpr byte K=(BPI == 1 ? 0 : (BPI == 2 ? 1 : (BPI == 4 ? 2 : (BPI == 8 ? 3 : 4))));

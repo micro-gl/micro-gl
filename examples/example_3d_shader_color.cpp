@@ -41,8 +41,8 @@ int main() {
 //        mat4 view = camera::angleAt<number>({0, 0, 70}, 0,0, 0);
         mat4 projection = camera::perspective<number>(math::deg_to_rad(60),
                                                       canvas.width(), canvas.height(), 20, 100);
-//        mat4 projection= camera::orthographic<number>(-canvas->width()/2, canvas->width()/2,
-//                                              -canvas->height()/2, canvas->height()/2, 1, 500);
+//        mat4 projection= camera::orthographic<number>(-W/2, W/2,-H/2, H/2, 1, 500);
+//        mat4 projection= camera::orthographic<number>(0, W,0, H, 1, 500);
         mat4 mvp= projection*view*model;
 
         // setup shader

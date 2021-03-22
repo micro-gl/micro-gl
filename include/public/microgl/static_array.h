@@ -5,6 +5,7 @@ class static_array {
 public:
     using index = unsigned int;
     using type = T;
+    static constexpr capacity = N;
 
     explicit static_array() = default;
 
@@ -45,6 +46,9 @@ public:
     void clear() { _current = 0; }
     index size() const { return _current; }
     constexpr index capacity() const { return N; }
+
+    T* begin() { return _data; }
+    T* end() { return _data + _current; }
 
 private:
     T _data[N];
