@@ -99,7 +99,7 @@ namespace microgl {
                 for (unsigned ix=0; ix<planeCount; ix++) {
                     unsigned vertex_count = out_list.size();
                     if (vertex_count < 2) break; // todo: why 2?
-                    in_list = traits::move(out_list); // move everything from_sampler out to in
+                    in_list = microgl::traits::move(out_list); // move everything from_sampler out to in
                     const vertex4 &plane = planes[ix];
                     bool cull = true;
 

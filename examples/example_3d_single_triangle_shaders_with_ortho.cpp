@@ -57,9 +57,8 @@ int main() {
         using Shader = flat_color_shader<number, rgba_t<8,8,8,0>>;
         using vertex_attributes = Shader::vertex_attributes;
         Shader shader;
-        color_t color{255,0,0,255};
         shader.matrix= camera::orthographic<number>(0, W, 0, H, 0, 100);
-        shader.color= color;
+        shader.color= {255,0,0,255};
         vertex_attributes v0, v1, v2;
         v0.point= {10.0,10.0, 0};
         v1.point= {500.0,10.0, 0};
