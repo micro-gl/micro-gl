@@ -78,11 +78,15 @@ using namespace microgl::coder;
 #define CANVAS_OPT_32_BIT_FREE (CANVAS_OPT_USE_DIVISION | CANVAS_OPT_COMPRESS_BITS)
 
 /**
- * default preset, includes usage of big integers
+ * 64 bit mode, includes usage of big integers
  */
 #define CANVAS_OPT_64_BIT (CANVAS_OPT_USE_BIG_INT | \
                             CANVAS_OPT_AVOID_RENDER_WITH_OVERFLOWS | \
                             CANVAS_OPT_COMPRESS_BITS )
+/**
+ * 64 bit mode without overflow detection
+ */
+#define CANVAS_OPT_64_BIT_FREE (CANVAS_OPT_USE_BIG_INT | CANVAS_OPT_COMPRESS_BITS )
 /**
  * default preset, includes usage of big integers
  */
