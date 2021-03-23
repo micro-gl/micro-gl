@@ -1,5 +1,5 @@
 #include <microgl/tesselation/simplify_components.h>
-#include <microgl/qsort.h>
+#include <microgl/tesselation/experiments/poly_heap_simplifier/qsort.h>
 
 namespace tessellation {
 
