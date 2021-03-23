@@ -656,9 +656,12 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
     if(area_c==0) return;
     int uvs_array[9]{u0,v0,q0, u1,v1,q1, u2,v2,q2};
     precision bits_used_area=microgl::functions::used_integer_bits(area);
+//    precision bits_used_max_uv=
+//            microgl::functions::used_integer_bits(
+//                    microgl::functions::abs_max(uvs_array, 9));
     precision bits_used_max_uv=
             microgl::functions::used_integer_bits(
-                    microgl::functions::abs_max(uvs_array, 9));
+                    microgl::functions::abs_max(u0,v0,q0, u1,v1,q1, u2,v2,q2));
     const precision LL = bits_used_area + precision_one_over_area;
     rint one_area = (rint_big(1)<<LL) / rint_big(area);
     if(avoid_overflows) {

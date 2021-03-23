@@ -25,27 +25,27 @@ path<number> path_star() {
 
 template <typename number>
 path<number> path_star_2() {
-    using il = std::initializer_list<vec2<number>>;
     path<number> path{};
-    path.linesTo(il{{150, 150},
-                  {450,150},
-                  {200,450},
-                  {300,50},
-                  {400,450}})
-            .moveTo({150/2, 150/2})
-            .linesTo(il{{450/2,150/2},
-                      {200/2,450/2},
-                      {300/2,50/2},
-                      {400/2,450/2}})
-            .moveTo({150/10, 150/10})
-            .linesTo(il{{450/10,150/10},
-                      {200/10,450/10},
-                      {300/10,50/10},
-                      {400/10,450/10}})
-            .rect(50, 50, 250, 250)
-            .rect(50, 250, 550, 50, false)
-            .rect(50, 450, 50, 50, false)
-            .closePath();
+
+    path.linesTo2(150, 150,
+                  450,150,
+                  200,450,
+                  300,50,
+                  400,450)
+        .moveTo({150/2, 150/2})
+        .linesTo2(450/2,150/2,
+                  200/2,450/2,
+                  300/2,50/2,
+                  400/2,450/2)
+        .moveTo({150/10, 150/10})
+        .linesTo2(450/10,150/10,
+                      200/10,450/10,
+                      300/10,50/10,
+                      400/10,450/10)
+        .rect(50, 50, 250, 250)
+        .rect(50, 250, 550, 50, false)
+        .rect(50, 450, 50, 50, false)
+        .closePath();
 
     return path;
 }
@@ -102,9 +102,9 @@ path<number> path_test() {
 }
 
 int main() {
-    using number = float;
+//    using number = float;
 //    using number = double;
-//    using number = Q<12>;
+    using number = Q<12>;
 //    using number = Q<4>;
 
     using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;

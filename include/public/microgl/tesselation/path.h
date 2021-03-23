@@ -106,6 +106,18 @@ namespace microgl {
                     lineTo(item);
                 return *this;
             }
+
+            template<typename... Args>
+            auto linesTo2(const number & x, const number & y, Args... args) -> path & {
+                lineTo({number(x), number(y)});
+                linesTo2(args...);
+                return *this;
+            }
+            auto linesTo2(const number & x, const number & y) -> path & {
+                lineTo({x, y});
+                return *this;
+            }
+
             auto lineTo(const vertex & point, number threshold=number(1)) -> path & {
                 auto current_path = _paths_vertices.back();
                 threshold=threshold<0 ? 0 : threshold;
