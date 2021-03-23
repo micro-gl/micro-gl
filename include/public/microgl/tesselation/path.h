@@ -100,6 +100,12 @@ namespace microgl {
                 return *this;
             }
 
+            /**
+             * insert lines from an iterable container
+             * @tparam Iterable
+             * @param list
+             * @return
+             */
             template<class Iterable>
             auto linesTo(const Iterable & list) -> path & {
                 for (const auto & item : list)
@@ -107,6 +113,10 @@ namespace microgl {
                 return *this;
             }
 
+            /**
+             * unpacked variadic version of lines to
+             *
+             */
             template<typename... Args>
             auto linesTo2(const number & x, const number & y, Args... args) -> path & {
                 linesTo2(x, y);
@@ -115,17 +125,6 @@ namespace microgl {
             }
             auto linesTo2(const number & x, const number & y) -> path & {
                 lineTo({x, y});
-                return *this;
-            }
-
-            template<typename... Args>
-            auto linesTo3(const vertex & v, Args... args) -> path & {
-                lineTo(v);
-                linesTo3(args...);
-                return *this;
-            }
-            auto linesTo3(const vertex & v) -> path & {
-                lineTo(v);
                 return *this;
             }
 
