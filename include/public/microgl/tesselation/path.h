@@ -109,12 +109,23 @@ namespace microgl {
 
             template<typename... Args>
             auto linesTo2(const number & x, const number & y, Args... args) -> path & {
-                lineTo({number(x), number(y)});
+                linesTo2(x, y);
                 linesTo2(args...);
                 return *this;
             }
             auto linesTo2(const number & x, const number & y) -> path & {
                 lineTo({x, y});
+                return *this;
+            }
+
+            template<typename... Args>
+            auto linesTo3(const vertex & v, Args... args) -> path & {
+                lineTo(v);
+                linesTo3(args...);
+                return *this;
+            }
+            auto linesTo3(const vertex & v) -> path & {
+                lineTo(v);
                 return *this;
             }
 

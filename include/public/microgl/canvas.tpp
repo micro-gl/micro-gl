@@ -654,11 +654,7 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
     const rint area = area_;
     const rint area_c = area>>sub_pixel_precision;
     if(area_c==0) return;
-    int uvs_array[9]{u0,v0,q0, u1,v1,q1, u2,v2,q2};
     precision bits_used_area=microgl::functions::used_integer_bits(area);
-//    precision bits_used_max_uv=
-//            microgl::functions::used_integer_bits(
-//                    microgl::functions::abs_max(uvs_array, 9));
     precision bits_used_max_uv=
             microgl::functions::used_integer_bits(
                     microgl::functions::abs_max(u0,v0,q0, u1,v1,q1, u2,v2,q2));
@@ -918,11 +914,10 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
                                 one_over_w2_fixed= f(one_over_w2, w_bits);
     /// overflow detection
     if(options_avoid_overflow()) { // compile time flag
-        rint w_array[3] {one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed};
         precision size_of_int_bits = sizeof(rint)<<3, size_of_big_int_bits = sizeof(rint_big)<<3;
         auto bits_used_max_area=microgl::functions::used_integer_bits(area);
         auto bits_used_max_w=microgl::functions::used_integer_bits(microgl::functions::abs_max(
-                w_array, 3));
+                one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed));
         if(!perspective_correct) bits_used_max_w=0;
         const bool first_test = bits_used_max_area + bits_used_max_w - sub_pixel_precision - 1 < size_of_int_bits;
         if(!first_test) return;
