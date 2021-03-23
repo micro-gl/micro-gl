@@ -132,7 +132,7 @@ namespace microgl {
             // 3 axis of rotation matrix for scene
             vertex3 z_axis = (position-target).normalize(); // forward
             vertex3 x_axis = up.cross(z_axis).normalize(); // left
-            vertex3 y_axis = z_axis.cross(x_axis); // up
+            vertex3 y_axis = z_axis.cross(x_axis).normalize(); // up
 
             // copy it to matrix transposed because it is inverted
             result.identity();

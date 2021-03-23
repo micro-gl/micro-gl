@@ -975,15 +975,16 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
     rint A01 = v0_y-v1_y, A12 = v1_y-v2_y, A20 = v2_y-v0_y;
     rint B01 = v1_x-v0_x, B12 = v2_x-v1_x, B20 = v0_x-v2_x;
     const int pitch= width(); int index = p.y * pitch;
-    for (p.y = bbox.top; p.y <= bbox.bottom; p.y++, index+=pitch) {
+    for (p.y = bbox.top; p.y <= bbox.bottom; p.y++, index+=pitch, b0_row+=B01, b1_row+=B12, b2_row+=B20) {
         rint b0 = b0_row, b1 = b1_row, b2 = b2_row;
-        for (p.x = bbox.left; p.x<=bbox.right; p.x++) {
+        for (p.x = bbox.left; p.x<=bbox.right; p.x++, b0+=A01, b1+=A12, b2+=A20) {
             // closure test with full sub pixel precision
             const bool in_closure= (b0 | b1 | b2) >= 0;
             bool should_sample= in_closure;
             auto opacity_sample = opacity;
             rint b0_c = b0>>sub_pixel_precision, b1_c = b1>>sub_pixel_precision, b2_c = b2>>sub_pixel_precision;
             rint area_c = b0_c + b1_c + b2_c;
+            if(!area_c) continue; // compression can cause zero area
             auto bary = vec4<rint>{b0_c, b1_c, b2_c, area_c};
             if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
                 bary.x= (b0_c * one_over_w0_fixed) >> w_bits;
@@ -1008,9 +1009,7 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
                 auto color = $shader.fragment(interpolated_varying);
                 blendColor<BlendMode, PorterDuff, shader_type::rgba::a>(color, index + p.x, opacity_sample);
             }
-            b0+=A01; b1+=A12; b2+=A20;
         }
-        b0_row+=B01; b1_row+=B12; b2_row+=B20;
     }
 #undef f
 }

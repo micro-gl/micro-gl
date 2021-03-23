@@ -11,25 +11,26 @@
 
 #define TEST_ITERATIONS 1
 #define W 640
-#define H 480
+#define H 640
 
 int main() {
-    using number = float;
+//    using number = float;
+//    using number = Q<5>;
 //    using number = Q<10>;
-//    using number = Q<12>;
-//    using number = Q<15>;
+//    using number = Q<11>;
+    using number = Q<11>;
+//    using number = float;
 
-    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_64_BIT_FREE>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
     Canvas24 canvas(W, H);
     Resources resources{};
 
     auto img = resources.loadImageFromCompressedPath("images/uv_256.png");
     Texture24 tex{new bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};
-    z_buffer<12> depth_buffer(canvas.width(), canvas.height());
 
     float t = -0.0;
-    constexpr bool enable_z_buffer = true;
+    constexpr bool enable_z_buffer = false;
 
     auto test_shader_texture_3d = [&](const model_3d<number> & object) {
 
@@ -40,24 +41,19 @@ int main() {
         using Shader = sampler_shader<number, Texture24>;
         using vertex_attributes = Shader::vertex_attributes;
 
+//        t-=0.0425;
         t-=0.1425;
 
         // setup mvp matrix
-        number radians = math::deg_to_rad(t / 2);
-        vertex rotation = {radians, radians, radians};
-        vertex translation = {-5,0, -t/10.f};
-        vertex scale = {10,10,10};
-
-        mat4 model_1 = mat4::transform(rotation, translation, scale);
-        mat4 model_2 = mat4::transform(rotation*2, translation + vertex{10,0,0}, scale);
+        mat4 model_1 = mat4::scale(10,10,10);
         mat4 view = camera::lookAt<number>({0, 0, 70}, {0,0, 0}, {0,1,0});
-        // mat4 view = camera::angleAt<number>({0, 0, 70}, 0, math::deg_to_rad(0), 0);
-        mat4 projection = camera::perspective<number>(math::deg_to_rad(90),
-                                                      W, H, 10.f, 100);
-        // mat4 projection= camera::orthographic<number>(-W/2, W/2, -H/2, H/2, 1, 500);
-
+//        mat4 view = camera::angleAt<number>({0, 0, 70+ 0 / t}, 0,
+//                                            math::deg_to_rad(0), 0);
+        mat4 projection = camera::perspective<number>(math::deg_to_rad(60),
+                                                      canvas.width(), canvas.height(), 10.f, 100);
+//        mat4 projection= camera::orthographic<number>(-canvas->width()/2, canvas->width()/2,
+//                                              -canvas->height()/2, canvas->height()/2, 1, 500);
         mat4 mvp_1= projection*view*model_1;
-        mat4 mvp_2= projection*view*model_2;
 
         // setup shader
         Shader shader;
@@ -74,7 +70,6 @@ int main() {
         }
 
         canvas.clear({255,255,255,255});
-        depth_buffer.clear();
         // draw model_1
         canvas.drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer>(
                 shader,
@@ -84,21 +79,7 @@ int main() {
                 object.indices.size(),
                 object.type,
                 triangles::face_culling::ccw,
-                &depth_buffer);
-//            (z_buffer<0> *)nullptr);
-
-        // draw model_2
-        shader.matrix= mvp_2;
-        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer>(
-                shader,
-                canvas.width(), canvas.height(),
-                vertex_buffer.data(),
-                object.indices.data(),
-                object.indices.size(),
-                object.type,
-                triangles::face_culling::ccw,
-                &depth_buffer);
-
+            (z_buffer<0> *)nullptr);
     };
 
     auto render = [&]() {

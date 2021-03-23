@@ -82,6 +82,7 @@ if(SDL2_FOUND)
             test_resource.cpp
             test_containers.cpp
             test_math.cpp
+            bug_1.cpp
             )
 
     set(SOURCES_SHARED
