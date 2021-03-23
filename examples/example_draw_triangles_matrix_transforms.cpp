@@ -14,9 +14,8 @@ int main() {
     using vertex = vec2<number>;
     using mat = matrix_3x3<number>;
 
-    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= canvas<Bitmap24>;
-    auto * canvas = new Canvas24(W, H);
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
+    Canvas24 canvas(W, H);
     sampling::flat_color<> color_red{{255,0,0,255}};
 
     vertex vertices[4] = {{0,0},
@@ -44,8 +43,8 @@ int main() {
         mat shear_x = mat::shear_x(float(t));
         mat transform = translate * rotation_pivot;
 
-        canvas->clear({255,255,255,255});
-        canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+        canvas.clear({255,255,255,255});
+        canvas.drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
                 color_red,
                 transform,
                 vertices,
@@ -57,5 +56,5 @@ int main() {
                 150);
     };
 
-    example_run(canvas, render);
+    example_run(&canvas, render);
 }

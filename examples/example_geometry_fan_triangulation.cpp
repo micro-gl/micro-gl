@@ -11,7 +11,8 @@
 
 template <typename number>
 dynamic_array<vec2<number>> poly_diamond() {
-    return {
+    using il = std::initializer_list<vec2<number>>;
+    return il{
         {100,300},
         {300, 100},
         {400, 300},
@@ -24,14 +25,14 @@ int main() {
 //    using number = Q<12>;
 
     using Canvas24 = canvas<bitmap<coder::RGB888_PACKED_32>>;
-    auto *canvas = new Canvas24(W, H);
+    Canvas24 canvas(W, H);
     sampling::flat_color<> color_red{{255, 0, 0, 255}};
 
     auto render_polygon = [&](const dynamic_array<vec2<number>> &polygon) {
         using index = unsigned int;
         using fan = tessellation::fan_triangulation<number>;
 
-        canvas->clear({255, 255, 255, 255});
+        canvas.clear({255, 255, 255, 255});
 
         auto type = triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY;
 
@@ -47,7 +48,7 @@ int main() {
         );
 
         // draw triangles batch
-        canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+        canvas.drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
                 color_red,
                 matrix_3x3<number>::identity(),
                 polygon.data(),
@@ -59,7 +60,7 @@ int main() {
                 120);
 
         // draw triangulation
-        canvas->drawTrianglesWireframe(
+        canvas.drawTrianglesWireframe(
                 {0, 0, 0, 255},
                 matrix_3x3<number>::identity(),
                 polygon.data(),
@@ -73,5 +74,5 @@ int main() {
         render_polygon(poly_diamond<number>());
     };
 
-    example_run(canvas, render);
+    example_run(&canvas, render);
 }

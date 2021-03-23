@@ -136,8 +136,9 @@ namespace microgl {
             identity_fill();
         };
 
-        matrix_3x3(const std::initializer_list<number> &list) :
-                            base__(list) {}
+        template<class Iterable>
+        matrix_3x3(const Iterable & list) : base__{list} {
+        }
 
         matrix_3x3(const_type_ref fill_value) :
                 base__(fill_value) {}

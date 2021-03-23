@@ -3,6 +3,7 @@
 #include <microgl/color.h>
 #include <microgl/crpt.h>
 #include <microgl/channel.h>
+#include <microgl/stdint.h>
 
 namespace microgl {
     namespace blendmode {

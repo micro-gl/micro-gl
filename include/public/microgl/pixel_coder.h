@@ -10,7 +10,7 @@ namespace microgl {
 
         using namespace microgl::color;
         using namespace microgl::traits;
-        using channel = uint8_t;
+//        using channel = uint8_t;
 //        using bits = uint8_t;
 
         /**

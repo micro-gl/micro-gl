@@ -1,4 +1,3 @@
-#include "src/Resources.h"
 #include "src/example.h"
 #include <microgl/camera.h>
 #include <microgl/canvas.h>
@@ -7,7 +6,6 @@
 #include <microgl/shaders/color_shader.h>
 #include "data/model_3d_cube.h"
 
-#define TEST_ITERATIONS 1
 #define W 640*1
 #define H 640*1
 
@@ -18,9 +16,8 @@ int main() {
 //    using number = Q<15>;
 //    using number = Q<16>;
 
-//    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
-    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
-    auto * canvas = new Canvas24(W, H);
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
+    Canvas24 canvas(W, H);
     float t = -30.0;
 
     auto test_shader_texture_3d = [&](const model_3d<number> & object) {
@@ -29,31 +26,28 @@ int main() {
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
         using math = microgl::math;
-//        using vertex_attribute= color_shader_vertex_attributes<number>;
+        using shader_ = color_shader<number, rgba_t<8,8,8,0>>;
+        using vertex_attributes = shader_::vertex_attributes;
 
         t-=0.0425;
 
         // setup mvp matrix
-        mat4 model_1 = mat4::transform({
-                                               math::deg_to_rad(t / 2),
-                                               math::deg_to_rad(t / 2),
-                                               math::deg_to_rad(t / 2)},
-                                       {-5,0, 0},
-                                       {10,10,10});
-//        mat4 view = camera::lookAt<number>({0, 0, 30}, {0,0, 0}, {0,1,0});
-        mat4 view = camera::angleAt<number>({0, 0, 70+ 0 / t}, 0,
-                                    math::deg_to_rad(0), 0);
+        number radians = math::deg_to_rad(t / 2);
+        vertex rotation = {radians, radians, radians};
+        vertex translation = {-5,0, 0};
+        vertex scale = {10,10,10};
+        mat4 model = mat4::transform(rotation, translation, scale);
+        mat4 view = camera::lookAt<number>({0, 0, 70}, {0,0, 0}, {0,1,0});
+//        mat4 view = camera::angleAt<number>({0, 0, 70}, 0,0, 0);
         mat4 projection = camera::perspective<number>(math::deg_to_rad(60),
-                                              canvas->width(), canvas->height(), 20, 100);
-//        mat4 projection= camera::orthographic<number>(-canvas->width()/2, canvas->width()/2,
-//                                              -canvas->height()/2, canvas->height()/2, 1, 500);
-        mat4 mvp_1= projection*view*model_1;
+                                                      canvas.width(), canvas.height(), 20, 100);
+//        mat4 projection= camera::orthographic<number>(-W/2, W/2,-H/2, H/2, 1, 500);
+//        mat4 projection= camera::orthographic<number>(0, W,0, H, 1, 500);
+        mat4 mvp= projection*view*model;
 
         // setup shader
-        using shader_ = color_shader<number, rgba_t<8,8,8,0>>;
-        using vertex_attributes = shader_::vertex_attributes;
         shader_ shader;
-        shader.matrix= mvp_1;
+        shader.matrix= mvp;
 
         // model to vertex buffers
         dynamic_array<vertex_attributes> vertex_buffer{object.vertices.size()};
@@ -68,9 +62,10 @@ int main() {
         }
 
         // draw model_1
-        canvas->drawTriangles<blendmode::Normal, porterduff::None<>, true, true, false>(
+        canvas.clear({255,255,255,255});
+        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, true, true, false>(
                 shader,
-                canvas->width(), canvas->height(),
+                canvas.width(), canvas.height(),
                 vertex_buffer.data(),
                 object.indices.data(),
                 object.indices.size(),
@@ -80,11 +75,11 @@ int main() {
     };
 
     auto render = [&]() {
-        canvas->clear({255,255,255,255});
-        canvas->updateClipRect(0,0,W,H);
-        test_shader_texture_3d(cube_3d<number>);
+        static auto model = cube_3d<number>;
+
+        test_shader_texture_3d(model);
     };
 
-    example_run(canvas, render);
+    example_run(&canvas, render);
 }
 

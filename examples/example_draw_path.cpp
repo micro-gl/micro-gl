@@ -11,29 +11,11 @@ using microgl::tessellation::path;
 float t = 0;
 
 template <typename number>
-dynamic_array<vec2<number>> box(float left, float top, float right, float bottom, bool ccw=false) {
-    if(!ccw)
-        return {
-                {left,top},
-                {right,top},
-                {right,bottom},
-                {left,bottom},
-        };
-
-    return{
-            {left,top},
-            {left,bottom},
-            {right,bottom},
-            {right,top},
-    };
-};
-
-template <typename number>
 path<number> path_star() {
+
     path<number> path{};
     path.lineTo({150, 150})
         .quadraticCurveTo({450, 0}, {450, 150})
-//        .lineTo({450, 150})
         .lineTo({200,450})
         .lineTo({300,50})
         .lineTo({400,450})
@@ -44,25 +26,26 @@ path<number> path_star() {
 template <typename number>
 path<number> path_star_2() {
     path<number> path{};
-    path.linesTo({{150, 150},
-                  {450,150},
-                  {200,450},
-                  {300,50},
-                  {400,450}})
-            .moveTo({150/2, 150/2})
-            .linesTo({{450/2,150/2},
-                      {200/2,450/2},
-                      {300/2,50/2},
-                      {400/2,450/2}})
-            .moveTo({150/10, 150/10})
-            .linesTo({{450/10,150/10},
-                      {200/10,450/10},
-                      {300/10,50/10},
-                      {400/10,450/10}})
-            .rect(50, 50, 250, 250)
-            .rect(50, 250, 550, 50, false)
-            .rect(50, 450, 50, 50, false)
-            .closePath();
+
+    path.linesTo2(150, 150,
+                  450,150,
+                  200,450,
+                  300,50,
+                  400,450)
+        .moveTo({150/2, 150/2})
+        .linesTo2(450/2,150/2,
+                  200/2,450/2,
+                  300/2,50/2,
+                  400/2,450/2)
+        .moveTo({150/10, 150/10})
+        .linesTo2(450/10,150/10,
+                      200/10,450/10,
+                      300/10,50/10,
+                      400/10,450/10)
+        .rect(50, 50, 250, 250)
+        .rect(50, 250, 550, 50, false)
+        .rect(50, 450, 50, 50, false)
+        .closePath();
 
     return path;
 }
@@ -120,44 +103,37 @@ path<number> path_test() {
 
 int main() {
 //    using number = float;
-    using number = double;
-//    using number = Q<12>;
+//    using number = double;
+    using number = Q<12>;
 //    using number = Q<4>;
 
-    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= canvas<Bitmap24>;
+    using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
     sampling::flat_color<> color_red {{255,0,255,255}};
+
     Canvas24 canvas(W, H);
 
-    auto render_path = [&](path<number> path) {
+    auto render_path = [&](path<number> & path) {
         canvas.clear({255, 255, 255, 255});
-        canvas.drawPathFill<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, false>(
+        canvas.drawPathFill<blendmode::Normal, porterduff::None<>, false, false>(
                 color_red,
                 matrix_3x3<number>::identity(),
                 path,
                 tessellation::fill_rule::even_odd,
                 tessellation::tess_quality::prettier_with_extra_vertices,
 //            tessellation::tess_quality::better,
-                250
+                255
         );
 
     };
 
     auto render = [&]() {
-        render_path(path_star<number>());
-//        render_path(path_star_2<number>());
-//        render_path(path_rects<number>());
-//        render_path(path_arc<number>());
+        static auto path = path_star_2<number>();
+//        static auto path = path_star<number>();
+//        static auto path = path_rects<number>();
+//        static auto path = path_arc<number>();
+//        static auto path = path_test<number>();
 
-//        render_path(path_arc<number>());
-
-//        render_path(path_arc<number>());
-//        render_path(path_arc<number>());
-//        render_path(path_arc<number>());
-//        render_path(path_arc<number>());
-//        render_path(path_arc<number>());
-//        render_path(path_test<number>());
-
+        render_path(path);
     };
 
     example_run(&canvas, render);

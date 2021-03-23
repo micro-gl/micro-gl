@@ -14,6 +14,8 @@ namespace microgl {
 
         struct text_format {
             int leading=0;
+            // -1 means use the native size of the font, otherwise
+            // it will be scaled.
             int fontSize=-1;
             int letterSpacing=0;
             wordWrap wordWrap=wordWrap::normal;

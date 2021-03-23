@@ -13,11 +13,10 @@ int main() {
 //    using number = float;
     using number = Q<15>;
 
-    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= canvas<Bitmap24>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     sampling::flat_color<> color_red{{255,0,0,255}};
 
-    auto * canvas = new Canvas24(W, H);
+    Canvas24 canvas(W, H);
 
     const auto render_arc_internal = [&](
             const number& start_angle_rad,
@@ -44,10 +43,10 @@ int main() {
                 true
         );
 
-        canvas->clear({255,255,255,255});
+        canvas.clear({255,255,255,255});
 
         for (uint ix = 0; ix < arc_points.size()-0; ++ix) {
-            canvas->drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+            canvas.drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
                     color_red, color_red,
                     arc_points[ix].x,
                     arc_points[ix].y,
@@ -55,7 +54,7 @@ int main() {
                     120);
         }
 
-        canvas->drawWuLinePath(
+        canvas.drawWuLinePath(
                 {0,0,0,255},
                 arc_points.data(),
                 arc_points.size(),
@@ -75,5 +74,5 @@ int main() {
                 rotation,32);
     };
 
-    example_run(canvas, render);
+    example_run(&canvas, render);
 }

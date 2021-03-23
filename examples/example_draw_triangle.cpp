@@ -5,7 +5,6 @@
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/flat_color.h>
 
-#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 640*1
 
@@ -15,7 +14,7 @@ using index_t = unsigned int;
 float t=0;
 
 int main() {
-    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, 0>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
 //    using number = Q<12>;
     using number = float;
@@ -28,12 +27,12 @@ int main() {
 
     auto render_flat = [&]() -> void {
         canvas.clear({255,255,255,255});
-//        canvas->drawTriangle<blendmode::Normal, porterduff::None<true>>(
-//                color_sampler,
-//                10.0f, 10.0f, 0.0f, 0.0f,
-//                400.0f, 10.0f, 1.0f, 0.0f,
-//                400.0f, 400.0f, 1.0f, 1.0f,
-//                255);
+        canvas.drawTriangle<blendmode::Normal, porterduff::None<true>>(
+                color_sampler,
+                10.0f, 10.0f, 0.0f, 0.0f,
+                400.0f, 10.0f, 1.0f, 0.0f,
+                400.0f, 400.0f, 1.0f, 1.0f,
+                255);
     };
 
     auto render_tex = [&]() -> void {
@@ -41,24 +40,24 @@ int main() {
         canvas.clear({255,255,255,255});
         canvas.drawTriangle<blendmode::Normal, porterduff::None<>>(
                 tex_uv,
-                10.0+t,10.0, 0.0, 1.0,
-                500.0+0,10.0, 1.0, 1.0,
-                500.0+0,500.0, 1.0, 0.0,
+                10.0   ,10.0, 0.0, 1.0,
+                250.0+0,10.0, 1.0, 1.0,
+                250.0+0,250.0, 1.0, 0.0,
                 255);
     };
 
     auto render_tex_aa = [&]() -> void {
 //        t+=0.01f;
         canvas.clear({255,255,255,255});
-//        canvas->drawTriangle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
-//                tex_uv,
-//                10.0,10.0, 0.0, 1.0,
-//                500.0+t,10.0, 1.0, 1.0,
-//                500.0+t,500.0, 1.0, 0.0,
-//                255);
+        canvas.drawTriangle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+                tex_uv,
+                10.0,10.0, 0.0, 1.0,
+                500.0,10.0, 1.0, 1.0,
+                500.0,500.0, 1.0, 0.0,
+                255);
     };
 
-//    example_run(canvas, render_flat);
+//    example_run(&canvas, render_flat);
     example_run(&canvas, render_tex);
-//    example_run(canvas, render_tex_aa);
+//    example_run(&canvas, render_tex_aa);
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <microgl/base_bitmap.h>
-#include <microgl/micro_gl_traits.h>
 
 /**
  * packed bitmap is a memory efficient bitmap, that encodes pixels as group of bits
@@ -16,8 +15,8 @@ class PackedBitmap : public base_bitmap<PackedBitmap<BPP, CODER, reverse_element
     using base=base_bitmap<PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte>, CODER, uint8_t>;
     using byte=unsigned char;
     static constexpr bool is_1_2_4_8 = BPP==1||BPP==2||BPP==4||BPP==8;
-    typename std::enable_if<is_1_2_4_8, bool>::type fails_if_else;
-    typename std::enable_if<microgl::traits::is_same<typename CODER::pixel, byte>::value, bool>::type fails_if_not_pixel_8_bit;
+    typename microgl::traits::enable_if<is_1_2_4_8, bool>::type fails_if_else;
+    typename microgl::traits::enable_if<microgl::traits::is_same<typename CODER::pixel, byte>::value, bool>::type fails_if_not_pixel_8_bit;
     static constexpr byte M = 3;
     static constexpr byte BPE = byte(1)<<M; // always 8 bits, 1 byte
     static constexpr byte K=(BPP==1 ? 0 : (BPP==2 ? 1 : (BPP==4 ? 2 : (BPP==8 ? 3 : 4))));
@@ -29,12 +28,8 @@ public:
     using base::pixelAt;
     using base::writeAt;
 
-    static
-    int pad_to(int val, int bits, int align) {
-        int I=(val*bits)%align;
-        int R=8-I;
-        int extra=R/bits;
-        return val+extra;
+    static int round(int val) {
+        return (val + ((1<<T)-1))>>T;
     }
 
     /**
@@ -44,14 +39,25 @@ public:
      * @param w the bitmap width
      * @param h the bitmap height
      */
-    PackedBitmap(void* $pixels, int w, int h) : base {$pixels, (w*h + ((1<<T)-1))>>T, w, h} {}; // todo:: padding/rounding ?
+    PackedBitmap(void* $pixels, int w, int h, bool owner=false) :
+                                            base {$pixels, round(w*h), w, h, owner} {};
     /**
      * construct a bitmap and allocate a pixel array
      *
      * @param w the bitmap width
      * @param h the bitmap height
      */
-    PackedBitmap(int w, int h) : PackedBitmap{new uint8_t[(w*h + ((1<<T)-1))>>T], w, h} {};
+    PackedBitmap(int w, int h) : PackedBitmap{new uint8_t[round(w*h)], w, h, true} {};
+    PackedBitmap(const PackedBitmap & bmp) : base{bmp} {}
+    PackedBitmap(PackedBitmap && bmp)  noexcept : base(microgl::traits::move(bmp)) {}
+    PackedBitmap & operator=(const PackedBitmap & bmp) {
+        base::operator=(bmp);
+        return *this;
+    }
+    PackedBitmap & operator=(PackedBitmap && bmp) noexcept {
+        base::operator=(microgl::traits::move(bmp));
+        return *this;
+    }
     ~PackedBitmap() = default;
 
     uint8_t extract_pixel(unsigned int index1) const {

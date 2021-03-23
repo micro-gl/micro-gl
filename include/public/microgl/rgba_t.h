@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include <microgl/stdint.h>
 
 namespace microgl {
     /**

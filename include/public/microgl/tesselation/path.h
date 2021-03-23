@@ -1,6 +1,7 @@
 #pragma once
 
 #include <microgl/triangles.h>
+#include <microgl/micro_gl_traits.h>
 #include <microgl/tesselation/curve_divider.h>
 #include <microgl/tesselation/elliptic_arc_divider.h>
 #include <microgl/tesselation/stroke_tessellation.h>
@@ -48,7 +49,7 @@ namespace microgl {
                 return *this;
             }
             path &operator=(path && $path) noexcept {
-                _paths_vertices=std::move($path._paths_vertices);
+                _paths_vertices=traits::move($path._paths_vertices);
                 return *this;
             }
 
@@ -90,7 +91,6 @@ namespace microgl {
             auto closePath() -> path & {
                 if(sizeOfCurrentSubPath()==0) return *this;
                 // move the pen to the first vertex of the sub-path and
-                const vertex first_point = firstPointOfCurrentSubPath();
                 const vertex last_point = lastPointOfCurrentSubPath();
                 // if two last points equal the first one, it is a close path signal
                 _paths_vertices.push_back(last_point);
@@ -100,11 +100,34 @@ namespace microgl {
                 return *this;
             }
 
-            auto linesTo(const std::initializer_list<vertex> &list) -> path & {
-                for(auto it = list.begin(); it != list.end(); ++it)
-                    lineTo(*it);
+            /**
+             * insert lines from an iterable container
+             * @tparam Iterable
+             * @param list
+             * @return
+             */
+            template<class Iterable>
+            auto linesTo(const Iterable & list) -> path & {
+                for (const auto & item : list)
+                    lineTo(item);
                 return *this;
             }
+
+            /**
+             * unpacked variadic version of lines to
+             *
+             */
+            template<typename... Args>
+            auto linesTo2(const number & x, const number & y, Args... args) -> path & {
+                linesTo2(x, y);
+                linesTo2(args...);
+                return *this;
+            }
+            auto linesTo2(const number & x, const number & y) -> path & {
+                lineTo({x, y});
+                return *this;
+            }
+
             auto lineTo(const vertex & point, number threshold=number(1)) -> path & {
                 auto current_path = _paths_vertices.back();
                 threshold=threshold<0 ? 0 : threshold;
@@ -205,12 +228,12 @@ namespace microgl {
                 triangles::indices output_indices_type{};
                 explicit buffers()= default;
                 buffers(buffers && val) noexcept {
-                    move(val);
+                    move_from(val);
                 }
                 buffers & operator=(buffers && val) noexcept {
-                    move(val); return *this;
+                    move_from(val); return *this;
                 }
-                void move(buffers & val) {
+                void move_from(buffers & val) {
                     DEBUG_output_trapezes=traits::move(val.DEBUG_output_trapezes);
                     output_vertices=traits::move(val.output_vertices);
                     output_indices=traits::move(val.output_indices);
@@ -242,28 +265,47 @@ namespace microgl {
             };
 
             struct stroke_cache_info {
-                number stroke_width;stroke_cap cap;
+                number stroke_width; stroke_cap cap;
                 stroke_line_join line_join; int miter_limit;
-                std::initializer_list<int> stroke_dash_array;
+                unsigned int stroke_dash_array_signature;
                 int stroke_dash_offset;
+
+                static unsigned used_integer_bits(const unsigned & value) {
+                    bits bits_used=0;
+                    while (value>int(1)<<(bits_used++)) {};
+                    return bits_used-1;
+                }
+
+                static unsigned int pow(unsigned base, unsigned exponent) {
+                    unsigned int result= 1;
+                    for (int ix = 0; ix < exponent; ++ix)
+                        result = result * base;
+                    return result;
+                }
+
+                template<class Iterable>
+                static unsigned int integer_sequence_to_integer(const Iterable & iterable) {
+                    using integer = unsigned int;
+                    integer max = (1u<<16) - 1;
+                    for (const auto & item : iterable) {
+                        if(integer(item) > max)
+                            max = integer(item);
+                    }
+                    auto bits = used_integer_bits(max);
+                    auto base = 1u<<bits;
+                    integer result=0, index=0;
+                    for (const auto & item : iterable)
+                        result += (integer(item)) * pow(base, index++);
+                    return result;
+                }
+
                 bool operator==(const stroke_cache_info &val) {
-                    bool a= stroke_width==val.stroke_width &&
+                    return stroke_width==val.stroke_width &&
                             cap==val.cap &&
                             line_join==val.line_join &&
                             miter_limit==val.miter_limit &&
-                            stroke_dash_offset==val.stroke_dash_offset;
-                    bool b=stroke_dash_array.size()==val.stroke_dash_array.size();
-                    if(b) {
-                        auto *iter_a=stroke_dash_array.begin();
-                        auto *iter_b=val.stroke_dash_array.begin();
-                        while (iter_a!=stroke_dash_array.end()) {
-                            if(*iter_a!=*iter_b) {
-                                b=false; break;
-                            }
-                            iter_a++; iter_b++;
-                        }
-                    }
-                    return a && b;
+                            stroke_dash_offset==val.stroke_dash_offset &&
+                            stroke_dash_array_signature==val.stroke_dash_array_signature;
                 }
             };
 
@@ -293,15 +335,18 @@ namespace microgl {
                 return _tess_fill;
             }
 
+            template<class Iterable>
             buffers & tessellateStroke(const number & stroke_width=number(1),
                                        const stroke_cap &cap=stroke_cap::butt,
                                        const stroke_line_join &line_join=stroke_line_join::bevel,
                                        const int miter_limit=4,
-                                       const std::initializer_list<int> & stroke_dash_array={},
+                                       const Iterable & stroke_dash_array={},
                                        int stroke_dash_offset=0,
                                        bool compute_boundary_buffer=true) {
                 stroke_cache_info info{stroke_width, cap, line_join, miter_limit,
-                                       stroke_dash_array, stroke_dash_offset};
+                                       stroke_cache_info::template integer_sequence_to_integer<Iterable>(stroke_dash_array),
+                                       stroke_dash_offset};
+
                 const bool was_computed=(info==_latest_stroke_cache_info) &&
                         _tess_stroke.output_vertices.size()!=0;
                 if(_invalid || !was_computed) {

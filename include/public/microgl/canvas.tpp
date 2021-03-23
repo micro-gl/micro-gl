@@ -344,11 +344,11 @@ void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill
 template<typename bitmap_type, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename Sampler>
 void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
-                                       const number1 left, const number1 top,
-                                       const number1 right, const number1 bottom,
+                                       const number1 & left, const number1 & top,
+                                       const number1 & right, const number1 & bottom,
                                        opacity_t opacity,
-                                       const number2 u0, const number2 v0,
-                                       const number2 u1, const number2 v1) {
+                                       const number2 & u0, const number2 & v0,
+                                       const number2 & u1, const number2 & v1) {
     static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
     const precision p_sub = renderingOptions()._2d_raster_bits_sub_pixel,
             p_uv = renderingOptions()._2d_raster_bits_uv;
@@ -364,11 +364,11 @@ template<typename bitmap_type, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename Sampler>
 void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
                                        const matrix_3x3<number1> &transform,
-                                       const number1 left, const number1 top,
-                                       const number1 right, const number1 bottom,
+                                       const number1 & left, const number1 & top,
+                                       const number1 & right, const number1 & bottom,
                                        opacity_t opacity,
-                                       const number2 u0, const number2 v0,
-                                       const number2 u1, const number2 v1) {
+                                       const number2 & u0, const number2 & v0,
+                                       const number2 & u1, const number2 & v1) {
     static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
     vec2<number1> p0{left, top}, p1{left, bottom}, p2{right, bottom}, p3{right, top};
     if(!transform.isIdentity()) {p0=transform*p0; p1=transform*p1; p2=transform*p2; p3=transform*p3;}
@@ -654,16 +654,15 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
     const rint area = area_;
     const rint area_c = area>>sub_pixel_precision;
     if(area_c==0) return;
-
     precision bits_used_area=microgl::functions::used_integer_bits(area);
     precision bits_used_max_uv=
             microgl::functions::used_integer_bits(
-                    microgl::functions::abs_max({u0,v0,q0, u1,v1,q1, u2,v2,q2}));
+                    microgl::functions::abs_max(u0,v0,q0, u1,v1,q1, u2,v2,q2));
     const precision LL = bits_used_area + precision_one_over_area;
     rint one_area = (rint_big(1)<<LL) / rint_big(area);
     if(avoid_overflows) {
         precision size_of_int_bits = sizeof(rint)<<3, size_of_big_int_bits = sizeof(rint_big)<<3;
-        const bool first_test = bits_used_area + bits_used_max_uv - sub_pixel_precision < size_of_int_bits;
+        const bool first_test = bits_used_area + bits_used_max_uv - sub_pixel_precision - 2 < size_of_int_bits;
         if(!first_test) return;
         if(!divide) {
             const bool second_test= bits_used_area + bits_used_max_uv - sub_pixel_precision +
@@ -755,7 +754,7 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
                 rint w0_c=w0>>pp, w1_c=w1>>pp, w2_c=w2>>pp;
                 rint u_fixed = (w0_c*rint(u2)) + (w1_c*rint(u0)) + (w2_c*rint(u1));
                 rint v_fixed = (w0_c*rint(v2)) + (w1_c*rint(v0)) + (w2_c*rint(v1));
-                if(perspective_correct) {
+                if(perspective_correct) { // compile-time branching
                     rint q_fixed = (w0_c*rint(q2)) +
                                    (w1_c*rint(q0)) + (w2_c*rint(q1));
                     rint q_compressed=q_fixed>>uv_precision; // this would not render with overflow detection
@@ -763,7 +762,7 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
                         u_i = rint(u_fixed/q_compressed); v_i = rint(v_fixed/q_compressed);
                     }
                 } else {
-                    if(divide) { // division is stabler and is un-avoidable most of the time for pure 32 bit mode
+                    if(divide) { // compile-time branching: division is stabler and is un-avoidable most of the time for pure 32 bit mode
                         rint aaa = w0_c+w1_c+w2_c;
                         if(aaa){
                             u_i = (u_fixed)/aaa; v_i = (v_fixed)/aaa;
@@ -918,8 +917,9 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
         precision size_of_int_bits = sizeof(rint)<<3, size_of_big_int_bits = sizeof(rint_big)<<3;
         auto bits_used_max_area=microgl::functions::used_integer_bits(area);
         auto bits_used_max_w=microgl::functions::used_integer_bits(microgl::functions::abs_max(
-                {one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed}));
-        const bool first_test = bits_used_max_area + bits_used_max_w < size_of_int_bits;
+                one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed));
+        if(!perspective_correct) bits_used_max_w=0;
+        const bool first_test = bits_used_max_area + bits_used_max_w - sub_pixel_precision - 1 < size_of_int_bits;
         if(!first_test) return;
     }
     rint v0_z= rint(v0_viewport.z*zbuff.maxValue()), v1_z= rint(v1_viewport.z*zbuff.maxValue()),
@@ -975,15 +975,16 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
     rint A01 = v0_y-v1_y, A12 = v1_y-v2_y, A20 = v2_y-v0_y;
     rint B01 = v1_x-v0_x, B12 = v2_x-v1_x, B20 = v0_x-v2_x;
     const int pitch= width(); int index = p.y * pitch;
-    for (p.y = bbox.top; p.y <= bbox.bottom; p.y++, index+=pitch) {
+    for (p.y = bbox.top; p.y <= bbox.bottom; p.y++, index+=pitch, b0_row+=B01, b1_row+=B12, b2_row+=B20) {
         rint b0 = b0_row, b1 = b1_row, b2 = b2_row;
-        for (p.x = bbox.left; p.x<=bbox.right; p.x++) {
+        for (p.x = bbox.left; p.x<=bbox.right; p.x++, b0+=A01, b1+=A12, b2+=A20) {
             // closure test with full sub pixel precision
             const bool in_closure= (b0 | b1 | b2) >= 0;
             bool should_sample= in_closure;
             auto opacity_sample = opacity;
             rint b0_c = b0>>sub_pixel_precision, b1_c = b1>>sub_pixel_precision, b2_c = b2>>sub_pixel_precision;
             rint area_c = b0_c + b1_c + b2_c;
+            if(!area_c) continue; // compression can cause zero area
             auto bary = vec4<rint>{b0_c, b1_c, b2_c, area_c};
             if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
                 bary.x= (b0_c * one_over_w0_fixed) >> w_bits;
@@ -1008,9 +1009,7 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
                 auto color = $shader.fragment(interpolated_varying);
                 blendColor<BlendMode, PorterDuff, shader_type::rgba::a>(color, index + p.x, opacity_sample);
             }
-            b0+=A01; b1+=A12; b2+=A20;
         }
-        b0_row+=B01; b1_row+=B12; b2_row+=B20;
     }
 #undef f
 }
@@ -1187,7 +1186,7 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
 
 template<typename bitmap_type, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1,
-        typename number2, typename Sampler>
+        typename number2, typename Sampler, class Iterable>
 void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
                                              const matrix_3x3<number1> &transform,
                                              tessellation::path<number1> & path,
@@ -1195,12 +1194,13 @@ void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
                                              const tessellation::stroke_cap &cap,
                                              const tessellation::stroke_line_join &line_join,
                                              const int miter_limit,
-                                             const std::initializer_list<int> & stroke_dash_array,
+                                             const Iterable & stroke_dash_array,
                                              int stroke_dash_offset,
                                              opacity_t opacity,
                                              const number2 u0, const number2 v0,
                                              const number2 u1, const number2 v1) {
-    const auto & buffers= path.tessellateStroke(stroke_width, cap, line_join, miter_limit, stroke_dash_array, stroke_dash_offset);
+    const auto & buffers= path.template tessellateStroke<Iterable>(
+            stroke_width, cap, line_join, miter_limit, stroke_dash_array, stroke_dash_offset);
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(
             sampler, transform,
             buffers.output_vertices.data(),
@@ -1212,7 +1212,7 @@ void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
             opacity,
             u0, v0, u1, v1);
     if(debug)
-        drawTrianglesWireframe({0,0,0,255}, transform,
+        drawTrianglesWireframe({0, 0, 0, 255}, transform,
                                buffers.output_vertices.data(),
                                buffers.output_indices.data(),
                                buffers.output_indices.size(),
@@ -1509,14 +1509,12 @@ void canvas<bitmap_type, options>::fxaa(int left, int top, int right, int bottom
 
 #include <microgl/samplers/texture.h>
 template<typename bitmap_type, uint8_t options>
-template<bool tint, typename BITMAP_FONT_TYPE>
-void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bitmap_font<BITMAP_FONT_TYPE> &font,
+template<bool tint, bool smooth, typename bitmap_font_type>
+void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bitmap_font<bitmap_font_type> &font,
                                        const color_t & color, microgl::text::text_format & format,
                                        int left, int top, int right, int bottom, bool frame,
                                        opacity_t opacity) {
     rect old=clipRect(); updateClipRect(left, top, right, bottom);
-//    microgl::sampling::texture<BITMAP_FONT_TYPE, sampling::texture_filter::NearestNeighboor> texture{font._bitmap};
-//    drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(texture,0,0, font._bitmap->width(), font._bitmap->height());return;
     unsigned int text_size=0;
     { const char * iter=text; while(*iter++!= '\0' && ++text_size); }
     microgl::text::char_location loc_buffer[text_size];
@@ -1525,18 +1523,19 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
     const int s=result.scale, PP=result.precision;
     const bool has_scaled=s!=1<<PP;
     if(has_scaled){ // we use the sampler for scaled
-        using tex = microgl::sampling::texture<BITMAP_FONT_TYPE, sampling::texture_filter::NearestNeighboor, tint>;
-        tex texture{font._bitmap, color};
+        constexpr auto filter = smooth ? sampling::texture_filter::Bilinear : sampling::texture_filter::NearestNeighboor;
+        using tex = microgl::sampling::texture<bitmap_font_type, filter, tint>;
+        tex texture{font.bitmap, color};
         const int UVP=renderingOptions()._2d_raster_bits_uv;
         int u0, v0, u1, v1;
         for (unsigned ix = 0; ix < count; ++ix) {
             const auto & l= result.locations[ix];
-            u0=(l.character->x<<UVP)/font._bitmap->width();
-            u1=((l.character->x+l.character->width)<<UVP)/font._bitmap->width();
-            v0=((font._bitmap->height()-l.character->y)<<UVP)/font._bitmap->height();
-            v1=((font._bitmap->height()-l.character->y-l.character->height)<<UVP)/font._bitmap->height();
-            v0=((l.character->y)<<UVP)/font._bitmap->height();
-            v1=((l.character->y+l.character->height)<<UVP)/font._bitmap->height();
+            u0=(l.character->x<<UVP)/font.bitmap->width();
+            u1=((l.character->x+l.character->width)<<UVP)/font.bitmap->width();
+            v0= ((font.bitmap->height() - l.character->y) << UVP) / font.bitmap->height();
+            v1= ((font.bitmap->height() - l.character->y - l.character->height) << UVP) / font.bitmap->height();
+            v0=((l.character->y)<<UVP)/font.bitmap->height();
+            v1=((l.character->y+l.character->height)<<UVP)/font.bitmap->height();
             int ll= l.x; ll+=left<<PP; int tt= l.y; tt+=top<<PP;
             int rr= ll + ((l.character->width*s)); int bb= tt + ((l.character->height*s));
             drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, decltype(texture)>(
@@ -1545,10 +1544,10 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
         }
     }
     else { // the sampler above gives amazing results for unscaled graphics, but I  to go for the most accurate version
-        constexpr uint8_t r_ = BITMAP_FONT_TYPE::rgba::r;
-        constexpr uint8_t g_ = BITMAP_FONT_TYPE::rgba::g;
-        constexpr uint8_t b_ = BITMAP_FONT_TYPE::rgba::b;
-        constexpr uint8_t a_ = BITMAP_FONT_TYPE::rgba::a;
+        constexpr uint8_t r_ = bitmap_font_type::rgba::r;
+        constexpr uint8_t g_ = bitmap_font_type::rgba::g;
+        constexpr uint8_t b_ = bitmap_font_type::rgba::b;
+        constexpr uint8_t a_ = bitmap_font_type::rgba::a;
         for (unsigned ix = 0; ix < count; ++ix) {
             const auto & l= result.locations[ix];
             const auto & c= *l.character;
@@ -1560,15 +1559,14 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
             color_t font_col;
             for (int y = b_r.top; y < b_r.bottom; ++y) {
                 for (int x = b_r.left; x < b_r.right; ++x) {
-                    font._bitmap->decode(c.x + x-b_r.left, (c.y + y-b_r.top), font_col);
+                    font.bitmap->decode(c.x + x - b_r.left, (c.y + y - b_r.top), font_col);
                     if(tint) {
-                        font_col.r = (uint16_t (font_col.r)*color.r)>>r_;
-                        font_col.g = (uint16_t (font_col.g)*color.g)>>g_;
-                        font_col.b = (uint16_t (font_col.b)*color.b)>>b_;
-                        font_col.a = (uint16_t (font_col.a)*color.a)>>a_;
+                        font_col.r = channel::mc<r_>(font_col.r, color.r);
+                        font_col.g = channel::mc<g_>(font_col.g, color.g);
+                        font_col.b = channel::mc<b_>(font_col.b, color.b);
+                        font_col.a = channel::mc<a_>(font_col.a, color.a);
                     }
                     blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_>(font_col, x, y, opacity);
-//                    blendColor({255,0,0,128}, x, y, opacity);
                 }
             }
         }

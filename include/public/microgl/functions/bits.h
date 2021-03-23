@@ -14,7 +14,7 @@ namespace microgl {
             const Integer abs_value= value<0 ? -value:value;
             bits bits_used=0;
             while (abs_value>Integer(1)<<(bits_used++)) {};
-            return bits_used-1;
+            return bits_used;
         }
 
     }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/micro_gl_traits.h>
+#include <microgl/stdint.h>
 
 namespace microgl {
     namespace channel {

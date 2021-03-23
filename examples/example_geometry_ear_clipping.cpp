@@ -6,7 +6,6 @@
 #include <microgl/tesselation/ear_clipping_triangulation.h>
 #include <microgl/triangles.h>
 
-#define TEST_ITERATIONS 1
 #define W 640*1
 #define H 480*1
 
@@ -14,17 +13,19 @@ float t = 0;
 
 template <typename number>
 dynamic_array<vec2<number>> poly_rect() {
+    using il = std::initializer_list<vec2<number>>;
     using vertex=vec2<number>;
     vertex p0 = {100,100};
     vertex p1 = {300, 100};
     vertex p2 = {300, 300};
     vertex p3 = {100, 300};
-    return {p0, p1, p2, p3};
+    return il{p0, p1, p2, p3};
 }
 
 float b = 1;
 template <typename number>
 dynamic_array<vec2<number>> poly_2_x_monotone() {
+    using il = std::initializer_list<vec2<number>>;
     using vertex=vec2<number>;
     vertex p0 = {100,100};
     vertex p1 = {300, 100};
@@ -32,21 +33,23 @@ dynamic_array<vec2<number>> poly_2_x_monotone() {
     vertex p3 = {200, 200};
     vertex p4 = {100, 300};
 
-    return {p0, p1, p2, p3, p4};
+    return il{p0, p1, p2, p3, p4};
 }
 
 template <typename number>
 dynamic_array<vec2<number>> poly_tri() {
+    using il = std::initializer_list<vec2<number>>;
     using vertex=vec2<number>;
     vertex p0 = {100,100};
     vertex p3 = {300, 100};
     vertex p4 = {100, 300};
 
-    return {p0, p3, p4};
+    return il{p0, p3, p4};
 }
 
 template <typename number>
 dynamic_array<vec2<number>> poly_hole() {
+    using il = std::initializer_list<vec2<number>>;
     using vertex=vec2<number>;
     vertex p0 = {100,100};
     vertex p1 = {300, 100};
@@ -63,7 +66,7 @@ dynamic_array<vec2<number>> poly_hole() {
     vertex p2_2 = {300-M, 300-M};
     vertex p3_2 = {300-M, 200};
 
-    return {p0, p1, p2, p3,
+    return il{p0, p1, p2, p3,
             p0_1, p1_1, p2_1,
             p0_2,
             p1_2, p2_2, p3_2,
@@ -74,8 +77,9 @@ dynamic_array<vec2<number>> poly_hole() {
 
 template <typename number>
 dynamic_array<vec2<number>> poly_hole3() {
+    using il = std::initializer_list<vec2<number>>;
     int M=10;
-    return {
+    return il{
             {10,10},
             {400,10},
             {400,400},
@@ -93,8 +97,9 @@ dynamic_array<vec2<number>> poly_hole3() {
 
 template <typename number>
 dynamic_array<vec2<number>> poly_hole4() {
+    using il = std::initializer_list<vec2<number>>;
     int M=10;
-    return {
+    return il{
             {10,10},
             {400,10},
             {400,400},
@@ -112,7 +117,8 @@ dynamic_array<vec2<number>> poly_hole4() {
 
 template <typename number>
 dynamic_array<vec2<number>> poly_3() {
-    return {
+    using il = std::initializer_list<vec2<number>>;
+    return il{
             {50,100},
             {100,50},
             {150,100},
@@ -143,14 +149,14 @@ int main() {
     sampling::flat_color<> color_black{{0,0,0,255}};
     Resources resources{};
 
-    auto * canvas = new Canvas24 (W, H);
+    Canvas24 canvas(W, H);
 
-    const auto render_polygon = [&](dynamic_array<vec2<number>> polygon) {
+    const auto render_polygon = [&](dynamic_array<vec2<number>> & polygon) {
         using index = unsigned int;
 
         //polygon[1].x = 140 + 20 +  t;
 
-        canvas->clear({255,255,255,255});
+        canvas.clear({255,255,255,255});
 
         using ear = microgl::tessellation::ear_clipping_triangulation<number>;
 
@@ -166,7 +172,7 @@ int main() {
         );
 
         // draw triangles batch
-        canvas->drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+        canvas.drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
                 color_red,
                 matrix_3x3<number>::identity(),
                 polygon.data(),
@@ -178,7 +184,7 @@ int main() {
                 122);
 
         // draw triangulation
-        canvas->drawTrianglesWireframe(
+        canvas.drawTrianglesWireframe(
                 {0,0,0,255},
                 matrix_3x3<number>::identity(),
                 polygon.data(),
@@ -190,15 +196,15 @@ int main() {
 
     const auto render = [&]() {
         t+=.05f;
-//        std::cout << t << std::endl;
-//        render_polygon(poly_rect<number>());
-        render_polygon(poly_3<number>());
-//        render_polygon(poly_hole<number>());
-//        render_polygon(poly_hole3<number>());
-//        render_polygon(poly_hole4<number>());
-//        render_polygon(poly_rect<number>());
-//        render_polygon(poly_tri<number>());
+        static auto poly = poly_rect<number>();
+//        static auto poly = poly_3<number>();
+//        static auto poly = poly_hole<number>();
+//        static auto poly = poly_hole3<number>();
+//        static auto poly = poly_hole4<number>();
+//        static auto poly = poly_tri<number>();
+
+        render_polygon(poly);
     };
 
-    example_run(canvas, render);
+    example_run(&canvas, render);
 }

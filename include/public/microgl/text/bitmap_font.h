@@ -16,9 +16,13 @@ namespace microgl {
             char_location * locations=nullptr;
         };
 
-        template<typename BITMAP>
+        /**
+         * bitmap font
+         * @tparam bitmap_type the type of bitmap
+         * @tparam MAX_CHARS max number of glyphs
+         */
+        template<typename bitmap_type, unsigned MAX_CHARS=100>
         class bitmap_font {
-            static const int MAX_CHARS = 100;
             static const int CHAR_MISSING = 0;
             static const int CHAR_TAB = 9;
             static const int CHAR_NEWLINE = 10;
@@ -40,7 +44,7 @@ namespace microgl {
             /** An offset that moves any generated text along the x-axis (in points).
               *  Useful to make up for incorrect font data. @default 0. */
             int offsetX = 0;
-            /** An offset that moves any generated text along the x-axis (in points).
+            /** An offset that moves any generated text along the y-axis (in points).
               *  Useful to make up for incorrect font data. @default 0. */
             int offsetY = 0;
             /** The width of a "gutter" around the composed text area, in points.
@@ -49,8 +53,7 @@ namespace microgl {
             int padding = 0;
             int glyphs_count = 0;
             int width=0, height=0;
-//            bitmap<P, pixel_coder_> *_bitmap = nullptr;
-            BITMAP *_bitmap = nullptr;
+            bitmap_type * bitmap = nullptr;
             bitmap_glyph gylphs[MAX_CHARS];
 
         public:

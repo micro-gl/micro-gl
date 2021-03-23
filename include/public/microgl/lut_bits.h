@@ -7,16 +7,18 @@ namespace microgl {
 
         /**
          * dynamic runtime (stack or heap storage) lookup table generation
-         * @tparam bits1
-         * @tparam bits2
+         * @tparam bits1 from bits
+         * @tparam bits2 to bits
+         * @tparam heap create on heap or stack
+         * @tparam mute mute, no data is spent
          */
-        template <uint8_t bits1, uint8_t bits2, bool heap=false>
+        template <uint8_t bits1, uint8_t bits2, bool heap=false, bool mute=false>
         struct dynamic_lut_bits {
         private:
             // let's fail if more than 8 bits
             typename microgl::traits::enable_if<bits1<=8 && bits2<=8, bool>::type fail_if_more_than_8_bits;
             constexpr static unsigned size=1u<<bits1;
-            dynamic_lut<uint8_t, size, heap> lut;
+            dynamic_lut<uint8_t, size, heap, mute> lut;
 
         public:
             dynamic_lut_bits() : lut{} {

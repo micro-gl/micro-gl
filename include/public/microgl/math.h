@@ -5,6 +5,11 @@
 
 namespace microgl {
 
+    template<typename number>
+    void foo(number val) {
+        val =0;
+    }
+
     class math {
     private:
         using cfr = const float &;
@@ -47,7 +52,7 @@ namespace microgl {
         }
 
         static float sqrt(const float &val) {
-            return sqrtf(val);
+            return std::sqrt(val);
         }
 
         static l64 sqrt(const l64 &val) {
@@ -66,7 +71,7 @@ namespace microgl {
         }
 
         static float length(cfr p_x, cfr p_y) {
-            return sqrtf(p_x*p_x + p_y*p_y);
+            return std::sqrt(p_x*p_x + p_y*p_y);
         }
 
         static double distance(double p0_x, double p0_y, double p1_x, double p1_y) {
@@ -76,7 +81,7 @@ namespace microgl {
         }
 
         static double length(double p_x, double p_y) {
-            return sqrtl(p_x*p_x + p_y*p_y);
+            return std::sqrt(p_x*p_x + p_y*p_y);
         }
 
         template<unsigned N>
@@ -121,15 +126,15 @@ namespace microgl {
 
         static
         float sin(const float & radians) {
-            return std::sinf(radians);
+            return std::sin(radians);
         }
         static
         float cos(const float & radians) {
-            return std::sinf(radians + float(HALF_PI));
+            return std::sin(radians + float(HALF_PI));
         }
         static
         float tan(const float & radians) {
-            return std::tanf(radians);
+            return std::tan(radians);
         }
 
         template <unsigned N>
@@ -167,12 +172,12 @@ namespace microgl {
 
         static
         float mod(float numer, float denom) {
-            return fmodf(numer, denom);
+            return std::fmod(numer, denom);
         }
 
         static
         double mod(double numer, double denom) {
-            return fmodf(numer, denom);
+            return std::fmod(numer, denom);
         }
 
         static

@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdint>
 
 namespace microgl {
 
@@ -7,9 +6,7 @@ namespace microgl {
     struct vec2 {
         number x, y;
         vec2() = default;
-        vec2(const number & x_, const number & y_) {
-            x = x_;
-            y = y_;
+        constexpr vec2(const number & x_, const number & y_) : x{x_}, y{y_}{
         }
 
         template<typename F>

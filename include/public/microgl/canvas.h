@@ -35,33 +35,34 @@
 using namespace microgl::triangles;
 using namespace microgl::polygons;
 using namespace microgl::shading;
+using namespace microgl::coder;
 
 /**
  * use big integers for 2d rasterizer, this implies a 64 bits place holders
  * for all or most calculations inside the rasterizer. bigger integers imply
  * overflow is harder to come by
  */
-#define CANVAS_OPT_2d_raster_USE_BIG_INT uint8_t(0b00000001)
+#define CANVAS_OPT_USE_BIG_INT uint8_t(0b00000001)
 /**
  * inside the 2d rasterizer, use division for uv-mapping, this reduces
  * the number of bits used BUT is slower. Generally this HAS to be used
  * on a forced 32 bit rasterizer, in case you want a pure 32 bit integers
  * only during rasterization. Do not use it when in BIG INT mode.
  */
-#define CANVAS_OPT_2d_raster_USE_DIVISION uint8_t(0b00000010)
+#define CANVAS_OPT_USE_DIVISION uint8_t(0b00000010)
 /**
  * inside the rasterizers, allow some bit compression in-order to minimize
  * overflow in 32 bit mode. disable it if 3d rendering for example starts
  * to jitter.
  */
-#define CANVAS_OPT_raster_COMPRESS_BITS uint8_t(0b00001000)
+#define CANVAS_OPT_COMPRESS_BITS uint8_t(0b00001000)
 /**
  * the 2d and 3d rasterizer can detect overflow of uv mapping, the detection
  * feature is great for debugging the rasterizer. this flag enables detection
  * and if so, exits the rendering. This is helpful for when using a 32 bit mode,
  * where overflows are likely to happen
  */
-#define CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS uint8_t(0b00000100)
+#define CANVAS_OPT_AVOID_RENDER_WITH_OVERFLOWS uint8_t(0b00000100)
 /**
  * use a true 32 bit mode in the 2d and 3d rasterizer, this means regular 32 bit integers
  * and also the usage of division in order to reduce overflow and also detecting
@@ -69,18 +70,27 @@ using namespace microgl::shading;
  * please adjust some of the render options bits in the canvas and make sure you
  * render small geometries at a time
  */
-#define CANVAS_OPT_2d_raster_FORCE_32_BIT (CANVAS_OPT_2d_raster_USE_DIVISION | \
-                        CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS | CANVAS_OPT_raster_COMPRESS_BITS)
+#define CANVAS_OPT_32_BIT (CANVAS_OPT_USE_DIVISION | CANVAS_OPT_COMPRESS_BITS | \
+                            CANVAS_OPT_AVOID_RENDER_WITH_OVERFLOWS)
+/**
+ * 32 bit mode without overflow detection
+ */
+#define CANVAS_OPT_32_BIT_FREE (CANVAS_OPT_USE_DIVISION | CANVAS_OPT_COMPRESS_BITS)
+
+/**
+ * 64 bit mode, includes usage of big integers
+ */
+#define CANVAS_OPT_64_BIT (CANVAS_OPT_USE_BIG_INT | \
+                            CANVAS_OPT_AVOID_RENDER_WITH_OVERFLOWS | \
+                            CANVAS_OPT_COMPRESS_BITS )
+/**
+ * 64 bit mode without overflow detection
+ */
+#define CANVAS_OPT_64_BIT_FREE (CANVAS_OPT_USE_BIG_INT | CANVAS_OPT_COMPRESS_BITS )
 /**
  * default preset, includes usage of big integers
  */
-#define CANVAS_OPT_2d_raster_FORCE_64_BIT (CANVAS_OPT_2d_raster_USE_BIG_INT | \
-                            CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS | \
-                            CANVAS_OPT_raster_COMPRESS_BITS )
-/**
- * default preset, includes usage of big integers
- */
-#define CANVAS_OPT_default CANVAS_OPT_2d_raster_FORCE_64_BIT
+#define CANVAS_OPT_default CANVAS_OPT_32_BIT_FREE
 
 /**
  * the main canvas object:
@@ -106,10 +116,10 @@ public:
         int index_correction=0;
     };
 
-    static constexpr bool options_compress_bits() { return options&CANVAS_OPT_raster_COMPRESS_BITS; }
-    static constexpr bool options_big_integers() { return options&CANVAS_OPT_2d_raster_USE_BIG_INT; }
-    static constexpr bool options_avoid_overflow() { return options&CANVAS_OPT_2d_raster_AVOID_RENDER_WITH_OVERFLOWS; }
-    static constexpr bool options_use_division() { return options&CANVAS_OPT_2d_raster_USE_DIVISION; }
+    static constexpr bool options_compress_bits() { return options & CANVAS_OPT_COMPRESS_BITS; }
+    static constexpr bool options_big_integers() { return options & CANVAS_OPT_USE_BIG_INT; }
+    static constexpr bool options_avoid_overflow() { return options & CANVAS_OPT_AVOID_RENDER_WITH_OVERFLOWS; }
+    static constexpr bool options_use_division() { return options & CANVAS_OPT_USE_DIVISION; }
     static constexpr bool hasNativeAlphaChannel() { return pixel_coder::rgba::a != 0;}
 
     /**
@@ -421,13 +431,13 @@ public:
      */
     template <typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
-            typename number1=float, typename number2=number1, typename Sampler>
+            typename number1, typename number2=number1, typename Sampler>
     void drawRect(const Sampler &sampler,
-                  number1 left, number1 top,
-                  number1 right, number1 bottom,
+                  const number1 & left, const number1 & top,
+                  const number1 & right, const number1 & bottom,
                   opacity_t opacity = 255,
-                  number2 u0= number2(0), number2 v0= number2(1),
-                  number2 u1= number2(1), number2 v1= number2(0));
+                  const number2 & u0= number2(0), const number2 & v0= number2(1),
+                  const number2 & u1= number2(1), const number2 & v1= number2(0));
 
     /**
      * Draw rectangle with transformation
@@ -456,11 +466,11 @@ public:
             typename number1=float, typename number2=number1, typename Sampler>
     void drawRect(const Sampler &sampler,
                   const matrix_3x3<number1> &transform,
-                  number1 left, number1 top,
-                  number1 right, number1 bottom,
+                  const number1 & left, const number1 & top,
+                  const number1 & right, const number1 & bottom,
                   opacity_t opacity = 255,
-                  number2 u0= number2(0), number2 v0= number2(1),
-                  number2 u1= number2(1), number2 v1= number2(0));
+                  const number2 & u0= number2(0), const number2 & v0= number2(1),
+                  const number2 & u1= number2(1), const number2 & v1= number2(0));
 
     /**
      * Draw a quadrilateral
@@ -982,7 +992,8 @@ public:
      * @param v1                    uv coord
      */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, bool debug=false, typename number1=float, typename number2=float, typename Sampler>
+            bool antialias=false, bool debug=false, typename number1=float, typename number2=float,
+            typename Sampler, class Iterable>
     void drawPathStroke(const Sampler &sampler,
                         const matrix_3x3<number1> &transform,
                         tessellation::path<number1> &path,
@@ -990,7 +1001,7 @@ public:
                         const tessellation::stroke_cap &cap=tessellation::stroke_cap::butt,
                         const tessellation::stroke_line_join &line_join=tessellation::stroke_line_join::bevel,
                         int miter_limit=4,
-                        const std::initializer_list<int> & stroke_dash_array={},
+                        const Iterable & stroke_dash_array={},
                         int stroke_dash_offset=0, opacity_t opacity=255,
                         number2 u0=number2(0), number2 v0=number2(1),
                         number2 u1=number2(1), number2 v1=number2(0));
@@ -1032,7 +1043,8 @@ public:
      * Draw Bitmap Fonts Text
      *
      * @tparam tint enable font tinting ?
-     * @tparam BITMAP_FONT_TYPE the type of the font bitmap
+     * @tparam smooth enable font smooth interpolation if font has scaled ?
+     * @tparam bitmap_font_type the type of the font bitmap
      *
      * @param text char array string of text to draw
      * @param font the bitmap font reference
@@ -1045,10 +1057,10 @@ public:
      * @param frame draw a frame ?
      * @param opacity opacity [0..255]
      */
-    template<bool tint=true, typename BITMAP_FONT_TYPE>
-    void drawText(const char *text, microgl::text::bitmap_font<BITMAP_FONT_TYPE> &font, const color_t & color,
-            microgl::text::text_format & format,
-            int left, int top, int right, int bottom, bool frame, opacity_t opacity=255);
+    template<bool tint=true, bool smooth=false, typename bitmap_font_type>
+    void drawText(const char *text, microgl::text::bitmap_font<bitmap_font_type> &font, const color_t & color,
+                  microgl::text::text_format & format,
+                  int left, int top, int right, int bottom, bool frame, opacity_t opacity=255);
 };
 
 #include "canvas.tpp"

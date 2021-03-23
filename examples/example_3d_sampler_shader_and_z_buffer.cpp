@@ -10,25 +10,23 @@
 #include "data/model_3d_cube.h"
 
 #define TEST_ITERATIONS 1
-#define W 640*1
-#define H 640*1
+#define W 640
+#define H 480
 
 int main() {
     using number = float;
-//    using number = Q<5>;
 //    using number = Q<10>;
+//    using number = Q<12>;
 //    using number = Q<15>;
-//    using number = Q<16>;
 
-//    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
-    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_2d_raster_FORCE_32_BIT>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
-    auto * canvas = new Canvas24(W, H);
+    Canvas24 canvas(W, H);
     Resources resources{};
 
     auto img = resources.loadImageFromCompressedPath("images/uv_256.png");
     Texture24 tex{new bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};
-    z_buffer<12> depth_buffer(canvas->width(), canvas->height());
+    z_buffer<12> depth_buffer(canvas.width(), canvas.height());
 
     float t = -0.0;
     constexpr bool enable_z_buffer = true;
@@ -39,35 +37,29 @@ int main() {
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
         using math = microgl::math;
+        using Shader = sampler_shader<number, Texture24>;
+        using vertex_attributes = Shader::vertex_attributes;
 
-//        t-=0.0425;
-        t-=0.425;
+        t-=0.1425;
 
         // setup mvp matrix
-        mat4 model_1 = mat4::transform({
-                                               math::deg_to_rad(t / 2),
-                                               math::deg_to_rad(t / 2),
-                                               math::deg_to_rad(t / 2)},
-                                       {-5,0, -t/30.f},
-                                       {10,10,10});
-        mat4 model_2 = mat4::transform({math::deg_to_rad(t / 1),
-                                        math::deg_to_rad(t / 2),
-                                        math::deg_to_rad(t / 2)},
-                                       {5,0, -t/30.f},
-                                       {10,10,10});
-//        mat4 view = camera::lookAt<number>({0, 0, 30}, {0,0, 0}, {0,1,0});
-        mat4 view = camera::angleAt<number>({0, 0, 70+ 0 / t}, 0,
-                                    math::deg_to_rad(0), 0);
-        mat4 projection = camera::perspective<number>(math::deg_to_rad(60),
-                                              canvas->width(), canvas->height(), 20, 100);
-//        mat4 projection= camera::orthographic<number>(-canvas->width()/2, canvas->width()/2,
-//                                              -canvas->height()/2, canvas->height()/2, 1, 500);
+        number radians = math::deg_to_rad(t / 2);
+        vertex rotation = {radians, radians, radians};
+        vertex translation = {-5,0, -t/10.f};
+        vertex scale = {10,10,10};
+
+        mat4 model_1 = mat4::transform(rotation, translation, scale);
+        mat4 model_2 = mat4::transform(rotation*2, translation + vertex{10,0,0}, scale);
+        mat4 view = camera::lookAt<number>({0, 0, 70}, {0,0, 0}, {0,1,0});
+        // mat4 view = camera::angleAt<number>({0, 0, 70}, 0, math::deg_to_rad(0), 0);
+        mat4 projection = camera::perspective<number>(math::deg_to_rad(90),
+                                                      W, H, 10.f, 100);
+        // mat4 projection= camera::orthographic<number>(-W/2, W/2, -H/2, H/2, 1, 500);
+
         mat4 mvp_1= projection*view*model_1;
         mat4 mvp_2= projection*view*model_2;
 
         // setup shader
-        using Shader = sampler_shader<number, Texture24>;
-        using vertex_attributes = Shader::vertex_attributes;
         Shader shader;
         shader.matrix= mvp_1;
         shader.sampler= &tex;
@@ -81,11 +73,12 @@ int main() {
             vertex_buffer.push_back(v);
         }
 
+        canvas.clear({255,255,255,255});
         depth_buffer.clear();
         // draw model_1
-        canvas->drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer>(
+        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer>(
                 shader,
-                canvas->width(), canvas->height(),
+                canvas.width(), canvas.height(),
                 vertex_buffer.data(),
                 object.indices.data(),
                 object.indices.size(),
@@ -96,9 +89,9 @@ int main() {
 
         // draw model_2
         shader.matrix= mvp_2;
-        canvas->drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer>(
+        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer>(
                 shader,
-                canvas->width(), canvas->height(),
+                canvas.width(), canvas.height(),
                 vertex_buffer.data(),
                 object.indices.data(),
                 object.indices.size(),
@@ -109,11 +102,11 @@ int main() {
     };
 
     auto render = [&]() {
-        canvas->clear({255,255,255,255});
-        canvas->updateClipRect(0,0,W,H);
-        test_shader_texture_3d(cube_3d<number>);
+        static auto model = cube_3d<number>;
+
+        test_shader_texture_3d(model);
     };
 
-    example_run(canvas, render);
+    example_run(&canvas, render);
 }
 
