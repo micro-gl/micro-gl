@@ -3,7 +3,6 @@
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/fast_radial_gradient.h>
 
-#define TEST_ITERATIONS 100
 #define W 640
 #define H 640
 
@@ -42,7 +41,8 @@ int main() {
                 255);
     };
 
-    auto & render3 = render2;
+//    auto & render3 = render2;
+    auto & render3 = render;
 
     example_run(&canvas, render3);
 }

@@ -21,6 +21,7 @@
 
 int main() {
     using number = float;
+//    using number = double;
 //    using number = Q<10>;
 //    using number = Q<12>;
 //    using number = Q<15>;
@@ -58,7 +59,7 @@ int main() {
         mat4 model_2 = mat4::transform(rotation*2, translation + vertex{10,0,0}, scale);
         mat4 view = camera::lookAt<number>({0, 0, 70}, {0,0, 0}, {0,1,0});
         // mat4 view = camera::angleAt<number>({0, 0, 70}, 0, math::deg_to_rad(0), 0);
-        mat4 projection = camera::perspective<number>(math::deg_to_rad(90),
+        mat4 projection = camera::perspective<number>(math::deg_to_rad(90.0f),
                                                       W, H, 10.f, 100);
         // mat4 projection= camera::orthographic<number>(-W/2, W/2, -H/2, H/2, 1, 500);
 

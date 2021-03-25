@@ -2,6 +2,7 @@
 
 #include <microgl/sampler.h>
 #include <microgl/vec2.h>
+#include <microgl/functions/distance.h>
 
 namespace microgl {
     namespace sampling {
@@ -81,7 +82,7 @@ namespace microgl {
 
             void setNewLine(const vec2<number> & start, const vec2<number> & end) {
                 const auto dir= end-start;
-                const auto length= math::length(dir.x, dir.y);
+                const auto length= microgl::functions::length(dir.x, dir.y);
 #define f math::to_fixed
                 _start= {f(start.x, p_bits), f(start.y, p_bits)};
                 _end= {f(end.x, p_bits), f(end.y, p_bits)};

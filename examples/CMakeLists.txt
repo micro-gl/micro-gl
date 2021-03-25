@@ -74,21 +74,21 @@ if(SDL2_FOUND)
             example_geometry_bezier_curve_divider.cpp
             example_sampler_masking_sampler.cpp
             example_compositing.cpp
-            test_coder_converter.cpp
-            test_coder_generator.cpp
-            test_lut.cpp
-            test_mem.cpp
-            test_resource.cpp
-            test_containers.cpp
-            gtest_math.cpp
-            test_q_sort.cpp
+            mtest_coder_converter.cpp
+            mtest_coder_generator.cpp
+            mtest_lut.cpp
+            mtest_mem.cpp
+            mtest_resource.cpp
+            mtest_containers.cpp
+            mtest_math.cpp
+            mtest_q_sort.cpp
             )
 
     set(SOURCES_SHARED
             libs/stb_image/stb_image.cpp
             src/Resources.cpp
             src/example.cpp src/example.h
-            test.cpp src/dummy.cpp src/dummy.h)
+            src/dummy.cpp src/dummy.h)
 
     foreach( testsourcefile ${SOURCES} )
         # I used a simple string replace, to cut off .cpp.

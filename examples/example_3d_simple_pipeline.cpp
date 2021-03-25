@@ -22,7 +22,7 @@ int main() {
         using vertex = vec3<number>;
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
-        using math = microgl::math;
+        using namespace microgl::math;
 
         static float z=0.0f;
 
@@ -32,14 +32,14 @@ int main() {
         int canvas_height = canvas.height();
 
         mat4 model = mat4::transform({ 0, math::deg_to_rad(z),
-                                       math::deg_to_rad(0/2)},
+                                       math::deg_to_rad(0.0f/2)},
                                      {0,0,-300+z},
                                      {10,10,10});
 //        mat4 view = camera::lookAt<number>({0, 0, -z}, {0,0, -z-1}, {0,1,0});
         mat4 view = camera::lookAt<number>({0, 0, 100},
                                    {0,0, 0},
                                    {0,1,0});
-        mat4 projection = camera::perspective<number>(math::deg_to_rad(60),
+        mat4 projection = camera::perspective<number>(math::deg_to_rad(60.0f),
                                               canvas_width, canvas_height, 1, 500);
         //mat4 projection = camera::perspective<number>(-1,1,-1,1,1,10000);
         mat4 mvp = projection * view * model;

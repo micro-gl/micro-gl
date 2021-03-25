@@ -49,11 +49,11 @@ namespace microgl {
 
         inline
         float deg_to_rad(float degrees) {
-            return ((degrees*PI)/180.0f);
+            return ((degrees*float(PI))/180.0f);
         }
         inline
         double deg_to_rad(double degrees) {
-            return ((degrees*PI)/180.0f);
+            return ((degrees*double(PI))/180.0f);
         }
 
         inline

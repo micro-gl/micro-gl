@@ -29,7 +29,7 @@ int main() {
         using vertex = vec3<number>;
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
-        using math = microgl::math;
+        using namespace microgl::math;
         using Shader = flat_color_shader<number, rgba_t<8,8,8,0>>;
         using vertex_attributes = Shader::vertex_attributes;
 
@@ -43,7 +43,7 @@ int main() {
         mat4 model = mat4::transform(rotation, translation, scale);
         mat4 view = camera::lookAt<number>({0, 0, 70}, {0,0, 0}, {0,1,0});
 //        mat4 view = camera::angleAt<number>({0, 0, 70}, 0,0, 0);
-        mat4 projection = camera::perspective<number>(math::deg_to_rad(60),
+        mat4 projection = camera::perspective<number>(math::deg_to_rad(60.0f),
                                               canvas.width(), canvas.height(), 20, 100);
 //        mat4 projection= camera::orthographic<number>(-canvas->width()/2, canvas->width()/2,
 //                                              -canvas->height()/2, canvas->height()/2, 1, 500);
