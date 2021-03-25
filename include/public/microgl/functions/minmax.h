@@ -12,7 +12,6 @@ namespace microgl {
             return max(max(a, b), args...);
         }
 
-
         template<typename number>
         inline number min(const number & a, const number & b) {
             return a < b ? a : b;

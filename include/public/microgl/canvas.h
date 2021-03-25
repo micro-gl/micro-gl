@@ -31,6 +31,7 @@
 #include <microgl/functions/swap.h>
 #include <microgl/functions/orient2d.h>
 #include <microgl/functions/bits.h>
+#include <microgl/functions/distance.h>
 
 using namespace microgl::triangles;
 using namespace microgl::polygons;
@@ -136,7 +137,6 @@ private:
     using index = unsigned int;
     using precision = unsigned char;
     using opacity_t = unsigned char;
-    using l64= long long;
     // rasterizer integers
     using rint_big = int64_t;
     using rint =typename microgl::traits::conditional<

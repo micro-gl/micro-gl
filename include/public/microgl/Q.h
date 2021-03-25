@@ -1,10 +1,14 @@
 #pragma once
 
-template <unsigned P>
+template <unsigned P, typename container_integer=long long, typename unsigned_container_integer=unsigned long long>
 class Q {
+public:
+    using integer = container_integer;
+    using unsigned_integer = unsigned_container_integer;
+    static constexpr unsigned precision = P;
+
 private:
     using index = unsigned int;
-    using integer = long long;
     using precision_t = unsigned char;
     using const_ref = const Q &;
     using const_exact_ref = const Q<P> &;
@@ -24,7 +28,6 @@ private:
         return val<0?-1:1;
     }
 public:
-    static const precision_t precision = P;
     integer _value = 0;
 
     static inline
@@ -205,4 +208,39 @@ public:
     integer integral() const { return _value & (~((1u<<P) - 1)); } //this is wrong ?}
     inline integer value() const { return _value; }
     inline void updateValue(const_signed_ref val) { this->_value=val; }
+
+    Q<P> sqrt() const {
+        return Q<P>((sqrt_<unsigned_container_integer>(unsigned_container_integer(_value))), P/2);
+    }
+    Q<P> abs() const {
+        return _value<0? Q{-_value}:Q{_value};
+    }
+    Q<P> mod(const_ref val) const {
+        return (*this)%val;
+    }
+
+private:
+
+    template<typename unsigned_integer_type>
+    static
+    unsigned_integer_type sqrt_(unsigned_integer_type a_nInput) {
+        constexpr unsigned char bits= sizeof (unsigned_integer_type)*8;
+        unsigned_integer_type op  = a_nInput;
+        unsigned_integer_type res = 0;
+        // The second-to-top bit is set: use 1u << 14 for uint16_t type; use 1uL<<30 for uint32_t type
+        unsigned_integer_type one = unsigned_integer_type(1u) << (bits-2);
+
+        // "one" starts at the highest power of four <= than the argument.
+        while (one > op) one >>= 2;
+        while (one != 0) {
+            if (op >= res + one) {
+                op = op - (res + one);
+                res = res + ( one<<1);
+            }
+            res >>= 1;
+            one >>= 2;
+        }
+        return res;
+    }
+
 };

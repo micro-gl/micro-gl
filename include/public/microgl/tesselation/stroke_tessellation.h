@@ -3,7 +3,7 @@
 #include <microgl/vec2.h>
 #include <microgl/triangles.h>
 #include <microgl/dynamic_array.h>
-#include <microgl/math.h>
+#include <microgl/functions/distance.h>
 
 namespace microgl {
     namespace tessellation {

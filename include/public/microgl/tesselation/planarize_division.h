@@ -23,9 +23,6 @@
 namespace microgl {
 
     namespace tessellation {
-#define abs__(a) ((a)<0 ? -(a) : (a))
-#define min__(a, b) ((a)<(b) ? (a) : (b))
-#define max__(a, b) ((a)>(b) ? (a) : (b))
 
         enum class fill_rule {
             non_zero, even_odd

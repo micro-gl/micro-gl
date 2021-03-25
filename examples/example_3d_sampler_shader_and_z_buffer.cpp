@@ -1,5 +1,11 @@
 #include "src/Resources.h"
 #include "src/example.h"
+
+//#include <microgl/math/std_float_math.h>
+//#include <microgl/math/q_math.h>
+
+//#include "dummy.h"
+
 #include <microgl/camera.h>
 #include <microgl/z_buffer.h>
 #include <microgl/canvas.h>
@@ -36,7 +42,7 @@ int main() {
         using vertex = vec3<number>;
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
-        using math = microgl::math;
+        using namespace microgl::math;
         using Shader = sampler_shader<number, Texture24>;
         using vertex_attributes = Shader::vertex_attributes;
 
