@@ -208,7 +208,7 @@ namespace microgl {
                      const number & rotation, const number &startAngle, const number &endAngle,
                      bool anti_clockwise, unsigned divisions_count=32) -> path & {
                 dynamic_array<vertex> output{divisions_count};
-                elliptic_arc_divider<number>::compute(output, point.x, point.y, radius_x, radius_y,
+                elliptic_arc_divider<number, dynamic_array>::compute(output, point.x, point.y, radius_x, radius_y,
                         rotation, startAngle, endAngle, divisions_count, anti_clockwise);
                 for (int ix = 0; ix < output.size(); ++ix)
                     lineTo(output[ix]);

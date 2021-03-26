@@ -1,7 +1,6 @@
 #pragma once
 
 #include <microgl/vec2.h>
-#include <microgl/dynamic_array.h>
 #include <microgl/math.h>
 
 namespace microgl {
@@ -9,18 +8,14 @@ namespace microgl {
     namespace tessellation {
 
         using index = unsigned int;
-        using precision_t = unsigned char;
-//        using math = microgl::math;
-        using namespace microgl::math;
-        using namespace microgl;
 
-        template <typename number>
+        template<typename number, template<typename...> class container_type>
         class elliptic_arc_divider {
         public:
             using vertex = vec2<number>;
 
             static void compute(
-                    dynamic_array<vertex> &output,
+                    container_type<vertex> &output,
                     number center_x,
                     number center_y,
                     number radius_x,
@@ -31,14 +26,14 @@ namespace microgl {
                     unsigned divisions=32,
                     bool anti_clockwise=false) {
                 if(divisions<=0) return;
-                const auto two_pi = math::pi<number>() * number(2);
-                const auto half_pi = math::pi<number>() / number(2);
+                const auto two_pi = microgl::math::pi<number>() * number(2);
+                const auto half_pi = microgl::math::pi<number>() / number(2);
                 const auto zero = number(0);
                 auto delta = end_angle_rad - start_angle_rad;
                 if (delta==0) return;
                 const bool full_circle_or_more= microgl::math::abs(delta) >= two_pi;
-                start_angle_rad = math::mod(start_angle_rad, two_pi);
-                end_angle_rad = math::mod(end_angle_rad, two_pi);
+                start_angle_rad = microgl::math::mod(start_angle_rad, two_pi);
+                end_angle_rad = microgl::math::mod(end_angle_rad, two_pi);
                 if(start_angle_rad<zero) start_angle_rad+=two_pi;
                 if(end_angle_rad<zero) end_angle_rad+=two_pi;
                 delta = end_angle_rad - start_angle_rad;
@@ -53,8 +48,8 @@ namespace microgl {
                 // we test_texture for greater in case of precision issues
                 delta = delta / number(divisions);
                 auto radians = start_angle_rad;
-                auto rotation_sin = math::sin(rotation);
-                auto rotation_cos = math::cos(rotation);
+                auto rotation_sin = microgl::math::sin(rotation);
+                auto rotation_cos = microgl::math::cos(rotation);
                 index first_index= output.size(), last_index=first_index;
                 number min_degree=start_angle_rad<=end_angle_rad?start_angle_rad:end_angle_rad;
                 number max_degree=start_angle_rad>=end_angle_rad?start_angle_rad:end_angle_rad;
@@ -66,8 +61,8 @@ namespace microgl {
                         if(radians>max_degree)
                             radians_clipped=max_degree;
                     }
-                    auto sine = math::sin(radians_clipped);
-                    auto cosine = math::sin(radians_clipped + half_pi);
+                    auto sine = microgl::math::sin(radians_clipped);
+                    auto cosine = microgl::math::sin(radians_clipped + half_pi);
                     // currently , we assume pixel coords and radians have the same precision
                     // this probably is not a very good idea
                     auto x = cosine * radius_x;
@@ -77,7 +72,10 @@ namespace microgl {
                     auto rotated_y= x*rotation_sin + y*rotation_cos;
                     const vertex point={(center_x + rotated_x), (center_y + rotated_y)};
                     const bool skip=ix!=0 && point==output[last_index];
-                    if(!skip) last_index=output.push_back(point);
+                    if(!skip) {
+                        output.push_back(point);
+                        last_index=output.size()-1;
+                    }
                     radians += delta;
                 }
                 // in addition to the clipping we perform, if it was a full circle, we need

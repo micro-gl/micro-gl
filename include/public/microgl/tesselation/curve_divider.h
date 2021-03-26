@@ -1,7 +1,6 @@
 #pragma once
 
 #include <microgl/vec2.h>
-#include <microgl/dynamic_array.h>
 
 using namespace microgl;
 
