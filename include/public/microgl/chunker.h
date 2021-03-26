@@ -1,21 +1,34 @@
 #pragma once
 
-#include <microgl/dynamic_array.h>
-#include <microgl/micro_gl_traits.h>
+namespace chunker_traits {
+    template< class T > struct remove_reference      {typedef T type;};
+    template< class T > struct remove_reference<T&>  {typedef T type;};
+    template< class T > struct remove_reference<T&&> {typedef T type;};
 
-template<typename T>
+    template <class _Tp>
+    inline
+    typename remove_reference<_Tp>::type&&
+    move(_Tp&& __t) noexcept
+    {
+        typedef typename remove_reference<_Tp>::type _Up;
+        return static_cast<_Up&&>(__t);
+    }
+
+}
+
+template<typename T, template<typename...> class container_template_type>
 class chunker {
     using index = unsigned int;
     using type = T;
-    using container_data_type = dynamic_array<type>;
-    using container_index_type = dynamic_array<index>;
+    using container_data_type = container_template_type<type>;
+    using container_index_type = container_template_type<index>;
 
 private:
     using type_ref = T &;
     using type_pointer= T *;
     using const_type_pointer= const T *;
-    using chunker_ref = chunker<T> &;
-    using const_chunker_ref = const chunker<T> &;
+    using chunker_ref = chunker &;
+    using const_chunker_ref = const chunker &;
 
     container_data_type _data;
     container_index_type _locations;
@@ -32,34 +45,25 @@ public:
         _locations = val._locations;
     }
 
-    chunker(chunker<T> && val) noexcept {
-        _data = traits::move(val._data);
-        _locations = traits::move(val._locations);
+    chunker(chunker && val) noexcept {
+        _data = chunker_traits::move(val._data);
+        _locations = chunker_traits::move(val._locations);
     }
     explicit chunker(unsigned initial_capacity=0) : _data(initial_capacity), _locations() {
         _locations.push_back(0);
     }
 
-    chunk back() const {
-        return chunk_for(size()-1);
-    }
+    chunk back() const { return chunk_for(size()-1); }
+    chunk front() { return chunk_for(0); }
 
-    chunk front() {
-        return chunk_for(0);
-    }
-
-    void cut_chunk() {
-        _locations.push_back(_data.size());
-    }
+    void cut_chunk() { _locations.push_back(_data.size()); }
 
     void cut_chunk_if_current_not_empty() {
         if(back().size==0) return;
         _locations.push_back(_data.size());
     }
 
-    void push_back(const T & v) {
-        _data.push_back(v);
-    }
+    void push_back(const T & v) { _data.push_back(v); }
 
     void push_back(const chunker & $chunker) {
         cut_chunk_if_current_not_empty();
@@ -84,23 +88,17 @@ public:
         cut_chunk();
     }
 
-    type_pointer raw_data() {
-        return _data.data();
-    }
-
-    const_type_pointer raw_data() const {
-        return _data.data();
-    }
+    type_pointer data() { return _data.data(); }
+    const_type_pointer data() const { return _data.data(); }
 
     chunker_ref operator=(const_chunker_ref chunker) {
-        _data = chunker._data;
-        _locations = chunker._locations;
+        _data = chunker._data; _locations = chunker._locations;
         return (*this);
     }
 
-    chunker_ref operator=(chunker<T> && chunker)  noexcept {
-        _data = traits::move(chunker._data);
-        _locations = traits::move(chunker._locations);
+    chunker_ref operator=(chunker && chunker)  noexcept {
+        _data = chunker_traits::move(chunker._data);
+        _locations = chunker_traits::move(chunker._locations);
         return (*this);
     }
 
@@ -120,13 +118,8 @@ public:
         return {pointer, size};
     }
 
-    chunk operator[](index i) {
-        return chunk_for(i);
-    }
-
-    chunk operator[](index i) const {
-        return chunk_for(i);
-    }
+    chunk operator[](index i) { return chunk_for(i); }
+    chunk operator[](index i) const { return chunk_for(i); }
 
     void clear() {
         _locations.clear();
@@ -140,17 +133,10 @@ public:
         _locations.push_back(0);
     }
 
-    bool empty() const {
-        return size()==0;
-    }
+    bool empty() const { return size()==0; }
+    index size() const { return _locations.size(); }
+    index unchunked_size() const { return _data.size(); }
 
-    index size() const {
-        return _locations.size();
-    }
-
-    index unchunked_size() const {
-        return _data.size();
-    }
-
+    // todo : implement iterator
 };
 

@@ -3,10 +3,10 @@ namespace microgl {
     namespace tessellation {
 
         template<typename number>
-        auto planarize_division<number>::create_frame(const chunker<vertex> &pieces,
+        auto planarize_division<number>::create_frame(const chunker<vertex, dynamic_array> &pieces,
                                                       dynamic_pool & dynamic_pool) -> half_edge_face * {
             const auto pieces_length = pieces.size();
-            vertex left_top=pieces.raw_data()[0];
+            vertex left_top= pieces.data()[0];
             vertex right_bottom=left_top;
             // find bbox of all
             for (index ix = 0; ix < pieces_length; ++ix) {
@@ -85,7 +85,7 @@ namespace microgl {
         }
 
         template<typename number>
-        auto planarize_division<number>::build_poly_and_conflicts(const chunker<vertex> &pieces,
+        auto planarize_division<number>::build_poly_and_conflicts(const chunker<vertex, dynamic_array> &pieces,
                                                                   half_edge_face & main_frame,
                                                                   poly_info ** poly_list_out,
                                                                   conflict ** conflict_list_out) -> void {
@@ -1049,7 +1049,7 @@ namespace microgl {
         }
 
         template<typename number>
-        void planarize_division<number>::compute(const chunker<vertex> &pieces,
+        void planarize_division<number>::compute(const chunker<vertex, dynamic_array> &pieces,
                                                  const fill_rule &rule,
                                                  const tess_quality &quality,
                                                  dynamic_array<vertex> &output_vertices,

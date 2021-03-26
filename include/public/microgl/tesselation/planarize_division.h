@@ -252,7 +252,7 @@ namespace microgl {
 
         public:
             static
-            void compute(const chunker<vertex> &pieces,
+            void compute(const chunker<vertex, dynamic_array> &pieces,
                        const fill_rule &rule,
                        const tess_quality &quality,
                        dynamic_array<vertex> &output_vertices,
@@ -282,10 +282,10 @@ namespace microgl {
                     dynamic_array<vertex> *debug_trapezes);
 
             static
-            auto create_frame(const chunker<vertex> &pieces, dynamic_pool & dynamic_pool) -> half_edge_face *;
+            auto create_frame(const chunker<vertex, dynamic_array> &pieces, dynamic_pool & dynamic_pool) -> half_edge_face *;
 
             static
-            auto build_poly_and_conflicts(const chunker<vertex> &pieces,
+            auto build_poly_and_conflicts(const chunker<vertex, dynamic_array> &pieces,
                                           half_edge_face & main_frame,
                                           poly_info ** poly_list_out,
                                           conflict ** conflict_list_out) -> void ;
