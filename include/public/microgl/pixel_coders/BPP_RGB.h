@@ -14,10 +14,11 @@ namespace microgl {
          * @tparam G green channel bits
          * @tparam B blue channel bits
          */
-        template <channel BPP, channel R, channel G, channel B>
-        struct BPP_RGB {
+        template <unsigned BPP, unsigned R, unsigned G, unsigned B>
+        class BPP_RGB {
+            using u8 = unsigned char;
             using rgba = rgba_t<R, G, B, 0>;
-            using pixel = uint8_t;
+            using pixel = u8;
         private:
             constexpr static bool same_r = BPP==rgba::r;
             constexpr static bool same_g = BPP==rgba::g;
@@ -31,10 +32,10 @@ namespace microgl {
         public:
             BPP_RGB() : _lut_r{}, _lut_g{}, _lut_b{} {}
 
-            inline void encode(const color_t &input, uint8_t &output) const {
+            inline void encode(const color_t &input, u8 &output) const {
             }
 
-            inline void decode(const uint8_t &input, color_t &output) const {
+            inline void decode(const u8 &input, color_t &output) const {
                 output.r=same_r ? input : _lut_r[input];
                 output.g=same_g ? input : _lut_g[input];
                 output.b=same_b ? input : _lut_b[input];

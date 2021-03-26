@@ -24,8 +24,8 @@
 #include <microgl/tesselation/ear_clipping_triangulation.h>
 #include <microgl/tesselation/fan_triangulation.h>
 #include <microgl/tesselation/bezier_patch_tesselator.h>
-#include <microgl/cohen_sutherland_clipper.h>
-#include <microgl/homo_triangle_clipper.h>
+#include <microgl/clippers/cohen_sutherland_clipper.h>
+#include <microgl/clippers/homo_triangle_clipper.h>
 #include <microgl/functions/minmax.h>
 #include <microgl/functions/clamp.h>
 #include <microgl/functions/swap.h>

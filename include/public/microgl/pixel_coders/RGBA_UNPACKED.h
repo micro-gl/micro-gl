@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/pixel_coder.h>
+#include <microgl/stdint.h>
 #include <microgl/micro_gl_traits.h>
 
 namespace microgl {

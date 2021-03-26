@@ -12,25 +12,26 @@ namespace microgl {
          * @tparam BPP bits of channel
          * @tparam rgba_ rgba info
          */
-        template <channel BPP, typename rgba_>
-        struct BPP_RGBA {
+        template <unsigned BPP, typename rgba_>
+        class BPP_RGBA {
+            using u8 = unsigned char;
             using rgba = rgba_;
-            using pixel = uint8_t;
+            using pixel = u8;
         private:
             // dynamic look-up tables
-            static constexpr uint8_t full_r = (1u<<rgba::r) - 1;
-            static constexpr uint8_t full_g = (1u<<rgba::g) - 1;
-            static constexpr uint8_t full_b = (1u<<rgba::b) - 1;
+            static constexpr u8 full_r = (1u<<rgba::r) - 1;
+            static constexpr u8 full_g = (1u<<rgba::g) - 1;
+            static constexpr u8 full_b = (1u<<rgba::b) - 1;
             static constexpr bool same_alpha_bits = BPP==rgba::a;
             microgl::lut::dynamic_lut_bits<BPP, rgba::a, false, same_alpha_bits> _lut_a;
 
         public:
             BPP_RGB() : _lut_a{} {}
 
-            inline void encode(const color_t &input, uint8_t &output) const {
+            inline void encode(const color_t &input, u8 &output) const {
             }
 
-            inline void decode(const uint8_t &input, color_t &output) const {
+            inline void decode(const u8 &input, color_t &output) const {
                 output.r=full_r;
                 output.g=full_g;
                 output.b=full_b;

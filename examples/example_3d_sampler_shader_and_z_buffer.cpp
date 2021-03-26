@@ -3,7 +3,7 @@
 
 //#include <microgl/math/std_float_math.h>
 //#include <microgl/math/q_math.h>
-
+//#define MICROGL_AVOID_STD_MATH
 //#include "dummy.h"
 
 #include <microgl/camera.h>
@@ -15,7 +15,6 @@
 #include <microgl/samplers/texture.h>
 #include "data/model_3d_cube.h"
 
-#define TEST_ITERATIONS 1
 #define W 640
 #define H 480
 

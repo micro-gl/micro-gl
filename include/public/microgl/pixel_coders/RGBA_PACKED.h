@@ -1,11 +1,9 @@
 #pragma once
 
-#include <microgl/pixel_coder.h>
-#include <microgl/micro_gl_traits.h>
+#include <microgl/stdint.h>
 
 namespace microgl {
     namespace coder {
-        using u8 = uint8_t;
 
         /**
          * create a pixel coder, that packs color channels at the smallest possible 2^N int.
@@ -22,10 +20,12 @@ namespace microgl {
          * @tparam bi position of blue channel
          * @tparam ai position of alpha channel
          */
-        template<u8 r, u8 g, u8 b, u8 a=0, u8 ri=0, u8 gi=1, u8 bi=2, u8 ai=3>
+        template<unsigned r, unsigned g, unsigned b, unsigned a=0,
+                 unsigned ri=0, unsigned gi=1, unsigned bi=2, unsigned ai=3>
         struct RGBA_PACKED {
             using rgba = rgba_t<r,g,b,a>;
             using pixel = uint_t<r+g+b+a>;
+            using u8 = unsigned char;
             static constexpr u8 size_pixel = sizeof (pixel);
 
         private:
