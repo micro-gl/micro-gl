@@ -22,7 +22,8 @@ namespace microgl {
          */
         template<unsigned r, unsigned g, unsigned b, unsigned a=0,
                  unsigned ri=0, unsigned gi=1, unsigned bi=2, unsigned ai=3>
-        struct RGBA_PACKED {
+        class RGBA_PACKED {
+        public:
             using rgba = rgba_t<r,g,b,a>;
             using pixel = uint_t<r+g+b+a>;
             using u8 = unsigned char;

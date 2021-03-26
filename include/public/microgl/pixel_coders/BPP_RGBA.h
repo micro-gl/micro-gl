@@ -14,6 +14,7 @@ namespace microgl {
          */
         template <unsigned BPP, typename rgba_>
         class BPP_RGBA {
+        public:
             using u8 = unsigned char;
             using rgba = rgba_;
             using pixel = u8;
