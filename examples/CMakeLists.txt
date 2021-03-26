@@ -82,6 +82,7 @@ if(SDL2_FOUND)
             mtest_containers.cpp
             mtest_math.cpp
             mtest_q_sort.cpp
+            mtest_Q.cpp
             )
 
     set(SOURCES_SHARED
