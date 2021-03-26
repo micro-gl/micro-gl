@@ -19,6 +19,7 @@
 #include <microgl/masks.h>
 #include <microgl/rgba_t.h>
 #include <microgl/math.h>
+#include <microgl/stdint.h>
 #include <microgl/tesselation/path.h>
 #include <microgl/tesselation/monotone_polygon_triangulation.h>
 #include <microgl/tesselation/ear_clipping_triangulation.h>
@@ -975,6 +976,7 @@ public:
      * @tparam number1              number type of path
      * @tparam number2              number type of uv coords
      * @tparam Sampler              Sampler type
+     * @tparam path_container_template the template of the container used by path
      *
      * @param sampler               sampler reference
      * @param transform             3x3 matrix for transform
@@ -1017,6 +1019,7 @@ public:
      * @tparam number1          number type of path
      * @tparam number2          number type of uv coords
      * @tparam Sampler          Sampler type
+     * @tparam path_container_template the template of the container used by path
      *
      * @param sampler           sampler reference
      * @param transform         3x3 matrix for transform

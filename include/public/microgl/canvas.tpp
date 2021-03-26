@@ -1404,7 +1404,7 @@ void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
                                               const number2 u0, const number2 v0,
                                               const number2 u1, const number2 v1,
                                               const opacity_t opacity) {
-    using tess= microgl::tessellation::bezier_patch_tesselator<number1, number2>;
+    using tess= microgl::tessellation::bezier_patch_tesselator<number1, number2, dynamic_array>;
     using vertex=vec2<number1>;
     dynamic_array<number1> v_a; // vertices attributes
     dynamic_array<index> indices;
