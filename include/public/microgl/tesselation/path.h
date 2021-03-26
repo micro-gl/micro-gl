@@ -393,5 +393,3 @@ namespace microgl {
     }
 
 }
-
-#include "path.tpp"
