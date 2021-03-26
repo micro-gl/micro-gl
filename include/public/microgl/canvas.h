@@ -992,11 +992,12 @@ public:
      * @param v1                    uv coord
      */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, bool debug=false, typename number1=float, typename number2=float,
-            typename Sampler, class Iterable>
+            bool antialias=false, bool debug=false,
+            typename number1=float, typename number2=float,
+            typename Sampler, class Iterable, template<typename...> class path_container_template>
     void drawPathStroke(const Sampler &sampler,
                         const matrix_3x3<number1> &transform,
-                        tessellation::path<number1> &path,
+                        tessellation::path<number1, path_container_template> &path,
                         const number1 &stroke_width=number1(1),
                         const tessellation::stroke_cap &cap=tessellation::stroke_cap::butt,
                         const tessellation::stroke_line_join &line_join=tessellation::stroke_line_join::bevel,
@@ -1029,10 +1030,12 @@ public:
      * @param v1                uv coord
      */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, bool debug=false, typename number1=float, typename number2=float, typename Sampler>
+            bool antialias=false, bool debug=false,
+            typename number1=float, typename number2=float,
+            typename Sampler, template<typename...> class path_container_template>
     void drawPathFill(const Sampler &sampler,
                       const matrix_3x3<number1> &transform,
-                      tessellation::path<number1> &path,
+                      tessellation::path<number1, path_container_template> &path,
                       const tessellation::fill_rule &rule=tessellation::fill_rule::non_zero,
                       const tessellation::tess_quality &quality=tessellation::tess_quality::better,
                       opacity_t opacity=255,

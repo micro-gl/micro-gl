@@ -7,7 +7,6 @@ namespace microgl {
 
     namespace tessellation {
 
-#define abs_(a) ((a)<0 ? -(a) : (a))
         using index = unsigned int;
 
         template<typename number, template<typename...> class container_type>

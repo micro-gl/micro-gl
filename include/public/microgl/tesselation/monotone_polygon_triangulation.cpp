@@ -67,9 +67,11 @@ namespace microgl {
             indices_buffer_triangulation.push_back(v1_index);
             indices_buffer_triangulation.push_back(v2_index);
             if(boundary_buffer) {
-                int first_edge_index_distance = abs_(v0_index - v1_index);
-                int second_edge_index_distance = abs_(v1_index- v2_index);
-                int third_edge_index_distance = abs_(v2_index - v0_index);
+#define abs_monotone(a) ((a)<0 ? -(a) : (a))
+                int first_edge_index_distance = abs_monotone(v0_index - v1_index);
+                int second_edge_index_distance = abs_monotone(v1_index- v2_index);
+                int third_edge_index_distance = abs_monotone(v2_index - v0_index);
+#undef abs_monotone
                 bool first_edge = first_edge_index_distance==1 || first_edge_index_distance==size-1;
                 bool second_edge = second_edge_index_distance==1 || second_edge_index_distance==size-1;
                 bool third_edge = third_edge_index_distance==1 || third_edge_index_distance==size-1;

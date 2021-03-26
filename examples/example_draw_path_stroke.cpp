@@ -9,9 +9,9 @@
 using microgl::tessellation::path;
 float t = 0;
 
-template <typename number>
-path<number> path_star() {
-    path<number> path{};
+template <typename number, template<typename...> class container_template>
+path<number, container_template> path_star() {
+    path<number, container_template> path{};
     path.lineTo({150, 150})
         .lineTo({450, 150})
         .lineTo({200,450})
@@ -21,10 +21,10 @@ path<number> path_star() {
     return path;
 }
 
-template <typename number>
-path<number> path_star_2() {
+template <typename number, template<typename...> class container_template>
+path<number, container_template> path_star_2() {
     using il = std::initializer_list<vec2<number>>;
-    path<number> path{};
+    path<number, container_template> path{};
     path.linesTo(il{{150, 150},
                   {450,150},
                   {200,450},
@@ -48,9 +48,9 @@ path<number> path_star_2() {
     return path;
 }
 
-template <typename number>
-path<number> path_arc() {
-    path<number> path{};
+template <typename number, template<typename...> class container_template>
+path<number, container_template> path_arc() {
+    path<number, container_template> path{};
     int div=32; //4
     path.arc({200,200}, 100,
              math::deg_to_rad(0.0f),
@@ -73,20 +73,20 @@ t+=0.82f;
     return path;
 }
 
-template <typename number>
-path<number> path_rects() {
-    path<number> path{};
+template <typename number, template<typename...> class container_template>
+path<number, container_template> path_rects() {
+    path<number, container_template> path{};
     path.rect(50, 50, 250, 250, false)
         .rect(50, 250, 550, 50, true)
         .rect(50, 450, 50, 50, true);
     return path;
 }
 
-template <typename number>
-path<number> path_test() {
+template <typename number, template<typename...> class container_template>
+path<number, container_template> path_test() {
     using il = std::initializer_list<vec2<number>>;
 
-    path<number> path{};
+    path<number, container_template> path{};
     int div=32;
 //    t+=0.01;
     t=137.999039f;
@@ -112,7 +112,7 @@ int main() {
     sampling::flat_color<> color_green {{22,22,22,255}};
     Canvas24 canvas(W, H);
 
-    auto render_path = [&](path<number> & path) {
+    auto render_path = [&](path<number, dynamic_array> & path) {
         t+=0.125f;
 
         canvas.clear({255, 255, 255, 255});
@@ -135,11 +135,11 @@ int main() {
     };
 
     auto render = [&]() {
-        static auto path = path_star<number>();
-//        static auto path = path_star_2<number>();
-//        static auto path = path_rects<number>();
-//        static auto path = path_arc<number>();
-//        static auto path = path_test<number>();
+        static auto path = path_star<number, dynamic_array>();
+//        static auto path = path_star_2<number, dynamic_array>();
+//        static auto path = path_rects<number, dynamic_array>();
+//        static auto path = path_arc<number, dynamic_array>();
+//        static auto path = path_test<number, dynamic_array>();
 
         render_path(path);
     };

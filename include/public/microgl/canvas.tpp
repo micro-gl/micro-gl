@@ -1155,7 +1155,7 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         case hints::COMPLEX:
         case hints::MULTIPLE_POLYGONS:
         {
-            tessellation::path<number1> path{};
+            tessellation::path<number1, dynamic_array> path{};
             path.addPoly(points, size);
             drawPathFill<BlendMode, PorterDuff, antialias, debug, number1, number2, Sampler>(
                     sampler, transform, path, tessellation::fill_rule::non_zero,
@@ -1185,11 +1185,13 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
 }
 
 template<typename bitmap_type, uint8_t options>
-template <typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1,
-        typename number2, typename Sampler, class Iterable>
+template <typename BlendMode, typename PorterDuff,
+          bool antialias, bool debug, typename number1,
+          typename number2, typename Sampler,
+          class Iterable, template<typename...> class path_container_template>
 void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
                                              const matrix_3x3<number1> &transform,
-                                             tessellation::path<number1> & path,
+                                             tessellation::path<number1, path_container_template> & path,
                                              const number1 & stroke_width,
                                              const tessellation::stroke_cap &cap,
                                              const tessellation::stroke_line_join &line_join,
@@ -1221,11 +1223,13 @@ void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
 }
 
 template<typename bitmap_type, uint8_t options>
-template <typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1,
-        typename number2, typename Sampler>
+template <typename BlendMode, typename PorterDuff,
+          bool antialias, bool debug,
+          typename number1, typename number2,
+          typename Sampler, template<typename...> class path_container_template>
 void canvas<bitmap_type, options>::drawPathFill(const Sampler &sampler,
                                            const matrix_3x3<number1> &transform,
-                                           tessellation::path<number1> & path,
+                                           tessellation::path<number1, path_container_template> & path,
                                            const tessellation::fill_rule &rule,
                                            const tessellation::tess_quality &quality,
                                            opacity_t opacity,

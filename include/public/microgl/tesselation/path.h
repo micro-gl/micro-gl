@@ -12,7 +12,7 @@ namespace microgl {
 
         using namespace microgl;
 
-        template<typename number>
+        template<typename number, template<typename...> class container_type>
         class path {
         private:
             using index = unsigned int;
@@ -75,7 +75,7 @@ namespace microgl {
                 return *this;
             }
 
-            auto addPoly(const dynamic_array<vertex> & poly) -> path & {
+            auto addPoly(const container_type<vertex> & poly) -> path & {
                 return addPoly(poly.data(), poly.size());
             }
 
@@ -161,8 +161,8 @@ namespace microgl {
                                     CurveDivisionAlgorithm bezier_curve_divider=
                                             CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small)  {
                 vertex bezier[4] = {lastPointOfCurrentSubPath(), cp1, cp2, last};
-                dynamic_array<vertex> output{32};
-                curve_divider<number, dynamic_array>::compute(bezier, output, bezier_curve_divider, CurveType::Cubic);
+                container_type<vertex> output{32};
+                curve_divider<number, container_type>::compute(bezier, output, bezier_curve_divider, CurveType::Cubic);
                 for (unsigned ix = 0; ix < output.size(); ++ix)
                     lineTo(output[ix]);
                 invalidate();
@@ -174,8 +174,8 @@ namespace microgl {
                             CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small)
                     -> path & {
                 vertex bezier[3] = {lastPointOfCurrentSubPath(), cp, last};
-                dynamic_array<vertex> output{32};
-                curve_divider<number, dynamic_array>::compute(bezier, output, bezier_curve_divider, CurveType::Quadratic);
+                container_type<vertex> output{32};
+                curve_divider<number, container_type>::compute(bezier, output, bezier_curve_divider, CurveType::Quadratic);
                 for (unsigned ix = 0; ix < output.size(); ++ix)
                     lineTo(output[ix]);
                 invalidate();
@@ -207,8 +207,8 @@ namespace microgl {
             auto ellipse(const vertex &point, const number &radius_x, const number &radius_y,
                      const number & rotation, const number &startAngle, const number &endAngle,
                      bool anti_clockwise, unsigned divisions_count=32) -> path & {
-                dynamic_array<vertex> output{divisions_count};
-                elliptic_arc_divider<number, dynamic_array>::compute(output, point.x, point.y, radius_x, radius_y,
+                container_type<vertex> output{divisions_count};
+                elliptic_arc_divider<number, container_type>::compute(output, point.x, point.y, radius_x, radius_y,
                         rotation, startAngle, endAngle, divisions_count, anti_clockwise);
                 for (int ix = 0; ix < output.size(); ++ix)
                     lineTo(output[ix]);
@@ -221,10 +221,10 @@ namespace microgl {
             }
 
             struct buffers {
-                dynamic_array<vertex> DEBUG_output_trapezes{};
-                dynamic_array<vertex> output_vertices{};
-                dynamic_array<index> output_indices{};
-                dynamic_array<triangles::boundary_info> output_boundary{};
+                container_type<vertex> DEBUG_output_trapezes{};
+                container_type<vertex> output_vertices{};
+                container_type<index> output_indices{};
+                container_type<triangles::boundary_info> output_boundary{};
                 triangles::indices output_indices_type{};
                 explicit buffers()= default;
                 buffers(buffers && val) noexcept {

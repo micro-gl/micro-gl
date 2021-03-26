@@ -9,7 +9,6 @@
 #define W 640*1
 #define H 480*1
 
-
 template<typename item_type>
 using static_arr = static_array<item_type, 100>;
 
