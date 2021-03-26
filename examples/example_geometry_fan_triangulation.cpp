@@ -3,14 +3,23 @@
 #include <microgl/samplers/flat_color.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/tesselation/fan_triangulation.h>
+#include <microgl/static_array.h>
+#include <vector>
 
-#define TEST_ITERATIONS 1
 #define W 640*1
 #define H 480*1
 
 
+template<typename item_type>
+using static_arr = static_array<item_type, 100>;
+
+template<typename item_type>
+//using container = static_arr<item_type>;
+using container = dynamic_array<item_type>;
+//using container = std::vector<item_type>;
+
 template <typename number>
-dynamic_array<vec2<number>> poly_diamond() {
+container<vec2<number>> poly_diamond() {
     using il = std::initializer_list<vec2<number>>;
     return il{
         {100,300},
@@ -30,14 +39,14 @@ int main() {
 
     auto render_polygon = [&](const dynamic_array<vec2<number>> &polygon) {
         using index = unsigned int;
-        using fan = tessellation::fan_triangulation<number>;
+        using fan = tessellation::fan_triangulation<number, dynamic_array>;
 
         canvas.clear({255, 255, 255, 255});
 
         auto type = triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY;
 
-        dynamic_array<index> indices;
-        dynamic_array<boundary_info> boundary_buffer;
+        container<index> indices;
+        container<boundary_info> boundary_buffer;
 
         fan::compute(
                 polygon.data(),

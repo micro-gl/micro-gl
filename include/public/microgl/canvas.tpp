@@ -1146,7 +1146,7 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         }
         case hints::CONVEX:
         {
-            using fan=microgl::tessellation::fan_triangulation<number1>;
+            using fan=microgl::tessellation::fan_triangulation<number1, dynamic_array>;
             fan::compute(points, size, indices, boundary_buffer_ptr, type);
             break;
         }
