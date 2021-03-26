@@ -1138,7 +1138,7 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         case hints::X_MONOTONE:
         case hints::Y_MONOTONE:
         {
-            using mpt=microgl::tessellation::monotone_polygon_triangulation<number1>;
+            using mpt=microgl::tessellation::monotone_polygon_triangulation<number1, dynamic_array>;
             typename mpt::monotone_axis axis=hint==hints::X_MONOTONE ? mpt::monotone_axis::x_monotone :
                                     mpt::monotone_axis::y_monotone;
             mpt::compute(points, size, axis, indices, boundary_buffer_ptr, type);

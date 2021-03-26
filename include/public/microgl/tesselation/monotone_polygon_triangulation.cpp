@@ -1,9 +1,9 @@
 namespace microgl {
     namespace tessellation {
 
-        template <typename number>
+        template<typename number, template<typename...> class container_type>
         auto
-        monotone_polygon_triangulation<number>::polygon_to_linked_list(const vertex *$pts,
+        monotone_polygon_triangulation<number, container_type>::polygon_to_linked_list(const vertex *$pts,
                                                                    index offset,
                                                                    index size,
                                                                    bool reverse,
@@ -45,12 +45,12 @@ namespace microgl {
             return last;
         }
 
-        template <typename number>
-        void monotone_polygon_triangulation<number>::compute(const vertex *polygon,
+        template<typename number, template<typename...> class container_type>
+        void monotone_polygon_triangulation<number, container_type>::compute(const vertex *polygon,
                                                          index size,
                                                          const monotone_axis & axis,
-                                                         dynamic_array<index> & indices_buffer_triangulation,
-                                                         dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
+                                                         container_type<index> & indices_buffer_triangulation,
+                                                         container_type<microgl::triangles::boundary_info> * boundary_buffer,
                                                          microgl::triangles::indices &output_type) {
             if(size<=2) return;
             pool_nodes_t pool{size};
@@ -58,10 +58,10 @@ namespace microgl {
             compute(outer, size, axis, indices_buffer_triangulation, boundary_buffer, output_type);
         }
 
-        template <typename number>
-        void monotone_polygon_triangulation<number>::triangle(
-                dynamic_array<index> & indices_buffer_triangulation,
-                dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
+        template<typename number, template<typename...> class container_type>
+        void monotone_polygon_triangulation<number, container_type>::triangle(
+                container_type<index> & indices_buffer_triangulation,
+                container_type<microgl::triangles::boundary_info> * boundary_buffer,
                 int v0_index, int v1_index, int v2_index, int size) {
             indices_buffer_triangulation.push_back(v0_index);
             indices_buffer_triangulation.push_back(v1_index);
@@ -77,12 +77,12 @@ namespace microgl {
             }
         }
 
-        template <typename number>
-        void monotone_polygon_triangulation<number>::compute(node_t *list,
+        template<typename number, template<typename...> class container_type>
+        void monotone_polygon_triangulation<number, container_type>::compute(node_t *list,
                                                              index size,
                                                              const monotone_axis & axis,
-                                                             dynamic_array<index> & indices_buffer_triangulation,
-                                                             dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
+                                                             container_type<index> & indices_buffer_triangulation,
+                                                             container_type<microgl::triangles::boundary_info> * boundary_buffer,
                                                              microgl::triangles::indices &output_type) {
             bool requested_triangles_with_boundary = boundary_buffer;
             output_type=requested_triangles_with_boundary? microgl::triangles::indices::TRIANGLES_WITH_BOUNDARY :
@@ -170,25 +170,25 @@ namespace microgl {
             delete [] sorted_list;
         }
 
-        template <typename number>
-        bool monotone_polygon_triangulation<number>::a_B_b(node_t *a, node_t *b, const monotone_axis & axis) {
+        template<typename number, template<typename...> class container_type>
+        bool monotone_polygon_triangulation<number, container_type>::a_B_b(node_t *a, node_t *b, const monotone_axis & axis) {
             bool is_x_monotone= axis==monotone_axis::x_monotone;
             bool is_before=is_x_monotone ? (a->pt->x<b->pt->x || (a->pt->x==b->pt->x && a->pt->y<b->pt->y)) :
                            (a->pt->y<b->pt->y || (a->pt->y==b->pt->y && a->pt->x<b->pt->x));
             return is_before;
         }
 
-        template <typename number>
-        bool monotone_polygon_triangulation<number>::a_G_b(node_t *a, node_t *b, const monotone_axis & axis) {
+        template<typename number, template<typename...> class container_type>
+        bool monotone_polygon_triangulation<number, container_type>::a_G_b(node_t *a, node_t *b, const monotone_axis & axis) {
             bool is_x_monotone= axis==monotone_axis::x_monotone;
             bool is_before=is_x_monotone ? (a->pt->x>b->pt->x || (a->pt->x==b->pt->x && a->pt->y>b->pt->y)) :
                            (a->pt->y>b->pt->y || (a->pt->y==b->pt->y && a->pt->x>b->pt->x));
             return is_before;
         }
 
-        template <typename number>
+        template<typename number, template<typename...> class container_type>
         inline int
-        monotone_polygon_triangulation<number>::classify_point(const vertex & point, const vertex &a, const vertex & b) {
+        monotone_polygon_triangulation<number, container_type>::classify_point(const vertex & point, const vertex &a, const vertex & b) {
             // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
             // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
             //    Input:  three points p, a, b
@@ -202,13 +202,13 @@ namespace microgl {
             else return 0;
         }
 
-        template <typename number>
-        bool monotone_polygon_triangulation<number>::isDegenerate(const node_t *v) {
+        template<typename number, template<typename...> class container_type>
+        bool monotone_polygon_triangulation<number, container_type>::isDegenerate(const node_t *v) {
             return classify_point(*v->prev->pt, *v->pt, *v->next->pt)==0;
         }
 
-        template <typename number>
-        auto monotone_polygon_triangulation<number>::find_min_max(node_t *list, const monotone_axis &axis,
+        template<typename number, template<typename...> class container_type>
+        auto monotone_polygon_triangulation<number, container_type>::find_min_max(node_t *list, const monotone_axis &axis,
                                                                   node_t **min, node_t **max) -> void {
             *min = list, *max=list;
             node_t * iter = list;

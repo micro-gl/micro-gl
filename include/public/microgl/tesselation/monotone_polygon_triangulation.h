@@ -2,7 +2,6 @@
 
 #include <microgl/vec2.h>
 #include <microgl/triangles.h>
-#include <microgl/dynamic_array.h>
 
 namespace microgl {
 
@@ -11,7 +10,7 @@ namespace microgl {
 #define abs_(a) ((a)<0 ? -(a) : (a))
         using index = unsigned int;
 
-        template<typename number>
+        template<typename number, template<typename...> class container_type>
         class monotone_polygon_triangulation {
         public:
             using vertex = microgl::vec2<number>;
@@ -46,8 +45,8 @@ namespace microgl {
             static void compute(const vertex *polygon,
                                 index size,
                                 const monotone_axis & axis,
-                                dynamic_array<index> &indices_buffer_triangulation,
-                                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
+                                container_type<index> &indices_buffer_triangulation,
+                                container_type<microgl::triangles::boundary_info> *boundary_buffer,
                                 microgl::triangles::indices &output_type
             );
 
@@ -56,8 +55,8 @@ namespace microgl {
             static void
             compute(node_t *list, index size,
                     const monotone_axis & axis,
-                    dynamic_array<index> & indices_buffer_triangulation,
-                    dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
+                    container_type<index> & indices_buffer_triangulation,
+                    container_type<microgl::triangles::boundary_info> * boundary_buffer,
                     microgl::triangles::indices &output_type);
 
             static
@@ -71,8 +70,8 @@ namespace microgl {
             static bool a_G_b(node_t *a, node_t *b, const monotone_axis & axis);
             static bool isDegenerate(const node_t *v);
             static int classify_point(const vertex & point, const vertex &a, const vertex & b);
-            static void triangle(dynamic_array<index> & indices_buffer_triangulation,
-                                 dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
+            static void triangle(container_type<index> & indices_buffer_triangulation,
+                                 container_type<microgl::triangles::boundary_info> * boundary_buffer,
                                  int v0_index, int v1_index, int v2_index, int size);
         };
 
