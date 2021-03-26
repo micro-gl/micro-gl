@@ -162,7 +162,7 @@ namespace microgl {
                                             CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small)  {
                 vertex bezier[4] = {lastPointOfCurrentSubPath(), cp1, cp2, last};
                 dynamic_array<vertex> output{32};
-                curve_divider<number>::compute(bezier, output, bezier_curve_divider, CurveType::Cubic);
+                curve_divider<number, dynamic_array>::compute(bezier, output, bezier_curve_divider, CurveType::Cubic);
                 for (unsigned ix = 0; ix < output.size(); ++ix)
                     lineTo(output[ix]);
                 invalidate();
@@ -175,7 +175,7 @@ namespace microgl {
                     -> path & {
                 vertex bezier[3] = {lastPointOfCurrentSubPath(), cp, last};
                 dynamic_array<vertex> output{32};
-                curve_divider<number>::compute(bezier, output, bezier_curve_divider, CurveType::Quadratic);
+                curve_divider<number, dynamic_array>::compute(bezier, output, bezier_curve_divider, CurveType::Quadratic);
                 for (unsigned ix = 0; ix < output.size(); ++ix)
                     lineTo(output[ix]);
                 invalidate();

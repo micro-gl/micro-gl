@@ -27,11 +27,11 @@ namespace microgl {
                     Uniform_16,
         };
 
-        template<typename number>
+        template<typename number, template<typename...> class container_type>
         class curve_divider {
         public:
             using vertex = vec2<number>;
-            using output = dynamic_array<vertex>;
+            using output = container_type<vertex>;
             using index = unsigned int;
 //        static number HALF = number(1)/number(2);
 
