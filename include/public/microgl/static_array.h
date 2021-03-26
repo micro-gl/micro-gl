@@ -1,11 +1,11 @@
 #pragma once
 
-template<typename T, unsigned N>
+template<typename T, unsigned N=10>
 class static_array {
 public:
     using index = unsigned int;
     using type = T;
-    static constexpr capacity = N;
+    static constexpr unsigned Capacity = N;
 
     explicit static_array() = default;
 

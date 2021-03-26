@@ -1131,7 +1131,7 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         case hints::CONCAVE:
         case hints::SIMPLE:
         {
-            using ect=microgl::tessellation::ear_clipping_triangulation<number1>;
+            using ect=microgl::tessellation::ear_clipping_triangulation<number1, dynamic_array>;
             ect::compute(points, size, indices, boundary_buffer_ptr, type);
             break;
         }

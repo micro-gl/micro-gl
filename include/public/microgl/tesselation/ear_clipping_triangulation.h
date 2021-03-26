@@ -27,7 +27,7 @@ namespace microgl {
          * 6. The strength of this algorithm is it's simplicity, short code, stability, low memory usage,
          *    does not require crazy numeric robustness.
          */
-        template<typename number>
+        template<typename number, template<typename...> class container_type>
         class ear_clipping_triangulation {
         public:
             using vertex = microgl::vec2<number>;
@@ -66,15 +66,15 @@ namespace microgl {
         public:
             static void compute(const vertex *polygon,
                                 index size,
-                                dynamic_array<index> &indices_buffer_triangulation,
-                                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
+                                container_type<index> &indices_buffer_triangulation,
+                                container_type<microgl::triangles::boundary_info> *boundary_buffer,
                                 microgl::triangles::indices &output_type);
         private:
 
             static void compute(node_t *list,
                                 index size,
-                                dynamic_array<index> &indices_buffer_triangulation,
-                                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
+                                container_type<index> &indices_buffer_triangulation,
+                                container_type<microgl::triangles::boundary_info> *boundary_buffer,
                                 microgl::triangles::indices &output_type);
 
             static

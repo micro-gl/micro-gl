@@ -6,7 +6,6 @@
 #include <microgl/tesselation/ear_clipping_triangulation.h>
 #include <microgl/triangles.h>
 #include <vector>
-#include <microgl/static_array.h>
 
 #define W 640*1
 #define H 480*1
@@ -14,12 +13,7 @@
 float t = 0;
 
 template<typename item_type>
-using static_arr = static_array<item_type, 100>;
-
-template<typename item_type>
-//using container = static_arr<item_type>;
 using container = dynamic_array<item_type>;
-//using container = std::vector<item_type>;
 
 template <typename number>
 container<vec2<number>> poly_rect() {
@@ -161,18 +155,18 @@ int main() {
 
     Canvas24 canvas(W, H);
 
-    const auto render_polygon = [&](container<vec2<number>> & polygon) {
+    const auto render_polygon = [&](dynamic_array<vec2<number>> & polygon) {
         using index = unsigned int;
 
         //polygon[1].x = 140 + 20 +  t;
 
         canvas.clear({255,255,255,255});
 
-        using ear = microgl::tessellation::ear_clipping_triangulation<number, dynamic_array>;
+        using ear = microgl::tessellation::ear_clipping_triangulation<number>;
 
         triangles::indices type;
-        container<index> indices;
-        container<boundary_info> boundary_buffer;
+        dynamic_array<index> indices;
+        dynamic_array<boundary_info> boundary_buffer;
 
         ear::compute(polygon.data(),
                      polygon.size(),
