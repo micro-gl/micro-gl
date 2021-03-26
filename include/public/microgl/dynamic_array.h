@@ -1,8 +1,31 @@
 #pragma once
 
+namespace dynamic_array_traits {
+
+    template< class T > struct remove_reference      {typedef T type;};
+    template< class T > struct remove_reference<T&>  {typedef T type;};
+    template< class T > struct remove_reference<T&&> {typedef T type;};
+
+    template <class _Tp>
+    inline
+    _Tp&&
+    forward(typename remove_reference<_Tp>::type& __t) noexcept
+    {
+        return static_cast<_Tp&&>(__t);
+    }
+
+    template <class _Tp>
+    inline
+    _Tp&&
+    forward(typename remove_reference<_Tp>::type&& __t) noexcept
+    {
+        return static_cast<_Tp&&>(__t);
+    }
+
+}
+
 template<typename T>
 class dynamic_array {
-    using dynamic_array_ref = dynamic_array<T> &;
     using const_dynamic_array_ref = const dynamic_array<T> &;
 public:
     using index = unsigned int;
@@ -29,24 +52,13 @@ public:
 
     explicit dynamic_array(unsigned capacity = 0) {
         _cap = capacity;
-        if(_cap > 0)
-            _data = new T[_cap];
+        if(_cap > 0) _data = new T[_cap];
     }
 
     explicit dynamic_array(signed capacity) : dynamic_array{unsigned(capacity)} {
     }
 
-    ~dynamic_array() {
-        drain();
-    }
-
-    T* data()  {
-        return _data;
-    }
-
-    const T* data() const {
-        return _data;
-    }
+    ~dynamic_array() { drain(); }
 
     dynamic_array<T> & operator=(const dynamic_array<T> &container) {
         if(this!= &container) {
@@ -67,17 +79,9 @@ public:
         return (*this);
     }
 
-    T& operator[](index i)  {
-        return _data[i];
-    }
-
-    const T& operator[](index i) const {
-        return _data[i];
-    }
-
-    const T& peek()  {
-        return (*this)[_current];
-    }
+    T& operator[](index i)  { return _data[i]; }
+    const T& operator[](index i) const { return _data[i]; }
+    const T& peek()  { return (*this)[_current]; }
 
     void alloc_(bool up) {
         _cap = up ? _cap<<1 : _cap>>1;
@@ -88,11 +92,8 @@ public:
 
         if(_cap>0) {
             _new = new T[_cap];
-
-            for (index ix = 0; ix < size(); ++ix) {
+            for (index ix = 0; ix < size(); ++ix)
                 _new[ix] = _data[ix];
-            }
-
         }
 
         if(_data)
@@ -114,35 +115,30 @@ public:
         return _current-1;
     }
 
-    void push_back(const_dynamic_array_ref container)  {
-        const int count = container.size();
-        for (int ix = 0; ix < count; ++ix) {
-            this->push_back(container[ix]);
-        }
+    template<typename... ARGS>
+    int emplace_back(ARGS&&... args)  {
+        if(int(_current)>int(_cap-1))
+            alloc_(true);
+        auto * mem_loc = &_data[_current++];
+        new (mem_loc) T(dynamic_array_traits::forward<ARGS>(args)...);
+        return _current-1;
     }
 
-    void push_back(dynamic_array_ref container)  {
+    void push_back(const_dynamic_array_ref container)  {
         const int count = container.size();
-        for (int ix = 0; ix < count; ++ix) {
+        for (int ix = 0; ix < count; ++ix)
             this->push_back(container[ix]);
-        }
     }
 
     void pop_back()  {
-        if(_current < (_cap>>1))
-            alloc_(false);
-        if(_current==0)
-            return;
+        if(_current < (_cap>>1)) alloc_(false);
+        if(_current==0) return;
         _data[_current--].~T();
     }
 
     void move(index idx)  {
         if(idx < capacity())
             _current = idx;
-    }
-
-    void clear()  {
-        _current = 0;
     }
 
     void drain()  {
@@ -152,22 +148,13 @@ public:
         _current = 0;
     }
 
-    T& back() {
-        return _data[_current-1];
-    }
-
-    bool empty() {
-        return _current==0;
-    }
-
-    index size() const  {
-        return _current;
-    }
-
-    index capacity() const  {
-        return _cap;
-    }
-
+    void clear()  { _current = 0; }
+    T* data()  { return _data; }
+    const T* data() const { return _data; }
+    T& back() { return _data[_current-1]; }
+    bool empty() { return _current==0; }
+    index size() const  { return _current; }
+    index capacity() const  { return _cap; }
     const T* begin() const {return _data;}
     const T* end()   const {return _data + size();}
 
