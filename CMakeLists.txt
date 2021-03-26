@@ -9,7 +9,7 @@ message("===============\n${PROJECT_NAME} project \n===============")
 #set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 #set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-add_library(${PROJECT_NAME} INTERFACE include/public/microgl/pixel_coders/RGBA_PACKED.h include/public/microgl/stdint.h)
+add_library(${PROJECT_NAME} INTERFACE)
 
 # expose public include directory
 target_include_directories(${PROJECT_NAME}

@@ -602,9 +602,10 @@ namespace microgl {
                 }
                 // in case of precision issues, bottom might be above top, if top was already present and it
                 // flowed a bit during it's lifetime :)
-                bottom_vertex_edge->origin->coords.y=max__(bottom_vertex_edge->origin->coords.y,
+#define max__1(a, b) ((a)>(b) ? (a) : (b))
+                bottom_vertex_edge->origin->coords.y=max__1(bottom_vertex_edge->origin->coords.y,
                         top_vertex_edge->origin->coords.y);
-
+#undef max__1
                 // now, we need to split face in two
                 // edge cannot exist yet because we are strictly inside horizontal part.
                 // we insert a vertical edge, that starts at bottom edge into the top wall (bottom-to-top)
@@ -1233,13 +1234,12 @@ namespace microgl {
 
         template<typename number>
         bool planarize_division<number>::infer_fill(int winding, const fill_rule & rule) {
+            unsigned int abs_winding = winding < 0 ? -winding : winding;
             switch (rule) {
                 case fill_rule::non_zero:
-                    return abs_(winding);
-                    break;
+                    return abs_winding;
                 case fill_rule::even_odd:
-                    return abs_(winding)%2==1;
-                    break;
+                    return abs_winding%2==1;
             }
         }
 
@@ -1452,8 +1452,9 @@ namespace microgl {
             auto ab = b - a;
             auto cd = d - c;
             auto dem = ab.x * cd.y - ab.y * cd.x;
+            auto abs_dem = dem<0?-dem:dem;
             // parallel lines
-            if (abs_(dem) <= number(0)) return intersection_status::parallel;
+            if (abs_dem <= number(0)) return intersection_status::parallel;
             else {
                 auto ca = a - c;
                 auto numerator_1 = ca.y*cd.x - ca.x*cd.y;

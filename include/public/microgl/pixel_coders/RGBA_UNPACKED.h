@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/pixel_coder.h>
+#include <microgl/stdint.h>
 #include <microgl/micro_gl_traits.h>
 
 namespace microgl {
@@ -23,7 +23,8 @@ namespace microgl {
          * @tparam delete_zero_channel this will make the pixel array smaller
          */
         template<uint8_t r, uint8_t g, uint8_t b, uint8_t a, bool delete_zero_channel=true>
-        struct RGBA_UNPACKED {
+        class RGBA_UNPACKED {
+        public:
             static constexpr uint8_t count = delete_zero_channel ?
                                              ((r==0?0:1)+(g==0?0:1)+(b==0?0:1)+(a==0?0:1))
                                              : 4;

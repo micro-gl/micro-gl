@@ -63,33 +63,32 @@ if(SDL2_FOUND)
             example_geometry_stroke_tessellation.cpp
             example_geometry_stroke_dash_tessellation.cpp
             example_geometry_elliptic_arc_divider.cpp
-            test_q_sort.cpp
             example_avl_tree.cpp
             example_draw_bitmap_fonts.cpp
             example_draw_bitmap_packed.cpp
             example_draw_bitmap_indexed_palette.cpp
-            test_lut.cpp
             example_draw_transparent.cpp
             example_draw_rect_axial.cpp
             example_draw_rect_transform.cpp
             example_3d_shader_color.cpp
             example_geometry_bezier_curve_divider.cpp
-            test_coder_converter.cpp
             example_sampler_masking_sampler.cpp
             example_compositing.cpp
-            test_mem.cpp
-            test_coder_generator.cpp
-            test_resource.cpp
-            test_containers.cpp
-            test_math.cpp
-            bug_1.cpp
+            mtest_coder_converter.cpp
+            mtest_coder_generator.cpp
+            mtest_lut.cpp
+            mtest_mem.cpp
+            mtest_resource.cpp
+            mtest_containers.cpp
+            mtest_math.cpp
+            mtest_q_sort.cpp
             )
 
     set(SOURCES_SHARED
             libs/stb_image/stb_image.cpp
             src/Resources.cpp
             src/example.cpp src/example.h
-            test.cpp)
+            src/dummy.cpp src/dummy.h)
 
     foreach( testsourcefile ${SOURCES} )
         # I used a simple string replace, to cut off .cpp.

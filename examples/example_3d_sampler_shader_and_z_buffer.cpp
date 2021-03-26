@@ -1,5 +1,11 @@
 #include "src/Resources.h"
 #include "src/example.h"
+
+//#include <microgl/math/std_float_math.h>
+//#include <microgl/math/q_math.h>
+//#define MICROGL_AVOID_STD_MATH
+//#include "dummy.h"
+
 #include <microgl/camera.h>
 #include <microgl/z_buffer.h>
 #include <microgl/canvas.h>
@@ -9,12 +15,12 @@
 #include <microgl/samplers/texture.h>
 #include "data/model_3d_cube.h"
 
-#define TEST_ITERATIONS 1
 #define W 640
 #define H 480
 
 int main() {
     using number = float;
+//    using number = double;
 //    using number = Q<10>;
 //    using number = Q<12>;
 //    using number = Q<15>;
@@ -36,7 +42,7 @@ int main() {
         using vertex = vec3<number>;
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
-        using math = microgl::math;
+        using namespace microgl::math;
         using Shader = sampler_shader<number, Texture24>;
         using vertex_attributes = Shader::vertex_attributes;
 
@@ -52,7 +58,7 @@ int main() {
         mat4 model_2 = mat4::transform(rotation*2, translation + vertex{10,0,0}, scale);
         mat4 view = camera::lookAt<number>({0, 0, 70}, {0,0, 0}, {0,1,0});
         // mat4 view = camera::angleAt<number>({0, 0, 70}, 0, math::deg_to_rad(0), 0);
-        mat4 projection = camera::perspective<number>(math::deg_to_rad(90),
+        mat4 projection = camera::perspective<number>(math::deg_to_rad(90.0f),
                                                       W, H, 10.f, 100);
         // mat4 projection= camera::orthographic<number>(-W/2, W/2, -H/2, H/2, 1, 500);
 

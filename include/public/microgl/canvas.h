@@ -24,13 +24,14 @@
 #include <microgl/tesselation/ear_clipping_triangulation.h>
 #include <microgl/tesselation/fan_triangulation.h>
 #include <microgl/tesselation/bezier_patch_tesselator.h>
-#include <microgl/cohen_sutherland_clipper.h>
-#include <microgl/homo_triangle_clipper.h>
+#include <microgl/clippers/cohen_sutherland_clipper.h>
+#include <microgl/clippers/homo_triangle_clipper.h>
 #include <microgl/functions/minmax.h>
 #include <microgl/functions/clamp.h>
 #include <microgl/functions/swap.h>
 #include <microgl/functions/orient2d.h>
 #include <microgl/functions/bits.h>
+#include <microgl/functions/distance.h>
 
 using namespace microgl::triangles;
 using namespace microgl::polygons;
@@ -136,7 +137,6 @@ private:
     using index = unsigned int;
     using precision = unsigned char;
     using opacity_t = unsigned char;
-    using l64= long long;
     // rasterizer integers
     using rint_big = int64_t;
     using rint =typename microgl::traits::conditional<

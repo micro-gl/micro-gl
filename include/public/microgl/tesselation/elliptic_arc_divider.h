@@ -10,7 +10,8 @@ namespace microgl {
 
         using index = unsigned int;
         using precision_t = unsigned char;
-        using math = microgl::math;
+//        using math = microgl::math;
+        using namespace microgl::math;
         using namespace microgl;
 
         template <typename number>

@@ -714,9 +714,9 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
     rint A01_h=0, B01_h=0, A12_h=0, B12_h=0, A20_h=0, B20_h=0;
     if(antialias) { // lengths of edges, produces a P+1 bits number
         // AA, 2A/L = h, therefore the division produces a P bit number
-        unsigned int length_w0 = microgl::math::distance(v0_x, v0_y, v1_x, v1_y);
-        unsigned int length_w1 = microgl::math::distance(v1_x, v1_y, v2_x, v2_y);
-        unsigned int length_w2 = microgl::math::distance(v0_x, v0_y, v2_x, v2_y);
+        unsigned int length_w0 = microgl::functions::distance(v0_x, v0_y, v1_x, v1_y);
+        unsigned int length_w1 = microgl::functions::distance(v1_x, v1_y, v2_x, v2_y);
+        unsigned int length_w2 = microgl::functions::distance(v0_x, v0_y, v2_x, v2_y);
         A01_h = (((rint_big)(v0_y - v1_y))<<P_AA)/length_w0, B01_h = (((rint_big)(v1_x - v0_x))<<P_AA)/length_w0;
         A12_h = (((rint_big)(v1_y - v2_y))<<P_AA)/length_w1, B12_h = (((rint_big)(v2_x - v1_x))<<P_AA)/length_w1;
         A20_h = (((rint_big)(v2_y - v0_y))<<P_AA)/length_w2, B20_h = (((rint_big)(v0_x - v2_x))<<P_AA)/length_w2;
@@ -960,7 +960,7 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
     // Barycentric coordinates at minX/minY corner
     vec2<int> p = { bbox.left, bbox.top };
     vec2<int> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
-    l64 half= (int(1)<<(sub_pixel_precision))>>1; // todo: remove l64
+    int half= (int(1)<<(sub_pixel_precision))>>1;
     p_fixed = p_fixed + vec2<int> {half, half}; // we sample at the center
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
@@ -1437,6 +1437,7 @@ void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
 
 template<typename bitmap_type, uint8_t options>
 void canvas<bitmap_type, options>::fxaa(int left, int top, int right, int bottom) {
+    using l64 = long long;
     // taken from_sampler opengl cookbook
 //    left=160;top=160;right=left+300;bottom=top+300;
 //return;

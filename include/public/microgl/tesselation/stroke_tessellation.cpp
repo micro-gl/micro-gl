@@ -35,9 +35,10 @@ namespace microgl {
             auto ab = b - a;
             auto cd = d - c;
             auto dem = ab.x * cd.y - ab.y * cd.x;
+            auto abs_dem = dem<0?-dem:dem;
 
             // parallel lines
-            if (abs_(dem) <= number(1))
+            if (abs_dem <= number(1))
                 return intersection_status::parallel;
             else {
                 auto ca = a - c;
@@ -86,7 +87,7 @@ namespace microgl {
                 number stroke) {
             vertex vec = pt1==pt0 ? vertex{1,0} : pt1 - pt0;
             vertex normal = {vec.y, -vec.x};
-            number length = microgl::math::length(normal.x, normal.y);
+            number length = microgl::functions::length(normal.x, normal.y);
             vertex dir = (normal*stroke)/length;
             pt_out_0 = pt0 + dir;
             pt_out_1 = pt1 + dir;
@@ -127,14 +128,14 @@ namespace microgl {
             edge result;
             vertex tangent1 = b-a, tangent2 = c-b;
             vertex normal1 = {tangent1.y, -tangent1.x}, normal2 = {tangent2.y, -tangent2.x};
-            normal1 = normal1/microgl::math::length(normal1.x, normal1.y);
-            normal2 = normal2/microgl::math::length(normal2.x, normal2.y);
+            normal1 = normal1/microgl::functions::length(normal1.x, normal1.y);
+            normal2 = normal2/microgl::functions::length(normal2.x, normal2.y);
             vertex pre_normal_join= normal1+normal2;
             if(pre_normal_join==vertex{0,0}) {
                 pre_normal_join=b-a;
                 mag= mag<0 ? -mag : mag;
             }
-            const number length= microgl::math::length(pre_normal_join.x, pre_normal_join.y);
+            const number length= microgl::functions::length(pre_normal_join.x, pre_normal_join.y);
             const vertex direction=(pre_normal_join*mag)/length;
             result.a = b + direction;
             result.b = result.a + vertex{direction.y, -direction.x};
@@ -247,7 +248,7 @@ namespace microgl {
             // calculate path length
             for (index ix = 0; ix < segments_count; ++ix) {
                 const auto vec= points[(ix+1)%size]-points[ix%size];
-                path_length+=microgl::math::length(vec.x, vec.y);
+                path_length+=microgl::functions::length(vec.x, vec.y);
                 if(ix==0) total_length=path_length; // adjusted to reflect current segment
             }
 
@@ -281,12 +282,12 @@ namespace microgl {
                         while(positions[ix]>total_length) {
                             current_seg++;
                             const auto seg_vec= (points[(current_seg+1)%size]- points[(current_seg)%size]);
-                            const auto seg_len=microgl::math::length(seg_vec.x, seg_vec.y); total_length+=seg_len;
+                            const auto seg_len=microgl::functions::length(seg_vec.x, seg_vec.y); total_length+=seg_len;
                             if(ix==1 && seg_len) points_segments.push_back(points[current_seg%size]);
                         }
                         // compute start-point
                         vertex seg_vec= (points[(current_seg+1)%size]- points[(current_seg)%size]);
-                        number seg_len=microgl::math::length(seg_vec.x, seg_vec.y);
+                        number seg_len=microgl::functions::length(seg_vec.x, seg_vec.y);
                         const auto point = points[(current_seg)%size] + (seg_len==0 ? vertex{0,0} :
                                 (seg_vec*(positions[ix]-(total_length-seg_len)))/seg_len);
                         points_segments.push_back(point);
@@ -539,7 +540,7 @@ namespace microgl {
                 {
                     const auto dir=b-a;
                     const auto n=vertex{dir.y, -dir.x};
-                    const auto dir2 = (n*radius)/microgl::math::length(n.x, n.y);
+                    const auto dir2 = (n*radius)/microgl::functions::length(n.x, n.y);
                     const auto ext_a_index= output_vertices.push_back(a+dir2);
                     const auto ext_b_index= output_vertices.push_back(b+dir2);
                     output_indices.push_back(ext_a_index); b1;

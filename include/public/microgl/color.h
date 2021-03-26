@@ -12,8 +12,8 @@ namespace microgl {
         struct color_t {
             color_t(channel_t $r=0, channel_t $g=0, channel_t $b=0, channel_t $a=255) :
                     r{$r}, g{$g}, b{$b}, a{$a} {};
-            color_t(const color_t &val) :
-                        color_t(val.r, val.g, val.b, val.a){};
+//            color_t(const color_t &val) :
+//                        color_t(val.r, val.g, val.b, val.a){};
             channel_t r=0, g=0, b=0, a=255;
         };
 
