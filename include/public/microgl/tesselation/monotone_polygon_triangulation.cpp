@@ -118,7 +118,7 @@ namespace microgl {
                 count++;
             }
             // start
-            container_type<node_t *> stack{16};
+            container_type<node_t *> stack{};
             stack.push_back(sorted_list[0]);
             stack.push_back(sorted_list[1]);
             for (unsigned j = 2; j < size - 1; ++j) {

@@ -15,7 +15,7 @@ private:
 
 public:
 
-    explicit static_array() = default;
+    explicit static_array(int cap = 0) {};
 
     template<class Iterable>
     static_array(const Iterable & list) {
@@ -50,6 +50,8 @@ public:
         if(_current==0) return;
         _data[_current--].~T();
     }
+
+    T& back() noexcept { return _data[_current-1]; }
 
     void clear() { _current = 0; }
     index size() const { return _current; }

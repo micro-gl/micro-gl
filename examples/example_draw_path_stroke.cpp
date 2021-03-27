@@ -2,6 +2,7 @@
 #include <microgl/canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
+#include <microgl/static_array.h>
 #include <vector>
 
 #define W 640*1
@@ -10,7 +11,12 @@
 using microgl::tessellation::path;
 float t = 0;
 
+template<typename item>
+using stat_array = static_array<item, 800>;
+
 template<typename number>
+//using path_t = path<number, dynamic_array>;
+//using path_t = path<number, stat_array>;
 using path_t = path<number, std::vector>;
 
 template <typename number>

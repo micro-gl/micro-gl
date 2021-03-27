@@ -261,11 +261,11 @@ namespace microgl {
             void compute(const chunker_t &pieces,
                        const fill_rule &rule,
                        const tess_quality &quality,
-                         container_type<vertex> &output_vertices,
+                       container_type<vertex> &output_vertices,
                        triangles::indices & output_indices_type,
-                         container_type<index> &output_indices,
-                         container_type<microgl::triangles::boundary_info> *boundary_buffer= nullptr,
-                         container_type<vertex> *debug_trapezes= nullptr);
+                       container_type<index> &output_indices,
+                       container_type<microgl::triangles::boundary_info> *boundary_buffer= nullptr,
+                       container_type<vertex> *debug_trapezes= nullptr);
 
         private:
             static

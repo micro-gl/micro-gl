@@ -10,7 +10,7 @@
 #define H 480*1
 
 template<typename item_type>
-using static_arr = static_array<item_type, 100>;
+using static_arr = static_array<item_type, 800>;
 
 template<typename item_type>
 //using container = static_arr<item_type>;
@@ -142,6 +142,8 @@ int main() {
         canvas.clear({255,255,255,255});
 
         using mpt = tessellation::monotone_polygon_triangulation<number, dynamic_array>;
+//        using mpt = tessellation::monotone_polygon_triangulation<number, std::vector>;
+//        using mpt = tessellation::monotone_polygon_triangulation<number, static_arr>;
 
         triangles::indices type;
         container<index> indices;
