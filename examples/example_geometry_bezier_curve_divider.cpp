@@ -11,8 +11,8 @@ using static_arr = static_array<item_type, 100>;
 
 template<typename item_type>
 //using container = static_arr<item_type>;
-using container = dynamic_array<item_type>;
-//using container = std::vector<item_type>;
+//using container = dynamic_array<item_type>;
+using container = std::vector<item_type>;
 
 #define W 640*1
 #define H 480*1
@@ -39,7 +39,9 @@ int main() {
 
     const auto render_cubic_1 = [&](container<vec2<number>> curve) {
         static number t = 0;
-        using curve_divider = microgl::tessellation::curve_divider<number, dynamic_array>;
+//        using curve_divider = microgl::tessellation::curve_divider<number, dynamic_array>;
+        using curve_divider = microgl::tessellation::curve_divider<number, std::vector>;
+//        using curve_divider = microgl::tessellation::curve_divider<number, static_arr>;
         auto algo = microgl::tessellation::CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium;
         auto type = microgl::tessellation::CurveType::Cubic;
         container<vec2<number>> output{};

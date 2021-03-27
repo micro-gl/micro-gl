@@ -36,6 +36,8 @@ int main() {
             const number& rotation,
             uint divisions_count) {
         using ellipse = microgl::tessellation::elliptic_arc_divider<number, dynamic_array>;
+//        using ellipse = microgl::tessellation::elliptic_arc_divider<number, std::vector>;
+//        using ellipse = microgl::tessellation::elliptic_arc_divider<number, static_arr>;
 
         container<vec2<number>> arc_points;
 
