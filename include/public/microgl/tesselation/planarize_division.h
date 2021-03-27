@@ -42,10 +42,12 @@ namespace microgl {
             prettier_with_extra_vertices
         };
 
-        template <typename number>
+        template<typename number, template<typename...> class container_type>
         class planarize_division {
-        private:
+        public:
             using vertex = microgl::vec2<number>;
+            using chunker_t = chunker<vertex, container_type>;
+        private:
             using index = unsigned int;
             using half_edge = half_edge_t<number>;
             using half_edge_vertex = half_edge_vertex_t<number>;
@@ -56,9 +58,9 @@ namespace microgl {
             struct dynamic_pool {
             private:
                 index t = 1;
-                dynamic_array<half_edge_vertex *> _vertices;
-                dynamic_array<half_edge *> _edges;
-                dynamic_array<half_edge_face *> _faces;
+                container_type<half_edge_vertex *> _vertices;
+                container_type<half_edge *> _edges;
+                container_type<half_edge_face *> _faces;
 
             public:
                 ~dynamic_pool() {
@@ -76,8 +78,8 @@ namespace microgl {
                 auto create_vertex(const vertex &coords) -> half_edge_vertex * {
                     auto * v = new half_edge_vertex();
                     v->coords = coords;
-//                    v->head_id=
-                    v->id=_vertices.push_back(v);
+                    _vertices.push_back(v);
+                    v->id=_vertices.size()-1;
                     if(v->id==43) {
                         int debug=1;
                     }
@@ -97,7 +99,7 @@ namespace microgl {
                     return v;
                 }
 
-                auto getFaces() -> dynamic_array<half_edge_face *> & {
+                auto getFaces() -> container_type<half_edge_face *> & {
                     return _faces;
                 }
 
@@ -171,10 +173,14 @@ namespace microgl {
                     const number pre_right_wall = -point.x+trapeze.right_top->origin->coords.x;
                     left_wall= pre_left_wall<number(0) ? -1 : (pre_left_wall>number(0) ? 1 : 0);
                     right_wall= pre_right_wall<number(0) ? -1 : (pre_right_wall>number(0) ? 1 : 0);
-                    bottom_wall = classify_point(point, trapeze.left_bottom->origin->coords, trapeze.right_bottom->origin->coords);
-                    top_wall = classify_point(point, trapeze.right_top->origin->coords, trapeze.left_top->origin->coords);
-                    if(point==trapeze.right_top->origin->coords || point==trapeze.left_top->origin->coords) top_wall=0; // this may be more robust and accurate for boundary vertices
-                    if(point==trapeze.left_bottom->origin->coords || point==trapeze.right_bottom->origin->coords) bottom_wall=0; // this may be more robust and accurate for boundary vertices
+                    bottom_wall = classify_point(point, trapeze.left_bottom->origin->coords,
+                                                 trapeze.right_bottom->origin->coords);
+                    top_wall = classify_point(point, trapeze.right_top->origin->coords,
+                                              trapeze.left_top->origin->coords);
+                    if(point==trapeze.right_top->origin->coords ||
+                                point==trapeze.left_top->origin->coords) top_wall=0; // this may be more robust and accurate for boundary vertices
+                    if(point==trapeze.left_bottom->origin->coords ||
+                                point==trapeze.right_bottom->origin->coords) bottom_wall=0; // this may be more robust and accurate for boundary vertices
                 }
                 void compute_codes_from_class(const vertex& v, const point_class_with_trapeze & classs, const trapeze_t & trapeze) {
                     if(classs==point_class_with_trapeze::outside || classs==point_class_with_trapeze::unknown)
@@ -252,18 +258,18 @@ namespace microgl {
 
         public:
             static
-            void compute(const chunker<vertex> &pieces,
+            void compute(const chunker_t &pieces,
                        const fill_rule &rule,
                        const tess_quality &quality,
-                       dynamic_array<vertex> &output_vertices,
+                       container_type<vertex> &output_vertices,
                        triangles::indices & output_indices_type,
-                       dynamic_array<index> &output_indices,
-                       dynamic_array<microgl::triangles::boundary_info> *boundary_buffer= nullptr,
-                       dynamic_array<vertex> *debug_trapezes= nullptr);
+                       container_type<index> &output_indices,
+                       container_type<microgl::triangles::boundary_info> *boundary_buffer= nullptr,
+                       container_type<vertex> *debug_trapezes= nullptr);
 
         private:
             static
-            void face_to_trapeze_vertices(half_edge_face * face, dynamic_array<vertex> &vertices) {
+            void face_to_trapeze_vertices(half_edge_face * face, container_type<vertex> &vertices) {
                 if(face->edge== nullptr)
                     return;
                 auto trapeze = infer_trapeze(face);
@@ -275,17 +281,17 @@ namespace microgl {
 
             static void
             tessellate(half_edge_face **faces, index size, const fill_rule &rule,
-                    tess_quality quality, dynamic_array<vertex> &output_vertices,
+                    tess_quality quality, container_type<vertex> &output_vertices,
                     triangles::indices & output_indices_type,
-                    dynamic_array<index> &output_indices,
-                    dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
-                    dynamic_array<vertex> *debug_trapezes);
+                       container_type<index> &output_indices,
+                       container_type<microgl::triangles::boundary_info> *boundary_buffer,
+                       container_type<vertex> *debug_trapezes);
 
             static
-            auto create_frame(const chunker<vertex> &pieces, dynamic_pool & dynamic_pool) -> half_edge_face *;
+            auto create_frame(const chunker_t &pieces, dynamic_pool & dynamic_pool) -> half_edge_face *;
 
             static
-            auto build_poly_and_conflicts(const chunker<vertex> &pieces,
+            auto build_poly_and_conflicts(const chunker_t &pieces,
                                           half_edge_face & main_frame,
                                           poly_info ** poly_list_out,
                                           conflict ** conflict_list_out) -> void ;

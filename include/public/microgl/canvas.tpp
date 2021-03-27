@@ -1131,14 +1131,14 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         case hints::CONCAVE:
         case hints::SIMPLE:
         {
-            using ect=microgl::tessellation::ear_clipping_triangulation<number1>;
+            using ect=microgl::tessellation::ear_clipping_triangulation<number1, dynamic_array>;
             ect::compute(points, size, indices, boundary_buffer_ptr, type);
             break;
         }
         case hints::X_MONOTONE:
         case hints::Y_MONOTONE:
         {
-            using mpt=microgl::tessellation::monotone_polygon_triangulation<number1>;
+            using mpt=microgl::tessellation::monotone_polygon_triangulation<number1, dynamic_array>;
             typename mpt::monotone_axis axis=hint==hints::X_MONOTONE ? mpt::monotone_axis::x_monotone :
                                     mpt::monotone_axis::y_monotone;
             mpt::compute(points, size, axis, indices, boundary_buffer_ptr, type);
@@ -1146,7 +1146,7 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         }
         case hints::CONVEX:
         {
-            using fan=microgl::tessellation::fan_triangulation<number1>;
+            using fan=microgl::tessellation::fan_triangulation<number1, dynamic_array>;
             fan::compute(points, size, indices, boundary_buffer_ptr, type);
             break;
         }
@@ -1155,7 +1155,7 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         case hints::COMPLEX:
         case hints::MULTIPLE_POLYGONS:
         {
-            tessellation::path<number1> path{};
+            tessellation::path<number1, dynamic_array> path{};
             path.addPoly(points, size);
             drawPathFill<BlendMode, PorterDuff, antialias, debug, number1, number2, Sampler>(
                     sampler, transform, path, tessellation::fill_rule::non_zero,
@@ -1185,11 +1185,13 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
 }
 
 template<typename bitmap_type, uint8_t options>
-template <typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1,
-        typename number2, typename Sampler, class Iterable>
+template <typename BlendMode, typename PorterDuff,
+          bool antialias, bool debug, typename number1,
+          typename number2, typename Sampler,
+          class Iterable, template<typename...> class path_container_template>
 void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
                                              const matrix_3x3<number1> &transform,
-                                             tessellation::path<number1> & path,
+                                             tessellation::path<number1, path_container_template> & path,
                                              const number1 & stroke_width,
                                              const tessellation::stroke_cap &cap,
                                              const tessellation::stroke_line_join &line_join,
@@ -1221,11 +1223,13 @@ void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
 }
 
 template<typename bitmap_type, uint8_t options>
-template <typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1,
-        typename number2, typename Sampler>
+template <typename BlendMode, typename PorterDuff,
+          bool antialias, bool debug,
+          typename number1, typename number2,
+          typename Sampler, template<typename...> class path_container_template>
 void canvas<bitmap_type, options>::drawPathFill(const Sampler &sampler,
                                            const matrix_3x3<number1> &transform,
-                                           tessellation::path<number1> & path,
+                                           tessellation::path<number1, path_container_template> & path,
                                            const tessellation::fill_rule &rule,
                                            const tessellation::tess_quality &quality,
                                            opacity_t opacity,
@@ -1400,7 +1404,7 @@ void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
                                               const number2 u0, const number2 v0,
                                               const number2 u1, const number2 v1,
                                               const opacity_t opacity) {
-    using tess= microgl::tessellation::bezier_patch_tesselator<number1, number2>;
+    using tess= microgl::tessellation::bezier_patch_tesselator<number1, number2, dynamic_array>;
     using vertex=vec2<number1>;
     dynamic_array<number1> v_a; // vertices attributes
     dynamic_array<index> indices;

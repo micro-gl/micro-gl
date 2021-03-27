@@ -7,7 +7,7 @@ namespace microgl {
         auto planarize_division<number>::create_frame(const chunker<vertex> &pieces,
                                                       static_pool & pool) -> half_edge_face * {
             const auto pieces_length = pieces.size();
-            vertex left_top=pieces.raw_data()[0];
+            vertex left_top=pieces.data()[0];
             vertex right_bottom=left_top;
             // find bbox of all
             for (index ix = 0; ix < pieces_length; ++ix) {
@@ -1596,7 +1596,7 @@ namespace microgl {
         auto planarize_division<number>::create_frame(const chunker<vertex> &pieces,
                                                       static_pool & pool) -> half_edge_face * {
             const auto pieces_length = pieces.size();
-            vertex left_top=pieces.raw_data()[0];
+            vertex left_top=pieces.data()[0];
             vertex right_bottom=left_top;
             // find bbox of all
             for (index ix = 0; ix < pieces_length; ++ix) {

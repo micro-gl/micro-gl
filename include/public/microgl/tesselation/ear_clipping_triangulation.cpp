@@ -1,9 +1,9 @@
 namespace microgl {
     namespace tessellation {
 
-        template <typename number>
+        template <typename number, template<typename...> class container_type>
         auto
-        ear_clipping_triangulation<number>::polygon_to_linked_list(const vertex *$pts,
+        ear_clipping_triangulation<number, container_type>::polygon_to_linked_list(const vertex *$pts,
                                                                    index offset,
                                                                    index size,
                                                                    bool reverse,
@@ -45,19 +45,19 @@ namespace microgl {
             return last;
         }
 
-        template <typename number>
-        void ear_clipping_triangulation<number>::compute(const vertex *polygon,
+        template <typename number, template<typename...> class container_type>
+        void ear_clipping_triangulation<number, container_type>::compute(const vertex *polygon,
                                                          index size,
-                                                         dynamic_array<index> & indices_buffer_triangulation,
-                                                         dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
+                                                         container_type<index> & indices_buffer_triangulation,
+                                                         container_type<microgl::triangles::boundary_info> * boundary_buffer,
                                                          microgl::triangles::indices &output_type) {
             pool_nodes_t pool{size};
             auto * outer = polygon_to_linked_list(polygon, 0, size, false, pool);
             compute(outer, size, indices_buffer_triangulation, boundary_buffer, output_type);
         }
 
-        template <typename number>
-        void ear_clipping_triangulation<number>::update_ear_status(node_t *vertex, const int &polygon_orientation) {
+        template <typename number, template<typename...> class container_type>
+        void ear_clipping_triangulation<number, container_type>::update_ear_status(node_t *vertex, const int &polygon_orientation) {
             if(!vertex->isValid()) {
                 vertex->is_ear=false;
                 return;
@@ -68,11 +68,11 @@ namespace microgl {
             vertex->is_ear=is_convex && is_empty;
         }
 
-        template <typename number>
-        void ear_clipping_triangulation<number>::compute(node_t *list,
+        template <typename number, template<typename...> class container_type>
+        void ear_clipping_triangulation<number, container_type>::compute(node_t *list,
                                                          index size,
-                                                         dynamic_array<index> & indices_buffer_triangulation,
-                                                         dynamic_array<microgl::triangles::boundary_info> * boundary_buffer,
+                                                         container_type<index> & indices_buffer_triangulation,
+                                                         container_type<microgl::triangles::boundary_info> * boundary_buffer,
                                                          microgl::triangles::indices &output_type) {
             bool requested_triangles_with_boundary = boundary_buffer;
             output_type=requested_triangles_with_boundary? microgl::triangles::indices::TRIANGLES_WITH_BOUNDARY :
@@ -100,9 +100,11 @@ namespace microgl {
                         // record boundary
                         if(requested_triangles_with_boundary) {
                             // classify if edges are on boundary
-                            unsigned int first_edge_index_distance = abs_((int)indices[ind + 0] - (int)indices[ind + 1]);
-                            unsigned int second_edge_index_distance = abs_((int)indices[ind + 1] - (int)indices[ind + 2]);
-                            unsigned int third_edge_index_distance = abs_((int)indices[ind + 2] - (int)indices[ind + 0]);
+#define abs_ear(a) ((a)<0 ? -(a) : (a))
+                            unsigned int first_edge_index_distance = abs_ear((int)indices[ind + 0] - (int)indices[ind + 1]);
+                            unsigned int second_edge_index_distance = abs_ear((int)indices[ind + 1] - (int)indices[ind + 2]);
+                            unsigned int third_edge_index_distance = abs_ear((int)indices[ind + 2] - (int)indices[ind + 0]);
+#undef abs_ear
                             bool first_edge = first_edge_index_distance==1 || first_edge_index_distance==size-1;
                             bool second_edge = second_edge_index_distance==1 || second_edge_index_distance==size-1;
                             bool third_edge = third_edge_index_distance==1 || third_edge_index_distance==size-1;
@@ -128,8 +130,8 @@ namespace microgl {
             }
         }
 
-        template <typename number>
-        auto ear_clipping_triangulation<number>::remove_degenerate_from(node_t *v, bool backwards) ->node_t * {
+        template <typename number, template<typename...> class container_type>
+        auto ear_clipping_triangulation<number, container_type>::remove_degenerate_from(node_t *v, bool backwards) ->node_t * {
             if(!v->isValid()) return v;
             node_t* anchor=v;
             while (anchor->isValid() && isDegenerate(anchor)) {
@@ -143,9 +145,9 @@ namespace microgl {
             return anchor;
         }
 
-        template <typename number>
+        template <typename number, template<typename...> class container_type>
         number
-        ear_clipping_triangulation<number>::orientation_value(const vertex *a,
+        ear_clipping_triangulation<number, container_type>::orientation_value(const vertex *a,
                                                               const vertex *b,
                                                               const vertex *c) {
             // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
@@ -154,16 +156,16 @@ namespace microgl {
         }
 
         // ts
-        template <typename number>
-        int ear_clipping_triangulation<number>::neighborhood_orientation_sign(
+        template <typename number, template<typename...> class container_type>
+        int ear_clipping_triangulation<number, container_type>::neighborhood_orientation_sign(
                 const node_t *v) {
             return sign_orientation_value(v->prev->pt, v->pt, v->next->pt);
         }
 
         // tv
-        template <typename number>
+        template <typename number, template<typename...> class container_type>
         char
-        ear_clipping_triangulation<number>::sign_orientation_value(const vertex *i,
+        ear_clipping_triangulation<number, container_type>::sign_orientation_value(const vertex *i,
                                                                    const vertex *j,
                                                                    const vertex *k) {
             auto v = orientation_value(i, j, k);
@@ -174,8 +176,8 @@ namespace microgl {
             else return 0;
         }
 
-        template <typename number>
-        auto ear_clipping_triangulation<number>::maximal_y_element(node_t *list) -> node_t * {
+        template <typename number, template<typename...> class container_type>
+        auto ear_clipping_triangulation<number, container_type>::maximal_y_element(node_t *list) -> node_t * {
             node_t * first = list;
             node_t * maximal_index = first;
             node_t * node = first;
@@ -194,19 +196,19 @@ namespace microgl {
             return maximal_index;
         }
 
-        template <typename number>
-        bool ear_clipping_triangulation<number>::isDegenerate(const node_t *v) {
+        template <typename number, template<typename...> class container_type>
+        bool ear_clipping_triangulation<number, container_type>::isDegenerate(const node_t *v) {
             return sign_orientation_value(v->prev->pt, v->pt, v->next->pt)==0;
         }
 
-        template <typename number>
-        bool ear_clipping_triangulation<number>::areEqual(const node_t *a,
+        template <typename number, template<typename...> class container_type>
+        bool ear_clipping_triangulation<number, container_type>::areEqual(const node_t *a,
                                                           const node_t *b) {
             return a==b;
         }
 
-        template <typename number>
-        bool ear_clipping_triangulation<number>::isEmpty(node_t *v) {
+        template <typename number, template<typename...> class container_type>
+        bool ear_clipping_triangulation<number, container_type>::isEmpty(node_t *v) {
             int tsv;
             bool is_super_simple = false;
             const node_t * l = v->next;

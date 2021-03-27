@@ -2,18 +2,24 @@
 #include <microgl/canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
+#include <microgl/static_array.h>
+#include <vector>
 
-#define TEST_ITERATIONS 1
 #define W 640*1
 #define H 640*1
 
 using microgl::tessellation::path;
 float t = 0;
 
-template <typename number>
-path<number> path_star() {
+template<typename number>
+//using path_t = path<number, std::vector>;
+using path_t = path<number, dynamic_array>;
 
-    path<number> path{};
+template <typename number>
+path_t<number> path_star() {
+    std::vector<int> a{100};
+//    a.push_back()
+    path_t<number> path{};
     path.lineTo({150, 150})
         .quadraticCurveTo({450, 0}, {450, 150})
         .lineTo({200,450})
@@ -24,8 +30,8 @@ path<number> path_star() {
 }
 
 template <typename number>
-path<number> path_star_2() {
-    path<number> path{};
+path_t<number> path_star_2() {
+    path_t<number> path{};
 
     path.linesTo2(150, 150,
                   450,150,
@@ -51,8 +57,8 @@ path<number> path_star_2() {
 }
 
 template <typename number>
-path<number> path_arc() {
-    path<number> path{};
+path_t<number> path_arc() {
+    path_t<number> path{};
     int div=32; //4
     path.arc({200,200}, 100,
              math::deg_to_rad(0.0f),
@@ -76,8 +82,8 @@ t+=0.82f;
 }
 
 template <typename number>
-path<number> path_rects() {
-    path<number> path{};
+path_t<number> path_rects() {
+    path_t<number> path{};
     path
         .rect(50, 50, 250, 250, false)
         .rect(50, 250, 550, 50, true)
@@ -86,8 +92,8 @@ path<number> path_rects() {
 }
 
 template <typename number>
-path<number> path_test() {
-    path<number> path{};
+path_t<number> path_test() {
+    path_t<number> path{};
     int div=32;
 //    t+=0.01;
     t=137.999039f;
@@ -112,7 +118,7 @@ int main() {
 
     Canvas24 canvas(W, H);
 
-    auto render_path = [&](path<number> & path) {
+    auto render_path = [&](path_t<number> & path) {
         canvas.clear({255, 255, 255, 255});
         canvas.drawPathFill<blendmode::Normal, porterduff::None<>, false, false>(
                 color_red,

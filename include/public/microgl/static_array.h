@@ -1,13 +1,21 @@
 #pragma once
 
-template<typename T, unsigned N>
+template<typename T, unsigned N=10>
 class static_array {
+
 public:
     using index = unsigned int;
     using type = T;
-    static constexpr capacity = N;
+    static constexpr unsigned Capacity = N;
 
-    explicit static_array() = default;
+private:
+    T _data[N];
+//    T *_data = new T[N];
+    index _current = 0;
+
+public:
+
+    explicit static_array(int cap = 0) {};
 
     template<class Iterable>
     static_array(const Iterable & list) {
@@ -43,6 +51,8 @@ public:
         _data[_current--].~T();
     }
 
+    T& back() noexcept { return _data[_current-1]; }
+
     void clear() { _current = 0; }
     index size() const { return _current; }
     constexpr index capacity() const { return N; }
@@ -50,7 +60,7 @@ public:
     T* begin() { return _data; }
     T* end() { return _data + _current; }
 
-private:
-    T _data[N];
-    index _current = 0;
+    const T* begin() const { return _data; }
+    const T* end() const { return _data + _current; }
+
 };

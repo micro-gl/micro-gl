@@ -2,6 +2,8 @@
 #include <microgl/canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
+#include <microgl/static_array.h>
+#include <vector>
 
 #define W 640*1
 #define H 640*1
@@ -9,9 +11,17 @@
 using microgl::tessellation::path;
 float t = 0;
 
+template<typename item>
+using stat_array = static_array<item, 800>;
+
+template<typename number>
+//using path_t = path<number, dynamic_array>;
+//using path_t = path<number, stat_array>;
+using path_t = path<number, std::vector>;
+
 template <typename number>
-path<number> path_star() {
-    path<number> path{};
+path_t<number> path_star() {
+    path_t<number> path{};
     path.lineTo({150, 150})
         .lineTo({450, 150})
         .lineTo({200,450})
@@ -22,9 +32,9 @@ path<number> path_star() {
 }
 
 template <typename number>
-path<number> path_star_2() {
+path_t<number> path_star_2() {
     using il = std::initializer_list<vec2<number>>;
-    path<number> path{};
+    path_t<number> path{};
     path.linesTo(il{{150, 150},
                   {450,150},
                   {200,450},
@@ -49,8 +59,8 @@ path<number> path_star_2() {
 }
 
 template <typename number>
-path<number> path_arc() {
-    path<number> path{};
+path_t<number> path_arc() {
+    path_t<number> path{};
     int div=32; //4
     path.arc({200,200}, 100,
              math::deg_to_rad(0.0f),
@@ -74,8 +84,8 @@ t+=0.82f;
 }
 
 template <typename number>
-path<number> path_rects() {
-    path<number> path{};
+path_t<number> path_rects() {
+    path_t<number> path{};
     path.rect(50, 50, 250, 250, false)
         .rect(50, 250, 550, 50, true)
         .rect(50, 450, 50, 50, true);
@@ -83,10 +93,10 @@ path<number> path_rects() {
 }
 
 template <typename number>
-path<number> path_test() {
+path_t<number> path_test() {
     using il = std::initializer_list<vec2<number>>;
 
-    path<number> path{};
+    path_t<number> path{};
     int div=32;
 //    t+=0.01;
     t=137.999039f;
@@ -112,7 +122,7 @@ int main() {
     sampling::flat_color<> color_green {{22,22,22,255}};
     Canvas24 canvas(W, H);
 
-    auto render_path = [&](path<number> & path) {
+    auto render_path = [&](path_t<number> & path) {
         t+=0.125f;
 
         canvas.clear({255, 255, 255, 255});

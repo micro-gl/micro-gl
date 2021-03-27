@@ -4,10 +4,20 @@
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
 #include <microgl/tesselation/elliptic_arc_divider.h>
+#include <microgl/static_array.h>
+#include <vector>
 
-#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 480*1
+
+
+template<typename item_type>
+using static_arr = static_array<item_type, 100>;
+
+template<typename item_type>
+//using container = static_arr<item_type>;
+using container = dynamic_array<item_type>;
+//using container = std::vector<item_type>;
 
 int main() {
 //    using number = float;
@@ -25,9 +35,11 @@ int main() {
             const number& radius_x, const number& radius_y,
             const number& rotation,
             uint divisions_count) {
-        using ellipse = microgl::tessellation::elliptic_arc_divider<number>;
+        using ellipse = microgl::tessellation::elliptic_arc_divider<number, dynamic_array>;
+//        using ellipse = microgl::tessellation::elliptic_arc_divider<number, std::vector>;
+//        using ellipse = microgl::tessellation::elliptic_arc_divider<number, static_arr>;
 
-        dynamic_array<vec2<number>> arc_points;
+        container<vec2<number>> arc_points;
 
         ellipse::compute(
                 arc_points,

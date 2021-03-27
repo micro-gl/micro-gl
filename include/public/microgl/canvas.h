@@ -19,6 +19,7 @@
 #include <microgl/masks.h>
 #include <microgl/rgba_t.h>
 #include <microgl/math.h>
+#include <microgl/stdint.h>
 #include <microgl/tesselation/path.h>
 #include <microgl/tesselation/monotone_polygon_triangulation.h>
 #include <microgl/tesselation/ear_clipping_triangulation.h>
@@ -975,6 +976,7 @@ public:
      * @tparam number1              number type of path
      * @tparam number2              number type of uv coords
      * @tparam Sampler              Sampler type
+     * @tparam path_container_template the template of the container used by path
      *
      * @param sampler               sampler reference
      * @param transform             3x3 matrix for transform
@@ -992,11 +994,12 @@ public:
      * @param v1                    uv coord
      */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, bool debug=false, typename number1=float, typename number2=float,
-            typename Sampler, class Iterable>
+            bool antialias=false, bool debug=false,
+            typename number1=float, typename number2=float,
+            typename Sampler, class Iterable, template<typename...> class path_container_template>
     void drawPathStroke(const Sampler &sampler,
                         const matrix_3x3<number1> &transform,
-                        tessellation::path<number1> &path,
+                        tessellation::path<number1, path_container_template> &path,
                         const number1 &stroke_width=number1(1),
                         const tessellation::stroke_cap &cap=tessellation::stroke_cap::butt,
                         const tessellation::stroke_line_join &line_join=tessellation::stroke_line_join::bevel,
@@ -1016,6 +1019,7 @@ public:
      * @tparam number1          number type of path
      * @tparam number2          number type of uv coords
      * @tparam Sampler          Sampler type
+     * @tparam path_container_template the template of the container used by path
      *
      * @param sampler           sampler reference
      * @param transform         3x3 matrix for transform
@@ -1029,10 +1033,12 @@ public:
      * @param v1                uv coord
      */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, bool debug=false, typename number1=float, typename number2=float, typename Sampler>
+            bool antialias=false, bool debug=false,
+            typename number1=float, typename number2=float,
+            typename Sampler, template<typename...> class path_container_template>
     void drawPathFill(const Sampler &sampler,
                       const matrix_3x3<number1> &transform,
-                      tessellation::path<number1> &path,
+                      tessellation::path<number1, path_container_template> &path,
                       const tessellation::fill_rule &rule=tessellation::fill_rule::non_zero,
                       const tessellation::tess_quality &quality=tessellation::tess_quality::better,
                       opacity_t opacity=255,

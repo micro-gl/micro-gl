@@ -2,8 +2,8 @@ namespace microgl {
 
     namespace tessellation {
 
-        template<typename number>
-        bool stroke_tessellation<number>::rays_intersect(
+        template<typename number, template<typename...> class container_type>
+        bool stroke_tessellation<number, container_type>::rays_intersect(
                 const vertex &a,
                 const vertex &b,
                 const vertex &c,
@@ -23,11 +23,12 @@ namespace microgl {
             return det!=0;
         }
 
-        template<typename number>
-        auto stroke_tessellation<number>::finite_segment_intersection_test(const vertex &a, const vertex &b,
-                                                                           const vertex &c, const vertex &d,
-                                                                           vertex & intersection,
-                                                                           number &alpha, number &alpha1) -> intersection_status{
+        template<typename number, template<typename...> class container_type>
+        auto stroke_tessellation<number, container_type>::finite_segment_intersection_test(
+                const vertex &a, const vertex &b,
+                const vertex &c, const vertex &d,
+                vertex & intersection,
+                number &alpha, number &alpha1) -> intersection_status{
             // this procedure will find proper and improper(touches) intersections, but no
             // overlaps, since overlaps induce parallel classification, this would have to be resolved outside
             if(a==b || c==d)
@@ -78,8 +79,8 @@ namespace microgl {
             return intersection_status::intersect;
         }
 
-        template<typename number>
-        void stroke_tessellation<number>::comp_parallel_ray(
+        template<typename number, template<typename...> class container_type>
+        void stroke_tessellation<number, container_type>::comp_parallel_ray(
                 const vertex &pt0,
                 const vertex &pt1,
                 vertex &pt_out_0,
@@ -93,10 +94,11 @@ namespace microgl {
             pt_out_1 = pt1 + dir;
         }
 
-        template<typename number>
-        auto stroke_tessellation<number>::build_quadrilateral(const stroke_tessellation::vertex &a,
-                                                              const stroke_tessellation::vertex &b,
-                                                              const number &stroke_width) -> poly_4 {
+        template<typename number, template<typename...> class container_type>
+        auto stroke_tessellation<number, container_type>::build_quadrilateral(
+                const stroke_tessellation::vertex &a,
+                const stroke_tessellation::vertex &b,
+                const number &stroke_width) -> poly_4 {
             poly_4 result;
             comp_parallel_ray(a, b, result.left, result.top, stroke_width);
             vertex dir=a-result.left;
@@ -105,9 +107,10 @@ namespace microgl {
             return result;
         }
 
-        template <typename number>
+        template<typename number, template<typename...> class container_type>
         inline int
-        stroke_tessellation<number>::classify_point(const vertex & point, const vertex &a, const vertex & b) {
+        stroke_tessellation<number, container_type>::classify_point(
+                const vertex & point, const vertex &a, const vertex & b) {
             // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
             // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
             //    Input:  three points p, a, b
@@ -121,8 +124,8 @@ namespace microgl {
             else return 0;
         }
 
-        template<typename number>
-        auto stroke_tessellation<number>::compute_distanced_tangent_at_joint(
+        template<typename number, template<typename...> class container_type>
+        auto stroke_tessellation<number, container_type>::compute_distanced_tangent_at_joint(
                 const vertex &a, const vertex &b, const vertex &c, number mag
         ) -> edge {
             edge result;
@@ -142,8 +145,8 @@ namespace microgl {
             return result;
         }
 
-        template<typename number>
-        auto stroke_tessellation<number>::resolve_left_right_walls_intersections(
+        template<typename number, template<typename...> class container_type>
+        auto stroke_tessellation<number, container_type>::resolve_left_right_walls_intersections(
                 const poly_4 &a, const poly_4 &b) -> poly_inter_result {
             poly_inter_result result{};
             vertex result_inter;
@@ -174,37 +177,13 @@ namespace microgl {
             return result;
         }
 
-        void b1_(dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
-                const dynamic_array<index> &output_indices){
-            if(boundary_buffer && output_indices.size()>=3)
-                boundary_buffer->push_back(triangles::create_boundary_info(
-                        false, false, false));
-        }
-        void b2_(dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
-                const dynamic_array<index> &output_indices){
-            if(boundary_buffer && output_indices.size()>=3)
-                boundary_buffer->push_back(triangles::create_boundary_info(
-                        false, false, true));
-        }
-        void b3_(dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
-                const dynamic_array<index> &output_indices){
-            if(boundary_buffer && output_indices.size()>=3)
-                boundary_buffer->push_back(triangles::create_boundary_info(
-                        true, false, true));
-        }
-        void reinforce_(dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
-                       dynamic_array<index> &output_indices){
-            if(output_indices.size()) {
-                output_indices.push_back(output_indices.back()); b1_(boundary_buffer, output_indices);
-            }
-        }
 #define abs__(x) ((x<0)?(-x):(x))
 #define min__(a,b) ((a<b)?(a):(b))
 #define max__(a, b) ((a)>(b) ? (a) : (b))
 
-        template<typename number>
+        template<typename number, template<typename...> class container_type>
         template<class iterable>
-        void stroke_tessellation<number>::compute_with_dashes(
+        void stroke_tessellation<number, container_type>::compute_with_dashes(
                 const number &stroke_width,
                  bool closePath,
                 const stroke_cap &cap,
@@ -214,10 +193,10 @@ namespace microgl {
                 const int stroke_dash_offset,
                 const vertex *points,
                 const index size,
-                dynamic_array<vertex> &output_vertices,
-                dynamic_array<index> &output_indices,
+                container_type<vertex> &output_vertices,
+                container_type<index> &output_indices,
                 microgl::triangles::indices &output_indices_type,
-                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer)
+                container_type<microgl::triangles::boundary_info> *boundary_buffer)
         {
             int offset=stroke_dash_offset, sum_dashes=0;
             index dash_arr_length=stroke_dash_array.size()*2;
@@ -252,7 +231,7 @@ namespace microgl {
                 if(ix==0) total_length=path_length; // adjusted to reflect current segment
             }
 
-            dynamic_array<vertex> points_segments;
+            container_type<vertex> points_segments;
             number dash_length, position;
 
             // calculate first index
@@ -304,8 +283,8 @@ namespace microgl {
 
         }
 
-        template<typename number>
-        void stroke_tessellation<number>::compute(
+        template<typename number, template<typename...> class container_type>
+        void stroke_tessellation<number, container_type>::compute(
                 const number &stroke_width,
                 bool closePath,
                 const stroke_cap &cap,
@@ -313,10 +292,10 @@ namespace microgl {
                 const number &miter_limit,
                 const vertex *points,
                 index size,
-                dynamic_array<vertex> &output_vertices,
-                dynamic_array<index> &output_indices,
+                container_type<vertex> &output_vertices,
+                container_type<index> &output_indices,
                 microgl::triangles::indices &output_indices_type,
-                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer)
+                container_type<microgl::triangles::boundary_info> *boundary_buffer)
         {
 #define b1 b1_(boundary_buffer, output_indices)
 #define b2 b2_(boundary_buffer, output_indices)
@@ -332,14 +311,14 @@ namespace microgl {
             }
             poly_4 current, next;
             current = build_quadrilateral(points[start_index], points[(start_index+1)%size], stroke_size);
-            current.left_index= output_vertices.push_back(current.left);
-            current.bottom_index= output_vertices.push_back(current.bottom);
+            output_vertices.push_back(current.left); current.left_index= output_vertices.size()-1;
+            output_vertices.push_back(current.bottom); current.bottom_index= output_vertices.size()-1;
 
             if(!closePath)
                 apply_cap(cap, false, points[start_index], current.bottom_index, current.left_index,
                           stroke_size, output_vertices, output_indices, boundary_buffer);
             // reinforce again
-            index first_left_index = output_indices.push_back(current.left_index); b1;
+            output_indices.push_back(current.left_index); index first_left_index = output_indices.size()-1 ;b1;
             output_indices.push_back(current.left_index); b1;
             output_indices.push_back(current.bottom_index); b1;
             index b_first_edge_idx= boundary_buffer && boundary_buffer->size() ? boundary_buffer->size()-1 : 0;
@@ -352,16 +331,16 @@ namespace microgl {
                 auto res= resolve_left_right_walls_intersections(current, next);
                 // use relevant vertices and store indices
                 if(res.has_left) {
-                    res.left_index= output_vertices.push_back(res.left);
+                    output_vertices.push_back(res.left); res.left_index= output_vertices.size()-1;
                 } else {
-                    current.top_index =output_vertices.push_back(current.top);
-                    next.left_index =output_vertices.push_back(next.left);
+                    output_vertices.push_back(current.top); current.top_index =output_vertices.size()-1;
+                    output_vertices.push_back(next.left); next.left_index =output_vertices.size()-1;
                 }
                 if(res.has_right) {
-                    res.right_index= output_vertices.push_back(res.right);
+                    output_vertices.push_back(res.right); res.right_index= output_vertices.size()-1;
                 } else {
-                    current.right_index =output_vertices.push_back(current.right);
-                    next.bottom_index =output_vertices.push_back(next.bottom);
+                    output_vertices.push_back(current.right); current.right_index =output_vertices.size()-1;
+                    output_vertices.push_back(next.bottom); next.bottom_index =output_vertices.size()-1;
                 }
 
                 output_indices.push_back(res.has_left ? res.left_index : current.top_index); b2;
@@ -372,7 +351,7 @@ namespace microgl {
                 if(!skip_join) {
                     // now walk to hinge
                     const vertex join_vertex= start;
-                    index join_index = output_vertices.push_back(join_vertex);
+                    output_vertices.push_back(join_vertex); index join_index = output_vertices.size()-1;
                     bool cls= classify_point(next.left, current.top, join_vertex)>=0;
                     index first_index= cls ? current.top_index : next.bottom_index;
                     index last_index= cls ? next.left_index : current.right_index;
@@ -398,8 +377,8 @@ namespace microgl {
 
             // close the last segment
             if(!closePath) {
-                current.top_index= output_vertices.push_back(current.top);
-                current.right_index= output_vertices.push_back(current.right);
+                output_vertices.push_back(current.top); current.top_index= output_vertices.size()-1;
+                output_vertices.push_back(current.right); current.right_index= output_vertices.size()-1;
                 output_indices.push_back(current.top_index); b2;
                 output_indices.push_back(current.right_index); b2; index b_idx=boundary_buffer ? boundary_buffer->size()-1 : 0;
                 output_indices.push_back(current.right_index); b1;
@@ -425,17 +404,17 @@ namespace microgl {
 #undef b2
         }
 
-        template<typename number>
-        void stroke_tessellation<number>::apply_line_join(
+        template<typename number, template<typename...> class container_type>
+        void stroke_tessellation<number, container_type>::apply_line_join(
                 const stroke_line_join &line_join,
                 const index & first_index,
                 const index & join_index,
                 const index & last_index,
                 const number &join_radius,
                 const number &miter_limit,
-                dynamic_array<vertex> &output_vertices,
-                dynamic_array<index> &output_indices,
-                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer) {
+                container_type<vertex> &output_vertices,
+                container_type<index> &output_indices,
+                container_type<microgl::triangles::boundary_info> *boundary_buffer) {
             // insert vertices strictly between the start and last vertex of the join
 #define b1 b1_(boundary_buffer, output_indices)
 #define b2 b2_(boundary_buffer, output_indices)
@@ -472,14 +451,14 @@ namespace microgl {
                                                              intersection, alpha, alpha);
                     if(status==intersection_status::intersect) {
                         // found intersection inside the half clip space
-                        output_indices.push_back(output_vertices.push_back(intersection)); b2;
+                        output_vertices.push_back(intersection); output_indices.push_back(output_vertices.size()-1); b2;
                         output_indices.push_back(join_index); b1;
                     } else if(line_join==stroke_line_join::miter_clip) {
                         // no found intersection inside the half clip space, so we use
                         // the two clipped points calculated
-                        output_indices.push_back(output_vertices.push_back(a_ray.b)); b2;
+                        output_vertices.push_back(a_ray.b); output_indices.push_back(output_vertices.size()-1); b2;
                         output_indices.push_back(join_index); b1;
-                        output_indices.push_back(output_vertices.push_back(b_ray.b)); b2;
+                        output_vertices.push_back(b_ray.b); output_indices.push_back(output_vertices.size()-1); b2;
                         output_indices.push_back(join_index); b1;
                     } else {
                         // else regular miter falls back to bevel (no vertices) if no intersection
@@ -501,17 +480,17 @@ namespace microgl {
 #undef b2
         }
 
-        template<typename number>
-        void stroke_tessellation<number>::apply_cap(
+        template<typename number, template<typename...> class container_type>
+        void stroke_tessellation<number, container_type>::apply_cap(
                 const stroke_cap &cap,
                 const bool is_start,
                 const vertex &root,
                 const index & a_index,
                 const index & b_index,
                 const number &radius,
-                dynamic_array<vertex> &output_vertices,
-                dynamic_array<index> &output_indices,
-                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer) {
+                container_type<vertex> &output_vertices,
+                container_type<index> &output_indices,
+                container_type<microgl::triangles::boundary_info> *boundary_buffer) {
             // create a cap to the left of edge (a, b)
 #define b1 b1_(boundary_buffer, output_indices)
 #define b2 b2_(boundary_buffer, output_indices)
@@ -525,7 +504,7 @@ namespace microgl {
                     break;
                 case stroke_cap::round:
                 {
-                    const index root_index= output_vertices.push_back(root);
+                    output_vertices.push_back(root); const index root_index= output_vertices.size()-1;
                     output_indices.push_back(a_index); b1;
                     output_indices.push_back(a_index); b1;
                     output_indices.push_back(root_index); b1;
@@ -541,8 +520,8 @@ namespace microgl {
                     const auto dir=b-a;
                     const auto n=vertex{dir.y, -dir.x};
                     const auto dir2 = (n*radius)/microgl::functions::length(n.x, n.y);
-                    const auto ext_a_index= output_vertices.push_back(a+dir2);
-                    const auto ext_b_index= output_vertices.push_back(b+dir2);
+                    output_vertices.push_back(a+dir2); const auto ext_a_index= output_vertices.size()-1;
+                    output_vertices.push_back(b+dir2); const auto ext_b_index= output_vertices.size()-1;
                     output_indices.push_back(ext_a_index); b1;
                     output_indices.push_back(ext_a_index); b1;
                     output_indices.push_back(ext_b_index); b1;
@@ -556,15 +535,15 @@ namespace microgl {
 #undef b3
         }
 
-        template<typename number>
-        void stroke_tessellation<number>::compute_arc(
+        template<typename number, template<typename...> class container_type>
+        void stroke_tessellation<number, container_type>::compute_arc(
                 const vertex &from, const vertex &root, const vertex &to,
                 const number &radius,
                 const number &max_distance_squared,
                 const index & root_index,
-                dynamic_array<vertex> &output_vertices,
-                dynamic_array<index> &output_indices,
-                dynamic_array<microgl::triangles::boundary_info> *boundary_buffer) {
+                container_type<vertex> &output_vertices,
+                container_type<index> &output_indices,
+                container_type<microgl::triangles::boundary_info> *boundary_buffer) {
             // this procedure will generate points on a half circle adaptively
             const auto dir= to-from;
             bool done= (dir.x*dir.x + dir.y*dir.y)<=max_distance_squared;
@@ -574,7 +553,7 @@ namespace microgl {
             if(not_in_cone_precision_issues) return; // in case, the bisecting point was not in cone
             compute_arc(from, root, e.a, radius, max_distance_squared, root_index,
                         output_vertices, output_indices, boundary_buffer);
-            output_indices.push_back(output_vertices.push_back(e.a));
+            output_vertices.push_back(e.a); output_indices.push_back(output_vertices.size()-1);
             b2_(boundary_buffer, output_indices);
             output_indices.push_back(root_index);
             b1_(boundary_buffer, output_indices);

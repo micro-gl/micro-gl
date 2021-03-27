@@ -4,12 +4,22 @@
 #include <microgl/samplers/flat_color.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/tesselation/stroke_tessellation.h>
+#include <microgl/static_array.h>
+#include <vector>
 
 #define W 640*1
-#define H 480*1
+#define H 640*1
+
+template<typename item>
+using stat_array = static_array<item, 800>;
+
+template<typename item>
+//using container = dynamic_array<item>;
+using container = std::vector<item>;
+//using container = stat_array<item>;
 
 template <typename number>
-dynamic_array<vec2<number>> path_diagonal() {
+container<vec2<number>> path_diagonal() {
     using il = std::initializer_list<vec2<number>>;
     vec2<number> p0 = {100, 100};
     vec2<number> p1 = {200, 200};
@@ -19,7 +29,7 @@ dynamic_array<vec2<number>> path_diagonal() {
 }
 
 template <typename number>
-dynamic_array<vec2<number>> path_horizontal() {
+container<vec2<number>> path_horizontal() {
     using il = std::initializer_list<vec2<number>>;
     vec2<number> p0 = {100, 100};
     vec2<number> p1 = {300, 100};
@@ -28,7 +38,7 @@ dynamic_array<vec2<number>> path_horizontal() {
 }
 
 template <typename number>
-dynamic_array<vec2<number>> path_resh() {
+container<vec2<number>> path_resh() {
     using il = std::initializer_list<vec2<number>>;
     vec2<number> p0 = {100, 100};
     vec2<number> p1 = {300, 100};
@@ -37,7 +47,7 @@ dynamic_array<vec2<number>> path_resh() {
 }
 
 template <typename number>
-dynamic_array<vec2<number>> path_2() {
+container<vec2<number>> path_2() {
     using il = std::initializer_list<vec2<number>>;
     vec2<number> p0 = {100, 100};
     vec2<number> p1 = {300, 400};
@@ -50,7 +60,7 @@ dynamic_array<vec2<number>> path_2() {
 }
 
 template <typename number>
-dynamic_array<vec2<number>> path_3() {
+container<vec2<number>> path_3() {
     using il = std::initializer_list<vec2<number>>;
     vec2<number> p0 = {100, 100};
     vec2<number> p1 = {300, 100};
@@ -62,7 +72,7 @@ dynamic_array<vec2<number>> path_3() {
 
 
 template <typename number>
-dynamic_array<vec2<number>> path_line() {
+container<vec2<number>> path_line() {
     using il = std::initializer_list<vec2<number>>;
     vec2<number> p0 = {100, 100};
     vec2<number> p1 = {300, 100};
@@ -71,7 +81,7 @@ dynamic_array<vec2<number>> path_line() {
 }
 
 template <typename number>
-dynamic_array<vec2<number>> path_tri() {
+container<vec2<number>> path_tri() {
     using il = std::initializer_list<vec2<number>>;
     vec2<number> p0 = {100, 100};
     vec2<number> p1 = {200, 100};
@@ -84,7 +94,7 @@ dynamic_array<vec2<number>> path_tri() {
 }
 
 template <typename number>
-dynamic_array<vec2<number>> path_rect() {
+container<vec2<number>> path_rect() {
     using il = std::initializer_list<vec2<number>>;
     vec2<number> p0 = {100, 200};
     vec2<number> p1 = {420, 100};
@@ -95,7 +105,7 @@ dynamic_array<vec2<number>> path_rect() {
 }
 
 template <typename number>
-dynamic_array<vec2<number>> path_rect2() {
+container<vec2<number>> path_rect2() {
     using il = std::initializer_list<vec2<number>>;
     vec2<number> p0 = {100, 200};
     vec2<number> p1 = {100, 100};
@@ -116,16 +126,18 @@ int main() {
     sampling::flat_color<> color_red{{255,0,0,255}};
     Canvas24 canvas(W, H);
 
-    auto render_path = [&](const dynamic_array<vec2<number>> & path, number stroke_width, bool close_path) {
+    auto render_path = [&](const container<vec2<number>> & path, number stroke_width, bool close_path) {
         using index = unsigned int;
-        using stroke_tess = microgl::tessellation::stroke_tessellation<number>;
+//        using stroke_tess = microgl::tessellation::stroke_tessellation<number, dynamic_array>;
+        using stroke_tess = microgl::tessellation::stroke_tessellation<number, std::vector>;
+//        using stroke_tess = microgl::tessellation::stroke_tessellation<number, stat_array>;
 
         //auto type = triangles::indices::TRIANGLES_STRIP;
         auto type = triangles::indices::TRIANGLES_STRIP_WITH_BOUNDARY;
 
-        dynamic_array<index> indices;
-        dynamic_array<vec2<number>> vertices;
-        dynamic_array<boundary_info> boundary_buffer;
+        container<index> indices;
+        container<vec2<number>> vertices;
+        container<boundary_info> boundary_buffer;
 
         stroke_tess::compute(
                 stroke_width,

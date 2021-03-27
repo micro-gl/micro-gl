@@ -1,12 +1,11 @@
 #pragma once
 
 #include <microgl/triangles.h>
-#include <microgl/dynamic_array.h>
 
 namespace microgl {
     namespace tessellation {
 
-        template <typename number1, typename number2=number1>
+        template <typename number1, typename number2, template<typename...> class container_type>
         class bezier_patch_tesselator {
             using index = unsigned int;
             using vertex3 = vec3<number1>;
@@ -24,8 +23,8 @@ namespace microgl {
             void compute(const vertex3 *meshPoints,
                          const index uOrder, const index vOrder,
                          const index uSamples, const index vSamples,
-                         dynamic_array<number1> &out_vertices_attributes,
-                         dynamic_array<index> &out_indices,
+                         container_type<number1> &out_vertices_attributes,
+                         container_type<index> &out_indices,
                          triangles::indices & out_indices_type,
                          number2 tex_left=number2(0), number2 tex_top=number2(1),
                          number2 tex_right=number2(1), number2 tex_bottom=number2(0)) {

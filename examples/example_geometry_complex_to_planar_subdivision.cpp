@@ -3,13 +3,27 @@
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/tesselation/planarize_division.h>
 #include <microgl/samplers/flat_color.h>
+#include <vector>
+#include <microgl/static_array.h>
 
-#define TEST_ITERATIONS 1
 #define W 640*1
 #define H 640*1
 
+template<typename item>
+using stat_array = static_array<item, 800>;
+
+template<typename number>
+using chunker_t = chunker<vec2<number>, dynamic_array>;
+//using chunker_t = chunker<vec2<number>, std::vector>;
+//using chunker_t = chunker<vec2<number>, stat_array>;
+
+template<typename item>
+using container = dynamic_array<item>;
+//using container = std::vector<item>;
+//using container = stat_array<item>;
+
 template <typename number>
-dynamic_array<vec2<number>> box(float left, float top, float right, float bottom, bool ccw=false) {
+container<vec2<number>> box(float left, float top, float right, float bottom, bool ccw=false) {
     using il = std::initializer_list<vec2<number>>;
 
     if(!ccw)
@@ -29,9 +43,9 @@ dynamic_array<vec2<number>> box(float left, float top, float right, float bottom
 };
 
 template <typename number>
-chunker<vec2<number>> poly_inter_star() {
+chunker_t<number> poly_inter_star() {
     using il = std::initializer_list<vec2<number>>;
-    chunker<vec2<number>> A;
+    chunker_t<number> A;
 
     A.push_back_and_cut(il{
                                 {150, 150},
@@ -45,9 +59,9 @@ chunker<vec2<number>> poly_inter_star() {
 }
 
 template <typename number>
-chunker<vec2<number>> poly_inter_star_2() {
+chunker_t<number> poly_inter_star_2() {
     using il = std::initializer_list<vec2<number>>;
-    chunker<vec2<number>> A;
+    chunker_t<number> A;
 
     A.push_back_and_cut(il{
                                 {150, 150},
@@ -80,9 +94,9 @@ chunker<vec2<number>> poly_inter_star_2() {
     return A;
 }
 
-template <typename number>
-chunker<vec2<number>> box_1() {
-    chunker<vec2<number>> A;
+template <typename number, template<typename...> class chunker_container>
+chunker<vec2<number>, chunker_container> box_1() {
+    chunker<vec2<number>, chunker_container> A;
     A.push_back_and_cut(box<number>(50,50,300,300));
     return A;
 }
@@ -102,15 +116,16 @@ int main() {
 
     Canvas24 canvas(W, H);
 
-    auto render_polygon = [&](const chunker<vec2<number>>& pieces) {
+    auto render_polygon = [&](const chunker_t<number>& pieces) {
         using index = unsigned int;
-        using psd = microgl::tessellation::planarize_division<number>;
+        using psd = microgl::tessellation::planarize_division<number, dynamic_array>;
+//        using psd = microgl::tessellation::planarize_division<number, std::vector>;
+//        using psd = microgl::tessellation::planarize_division<number, stat_array>;
 
-//        psd::compute_DEBUG(pieces, trapezes);
-        dynamic_array<vec2<number>> trapezes;
-        dynamic_array<vec2<number>> vertices;
-        dynamic_array<index> indices;
-        dynamic_array<triangles::boundary_info> boundary;
+        container<vec2<number>> trapezes;
+        container<vec2<number>> vertices;
+        container<index> indices;
+        container<triangles::boundary_info> boundary;
         triangles::indices type;
         psd::compute(pieces,
                      tessellation::fill_rule::even_odd,
@@ -130,6 +145,7 @@ int main() {
                 type,
                 255);
 
+//        return;
         canvas.drawTrianglesWireframe({0,0,0,255},
                                        matrix_3x3<number>::identity(),
                                        vertices.data(),

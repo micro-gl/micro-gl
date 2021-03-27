@@ -5,14 +5,24 @@
 #include <microgl/samplers/flat_color.h>
 #include <microgl/tesselation/ear_clipping_triangulation.h>
 #include <microgl/triangles.h>
+#include <vector>
+#include <microgl/static_array.h>
 
 #define W 640*1
 #define H 480*1
 
 float t = 0;
 
+template<typename item_type>
+using static_arr = static_array<item_type, 100>;
+
+template<typename item_type>
+//using container = static_arr<item_type>;
+using container = dynamic_array<item_type>;
+//using container = std::vector<item_type>;
+
 template <typename number>
-dynamic_array<vec2<number>> poly_rect() {
+container<vec2<number>> poly_rect() {
     using il = std::initializer_list<vec2<number>>;
     using vertex=vec2<number>;
     vertex p0 = {100,100};
@@ -24,7 +34,7 @@ dynamic_array<vec2<number>> poly_rect() {
 
 float b = 1;
 template <typename number>
-dynamic_array<vec2<number>> poly_2_x_monotone() {
+container<vec2<number>> poly_2_x_monotone() {
     using il = std::initializer_list<vec2<number>>;
     using vertex=vec2<number>;
     vertex p0 = {100,100};
@@ -37,7 +47,7 @@ dynamic_array<vec2<number>> poly_2_x_monotone() {
 }
 
 template <typename number>
-dynamic_array<vec2<number>> poly_tri() {
+container<vec2<number>> poly_tri() {
     using il = std::initializer_list<vec2<number>>;
     using vertex=vec2<number>;
     vertex p0 = {100,100};
@@ -48,7 +58,7 @@ dynamic_array<vec2<number>> poly_tri() {
 }
 
 template <typename number>
-dynamic_array<vec2<number>> poly_hole() {
+container<vec2<number>> poly_hole() {
     using il = std::initializer_list<vec2<number>>;
     using vertex=vec2<number>;
     vertex p0 = {100,100};
@@ -76,7 +86,7 @@ dynamic_array<vec2<number>> poly_hole() {
 }
 
 template <typename number>
-dynamic_array<vec2<number>> poly_hole3() {
+container<vec2<number>> poly_hole3() {
     using il = std::initializer_list<vec2<number>>;
     int M=10;
     return il{
@@ -96,7 +106,7 @@ dynamic_array<vec2<number>> poly_hole3() {
 }
 
 template <typename number>
-dynamic_array<vec2<number>> poly_hole4() {
+container<vec2<number>> poly_hole4() {
     using il = std::initializer_list<vec2<number>>;
     int M=10;
     return il{
@@ -116,7 +126,7 @@ dynamic_array<vec2<number>> poly_hole4() {
 }
 
 template <typename number>
-dynamic_array<vec2<number>> poly_3() {
+container<vec2<number>> poly_3() {
     using il = std::initializer_list<vec2<number>>;
     return il{
             {50,100},
@@ -151,18 +161,20 @@ int main() {
 
     Canvas24 canvas(W, H);
 
-    const auto render_polygon = [&](dynamic_array<vec2<number>> & polygon) {
+    const auto render_polygon = [&](container<vec2<number>> & polygon) {
         using index = unsigned int;
 
         //polygon[1].x = 140 + 20 +  t;
 
         canvas.clear({255,255,255,255});
 
-        using ear = microgl::tessellation::ear_clipping_triangulation<number>;
+        using ear = microgl::tessellation::ear_clipping_triangulation<number, dynamic_array>;
+//        using ear = microgl::tessellation::ear_clipping_triangulation<number, static_arr>;
+//        using ear = microgl::tessellation::ear_clipping_triangulation<number, std::vector>;
 
         triangles::indices type;
-        dynamic_array<index> indices;
-        dynamic_array<boundary_info> boundary_buffer;
+        container<index> indices;
+        container<boundary_info> boundary_buffer;
 
         ear::compute(polygon.data(),
                      polygon.size(),

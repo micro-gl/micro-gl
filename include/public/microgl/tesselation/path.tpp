@@ -1,8 +1,0 @@
-
-namespace microgl {
-    namespace tessellation {
-
-
-
-    }
-}
