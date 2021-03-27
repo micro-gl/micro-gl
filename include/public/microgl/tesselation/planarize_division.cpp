@@ -2,8 +2,8 @@ namespace microgl {
 
     namespace tessellation {
 
-        template<typename number>
-        auto planarize_division<number>::create_frame(const chunker<vertex, dynamic_array> &pieces,
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::create_frame(const chunker_t &pieces,
                                                       dynamic_pool & dynamic_pool) -> half_edge_face * {
             const auto pieces_length = pieces.size();
             vertex left_top= pieces.data()[0];
@@ -84,8 +84,8 @@ namespace microgl {
             return face;
         }
 
-        template<typename number>
-        auto planarize_division<number>::build_poly_and_conflicts(const chunker<vertex, dynamic_array> &pieces,
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::build_poly_and_conflicts(const chunker_t &pieces,
                                                                   half_edge_face & main_frame,
                                                                   poly_info ** poly_list_out,
                                                                   conflict ** conflict_list_out) -> void {
@@ -124,8 +124,8 @@ namespace microgl {
             *conflict_list_out=conflict_list;
         }
 
-        template<typename number>
-        auto planarize_division<number>::infer_trapeze(const half_edge_face *face) -> trapeze_t {
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::infer_trapeze(const half_edge_face *face) -> trapeze_t {
             if(face==nullptr || face->edge==nullptr)
                 throw_regular(string_debug("infer_trapeze()::trying to infer a trapeze of a probably merged/deleted face !!!"));
             auto * e = face->edge;
@@ -148,8 +148,9 @@ namespace microgl {
             return trapeze;
         }
 
-        template<typename number>
-        auto planarize_division<number>::round_vertex_to_trapeze(vertex & point, const trapeze_t &trapeze) -> point_class_with_trapeze {
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::round_vertex_to_trapeze(
+                vertex & point, const trapeze_t &trapeze) -> point_class_with_trapeze {
             // given that point that should belong to trapeze, BUT may not sit properly or outside because
             // of precision errors, geometrically round it into place
             location_codes codes;
@@ -179,8 +180,8 @@ namespace microgl {
             return point_class_with_trapeze::unknown;
         }
 
-        template<typename number>
-        auto planarize_division<number>::clamp_vertex_to_trapeze_wall(const vertex & v,
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::clamp_vertex_to_trapeze_wall(const vertex & v,
                                                                       const point_class_with_trapeze & wall,
                                                                       const trapeze_t &trapeze) -> vertex {
             vertex start, end, result=v;
@@ -194,9 +195,9 @@ namespace microgl {
             return result;
         }
 
-        template<typename number>
-        auto planarize_division<number>::locate_and_classify_vertex_that_is_already_on_trapeze(const half_edge_vertex * v,
-                                                                                              const trapeze_t &trapeze)
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::locate_and_classify_vertex_that_is_already_on_trapeze(
+                    const half_edge_vertex * v, const trapeze_t &trapeze)
                 -> vertex_location_result {
             // given that the planar vertex IS present on the trapeze boundary
             if(v==trapeze.left_top->origin) return {point_class_with_trapeze::boundary_vertex, trapeze.left_top};
@@ -216,8 +217,8 @@ namespace microgl {
             return {point_class_with_trapeze::unknown, nullptr};
         }
 
-        template<typename number>
-        auto planarize_division<number>::try_split_edge_at(const vertex& point,
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::try_split_edge_at(const vertex& point,
                                                            half_edge *edge,
                                                            dynamic_pool & pool) -> half_edge * {
             // let's shorten both edge and it's twin,each from_sampler it's side
@@ -262,11 +263,10 @@ namespace microgl {
             return e_1;
         }
 
-        template<typename number>
-        auto planarize_division<number>::try_insert_vertex_on_trapeze_boundary_at(const vertex & v,
-                                                                                  const trapeze_t & trapeze,
-                                                                                  point_class_with_trapeze where_boundary,
-                                                                                  dynamic_pool & pool) -> half_edge * {
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::try_insert_vertex_on_trapeze_boundary_at(
+                const vertex & v, const trapeze_t & trapeze, point_class_with_trapeze where_boundary,
+                dynamic_pool & pool) -> half_edge * {
             // given where on the boundary: left, top, right, bottom
             // walk along that boundary wall and insert the vertex at the right place.
             // if the vertex already exists, return it's corresponding half edge.
@@ -318,16 +318,17 @@ namespace microgl {
             return nullptr;
         }
 
-        template<typename number>
-        number planarize_division<number>::evaluate_line_at_x(const number x, const vertex &a, const vertex &b) {
+        template <typename number, template<typename...> class container_type>
+        number planarize_division<number, container_type>::evaluate_line_at_x(
+                const number x, const vertex &a, const vertex &b) {
             if(x==a.x) return a.y; if(x==b.x) return b.y;
             return a.y + (((b.y-a.y)*(x-a.x))/(b.x-a.x));
         }
 
-        template<typename number>
-        void planarize_division<number>::re_distribute_conflicts_of_split_face(conflict *conflict_list,
-                                                                               const half_edge* face_separator,
-                                                                               const vertex &extra_direction_for_split) {
+        template <typename number, template<typename...> class container_type>
+        void planarize_division<number, container_type>::re_distribute_conflicts_of_split_face(
+                conflict *conflict_list, const half_edge* face_separator,
+                const vertex &extra_direction_for_split) {
             // given that a face f was just split into two faces with
             // face_separator edge, let's redistribute the conflicts
             auto * f1 = face_separator->face;
@@ -351,11 +352,11 @@ namespace microgl {
             }
         }
 
-        template<typename number>
-        auto planarize_division<number>::classify_conflict_against_two_faces(const half_edge* face_separator,
-                                                                             const vertex &c, const vertex &d,
-                                                                             const vertex &extra_direction_for_split)
-                                                                             -> half_edge_face *{
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::classify_conflict_against_two_faces(
+                const half_edge* face_separator, const vertex &c, const vertex &d,
+                const vertex &extra_direction_for_split)
+                -> half_edge_face *{
             // note:: edge's face always points to the face that lies to it's left.
             // 1. if the first point lie completely to the left of the edge, then they belong to f1, other wise f2
             // 2. if they lie exactly on the edge, then we test_texture the second end-point
@@ -378,8 +379,9 @@ namespace microgl {
             return face_separator->face; // both lie on the separator
         }
 
-        template<typename number>
-        void planarize_division<number>::walk_and_update_edges_face(half_edge * edge_start, half_edge_face * face) {
+        template <typename number, template<typename...> class container_type>
+        void planarize_division<number, container_type>::walk_and_update_edges_face(
+                half_edge * edge_start, half_edge_face * face) {
             // start walk at edge and update all face references.
             auto * e_ref = edge_start;
             const auto * const e_end = edge_start;
@@ -389,9 +391,9 @@ namespace microgl {
             } while(e_ref!=e_end);
         }
 
-        template<typename number>
-        bool planarize_division<number>::is_a_before_or_equal_b_on_same_boundary(const vertex &a, const vertex &b,
-                                                                                 const point_class_with_trapeze &wall) {
+        template <typename number, template<typename...> class container_type>
+        bool planarize_division<number, container_type>::is_a_before_or_equal_b_on_same_boundary(
+                const vertex &a, const vertex &b, const point_class_with_trapeze &wall) {
             switch (wall) {
                 case point_class_with_trapeze::left_wall: return (a.y<=b.y);
                 case point_class_with_trapeze::right_wall: return (b.y<=a.y);
@@ -404,9 +406,9 @@ namespace microgl {
             }
         }
 
-        template<typename number>
-        auto planarize_division<number>::locate_half_edge_of_face_rooted_at_vertex(const half_edge_vertex *root,
-                                                                                   const half_edge_face * face) -> half_edge * {
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::locate_half_edge_of_face_rooted_at_vertex(
+                const half_edge_vertex *root, const half_edge_face * face) -> half_edge * {
             auto *iter = root->edge;
             const auto * const end = root->edge;
             do {
@@ -417,9 +419,9 @@ namespace microgl {
             return nullptr;
         }
 
-        template<typename number>
-        auto planarize_division<number>::locate_next_trapeze_boundary_vertex_from(half_edge *a,
-                                                                           const trapeze_t &trapeze) -> half_edge * {
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::locate_next_trapeze_boundary_vertex_from(
+                half_edge *a, const trapeze_t &trapeze) -> half_edge * {
             half_edge *iter = a;
             const half_edge *end = iter;
             do {
@@ -431,9 +433,9 @@ namespace microgl {
             return nullptr;
         }
 
-        template<typename number>
-        auto planarize_division<number>::locate_prev_trapeze_boundary_vertex_from(half_edge *a,
-                                                                           const trapeze_t &trapeze) -> half_edge * {
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::locate_prev_trapeze_boundary_vertex_from(
+                half_edge *a, const trapeze_t &trapeze) -> half_edge * {
             half_edge *iter = a;
             const half_edge *end = iter;
             do {
@@ -445,9 +447,9 @@ namespace microgl {
             return iter;
         }
 
-        template<typename number>
-        auto planarize_division<number>::locate_face_of_a_b(const half_edge_vertex &a,
-                                                            const vertex &b) -> half_edge * {
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::locate_face_of_a_b(
+                const half_edge_vertex &a, const vertex &b) -> half_edge * {
             // given edge (a,b) as half_edge_vertex a and a vertex b, find out to which
             // adjacent face does this edge should belong. we return the half_edge that
             // has this face to it's left and vertex 'a' as an origin. we walk CW around
@@ -496,11 +498,11 @@ namespace microgl {
             return nullptr;
         }
 
-        template<typename number>
-        auto planarize_division<number>::insert_edge_between_non_co_linear_vertices(half_edge *vertex_a_edge,
-                                                                                    half_edge *vertex_b_edge,
-                                                                                    const vertex &extra_direction_for_split,
-                                                                                    dynamic_pool & pool) -> half_edge * {
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::insert_edge_between_non_co_linear_vertices(
+                half_edge *vertex_a_edge, half_edge *vertex_b_edge,
+                const vertex &extra_direction_for_split,
+                dynamic_pool & pool) -> half_edge * {
             // insert edge between two vertices in a face, that are not co linear with one of the 4 walls, located
             // by their leaving edges. co linearity means the vertices lie on the same boundary ray.
             // for that case, we have a different procedure to handle.
@@ -537,12 +539,10 @@ namespace microgl {
             return e;
         }
 
-        template<typename number>
-        void planarize_division<number>::handle_co_linear_edge_with_trapeze(const trapeze_t &trapeze,
-                                                                            half_edge * edge_vertex_a,
-                                                                            half_edge * edge_vertex_b,
-                                                                            const point_class_with_trapeze &wall_class,
-                                                                            int winding) {
+        template <typename number, template<typename...> class container_type>
+        void planarize_division<number, container_type>::handle_co_linear_edge_with_trapeze(
+                const trapeze_t &trapeze, half_edge * edge_vertex_a, half_edge * edge_vertex_b,
+                const point_class_with_trapeze &wall_class, int winding) {
             // given that (a) and (b) are on the same wall, update windings along their path/between them.
             if(winding==0) return;
             auto *start = edge_vertex_a;
@@ -558,10 +558,10 @@ namespace microgl {
             }
         }
 
-        template<typename number>
-        auto planarize_division<number>::handle_vertical_face_cut(const trapeze_t &trapeze, const vertex & a,
-                                                                  const point_class_with_trapeze &a_classs,
-                                                                  dynamic_pool & dynamic_pool) -> vertical_face_cut_result {
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::handle_vertical_face_cut(
+                const trapeze_t &trapeze, const vertex & a, const point_class_with_trapeze &a_classs,
+                dynamic_pool & dynamic_pool) -> vertical_face_cut_result {
             // given that vertex (a) is in the closure of the trapeze
             const bool on_boundary = a_classs != point_class_with_trapeze::strictly_inside;
             const bool on_boundary_vertices = a_classs == point_class_with_trapeze::boundary_vertex;
@@ -642,8 +642,8 @@ namespace microgl {
             return result;
         }
 
-        template<typename number>
-        auto planarize_division<number>::contract_edge(half_edge * e) -> half_edge_vertex * {
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::contract_edge(half_edge * e) -> half_edge_vertex * {
             // given edge (e)=(a,b) contract it,  which is like removal and connecting it's neighbors
             auto * origin_a=e->origin;
             auto * origin_b=e->twin->origin;
@@ -669,13 +669,11 @@ namespace microgl {
 
         int id_a=-1;
 
-        template<typename number>
-        auto planarize_division<number>::handle_face_split(const trapeze_t & trapeze,
-                                                           const vertex &a, vertex b, vertex extra_direction,
-                                                           const point_class_with_trapeze &a_class,
-                                                           const point_class_with_trapeze &b_class,
-                                                           int winding,
-                                                           dynamic_pool & dynamic_pool) -> face_split_result {
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::handle_face_split(
+                const trapeze_t & trapeze, const vertex &a, vertex b, vertex extra_direction,
+                const point_class_with_trapeze &a_class, const point_class_with_trapeze &b_class,
+                int winding, dynamic_pool & dynamic_pool) -> face_split_result {
             // given that edge (a,b) is in the closure of the trapeze,
             // split the face to up to 4 pieces, strategy is:
             // 1. use a vertical that goes through "a" to try and split the trapeze
@@ -781,8 +779,9 @@ namespace microgl {
             return result;
         }
 
-        template<typename number>
-        auto planarize_division<number>::handle_face_merge(const half_edge_vertex *vertex_on_vertical_wall) -> void {
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::handle_face_merge(
+                const half_edge_vertex *vertex_on_vertical_wall) -> void {
             // given that vertex v is on a past vertical wall (left/right) boundary, we want to check 2 things:
             // 1. the vertical top/bottom edge that adjacent to it, is single(not divided) in it's adjacent trapezes
             // 2. has winding==0
@@ -871,9 +870,9 @@ namespace microgl {
             }
         }
 
-        template<typename number>
-        bool planarize_division<number>::is_distance_to_line_less_than_epsilon(const vertex &v,
-                const vertex &a, const vertex &b, number epsilon) {
+        template <typename number, template<typename...> class container_type>
+        bool planarize_division<number, container_type>::is_distance_to_line_less_than_epsilon(
+                const vertex &v, const vertex &a, const vertex &b, number epsilon) {
             // we use the equation 2*A = h*d(a,b)
             // where A = area of triangle spanned by (a,b,v), h= distance of v to (a,b)
             // we raise everything to quads to avoid square function and we avoid division.
@@ -886,8 +885,8 @@ namespace microgl {
             return numerator_quad < epsilon_quad*ab_length_quad;
         }
 
-        template<typename number>
-        void planarize_division<number>::remove_edge(half_edge *edge) {
+        template <typename number, template<typename...> class container_type>
+        void planarize_division<number, container_type>::remove_edge(half_edge *edge) {
             // remove an edge and it's twin, then:
             // 1.  re-connect adjacent edges
             // 2.  merge faces
@@ -925,8 +924,9 @@ namespace microgl {
             face_2->edge=nullptr; face_2->conflict_list= nullptr;
         }
 
-        template<typename number>
-        void planarize_division<number>::insert_poly(poly_info &poly, dynamic_pool & dynamic_pool) {
+        template <typename number, template<typename...> class container_type>
+        void planarize_division<number, container_type>::insert_poly(
+                poly_info &poly, dynamic_pool & dynamic_pool) {
             const unsigned size= poly.size;
             half_edge_vertex *last_edge_last_planar_vertex=nullptr, *first_edge_first_planar_vertex=nullptr;
             bool first_edge=true;
@@ -1048,15 +1048,16 @@ namespace microgl {
 
         }
 
-        template<typename number>
-        void planarize_division<number>::compute(const chunker<vertex, dynamic_array> &pieces,
-                                                 const fill_rule &rule,
-                                                 const tess_quality &quality,
-                                                 dynamic_array<vertex> &output_vertices,
-                                                 triangles::indices & output_indices_type,
-                                                 dynamic_array<index> &output_indices,
-                                                 dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
-                                                 dynamic_array<vertex> *debug_trapezes) {
+        template <typename number, template<typename...> class container_type>
+        void planarize_division<number, container_type>::compute(
+                const chunker_t &pieces,
+                 const fill_rule &rule,
+                 const tess_quality &quality,
+                container_type<vertex> &output_vertices,
+                 triangles::indices & output_indices_type,
+                container_type<index> &output_indices,
+                container_type<microgl::triangles::boundary_info> *boundary_buffer,
+                container_type<vertex> *debug_trapezes) {
 
             // vertices size is also edges size since these are polygons
             const auto poly_count = pieces.size();
@@ -1086,16 +1087,17 @@ namespace microgl {
                        output_indices, boundary_buffer, debug_trapezes);
         }
 
-        template<typename number>
-        void planarize_division<number>::tessellate(half_edge_face **faces,
-                                                       index size,
-                                                       const fill_rule &rule,
-                                                       tess_quality quality,
-                                                       dynamic_array<vertex> &output_vertices,
-                                                       triangles::indices & output_indices_type,
-                                                       dynamic_array<index> &output_indices,
-                                                       dynamic_array<microgl::triangles::boundary_info> *boundary_buffer,
-                                                       dynamic_array<vertex> *debug_trapezes) {
+        template <typename number, template<typename...> class container_type>
+        void planarize_division<number, container_type>::tessellate(
+                half_edge_face **faces,
+                index size,
+                const fill_rule &rule,
+                tess_quality quality,
+                container_type<vertex> &output_vertices,
+                triangles::indices & output_indices_type,
+                container_type<index> &output_indices,
+                container_type<microgl::triangles::boundary_info> *boundary_buffer,
+                container_type<vertex> *debug_trapezes) {
             // compute windings of faces
             for (index ix = 0; ix < size; ++ix)
                 compute_face_windings(faces[ix]);
@@ -1115,8 +1117,10 @@ namespace microgl {
                 { // add all of the vertices and record their index
                     auto *iter=face->edge;
                     do { // insert new vertices only
-                        if(iter->origin->tess_index==-1)
-                            iter->origin->tess_index=output_vertices.push_back(iter->origin->coords);
+                        if(iter->origin->tess_index==-1) {
+                            output_vertices.push_back(iter->origin->coords);
+                            iter->origin->tess_index = output_vertices.size() - 1;
+                        }
                         iter->origin->internal_tess_clipped=false;
                         iter=iter->next;
                     } while (iter!=face->edge);
@@ -1197,7 +1201,8 @@ namespace microgl {
                     {
                         const auto center = (trapeze.left_top->origin->coords + trapeze.right_top->origin->coords +
                                              trapeze.left_bottom->origin->coords + trapeze.right_bottom->origin->coords)/4;
-                        int center_index= output_vertices.push_back(center);
+                        output_vertices.push_back(center);
+                        int center_index= output_vertices.size()-1;
                         const auto *start = face->edge;
                         auto *iter = start;
                         do { // triangulate the convex piece, we insert a vertex because this will create better/accurate triangles
@@ -1232,8 +1237,8 @@ namespace microgl {
             }
         }
 
-        template<typename number>
-        bool planarize_division<number>::infer_fill(int winding, const fill_rule & rule) {
+        template <typename number, template<typename...> class container_type>
+        bool planarize_division<number, container_type>::infer_fill(int winding, const fill_rule & rule) {
             unsigned int abs_winding = winding < 0 ? -winding : winding;
             switch (rule) {
                 case fill_rule::non_zero:
@@ -1243,8 +1248,8 @@ namespace microgl {
             }
         }
 
-        template<typename number>
-        int planarize_division<number>::compute_face_windings(half_edge_face * face) {
+        template <typename number, template<typename...> class container_type>
+        int planarize_division<number, container_type>::compute_face_windings(half_edge_face * face) {
             // given that we have an unordered graph of planar subdivision and that we have
             // already have computed windings for edges, it is enough to pick any point in the face
             // to compute the winding via a ray that spans infinitely until we are outside.
@@ -1262,28 +1267,29 @@ namespace microgl {
             return face->winding;
         }
 
-        template<typename number>
-        number planarize_division<number>::clamp(const number &val, number a, number b) {
+        template <typename number, template<typename...> class container_type>
+        number planarize_division<number, container_type>::clamp(const number &val, number a, number b) {
             if(a>b) { auto c=a;a=b;b=c; }
             if(val<a) return a;
             if(val>b) return b;
             return val;
         }
 
-        template<typename number>
-        int planarize_division<number>::infer_edge_winding(const vertex & a, const vertex & b) {
+        template <typename number, template<typename...> class container_type>
+        int planarize_division<number, container_type>::infer_edge_winding(const vertex & a, const vertex & b) {
             // infer winding of edge (a,b)
             if(b.y<a.y || (b.y==a.y && b.x<a.x)) return 1; // rising/ascending edge
             else if(b.y>a.y || (b.y==a.y && b.x>a.x)) return -1; // descending edge
             return 0;
         }
 
-        template<typename number>
-        auto planarize_division<number>::do_a_b_lies_on_same_trapeze_wall(const trapeze_t & trapeze,
-                                                                          const vertex &a,
-                                                                          const vertex &b,
-                                                                          const point_class_with_trapeze & a_class,
-                                                                          const point_class_with_trapeze & b_class) -> point_class_with_trapeze {
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::do_a_b_lies_on_same_trapeze_wall(
+                const trapeze_t & trapeze,
+                const vertex &a,
+                const vertex &b,
+                const point_class_with_trapeze & a_class,
+                const point_class_with_trapeze & b_class) -> point_class_with_trapeze {
             location_codes a_codes, b_codes;
             a_codes.compute_codes_from_class(a, a_class, trapeze); a_codes.fill();
             b_codes.compute_codes_from_class(b, b_class, trapeze); b_codes.fill();
@@ -1294,17 +1300,19 @@ namespace microgl {
             return point_class_with_trapeze::unknown;
         }
 
-        template<typename number>
-        void planarize_division<number>::wall_vertex_endpoints(const trapeze_t & trapeze, const point_class_with_trapeze & wall,
-                                                                vertex & start, vertex& end) {
+        template <typename number, template<typename...> class container_type>
+        void planarize_division<number, container_type>::wall_vertex_endpoints(
+                const trapeze_t & trapeze, const point_class_with_trapeze & wall,
+                vertex & start, vertex& end) {
             half_edge *edge_start, *edge_end;
             wall_edge_endpoints(trapeze, wall, &edge_start, &edge_end);
             start=edge_start->origin->coords; end=edge_end->origin->coords;
         }
 
-        template<typename number>
-        void planarize_division<number>::wall_edge_endpoints(const trapeze_t & trapeze, const point_class_with_trapeze & wall,
-                                                        half_edge ** start, half_edge ** end) {
+        template <typename number, template<typename...> class container_type>
+        void planarize_division<number, container_type>::wall_edge_endpoints(
+                const trapeze_t & trapeze, const point_class_with_trapeze & wall,
+                half_edge ** start, half_edge ** end) {
             switch (wall) {
                 case point_class_with_trapeze::left_wall: {*start=trapeze.left_top;*end=trapeze.left_bottom;return;}
                 case point_class_with_trapeze::bottom_wall: {*start=trapeze.left_bottom;*end=trapeze.right_bottom;return;}
@@ -1314,10 +1322,10 @@ namespace microgl {
             }
         }
 
-        template<typename number>
-        auto planarize_division<number>::compute_conflicting_edge_intersection_against_trapeze(const trapeze_t & trapeze,
-                                                                                               vertex &a, vertex b,
-                                                                                               const point_class_with_trapeze & a_class)
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::compute_conflicting_edge_intersection_against_trapeze(
+                const trapeze_t & trapeze, vertex &a, vertex b,
+                const point_class_with_trapeze & a_class)
         -> conflicting_edge_intersection_status {
             // given that edge (a,b), vertex (a) is conflicting, i.e on boundary or completely inside
             // and we know that the edge passes through the trapeze or lies on the boundary,
@@ -1440,11 +1448,12 @@ namespace microgl {
             return result;
         }
 
-        template<typename number>
-        auto planarize_division<number>::finite_segment_intersection_test(const vertex &a, const vertex &b,
-                                                                          const vertex &c, const vertex &d,
-                                                                          vertex & intersection,
-                                                                          number &alpha, number &alpha1) -> intersection_status{
+        template <typename number, template<typename...> class container_type>
+        auto planarize_division<number, container_type>::finite_segment_intersection_test(
+                const vertex &a, const vertex &b,
+                const vertex &c, const vertex &d,
+                vertex & intersection,
+                number &alpha, number &alpha1) -> intersection_status{
             // this procedure will find proper and improper(touches) intersections, but no
             // overlaps, since overlaps induce parallel classification, this would have to be resolved outside,
             // this is NOT sub-pixel robust when underflows occur, but I don't need it that robust
@@ -1482,9 +1491,10 @@ namespace microgl {
             return intersection_status::intersect;
         }
 
-        template <typename number>
+        template <typename number, template<typename...> class container_type>
         inline int
-        planarize_division<number>::classify_point(const vertex & point, const vertex &a, const vertex & b) {
+        planarize_division<number, container_type>::classify_point(
+                const vertex & point, const vertex &a, const vertex & b) {
             auto a_p=point-a, a_b=b-a;
             auto result= robust_dot(a_b.orthogonalLeft(), a_p);
             if(result>0) return 1;
@@ -1492,9 +1502,9 @@ namespace microgl {
             else return 0;
         }
 
-        template <typename number>
+        template <typename number, template<typename...> class container_type>
         inline number
-        planarize_division<number>::robust_dot(const vertex &u, const vertex & v) {
+        planarize_division<number, container_type>::robust_dot(const vertex &u, const vertex & v) {
             int f1=1, f2=1;
             bool skip=u.x>=1 || u.y>=1 || v.x>=1 || v.y>=1;
 //            skip=false;

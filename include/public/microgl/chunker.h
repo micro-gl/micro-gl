@@ -18,6 +18,7 @@ namespace chunker_traits {
 
 template<typename T, template<typename...> class container_template_type>
 class chunker {
+public:
     using index = unsigned int;
     using type = T;
     using container_data_type = container_template_type<type>;
@@ -49,7 +50,7 @@ public:
         _data = chunker_traits::move(val._data);
         _locations = chunker_traits::move(val._locations);
     }
-    explicit chunker(unsigned initial_capacity=0) : _data(initial_capacity), _locations() {
+    explicit chunker() : _data(), _locations() {
         _locations.push_back(0);
     }
 

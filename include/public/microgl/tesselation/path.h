@@ -327,7 +327,7 @@ namespace microgl {
                     _latest_fill_cache_info=info;
                     _invalid=false;
                     _tess_fill.clear();
-                    planarize_division<number>::compute(
+                    planarize_division<number, container_template_type>::compute(
                             _paths_vertices, rule, quality,
                             _tess_fill.output_vertices,
                             _tess_fill.output_indices_type,

@@ -2,10 +2,18 @@
 
 template<typename T, unsigned N=10>
 class static_array {
+
 public:
     using index = unsigned int;
     using type = T;
     static constexpr unsigned Capacity = N;
+
+private:
+    T _data[N];
+//    T *_data = new T[N];
+    index _current = 0;
+
+public:
 
     explicit static_array() = default;
 
@@ -50,7 +58,7 @@ public:
     T* begin() { return _data; }
     T* end() { return _data + _current; }
 
-private:
-    T _data[N];
-    index _current = 0;
+    const T* begin() const { return _data; }
+    const T* end() const { return _data + _current; }
+
 };

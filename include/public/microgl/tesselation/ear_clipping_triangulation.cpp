@@ -100,9 +100,11 @@ namespace microgl {
                         // record boundary
                         if(requested_triangles_with_boundary) {
                             // classify if edges are on boundary
-                            unsigned int first_edge_index_distance = abs_((int)indices[ind + 0] - (int)indices[ind + 1]);
-                            unsigned int second_edge_index_distance = abs_((int)indices[ind + 1] - (int)indices[ind + 2]);
-                            unsigned int third_edge_index_distance = abs_((int)indices[ind + 2] - (int)indices[ind + 0]);
+#define abs_ear(a) ((a)<0 ? -(a) : (a))
+                            unsigned int first_edge_index_distance = abs_ear((int)indices[ind + 0] - (int)indices[ind + 1]);
+                            unsigned int second_edge_index_distance = abs_ear((int)indices[ind + 1] - (int)indices[ind + 2]);
+                            unsigned int third_edge_index_distance = abs_ear((int)indices[ind + 2] - (int)indices[ind + 0]);
+#undef abs_ear
                             bool first_edge = first_edge_index_distance==1 || first_edge_index_distance==size-1;
                             bool second_edge = second_edge_index_distance==1 || second_edge_index_distance==size-1;
                             bool third_edge = third_edge_index_distance==1 || third_edge_index_distance==size-1;

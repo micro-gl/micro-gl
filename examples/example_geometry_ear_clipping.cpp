@@ -169,6 +169,8 @@ int main() {
         canvas.clear({255,255,255,255});
 
         using ear = microgl::tessellation::ear_clipping_triangulation<number, dynamic_array>;
+//        using ear = microgl::tessellation::ear_clipping_triangulation<number, static_arr>;
+//        using ear = microgl::tessellation::ear_clipping_triangulation<number, std::vector>;
 
         triangles::indices type;
         container<index> indices;
