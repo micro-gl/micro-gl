@@ -41,9 +41,7 @@ public:
 //        index offset;
     };
 
-    chunker(const_chunker_ref val) {
-        _data = val._data;
-        _locations = val._locations;
+    chunker(const_chunker_ref val) : _data{val._data}, _locations{val._locations} {
     }
 
     chunker(chunker && val) noexcept {

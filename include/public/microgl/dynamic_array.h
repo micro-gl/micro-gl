@@ -190,7 +190,11 @@ public:
         _current = 0;
     }
 
-    void clear() noexcept { _current = 0; }
+    void clear() noexcept {
+        for (int ix = 0; ix < capacity(); ++ix)
+            _data[ix].~T();
+        _current = 0;
+    }
     T* data() noexcept { return _data; }
     const T* data() const noexcept { return _data; }
     T& back() noexcept { return _data[_current-1]; }

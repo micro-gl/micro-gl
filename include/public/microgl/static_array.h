@@ -53,7 +53,11 @@ public:
 
     T& back() noexcept { return _data[_current-1]; }
 
-    void clear() { _current = 0; }
+    void clear() {
+        for (int ix = 0; ix < capacity(); ++ix)
+            _data[ix].~T();
+        _current = 0;
+    }
     index size() const { return _current; }
     constexpr index capacity() const { return N; }
 
