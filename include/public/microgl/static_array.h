@@ -25,13 +25,13 @@ public:
 
     static_array(const static_array & container) {
         for(auto ix = 0; ix < container.size(); ix++)
-            this->push_back(container[ix]);
+            push_back(container[ix]);
     }
 
     static_array & operator=(const static_array & container) {
-        this->clear();
+        clear();
         for(index ix = 0; ix < container.size(); ix++)
-            this->push_back(container[ix]);
+            push_back(container[ix]);
         return (*this);
     }
 

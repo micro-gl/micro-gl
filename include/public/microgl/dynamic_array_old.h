@@ -31,29 +31,9 @@ namespace dynamic_array_traits {
         return static_cast<_Tp&&>(__t);
     }
 
-    inline
-    void * memcpy(void *dst, const void *src, const unsigned len) noexcept
-     {
-         if ((unsigned long)dst % sizeof(long) == 0 &&
-             (unsigned long)src % sizeof(long) == 0 &&
-             len % sizeof(long) == 0) {
-             long *d = (long *)dst;
-             const long *s = (const long *)src;
-             for (int i=0; i<len/sizeof(long); i++)
-                 *d++ = *s++;
-         }
-         else {
-             char *d = (char *)dst;
-             const char *s = (char *)src;
-             for (int i=0; i<len; i++)
-                 *d++ = *s++;
-         }
-
-         return dst;
-    }
-
 }
 
+#include <initializer_list>
 
 template<typename T>
 class dynamic_array {
@@ -64,6 +44,7 @@ public:
 
 private:
     T *_data = nullptr;
+//    T *_data = new T[800];
     index _current = 0u;
     index _cap = 0u;
 
@@ -124,28 +105,28 @@ public:
         const auto new_size = up ? (_cap==0?1:_cap*2) : _cap/2;
         const auto copy_size = old_size<new_size ? old_size : new_size;
         T* _new = new T[new_size];
-//        for (index ix = 0; ix < copy_size; ++ix)
-//            _new[ix] = dynamic_array_traits::move(_data[ix]);
-        // this reduces binary size
-        dynamic_array_traits::memcpy(_new, _data, copy_size*sizeof (T));
-        delete [] _data;
-        _data = reinterpret_cast<T*>(_new);
+        // move objects
+        for (index ix = 0; ix < copy_size; ++ix)
+            _new[ix] = dynamic_array_traits::move(_data[ix]);
+        if(_data) delete [] _data;
+        _data = _new;
         _cap = new_size;
     }
 
-    void push_back(const T & v) noexcept {
+    int push_back(const T & v) noexcept {
         if(int(_current)>int(_cap-1)) {
-//             copy the value, edge case if v belongs
-//             to the dynamic array
+            // copy the value, edge case if v belongs
+            // to the dynamic array
             const T vv = v;
             alloc_(true);
             _data[_current++] = vv;
         } else {
             _data[_current++] = v;
         }
+        return _current-1;
     }
 
-    void push_back(T && v) noexcept {
+    int push_back(T && v) noexcept {
         if(int(_current)>int(_cap-1)) {
             // copy the value, edge case if v belongs
             // to the dynamic array
@@ -155,6 +136,7 @@ public:
         } else {
             _data[_current++] = dynamic_array_traits::move(v);
         }
+        return _current-1;
     }
 
     template<typename... ARGS>
