@@ -9,8 +9,8 @@ namespace microgl {
 #define PI        3.14159265358979323846264338327950288
 #define HALF_PI   1.5707963268
 
-        template<unsigned N>
-        inline int to_fixed(const Q<N> &val, unsigned char precision) {
+        template<unsigned N, typename integer>
+        inline int to_fixed(const Q<N, integer> &val, unsigned char precision) {
             return int(val.toFixed(precision));
         }
 
@@ -19,42 +19,42 @@ namespace microgl {
             return T{float(PI)};
         }
 
-        template<unsigned N>
+        template<unsigned N, typename integer>
         static
-        Q<N> sin(const Q<N> &radians) {
+        Q<N, integer> sin(const Q<N, integer> &radians) {
             const float radians_f = radians.toFloat();
-            return Q<N>(std::sinf(radians_f));
+            return Q<N, integer>(std::sinf(radians_f));
         }
 
-        template<unsigned N>
+        template<unsigned N, typename integer>
         static
-        Q<N> cos(const Q<N> &radians) {
-            const auto half_pi = Q<N>(HALF_PI);
+        Q<N, integer> cos(const Q<N, integer> &radians) {
+            const auto half_pi = Q<N, integer>(HALF_PI);
             return sin(radians + half_pi);
         }
 
-        template<unsigned N>
+        template<unsigned N, typename integer>
         static
-        Q<N> tan(const Q<N> &radians) {
+        Q<N, integer> tan(const Q<N, integer> &radians) {
             const float radians_f = radians.toFloat();
-            return Q<N>(std::tanf(radians_f));
+            return Q<N, integer>(std::tanf(radians_f));
         }
 
-        template<unsigned N>
+        template<unsigned N, typename integer>
         static
-        Q<N> deg_to_rad(const Q<N> &degrees) {
-            using q = Q<N>;
+        Q<N, integer> deg_to_rad(const Q<N, integer> &degrees) {
+            using q = Q<N, integer>;
             return (degrees * math::pi<q>()) / q(180);
         }
 
-        template<unsigned N>
+        template<unsigned N, typename integer>
         static
-        Q<N> mod(const Q<N> &numer, const Q<N> &denom) {
+        Q<N, integer> mod(const Q<N, integer> &numer, const Q<N, integer> &denom) {
             return numer % denom;
         }
 
-        template<unsigned N>
-        static Q<N> sqrt(const Q<N> &val) {
+        template<unsigned N, typename integer>
+        static Q<N, integer> sqrt(const Q<N, integer> &val) {
             return val.sqrt();
         }
 

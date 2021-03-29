@@ -59,7 +59,7 @@ path_t<number> path_star_2() {
 }
 
 template <typename number>
-path_t<number> path_arc() {
+path_t<number> path_arc_animation() {
     path_t<number> path{};
     int div=32; //4
     path.arc({200,200}, 100,
@@ -149,7 +149,7 @@ int main() {
         static auto path = path_star<number>();
 //        static auto path = path_star_2<number>();
 //        static auto path = path_rects<number>();
-//        static auto path = path_arc<number>();
+//        static auto path = path_arc_animation<number>();
 //        static auto path = path_test<number>();
 
         render_path(path);
