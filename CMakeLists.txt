@@ -6,9 +6,6 @@ set (CMAKE_CXX_STANDARD 11)
 
 message("===============\n${PROJECT_NAME} project \n===============")
 
-#set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-
 add_library(${PROJECT_NAME} INTERFACE)
 
 # expose public include directory

@@ -20,8 +20,8 @@ using container = dynamic_array<item_type>;
 //using container = std::vector<item_type>;
 
 int main() {
-//    using number = float;
-    using number = Q<15>;
+    using number = float;
+//    using number = Q<15>;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     sampling::flat_color<> color_red{{255,0,0,255}};
@@ -51,8 +51,8 @@ int main() {
                 start_angle_rad,
                 end_angle_rad,
                 divisions_count,
-//            false,
-                true
+            false
+//                true
         );
 
         canvas.clear({255,255,255,255});
@@ -74,8 +74,8 @@ int main() {
 
     };
 
-    number start_angle_rad = math::deg_to_rad(-45.0f);
-    number end_angle_rad = math::deg_to_rad(360.0f);
+    number start_angle_rad = math::deg_to_rad(0.0f);
+    number end_angle_rad = math::deg_to_rad(-45.0f);
     number rotation = math::deg_to_rad(45.0f);
     number radius_x = 50, radius_y = 75;
     number center_x = 200, center_y=200;
@@ -83,7 +83,7 @@ int main() {
     const auto render = [&](){
         render_arc_internal(start_angle_rad, end_angle_rad,
                 center_x, center_y, radius_x, radius_y,
-                rotation,32);
+                rotation,33);
     };
 
     example_run(&canvas, render);

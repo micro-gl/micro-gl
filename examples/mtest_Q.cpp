@@ -1,15 +1,14 @@
 #include <microgl/Q.h>
+#include <microgl/math/q_math.h>
 #include <iostream>
 
 int main() {
     std::cout <<std::to_string(_LIBCPP_STD_VER) << std::endl;
 
-    using q = Q<4>;
+    using q = Q<4, int32_t>;
 
-    q a{(unsigned int)(4)}, b{1}, c{2};
-
-    q a1 = 7.0f;
-    a1= a1 + 5.11f;
-    a1/=5.11f;
+    q a{9};
+    auto b = int(microgl::math::sqrt(a));
+    auto c = microgl::math::sqrt(a);
 }
 

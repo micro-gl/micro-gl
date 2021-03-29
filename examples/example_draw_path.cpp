@@ -57,7 +57,7 @@ path_t<number> path_star_2() {
 }
 
 template <typename number>
-path_t<number> path_arc() {
+path_t<number> path_arc_animation() {
     path_t<number> path{};
     int div=32; //4
     path.arc({200,200}, 100,
@@ -69,7 +69,7 @@ path_t<number> path_arc() {
              math::deg_to_rad(0.0f),
              math::deg_to_rad(360.0f),
              true, div).closePath();
-t+=0.82f;
+t+=1.82f;
 //    t=120.539963f;//819999992f;//-0.01f;
 ////t=26.0399914;
     path.moveTo({150,150});
@@ -120,7 +120,7 @@ int main() {
 
     auto render_path = [&](path_t<number> & path) {
         canvas.clear({255, 255, 255, 255});
-        canvas.drawPathFill<blendmode::Normal, porterduff::None<>, false, false>(
+        canvas.drawPathFill<blendmode::Normal, porterduff::None<>, false, true>(
                 color_red,
                 matrix_3x3<number>::identity(),
                 path,
@@ -136,7 +136,7 @@ int main() {
         static auto path = path_star_2<number>();
 //        static auto path = path_star<number>();
 //        static auto path = path_rects<number>();
-//        static auto path = path_arc<number>();
+//        auto path = path_arc_animation<number>();
 //        static auto path = path_test<number>();
 
         render_path(path);

@@ -64,12 +64,6 @@ namespace microgl {
         using boundary_info = unsigned char;
         using index = unsigned int;
 
-//        bool classify_boundary_info(const boundary_info &info,
-//                                    unsigned int edge_index);
-//        boundary_info create_boundary_info(bool first,
-//                                           bool second,
-//                                           bool third);
-
         static bool classify_boundary_info(const boundary_info &info, unsigned int edge_index) {
             switch (edge_index) {
                 case 0:

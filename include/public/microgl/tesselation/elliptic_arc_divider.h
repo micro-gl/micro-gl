@@ -29,11 +29,13 @@ namespace microgl {
                 const auto two_pi = microgl::math::pi<number>() * number(2);
                 const auto half_pi = microgl::math::pi<number>() / number(2);
                 const auto zero = number(0);
+                while(start_angle_rad<zero) start_angle_rad+=two_pi;
+                while(end_angle_rad<zero) end_angle_rad+=two_pi;
                 auto delta = end_angle_rad - start_angle_rad;
                 if (delta==0) return;
                 const bool full_circle_or_more= microgl::math::abs(delta) >= two_pi;
-                start_angle_rad = microgl::math::mod(start_angle_rad, two_pi);
-                end_angle_rad = microgl::math::mod(end_angle_rad, two_pi);
+//                start_angle_rad = microgl::math::mod(start_angle_rad, two_pi);
+//                end_angle_rad = microgl::math::mod(end_angle_rad, two_pi);
                 if(start_angle_rad<zero) start_angle_rad+=two_pi;
                 if(end_angle_rad<zero) end_angle_rad+=two_pi;
                 delta = end_angle_rad - start_angle_rad;
@@ -46,14 +48,14 @@ namespace microgl {
                 }
                 delta = end_angle_rad - start_angle_rad;
                 // we test_texture for greater in case of precision issues
-                delta = delta / number(divisions);
+                delta = delta / number(divisions-(full_circle_or_more?1:0));
                 auto radians = start_angle_rad;
                 auto rotation_sin = microgl::math::sin(rotation);
                 auto rotation_cos = microgl::math::cos(rotation);
                 index first_index= output.size(), last_index=first_index;
                 number min_degree=start_angle_rad<=end_angle_rad?start_angle_rad:end_angle_rad;
                 number max_degree=start_angle_rad>=end_angle_rad?start_angle_rad:end_angle_rad;
-                for (index ix = 0; ix <= divisions; ++ix) {
+                for (index ix = 0; ix < divisions; ++ix) {
                     number radians_clipped=radians;
                     { // due to precision errors when adding radians they might overflow at the end
                         if(radians<min_degree)

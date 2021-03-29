@@ -1,11 +1,9 @@
 #pragma once
 
-template <unsigned P, typename container_integer=long long,
-          typename unsigned_container_integer=unsigned long long>
+template <unsigned P, typename container_integer=long long>
 class Q {
 public:
     using integer = container_integer;
-    using unsigned_integer = unsigned_container_integer;
     static constexpr unsigned precision = P;
 
 private:
@@ -162,7 +160,7 @@ public:
     inline void updateValue(const_signed_ref val) { this->_value=val; }
 
     Q<P> sqrt() const {
-        return Q<P>((sqrt_<unsigned_container_integer>(unsigned_container_integer(_value))), P/2);
+        return Q<P>((sqrt_<container_integer>(container_integer(_value))), P/2);
     }
     Q<P> abs() const {
         return _value<0? Q{-_value}:Q{_value};
@@ -173,14 +171,14 @@ public:
 
 private:
 
-    template<typename unsigned_integer_type>
+    template<typename integer_type>
     static
-    unsigned_integer_type sqrt_(unsigned_integer_type a_nInput) {
-        constexpr unsigned char bits= sizeof (unsigned_integer_type)*8;
-        unsigned_integer_type op  = a_nInput;
-        unsigned_integer_type res = 0;
+    integer_type sqrt_(integer_type val) {
+        constexpr unsigned char bits= sizeof (integer_type) * 8;
+        integer_type op  = val;
+        integer_type res = 0;
         // The second-to-top bit is set: use 1u << 14 for uint16_t type; use 1uL<<30 for uint32_t type
-        unsigned_integer_type one = unsigned_integer_type(1u) << (bits-2);
+        integer_type one = integer_type(1u) << (bits - 2);
 
         // "one" starts at the highest power of four <= than the argument.
         while (one > op) one >>= 2;
