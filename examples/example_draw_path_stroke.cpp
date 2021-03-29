@@ -15,9 +15,9 @@ template<typename item>
 using stat_array = static_array<item, 800>;
 
 template<typename number>
-//using path_t = path<number, dynamic_array>;
+using path_t = path<number, dynamic_array>;
 //using path_t = path<number, stat_array>;
-using path_t = path<number, std::vector>;
+//using path_t = path<number, std::vector>;
 
 template <typename number>
 path_t<number> path_star() {
@@ -142,6 +142,7 @@ int main() {
                 4, il{50, 20}, t,
                 255
         );
+
     };
 
     auto render = [&]() {

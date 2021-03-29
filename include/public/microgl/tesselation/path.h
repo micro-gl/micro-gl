@@ -17,7 +17,8 @@ namespace microgl {
         private:
             using index = unsigned int;
             using vertex = vec2<number>;
-            chunker<vertex, container_template_type> _paths_vertices;
+            using chunker_t = chunker<vertex, container_template_type>;
+            chunker_t _paths_vertices;
             bool _invalid=true;
 
             vertex firstPointOfCurrentSubPath() const {
@@ -244,10 +245,10 @@ namespace microgl {
                     output_indices_type=val.output_indices_type;
                 }
                 void drain() {
-                    DEBUG_output_trapezes.drain();
-                    output_vertices.drain();
-                    output_indices.drain();
-                    output_boundary.drain();
+                    DEBUG_output_trapezes = container_template_type<vertex>{};
+                    output_vertices = container_template_type<vertex>{};
+                    output_indices = container_template_type<index>{};
+                    output_boundary = container_template_type<triangles::boundary_info>{};
                 }
                 void clear() {
                     DEBUG_output_trapezes.clear();
@@ -383,6 +384,18 @@ namespace microgl {
                 _tess_fill.drain();
                 _tess_stroke.drain();
                 _invalid=true;
+            }
+
+            buffers & buffers_fill() {
+                return _tess_fill;
+            }
+
+            buffers & buffers_stroke() {
+                return _tess_stroke;
+            }
+
+            chunker_t & paths_vertices() {
+                return _paths_vertices;
             }
 
         private:

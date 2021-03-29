@@ -41,9 +41,7 @@ public:
 //        index offset;
     };
 
-    chunker(const_chunker_ref val) {
-        _data = val._data;
-        _locations = val._locations;
+    chunker(const_chunker_ref val) : _data{val._data}, _locations{val._locations} {
     }
 
     chunker(chunker && val) noexcept {
@@ -129,8 +127,8 @@ public:
     }
 
     void drain() {
-        _locations.drain();
-        _data.drain();
+        _locations = container_index_type{};
+        _data = container_data_type{};
         _locations.push_back(0);
     }
 

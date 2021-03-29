@@ -108,9 +108,9 @@ path_t<number> path_test() {
 }
 
 int main() {
-//    using number = float;
+    using number = float;
 //    using number = double;
-    using number = Q<12>;
+//    using number = Q<12>;
 //    using number = Q<4>;
 
     using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
