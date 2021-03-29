@@ -1,28 +1,27 @@
 # micro{gl}
 
-fast, super slim, headers files only `C++11` graphics library, that  
-can run on any 32 bits computer without FPU or GPU.
+fast, super slim, embeddable, headers files only `C++11` graphics library, that  
+can run on any 32/64 bits computer without FPU or GPU. no standard library required.
 
 check out our website at [micro-gl.github.io](micro-gl.github.io)
 
-## install *microGL* with *CMake*
+# Usage
+because `microgl` is a headers only lib, installing just means copying the `include/public/microgl`
+folder to your system search path or another folder and then set the include path in your build.
+the `cmake` file also has an install target.
 
-```bash
-$ cd path/to/microgl
-$ mkdir cmake-build-release
-$ cd cmake-build-release
-
-# use this to install globally (usually /usr/local/ on *nix)
-$ cmake -DCMAKE_BUILD_TYPE=Release ..
-# use this to install at a folder you want
-$ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/path/for/install ..
-
-$ cmake --build . --target install
+## using *CMake*
+download the project to a sub folder of your project. inside your **`CMakeLists.txt`** add
+```cmake
+add_subdirectory(/path/to/microgl)
+target_link_libraries(your_app microgl)
+```
+if you installed **`micro{gl}`** (see above) at your system, you can instead
+```cmake
+target_include_directories(app path/to/microgl/install/include/)
 ```
 
-* or simply copy the `/include` folder into your project or path
-
-## running examples
+# running examples
 first make sure you have 
  - [SDL2](https://www.libsdl.org/) installed at your system.  
  - [cmake](https://cmake.org/download/) installed at your system.
