@@ -127,8 +127,8 @@ public:
     }
 
     void drain() {
-        _locations.drain();
-        _data.drain();
+        _locations = container_index_type{};
+        _data = container_data_type{};
         _locations.push_back(0);
     }
 

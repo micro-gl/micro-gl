@@ -84,7 +84,7 @@ public:
         _current = container._current;
         _cap = container._cap;
         container._data=nullptr;
-        container.clear();
+        container._cap=0;
     }
 
     explicit dynamic_array(unsigned capacity = 0) noexcept : _cap{capacity} {
@@ -106,12 +106,12 @@ public:
     }
 
     dynamic_array<T> & operator=(dynamic_array<T> &&container) noexcept {
-        if(_data) delete [] _data;
+        delete [] _data;
         _data = container._data;
         _current = container._current;
         _cap = container._cap;
         container._data=nullptr;
-        container.clear();
+        container._cap=0;
         return (*this);
     }
 
