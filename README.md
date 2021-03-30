@@ -6,7 +6,7 @@ can run on any 32/64 bits computer without FPU or GPU. no standard library requi
 check out our website at [micro-gl.github.io](micro-gl.github.io)
 
 # Usage
-because `microgl` is a headers only lib, installing just means copying the `include/public/microgl`
+Because `microgl` is a headers only library, installing just means copying the `include/public/microgl`
 folder to your system search path or another folder and then set the include path in your build.
 the `cmake` file also has an install target.
 

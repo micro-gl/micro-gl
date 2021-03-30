@@ -10,10 +10,10 @@
 #define H 640*1
 
 int main() {
-    using number = float;
+//    using number = float;
 //    using number = Q<5>;
 //    using number = Q<10>;
-//    using number = Q<15>;
+    using number = Q<15>;
 //    using number = Q<16>;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
@@ -32,12 +32,12 @@ int main() {
         t-=0.0425;
 
         // setup mvp matrix
-        number radians = math::deg_to_rad(t / 2);
+        number radians = math::deg_to_rad(number{t} / 2);
         vertex rotation = {radians, radians, radians};
         vertex translation = {-5,0, 0};
         vertex scale = {10,10,10};
         mat4 model = mat4::transform(rotation, translation, scale);
-        mat4 view = camera::lookAt<number>({0, 0, 70}, {0,0, 0}, {0,1,0});
+        mat4 view = camera::lookAt<number>({0, 0, 100}, {0,0, 0}, {0,1,0});
 //        mat4 view = camera::angleAt<number>({0, 0, 70}, 0,0, 0);
         mat4 projection = camera::perspective<number>(math::deg_to_rad(60.0f),
                                                       canvas.width(), canvas.height(), 20, 100);

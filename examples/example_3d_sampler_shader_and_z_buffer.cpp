@@ -49,7 +49,7 @@ int main() {
         t-=0.1425;
 
         // setup mvp matrix
-        number radians = math::deg_to_rad(t / 2);
+        number radians = math::deg_to_rad(number{t} / 2);
         vertex rotation = {radians, radians, radians};
         vertex translation = {-5,0, -t/10.f};
         vertex scale = {10,10,10};
