@@ -1,5 +1,5 @@
 #include <microgl/Q.h>
-#include <microgl/math/q_math.h>
+#include <microgl/math/std_q_math.h>
 #include <iostream>
 
 int main() {

@@ -1,4 +1,3 @@
-#include "src/Resources.h"
 #include "src/example.h"
 #include <microgl/camera.h>
 #include <microgl/canvas.h>
@@ -8,15 +7,14 @@
 #include <microgl/samplers/texture.h>
 #include "data/model_3d_cube.h"
 
-#define TEST_ITERATIONS 1
 #define W 640*1
 #define H 640*1
 
 int main() {
-    using number = float;
+//    using number = float;
 //    using number = Q<5>;
 //    using number = Q<10>;
-//    using number = Q<15>;
+    using number = Q<15>;
 //    using number = Q<16>;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_32_BIT>;
@@ -56,9 +54,9 @@ int main() {
 
         // model to vertex buffers
         dynamic_array<vertex_attributes> vertex_buffer{object.vertices.size()};
-        for (unsigned ix = 0; ix < object.vertices.size(); ++ix) {
+        for (const auto & vert : object.vertices) {
             vertex_attributes v{};
-            v.point= object.vertices[ix];
+            v.point= vert;
             vertex_buffer.push_back(v);
         }
 

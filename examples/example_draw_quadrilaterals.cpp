@@ -34,7 +34,7 @@ int main() {
 
         canvas.clear(intensity<number>{1, 1, 1, 1});
 //        canvas->drawQuadrilateral<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
-        canvas.drawQuadrilateral<blendmode::Normal, porterduff::None<>, false, number>(
+        canvas.drawQuadrilateral<blendmode::Normal, porterduff::None<>, false, number, number>(
 //                tex_1,
                 tex_2,
                 0.0f,               0.0f,     0.0f, 1.0f,
