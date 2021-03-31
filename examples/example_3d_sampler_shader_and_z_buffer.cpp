@@ -1,10 +1,9 @@
 #include "src/Resources.h"
 #include "src/example.h"
 
-//#include <microgl/math/std_float_math.h>
-//#include <microgl/math/q_math.h>
-//#define MICROGL_AVOID_STD_MATH
-//#include "dummy.h"
+#include <microgl/math/std_float_math.h>
+#include <microgl/math/std_q_math.h>
+#define MICROGL_AVOID_BUILTIN_MATH
 
 #include <microgl/camera.h>
 #include <microgl/z_buffer.h>
