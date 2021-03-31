@@ -16,8 +16,8 @@ float t=0;
 int main() {
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
-//    using number = Q<12>;
-    using number = float;
+    using number = Q<12>;
+//    using number = float;
 
     Resources resources{};
     auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
@@ -27,7 +27,7 @@ int main() {
 
     auto render_flat = [&]() -> void {
         canvas.clear({255,255,255,255});
-        canvas.drawTriangle<blendmode::Normal, porterduff::None<true>>(
+        canvas.drawTriangle<blendmode::Normal, porterduff::None<true>, false, number, number>(
                 color_sampler,
                 10.0f, 10.0f, 0.0f, 0.0f,
                 400.0f, 10.0f, 1.0f, 0.0f,
@@ -38,7 +38,7 @@ int main() {
     auto render_tex = [&]() -> void {
         t+=0.01f;
         canvas.clear({255,255,255,255});
-        canvas.drawTriangle<blendmode::Normal, porterduff::None<>>(
+        canvas.drawTriangle<blendmode::Normal, porterduff::None<>, false, number, number>(
                 tex_uv,
                 10.0   ,10.0, 0.0, 1.0,
                 250.0+0,10.0, 1.0, 1.0,
@@ -49,7 +49,7 @@ int main() {
     auto render_tex_aa = [&]() -> void {
 //        t+=0.01f;
         canvas.clear({255,255,255,255});
-        canvas.drawTriangle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+        canvas.drawTriangle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number, number>(
                 tex_uv,
                 10.0,10.0, 0.0, 1.0,
                 500.0,10.0, 1.0, 1.0,
