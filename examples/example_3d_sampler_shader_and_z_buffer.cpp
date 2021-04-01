@@ -12,10 +12,12 @@
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/shaders/sampler_shader.h>
 #include <microgl/samplers/texture.h>
+#include <microgl/samplers/checker_board.h>
 #include "data/model_3d_cube.h"
 
 #define W 640
 #define H 480
+//#define SAMPLER_TEXTURE
 
 int main() {
     using number = float;
@@ -27,10 +29,17 @@ int main() {
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
     Canvas24 canvas(W, H);
-    Resources resources{};
 
+#ifdef SAMPLER_TEXTURE
+    Resources resources{};
     auto img = resources.loadImageFromCompressedPath("images/uv_256.png");
-    Texture24 tex{new bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};
+    Texture24 sampler{new bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};
+#else
+    sampling::checker_board<> sampler{{0, 0, 0, 255},
+                            {255, 255, 255, 255},
+                            10, 10};
+#endif
+
     z_buffer<12> depth_buffer(canvas.width(), canvas.height());
 
     float t = -0.0;
@@ -42,7 +51,7 @@ int main() {
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
         using namespace microgl::math;
-        using Shader = sampler_shader<number, Texture24>;
+        using Shader = sampler_shader<number, decltype(sampler)>;
         using vertex_attributes = Shader::vertex_attributes;
 
         t-=0.1425;
@@ -67,7 +76,7 @@ int main() {
         // setup shader
         Shader shader;
         shader.matrix= mvp_1;
-        shader.sampler= &tex;
+        shader.sampler= &sampler;
 
         // model to vertex buffers
         dynamic_array<vertex_attributes> vertex_buffer{object.vertices.size()};
