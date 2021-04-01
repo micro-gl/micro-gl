@@ -1,3 +1,5 @@
+#pragma once
+
 #include <microgl/samplers/line_linear_gradient.h>
 
 namespace microgl {

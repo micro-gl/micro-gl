@@ -1,4 +1,4 @@
-#include <microgl/sampler.h>
+#include <microgl/rgba_t.h>
 #include <microgl/micro_gl_traits.h>
 
 namespace microgl {
