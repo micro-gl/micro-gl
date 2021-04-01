@@ -1,6 +1,5 @@
 #pragma once
 
-#include <microgl/sampler.h>
 #include <microgl/masks.h>
 
 namespace microgl {

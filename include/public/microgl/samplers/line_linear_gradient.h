@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/sampler.h>
+#include <microgl/rgba_t.h>
 #include <microgl/vec2.h>
 #include <microgl/functions/distance.h>
 
@@ -10,8 +10,9 @@ namespace microgl {
         /**
          * given a line, compute gradient in the [0,1]x[0,1] box.
          * experiment with line inside the [0,1]x[0,1] box in order to see pronounced results.
-         * @tparam number
-         * @tparam N
+         *
+         * @tparam number the number type for positions
+         * @tparam N the number of gradient stops
          */
         template <typename number, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>,
                  enum precision $precision=precision::medium, bool useBigIntegers=false>
