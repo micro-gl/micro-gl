@@ -194,6 +194,7 @@ void canvas<bitmap_type, options>::drawCircle(const Sampler1 & sampler_fill,
             u0, v0, u1, v1);
 }
 
+
 template<typename bitmap_type, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename Sampler1, typename Sampler2>
 void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill,
@@ -214,6 +215,168 @@ void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill
             f_p(bottom), f_p(radius), f_p(stroke_size), f_uv(u0), f_uv(v0), f_uv(u1), f_uv(v1), p, p_uv, opacity);
 #undef f_uv
 #undef f_p
+}
+
+template<typename bitmap_type, uint8_t options>
+template<typename BlendMode, typename PorterDuff, bool antialias,
+        typename number1, typename number2, typename Sampler1>
+void canvas<bitmap_type, options>::drawArc(const Sampler1 &sampler_fill,
+                                           const number1 &centerX, const number1 &centerY,
+                                           const number1 &radius, const number1 &stroke_size,
+                                           number1 from_angle, number1 to_angle,
+                                           const bool clock_wise,
+                                           canvas::opacity_t opacity,
+                                           const number2 &u0, const number2 &v0,
+                                           const number2 &u1, const number2 &v1) {
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler1::rgba>();
+//    if(from_angle==to_angle) return;
+    bool full_circle = (clock_wise && (to_angle-from_angle>=360)) ||
+                       (!clock_wise && (-to_angle+from_angle>=360));
+    bool empty_circle = (clock_wise && (to_angle-from_angle<=0)) ||
+                       (!clock_wise && (to_angle-from_angle>=0));
+    if(empty_circle) return;
+    from_angle=microgl::math::mod(from_angle, number1(360));
+    to_angle=microgl::math::mod(to_angle, number1(360));
+    const number1 cos1 = microgl::math::cos(microgl::math::deg_to_rad(from_angle));
+    const number1 sin1 = microgl::math::sin(microgl::math::deg_to_rad(from_angle));
+    const number1 cos2 = microgl::math::cos(microgl::math::deg_to_rad(to_angle));
+    const number1 sin2 = microgl::math::sin(microgl::math::deg_to_rad(to_angle));
+    number1 cone_ax = centerX + radius*cos1;
+    number1 cone_ay = centerY + radius*sin1;
+    number1 cone_bx = centerX + radius*cos2;
+    number1 cone_by = centerY + radius*sin2;
+    if(!clock_wise) {
+        microgl::functions::swap(cone_ax, cone_bx);
+        microgl::functions::swap(cone_ay, cone_by);
+    }
+    const precision p = renderingOptions()._2d_raster_bits_sub_pixel;
+    const precision p_uv = renderingOptions()._2d_raster_bits_uv;
+#define f_p(x) microgl::math::to_fixed((x), p)
+#define f_uv(x) microgl::math::to_fixed((x), p_uv)
+    drawArc_internal<BlendMode, PorterDuff, antialias>(
+            sampler_fill, f_p(centerX), f_p(centerY), f_p(radius),
+            f_p(stroke_size), full_circle, f_p(cone_ax), f_p(cone_ay),
+            f_p(cone_bx), f_p(cone_by),
+            f_uv(u0), f_uv(v0), f_uv(u1), f_uv(v1), p, p_uv, opacity);
+#undef f_uv
+#undef f_p
+
+}
+
+template<typename bitmap_type, uint8_t options>
+template<typename BlendMode, typename PorterDuff, bool antialias, typename Sampler1>
+void canvas<bitmap_type, options>::drawArc_internal(const Sampler1 &sampler_fill,
+                                           const int centerX, const int centerY,
+                                           const int radius, const int stroke_size,
+                                           const bool full_circle,
+                                           const int cone_ax, const int cone_ay,
+                                           const int cone_bx, const int cone_by,
+                                           int u0, int v0,
+                                           int u1, int v1,
+                                           precision sub_pixel_precision, precision uv_p,
+                                           canvas::opacity_t opacity) {
+    auto effectiveRect = calculateEffectiveDrawRect();
+    if(effectiveRect.empty()) return;
+    const precision p = sub_pixel_precision;
+    const rint step = (rint(1)<<p);
+    const rint half = step>>1;
+    const rint stroke = stroke_size-step;//(10<<p)/1;
+    const rint aa_range = step;// (1<<p)/1;
+    const rint radius_squared=(rint_big(radius)*(radius))>>p;
+    const rint stroke_radius = (rint_big(radius-(stroke-0))*(radius-(stroke-0)))>>p;
+    const rint outer_aa_radius = (rint_big(radius+aa_range)*(radius+aa_range))>>p;
+    const rint outer_aa_bend = outer_aa_radius-radius_squared;
+    const rint inner_aa_radius = (rint_big(radius-(stroke-0)-aa_range)*rint_big(radius-(stroke-0)-aa_range))>>p;
+    const rint inner_aa_bend = stroke_radius-inner_aa_radius;
+    const bool apply_opacity = opacity!=255;
+    const rint mask= (rint(1)<<sub_pixel_precision)-1;
+    // dimensions in two spaces, one in raster spaces for optimization
+    const rint left_=(centerX-radius), top_=(centerY-radius), right_=(centerX+radius), bottom_=(centerY+radius);
+    const rect bbox_r = {left_>>p, top_>>p,(right_+aa_range)>>p, (bottom_+aa_range)>>p};
+    const rect bbox_r_c = bbox_r.intersect(effectiveRect);
+    if(bbox_r_c.empty()) return;
+    // calculate uvs with original unclipped deltas, this way we can always accurately predict blocks
+    const auto bits_du=microgl::functions::used_integer_bits(u1-u0);
+    const auto bits_dv=microgl::functions::used_integer_bits(v1-v0);
+    const auto bits_width=microgl::functions::used_integer_bits(bbox_r.width());
+    const auto bits_height=microgl::functions::used_integer_bits(bbox_r.height());
+    // boost is done against compressed sub pixel coords, so we really cannot overflow, we leave
+    // (31-14=17) bits for coords without sub-pixel
+    const precision boost_bits=14, boost_width= bits_width + boost_bits, boost_height= bits_height + boost_bits;
+    precision boost_u=0, boost_v=0;
+    if(boost_width > bits_du) boost_u= boost_width - bits_du;
+    if(boost_height > bits_dv) boost_v= boost_height - bits_dv;
+    u0=u0<<boost_u;v0=v0<<boost_v;u1=u1<<boost_u;v1=v1<<boost_v; // this is (coords-sub_pixel bits)+(boost_bits=14) bits
+    const int du= (u1-u0)/(bbox_r.width()); // this occupies (boost_bits=14) bits
+    const int dv = (v1-v0)/(bbox_r.height()); // this occupies (boost_bits=14) bits
+    const rint dx=bbox_r_c.left-bbox_r.left, dy=bbox_r_c.top-bbox_r.top;
+    color_t color;
+    const int pitch = width();
+    int index = bbox_r_c.top * pitch;
+
+    const bool is_convex = functions::orient2d<int, rint_big>(centerX, centerY, cone_ax, cone_ay,
+                                                              cone_bx, cone_by, p)>=0;
+//    const bool is_full_cone = cone_ax==cone_bx && cone_ay==cone_by;
+
+    const auto in_cone_lambda = [&is_convex](const int a0x, const int a0y,
+                            const int ax, const int ay,
+                            const int a1x, const int a1y,
+                            const int bx, const int by,
+                            const int precision) -> bool {
+        if(is_convex)
+            return (functions::orient2d<int, rint_big>(ax, ay, bx, by, a1x, a1y, precision)>=0 &&
+                     functions::orient2d<int, rint_big>(bx, by, ax, ay, a0x, a0y, precision)>=0);
+        else
+            return !(functions::orient2d<int, rint_big>(ax, ay, bx, by, a0x, a0y, precision)>0 &&
+                   functions::orient2d<int, rint_big>(bx, by, ax, ay, a1x, a1y, precision)>0);
+    };
+
+    for (rint y_r=bbox_r_c.top, yy=(top_&~mask)+dy*step, v=v0+dy*dv+(dv>>1); y_r<=bbox_r_c.bottom; y_r++, yy+=step, v+=dv, index+=pitch) {
+        for (rint x_r=bbox_r_c.left, xx=(left_&~mask)+dx*step, u=u0+dx*du+(du>>1); x_r<=bbox_r_c.right; x_r++, xx+=step, u+=du) {
+
+            bool in_cone = full_circle || in_cone_lambda(cone_ax, cone_ay, centerX, centerY, cone_bx, cone_by, xx, yy, p);
+            if(!in_cone) continue;
+            int blend_fill=opacity, blend_stroke=opacity;
+            bool inside_radius=false, sample_stroke=false;
+
+            rint anchor_x=centerX, anchor_y=centerY;
+            rint delta_x = xx - anchor_x, delta_y = yy - anchor_y;
+            const rint distance_squared = ((rint(delta_x) * delta_x) >> p) + ((rint(delta_y) * delta_y) >> p);
+            inside_radius = (distance_squared - radius_squared) <= 0;
+
+            if (inside_radius) { // inside radius
+                const bool inside_stroke = (distance_squared - stroke_radius) >= 0;
+                if (inside_stroke) { // inside stroke disk
+                    blend_stroke = opacity;
+                    sample_stroke=true;
+                }
+                else { // outside stroke disk, let's sample for AA disk or radius inclusion
+                    const rint delta_inner_aa = -inner_aa_radius + distance_squared;
+                    const bool inside_inner_aa_ring = delta_inner_aa >= 0;
+                    if (antialias && inside_inner_aa_ring) {
+                        // scale inner to 8 bit and then convert to integer
+                        blend_stroke = ((delta_inner_aa) << (8)) / inner_aa_bend;
+                        if (apply_opacity) blend_stroke = (blend_stroke * opacity) >> 8;
+                        sample_stroke=true;
+                    }
+                }
+            } else if (antialias) { // we are outside the main radius, AA the outer boundery
+                const int delta_outer_aa = outer_aa_radius - distance_squared;
+                const bool inside_outer_aa_ring = delta_outer_aa >= 0;
+                if (inside_outer_aa_ring) {
+                    // scale inner to 8 bit and then convert to integer
+                    blend_stroke = ((delta_outer_aa) << (8)) / outer_aa_bend;
+                    if (apply_opacity) blend_stroke = (blend_stroke * opacity) >> 8;
+                    sample_stroke=true;
+                }
+            }
+
+            if (sample_stroke) {
+                sampler_fill.sample(u>>boost_u, v>>boost_v, uv_p, color);
+                blendColor<BlendMode, PorterDuff, Sampler1::rgba::a>(color, (index+x_r), blend_stroke);
+            }
+        }
+    }
 }
 
 template<typename bitmap_type, uint8_t options>
@@ -1513,6 +1676,8 @@ void canvas<bitmap_type, options>::fxaa(int left, int top, int right, int bottom
 }
 
 #include <microgl/samplers/texture.h>
+#include "canvas.h"
+
 template<typename bitmap_type, uint8_t options>
 template<bool tint, bool smooth, typename bitmap_font_type>
 void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bitmap_font<bitmap_font_type> &font,
@@ -1584,3 +1749,4 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
     }
     updateClipRect(old.left, old.top, old.right, old.bottom);
 }
+

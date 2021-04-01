@@ -3,9 +3,8 @@
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/checker_board.h>
 
-#define TEST_ITERATIONS 100
-#define W 640*1
-#define H 640*1
+#define W 640
+#define H 480
 
 using namespace microgl::sampling;
 
