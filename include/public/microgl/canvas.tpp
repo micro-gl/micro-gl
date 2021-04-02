@@ -219,8 +219,8 @@ void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill
 
 template<typename bitmap_type, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias,
-        typename number1, typename number2, typename Sampler1>
-void canvas<bitmap_type, options>::drawArc(const Sampler1 &sampler_fill,
+        typename number1, typename number2, typename Sampler>
+void canvas<bitmap_type, options>::drawArc(const Sampler &sampler_fill,
                                            const number1 &centerX, const number1 &centerY,
                                            const number1 &radius, const number1 &stroke_size,
                                            number1 from_angle, number1 to_angle,
@@ -228,7 +228,7 @@ void canvas<bitmap_type, options>::drawArc(const Sampler1 &sampler_fill,
                                            canvas::opacity_t opacity,
                                            const number2 &u0, const number2 &v0,
                                            const number2 &u1, const number2 &v1) {
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler1::rgba>();
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
 
     bool full_circle = (clock_wise && (to_angle-from_angle>=360)) ||
                        (!clock_wise && (-to_angle+from_angle>=360));
@@ -264,8 +264,8 @@ void canvas<bitmap_type, options>::drawArc(const Sampler1 &sampler_fill,
 }
 
 template<typename bitmap_type, uint8_t options>
-template<typename BlendMode, typename PorterDuff, bool antialias, typename Sampler1>
-void canvas<bitmap_type, options>::drawArc_internal(const Sampler1 &sampler_fill,
+template<typename BlendMode, typename PorterDuff, bool antialias, typename Sampler>
+void canvas<bitmap_type, options>::drawArc_internal(const Sampler &sampler_fill,
                                            const int centerX, const int centerY,
                                            const int radius, const int stroke_size,
                                            const bool full_circle,
@@ -373,7 +373,7 @@ void canvas<bitmap_type, options>::drawArc_internal(const Sampler1 &sampler_fill
 
             if (sample_stroke) {
                 sampler_fill.sample(u>>boost_u, v>>boost_v, uv_p, color);
-                blendColor<BlendMode, PorterDuff, Sampler1::rgba::a>(color, (index+x_r), blend_stroke);
+                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(color, (index+x_r), blend_stroke);
             }
         }
     }
@@ -1749,4 +1749,3 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
     }
     updateClipRect(old.left, old.top, old.right, old.bottom);
 }
-
