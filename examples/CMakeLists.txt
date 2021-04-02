@@ -38,6 +38,7 @@ if(SDL2_FOUND)
             example_draw_bezier_patch.cpp
             example_draw_rounded_rectangle.cpp
             example_draw_circles.cpp
+            example_draw_arcs.cpp
             example_draw_masks.cpp
             example_draw_path.cpp
             example_draw_path_stroke.cpp

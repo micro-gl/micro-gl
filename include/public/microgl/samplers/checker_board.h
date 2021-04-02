@@ -14,9 +14,6 @@ namespace microgl {
         struct checker_board {
             using rgba = rgba_;
 
-            color_t color1, color2;
-            unsigned horizontal, vertical;
-
             /**
              * ctor
              * @param color1 1st color
@@ -44,6 +41,8 @@ namespace microgl {
                 else output = color2;
             }
 
+            color_t color1, color2;
+            unsigned horizontal, vertical;
         };
 
         /**
