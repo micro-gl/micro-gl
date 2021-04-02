@@ -229,7 +229,7 @@ void canvas<bitmap_type, options>::drawArc(const Sampler1 &sampler_fill,
                                            const number2 &u0, const number2 &v0,
                                            const number2 &u1, const number2 &v1) {
     static_assert_rgb<typename pixel_coder::rgba, typename Sampler1::rgba>();
-//    if(from_angle==to_angle) return;
+
     bool full_circle = (clock_wise && (to_angle-from_angle>=360)) ||
                        (!clock_wise && (-to_angle+from_angle>=360));
     bool empty_circle = (clock_wise && (to_angle-from_angle<=0)) ||
@@ -325,10 +325,10 @@ void canvas<bitmap_type, options>::drawArc_internal(const Sampler1 &sampler_fill
                             const int precision) -> bool {
         if(is_convex)
             return (functions::orient2d<int, rint_big>(ax, ay, bx, by, a1x, a1y, precision)>=0 &&
-                     functions::orient2d<int, rint_big>(bx, by, ax, ay, a0x, a0y, precision)>=0);
+                    functions::orient2d<int, rint_big>(bx, by, ax, ay, a0x, a0y, precision)>=0);
         else
             return !(functions::orient2d<int, rint_big>(ax, ay, bx, by, a0x, a0y, precision)>0 &&
-                   functions::orient2d<int, rint_big>(bx, by, ax, ay, a1x, a1y, precision)>0);
+                     functions::orient2d<int, rint_big>(bx, by, ax, ay, a1x, a1y, precision)>0);
     };
 
     for (rint y_r=bbox_r_c.top, yy=(top_&~mask)+dy*step, v=v0+dy*dv+(dv>>1); y_r<=bbox_r_c.bottom; y_r++, yy+=step, v+=dv, index+=pitch) {
