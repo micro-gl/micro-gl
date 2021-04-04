@@ -248,8 +248,8 @@ public:
     // get the pixels array from the underlying bitmap
     pixel * pixels() const;
     // get a pixel by position
-    pixel &getPixel(int x, int y) const ;
-    pixel &getPixel(int index) const ;
+    pixel getPixel(int x, int y) const ;
+    pixel getPixel(int index) const ;
     // decode pixel color by position
     void getPixelColor(int index, color_t & output) const;
     void getPixelColor(int x, int y, color_t & output) const;
