@@ -1,5 +1,6 @@
 #pragma once
 
+#include <microgl/stdint.h>
 #include <microgl/micro_gl_traits.h>
 
 template<unsigned Bits>

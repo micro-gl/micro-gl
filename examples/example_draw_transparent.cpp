@@ -22,11 +22,10 @@ int main() {
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>>;
     using Texture32= sampling::texture<bitmap<coder::RGBA8888_ARRAY>>;
 
-    Resources resources{};
     float t=0;
 
-    auto img_0 = resources.loadImageFromCompressedPath("images/dog_32bit.png");
-    auto img_1 = resources.loadImageFromCompressedPath("images/charsprites.png");
+    auto img_0 = Resources::loadImageFromCompressedPath("images/dog_32bit.png");
+    auto img_1 = Resources::loadImageFromCompressedPath("images/charsprites.png");
 //
     Canvas24 canvas(W, H);
     Texture24 tex_1{new bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height)};

@@ -23,8 +23,8 @@ int main() {
     fast_radial_gradient<float> gradient{0.5, 0.5, 0.75};
     linear_gradient_2_colors<120> gradient2Colors{{255,0,255}, {255,0,0}};
     flat_color<> flatColor{{133,133,133, 255}};
-    Resources resources{};
-    auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
+
+    auto img_2 = Resources::loadImageFromCompressedPath("images/uv_256.png");
     Canvas24 canvas(W, H);;
     Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
 

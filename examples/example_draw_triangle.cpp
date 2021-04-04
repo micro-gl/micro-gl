@@ -19,8 +19,7 @@ int main() {
     using number = Q<12>;
 //    using number = float;
 
-    Resources resources{};
-    auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
+    auto img_2 = Resources::loadImageFromCompressedPath("images/uv_512.png");
     Canvas24 canvas(W, H);;
     Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
     flat_color<> color_sampler{{255,122,0}};

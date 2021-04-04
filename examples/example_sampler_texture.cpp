@@ -19,9 +19,8 @@ int main() {
     using number_uv = Q<12>;
 //    using number = float;
 
-    Resources resources{};
-    auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
-    auto img_1 = resources.loadImageFromCompressedPath("images/dog_32bit.png");
+    auto img_2 = Resources::loadImageFromCompressedPath("images/uv_256.png");
+    auto img_1 = Resources::loadImageFromCompressedPath("images/dog_32bit.png");
     Canvas24 canvas(W, H);
     Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
     Texture32 tex_uv_32{new bitmap<coder::RGBA8888_ARRAY>(img_1.data, img_1.width, img_1.height)};

@@ -17,6 +17,5 @@ int main() {
         canvas.clear(color_t{255,0,0});
     };
 
-    example_run(&canvas,
-                render);
+    example_run(&canvas, render);
 }

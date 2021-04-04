@@ -2,7 +2,6 @@
 #include "src/Resources.h"
 #include <microgl/canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/samplers/texture.h>
 #include <microgl/samplers/linear_gradient_2_colors.h>
 #include <microgl/samplers/flat_color.h>
 
@@ -37,7 +36,6 @@ dynamic_array<vec2<number>> poly_diamond() {
 int main() {
     using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
     using Canvas24= canvas<Bitmap24>;
-    using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
     using number = float;
 //    using number = Q<15>;
 

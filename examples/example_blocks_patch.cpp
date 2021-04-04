@@ -14,7 +14,6 @@
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * sdl_texture;
-Resources resources{};
 
 using namespace microgl;
 using namespace microgl::sampling;
@@ -118,7 +117,7 @@ void init_sdl(int width, int height) {
     renderer = SDL_CreateRenderer(window, -1, 0);
     sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
             SDL_TEXTUREACCESS_STREAMING, width, height);
-    auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
+    auto img_2 =Resources::loadImageFromCompressedPath("images/uv_512.png");
     auto bmp_uv_U8 = new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
     canvas_ = new Canvas24(width, height);

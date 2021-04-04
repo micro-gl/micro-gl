@@ -26,7 +26,6 @@ using Canvas24= canvas<Bitmap24>;
 using namespace experiments;
 Canvas24 * canvas;
 microgl::sampling::flat_color color_RED {{255,0,0,255}};
-Resources resources{};
 
 void loop();
 void init_sdl(int width, int height);
@@ -155,7 +154,7 @@ void init_sdl(int width, int height) {
 
     canvas = new Canvas24(width, height);
 
-    resources.init();
+   Resources::init();
 }
 
 int render_test(int N) {
