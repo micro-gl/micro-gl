@@ -26,13 +26,13 @@ unsigned int canvas<bitmap_type, options>::sizeofPixel() const {
 }
 
 template<typename bitmap_type, uint8_t options>
-auto canvas<bitmap_type, options>::getPixel(int x, int y) const -> pixel & {
+auto canvas<bitmap_type, options>::getPixel(int x, int y) const -> pixel {
     // this is not good for high performance loop
     return _bitmap_canvas->pixelAt(x, y);
 }
 
 template<typename bitmap_type, uint8_t options>
-auto canvas<bitmap_type, options>::getPixel(int index) const -> pixel & {
+auto canvas<bitmap_type, options>::getPixel(int index) const -> pixel {
     // this is better for high performance loop
     return _bitmap_canvas->pixelAt(index);
 }
