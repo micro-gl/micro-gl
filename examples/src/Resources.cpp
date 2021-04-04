@@ -1,17 +1,7 @@
 #include "Resources.h"
 
-Resources::Resources() {
-    _asset_folder = "assets/";
-    stbi_set_flip_vertically_on_load(true);
-};
 
-Resources::~Resources() = default;;
-
-bool Resources::init() {
-    return true;
-}
-
-Resources::image_info_t Resources::loadImageFromCompressedPath(const std::string &path, const std::string &name) const {
+Resources::image_info_t Resources::loadImageFromCompressedPath(const std::string &path, const std::string &name) {
 
     auto * byte_array = loadFileAsByteArray(path);
     const image_info_t & result = loadImageFromCompressedMemory(byte_array->data(),
@@ -23,14 +13,15 @@ Resources::image_info_t Resources::loadImageFromCompressedPath(const std::string
 
 Resources::image_info_t Resources::loadImageFromCompressedMemory(unsigned char *byte_array,
                                                                  unsigned int length_bytes,
-                                                                 const std::string & name) const {
+                                                                 const std::string & name) {
+    stbi_set_flip_vertically_on_load(true);
     int width, height, nrChannels;
     unsigned char * data = stbi_load_from_memory(byte_array, length_bytes, &width, &height, &nrChannels, 0);
     image_info_t info { "", name, width, height, nrChannels, data };
     return info;
 }
 
-std::vector<unsigned char> * Resources::loadFileAsByteArray(const std::string &file_name) const {
+std::vector<unsigned char> * Resources::loadFileAsByteArray(const std::string &file_name) {
     std::ifstream ifs(getAssetFolder() + file_name, std::ios::binary);
     ifs.seekg(0, std::ios::end);
     auto isGood = ifs.good();
@@ -58,10 +49,3 @@ std::string Resources::loadTextFile(const std::string &file_name) {
     delete ba;
     return str;
 }
-
-const std::string & Resources::getAssetFolder() const{
-    return _asset_folder;
-}
-
-
-

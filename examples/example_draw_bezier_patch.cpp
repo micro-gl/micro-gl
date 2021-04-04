@@ -43,11 +43,10 @@ int main() {
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
     sampling::flat_color<> color_grey{{222,222,222,255}};
-    Resources resources{};
 
     Canvas24 canvas(W, H);
 
-    auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
+    auto img_2 = Resources::loadImageFromCompressedPath("images/uv_512.png");
     Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
     constexpr int samples = 20;
     auto test_bezier = [&](vec3<number>* mesh, const unsigned U, const unsigned V) {

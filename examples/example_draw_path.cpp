@@ -120,7 +120,7 @@ int main() {
 
     auto render_path = [&](path_t<number> & path) {
         canvas.clear({255, 255, 255, 255});
-        canvas.drawPathFill<blendmode::Normal, porterduff::None<>, false, true>(
+        canvas.drawPathFill<blendmode::Normal, porterduff::None<>, false, false>(
                 color_red,
                 matrix_3x3<number>::identity(),
                 path,

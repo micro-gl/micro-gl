@@ -5,7 +5,7 @@ message(\n===========\n${PROJECT_NAME} \n===========\n)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS_DEBUG  ${CMAKE_CXX_FLAGS_DEBUG})
 set(CMAKE_CXX_FLAGS_RELEASE " -fno-rtti -fno-exceptions -fno-unwind-tables \
-                            -fstrict-aliasing -O3 -flto \
+                            -fstrict-aliasing -O3 -flto  \
                             -Wstrict-aliasing -fno-math-errno \
                             -ffast-math -fno-threadsafe-statics \
                             -fdata-sections -ffunction-sections \
@@ -18,6 +18,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 find_package(SDL2 REQUIRED)
 
 if(SDL2_FOUND)
+#    set(libs microgl)
     set(libs ${SDL2_LIBRARY} microgl)
 
     message(${SDL2_FOUND})
@@ -101,6 +102,7 @@ if(SDL2_FOUND)
         include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
         include_directories("${PROJECT_BINARY_DIR}")
         add_executable( ${testname} ${testsourcefile} ${SOURCES_SHARED} )
+#        add_executable( ${testname} ${testsourcefile}  )
         # Make sure YourLib is linked to each app
         target_link_libraries( ${testname} ${libs} )
         add_custom_command(TARGET ${testname} POST_BUILD COMMAND

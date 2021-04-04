@@ -34,22 +34,15 @@ public:
         unsigned char * data;
     };
 
-    Resources();
-
-    virtual ~Resources();
-
-    /**
-     * init the damn thing
-     *
-     * @return true/false on failure
-     */
-    virtual bool init();
+    Resources()=delete;
 
     /**
      * asset folder path
      *
      */
-    const std::string & getAssetFolder() const;
+    static std::string getAssetFolder() {
+        return "assets/";
+    }
 
     /**
      * load an image from_sampler path
@@ -59,7 +52,8 @@ public:
      *
      * @return  image_info_t instance
      */
-    image_info_t loadImageFromCompressedPath(const std::string &path, const std::string &name = "") const;
+    static
+    image_info_t loadImageFromCompressedPath(const std::string &path, const std::string &name = "");
 
     /**
      * load an image from_sampler raw byte array of memory (decode PNG)
@@ -70,7 +64,7 @@ public:
      *
      * @return  image_info_t instance
      */
-    image_info_t loadImageFromCompressedMemory(unsigned char *byte_array, unsigned int length_bytes, const std::string & name) const;
+    static image_info_t loadImageFromCompressedMemory(unsigned char *byte_array, unsigned int length_bytes, const std::string & name) ;
 
     /**
      * load a file from_sampler disk as a byte array
@@ -79,7 +73,7 @@ public:
      *
      * @return a vector as a byte array
      */
-    std::vector<unsigned char> * loadFileAsByteArray(const std::string &file_name) const;
+    static std::vector<unsigned char> * loadFileAsByteArray(const std::string &file_name);
 
 
 
@@ -91,12 +85,14 @@ public:
      *
      * @return true/false on failure
      */
+    static
     std::string loadTextFile(const std::string &file_name);
 
+    static
     void loadXML(const std::string &file_name, rapidxml::xml_document<> & doc);
 
     template<typename BITMAP>
-    microgl::text::bitmap_font<BITMAP> loadFont(const std::string &name) {
+    static microgl::text::bitmap_font<BITMAP> loadFont(const std::string &name) {
         microgl::text::bitmap_font<BITMAP> font;
         stbi_set_flip_vertically_on_load(false);
         rapidxml::xml_document<> d;

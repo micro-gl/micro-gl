@@ -31,8 +31,7 @@ int main() {
 
 #ifdef SAMPLER_TEXTURE
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
-    Resources resources{};
-    auto img = resources.loadImageFromCompressedPath("images/uv_256.png");
+    auto img = Resources::loadImageFromCompressedPath("images/uv_256.png");
     Texture24 sampler{new bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};
 #else
     sampling::checker_board<> sampler{{0, 0, 0, 255},

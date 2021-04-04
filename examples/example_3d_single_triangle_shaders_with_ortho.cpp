@@ -24,9 +24,8 @@ int main() {
     using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
     using Canvas24= canvas<Bitmap24>;
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
-    Resources resources{};
 
-    auto img = resources.loadImageFromCompressedPath("images/uv_256.png");
+    auto img = Resources::loadImageFromCompressedPath("images/uv_256.png");
 
     Canvas24 canvas(W, H);
     Texture24 tex{new bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};

@@ -18,9 +18,8 @@ int main() {
 //    using number = Q<12>;
     using number = float;
 
-    Resources resources{};
-    auto img_2 = resources.loadImageFromCompressedPath("images/uv_256.png");
-    auto img_1 = resources.loadImageFromCompressedPath("images/dog_32bit.png");
+    auto img_2 = Resources::loadImageFromCompressedPath("images/uv_256.png");
+    auto img_1 = Resources::loadImageFromCompressedPath("images/dog_32bit.png");
 
     bitmap<coder::RGB888_ARRAY> a(img_2.data, img_2.width, img_2.height);
     bitmap<coder::RGB888_ARRAY> a_copy(a);

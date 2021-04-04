@@ -157,7 +157,6 @@ int main() {
     using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::NearestNeighboor>;
     sampling::flat_color<> color_red{{255,0,0,255}};
     sampling::flat_color<> color_black{{0,0,0,255}};
-    Resources resources{};
 
     Canvas24 canvas(W, H);
 

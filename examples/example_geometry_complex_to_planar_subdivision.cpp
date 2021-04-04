@@ -13,13 +13,13 @@ template<typename item>
 using stat_array = static_array<item, 800>;
 
 template<typename number>
-using chunker_t = chunker<vec2<number>, dynamic_array>;
-//using chunker_t = chunker<vec2<number>, std::vector>;
+//using chunker_t = chunker<vec2<number>, dynamic_array>;
+using chunker_t = chunker<vec2<number>, std::vector>;
 //using chunker_t = chunker<vec2<number>, stat_array>;
 
 template<typename item>
-using container = dynamic_array<item>;
-//using container = std::vector<item>;
+//using container = dynamic_array<item>;
+using container = std::vector<item>;
 //using container = stat_array<item>;
 
 template <typename number>
@@ -118,8 +118,8 @@ int main() {
 
     auto render_polygon = [&](const chunker_t<number>& pieces) {
         using index = unsigned int;
-        using psd = microgl::tessellation::planarize_division<number, dynamic_array>;
-//        using psd = microgl::tessellation::planarize_division<number, std::vector>;
+//        using psd = microgl::tessellation::planarize_division<number, dynamic_array>;
+        using psd = microgl::tessellation::planarize_division<number, std::vector>;
 //        using psd = microgl::tessellation::planarize_division<number, stat_array>;
 
         container<vec2<number>> trapezes;
@@ -145,7 +145,7 @@ int main() {
                 type,
                 255);
 
-//        return;
+        return;
         canvas.drawTrianglesWireframe({0,0,0,255},
                                        matrix_3x3<number>::identity(),
                                        vertices.data(),

@@ -35,7 +35,6 @@ using namespace microgl::color;
 int main() {
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     sampling::flat_color<> color_grey{{128,128,128,255}};
-    Resources resources{};
 
     Canvas24 canvas(W, H);
 

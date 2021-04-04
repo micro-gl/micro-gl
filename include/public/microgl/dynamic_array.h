@@ -124,10 +124,10 @@ public:
         const auto new_size = up ? (_cap==0?1:_cap*2) : _cap/2;
         const auto copy_size = old_size<new_size ? old_size : new_size;
         T* _new = new T[new_size];
-//        for (index ix = 0; ix < copy_size; ++ix)
-//            _new[ix] = dynamic_array_traits::move(_data[ix]);
+        for (index ix = 0; ix < copy_size; ++ix)
+            _new[ix] = dynamic_array_traits::move(_data[ix]);
         // this reduces binary size
-        dynamic_array_traits::memcpy(_new, _data, copy_size*sizeof (T));
+//        dynamic_array_traits::memcpy(_new, _data, copy_size*sizeof (T));
         delete [] _data;
         _data = reinterpret_cast<T*>(_new);
         _cap = new_size;

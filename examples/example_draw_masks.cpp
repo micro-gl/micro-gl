@@ -24,11 +24,10 @@ int main() {
     bool draw_first_mask = true;
 
     Canvas24 canvas(W, H);
-    Resources resources{};
 
-    auto img_0 = resources.loadImageFromCompressedPath("images/dog_32bit.png");
-    auto img_1 = resources.loadImageFromCompressedPath("images/charsprites.png");
-    auto img_3 = resources.loadImageFromCompressedPath("images/bw_8bits.png");
+    auto img_0 = Resources::loadImageFromCompressedPath("images/dog_32bit.png");
+    auto img_1 = Resources::loadImageFromCompressedPath("images/charsprites.png");
+    auto img_3 = Resources::loadImageFromCompressedPath("images/bw_8bits.png");
 
     Texture24 tex_1{new bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height)};
     Texture24 tex_mask{new bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height)};

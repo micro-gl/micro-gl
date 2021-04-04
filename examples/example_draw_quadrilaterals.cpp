@@ -15,11 +15,10 @@ int main() {
     using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
     Canvas24 canvas(W, H);
     Texture24 tex_1, tex_2;
-    Resources resources{};
 
-    auto img_1 = resources.loadImageFromCompressedPath("images/charsprites.png");
-//    auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
-    auto img_2 = resources.loadImageFromCompressedPath("images/uv_512.png");
+    auto img_1 = Resources::loadImageFromCompressedPath("images/charsprites.png");
+//    auto img_2 = Resources::loadImageFromCompressedPath("images/uv_512.png");
+    auto img_2 = Resources::loadImageFromCompressedPath("images/uv_512.png");
 
     tex_1.updateBitmap(new bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height));
     tex_2.updateBitmap(new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height));

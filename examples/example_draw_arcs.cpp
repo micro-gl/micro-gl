@@ -1,4 +1,4 @@
-#include "src/example.h"
+//#include "src/example.h"
 #include <microgl/canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/fast_radial_gradient.h>
@@ -43,6 +43,6 @@ int main() {
                 255);
 
     };
-
-    example_run(&canvas, render);
+    render();
+//    example_run(&canvas, render);
 }
