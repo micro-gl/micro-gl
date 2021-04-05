@@ -8,6 +8,7 @@
 
 #define W 640*1
 #define H 640*1
+//#define USE_TEXTURE
 
 using namespace microgl;
 using namespace microgl::sampling;
@@ -15,19 +16,22 @@ using namespace microgl::sampling;
 int main() {
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
-    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>>;
     using number = float;
 
+#ifdef USE_TEXTURE
+    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>>;
     auto img_2 = Resources::loadImageFromCompressedPath("images/uv_256.png");
-    Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
+    Texture24 sampler{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
+#else
+    flat_color<rgba_t<8,8,8,8>> sampler{{122, 122, 122, 0}};
+#endif
 
     Canvas24 canvas(W, H);
 
     auto render = [&]() -> void {
         canvas.clear({255,255,255,255});
         canvas.drawRect<blendmode::Normal, porterduff::None<>, false, number>(
-//                tex_uv,
-                flat_color<>{{122, 122, 122, 255}},
+                sampler,
                 0, 0, 256, 256);
     };
 
