@@ -23,14 +23,14 @@ int main() {
     auto img_2 = Resources::loadImageFromCompressedPath("images/uv_256.png");
     Texture24 sampler{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
 #else
-    flat_color<rgba_t<8,8,8,8>> sampler{{122, 122, 122, 0}};
+    flat_color<rgba_t<8,8,8,8>> sampler{{122, 122, 122, 255}};
 #endif
 
     Canvas24 canvas(W, H);
 
     auto render = [&]() -> void {
         canvas.clear({255,255,255,255});
-        canvas.drawRect<blendmode::Normal, porterduff::None<>, false, number>(
+        canvas.drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
                 sampler,
                 0, 0, 256, 256);
     };

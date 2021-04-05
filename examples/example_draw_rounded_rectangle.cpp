@@ -5,6 +5,7 @@
 #include <microgl/samplers/fast_radial_gradient.h>
 #include <microgl/samplers/linear_gradient_2_colors.h>
 #include <microgl/samplers/flat_color.h>
+#include <microgl/samplers/void_sampler.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 
 #define W 640*1
@@ -16,17 +17,14 @@ float t=0;
 
 int main() {
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_32_BIT>;
-    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
-//    using number = Q<12>;
     using number = float;
+    // using number = Q<12>;
 
     fast_radial_gradient<float> gradient{0.5, 0.5, 0.75};
     linear_gradient_2_colors<120> gradient2Colors{{255,0,255}, {255,0,0}};
     flat_color<> flatColor{{133,133,133, 255}};
 
-    auto img_2 = Resources::loadImageFromCompressedPath("images/uv_256.png");
     Canvas24 canvas(W, H);;
-    Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
 
     gradient.addStop(0.0f, {255,0,0});
     gradient.addStop(0.45f, {255,0,0});
@@ -34,10 +32,12 @@ int main() {
     gradient.addStop(1.f, {255,0,255});
 
     auto render = [&]() -> void {
-        canvas.clear({255,255,255,255});
+        canvas.clear({255/1,255,255,255});
         canvas.drawRoundedRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
-                gradient,
-                gradient2Colors,
+                flatColor,
+//                gradient,
+                void_sampler{},
+//                gradient2Colors,
 //                flatColor,
                 10+t, 10+t, 300+t, 300+t,
                 50, 10);

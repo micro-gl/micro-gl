@@ -5,15 +5,16 @@
 #include <microgl/matrix_3x3.h>
 #include <microgl/rect.h>
 #include <microgl/color.h>
-#include <microgl/pixel_coder.h>
+//#include <microgl/pixel_coder.h>
 #include <microgl/micro_gl_traits.h>
 #include <microgl/porter_duff/FastSourceOverOnOpaque.h>
 #include <microgl/porter_duff/DestinationIn.h>
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
-#include <microgl/bitmaps/bitmap.h>
+//#include <microgl/bitmaps/bitmap.h>
 #include <microgl/shader.h>
-#include <microgl/sampler.h>
+#include <microgl/samplers/texture.h>
+#include <microgl/samplers/void_sampler.h>
 #include <microgl/triangles.h>
 #include <microgl/polygons.h>
 #include <microgl/masks.h>
@@ -676,8 +677,6 @@ public:
                        opacity_t opacity=255,
                        const shader_number<Shader>& depth_range_near=shader_number<Shader>(0),
                        const shader_number<Shader>& depth_range_far=shader_number<Shader>(1));
-
-    void fxaa(int left, int top, int right, int bottom);
 
     /**
      * Draw a wireframe lines using wu-lines algorithm
