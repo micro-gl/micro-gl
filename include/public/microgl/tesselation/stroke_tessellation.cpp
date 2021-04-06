@@ -468,7 +468,7 @@ namespace microgl {
                 case stroke_line_join::round:
                 {
                     compute_arc(first_vertex, join_vertex, last_vertex,
-                                join_radius, 100 / 4,
+                                join_radius, 1,
                                 join_index, output_vertices, output_indices, boundary_buffer);
                     break;
                 }
@@ -508,7 +508,7 @@ namespace microgl {
                     output_indices.push_back(a_index); b1;
                     output_indices.push_back(a_index); b1;
                     output_indices.push_back(root_index); b1;
-                    compute_arc(a, root, b, radius, 100/4,
+                    compute_arc(a, root, b, radius, 1,
                                 root_index, output_vertices, output_indices, boundary_buffer);
                     output_indices.push_back(b_index); b2;
                     output_indices.push_back(root_index); b1;

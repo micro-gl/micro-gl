@@ -229,8 +229,9 @@ void canvas<bitmap_type, options>::drawArc(const Sampler &sampler_fill,
                                            canvas::opacity_t opacity,
                                            const number2 &u0, const number2 &v0,
                                            const number2 &u1, const number2 &v1) {
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
-
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
     bool full_circle = (clock_wise && (to_angle-from_angle>=360)) ||
                        (!clock_wise && (-to_angle+from_angle>=360));
     bool empty_circle = (clock_wise && (to_angle-from_angle<=0)) ||
@@ -392,6 +393,7 @@ void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill
                                               canvas::opacity_t opacity) {
     constexpr bool void_sampler_1 = microgl::traits::is_same<Sampler1, microgl::sampling::void_sampler>::value;
     constexpr bool void_sampler_2 = microgl::traits::is_same<Sampler2, microgl::sampling::void_sampler>::value;
+    if(void_sampler_1 && void_sampler_2) return;
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
     const precision p = sub_pixel_precision;
@@ -520,7 +522,9 @@ void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
                                        opacity_t opacity,
                                        const number2 & u0, const number2 & v0,
                                        const number2 & u1, const number2 & v1) {
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
     const precision p_sub = renderingOptions()._2d_raster_bits_sub_pixel,
             p_uv = renderingOptions()._2d_raster_bits_uv;
     drawRect<BlendMode, PorterDuff, antialias, Sampler> (sampler,
@@ -541,6 +545,8 @@ void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
                                        const number2 & u0, const number2 & v0,
                                        const number2 & u1, const number2 & v1) {
     static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    if(void_sampler) return;
     vec2<number1> p0{left, top}, p1{left, bottom}, p2{right, bottom}, p3{right, top};
     if(!transform.isIdentity()) {p0=transform*p0; p1=transform*p1; p2=transform*p2; p3=transform*p3;}
     drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(sampler,
@@ -704,7 +710,9 @@ void canvas<bitmap_type, options>::drawTriangles(const Sampler &sampler,
                                             const opacity_t opacity,
                                             const number2 &u0, const number2 &v0,
                                             const number2 &u1, const number2 &v1) {
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
 #define f microgl::math::to_fixed
     const precision p = renderingOptions()._2d_raster_bits_sub_pixel;
     const precision uv_p = renderingOptions()._2d_raster_bits_uv;
@@ -807,7 +815,6 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
                                            int v2_x, int v2_y, int u2, int v2, int q2,
                                            const opacity_t opacity, const precision sub_pixel_precision,
                                            const precision uv_precision, bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
     constexpr precision precision_one_over_area=15;
     constexpr precision P_AA = 16;
     constexpr bool divide=options_use_division(); // compile time flag
@@ -967,7 +974,9 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler & sampler,
                                            const number1 &v1_x, const number1 &v1_y, const number2 &u1, const number2 &v1,
                                            const number1 &v2_x, const number1 &v2_y, const number2 &u2, const number2 &v2,
                                            const opacity_t opacity, bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
     const precision prec_pixel = renderingOptions()._2d_raster_bits_sub_pixel,
         prec_uv = renderingOptions()._2d_raster_bits_uv;
 #define f_pos(v) microgl::math::to_fixed((v), prec_pixel)
@@ -1194,7 +1203,9 @@ void canvas<bitmap_type, options>::drawMask(const masks::chrome_mode &mode,
                                        const number2 u0, const number2 v0,
                                        const number2 u1, const number2 v1,
                                        const opacity_t opacity) {
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
     precision p_sub = renderingOptions()._2d_raster_bits_sub_pixel, p_uv = renderingOptions()._2d_raster_bits_uv;
     drawMask<Sampler>(mode, sampler,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
@@ -1294,6 +1305,10 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
                                           index size, opacity_t opacity,
                                           const number2 u0, const number2 v0,
                                           const number2 u1, const number2 v1) {
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
+
     indices type;
     dynamic_array<index> indices;
     dynamic_array<boundary_info> boundary_buffer;
@@ -1372,6 +1387,9 @@ void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
                                              opacity_t opacity,
                                              const number2 u0, const number2 v0,
                                              const number2 u1, const number2 v1) {
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
     const auto & buffers= path.template tessellateStroke<Iterable>(
             stroke_width, cap, line_join, miter_limit, stroke_dash_array, stroke_dash_offset);
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(
@@ -1406,6 +1424,9 @@ void canvas<bitmap_type, options>::drawPathFill(const Sampler &sampler,
                                            opacity_t opacity,
                                            const number2 u0, const number2 v0,
                                            const number2 u1, const number2 v1) {
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
     const auto & buffers= path.tessellateFill(rule, quality, antialias, debug);
     if(buffers.output_vertices.size()==0) return;
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(
@@ -1575,6 +1596,9 @@ void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
                                               const number2 u0, const number2 v0,
                                               const number2 u1, const number2 v1,
                                               const opacity_t opacity) {
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
     using tess= microgl::tessellation::bezier_patch_tesselator<number1, number2, dynamic_array>;
     using vertex=vec2<number1>;
     dynamic_array<number1> v_a; // vertices attributes

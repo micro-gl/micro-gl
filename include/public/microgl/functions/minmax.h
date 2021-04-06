@@ -9,7 +9,7 @@ namespace microgl {
         }
         template<typename number, typename... Args>
         inline number max(const number & a, const number & b, Args... args) {
-            return max(max(a, b), args...);
+            return max<number>(max<number>(a, b), args...);
         }
 
         template<typename number>
@@ -18,7 +18,7 @@ namespace microgl {
         }
         template<typename number, typename... Args>
         inline number min(const number & a, const number & b, Args... args) {
-            return min(min(a, b), args...);
+            return min<number>(min<number>(a, b), args...);
         }
 
         template<typename number>
@@ -30,8 +30,8 @@ namespace microgl {
         }
         template<typename number, typename... Args>
         inline number abs_max(const number & a, const number & b, Args... args) {
-            const auto max = abs_max(a, b);
-            return abs_max(max, args...);
+            const auto max = abs_max<number>(a, b);
+            return abs_max<number>(max, args...);
         }
 
         template<typename number>
@@ -43,8 +43,8 @@ namespace microgl {
         }
         template<typename number, typename... Args>
         inline number abs_min(const number & a, const number & b, Args... args) {
-            const auto max = abs_min(a, b);
-            return abs_min(max, args...);
+            const auto max = abs_min<number>(a, b);
+            return abs_min<number>(max, args...);
         }
 
     }
