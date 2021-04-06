@@ -194,7 +194,6 @@ void canvas<bitmap_type, options>::drawCircle(const Sampler1 & sampler_fill,
             u0, v0, u1, v1);
 }
 
-
 template<typename bitmap_type, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename Sampler1, typename Sampler2>
 void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill,
@@ -205,8 +204,10 @@ void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill
                                               canvas::opacity_t opacity,
                                               const number2 & u0, const number2 & v0,
                                               const number2 & u1, const number2 & v1) {
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler1::rgba>();
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler2::rgba>();
+    constexpr bool void_sampler_1 = microgl::traits::is_same<Sampler1, microgl::sampling::void_sampler>::value;
+    constexpr bool void_sampler_2 = microgl::traits::is_same<Sampler2, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler1::rgba, void_sampler_1>();
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler2::rgba, void_sampler_2>();
     const precision p = renderingOptions()._2d_raster_bits_sub_pixel;
     const precision p_uv = renderingOptions()._2d_raster_bits_uv;
 #define f_p(x) microgl::math::to_fixed((x), p)
@@ -228,8 +229,9 @@ void canvas<bitmap_type, options>::drawArc(const Sampler &sampler_fill,
                                            canvas::opacity_t opacity,
                                            const number2 &u0, const number2 &v0,
                                            const number2 &u1, const number2 &v1) {
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
-
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
     bool full_circle = (clock_wise && (to_angle-from_angle>=360)) ||
                        (!clock_wise && (-to_angle+from_angle>=360));
     bool empty_circle = (clock_wise && (to_angle-from_angle<=0)) ||
@@ -389,6 +391,9 @@ void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill
                                               int u0, int v0, int u1, int v1,
                                               precision sub_pixel_precision, precision uv_p,
                                               canvas::opacity_t opacity) {
+    constexpr bool void_sampler_1 = microgl::traits::is_same<Sampler1, microgl::sampling::void_sampler>::value;
+    constexpr bool void_sampler_2 = microgl::traits::is_same<Sampler2, microgl::sampling::void_sampler>::value;
+    if(void_sampler_1 && void_sampler_2) return;
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
     const precision p = sub_pixel_precision;
@@ -472,6 +477,11 @@ void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill
                         blend_stroke = ((delta_outer_aa) << (8)) / outer_aa_bend;
                         if (apply_opacity) blend_stroke = (blend_stroke * opacity) >> 8;
                         sample_stroke=true;
+                        // if the stroke sampler is avoid sampler, then take AA for fill
+                        if(void_sampler_2) {
+                            blend_fill=blend_stroke;
+                            sample_fill=sample_stroke;
+                        }
                     }
                 }
             } else {
@@ -492,11 +502,11 @@ void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill
                     sample_fill=true;
                 }
             }
-            if (sample_fill) {
+            if (!void_sampler_1 && sample_fill) {
                 sampler_fill.sample(u>>boost_u, v>>boost_v, uv_p, color);
                 blendColor<BlendMode, PorterDuff, Sampler1::rgba::a>(color, (index+x_r), blend_fill);
             }
-            if (sample_stroke) {
+            if (!void_sampler_2 && sample_stroke) {
                 sampler_stroke.sample(u>>boost_u, v>>boost_v, uv_p, color);
                 blendColor<BlendMode, PorterDuff, Sampler2::rgba::a>(color, (index+x_r), blend_stroke);
             }
@@ -512,7 +522,9 @@ void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
                                        opacity_t opacity,
                                        const number2 & u0, const number2 & v0,
                                        const number2 & u1, const number2 & v1) {
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
     const precision p_sub = renderingOptions()._2d_raster_bits_sub_pixel,
             p_uv = renderingOptions()._2d_raster_bits_uv;
     drawRect<BlendMode, PorterDuff, antialias, Sampler> (sampler,
@@ -533,6 +545,8 @@ void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
                                        const number2 & u0, const number2 & v0,
                                        const number2 & u1, const number2 & v1) {
     static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    if(void_sampler) return;
     vec2<number1> p0{left, top}, p1{left, bottom}, p2{right, bottom}, p3{right, top};
     if(!transform.isIdentity()) {p0=transform*p0; p1=transform*p1; p2=transform*p2; p3=transform*p3;}
     drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(sampler,
@@ -696,7 +710,9 @@ void canvas<bitmap_type, options>::drawTriangles(const Sampler &sampler,
                                             const opacity_t opacity,
                                             const number2 &u0, const number2 &v0,
                                             const number2 &u1, const number2 &v1) {
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
 #define f microgl::math::to_fixed
     const precision p = renderingOptions()._2d_raster_bits_sub_pixel;
     const precision uv_p = renderingOptions()._2d_raster_bits_uv;
@@ -799,7 +815,6 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
                                            int v2_x, int v2_y, int u2, int v2, int q2,
                                            const opacity_t opacity, const precision sub_pixel_precision,
                                            const precision uv_precision, bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
     constexpr precision precision_one_over_area=15;
     constexpr precision P_AA = 16;
     constexpr bool divide=options_use_division(); // compile time flag
@@ -959,7 +974,9 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler & sampler,
                                            const number1 &v1_x, const number1 &v1_y, const number2 &u1, const number2 &v1,
                                            const number1 &v2_x, const number1 &v2_y, const number2 &u2, const number2 &v2,
                                            const opacity_t opacity, bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
     const precision prec_pixel = renderingOptions()._2d_raster_bits_sub_pixel,
         prec_uv = renderingOptions()._2d_raster_bits_uv;
 #define f_pos(v) microgl::math::to_fixed((v), prec_pixel)
@@ -1186,7 +1203,9 @@ void canvas<bitmap_type, options>::drawMask(const masks::chrome_mode &mode,
                                        const number2 u0, const number2 v0,
                                        const number2 u1, const number2 v1,
                                        const opacity_t opacity) {
-    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
     precision p_sub = renderingOptions()._2d_raster_bits_sub_pixel, p_uv = renderingOptions()._2d_raster_bits_uv;
     drawMask<Sampler>(mode, sampler,
             microgl::math::to_fixed(left, p_sub), microgl::math::to_fixed(top, p_sub),
@@ -1286,6 +1305,10 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
                                           index size, opacity_t opacity,
                                           const number2 u0, const number2 v0,
                                           const number2 u1, const number2 v1) {
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
+
     indices type;
     dynamic_array<index> indices;
     dynamic_array<boundary_info> boundary_buffer;
@@ -1364,6 +1387,9 @@ void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
                                              opacity_t opacity,
                                              const number2 u0, const number2 v0,
                                              const number2 u1, const number2 v1) {
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
     const auto & buffers= path.template tessellateStroke<Iterable>(
             stroke_width, cap, line_join, miter_limit, stroke_dash_array, stroke_dash_offset);
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(
@@ -1398,6 +1424,9 @@ void canvas<bitmap_type, options>::drawPathFill(const Sampler &sampler,
                                            opacity_t opacity,
                                            const number2 u0, const number2 v0,
                                            const number2 u1, const number2 v1) {
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
     const auto & buffers= path.tessellateFill(rule, quality, antialias, debug);
     if(buffers.output_vertices.size()==0) return;
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(
@@ -1567,6 +1596,9 @@ void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
                                               const number2 u0, const number2 v0,
                                               const number2 u1, const number2 v1,
                                               const opacity_t opacity) {
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
     using tess= microgl::tessellation::bezier_patch_tesselator<number1, number2, dynamic_array>;
     using vertex=vec2<number1>;
     dynamic_array<number1> v_a; // vertices attributes
@@ -1601,82 +1633,6 @@ void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
     }
 #undef IND
 }
-
-template<typename bitmap_type, uint8_t options>
-void canvas<bitmap_type, options>::fxaa(int left, int top, int right, int bottom) {
-    using l64 = long long;
-    // taken from_sampler opengl cookbook
-//    left=160;top=160;right=left+300;bottom=top+300;
-//return;
-    // this is the config in an optimized manner
-    const l64 FXAA_SPAN_PIXELS_MAX = 8; // max pixels span
-    const l64 FXAA_REDUCE_MUL_BITS = 3; // to be used as 1/2^3
-    const l64 FXAA_REDUCE_MIN_BITS = 4; // to be used as 1/2^7
-    const l64 LUMA_THRESHOLD_BITS = 5; // to be used as 1/2^5
-
-    const char p = 10;
-    const char t = p - coder().g();
-    const l64 ONE = l64(1) << p;
-    const l64 FXAA_REDUCE_MIN = ONE >> FXAA_REDUCE_MIN_BITS;
-    const l64 FXAA_SPAN_MAX = FXAA_SPAN_PIXELS_MAX << p;
-    const int pitch = width();
-    for (int yy = top, index = top * pitch; yy < bottom; ++yy, index += pitch) {
-        for (int xx = left; xx < right; ++xx) {
-            color_t nw, ne, sw, se, m, rgb_1, rgb_2, rgb_3, rgb_4, rgb_A, rgb_B;
-            this->_bitmap_canvas->decode(index + xx, m);
-            this->_bitmap_canvas->decode(index + xx - pitch - 1, nw);
-            this->_bitmap_canvas->decode(index + xx - pitch + 1, ne);
-            this->_bitmap_canvas->decode(index + xx + pitch - 1, sw);
-            this->_bitmap_canvas->decode(index + xx + pitch + 1, se);
-            // convert lumas to p bits space
-            l64 luma_M = l64(m.g) << t, luma_NW = l64(nw.g) << t, luma_NE = l64(ne.g) << t, luma_SW =
-                    l64(sw.g) << t, luma_SE = l64(se.g) << t;
-            l64 luma_min = microgl::functions::min(luma_M, luma_NW, luma_NE, luma_SW, luma_SE);
-            l64 luma_max = microgl::functions::max(luma_M, luma_NW, luma_NE, luma_SW, luma_SE);
-            // If contrast is lower than a maximum threshold ...
-            if (luma_max - luma_min <= (luma_max >> LUMA_THRESHOLD_BITS))
-                continue;
-            l64 dirSwMinusNe = luma_SW - luma_NE;
-            l64 dirSeMinusNw = luma_SE - luma_NW;
-            l64 dir_x = dirSwMinusNe + dirSeMinusNw;
-            l64 dir_y = dirSwMinusNe - dirSeMinusNw;
-            if (dir_x == 0 && dir_y == 0) continue;
-
-            l64 dirReduce = microgl::functions::max(
-                    ((luma_NW + luma_NE + luma_SW + luma_SE) >> (FXAA_REDUCE_MUL_BITS + 2)), // +2 for average
-                    FXAA_REDUCE_MIN);
-            l64 rcpDirMin = microgl::functions::min(microgl::math::abs(dir_x), microgl::math::abs(dir_y)) + dirReduce;
-            dir_x = (dir_x << p) / rcpDirMin, dir_y = (dir_y << p) / rcpDirMin;
-            dir_x = microgl::functions::clamp(dir_x, -FXAA_SPAN_MAX, FXAA_SPAN_MAX);
-            dir_y = microgl::functions::clamp(dir_y, -FXAA_SPAN_MAX, FXAA_SPAN_MAX);
-            l64 dir_x_temp = (dir_x / 4) >> p, dir_y_temp = (dir_y / 4) >> p;
-            this->_bitmap_canvas->decode(xx - dir_x_temp, yy - dir_y_temp, rgb_1);
-            this->_bitmap_canvas->decode(xx + dir_x_temp, yy + dir_y_temp, rgb_2);
-            rgb_A.r = (int(rgb_1.r) + int(rgb_2.r)) >> 1, rgb_A.g = (int(rgb_1.g) + int(rgb_2.g)) >> 1, rgb_A.b =
-                    (int(rgb_1.b) + int(rgb_2.b)) >> 1;
-            dir_x_temp = (dir_x >> 1) >> p, dir_y_temp = (dir_y >> 1) >> p;
-            this->_bitmap_canvas->decode(xx - dir_x_temp, yy - dir_y_temp, rgb_3);
-            this->_bitmap_canvas->decode(xx + dir_x_temp, yy + dir_y_temp, rgb_4);
-            rgb_B.r = int(rgb_A.r >> 1) + ((int(rgb_3.r) + int(rgb_4.r)) >> 2); // compute the average of 4 pixels
-            rgb_B.g = int(rgb_A.g >> 1) + ((int(rgb_3.g) + int(rgb_4.g)) >> 2);
-            rgb_B.b = int(rgb_A.b >> 1) + ((int(rgb_3.b) + int(rgb_4.b)) >> 2);
-            l64 luma_rgb_B = l64(rgb_B.g) << t;
-            color_t *selected_color;
-            if (luma_rgb_B < luma_min || luma_rgb_B > luma_max) selected_color = &rgb_A;
-            else selected_color = &rgb_B;
-//            selected_color=&rgb_B;
-            selected_color->a = m.a; // restore middle alpha
-            pixel output;
-            color_t black{0, 0, 0};
-//            selected_color=&black;
-            coder().encode(*selected_color, output);
-            drawPixel(output, index + xx);
-        }
-    }
-}
-
-#include <microgl/samplers/texture.h>
-#include "canvas.h"
 
 template<typename bitmap_type, uint8_t options>
 template<bool tint, bool smooth, typename bitmap_font_type>

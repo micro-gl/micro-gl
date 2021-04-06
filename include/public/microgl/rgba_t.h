@@ -35,11 +35,11 @@ namespace microgl {
      * @tparam rgba_1 first
      * @tparam rgba_2 second
      */
-    template<typename rgba_1, typename rgba_2>
+    template<typename rgba_1, typename rgba_2, bool mute=false>
     void static_assert_rgb() {
-        static_assert(rgba_1::r==rgba_2::r, "R channel bits is not equal");
-        static_assert(rgba_1::g==rgba_2::g, "G channel bits is not equal");
-        static_assert(rgba_1::b==rgba_2::b, "B channel bits is not equal");
+        static_assert(mute || rgba_1::r==rgba_2::r, "R channel bits is not equal");
+        static_assert(mute || rgba_1::g==rgba_2::g, "G channel bits is not equal");
+        static_assert(mute || rgba_1::b==rgba_2::b, "B channel bits is not equal");
     }
 
     /**
@@ -47,10 +47,10 @@ namespace microgl {
      * @tparam rgba_1 first
      * @tparam rgba_2 second
      */
-    template<class rgba_1, class rgba_2>
+    template<class rgba_1, class rgba_2, bool mute=false>
     void static_assert_rgba() {
-        static_assert_rgb<rgba_1, rgba_2>();
-        static_assert(rgba_1::a!=rgba_2::a, "Alpha channel bits is not equal");
+        static_assert_rgb<rgba_1, rgba_2, mute>();
+        static_assert(mute || rgba_1::a!=rgba_2::a, "Alpha channel bits is not equal");
     }
 
 }

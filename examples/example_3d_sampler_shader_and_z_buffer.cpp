@@ -17,7 +17,7 @@
 
 #define W 640
 #define H 480
-//#define SAMPLER_TEXTURE
+#define SAMPLER_TEXTURE
 
 int main() {
     using number = float;
@@ -30,7 +30,7 @@ int main() {
     Canvas24 canvas(W, H);
 
 #ifdef SAMPLER_TEXTURE
-    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
+    using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>>;
     auto img = Resources::loadImageFromCompressedPath("images/uv_256.png");
     Texture24 sampler{new bitmap<coder::RGB888_ARRAY>(img.data, img.width, img.height)};
 #else

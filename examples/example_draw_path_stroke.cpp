@@ -15,9 +15,9 @@ template<typename item>
 using stat_array = static_array<item, 800>;
 
 template<typename number>
-using path_t = path<number, dynamic_array>;
+//using path_t = path<number, dynamic_array>;
 //using path_t = path<number, stat_array>;
-//using path_t = path<number, std::vector>;
+using path_t = path<number, std::vector>;
 
 template <typename number>
 path_t<number> path_star() {
@@ -126,20 +126,20 @@ int main() {
         t+=0.125f;
 
         canvas.clear({255, 255, 255, 255});
-        canvas.drawPathStroke<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
+        canvas.drawPathStroke<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(
                 color_green,
                 matrix_3x3<number>::identity(),
                 path,
                 number{12},
-                tessellation::stroke_cap::butt,
-//            tessellation::stroke_cap::round,
-//            tessellation::stroke_cap::square,
+//                tessellation::stroke_cap::butt,
+                tessellation::stroke_cap::round,
+//                tessellation::stroke_cap::square,
 //                tessellation::stroke_line_join::bevel,
-//            tessellation::stroke_line_join::miter,
-//            tessellation::stroke_line_join::miter_clip,
-            tessellation::stroke_line_join::round,
+//                tessellation::stroke_line_join::miter,
+//                tessellation::stroke_line_join::miter_clip,
+                tessellation::stroke_line_join::round,
 //                4, {0, 0}, 0,
-                4, il{50, 20}, t,
+                4, il{50, 50}, t,
                 255
         );
 
