@@ -54,6 +54,8 @@ if(SDL2_FOUND)
             example_sampler_flat_color.cpp
             example_sampler_checkerboard.cpp
             example_sampler_void_sampler.cpp
+            example_sampler_lines.cpp
+            example_sampler_capsule.cpp
             example_draw_triangles_matrix_transforms.cpp
             example_3d_single_triangle_shaders_with_ortho.cpp
             example_3d_shaders_flat_color.cpp
