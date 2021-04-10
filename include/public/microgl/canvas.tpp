@@ -79,90 +79,8 @@ void canvas<bitmap_type, options>::clear(const color_t &color) {
 
 template<typename bitmap_type, uint8_t options>
 template<typename BlendMode, typename PorterDuff, uint8_t a_src>
-inline void canvas<bitmap_type, options>::blendColor(const color_t &val, int x, int y, opacity_t opacity) {
-    blendColor<BlendMode, PorterDuff, a_src>(val, y*width() + x, opacity);
-}
-
-template<typename bitmap_type, uint8_t options>
-template<typename BlendMode, typename PorterDuff, uint8_t a_src>
-inline void canvas<bitmap_type, options>::blendColor(const color_t &val, int index, opacity_t opacity) {
-    // correct index position when window is not at the (0,0) costs one subtraction.
-    // we use it for sampling the backdrop if needed and for writing the output pixel
-    index -= _window.index_correction;
-    // we assume that the color conforms to the same pixel-coder. but we are flexible
-    // for alpha channel. if coder does not have an alpha channel, the color itself may
-    // have non-zero alpha channel, for which we emulate 8-bit alpha processing and also pre
-    // multiply result with alpha
-    constexpr bool hasBackdropAlphaChannel = pixel_coder::rgba::a != 0;
-    constexpr bool hasSrcAlphaChannel = a_src != 0;
-    constexpr uint8_t canvas_a_bits = hasBackdropAlphaChannel ? pixel_coder::rgba::a : (a_src ? a_src : 8);
-    constexpr uint8_t src_a_bits = a_src ? a_src : 8;
-    constexpr uint8_t alpha_bits = src_a_bits;
-    constexpr unsigned int alpha_max_value = uint16_t (1 << alpha_bits) - 1;
-    constexpr bool is_source_over = microgl::traits::is_same<PorterDuff, porterduff::FastSourceOverOnOpaque>::value;
-    constexpr bool none_compositing = microgl::traits::is_same<PorterDuff, porterduff::None<>>::value;
-    constexpr bool skip_blending =microgl::traits::is_same<BlendMode, blendmode::Normal>::value;
-    constexpr bool premultiply_result = !hasBackdropAlphaChannel;
-    const bool skip_all= skip_blending && none_compositing && opacity == 255;
-    static_assert(src_a_bits==canvas_a_bits, "src_a_bits!=canvas_a_bits");
-
-    const color_t & src = val;
-    static color_t result{};
-    static pixel output{};
-
-    if(!skip_all) {
-        static color_t backdrop{}, blended{};
-        // normal blend and none composite do not require a backdrop
-        if(!(skip_blending && none_compositing))
-            this->_bitmap_canvas->decode(index, backdrop); // not using getPixelColor to avoid extra subtraction
-
-        // support compositing even if the surface is opaque.
-        if(!hasBackdropAlphaChannel) backdrop.a = alpha_max_value;
-
-        if(is_source_over && src.a==0) return;
-
-        // if we are normal then do nothing
-        if(!skip_blending && backdrop.a!=0) { //  or backdrop alpha is zero is also valid
-            BlendMode::template blend<pixel_coder::rgba::r,
-                                      pixel_coder::rgba::g,
-                                      pixel_coder::rgba::b>(backdrop, src, blended);
-            // if backdrop alpha!= max_alpha let's first composite the blended color, this is
-            // an intermediate step before Porter-Duff
-            if(backdrop.a < alpha_max_value) {
-                // if((backdrop.a ^ _max_alpha_value)) {
-                unsigned int comp = alpha_max_value - backdrop.a;
-                // this is of-course a not accurate interpolation, we should
-                // divide by 255. bit shifting is like dividing by 256 and is FASTER.
-                // you will pay a price when bit count is low, this is where the error
-                // is very noticeable.
-                blended.r = (comp * src.r + backdrop.a * blended.r) >> alpha_bits;
-                blended.g = (comp * src.g + backdrop.a * blended.g) >> alpha_bits;
-                blended.b = (comp * src.b + backdrop.a * blended.b) >> alpha_bits;
-            }
-        }
-        else {
-            // skipped blending therefore use src color
-            blended.r = src.r; blended.g = src.g; blended.b = src.b;
-        }
-
-        // support alpha channel in case, source pixel does not have
-        blended.a = hasSrcAlphaChannel ? src.a : alpha_max_value;
-
-        // I fixed opacity is always 8 bits no matter what the alpha depth of the native canvas
-        if(opacity < 255)
-            blended.a =  (int(blended.a) * int(opacity)*int(257) + 257)>>16; // blinn method
-
-        // finally alpha composite with Porter-Duff equations,
-        // this should be zero-cost for None option with compiler optimizations
-        // if we do not own a native alpha channel, then please keep the composited result
-        // with premultiplied alpha, this is why we composite for None option, because it performs
-        // alpha multiplication
-        PorterDuff::template composite<alpha_bits, premultiply_result>(backdrop, blended, result);
-    } else
-        result = src;
-
-    coder().encode(result, output);
-    _bitmap_canvas->writeAt(index, output);
+void canvas<bitmap_type, options>::blendColor(const color_t &val, int x, int y, opacity_t opacity) {
+    blendColor<BlendMode, PorterDuff, a_src>(val, y*width() + x, opacity, *this);
 }
 
 template<typename bitmap_type, uint8_t options>
@@ -375,7 +293,7 @@ void canvas<bitmap_type, options>::drawArc_internal(const Sampler &sampler_fill,
 
             if (sample_stroke) {
                 sampler_fill.sample(u>>boost_u, v>>boost_v, uv_p, color);
-                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(color, (index+x_r), blend_stroke);
+                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(color, (index+x_r), blend_stroke, *this);
             }
         }
     }
@@ -504,11 +422,11 @@ void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill
             }
             if (!void_sampler_1 && sample_fill) {
                 sampler_fill.sample(u>>boost_u, v>>boost_v, uv_p, color);
-                blendColor<BlendMode, PorterDuff, Sampler1::rgba::a>(color, (index+x_r), blend_fill);
+                blendColor<BlendMode, PorterDuff, Sampler1::rgba::a>(color, (index+x_r), blend_fill, *this);
             }
             if (!void_sampler_2 && sample_stroke) {
                 sampler_stroke.sample(u>>boost_u, v>>boost_v, uv_p, color);
-                blendColor<BlendMode, PorterDuff, Sampler2::rgba::a>(color, (index+x_r), blend_stroke);
+                blendColor<BlendMode, PorterDuff, Sampler2::rgba::a>(color, (index+x_r), blend_stroke, *this);
             }
         }
     }
@@ -624,7 +542,7 @@ void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
                 else if(y==bbox_r_c.top && !clipped_top) blend= blend_top;
                 else if(y==bbox_r_c.bottom && !clipped_bottom) blend= blend_bottom;
                 sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
-                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + x, blend);
+                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + x, blend, *this);
             }
         }
     }
@@ -633,7 +551,7 @@ void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
         for (int y=bbox_r_c.top, v=v0+(dv>>1)+dy*dv; y<bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
             for (int x=bbox_r_c.left, u=u0+(du>>1)+dx*du; x<bbox_r_c.right; x++, u+=du) {
                 sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
-                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + x, opacity);
+                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + x, opacity, *this);
             }
         }
     }
@@ -957,7 +875,7 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
                 v_i = functions::clamp<rint>(v_i, 0, (rint(1)<<uv_precision));
                 color_t col_bmp;
                 sampler.sample(u_i, v_i, uv_precision, col_bmp);
-                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + p.x, blend);
+                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + p.x, blend, *this);
             }
             w0+=A01; w1+=A12; w2+=A20;
             if(antialias) { w0_h+=A01_h; w1_h+=A12_h; w2_h+=A20_h; }
@@ -1187,7 +1105,7 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
                 // because other wise this would have wasted bits for Q types although it would have been more elegant.
                 interpolated_varying.interpolate(varying_v0, varying_v1, varying_v2, bary);
                 auto color = $shader.fragment(interpolated_varying);
-                blendColor<BlendMode, PorterDuff, shader_type::rgba::a>(color, index + p.x, opacity_sample);
+                blendColor<BlendMode, PorterDuff, shader_type::rgba::a>(color, index + p.x, opacity_sample, *this);
             }
         }
     }
@@ -1291,7 +1209,7 @@ void canvas<bitmap_type, options>::drawMask(const masks::chrome_mode &mode,
             }
             col_bmp.r=0, col_bmp.g=0, col_bmp.b=0, col_bmp.a=a,
             // re-encode for a different canvas
-            blendColor<blendmode::Normal, porterduff::DestinationIn<true>, alpha_bits>(col_bmp, index + x, opacity);
+            blendColor<blendmode::Normal, porterduff::DestinationIn<true>, alpha_bits>(col_bmp, index + x, opacity, *this);
         }
     }
 }
@@ -1492,7 +1410,7 @@ void canvas<bitmap_type, options>::drawWuLine(const color_t &color,
     if (Y0 > Y1) { Temp = Y0; Y0 = Y1; Y1 = Temp; Temp = X0; X0 = X1; X1 = Temp; }
     // Draw the initial pixel, which is always exactly intersected by the line and so needs no weighting
     blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input,
-                                                              (X0+round)>>bits, (Y0+round)>>bits, opacity);
+                                                              (X0+round)>>bits, (Y0+round)>>bits, opacity, *this);
     if ((DeltaX = X1 - X0) >= 0) {
         XDir = int(1)<<bits;
     } else {
@@ -1504,14 +1422,14 @@ void canvas<bitmap_type, options>::drawWuLine(const color_t &color,
     if ((Y1 - Y0) == 0) { // Horizontal line
         while ((DeltaX-=one) > 0) {
             X0 += XDir;
-            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, opacity);
+            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, opacity, *this);
         }
         return;
     }
     if (DeltaX == 0) { // Vertical line
         do {
             Y0+=one;
-            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, opacity);
+            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, opacity, *this);
         } while ((DeltaY-=one) > 0);
         return;
     }
@@ -1519,7 +1437,7 @@ void canvas<bitmap_type, options>::drawWuLine(const color_t &color,
         do {
             X0 += XDir;
             Y0+=one;
-            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, opacity);
+            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, opacity, *this);
         } while ((DeltaY-=one) > 0);
         return;
     }
@@ -1545,11 +1463,11 @@ void canvas<bitmap_type, options>::drawWuLine(const color_t &color,
             Y0+=one;
             Weighting = ErrorAcc >> IntensityShift;
             unsigned int mix = (Weighting ^ WeightingComplementMask); // complement of Weighting
-            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, (mix*opacity*257)>>16);
-            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, (X0 + XDir)>>bits, Y0>>bits, (Weighting*opacity*257)>>16);
+            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, (mix*opacity*257)>>16, *this);
+            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, (X0 + XDir)>>bits, Y0>>bits, (Weighting*opacity*257)>>16, *this);
         }
         // Draw the final pixel, which is always exactly intersected by the line
-        blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, (X1+round)>>bits, (Y1+round)>>bits, opacity);
+        blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, (X1+round)>>bits, (Y1+round)>>bits, opacity, *this);
         return;
     }
     // It's an X-major line;
@@ -1563,11 +1481,11 @@ void canvas<bitmap_type, options>::drawWuLine(const color_t &color,
         Weighting = (ErrorAcc >> IntensityShift);
         unsigned int mix = (Weighting ^ WeightingComplementMask);
         unsigned int mix_complement = maxIntensity - mix; // this equals Weighting
-        blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, (mix*opacity*257)>>16);
-        blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, (Y0 + one)>>bits, (Weighting*opacity*257)>>16);
+        blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, (mix*opacity*257)>>16, *this);
+        blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, (Y0 + one)>>bits, (Weighting*opacity*257)>>16, *this);
     }
     // Draw the final pixel, which is always exactly intersected by the line and so needs no weighting
-    blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, (X1+round)>>bits, (Y1+round)>>bits, opacity);
+    blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, (X1+round)>>bits, (Y1+round)>>bits, opacity, *this);
 }
 
 template<typename bitmap_type, uint8_t options>
@@ -1692,7 +1610,7 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
                         font_col.b = channel::mc<b_>(font_col.b, color.b);
                         font_col.a = channel::mc<a_>(font_col.a, color.a);
                     }
-                    blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_>(font_col, x, y, opacity);
+                    blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_>(font_col, x, y, opacity, *this);
                 }
             }
         }

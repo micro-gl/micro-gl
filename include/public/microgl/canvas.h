@@ -289,14 +289,97 @@ public:
      * @param opacity 8 bit opacity [0..255]
      */
     template<typename BlendMode=blendmode::Normal,
-             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-             uint8_t a_src>
-    inline void blendColor(const color_t &val, int index, opacity_t opacity);
-    template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             uint8_t a_src>
     void blendColor(const color_t &val, int x, int y, opacity_t opacity);
 
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
+            uint8_t a_src>
+//    __attribute__((noinline))
+    static void blendColor(const color_t &val, int index, opacity_t opacity, canvas & canva) {
+        // correct index position when window is not at the (0,0) costs one subtraction.
+        // we use it for sampling the backdrop if needed and for writing the output pixel
+        index -= canva._window.index_correction;
+
+        // we assume that the color conforms to the same pixel-coder. but we are flexible
+        // for alpha channel. if coder does not have an alpha channel, the color itself may
+        // have non-zero alpha channel, for which we emulate 8-bit alpha processing and also pre
+        // multiply result with alpha
+        constexpr bool hasBackdropAlphaChannel = pixel_coder::rgba::a != 0;
+        constexpr bool hasSrcAlphaChannel = a_src != 0;
+        constexpr uint8_t canvas_a_bits = hasBackdropAlphaChannel ? pixel_coder::rgba::a : (a_src ? a_src : 8);
+        constexpr uint8_t src_a_bits = a_src ? a_src : 8;
+        constexpr uint8_t alpha_bits = src_a_bits;
+        constexpr unsigned int alpha_max_value = uint16_t (1 << alpha_bits) - 1;
+        constexpr bool is_source_over = microgl::traits::is_same<PorterDuff, porterduff::FastSourceOverOnOpaque>::value;
+        constexpr bool none_compositing = microgl::traits::is_same<PorterDuff, porterduff::None<>>::value;
+        constexpr bool skip_blending =microgl::traits::is_same<BlendMode, blendmode::Normal>::value;
+        constexpr bool premultiply_result = !hasBackdropAlphaChannel;
+        const bool skip_all= skip_blending && none_compositing && opacity == 255;
+        static_assert(src_a_bits==canvas_a_bits, "src_a_bits!=canvas_a_bits");
+
+        const color_t & src = val;
+        static color_t result{};
+
+        if(!skip_all) {
+            pixel output;
+            static color_t backdrop{}, blended{};
+            // normal blend and none composite do not require a backdrop
+            if(!(skip_blending && none_compositing))
+                canva._bitmap_canvas->decode(index, backdrop); // not using getPixelColor to avoid extra subtraction
+
+            // support compositing even if the surface is opaque.
+            if(!hasBackdropAlphaChannel) backdrop.a = alpha_max_value;
+
+            if(is_source_over && src.a==0) return;
+
+            // if we are normal then do nothing
+            if(!skip_blending && backdrop.a!=0) { //  or backdrop alpha is zero is also valid
+                BlendMode::template blend<pixel_coder::rgba::r,
+                        pixel_coder::rgba::g,
+                        pixel_coder::rgba::b>(backdrop, src, blended);
+                // if backdrop alpha!= max_alpha let's first composite the blended color, this is
+                // an intermediate step before Porter-Duff
+                if(backdrop.a < alpha_max_value) {
+                    // if((backdrop.a ^ _max_alpha_value)) {
+                    unsigned int comp = alpha_max_value - backdrop.a;
+                    // this is of-course a not accurate interpolation, we should
+                    // divide by 255. bit shifting is like dividing by 256 and is FASTER.
+                    // you will pay a price when bit count is low, this is where the error
+                    // is very noticeable.
+                    blended.r = (comp * src.r + backdrop.a * blended.r) >> alpha_bits;
+                    blended.g = (comp * src.g + backdrop.a * blended.g) >> alpha_bits;
+                    blended.b = (comp * src.b + backdrop.a * blended.b) >> alpha_bits;
+                }
+            }
+            else {
+                // skipped blending therefore use src color
+                blended.r = src.r; blended.g = src.g; blended.b = src.b;
+            }
+
+            // support alpha channel in case, source pixel does not have
+            blended.a = hasSrcAlphaChannel ? src.a : alpha_max_value;
+
+            // I fixed opacity is always 8 bits no matter what the alpha depth of the native canvas
+            if(opacity < 255)
+                blended.a =  (int(blended.a) * int(opacity)*int(257) + 257)>>16; // blinn method
+
+            // finally alpha composite with Porter-Duff equations,
+            // this should be zero-cost for None option with compiler optimizations
+            // if we do not own a native alpha channel, then please keep the composited result
+            // with premultiplied alpha, this is why we composite for None option, because it performs
+            // alpha multiplication
+            PorterDuff::template composite<alpha_bits, premultiply_result>(backdrop, blended, result);
+            canva.coder().encode(result, output);
+            canva._bitmap_canvas->writeAt(index, output);
+        }
+        else {
+            pixel output;
+            canva.coder().encode(val, output);
+            canva._bitmap_canvas->writeAt(index, output);
+        }
+    }
     /**
      * draw an already encoded pixel at position
      */

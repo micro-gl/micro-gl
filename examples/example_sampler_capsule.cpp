@@ -20,6 +20,7 @@ int main() {
     sampler.updatePoints({0.20,0.5}, {1.-0.2,0.85},
                          0.25, 0.2);
     sampler.color_fill= {0, 0, 0, 255};
+    // sampler.color_fill= {255, 255, 255, 0};
 
     Canvas24 canvas(W, H);
 
