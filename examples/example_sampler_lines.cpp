@@ -34,8 +34,8 @@ int main() {
 
     lines_sampler<float> sampler{};
 
-//    sampler.updatePoints(points, size, 0.07);
-    sampler.updatePoints(points2, 2, 0.25);
+    sampler.updatePoints(points, size/1, 0.04);
+//    sampler.updatePoints(points2, 2, 0.25);
 
     Canvas24 canvas(W, H);
 

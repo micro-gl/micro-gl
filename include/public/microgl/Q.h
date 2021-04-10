@@ -1,5 +1,5 @@
 #pragma once
-
+#include <stdint.h>
 template <unsigned P, typename container_integer=long long>
 class Q {
 public:
@@ -160,7 +160,7 @@ public:
     inline void updateValue(const_signed_ref val) { this->_value=val; }
 
     Q<P> sqrt() const {
-        return Q<P>((sqrt_<container_integer>(container_integer(_value))), P/2);
+        return Q<P>((sqrt_<unsigned>(unsigned(_value))), P/2);
     }
     Q<P> abs() const {
         return _value<0? Q{-_value}:Q{_value};

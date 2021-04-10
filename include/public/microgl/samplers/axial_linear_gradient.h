@@ -6,7 +6,7 @@ namespace microgl {
     namespace sampling {
 
         template <unsigned degree=0, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>,
-                  enum precision $precision=precision::medium, bool useBigIntegers=false>
+                  enum precision $precision=precision::medium>
         struct axial_linear_gradient {
             using rgba = rgba_;
 
@@ -14,7 +14,7 @@ namespace microgl {
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
             static constexpr precision_t p_bits_double= p_bits<<1;
             using rint_big=int64_t;
-            using rint= typename microgl::traits::conditional<useBigIntegers, int64_t, int32_t>::type;
+            using rint= typename microgl::traits::conditional<p_bits>=16, int64_t, int32_t>::type;
 
             struct stop_t {
                 rint where=0;

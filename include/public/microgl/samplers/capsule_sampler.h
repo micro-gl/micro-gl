@@ -3,6 +3,7 @@
 #include <microgl/rgba_t.h>
 #include <microgl/vec2.h>
 #include <microgl/math.h>
+#include <microgl/precision.h>
 
 namespace microgl {
     namespace sampling {
@@ -14,19 +15,28 @@ namespace microgl {
 //            return length( pa - ba*h );
 //        }
 
+        /**
+         * a capsule sampler
+         *
+         * @tparam number the number type of inputs
+         * @tparam rgba_ rgba info, define alpha bits for transparency
+         * @tparam $precision precision
+         */
         template <typename number, typename rgba_=rgba_t<8,8,8,8>,
-                  bool useBigIntegers=true>
+                enum precision $precision=precision::high>
         class capsule_sampler {
         public:
             using rgba = rgba_;
-            using rint_big=int64_t;
-            using rint= typename microgl::traits::conditional<useBigIntegers,
-                                    int64_t, int32_t>::type;
             using vertex = vec2<number>;
-            using ivertex = vec2<rint>;
-            static constexpr precision_t p_bits= 15;
+        private:
+            static constexpr precision_t p_bits= static_cast<precision_t>($precision);
+            static constexpr bool useBigIntegers = p_bits>=16;
+        public:
+            using rint= typename microgl::traits::conditional<useBigIntegers,
+                                        int64_t, int32_t>::type;
             static constexpr rint ONE= rint(1)<<p_bits;
-            static constexpr rint HALF= ONE>>1;
+
+            using ivertex = vec2<rint>;
 
             color_t color1= {0,0,0, 255};
             color_t color2= {255,0,0, 0};

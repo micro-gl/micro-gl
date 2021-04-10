@@ -102,7 +102,7 @@ namespace microgl {
                                    _seg[ix+1].reciprocal_a_dot_b);
                     dis = dis < dis_res ? dis : dis_res;
                 }
-                constexpr rint aa_bits = p_bits - 8 < 0 ? 0 : p_bits - 8;
+                constexpr rint aa_bits = p_bits - 10 < 0 ? 0 : p_bits - 10;
                 constexpr rint aa_band = 1u << aa_bits;
 
                 dis -= epsilon;
