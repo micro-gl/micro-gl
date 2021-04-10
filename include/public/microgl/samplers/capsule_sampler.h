@@ -20,9 +20,10 @@ namespace microgl {
          *
          * @tparam number the number type of inputs
          * @tparam rgba_ rgba info, define alpha bits for transparency
+         * @tparam anti_alias apply anti-aliasing
          * @tparam $precision precision
          */
-        template <typename number, typename rgba_=rgba_t<8,8,8,8>,
+        template <typename number, typename rgba_=rgba_t<8,8,8,8>, bool anti_alias=true,
                 enum precision $precision=precision::high>
         class capsule_sampler {
         public:
@@ -30,21 +31,21 @@ namespace microgl {
             using vertex = vec2<number>;
         private:
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
-            static constexpr bool useBigIntegers = p_bits>=16;
         public:
-            using rint= typename microgl::traits::conditional<useBigIntegers,
+            using rint= typename microgl::traits::conditional<p_bits>=16,
                                         int64_t, int32_t>::type;
             static constexpr rint ONE= rint(1)<<p_bits;
 
             using ivertex = vec2<rint>;
 
-            color_t color1= {0,0,0, 255};
-            color_t color2= {255,0,0, 0};
+            color_t color_fill= {0, 0, 0, (1u<<rgba::a)-1};
+            color_t color_background= {(1u<<rgba::r)-1, (1u<<rgba::g)-1, (1u<<rgba::b)-1, 0};
+            color_t color_stroke= {(1u<<rgba::r)-1, (1u<<rgba::g)-1, (1u<<rgba::b)-1, (1u<<rgba::a)-1};
 
             capsule_sampler() = default;
 
         private:
-            rint _epsilon;
+            rint _fraction_radius, _fraction_stroke;
             rint _reciprocal_a_dot_b;
             ivertex _a, _b;
 
@@ -70,8 +71,9 @@ namespace microgl {
 
         public:
 
-            void updatePoints(const vertex & a, const vertex & b, number epsilon) {
-                _epsilon = microgl::math::to_fixed((epsilon/number(2))*(epsilon/number(2)), p_bits);
+            void updatePoints(const vertex & a, const vertex & b, number fraction_radius, number fraction_stroke) {
+                _fraction_radius = microgl::math::to_fixed((fraction_radius / number(2)) * (fraction_radius / number(2)), p_bits);
+                _fraction_stroke = microgl::math::to_fixed((fraction_stroke / number(2)) * (fraction_stroke / number(2)), p_bits);
                 _a.x = microgl::math::to_fixed(a.x, p_bits);
                 _a.y = microgl::math::to_fixed(a.y, p_bits);
                 _b.x = microgl::math::to_fixed(b.x, p_bits);
@@ -82,6 +84,8 @@ namespace microgl {
                 _reciprocal_a_dot_b = (ONE<<p_bits) / dot;
             }
 
+#define aaaa(x) (x)<0?-(x):(x)
+
             inline void sample(const int u, const int v,
                                const unsigned bits,
                                color_t &output) const {
@@ -90,20 +94,37 @@ namespace microgl {
                 ivertex p{u_tag, v_tag};
                 rint distance = sdSegment_squared(p, _a, _b,
                                _reciprocal_a_dot_b);
-                constexpr rint aa_bits = p_bits - 8 < 0 ? 0 : p_bits - 8;
+                constexpr rint aa_bits = p_bits - 9 < 0 ? 0 : p_bits - 9;
+                constexpr rint aa_bits2 = aa_bits-1;
                 constexpr rint aa_band = 1u << aa_bits;
+                constexpr rint aa_band2 =1u << aa_bits2;
 
-                distance -= _epsilon;
+                distance = (distance) - _fraction_radius;
+                rint distance2 = aaaa(distance) - _fraction_stroke;
 
-                output=color2;
+                output=color_background;
 
                 if((distance)<=0) {
-                    output=color1;
+                    output=color_fill;
                 }
-                else if (distance < aa_band) {
-                    const unsigned char factor = ((color1.a*(aa_band-distance)) >> aa_bits);
-                    output=color1;
+                else if (anti_alias && (distance < aa_band)) {
+                    const unsigned char factor = ((color_fill.a * (aa_band - distance)) >> aa_bits);
+                    output=color_fill;
                     output.a=factor;
+                }
+
+                if((distance2)<=0) {
+                    output=color_stroke;
+                }
+                else if (anti_alias && (distance2 < aa_band2)) {
+                    const unsigned char factor = ((output.a*(aa_band-distance2)) >> aa_bits);
+//                    output= {255,255,255,255};
+//                    output.a=factor;
+                        const color_t & st = color_stroke;
+                        output.r = (output.r*distance2 + st.r*(aa_band2-distance2)) >> aa_bits2;
+                        output.g = (output.g*distance2 + st.g*(aa_band2-distance2)) >> aa_bits2;
+                        output.b = (output.b*distance2 + st.b*(aa_band2-distance2)) >> aa_bits2;
+                        output.a = (output.a*distance2 + st.a*(aa_band2-distance2)) >> aa_bits2;
                 }
 
             }
