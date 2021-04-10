@@ -1410,7 +1410,7 @@ void canvas<bitmap_type, options>::drawWuLine(const color_t &color,
     if (Y0 > Y1) { Temp = Y0; Y0 = Y1; Y1 = Temp; Temp = X0; X0 = X1; X1 = Temp; }
     // Draw the initial pixel, which is always exactly intersected by the line and so needs no weighting
     blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input,
-                                                              (X0+round)>>bits, (Y0+round)>>bits, opacity, *this);
+                                                              (X0+round)>>bits, (Y0+round)>>bits, opacity);
     if ((DeltaX = X1 - X0) >= 0) {
         XDir = int(1)<<bits;
     } else {
@@ -1422,14 +1422,14 @@ void canvas<bitmap_type, options>::drawWuLine(const color_t &color,
     if ((Y1 - Y0) == 0) { // Horizontal line
         while ((DeltaX-=one) > 0) {
             X0 += XDir;
-            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, opacity, *this);
+            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, opacity);
         }
         return;
     }
     if (DeltaX == 0) { // Vertical line
         do {
             Y0+=one;
-            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, opacity, *this);
+            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, opacity);
         } while ((DeltaY-=one) > 0);
         return;
     }
@@ -1437,7 +1437,7 @@ void canvas<bitmap_type, options>::drawWuLine(const color_t &color,
         do {
             X0 += XDir;
             Y0+=one;
-            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, opacity, *this);
+            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, opacity);
         } while ((DeltaY-=one) > 0);
         return;
     }
@@ -1463,11 +1463,11 @@ void canvas<bitmap_type, options>::drawWuLine(const color_t &color,
             Y0+=one;
             Weighting = ErrorAcc >> IntensityShift;
             unsigned int mix = (Weighting ^ WeightingComplementMask); // complement of Weighting
-            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, (mix*opacity*257)>>16, *this);
-            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, (X0 + XDir)>>bits, Y0>>bits, (Weighting*opacity*257)>>16, *this);
+            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, (mix*opacity*257)>>16);
+            blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, (X0 + XDir)>>bits, Y0>>bits, (Weighting*opacity*257)>>16);
         }
         // Draw the final pixel, which is always exactly intersected by the line
-        blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, (X1+round)>>bits, (Y1+round)>>bits, opacity, *this);
+        blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, (X1+round)>>bits, (Y1+round)>>bits, opacity);
         return;
     }
     // It's an X-major line;
@@ -1481,11 +1481,11 @@ void canvas<bitmap_type, options>::drawWuLine(const color_t &color,
         Weighting = (ErrorAcc >> IntensityShift);
         unsigned int mix = (Weighting ^ WeightingComplementMask);
         unsigned int mix_complement = maxIntensity - mix; // this equals Weighting
-        blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, (mix*opacity*257)>>16, *this);
-        blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, (Y0 + one)>>bits, (Weighting*opacity*257)>>16, *this);
+        blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, Y0>>bits, (mix*opacity*257)>>16);
+        blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, X0>>bits, (Y0 + one)>>bits, (Weighting*opacity*257)>>16);
     }
     // Draw the final pixel, which is always exactly intersected by the line and so needs no weighting
-    blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, (X1+round)>>bits, (Y1+round)>>bits, opacity, *this);
+    blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, (X1+round)>>bits, (Y1+round)>>bits, opacity);
 }
 
 template<typename bitmap_type, uint8_t options>

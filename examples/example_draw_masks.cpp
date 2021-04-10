@@ -9,7 +9,6 @@
 #include <microgl/bitmaps/bitmap.h>
 #include <microgl/samplers/texture.h>
 
-#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 480*1
 
