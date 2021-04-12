@@ -16,9 +16,9 @@ int main() {
 
     circle_sampler<number> sampler{};
 
-    sampler.updatePoints({0.20,0.5},
-                         0.25, 0.2);
-    sampler.color_fill= {255, 255, 255, 128};
+    sampler.updatePoints({0.50,0.5},
+                         0.5, 0.40);
+    sampler.color_fill= {0, 0, 0, 255};
     sampler.color_background= {255, 255, 255, 0};
     sampler.color_stroke= {255, 255, 255, 255};
 
@@ -28,7 +28,7 @@ int main() {
         canvas.clear({255,0,255,255});
         canvas.drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
                 sampler,
-                0, 0, 500/2, 500/2);
+                0, 0, 300, 300);
     };
 
     example_run(&canvas, render, 100);

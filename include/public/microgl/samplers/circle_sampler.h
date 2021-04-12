@@ -76,7 +76,7 @@ namespace microgl {
                 auto pc = p-_center;
                 rint distance= ((pc.x*pc.x)>>p_bits) + ((pc.y*pc.y)>>p_bits);
 
-                constexpr rint aa_bits = p_bits - 9 < 0 ? 0 : p_bits - 9;
+                constexpr rint aa_bits = p_bits - 8 < 0 ? 0 : p_bits - 8;
                 constexpr rint aa_bits2 = aa_bits-1;
                 constexpr rint aa_band = 1u << aa_bits;
                 constexpr rint aa_band2 =1u << aa_bits2;
@@ -100,15 +100,15 @@ namespace microgl {
                 }
                 else if (anti_alias && (distance2 < aa_band2)) {
                     const unsigned char factor = ((output.a*(aa_band-distance2)) >> aa_bits);
-                        const color_t & st = color_stroke;
-                        output.r = (output.r*distance2 + st.r*(aa_band2-distance2)) >> aa_bits2;
-                        output.g = (output.g*distance2 + st.g*(aa_band2-distance2)) >> aa_bits2;
-                        output.b = (output.b*distance2 + st.b*(aa_band2-distance2)) >> aa_bits2;
-                        output.a = (output.a*distance2 + st.a*(aa_band2-distance2)) >> aa_bits2;
+                    const color_t & st = color_stroke;
+                    output.r = (output.r*distance2 + st.r*(aa_band2-distance2)) >> aa_bits2;
+                    output.g = (output.g*distance2 + st.g*(aa_band2-distance2)) >> aa_bits2;
+                    output.b = (output.b*distance2 + st.b*(aa_band2-distance2)) >> aa_bits2;
+                    output.a = (output.a*distance2 + st.a*(aa_band2-distance2)) >> aa_bits2;
                 }
 
             }
-
+#undef aaaa
         };
 
     }
