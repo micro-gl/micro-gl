@@ -99,7 +99,35 @@ namespace microgl {
                 ivertex p{u_tag, v_tag};
                 for (int ix = 0; ix < _size-1; ++ix) {
                     rint dis_res = sdSegment_squared(p, _seg[ix].p, _seg[ix+1].p,
-                                   _seg[ix+1].reciprocal_a_dot_b);
+                                                     _seg[ix+1].reciprocal_a_dot_b);
+                    dis = dis < dis_res ? dis : dis_res;
+                }
+                constexpr rint aa_bits = p_bits - 10 < 0 ? 0 : p_bits - 10;
+                constexpr rint aa_band = 1u << aa_bits;
+
+                dis -= epsilon;
+
+                output={255,0,0,0};
+
+                if((dis)<=0) {
+                    output={0,0,0, 255};
+                } else if (dis < aa_band) {
+                    const unsigned char factor = ((color1.a*(aa_band-dis)) >> aa_bits);
+                    output={0,0,0, factor};
+                }
+
+            }
+
+            inline void sample2(const int u, const int v,
+                               const unsigned bits,
+                               color_t &output) const {
+                const auto u_tag= convert(u, bits, p_bits);
+                const auto v_tag= convert(v, bits, p_bits);
+                rint dis=ONE;
+                ivertex p{u_tag, v_tag};
+                for (int ix = 0; ix < _size-1; ++ix) {
+                    rint dis_res = sdSegment_squared(p, _seg[ix].p, _seg[ix+1].p,
+                                                     _seg[ix+1].reciprocal_a_dot_b);
                     dis = dis < dis_res ? dis : dis_res;
                 }
                 constexpr rint aa_bits = p_bits - 10 < 0 ? 0 : p_bits - 10;
