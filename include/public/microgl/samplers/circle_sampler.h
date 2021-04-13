@@ -65,7 +65,7 @@ namespace microgl {
                 _center.y = microgl::math::to_fixed(center.y, p_bits);
             }
 
-#define aaaa(x) (x)<0?-(x):(x)
+#define aaaa(x) ((x)<0?-(x):(x))
 
             inline void sample(const int u, const int v,
                                const unsigned bits,

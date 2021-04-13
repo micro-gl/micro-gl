@@ -84,7 +84,7 @@ namespace microgl {
                 _reciprocal_a_dot_b = dot==0 ? 0 : (ONE<<p_bits)/dot;
             }
 
-#define aaaa(x) (x)<0?-(x):(x)
+#define aaaa(x) ((x)<0?-(x):(x))
 
             inline void sample(const int u, const int v,
                                const unsigned bits,
@@ -121,10 +121,11 @@ namespace microgl {
 //                    output= {255,255,255,255};
 //                    output.a=factor;
                         const color_t & st = color_stroke;
-                        output.r = (output.r*distance2 + st.r*(aa_band2-distance2)) >> aa_bits2;
-                        output.g = (output.g*distance2 + st.g*(aa_band2-distance2)) >> aa_bits2;
-                        output.b = (output.b*distance2 + st.b*(aa_band2-distance2)) >> aa_bits2;
-                        output.a = (output.a*distance2 + st.a*(aa_band2-distance2)) >> aa_bits2;
+                        rint comp = (aa_band2-distance2);
+                        output.r = (distance2*output.r + comp*st.r) >> aa_bits2;
+                        output.g = (distance2*output.g + comp*st.g) >> aa_bits2;
+                        output.b = (distance2*output.b + comp*st.b) >> aa_bits2;
+                        output.a = (distance2*output.a + comp*st.a) >> aa_bits2;
                 }
 
             }
