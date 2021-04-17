@@ -665,7 +665,7 @@ public:
     /**
      * Draw 2d triangle batches. Given:
      * - vertex buffer, indices buffer, indices type, draw triangles.
-     * - uvs are optional, and if are nullptr, the method will compute them alone.
+     * - uvs are optional, and if are nullptr, the method will compute them alone in-place.
      * - indices buffer are optional, and if are nullptr, the method will use vertex buffer as is.
      *
      * Supported batch strategies are:
@@ -1026,7 +1026,9 @@ public:
 
     // polygons
     /**
-     * Draw a polygon
+     * Draw a polygon of any type via tesselation given a hint. Notes:
+     * 1. Convex polygon does not require a memory allocation for the tesselation, so use convex polygons for memory efficiency.
+     * 2. All other polygons types allocate memory for triangulation
      *
      * @tparam hint         the type of polygon {SIMPLE, CONCAVE, X_MONOTONE, Y_MONOTONE, CONVEX, COMPLEX, SELF_INTERSECTING}
      * @tparam BlendMode    the blend mode struct

@@ -647,14 +647,23 @@ void canvas<bitmap_type, options>::drawTriangles(const Sampler &sampler,
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
           [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
               const index &edge_0_id, const index &edge_1_id, const index &edge_2_id) {
-              const bool aa_2d= boundary_buffer!=nullptr;
               bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
-              if(aa_2d) {
-                  const boundary_info aa_info = boundary_buffer[idx];
-                  aa_first_edge = triangles::classify_boundary_info(aa_info, edge_0_id);
-                  aa_second_edge = triangles::classify_boundary_info(aa_info, edge_1_id);
-                  aa_third_edge = triangles::classify_boundary_info(aa_info, edge_2_id);
+              if(antialias) {
+                  if(boundary_buffer!=nullptr) {
+                      const boundary_info aa_info = boundary_buffer[idx];
+                      aa_first_edge = triangles::classify_boundary_info(aa_info, edge_0_id);
+                      aa_second_edge = triangles::classify_boundary_info(aa_info, edge_1_id);
+                      aa_third_edge = triangles::classify_boundary_info(aa_info, edge_2_id);
+                  }
+                  else if(type==indices::TRIANGLES_FAN_WITH_BOUNDARY) {
+                      // for fan triangulation, that requires AA and does not have a boundary buffer,
+                      // we can calculate the boundary in-place, instead of allocating memory
+                      aa_first_edge = idx==0;
+                      aa_second_edge = true;
+                      aa_third_edge = idx==(size-3);
+                  }
               }
+
               auto p1= vertices[first_index], p2=vertices[second_index], p3=vertices[third_index];
               vec2<number2> uv_s{u0,v0}, uv_e{u1,v1}, uv_d{u1-u0,v1-v0};
               auto uv1= uvs?uvs[first_index] : vec2<number2>(p1-min)/vec2<number2>(max-min);
@@ -1228,7 +1237,9 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
     if(void_sampler) return;
 
     indices type;
+    unsigned int tess_size=0;
     dynamic_array<index> indices;
+    dynamic_array<index> *indices_ptr = &indices;
     dynamic_array<boundary_info> boundary_buffer;
     dynamic_array<boundary_info> *boundary_buffer_ptr=antialias? &boundary_buffer: nullptr;
     switch (hint) {
@@ -1250,8 +1261,10 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         }
         case hints::CONVEX:
         {
-            using fan=microgl::tessellation::fan_triangulation<number1, dynamic_array>;
-            fan::compute(points, size, indices, boundary_buffer_ptr, type);
+            // for convex, we don't need tesselation, we can do it in-place without allocating memory
+            type=antialias ? microgl::triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY :
+                    microgl::triangles::indices::TRIANGLES_FAN;
+            tess_size=size;
             break;
         }
         case hints::NON_SIMPLE:
@@ -1269,6 +1282,7 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         default:
             return;
     }
+    if(indices.size()) tess_size=indices.size();
     const vec2<number2> * uvs= nullptr;//uv_map<number1, number2>::compute(points, size, u0, v0, u1, v1);
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(
             sampler, transform,
@@ -1276,7 +1290,8 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
             uvs,
             indices.data(),
             boundary_buffer.data(),
-            indices.size(),
+            tess_size,
+//            indices.size(),
             type,
             opacity,
             u0, v0, u1, v1);

@@ -54,16 +54,18 @@ int main() {
         canvas.clear({255,255,255,255});
         canvas.drawPolygon<
 //                polygons::hints::CONVEX,
+                polygons::hints::SIMPLE,
 //                polygons::hints::CONCAVE,
-            polygons::hints::SIMPLE,
-                // polygons::hints::SELF_INTERSECTING,
+//                polygons::hints::X_MONOTONE,
+//                polygons::hints::Y_MONOTONE,
+//                 polygons::hints::SELF_INTERSECTING,
                 blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, false>(
                 gradient2Colors,
 //                flatColor,
                 matrix_3x3<number>::identity(),
                 polygon.data(),
                 polygon.size(),
-                255);
+                100);
 
     };
 
