@@ -7,11 +7,11 @@ namespace microgl {
     namespace sampling {
 
         /**
-         * this sampler receives uniformly spaces (in x axis) 2d points in the unit rectangle space,
+         * this sampler receives  2d points in the unit rectangle space,
          * and samples crudely the function they approximate. This is a very fast sampler, that does
          * not allocate space, BUT it comes with some quirks:
          *
-         * 1. the spacing of the points should be uniform if you want to use stroke (this is the trick for speed)
+         * 1. the spacing of the points should be uniform (in x axis) if you want to use stroke (this is the trick for speed)
          * 2. If you use stroke, you need to test and adjust until you see pleasing results
          * 3. the sampler assumes it is being sampled from left to right in a rectangle, this is how it caches
          *    and finds the correct segment to compare if it is to the right/left of

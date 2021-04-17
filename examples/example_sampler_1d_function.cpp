@@ -2,7 +2,7 @@
 #define MICROGL_USE_STD_MATH
 #include <microgl/canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/samplers/uniform_function_sampler.h>
+#include <microgl/samplers/d1_function_sampler.h>
 
 #define W 640
 #define H 640

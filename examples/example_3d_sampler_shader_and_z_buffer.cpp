@@ -13,7 +13,7 @@
 #include <microgl/shaders/sampler_shader.h>
 #include <microgl/samplers/texture.h>
 #include <microgl/samplers/checker_board.h>
-#include <microgl/samplers/uniform_function_sampler.h>
+#include <microgl/samplers/d1_function_sampler.h>
 #include "data/model_3d_cube.h"
 
 #define W 640
