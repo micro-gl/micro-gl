@@ -5,13 +5,11 @@
 #include <microgl/matrix_3x3.h>
 #include <microgl/rect.h>
 #include <microgl/color.h>
-//#include <microgl/pixel_coder.h>
 #include <microgl/micro_gl_traits.h>
 #include <microgl/porter_duff/FastSourceOverOnOpaque.h>
 #include <microgl/porter_duff/DestinationIn.h>
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
-//#include <microgl/bitmaps/bitmap.h>
 #include <microgl/shader.h>
 #include <microgl/samplers/texture.h>
 #include <microgl/samplers/void_sampler.h>
@@ -24,7 +22,6 @@
 #include <microgl/tesselation/path.h>
 #include <microgl/tesselation/monotone_polygon_triangulation.h>
 #include <microgl/tesselation/ear_clipping_triangulation.h>
-#include <microgl/tesselation/fan_triangulation.h>
 #include <microgl/tesselation/bezier_patch_tesselator.h>
 #include <microgl/clippers/cohen_sutherland_clipper.h>
 #include <microgl/clippers/homo_triangle_clipper.h>

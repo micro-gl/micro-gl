@@ -34,8 +34,7 @@ dynamic_array<vec2<number>> poly_diamond() {
 }
 
 int main() {
-    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= canvas<Bitmap24>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using number = float;
 //    using number = Q<15>;
 
@@ -65,7 +64,7 @@ int main() {
                 matrix_3x3<number>::identity(),
                 polygon.data(),
                 polygon.size(),
-                100);
+                255);
 
     };
 
