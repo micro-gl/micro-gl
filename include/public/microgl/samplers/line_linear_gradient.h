@@ -15,14 +15,15 @@ namespace microgl {
          * @tparam N the number of gradient stops
          */
         template <typename number, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>,
-                 enum precision $precision=precision::medium, bool useBigIntegers=false>
+                 enum precision $precision=precision::medium>
         struct line_linear_gradient {
             using rgba = rgba_;
         private:
             using rint_big=int64_t;
-            using rint= typename microgl::traits::conditional<useBigIntegers, int64_t, int32_t>::type;
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
+            using rint= typename microgl::traits::conditional<p_bits>=16, int64_t, int32_t>::type;
             static constexpr precision_t p_bits_double= p_bits<<1;
+            static constexpr rint ONE= rint(1)<<p_bits;
             using point_int= vec2<rint>;
             using point= vec2<number>;
 
@@ -34,7 +35,7 @@ namespace microgl {
                     // in the distance function,
                     // BUT may cause overflow, so keep tabs on it and the distance function
                     a=n.x, b=n.y, c= -(n.dot(p)>>p_bits); // todo
-                    rint sqr=microgl::math::sqrt(int64_t (n.x*n.x + n.y*n.y));
+                    rint sqr=microgl::math::sqrt(unsigned (n.x*n.x + n.y*n.y));
                     if(sqr) inv_normal_length = (rint_big(1)<<p_bits_double)/sqr;
                 }
 
@@ -62,7 +63,7 @@ namespace microgl {
             };
 
             static inline
-            rint convert(rint from_value, int from_precision, int to_precision) {
+            rint convert(rint from_value, unsigned from_precision, unsigned to_precision) {
                 const int pp= int(from_precision) - int(to_precision);
                 if(pp==0) return from_value;
                 else if(pp > 0) return from_value>>pp;
@@ -132,7 +133,8 @@ namespace microgl {
                 const auto & stop_0= _stops[pos-1];
                 const auto & stop_1= _stops[pos];
                 const auto & l_inverse= _stops[pos].length_inverse;
-                const rint factor= (distance*l_inverse)>>p_bits;
+                rint factor= (distance*l_inverse)>>p_bits;
+                if(factor>ONE) factor=ONE;
                 output.r= rint(stop_0.color.r) + ((rint(stop_1.color.r-stop_0.color.r)*factor)>>p_bits);
                 output.g= rint(stop_0.color.g) + ((rint(stop_1.color.g-stop_0.color.g)*factor)>>p_bits);
                 output.b= rint(stop_0.color.b) + ((rint(stop_1.color.b-stop_0.color.b)*factor)>>p_bits);

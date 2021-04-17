@@ -79,90 +79,8 @@ void canvas<bitmap_type, options>::clear(const color_t &color) {
 
 template<typename bitmap_type, uint8_t options>
 template<typename BlendMode, typename PorterDuff, uint8_t a_src>
-inline void canvas<bitmap_type, options>::blendColor(const color_t &val, int x, int y, opacity_t opacity) {
-    blendColor<BlendMode, PorterDuff, a_src>(val, y*width() + x, opacity);
-}
-
-template<typename bitmap_type, uint8_t options>
-template<typename BlendMode, typename PorterDuff, uint8_t a_src>
-inline void canvas<bitmap_type, options>::blendColor(const color_t &val, int index, opacity_t opacity) {
-    // correct index position when window is not at the (0,0) costs one subtraction.
-    // we use it for sampling the backdrop if needed and for writing the output pixel
-    index -= _window.index_correction;
-    // we assume that the color conforms to the same pixel-coder. but we are flexible
-    // for alpha channel. if coder does not have an alpha channel, the color itself may
-    // have non-zero alpha channel, for which we emulate 8-bit alpha processing and also pre
-    // multiply result with alpha
-    constexpr bool hasBackdropAlphaChannel = pixel_coder::rgba::a != 0;
-    constexpr bool hasSrcAlphaChannel = a_src != 0;
-    constexpr uint8_t canvas_a_bits = hasBackdropAlphaChannel ? pixel_coder::rgba::a : (a_src ? a_src : 8);
-    constexpr uint8_t src_a_bits = a_src ? a_src : 8;
-    constexpr uint8_t alpha_bits = src_a_bits;
-    constexpr unsigned int alpha_max_value = uint16_t (1 << alpha_bits) - 1;
-    constexpr bool is_source_over = microgl::traits::is_same<PorterDuff, porterduff::FastSourceOverOnOpaque>::value;
-    constexpr bool none_compositing = microgl::traits::is_same<PorterDuff, porterduff::None<>>::value;
-    constexpr bool skip_blending =microgl::traits::is_same<BlendMode, blendmode::Normal>::value;
-    constexpr bool premultiply_result = !hasBackdropAlphaChannel;
-    const bool skip_all= skip_blending && none_compositing && opacity == 255;
-    static_assert(src_a_bits==canvas_a_bits, "src_a_bits!=canvas_a_bits");
-
-    const color_t & src = val;
-    static color_t result{};
-    static pixel output{};
-
-    if(!skip_all) {
-        static color_t backdrop{}, blended{};
-        // normal blend and none composite do not require a backdrop
-        if(!(skip_blending && none_compositing))
-            this->_bitmap_canvas->decode(index, backdrop); // not using getPixelColor to avoid extra subtraction
-
-        // support compositing even if the surface is opaque.
-        if(!hasBackdropAlphaChannel) backdrop.a = alpha_max_value;
-
-        if(is_source_over && src.a==0) return;
-
-        // if we are normal then do nothing
-        if(!skip_blending && backdrop.a!=0) { //  or backdrop alpha is zero is also valid
-            BlendMode::template blend<pixel_coder::rgba::r,
-                                      pixel_coder::rgba::g,
-                                      pixel_coder::rgba::b>(backdrop, src, blended);
-            // if backdrop alpha!= max_alpha let's first composite the blended color, this is
-            // an intermediate step before Porter-Duff
-            if(backdrop.a < alpha_max_value) {
-                // if((backdrop.a ^ _max_alpha_value)) {
-                unsigned int comp = alpha_max_value - backdrop.a;
-                // this is of-course a not accurate interpolation, we should
-                // divide by 255. bit shifting is like dividing by 256 and is FASTER.
-                // you will pay a price when bit count is low, this is where the error
-                // is very noticeable.
-                blended.r = (comp * src.r + backdrop.a * blended.r) >> alpha_bits;
-                blended.g = (comp * src.g + backdrop.a * blended.g) >> alpha_bits;
-                blended.b = (comp * src.b + backdrop.a * blended.b) >> alpha_bits;
-            }
-        }
-        else {
-            // skipped blending therefore use src color
-            blended.r = src.r; blended.g = src.g; blended.b = src.b;
-        }
-
-        // support alpha channel in case, source pixel does not have
-        blended.a = hasSrcAlphaChannel ? src.a : alpha_max_value;
-
-        // I fixed opacity is always 8 bits no matter what the alpha depth of the native canvas
-        if(opacity < 255)
-            blended.a =  (int(blended.a) * int(opacity)*int(257) + 257)>>16; // blinn method
-
-        // finally alpha composite with Porter-Duff equations,
-        // this should be zero-cost for None option with compiler optimizations
-        // if we do not own a native alpha channel, then please keep the composited result
-        // with premultiplied alpha, this is why we composite for None option, because it performs
-        // alpha multiplication
-        PorterDuff::template composite<alpha_bits, premultiply_result>(backdrop, blended, result);
-    } else
-        result = src;
-
-    coder().encode(result, output);
-    _bitmap_canvas->writeAt(index, output);
+void canvas<bitmap_type, options>::blendColor(const color_t &val, int x, int y, opacity_t opacity) {
+    blendColor<BlendMode, PorterDuff, a_src>(val, y*width() + x, opacity, *this);
 }
 
 template<typename bitmap_type, uint8_t options>
@@ -375,7 +293,7 @@ void canvas<bitmap_type, options>::drawArc_internal(const Sampler &sampler_fill,
 
             if (sample_stroke) {
                 sampler_fill.sample(u>>boost_u, v>>boost_v, uv_p, color);
-                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(color, (index+x_r), blend_stroke);
+                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(color, (index+x_r), blend_stroke, *this);
             }
         }
     }
@@ -504,11 +422,11 @@ void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill
             }
             if (!void_sampler_1 && sample_fill) {
                 sampler_fill.sample(u>>boost_u, v>>boost_v, uv_p, color);
-                blendColor<BlendMode, PorterDuff, Sampler1::rgba::a>(color, (index+x_r), blend_fill);
+                blendColor<BlendMode, PorterDuff, Sampler1::rgba::a>(color, (index+x_r), blend_fill, *this);
             }
             if (!void_sampler_2 && sample_stroke) {
                 sampler_stroke.sample(u>>boost_u, v>>boost_v, uv_p, color);
-                blendColor<BlendMode, PorterDuff, Sampler2::rgba::a>(color, (index+x_r), blend_stroke);
+                blendColor<BlendMode, PorterDuff, Sampler2::rgba::a>(color, (index+x_r), blend_stroke, *this);
             }
         }
     }
@@ -624,7 +542,7 @@ void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
                 else if(y==bbox_r_c.top && !clipped_top) blend= blend_top;
                 else if(y==bbox_r_c.bottom && !clipped_bottom) blend= blend_bottom;
                 sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
-                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + x, blend);
+                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + x, blend, *this);
             }
         }
     }
@@ -633,7 +551,7 @@ void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
         for (int y=bbox_r_c.top, v=v0+(dv>>1)+dy*dv; y<bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
             for (int x=bbox_r_c.left, u=u0+(du>>1)+dx*du; x<bbox_r_c.right; x++, u+=du) {
                 sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
-                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + x, opacity);
+                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + x, opacity, *this);
             }
         }
     }
@@ -729,14 +647,23 @@ void canvas<bitmap_type, options>::drawTriangles(const Sampler &sampler,
     triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
           [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
               const index &edge_0_id, const index &edge_1_id, const index &edge_2_id) {
-              const bool aa_2d= boundary_buffer!=nullptr;
               bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
-              if(aa_2d) {
-                  const boundary_info aa_info = boundary_buffer[idx];
-                  aa_first_edge = triangles::classify_boundary_info(aa_info, edge_0_id);
-                  aa_second_edge = triangles::classify_boundary_info(aa_info, edge_1_id);
-                  aa_third_edge = triangles::classify_boundary_info(aa_info, edge_2_id);
+              if(antialias) {
+                  if(boundary_buffer!=nullptr) {
+                      const boundary_info aa_info = boundary_buffer[idx];
+                      aa_first_edge = triangles::classify_boundary_info(aa_info, edge_0_id);
+                      aa_second_edge = triangles::classify_boundary_info(aa_info, edge_1_id);
+                      aa_third_edge = triangles::classify_boundary_info(aa_info, edge_2_id);
+                  }
+                  else if(type==indices::TRIANGLES_FAN_WITH_BOUNDARY) {
+                      // for fan triangulation, that requires AA and does not have a boundary buffer,
+                      // we can calculate the boundary in-place, instead of allocating memory
+                      aa_first_edge = idx==0;
+                      aa_second_edge = true;
+                      aa_third_edge = idx==(size-3);
+                  }
               }
+
               auto p1= vertices[first_index], p2=vertices[second_index], p3=vertices[third_index];
               vec2<number2> uv_s{u0,v0}, uv_e{u1,v1}, uv_d{u1-u0,v1-v0};
               auto uv1= uvs?uvs[first_index] : vec2<number2>(p1-min)/vec2<number2>(max-min);
@@ -957,7 +884,7 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
                 v_i = functions::clamp<rint>(v_i, 0, (rint(1)<<uv_precision));
                 color_t col_bmp;
                 sampler.sample(u_i, v_i, uv_precision, col_bmp);
-                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + p.x, blend);
+                blendColor<BlendMode, PorterDuff, Sampler::rgba::a>(col_bmp, index + p.x, blend, *this);
             }
             w0+=A01; w1+=A12; w2+=A20;
             if(antialias) { w0_h+=A01_h; w1_h+=A12_h; w2_h+=A20_h; }
@@ -1187,7 +1114,7 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
                 // because other wise this would have wasted bits for Q types although it would have been more elegant.
                 interpolated_varying.interpolate(varying_v0, varying_v1, varying_v2, bary);
                 auto color = $shader.fragment(interpolated_varying);
-                blendColor<BlendMode, PorterDuff, shader_type::rgba::a>(color, index + p.x, opacity_sample);
+                blendColor<BlendMode, PorterDuff, shader_type::rgba::a>(color, index + p.x, opacity_sample, *this);
             }
         }
     }
@@ -1291,7 +1218,7 @@ void canvas<bitmap_type, options>::drawMask(const masks::chrome_mode &mode,
             }
             col_bmp.r=0, col_bmp.g=0, col_bmp.b=0, col_bmp.a=a,
             // re-encode for a different canvas
-            blendColor<blendmode::Normal, porterduff::DestinationIn<true>, alpha_bits>(col_bmp, index + x, opacity);
+            blendColor<blendmode::Normal, porterduff::DestinationIn<true>, alpha_bits>(col_bmp, index + x, opacity, *this);
         }
     }
 }
@@ -1310,7 +1237,9 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
     if(void_sampler) return;
 
     indices type;
+    unsigned int tess_size=0;
     dynamic_array<index> indices;
+    dynamic_array<index> *indices_ptr = &indices;
     dynamic_array<boundary_info> boundary_buffer;
     dynamic_array<boundary_info> *boundary_buffer_ptr=antialias? &boundary_buffer: nullptr;
     switch (hint) {
@@ -1332,8 +1261,10 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         }
         case hints::CONVEX:
         {
-            using fan=microgl::tessellation::fan_triangulation<number1, dynamic_array>;
-            fan::compute(points, size, indices, boundary_buffer_ptr, type);
+            // for convex, we don't need tesselation, we can do it in-place without allocating memory
+            type=antialias ? microgl::triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY :
+                    microgl::triangles::indices::TRIANGLES_FAN;
+            tess_size=size;
             break;
         }
         case hints::NON_SIMPLE:
@@ -1351,6 +1282,7 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         default:
             return;
     }
+    if(indices.size()) tess_size=indices.size();
     const vec2<number2> * uvs= nullptr;//uv_map<number1, number2>::compute(points, size, u0, v0, u1, v1);
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(
             sampler, transform,
@@ -1358,7 +1290,8 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
             uvs,
             indices.data(),
             boundary_buffer.data(),
-            indices.size(),
+            tess_size,
+//            indices.size(),
             type,
             opacity,
             u0, v0, u1, v1);
@@ -1692,7 +1625,7 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
                         font_col.b = channel::mc<b_>(font_col.b, color.b);
                         font_col.a = channel::mc<a_>(font_col.a, color.a);
                     }
-                    blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_>(font_col, x, y, opacity);
+                    blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_>(font_col, x, y, opacity, *this);
                 }
             }
         }

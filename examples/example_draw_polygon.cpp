@@ -34,8 +34,7 @@ dynamic_array<vec2<number>> poly_diamond() {
 }
 
 int main() {
-    using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
-    using Canvas24= canvas<Bitmap24>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using number = float;
 //    using number = Q<15>;
 
@@ -54,9 +53,11 @@ int main() {
         canvas.clear({255,255,255,255});
         canvas.drawPolygon<
 //                polygons::hints::CONVEX,
+                polygons::hints::SIMPLE,
 //                polygons::hints::CONCAVE,
-            polygons::hints::SIMPLE,
-                // polygons::hints::SELF_INTERSECTING,
+//                polygons::hints::X_MONOTONE,
+//                polygons::hints::Y_MONOTONE,
+//                 polygons::hints::SELF_INTERSECTING,
                 blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, false>(
                 gradient2Colors,
 //                flatColor,

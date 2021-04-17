@@ -11,13 +11,13 @@ namespace microgl {
          * to a quadratic function interpolation to calculate interpolation factor
          */
         template <typename number, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>,
-                  enum precision $precision=precision::medium, bool useBigIntegers=false>
+                  enum precision $precision=precision::medium>
         struct fast_radial_gradient {
             using rgba = rgba_;
         private:
             using rint_big=int64_t;
-            using rint= typename microgl::traits::conditional<useBigIntegers, int64_t, int32_t>::type;
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
+            using rint= typename microgl::traits::conditional<p_bits>=16, int64_t, int32_t>::type;
             static constexpr precision_t p_bits_double= p_bits<<1;
             static constexpr rint ONE= rint(1)<<p_bits;
             static constexpr rint HALF= ONE>>1;

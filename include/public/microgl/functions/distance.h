@@ -6,7 +6,7 @@ namespace microgl {
     namespace functions {
 
         template<typename number>
-        static number length(number p_x, number p_y) {
+        static number length(const number &p_x, const number & p_y) {
             return microgl::math::sqrt(p_x*p_x + p_y*p_y);
         }
 

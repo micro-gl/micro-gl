@@ -9,7 +9,6 @@
 #include <microgl/bitmaps/bitmap.h>
 #include <microgl/samplers/texture.h>
 
-#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 480*1
 
@@ -21,7 +20,7 @@ int main() {
     using Texture32 = texture<bitmap<coder::RGBA8888_ARRAY>>;
     using number = float;
 
-    bool draw_first_mask = true;
+    constexpr bool draw_first_mask = false;
 
     Canvas24 canvas(W, H);
 

@@ -19,6 +19,7 @@ namespace microgl {
                 output.g=color.g;
                 output.b=color.b;
                 output.a=color.a;
+//                output=color;
             }
             color_t color;
         };

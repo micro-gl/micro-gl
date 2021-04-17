@@ -9,9 +9,9 @@ namespace microgl {
          * given an angle, compute the gradient line in the [0,1]x[0,1] box.
          */
         template <typename number, unsigned N=10, typename rgba_=rgba_t<8,8,8,0>,
-                enum precision $precision=precision::medium, bool useBigIntegers=false>
-        class angular_linear_gradient : public line_linear_gradient<number, N, rgba_, $precision, useBigIntegers> {
-            using base= line_linear_gradient<number, N, rgba_, $precision, useBigIntegers>;
+                enum precision $precision=precision::medium>
+        class angular_linear_gradient : public line_linear_gradient<number, N, rgba_, $precision> {
+            using base= line_linear_gradient<number, N, rgba_, $precision>;
             using point= vec2<number>;
 
             point intersect(const point &a, const point &b,
@@ -40,6 +40,7 @@ namespace microgl {
                 // center in unit box
                 const auto center= point(1, 1)/2;
                 const auto dir= point{microgl::math::cos(radians), microgl::math::sin(radians)};
+//                const auto dir= point{1,0};
                 // pre modified gradient line
                 const auto p1= center;
                 const auto p2= center + dir;

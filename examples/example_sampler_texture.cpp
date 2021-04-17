@@ -5,7 +5,6 @@
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/pixel_coders/RGBA8888_ARRAY.h>
 
-#define TEST_ITERATIONS 100
 #define W 640*1
 #define H 640*1
 
@@ -27,9 +26,9 @@ int main() {
 
     auto render = [&]() -> void {
         canvas.clear({255,255,255,255});
-        canvas.drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number, number_uv>(
-//                tex_uv,
-                tex_uv_32,
+        canvas.drawRect<blendmode::Normal, porterduff::None<>, false, number, number_uv>(
+                tex_uv,
+//                tex_uv_32,
                 0, 0, 300, 300,
                 255,
                 number_uv{0},number_uv{1},number_uv{1},number_uv{0});

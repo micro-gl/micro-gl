@@ -14,6 +14,13 @@ namespace microgl {
                     r{$r}, g{$g}, b{$b}, a{$a} {};
 //            color_t(const color_t &val) :
 //                        color_t(val.r, val.g, val.b, val.a){};
+            color_t & operator=(const color_t & rhs) {
+                r=rhs.r;
+                g=rhs.g;
+                b=rhs.b;
+                a=rhs.a;
+                return (*this);
+            }
             channel_t r=0, g=0, b=0, a=255;
         };
 
