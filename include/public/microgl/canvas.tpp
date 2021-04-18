@@ -173,28 +173,73 @@ void canvas<bitmap_type, options>::drawArc(const Sampler &sampler_fill,
     const precision p_uv = renderingOptions()._2d_raster_bits_uv;
 #define f_p(x) microgl::math::to_fixed((x), p)
 #define f_uv(x) microgl::math::to_fixed((x), p_uv)
-    drawArc_internal<BlendMode, PorterDuff, antialias>(
+    drawArcOrPie_internal<BlendMode, PorterDuff, antialias>(
             sampler_fill, f_p(centerX), f_p(centerY), f_p(radius),
-            f_p(stroke_size), full_circle, f_p(cone_ax), f_p(cone_ay),
+            f_p(stroke_size), full_circle, false, f_p(cone_ax), f_p(cone_ay),
             f_p(cone_bx), f_p(cone_by),
             f_uv(u0), f_uv(v0), f_uv(u1), f_uv(v1), p, p_uv, opacity);
 #undef f_uv
 #undef f_p
+}
 
+template<typename bitmap_type, uint8_t options>
+template<typename BlendMode, typename PorterDuff, bool antialias,
+        typename number1, typename number2, typename Sampler>
+void canvas<bitmap_type, options>::drawPie(const Sampler &sampler_fill,
+                                           const number1 &centerX, const number1 &centerY,
+                                           const number1 &radius,
+                                           number1 from_angle, number1 to_angle,
+                                           const bool clock_wise,
+                                           canvas::opacity_t opacity,
+                                           const number2 &u0, const number2 &v0,
+                                           const number2 &u1, const number2 &v1) {
+    constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
+    static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
+    if(void_sampler) return;
+    bool full_circle = (clock_wise && (to_angle-from_angle>=360)) ||
+                       (!clock_wise && (-to_angle+from_angle>=360));
+    bool empty_circle = (clock_wise && (to_angle-from_angle<=0)) ||
+                        (!clock_wise && (to_angle-from_angle>=0));
+    if(empty_circle) return;
+    from_angle=microgl::math::mod(from_angle, number1(360));
+    to_angle=microgl::math::mod(to_angle, number1(360));
+    const number1 cos1 = microgl::math::cos(microgl::math::deg_to_rad(from_angle));
+    const number1 sin1 = microgl::math::sin(microgl::math::deg_to_rad(from_angle));
+    const number1 cos2 = microgl::math::cos(microgl::math::deg_to_rad(to_angle));
+    const number1 sin2 = microgl::math::sin(microgl::math::deg_to_rad(to_angle));
+    number1 cone_ax = centerX + radius*cos1;
+    number1 cone_ay = centerY + radius*sin1;
+    number1 cone_bx = centerX + radius*cos2;
+    number1 cone_by = centerY + radius*sin2;
+    if(!clock_wise) {
+        microgl::functions::swap(cone_ax, cone_bx);
+        microgl::functions::swap(cone_ay, cone_by);
+    }
+    const precision p = renderingOptions()._2d_raster_bits_sub_pixel;
+    const precision p_uv = renderingOptions()._2d_raster_bits_uv;
+#define f_p(x) microgl::math::to_fixed((x), p)
+#define f_uv(x) microgl::math::to_fixed((x), p_uv)
+    drawArcOrPie_internal<BlendMode, PorterDuff, antialias>(
+            sampler_fill, f_p(centerX), f_p(centerY), f_p(radius),
+            0, full_circle, true, f_p(cone_ax), f_p(cone_ay),
+            f_p(cone_bx), f_p(cone_by),
+            f_uv(u0), f_uv(v0), f_uv(u1), f_uv(v1), p, p_uv, opacity);
+#undef f_uv
+#undef f_p
 }
 
 template<typename bitmap_type, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename Sampler>
-void canvas<bitmap_type, options>::drawArc_internal(const Sampler &sampler_fill,
-                                           const int centerX, const int centerY,
-                                           const int radius, const int stroke_size,
-                                           const bool full_circle,
-                                           const int cone_ax, const int cone_ay,
-                                           const int cone_bx, const int cone_by,
-                                           int u0, int v0,
-                                           int u1, int v1,
-                                           precision sub_pixel_precision, precision uv_p,
-                                           canvas::opacity_t opacity) {
+void canvas<bitmap_type, options>::drawArcOrPie_internal(const Sampler &sampler_fill,
+                                                         int centerX, int centerY,
+                                                         int radius, int stroke_size,
+                                                         bool full_circle, bool draw_pie,
+                                                         int cone_ax, int cone_ay,
+                                                         int cone_bx, int cone_by,
+                                                         int u0, int v0,
+                                                         int u1, int v1,
+                                                         precision sub_pixel_precision, precision uv_p,
+                                                         canvas::opacity_t opacity) {
     auto effectiveRect = calculateEffectiveDrawRect();
     if(effectiveRect.empty()) return;
     const precision p = sub_pixel_precision;
@@ -265,20 +310,24 @@ void canvas<bitmap_type, options>::drawArc_internal(const Sampler &sampler_fill,
             inside_radius = (distance_squared - radius_squared) <= 0;
 
             if (inside_radius) { // inside radius
-                const bool inside_stroke = (distance_squared - stroke_radius) >= 0;
-                if (inside_stroke) { // inside stroke disk
-                    blend_stroke = opacity;
-                    sample_stroke=true;
-                }
-                else { // outside stroke disk, let's sample for AA disk or radius inclusion
-                    const rint delta_inner_aa = -inner_aa_radius + distance_squared;
-                    const bool inside_inner_aa_ring = delta_inner_aa >= 0;
-                    if (antialias && inside_inner_aa_ring) {
-                        // scale inner to 8 bit and then convert to integer
-                        blend_stroke = ((delta_inner_aa) << (8)) / inner_aa_bend;
-                        if (apply_opacity) blend_stroke = (blend_stroke * opacity) >> 8;
+                if(!draw_pie) {
+                    const bool inside_stroke = (distance_squared - stroke_radius) >= 0;
+                    if (inside_stroke) { // inside stroke disk
+                        blend_stroke = opacity;
                         sample_stroke=true;
                     }
+                    else { // below stroke disk, let's sample for AA disk or radius inclusion
+                        const rint delta_inner_aa = -inner_aa_radius + distance_squared;
+                        const bool inside_inner_aa_ring = delta_inner_aa >= 0;
+                        if (antialias && inside_inner_aa_ring) {
+                            // scale inner to 8 bit and then convert to integer
+                            blend_stroke = ((delta_inner_aa) << (8)) / inner_aa_bend;
+                            if (apply_opacity) blend_stroke = (blend_stroke * opacity) >> 8;
+                            sample_stroke=true;
+                        }
+                    }
+                } else {
+                    sample_stroke=true;
                 }
             } else if (antialias) { // we are outside the main radius, AA the outer boundery
                 const int delta_outer_aa = outer_aa_radius - distance_squared;

@@ -451,27 +451,101 @@ public:
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
             typename number1, typename number2=number1, typename Sampler>
     void drawArc(const Sampler & sampler_fill,
-                    const number1 &centerX, const number1 &centerY,
-                    const number1 &radius, const number1 &stroke_size,
-                    number1 from_angle, number1 to_angle,
-                    bool clock_wise=true,
-                    opacity_t opacity=255,
-                    const number2 &u0=number2(0), const number2 &v0=number2(1),
-                    const number2 &u1=number2(1), const number2 &v1=number2(0));
+                 const number1 &centerX, const number1 &centerY,
+                 const number1 &radius, const number1 &stroke_size,
+                 number1 from_angle, number1 to_angle,
+                 bool clock_wise=true,
+                 opacity_t opacity=255,
+                 const number2 &u0=number2(0), const number2 &v0=number2(1),
+                 const number2 &u1=number2(1), const number2 &v1=number2(0));
+
+    /**
+     * Draw a Pie.
+     * Note: pay attention to the clock-wise argument, for example, clock-wise
+     * arcs, that have negative arc will be interpreted as empty arcs. This is
+     * done to support animations without quirks and bugs.
+     *
+     * @tparam BlendMode        the blend mode struct
+     * @tparam PorterDuff       the alpha compositing struct
+     * @tparam antialias        antialiasing flag
+     * @tparam number1          number type of position
+     * @tparam number2          number type of uv coords
+     * @tparam Sampler1         sampler type for stroke
+     *
+     * @param sampler_fill      fill sampler reference
+     * @param sampler_stroke    stroke sampler reference
+     * @param centerX           the center x-coord of the circle
+     * @param centerY           the center y-coord of the circle
+     * @param radius            the radius of the circle
+     * @param from_angle        arc start angle in degrees (not radians)
+     * @param to_angle          arc end angle in degrees (not radians)
+     * @param clock_wise        is it a clock-wise arc
+     * @param opacity           opacity [0..255]
+     * @param u0                uv coord
+     * @param v0                uv coord
+     * @param u1                uv coord
+     * @param v1                uv coord
+     *
+     */
+    template<typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false,
+            typename number1, typename number2=number1, typename Sampler>
+    void drawPie(const Sampler & sampler_fill,
+                 const number1 &centerX, const number1 &centerY,
+                 const number1 &radius,
+                 number1 from_angle, number1 to_angle,
+                 bool clock_wise=true,
+                 opacity_t opacity=255,
+                 const number2 &u0=number2(0), const number2 &v0=number2(1),
+                 const number2 &u1=number2(1), const number2 &v1=number2(0));
 
 private:
+
+    /**
+     * Draw a stroked arc or full Pie
+     *
+     * @tparam BlendMode        the blend mode struct
+     * @tparam PorterDuff       the alpha compositing struct
+     * @tparam antialias        antialiasing flag
+     * @tparam number1          number type of position
+     * @tparam number2          number type of uv coords
+     * @tparam Sampler1         sampler type for stroke
+     *
+     * @param sampler_fill      fill sampler reference
+     * @param sampler_stroke    stroke sampler reference
+     * @param centerX           the center x-coord of the circle
+     * @param centerY           the center y-coord of the circle
+     * @param radius            the radius of the circle
+     * @param stroke_size       if this is an arc, choose a stroke band
+     * @param draw_pie          true for pie, false for arc
+     * @param cone_ax           a.x point of cone
+     * @param cone_ay           a.y point of cone
+     * @param cone_ax           b.x point of cone
+     * @param cone_ay           b.y point of cone
+     * @param from_angle        arc start angle in degrees (not radians)
+     * @param to_angle          arc end angle in degrees (not radians)
+     * @param clock_wise        is it a clock-wise arc
+     * @param opacity           opacity [0..255]
+     * @param u0                uv coord
+     * @param v0                uv coord
+     * @param u1                uv coord
+     * @param v1                uv coord
+     * @param sub_pixel_precision
+     * @param uv_p
+     * @param opacity
+     */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename Sampler>
-    void drawArc_internal(const Sampler &sampler_fill,
-                          int centerX, int centerY,
-                          int radius, int stroke_size,
-                          bool full_circle,
-                          int cone_ax, int cone_ay,
-                          int cone_bx, int cone_by,
-                          int u0, int v0,
-                          int u1, int v1,
-                          precision sub_pixel_precision, precision uv_p,
-                          canvas::opacity_t opacity);
+    void drawArcOrPie_internal(const Sampler &sampler_fill,
+                               int centerX, int centerY,
+                               int radius, int stroke_size,
+                               bool full_circle, bool draw_pie,
+                               int cone_ax, int cone_ay,
+                               int cone_bx, int cone_by,
+                               int u0, int v0,
+                               int u1, int v1,
+                               precision sub_pixel_precision, precision uv_p,
+                               canvas::opacity_t opacity);
 
 public:
 
