@@ -103,21 +103,21 @@ namespace microgl {
                 rint distance2 = aaaa(distance) - _fraction_stroke;
 
                 output=color_background;
+                const bool stroke_flag=color_stroke.a!=0;
 
                 if((distance)<=0) {
                     output=color_fill;
                 }
-                else if (anti_alias && (distance < aa_band)) {
+                else if (anti_alias && !stroke_flag && (distance < aa_band)) {
                     const unsigned char factor = ((color_fill.a * (aa_band - distance)) >> aa_bits);
                     output=color_fill;
                     output.a=factor;
                 }
-
+                if(!stroke_flag) return;
                 if((distance2)<=0) {
                     output=color_stroke;
                 }
                 else if (anti_alias && (distance2 < aa_band2)) {
-                    const unsigned char factor = ((output.a*(aa_band-distance2)) >> aa_bits);
 //                    output= {255,255,255,255};
 //                    output.a=factor;
                         const color_t & st = color_stroke;
