@@ -16,7 +16,7 @@ int main() {
 
     rouned_rect_sampler<number> sampler{};
 
-    sampler.updatePoints({0.50,0.5}, {.9f, 0.9f},
+    sampler.updatePoints({0.50,0.5}, {.5, 0.6},
                          0.15, 0.05);
     sampler.color_fill= {0, 0, 0, 255};
 //    sampler.color_fill= {255, 255, 255, 0};

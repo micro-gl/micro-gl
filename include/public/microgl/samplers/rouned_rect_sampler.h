@@ -24,7 +24,7 @@ namespace microgl {
          * @tparam $precision precision
          */
         template <typename number, typename rgba_=rgba_t<8,8,8,8>, bool anti_alias=true,
-                enum precision $precision=precision::amazing>
+                enum precision $precision=precision::high>
         class rouned_rect_sampler {
         public:
             using rgba = rgba_;
