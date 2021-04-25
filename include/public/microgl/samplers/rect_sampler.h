@@ -8,13 +8,6 @@
 namespace microgl {
     namespace sampling {
 
-//        float sdSegment( in vec2 p, in vec2 a, in vec2 b )
-//        {
-//            vec2 pa = p-a, ba = b-a;
-//            float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
-//            return length( pa - ba*h );
-//        }
-
         /**
          * a capsule sampler
          *
@@ -25,7 +18,7 @@ namespace microgl {
          */
         template <typename number, typename rgba_=rgba_t<8,8,8,8>, bool anti_alias=true,
                 enum precision $precision=precision::high>
-        class rouned_rect_sampler {
+        class rect_sampler {
         public:
             using rgba = rgba_;
             using vertex = vec2<number>;
@@ -42,7 +35,7 @@ namespace microgl {
             color_t color_background= {(1u<<rgba::r)-1, (1u<<rgba::g)-1, (1u<<rgba::b)-1, 0};
             color_t color_stroke= {(1u<<rgba::r)-1, (1u<<rgba::g)-1, (1u<<rgba::b)-1, (1u<<rgba::a)-1};
 
-            rouned_rect_sampler() = default;
+            rect_sampler() = default;
 
         private:
             rint _fraction_radius, _fraction_stroke;
@@ -58,14 +51,12 @@ namespace microgl {
 
         public:
             void updatePoints(const vertex & center, const vertex & dim,
-                              number fraction_radius, number fraction_stroke) {
-                if(fraction_stroke>fraction_radius) fraction_stroke=fraction_radius;
-                _fraction_radius = microgl::math::to_fixed((fraction_radius) * (fraction_radius), p_bits);
-                _fraction_stroke = microgl::math::to_fixed((fraction_stroke) * (fraction_stroke), p_bits);
+                              number fraction_stroke) {
+                _fraction_stroke = microgl::math::to_fixed((fraction_stroke/number(2)) , p_bits);
                 _center.x = microgl::math::to_fixed(center.x, p_bits);
                 _center.y = microgl::math::to_fixed(center.y, p_bits);
-                _dim.x = microgl::math::to_fixed(dim.x/2.f - fraction_radius, p_bits);
-                _dim.y = microgl::math::to_fixed(dim.y/2.f - fraction_radius, p_bits);
+                _dim.x = microgl::math::to_fixed(dim.x/2.f, p_bits);
+                _dim.y = microgl::math::to_fixed(dim.y/2.f, p_bits);
             }
 
 #define aaaa(x) ((x)<0?-(x):(x))
@@ -80,19 +71,15 @@ namespace microgl {
                 auto pc = p-_center;
                 pc.x = aaaa(pc.x) - _dim.x;
                 pc.y = aaaa(pc.y) - _dim.y;
-                pc.x = pc.x < 0 ? 0 : pc.x;
-                pc.y = pc.y < 0 ? 0 : pc.y;
-                rint distance= ((pc.x*pc.x)>>p_bits) + ((pc.y*pc.y)>>p_bits);
-//                rint distance= mmmm(pc.x, pc.y);
+                rint distance= mmmm(pc.x, pc.y);
 
                 constexpr rint aa_bits = p_bits - 8 < 0 ? 0 : p_bits - 8;
-                constexpr rint aa_bits2 = aa_bits-1;
+                constexpr rint aa_bits2 = aa_bits+1;
                 constexpr rint aa_band = 1u << aa_bits;
                 constexpr rint aa_band2 = 1u << aa_bits2;
 
-                distance = (distance) - _fraction_radius;
-                rint distance2 = aaaa(distance) - _fraction_stroke;
-
+                distance = (distance) - 0;
+                rint distance2 = aaaa(distance)-_fraction_stroke;
                 output=color_background;
                 const bool stroke_flag=color_stroke.a!=0;
 
@@ -120,6 +107,7 @@ namespace microgl {
 
             }
 #undef aaaa
+#undef mmmm
         };
 
     }

@@ -62,6 +62,7 @@ if(SDL2_FOUND)
             example_sampler_1d_function.cpp
             example_sampler_quantize.cpp
             example_sampler_rounded_rect.cpp
+            example_sampler_rect.cpp
             example_draw_triangles_matrix_transforms.cpp
             example_3d_single_triangle_shaders_with_ortho.cpp
             example_3d_shaders_flat_color.cpp
