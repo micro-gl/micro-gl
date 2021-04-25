@@ -1,7 +1,7 @@
 #include "src/example.h"
 #include <microgl/canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/samplers/circle_sampler.h>
+#include <microgl/samplers/rect_sampler.h>
 
 #define W 640
 #define H 640
@@ -14,11 +14,12 @@ int main() {
     using number = float;
 //    using number = Q<12>;
 
-    circle_sampler<number> sampler{};
+    rect_sampler<number> sampler{};
 
-    sampler.updatePoints({0.50,0.5},
-                         0.5, 0.10);
+    sampler.updatePoints({0.50,0.5}, {.5, 0.5},
+                         0.025);
     sampler.color_fill= {0, 0, 0, 255};
+//    sampler.color_fill= {255, 255, 255, 0};
     sampler.color_background= {255, 255, 255, 0};
     sampler.color_stroke= {255, 255, 255, 255};
 

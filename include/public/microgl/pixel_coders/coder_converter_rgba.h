@@ -4,6 +4,7 @@
 
 namespace microgl {
     namespace coder {
+        using namespace microgl::color;
 
         /**
          * a coder that rescales it's rgba_t values. it is advised to use a custom one,
@@ -16,7 +17,6 @@ namespace microgl {
          */
         template<class from_coder, typename rgba_>
         struct coder_converter_rgba {
-
             using rgba = rgba_;
             using pixel = typename from_coder::pixel;
 

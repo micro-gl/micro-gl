@@ -1,7 +1,7 @@
 #include "src/example.h"
 #include <microgl/canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/samplers/circle_sampler.h>
+#include <microgl/samplers/white_noise_sampler.h>
 
 #define W 640
 #define H 640
@@ -14,21 +14,18 @@ int main() {
     using number = float;
 //    using number = Q<12>;
 
-    circle_sampler<number> sampler{};
-
-    sampler.updatePoints({0.50,0.5},
-                         0.5, 0.10);
-    sampler.color_fill= {0, 0, 0, 255};
-    sampler.color_background= {255, 255, 255, 0};
-    sampler.color_stroke= {255, 255, 255, 255};
-
+    white_noise_sampler<4> sampler{};
     Canvas24 canvas(W, H);
 
+
     auto render = [&]() -> void {
+        static long long counter = 0;
+        if(counter++%50==0)
+            sampler.update();
         canvas.clear({255,0,255,255});
-        canvas.drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
+        canvas.drawRect<blendmode::Normal, porterduff::None<>, false, number>(
                 sampler,
-                0, 0, 300, 300);
+                0, 0, 250, 250);
     };
 
     example_run(&canvas, render, 100);
