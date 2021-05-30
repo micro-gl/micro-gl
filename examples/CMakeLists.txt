@@ -12,19 +12,20 @@ set(CMAKE_CXX_FLAGS_RELEASE " -fno-rtti -fno-exceptions -fno-unwind-tables \
                             " CACHE INTERNAL "" FORCE)
 #-nostdlib
 message("using compiler: ${CMAKE_CXX_COMPILER_ID}")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(SDL2 REQUIRED)
 
 if(SDL2_FOUND)
-#    set(libs microgl)
     set(libs ${SDL2_LIBRARY} microgl)
 
+    message(${CMAKE_BINARY_DIR})
     message(${SDL2_FOUND})
     message(${SDL2_INCLUDE_DIR})
     message(${CMAKE_MODULE_PATH})
     message(${PROJECT_SOURCE_DIR})
+    message(${PROJECT_BINARY_DIR})
 
     set(SOURCES
             example_blocks_3d_raster.cpp
@@ -113,13 +114,18 @@ if(SDL2_FOUND)
         include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
         include_directories("${PROJECT_BINARY_DIR}")
         add_executable( ${testname} ${testsourcefile} ${SOURCES_SHARED} )
-#        add_executable( ${testname} ${testsourcefile}  )
+        #        add_executable( ${testname} ${testsourcefile}  )
         # Make sure YourLib is linked to each app
         target_link_libraries( ${testname} ${libs} )
+        # this is redundant, as target file dir is always delegated to CMAKE_RUNTIME_OUTPUT_DIRECTORY
         add_custom_command(TARGET ${testname} POST_BUILD COMMAND
                 ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets
                 $<TARGET_FILE_DIR:${testname}>/assets)
     endforeach( testsourcefile ${SOURCES} )
 
 endif()
+
+# newer clion does not make the binary executable location the current working dir,
+# so I copy the assets also to the top level build directory.
+file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 
