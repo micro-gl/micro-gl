@@ -89,7 +89,7 @@ namespace microgl {
             vertex vec = pt1==pt0 ? vertex{1,0} : pt1 - pt0;
             vertex normal = {vec.y, -vec.x};
             number length = microgl::functions::length(normal.x, normal.y);
-            vertex dir = (normal*stroke)/length;
+            vertex dir = length ? (normal*stroke)/length : normal*stroke;
             pt_out_0 = pt0 + dir;
             pt_out_1 = pt1 + dir;
         }
@@ -139,7 +139,7 @@ namespace microgl {
                 mag= mag<0 ? -mag : mag;
             }
             const number length= microgl::functions::length(pre_normal_join.x, pre_normal_join.y);
-            const vertex direction=(pre_normal_join*mag)/length;
+            const vertex direction=length ? (pre_normal_join*mag)/length : (pre_normal_join*mag);
             result.a = b + direction;
             result.b = result.a + vertex{direction.y, -direction.x};
             return result;
@@ -353,19 +353,20 @@ namespace microgl {
                     const vertex join_vertex= start;
                     output_vertices.push_back(join_vertex); index join_index = output_vertices.size()-1;
                     bool cls= classify_point(next.left, current.top, join_vertex)>=0;
-                    index first_index= cls ? current.top_index : next.bottom_index;
-                    index last_index= cls ? next.left_index : current.right_index;
+                    int first_index= cls ? current.top_index : next.bottom_index;
+                    int last_index= cls ? next.left_index : current.right_index;
+                    if(first_index!=-1 && last_index!=-1) {
+                        output_indices.push_back(join_index); b1;
+                        output_indices.push_back(join_index); b1;
+                        output_indices.push_back(first_index); b1;
+                        output_indices.push_back(join_index); b1;
+                        apply_line_join(line_join, first_index, join_index, last_index, stroke_size,
+                                        miter_limit, output_vertices, output_indices, boundary_buffer);
+                        // close the join and reinforce
+                        output_indices.push_back(last_index);b2;
+                        output_indices.push_back(join_index);b1;
+                        output_indices.push_back(join_index);b1;                    }
 
-                    output_indices.push_back(join_index); b1;
-                    output_indices.push_back(join_index); b1;
-                    output_indices.push_back(first_index); b1;
-                    output_indices.push_back(join_index); b1;
-                    apply_line_join(line_join, first_index, join_index, last_index, stroke_size,
-                                    miter_limit, output_vertices, output_indices, boundary_buffer);
-                    // close the join and reinforce
-                    output_indices.push_back(last_index);b2;
-                    output_indices.push_back(join_index);b1;
-                    output_indices.push_back(join_index);b1;
                 }
                 // second quad
                 // left wall intersection or last point on current left wall

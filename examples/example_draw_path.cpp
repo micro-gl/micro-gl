@@ -108,9 +108,10 @@ path_t<number> path_test() {
 }
 
 int main() {
-    using number = float;
+//    using number = float;
 //    using number = double;
-//    using number = Q<12>;
+//    using number = Q<14, long long>;
+    using number = Q<4, int32_t>;
 //    using number = Q<4>;
 
     using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
@@ -120,7 +121,7 @@ int main() {
 
     auto render_path = [&](path_t<number> & path) {
         canvas.clear({255, 255, 255, 255});
-        canvas.drawPathFill<blendmode::Normal, porterduff::None<>, false, false>(
+        canvas.drawPathFill<blendmode::Normal, porterduff::None<>, false, true>(
                 color_red,
                 matrix_3x3<number>::identity(),
                 path,
