@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
-template <unsigned P, typename container_integer=long long, typename intermediate_container_integer=long long>
+template <unsigned P, typename container_integer=long long,
+        typename intermediate_container_integer=long long>
 class Q {
 public:
     using integer = container_integer;
@@ -97,8 +98,8 @@ public:
     }
     q_ref operator /=(const_ref q) {
         const bool isNegative=_value<0;
-        integer value_abs=abs<intermediate_container_integer>(_value)<<P;
-        this->_value = value_abs/q.value();
+        intermediate_container_integer value_abs=abs<intermediate_container_integer>(_value)<<P;
+        this->_value = value_abs/(intermediate_container_integer)q.value();
         if(isNegative) this->_value = -this->_value;
         return *this;
     }

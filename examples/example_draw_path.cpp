@@ -111,7 +111,8 @@ int main() {
 //    using number = float;
 //    using number = double;
 //    using number = Q<8, long long>;
-    using number = Q<2, int32_t>;
+//    using number = Q<2, int64_t>;
+using number = Q<8, int32_t>;
 //    using number = Q<8>;
 
     using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
@@ -134,8 +135,8 @@ int main() {
     };
 
     auto render = [&]() {
-//        static auto path = path_star_2<number>();
-        static auto path = path_star<number>();
+        static auto path = path_star_2<number>();
+//        static auto path = path_star<number>();
 //        static auto path = path_rects<number>();
 //        auto path = path_arc_animation<number>();
 //        static auto path = path_test<number>();

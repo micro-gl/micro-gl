@@ -859,8 +859,8 @@ namespace microgl {
                         int a=0;
                     }
                     ////
-                    // perform test_texture #3
-                    bool is_abc_almost_a_line = is_distance_to_line_less_than_epsilon(c, a, b, number(1));
+                    // perform test #3
+                    bool is_abc_almost_a_line = is_distance_to_line_less_than_epsilon(c, a, b, number(0));
                     if(is_abc_almost_a_line) {
                         // if it is almost a line, then (v,b) edge eligible for removal
                         remove_edge(candidate_edge);
@@ -873,6 +873,7 @@ namespace microgl {
         template <typename number, template<typename...> class container_type>
         bool planarize_division<number, container_type>::is_distance_to_line_less_than_epsilon(
                 const vertex &v, const vertex &a, const vertex &b, number epsilon) {
+//            return false;
             // we use the equation 2*A = h*d(a,b)
             // where A = area of triangle spanned by (a,b,v), h= distance of v to (a,b)
             // we raise everything to quads to avoid square function and we avoid division.
