@@ -1486,6 +1486,7 @@ namespace microgl {
                     alpha = numerator_1/dem;
                     // alpha1 = numerator_2/dem;
                     intersection = a + (ab*numerator_1)/dem;
+//                    intersection = a + ab*(numerator_1/dem);
                 }
             }
             return intersection_status::intersect;

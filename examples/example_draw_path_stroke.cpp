@@ -111,12 +111,12 @@ path_t<number> path_test() {
 }
 
 int main() {
-    using number = float;
+//    using number = float;
 //    using number = double;
 //    using number = Q<12>;
 //    using number = Q<4>;
 //    using number = Q<14, long long>;
-//    using number = Q<4, int32_t>;
+    using number = Q<12, int32_t>;
 //    using number = Q<4, int64_t>;
 
     using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
@@ -126,7 +126,7 @@ int main() {
     Canvas24 canvas(W, H);
 
     auto render_path = [&](path_t<number> & path) {
-        t+=0.0125f;
+        t+=0.125f;
 
         canvas.clear({255, 255, 255, 255});
         canvas.drawPathStroke<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false>(
@@ -134,8 +134,8 @@ int main() {
                 matrix_3x3<number>::identity(),
                 path,
                 number{12},
-                tessellation::stroke_cap::butt,
-//                tessellation::stroke_cap::round,
+//                tessellation::stroke_cap::butt,
+                tessellation::stroke_cap::round,
 //                tessellation::stroke_cap::square,
 //                tessellation::stroke_line_join::bevel,
 //                tessellation::stroke_line_join::miter,

@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-template <unsigned P, typename container_integer=long long>
+template <unsigned P, typename container_integer=long long, typename intermediate_container_integer=long long>
 class Q {
 public:
     using integer = container_integer;
@@ -19,8 +19,13 @@ private:
                        this->precision);
     }
 
+    template<class number>
+            static inline
+            number abs(const number & val) {
+        return val<0?-val:val;
+    }
     static inline
-    integer abs(const integer & val) {
+    integer abs2(const integer & val) {
         return val<0?-val:val;
     }
     static inline
@@ -84,15 +89,15 @@ public:
         return *this;
     }
     q_ref operator *=(const_ref q) {
-        long long inter = ((long long)this->_value*q.value());
+        intermediate_container_integer inter = ((intermediate_container_integer)this->_value*q.value());
         const bool isNegative=inter<0;
-        this->_value = abs(inter)>>P;
+        this->_value = abs<intermediate_container_integer>(inter)>>P;
         if(isNegative) this->_value = -this->_value;
         return *this;
     }
     q_ref operator /=(const_ref q) {
         const bool isNegative=_value<0;
-        integer value_abs=abs(_value)<<P;
+        integer value_abs=abs<intermediate_container_integer>(_value)<<P;
         this->_value = value_abs/q.value();
         if(isNegative) this->_value = -this->_value;
         return *this;

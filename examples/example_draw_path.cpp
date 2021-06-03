@@ -110,9 +110,9 @@ path_t<number> path_test() {
 int main() {
 //    using number = float;
 //    using number = double;
-//    using number = Q<14, long long>;
-    using number = Q<4, int32_t>;
-//    using number = Q<4>;
+//    using number = Q<8, long long>;
+    using number = Q<2, int32_t>;
+//    using number = Q<8>;
 
     using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
     sampling::flat_color<> color_red {{255,0,255,255}};
@@ -134,8 +134,8 @@ int main() {
     };
 
     auto render = [&]() {
-        static auto path = path_star_2<number>();
-//        static auto path = path_star<number>();
+//        static auto path = path_star_2<number>();
+        static auto path = path_star<number>();
 //        static auto path = path_rects<number>();
 //        auto path = path_arc_animation<number>();
 //        static auto path = path_test<number>();
