@@ -860,7 +860,7 @@ namespace microgl {
                     }
                     ////
                     // perform test #3
-                    bool is_abc_almost_a_line = is_distance_to_line_less_than_epsilon(c, a, b, number(0));
+                    bool is_abc_almost_a_line = is_distance_to_line_less_than_epsilon(c, a, b, number(1));
                     if(is_abc_almost_a_line) {
                         // if it is almost a line, then (v,b) edge eligible for removal
                         remove_edge(candidate_edge);
@@ -879,11 +879,23 @@ namespace microgl {
             // we raise everything to quads to avoid square function and we avoid division.
             // while this is more robust, you have to make sure that your number type will
             // not overflow (use 64 bit for fixed point integers)
-            number numerator= abs__((b.x - a.x) * (v.y - a.y) - (v.x - a.x) * (b.y - a.y)); // 2*A
-            number numerator_quad = numerator*numerator; // (2A)^2
+            number numerator= (b.x - a.x) * (v.y - a.y) - (v.x - a.x) * (b.y - a.y); // 2*A
+            number numerator_abs= abs__(numerator); // 2*A
+            number numerator_abs2= abs__((b.x - a.x) * (v.y - a.y) - (v.x - a.x) * (b.y - a.y)); // 2*A
+            number numerator_quad = numerator_abs*numerator_abs; // (2A)^2
             number ab_length_quad = (b.y - a.y)*(b.y - a.y) + (b.x - a.x)*(b.x - a.x); // (length(a,b))^2
             number epsilon_quad = epsilon*epsilon;
+
+//            return numerator_abs.toFloat() < epsilon.toFloat()*std::sqrt(ab_length_quad.toFloat());
+            // error detection, this fights overflows that wraps to negative, and because merging is optional
+            // we can avoid
+            if(numerator_quad<number(0))
+                return false;
+//            return numerator_abs < epsilon*(ab_length_quad.sqrt());
+            if(epsilon==number(1))
+                return numerator_quad < ab_length_quad;
             return numerator_quad < epsilon_quad*ab_length_quad;
+//            return numerator_quad/epsilon_quad < ab_length_quad;
         }
 
         template <typename number, template<typename...> class container_type>

@@ -177,8 +177,8 @@ namespace microgl {
             return result;
         }
 
-#define abs__(x) ((x<0)?(-x):(x))
-#define min__(a,b) ((a<b)?(a):(b))
+#define abs__(x) (((x)<0)?(-(x)):(x))
+#define min__(a,b) (((a)<(b))?(a):(b))
 #define max__(a, b) ((a)>(b) ? (a) : (b))
 
         template<typename number, template<typename...> class container_type>

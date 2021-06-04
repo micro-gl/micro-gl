@@ -5,6 +5,8 @@
 
 #include <microgl/tesselation/half_edge.h>
 #include <microgl/chunker.h>
+#include <cmath>
+using namespace std;
 
 #if DEBUG_PLANAR==true
 #include <stdexcept>
