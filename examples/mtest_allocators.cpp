@@ -389,7 +389,9 @@ public:
             std::cout << "- free list was empty, assigned the block" << std::endl;
             _free_list_root = new_block.header();
         }
-        else if(left_hint_node) { // insert link
+        // if coalesce happened, then we can use the locations to insert
+        // into the sorted list in O(1) instead of searching
+        else if(left_hint_node) { // insert to the right of hint
             new_block.header()->next = left_hint_node->next;
             new_block.header()->prev = left_hint_node;
             if(left_hint_node->next)
@@ -397,15 +399,19 @@ public:
             left_hint_node->next = new_block.header();
             std::cout << "- used left hint node" << std::endl;
         }
-        else if(right_hint_node) {
+        else if(right_hint_node) { // insert to the left of hint
             new_block.header()->next = right_hint_node;
             new_block.header()->prev = right_hint_node->prev;
             if(right_hint_node->prev)
                 right_hint_node->prev->next = new_block.header();
             right_hint_node->prev = new_block.header();
+            // we insert to the left of hint, and if hint was the root,
+            // we need to replace
+            if(_free_list_root==right_hint_node)
+                _free_list_root=new_block.header();
             std::cout << "- used right hint node" << std::endl;
         }
-        else { // search the entire list in order ascending
+        else { // search the entire free list in ascending address order
             std::cout << "- searching the entire free list, ascending order" << std::endl;
             auto * current_node = _free_list_root;
             auto * current_node_before = current_node;
@@ -463,7 +469,7 @@ char bbb[3];
 
 int main() {
     using byte= unsigned char;
-    const int size = 1024+16;
+    const int size = 5000;
     byte memory[size];
 
     allocator alloc{memory, size, 8};
@@ -472,10 +478,12 @@ int main() {
     void * a2 = alloc.allocate(200);
     void * a3 = alloc.allocate(200);
     void * a4 = alloc.allocate(200);
-//    alloc.free(a1);
-//    alloc.free(a2);
-//    alloc.free(a3);
+    void * a5 = alloc.allocate(200);
+    void * a6 = alloc.allocate(200);
+    alloc.free(a2);
     alloc.free(a4);
+    alloc.free(a6);
+    alloc.free(a3);
 
 //    alloc.free(a3);
 
