@@ -3,14 +3,14 @@
 #include <iostream>
 #include <new>
 
-int test_dynamic_allocator() {
+void test_dynamic_allocator() {
     using byte= unsigned char;
     const int size = 5000;
     byte memory[size];
 
     dynamic_allocator<> alloc{memory, size};
 
-    void * a1 = alloc.allocate(200);
+    void * a1 = alloc.allocate(3);
     void * a2 = alloc.allocate(200);
     void * a3 = alloc.allocate(200);
     void * a4 = alloc.allocate(200);
@@ -22,8 +22,29 @@ int test_dynamic_allocator() {
     alloc.free(a3);
 }
 
+void test_pool_allocator() {
+    using byte= unsigned char;
+    const int size = 1024;
+    byte memory[size];
+
+    pool_allocator<> alloc{memory, size, 256, true};
+
+    void  * p1 = alloc.allocate();
+    void  * p2 = alloc.allocate();
+    void  * p3 = alloc.allocate();
+    void  * p4 = alloc.allocate();
+
+    alloc.free(p1);
+    alloc.free(p1);
+//    alloc.free((void *)(memory+256));
+
+//    alloc.free(p1);
+//    alloc.free(p1);
+}
+
 
 
 int main() {
     test_dynamic_allocator();
+//    test_pool_allocator();
 }

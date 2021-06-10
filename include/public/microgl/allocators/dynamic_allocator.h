@@ -32,7 +32,6 @@ template<typename uintptr_type=unsigned long,
             using uint = unsigned int;
             using uptr = uintptr_type;
             void * _ptr;
-
             uint _size;
 
             static
@@ -59,8 +58,6 @@ template<typename uintptr_type=unsigned long,
 
             template<typename T>
             T int_to(uptr integer) { return reinterpret_cast<T>(integer); }
-
-        public:
 
             struct base_header_t {
                 uptr size_and_status=0;
@@ -89,9 +86,7 @@ template<typename uintptr_type=unsigned long,
                 header_t * next=nullptr;
             };
 
-            header_t * int_to_header_ptr(uptr integer) {
-                return reinterpret_cast<header_t *>(integer);
-            }
+            header_t *_free_list_root = nullptr;
 
             struct block_t {
                 uptr aligned_from=0, aligned_to=0;
@@ -213,7 +208,6 @@ template<typename uintptr_type=unsigned long,
                 return block;
             }
 
-            header_t *_free_list_root = nullptr;
         public:
             dynamic_allocator(void * ptr, unsigned int size_bytes) :
             _ptr(ptr), _size(size_bytes) {
