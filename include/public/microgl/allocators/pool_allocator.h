@@ -1,6 +1,6 @@
 #pragma once
 
-#define DEBUG_ALLOCATOR
+//#define DEBUG_ALLOCATOR
 
 #ifdef DEBUG_ALLOCATOR
 #include <iostream>
@@ -96,6 +96,14 @@ template<typename uintptr_type=unsigned long,
                 return _free_blocks_count;
             }
 
+            uptr start_aligned_address() const {
+                return align_up(ptr_to_int(_ptr));
+            }
+
+            uptr end_aligned_address() const {
+                return align_down(ptr_to_int(_ptr) + _size);
+            }
+
             /**
              *
              * @param ptr start of memory
@@ -110,7 +118,7 @@ template<typename uintptr_type=unsigned long,
             _ptr(ptr), _size(size_bytes), _block_size(0),
             _guard_against_double_free(guard_against_double_free) {
 #ifdef DEBUG_ALLOCATOR
-                std::cout << std::endl << "mem pool_allocator hello"<< std::endl;
+                std::cout << std::endl << "HELLO:: pool allocator hello"<< std::endl;
                 std::cout << "* correct block size due to headers and alignment is "
                 << correct_block_size(block_size) << " bytes" <<std::endl;
                 std::cout << "* requested alignment is " << alignment << " bytes" << std::endl;
@@ -151,10 +159,14 @@ template<typename uintptr_type=unsigned long,
             }
 
             void * allocate(uptr size_bytes_dont_matter=0) {
+#ifdef DEBUG_ALLOCATOR
+                std::cout << std::endl << "ALLOCATE:: pool allocator"
+                          << std::endl;
+#endif
+
                 if(_free_list_root==nullptr) {
 #ifdef DEBUG_ALLOCATOR
-                    std::cout << std::endl << "ALLOCATE:: no free blocks are available"
-                              << std::endl;
+                    std::cout << "- no free blocks are available" << std::endl;
 #endif
                     return nullptr;
                 }
@@ -163,22 +175,24 @@ template<typename uintptr_type=unsigned long,
                 _free_blocks_count-=1;
 
 #ifdef DEBUG_ALLOCATOR
-                std::cout << std::endl << "ALLOCATE:: handed a free block @"
+                std::cout << "- handed a free block @"
                           << ptr_to_int(current_node) << std::endl;
+                std::cout << "- free blocks in pool [" << _free_blocks_count << "/"
+                << _blocks_count << "]" << std::endl;
 #endif
 
-                print_free_list();
                 return current_node;
             }
 
             bool free(void * pointer) {
                 auto address = ptr_to_int(pointer);
+                const uptr min_range = align_up(ptr_to_int(_ptr));
+                const uptr max_range = align_down(ptr_to_int(_ptr) + _size);
+                const bool is_in_range = address >= min_range && address < max_range;
 
 #ifdef DEBUG_ALLOCATOR
-                std::cout << std::endl << "FREE:: address @ " << address <<std::endl;
-                uptr min_range = align_up(ptr_to_int(_ptr));
-                uptr max_range = align_down(ptr_to_int(_ptr) + _size);
-                bool is_in_range = address >= min_range && address < max_range;
+                std::cout << std::endl << "FREE:: pool allocator " << std::endl
+                          << "- free a block address @ " << address << std::endl;
 #endif
                 if(!is_in_range) {
 #ifdef DEBUG_ALLOCATOR
@@ -219,13 +233,18 @@ template<typename uintptr_type=unsigned long,
                 block->next = _free_list_root;
                 _free_list_root = block;
                 _free_blocks_count+=1;
-                print_free_list();
+
+#ifdef DEBUG_ALLOCATOR
+                std::cout << "- free blocks in pool [" << _free_blocks_count << "/"
+                          << _blocks_count << "]" << std::endl;
+#endif
+
                 return true;
             }
 
             void print_free_list() const {
 #ifdef DEBUG_ALLOCATOR
-                std::cout << std::endl << "PRINT:: free list " << std::endl;
+                std::cout << std::endl << "PRINT:: pool allocator " << std::endl;
                 std::cout << "- free list is [" << _free_blocks_count << "/" << _blocks_count << "]" << std::endl;
                 std::cout << std::endl;
 #endif

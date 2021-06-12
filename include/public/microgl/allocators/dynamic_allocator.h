@@ -1,6 +1,6 @@
 #pragma once
 
-#define DEBUG_ALLOCATOR
+//#define DEBUG_ALLOCATOR
 
 #ifdef DEBUG_ALLOCATOR
 #include <iostream>
@@ -209,15 +209,24 @@ template<typename uintptr_type=unsigned long,
             }
 
         public:
+
+            uptr start_aligned_address() const {
+                return align_up(ptr_to_int(_ptr));
+            }
+
+            uptr end_aligned_address() const {
+                return align_down(ptr_to_int(_ptr) + _size);
+            }
+
             dynamic_allocator(void * ptr, unsigned int size_bytes) :
             _ptr(ptr), _size(size_bytes) {
 #ifdef DEBUG_ALLOCATOR
-                std::cout << std::endl << "mem dynamic_allocator hello"<< std::endl;
+                std::cout << std::endl << "HELLO:: dynamic allocator hello"<< std::endl;
                 std::cout << "* minimal block size due to headers, footers and alignment is "
                 << minimal_size_of_any_block() << " bytes" <<std::endl;
                 std::cout << "* requested alignment is " << alignment << " bytes" << std::endl;
 #endif
-                _ptr = ptr;//int_to_ptr(from);
+                _ptr = ptr;
                 auto block = create_free_block(ptr_to_int(ptr), ptr_to_int(ptr) + size_bytes);
                 bool is_memory_valid = block.size() >= minimal_size_of_any_block();
 #ifdef DEBUG_ALLOCATOR
@@ -239,8 +248,9 @@ template<typename uintptr_type=unsigned long,
             void * allocate(uptr size_bytes) {
                 size_bytes = align_up(size_bytes);
 #ifdef DEBUG_ALLOCATOR
-                std::cout << std::endl << "ALLOCATE:: requested " << size_bytes
-                << " bytes (aligned up)"<< std::endl;
+                std::cout << std::endl << "ALLOCATE:: dynamic allocator " << std::endl
+                          << "- requested block size is " << size_bytes
+                          << " bytes (aligned up)" << std::endl;
 #endif
                 auto * current_node = _free_list_root;
                 header_t * best_node= nullptr;
@@ -296,7 +306,7 @@ template<typename uintptr_type=unsigned long,
                 std::cout << "- fulfilled:: block of size " << resolved_header->base.size()
                 << " bytes (aligned up)"<< std::endl;
                 std::cout << "              address is " << address << std::endl;
-                print_free_list();
+                print_free_list(true);
 #endif
                 void * ptr = int_to_ptr(address);
                 return ptr;
@@ -306,7 +316,8 @@ template<typename uintptr_type=unsigned long,
                 auto address = ptr_to_int(pointer);
 
 #ifdef DEBUG_ALLOCATOR
-                std::cout << std::endl << "FREE:: address @ " << address <<std::endl;
+                std::cout << std::endl << "FREE:: dynamic allocator" << std::endl
+                          << "- address @ " << address << std::endl;
 #endif
                 if(!is_aligned(address)) {
 #ifdef DEBUG_ALLOCATOR
@@ -462,13 +473,14 @@ template<typename uintptr_type=unsigned long,
 
                 }
 
-                print_free_list();
+                print_free_list(true);
                 return true;
             }
 
-            void print_free_list() const {
+            void print_free_list(bool embed=false) const {
 #ifdef DEBUG_ALLOCATOR
-                std::cout << std::endl << "PRINT:: free list " << std::endl;
+                if(!embed)
+                    std::cout << std::endl << "PRINT:: dynamic allocator " << std::endl;
                 if(!_free_list_root) {
                     std::cout << "- free list is empty" << std::endl;
                     return;
