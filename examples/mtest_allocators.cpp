@@ -49,7 +49,9 @@ void test_dynamic_allocator() {
     void * a2 = alloc.allocate(200);
     void * a3 = alloc.allocate(200);
     alloc.free(a3);
-    alloc.free(a3);
+    alloc.free(a1);
+    alloc.free(a2);
+    alloc.free(a2);
 //    void * a4 = alloc.allocate(200);
 //    void * a5 = alloc.allocate(200);
 //    void * a6 = alloc.allocate(200);
@@ -110,8 +112,8 @@ void test_linear_allocator() {
 
 
 int main() {
-    test_stack_allocator();
-//    test_dynamic_allocator();
+//    test_stack_allocator();
+    test_dynamic_allocator();
 //    test_pool_allocator();
 //    test_linear_allocator();
 }
