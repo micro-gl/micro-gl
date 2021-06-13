@@ -6,7 +6,7 @@ set (CMAKE_CXX_STANDARD 11)
 
 message("===============\n${PROJECT_NAME} project \n===============")
 
-add_library(${PROJECT_NAME} INTERFACE include/public/microgl/allocators/dynamic_allocator.h)
+add_library(${PROJECT_NAME} INTERFACE)
 
 # expose public include directory
 target_include_directories(${PROJECT_NAME}
