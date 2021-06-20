@@ -386,7 +386,7 @@ namespace rapidxml
         typedef void (free_func)(void *);              // Type of user-defined function used to free memory
         //! \endcond
         
-        //! Constructs empty pool with default allocator functions.
+        //! Constructs empty pool with default dynamic_allocator functions.
         memory_pool()
             : m_alloc_func(0)
             , m_free_func(0)
