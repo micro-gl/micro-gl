@@ -99,6 +99,8 @@ if(SDL2_FOUND)
             mtest_q_sort.cpp
             mtest_Q.cpp
             mtest_allocators.cpp
+            mtest_containers_alloc.cpp
+            mtest_poly_allocators.cpp
             )
 
     set(SOURCES_SHARED
@@ -114,6 +116,7 @@ if(SDL2_FOUND)
         include_directories("${PROJECT_SOURCE_DIR}/src")
         include_directories("${PROJECT_SOURCE_DIR}/libs/stb_image")
         include_directories("${PROJECT_BINARY_DIR}")
+
         add_executable( ${testname} ${testsourcefile} ${SOURCES_SHARED} )
         #        add_executable( ${testname} ${testsourcefile}  )
         # Make sure YourLib is linked to each app

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.21.1)
 project(microgl)
 
 enable_language(CXX)
@@ -6,7 +6,7 @@ set (CMAKE_CXX_STANDARD 11)
 
 message("===============\n${PROJECT_NAME} project \n===============")
 
-add_library(${PROJECT_NAME} INTERFACE)
+add_library(${PROJECT_NAME} INTERFACE include/public/microgl/allocators/memory_resource.h include/public/microgl/allocators/polymorphic_allocator.h)
 
 # expose public include directory
 target_include_directories(${PROJECT_NAME}

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "memory_resource.h"
 //#define DEBUG_ALLOCATOR
 
 #ifdef DEBUG_ALLOCATOR
@@ -37,46 +38,24 @@
  *   - I test that pointers are aligned to the requested alignment.
  *
  * @tparam uintptr_type unsigned integer type that can hold a pointer
- * @tparam alignment alignment requirement, must be valid power of 2, that can satisfy
- *         the highest alignment requirement that you wish to store in the memory dynamic_allocator.
- *         alignment of atomic types usually equals their size.
- *         alignment of struct types equals the maximal alignment among it's member types.
- *         if you have std lib, you can infer these, otherwise, just plug them if you know
  *
  * @author Tomer Riko Shalev
  */
-template<typename uintptr_type=unsigned long, uintptr_type alignment=sizeof(uintptr_type)>
-class dynamic_allocator {
+template<typename uintptr_type=unsigned long>
+class dynamic_memory : public memory_resource<uintptr_type> {
 private:
-    using uint = unsigned int;
-    using uptr = uintptr_type;
+    using base = memory_resource<uintptr_type>;
+    using typename base::uptr;
+    using typename base::uint;
+    using base::align_up;
+    using base::align_down;
+    using base::is_aligned;
+    using base::ptr_to_int;
+    using base::int_to_ptr;
+    using base::int_to;
+
     void * _ptr;
     uint _size;
-
-    static
-    inline uptr align_up(const uptr address)
-    {
-        constexpr uptr align_m_1 = alignment - 1;
-        constexpr uptr b = ~align_m_1;
-        uptr a = (address+align_m_1);
-        uptr c = a & b;
-        return c;
-    }
-
-    static inline
-    uptr is_aligned(const uptr address) { return align_down(address)==address; }
-
-    static inline uptr align_down(const uptr address)
-    {
-        constexpr uptr a = ~(alignment - 1);
-        return (address & a);
-    }
-
-    static uptr ptr_to_int(void * pointer) { return reinterpret_cast<uptr>(pointer); }
-    static void * int_to_ptr(uptr integer) { return reinterpret_cast<void *>(integer); }
-
-    template<typename T>
-    T int_to(uptr integer) { return reinterpret_cast<T>(integer); }
 
     struct base_header_t {
         uptr size_and_status=0;
@@ -109,12 +88,14 @@ private:
 
     struct block_t {
         uptr aligned_from=0, aligned_to=0;
+        const dynamic_memory<uintptr_type> * allocator;
+
         header_t * header() const {
             return reinterpret_cast<header_t *>(aligned_from);
         }
         footer_t * footer() const {
             return reinterpret_cast<footer_t *>(aligned_to -
-            align_up(sizeof (footer_t)));
+            allocator->align_up(sizeof (footer_t)));
         }
         uptr size() const {
             return header()->base.size();
@@ -141,6 +122,7 @@ private:
         block_t result;
         result.aligned_from = align_up(from);
         result.aligned_to = align_down(to);
+        result.allocator = this;
         result.set_size_and_status(result.aligned_to-result.aligned_from, false);
         result.header()->prev=nullptr;
         result.header()->next=nullptr;
@@ -151,6 +133,7 @@ private:
         block_t result;
         result.aligned_from = align_up(from);
         result.aligned_to = result.aligned_from+result.size();
+        result.allocator = this;
         return result;
     }
 
@@ -198,7 +181,7 @@ private:
         uptr required_allocated_block_size =
                 compute_required_block_size_by_payload_size(payload_size);
         // min acceptable size of right free block
-        uptr required_free_block_size = minimal_size_of_any_block() + alignment;
+        uptr required_free_block_size = minimal_size_of_any_block() + this->alignment;
         bool has_space = required_allocated_block_size + required_free_block_size
                 <= block->base.size();
         if(has_space) {
@@ -234,30 +217,40 @@ private:
 
 public:
 
-    uptr available_size() const {
+    uptr available_size() const override {
         const uptr max = end_aligned_address() - start_aligned_address();
         return max - _allocations;
     }
 
     uptr start_aligned_address() const {
-        return align_up(ptr_to_int(_ptr));
+        return align_up(this->ptr_to_int(_ptr));
     }
 
     uptr end_aligned_address() const {
-        return align_down(ptr_to_int(_ptr) + _size);
+        return align_down(this->ptr_to_int(_ptr) + _size);
     }
 
-    dynamic_allocator(void * ptr, unsigned int size_bytes) :
-        _ptr(ptr), _size(size_bytes) {
+    /**
+     * ctor
+     *
+     * @param ptr pointer of starting pool
+     * @param size_bytes amount of bytes
+     * @param alignment alignment has to be a power of 2 that is divisible sizeof(uintptr_type)
+     */
+    dynamic_memory(void * ptr, unsigned int size_bytes, uptr alignment=sizeof (uintptr_type)) :
+            base{2, alignment}, _ptr(ptr), _size(size_bytes) {
 #ifdef DEBUG_ALLOCATOR
         std::cout << std::endl << "HELLO:: dynamic allocator hello"<< std::endl;
         std::cout << "* minimal block size due to headers, footers and alignment is "
         << minimal_size_of_any_block() << " bytes" <<std::endl;
-        std::cout << "* requested alignment is " << alignment << " bytes" << std::endl;
+        std::cout << "* requested alignment is " << this->alignment << " bytes" << std::endl;
 #endif
         _ptr = ptr;
-        auto block = create_free_block(ptr_to_int(ptr), ptr_to_int(ptr) + size_bytes);
-        bool is_memory_valid = block.size() >= minimal_size_of_any_block();
+        auto block = create_free_block(this->ptr_to_int(ptr), this->ptr_to_int(ptr) + size_bytes);
+        bool is_memory_valid_1 = block.size() >= minimal_size_of_any_block();
+        bool is_memory_valid_2 = sizeof(void *)==sizeof(uintptr_type);
+        bool is_memory_valid_3 = alignment % sizeof(uintptr_type)==0;
+        bool is_memory_valid = is_memory_valid_1 and is_memory_valid_2 and is_memory_valid_3;
 #ifdef DEBUG_ALLOCATOR
         std::cout << "* principal memory block after alignment is " << block.size() << " bytes"
         << std::endl;
@@ -266,15 +259,22 @@ public:
             _free_list_root = block.header();
         } else {
 #ifdef DEBUG_ALLOCATOR
-            std::cout << "* memory does not satisfy minimal size requirements !!!"
-            << std::endl;
+            if(!is_memory_valid_1)
+                std::cout << "* error:: memory does not satisfy minimal size requirements !!!"
+                          << std::endl;
+            if(!is_memory_valid_2)
+                std::cout << "* error:: a pointer is not expressible as uintptr_type !!!"
+                          << std::endl;
+            if(!is_memory_valid_3)
+                std::cout << "* error:: memory does not satisfy minimal size requirements !!!"
+                          << std::endl;
 #endif
         }
 
-        print();
+        print(false);
     }
 
-    void * allocate(uptr size_bytes) {
+    void * malloc(uptr size_bytes) override {
         size_bytes = align_up(size_bytes);
 #ifdef DEBUG_ALLOCATOR
         std::cout << std::endl << "ALLOCATE:: dynamic allocator " << std::endl
@@ -342,8 +342,8 @@ public:
         return ptr;
     }
 
-    bool free(void * pointer) {
-        auto address = ptr_to_int(pointer);
+    bool free(void * pointer) override {
+        auto address = this->ptr_to_int(pointer);
 
 #ifdef DEBUG_ALLOCATOR
         std::cout << std::endl << "FREE:: dynamic allocator" << std::endl
@@ -351,7 +351,7 @@ public:
 #endif
         if(!is_aligned(address)) {
 #ifdef DEBUG_ALLOCATOR
-            std::cout << "- error: address is misaligned to " << alignment << " bytes" << std::endl;
+            std::cout << "- error: address is misaligned to " << this->alignment << " bytes" << std::endl;
 #endif
             return false;
         }
@@ -379,12 +379,12 @@ public:
         }
         // mark it as free, while this might seem redundant as we create a new free block later,
         // BUT, in case of coalesce from left to this block, this can help the allocator to deny
-        // false muliple de-allocation of user fault behaviour
+        // false multiple de-allocation of user fault behaviour
         block.toggle_allocated();
         _allocations -= block.size();
 
-        bool is_first_block = align_up(ptr_to_int(_ptr)) == block.aligned_from;
-        bool is_last_block = align_down(ptr_to_int(_ptr)+_size) == block.aligned_to;
+        bool is_first_block = align_up(this->ptr_to_int(_ptr)) == block.aligned_from;
+        bool is_last_block = align_down(this->ptr_to_int(_ptr)+_size) == block.aligned_to;
         // coalesce left and right of block
         header_t * left_hint_node=nullptr, * right_hint_node=nullptr;
         uptr left_most_address = block.aligned_from;
@@ -392,7 +392,7 @@ public:
         if(!is_first_block) { // let's try to coalesce left
             // first find left block
             uptr left_block_footer_address = block.aligned_from - align_up(size_of_block_footer());
-            auto * left_footer = int_to<footer_t *>(left_block_footer_address);
+            auto * left_footer = this->template int_to<footer_t *>(left_block_footer_address);
             uptr left_block_address = block.aligned_from - left_footer->size();
             auto left_block = get_block(left_block_address);
             auto is_allocated = left_block.is_allocated();
@@ -519,7 +519,7 @@ public:
         return true;
     }
 
-    void print(bool embed=false) const {
+    void print(bool embed) const override {
 #ifdef DEBUG_ALLOCATOR
         if(!embed)
             std::cout << std::endl << "PRINT:: dynamic allocator " << std::endl;
@@ -537,6 +537,14 @@ public:
         std::cout << std::endl << "- available size [" << available_size() << "/" << diff_space << "]" << std::endl;
         std::cout << std::endl;
 #endif
+    }
+
+    bool is_equal(const memory_resource<> &other) const noexcept override {
+        bool equals = this->type_id() == other.type_id();
+        if(!equals) return false;
+        const auto * casted_other = dynamic_cast<const dynamic_memory<> *>(&other);
+        equals = this->_ptr==casted_other->_ptr;
+        return equals;
     }
 
 };

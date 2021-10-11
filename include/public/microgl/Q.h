@@ -1,5 +1,7 @@
 #pragma once
-#include <stdint.h>
+
+#include <microgl/stdint.h>
+
 template <unsigned P, typename container_integer=long long,
         typename intermediate_container_integer=long long>
 class Q {

@@ -1538,7 +1538,7 @@ void canvas<bitmap_type, options>::drawWuLine(const color_t &color,
     ErrorAdj = ((unsigned long long) DeltaY << 32) / (unsigned long long) DeltaX;
     // Draw all pixels other than the first and last
     while ((DeltaX-=one) > 0) {
-        ErrorAccTemp = ErrorAcc; // remember currrent accumulated error
+        ErrorAccTemp = ErrorAcc; // remember current accumulated error
         ErrorAcc += ErrorAdj; // calculate error for next pixel
         if (ErrorAcc <= ErrorAccTemp) Y0+=one;
         X0 += XDir; // X-major, so always advance X

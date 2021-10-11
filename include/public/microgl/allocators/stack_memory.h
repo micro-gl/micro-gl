@@ -1,5 +1,7 @@
 #pragma once
 
+#include "memory_resource.h"
+
 #ifdef DEBUG_ALLOCATOR
 #include <iostream>
 #endif
@@ -23,18 +25,27 @@
  *
  * @tparam uintptr_type unsigned integer type that can hold a pointer
  * @tparam alignment alignment requirement, must be valid power of 2, that can satisfy
- *         the highest alignment requirement that you wish to store in the memory dynamic_allocator.
+ *         the highest alignment requirement that you wish to store in the memory dynamic_memory.
  *         alignment of atomic types usually equals their size.
  *         alignment of struct types equals the maximal alignment among it's member types.
  *         if you have std lib, you can infer these, otherwise, just plug them if you know
  *
  * @author Tomer Riko Shalev
  */
-template<typename uintptr_type=unsigned long, uintptr_type alignment=sizeof(uintptr_type)>
-class stack_allocator {
+template<typename uintptr_type=unsigned long>
+class stack_memory : memory_resource<uintptr_type> {
 private:
-    using uint = unsigned int;
-    using uptr = uintptr_type;
+    using base = memory_resource<uintptr_type>;
+    using typename base::uptr;
+    using typename base::uint;
+    using base::align_up;
+    using base::align_down;
+    using base::is_aligned;
+    using base::ptr_to_int;
+    using base::int_to_ptr;
+
+    template<typename T>
+    static T int_to(uptr integer) { return reinterpret_cast<T>(integer); }
 
     struct footer_t {
         uptr size=0;
@@ -43,31 +54,6 @@ private:
     void * _ptr=nullptr;
     uptr _current_head = 0;
     uint _size=0;
-
-    static
-    inline uptr align_up(const uptr address)
-    {
-        constexpr uptr align_m_1 = alignment - 1;
-        constexpr uptr b = ~align_m_1;
-        uptr a = (address+align_m_1);
-        uptr c = a & b;
-        return c;
-    }
-
-    static inline
-    uptr is_aligned(const uptr address) { return align_down(address)==address; }
-
-    static inline uptr align_down(const uptr address)
-    {
-        constexpr uptr a = ~(alignment - 1);
-        return (address & a);
-    }
-
-    static uptr ptr_to_int(void * pointer) { return reinterpret_cast<uptr>(pointer); }
-    static void * int_to_ptr(uptr integer) { return reinterpret_cast<void *>(integer); }
-
-    template<typename T>
-    T int_to(uptr integer) const { return reinterpret_cast<T>(integer); }
 
     uptr aligned_size_of_footer() const {
         return align_up(sizeof (footer_t));
@@ -88,13 +74,13 @@ public:
      * @param ptr start of memory
      * @param size_bytes the memory size in bytes
      */
-    stack_allocator(void * ptr, uint size_bytes) :
-        _ptr(ptr), _size(size_bytes) {
+    stack_memory(void * ptr, uint size_bytes, uptr alignment=sizeof (uintptr_type)) :
+        base{4, alignment}, _ptr(ptr), _size(size_bytes) {
 #ifdef DEBUG_ALLOCATOR
         std::cout << std::endl << "HELLO:: stack allocator hello"<< std::endl;
         std::cout << "* minimal block size due to headers and alignment is "
                   << aligned_size_of_footer() << " bytes" << std::endl;
-        std::cout << "* requested alignment is " << alignment << " bytes" << std::endl;
+        std::cout << "* requested alignment is " << this->alignment << " bytes" << std::endl;
 #endif
         const bool is_memory_valid = aligned_size_of_footer() <= size_bytes;
         if(!is_memory_valid) {
@@ -106,14 +92,14 @@ public:
             _current_head = align_up(ptr_to_int(_ptr));
     }
 
-    uptr available_size() const {
+    uptr available_size() const override {
         const uptr min = align_up(_current_head);
         const uptr max = end_aligned_address();
         const uptr delta = max - min;
         return delta;
     }
 
-    void * allocate(uptr size_bytes=0) {
+    void * malloc(uptr size_bytes) override {
         size_bytes = align_up(size_bytes);
 #ifdef DEBUG_ALLOCATOR
         std::cout << std::endl << "ALLOCATE:: stack allocator"
@@ -148,7 +134,7 @@ public:
         return int_to<void *>(block_start);
     }
 
-    bool free(void * pointer) {
+    bool free(void * pointer) override {
         auto address = ptr_to_int(pointer);
 
 #ifdef DEBUG_ALLOCATOR
@@ -182,7 +168,7 @@ public:
         return true;
     }
 
-    void print(bool embed=false) const {
+    void print(bool embed) const override {
 #ifdef DEBUG_ALLOCATOR
         if(!embed)
             std::cout << std::endl << "PRINT:: stack allocator " << std::endl;
@@ -199,6 +185,14 @@ public:
         }
         std::cout << "]" << std::endl;
 #endif
+    }
+
+    bool is_equal(const memory_resource<> &other) const noexcept override {
+        bool equals = this->type_id() == other.type_id();
+        if(!equals) return false;
+        const auto * casted_other = dynamic_cast<const stack_memory<> *>(&other);
+        equals = this->_ptr==casted_other->_ptr;
+        return equals;
     }
 
 };
