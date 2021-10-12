@@ -82,10 +82,10 @@ public:
     }
 
     T * allocate(size_t n) {
-        return _mem->malloc(n * sizeof(T));
+        return (T *)_mem->malloc(n * sizeof(T));
     }
 
-    void deallocate(T * p, size_t n) {
+    void deallocate(T * p, size_t n=0) {
         _mem->free(p);
     }
 

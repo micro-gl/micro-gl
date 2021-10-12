@@ -33,7 +33,7 @@
  * @author Tomer Riko Shalev
  */
 template<typename uintptr_type=unsigned long>
-class stack_memory : memory_resource<uintptr_type> {
+class stack_memory : public memory_resource<uintptr_type> {
 private:
     using base = memory_resource<uintptr_type>;
     using typename base::uptr;
@@ -184,7 +184,7 @@ public:
         while(head>root) {
             footer_t * footer = int_to<footer_t *>(head - aligned_size_of_footer());
             head-=footer->size;
-            bool is_first = !(head>root);
+            bool is_first = head <= root;
             std::cout << (!is_last?"<-":"") << footer->size - aligned_size_of_footer() << (is_first ? "(ROOT)" : "");
             if(is_last) is_last=false;
         }
@@ -195,7 +195,7 @@ public:
     bool is_equal(const memory_resource<> &other) const noexcept override {
         bool equals = this->type_id() == other.type_id();
         if(!equals) return false;
-        const auto * casted_other = dynamic_cast<const stack_memory<> *>(&other);
+        const auto * casted_other = reinterpret_cast<const stack_memory<> *>(&other);
         equals = this->_ptr==casted_other->_ptr;
         return equals;
     }

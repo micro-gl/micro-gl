@@ -131,7 +131,8 @@ public:
     }
 
     ~pool_memory() override {
-        _free_list_root=_ptr=nullptr;
+        _free_list_root=nullptr;
+        _ptr=nullptr;
         _blocks_count=_block_size=_size=0;
     }
 
@@ -153,7 +154,7 @@ public:
         int_to<header_t *>(current)->next = nullptr;
     }
 
-    void * malloc(uptr size_bytes_dont_matter) override {
+    void * malloc(uptr size_bytes_dont_matter=0) override {
 #ifdef DEBUG_ALLOCATOR
         std::cout << std::endl << "ALLOCATE:: pool memory resource"
                   << std::endl;
@@ -248,7 +249,7 @@ public:
     bool is_equal(const memory_resource<> &other) const noexcept override {
         bool equals = this->type_id() == other.type_id();
         if(!equals) return false;
-        const auto * casted_other = dynamic_cast<const pool_memory<> *>(&other);
+        const auto * casted_other = reinterpret_cast<const pool_memory<> *>(&other);
         equals = this->_ptr==casted_other->_ptr;
         return equals;
     }
