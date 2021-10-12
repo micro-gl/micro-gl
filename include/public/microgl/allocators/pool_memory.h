@@ -108,7 +108,7 @@ public:
         base{3, alignment}, _ptr(ptr), _size(size_bytes), _block_size(0),
         _guard_against_double_free(guard_against_double_free) {
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "HELLO:: pool allocator hello"<< std::endl;
+        std::cout << std::endl << "HELLO:: pool memory resource"<< std::endl;
         std::cout << "* correct block size due to headers and alignment is "
         << correct_block_size(block_size) << " bytes" <<std::endl;
         std::cout << "* requested alignment is " << alignment << " bytes" << std::endl;
@@ -130,6 +130,11 @@ public:
         print(false);
     }
 
+    ~pool_memory() override {
+        _free_list_root=_ptr=nullptr;
+        _blocks_count=_block_size=_size=0;
+    }
+
     void reset(const uint block_size) {
         _block_size = correct_block_size(block_size);
         const uint blocks = _free_blocks_count = _blocks_count
@@ -148,9 +153,9 @@ public:
         int_to<header_t *>(current)->next = nullptr;
     }
 
-    void * malloc(uptr size_bytes_dont_matter=0) override {
+    void * malloc(uptr size_bytes_dont_matter) override {
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "ALLOCATE:: pool allocator"
+        std::cout << std::endl << "ALLOCATE:: pool memory resource"
                   << std::endl;
 #endif
 

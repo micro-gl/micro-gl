@@ -29,13 +29,13 @@ public:
     explicit std_memory(uptr alignment=sizeof (unsigned long)) :
             base{0, alignment} {
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "HELLO:: standard memory"<< std::endl;
+        std::cout << std::endl << "HELLO:: standard memory resource"<< std::endl;
         std::cout << "* requested alignment is " << alignment << " bytes" << std::endl;
 #endif
     }
 
     uptr available_size() const override {
-        return 0;
+        return ~uptr(0);
     }
 
     void * malloc(uptr size_bytes) override {

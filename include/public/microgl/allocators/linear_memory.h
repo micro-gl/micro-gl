@@ -39,7 +39,7 @@ private:
     using base::int_to_ptr;
     using base::int_to;
 
-    const void * _ptr;
+    void * _ptr;
     void * _current_ptr=nullptr;
     uint _size=0;
 
@@ -57,18 +57,23 @@ public:
     linear_memory(void * ptr, uint size_bytes, uptr alignment=sizeof (uintptr_type)) :
             base{1, alignment}, _ptr(ptr), _size(size_bytes) {
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "HELLO:: linear allocator"<< std::endl;
+        std::cout << std::endl << "HELLO:: linear memory resource"<< std::endl;
         std::cout << "* requested alignment is " << alignment << " bytes" << std::endl;
         std::cout << "* size is " << size_bytes << " bytes" << std::endl;
 #endif
         reset();
     }
 
+    ~linear_memory() override {
+        _current_ptr=_ptr=nullptr;
+        _size=0;
+    }
+
     void reset() {
         _current_ptr = base:: template int_to<void *>(align_up(ptr_to_int(_ptr)));
 
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "RESET:: linear allocator" << std::endl
+        std::cout << std::endl << "RESET:: linear memory" << std::endl
                   << "- reset memory to start @ " << ptr_to_int(_current_ptr)
                   << " (aligned up)" << std::endl;
 #endif

@@ -77,7 +77,7 @@ public:
     stack_memory(void * ptr, uint size_bytes, uptr alignment=sizeof (uintptr_type)) :
         base{4, alignment}, _ptr(ptr), _size(size_bytes) {
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "HELLO:: stack allocator hello"<< std::endl;
+        std::cout << std::endl << "HELLO:: stack memory resource"<< std::endl;
         std::cout << "* minimal block size due to headers and alignment is "
                   << aligned_size_of_footer() << " bytes" << std::endl;
         std::cout << "* requested alignment is " << this->alignment << " bytes" << std::endl;
@@ -90,6 +90,11 @@ public:
 #endif
         } else
             _current_head = align_up(ptr_to_int(_ptr));
+    }
+
+    ~stack_memory() override {
+        _ptr=nullptr;
+        _size=0;
     }
 
     uptr available_size() const override {

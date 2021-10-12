@@ -33,6 +33,17 @@ namespace poly_alloc_traits {
         return static_cast<_Tp&&>(__t);
     }
 
+    template <class Tp, Tp _v>
+    struct integral_constant
+    {
+        static constexpr const Tp      value = _v;
+        typedef Tp               value_type;
+        typedef integral_constant type;
+        constexpr operator value_type() const noexcept {return value;}
+    };
+
+    typedef integral_constant<bool, true> true_type;
+    typedef integral_constant<bool, false> false_type;
 }
 
 /**
@@ -114,10 +125,17 @@ public:
 
     polymorphic_allocator & operator=(polymorphic_allocator) = delete;
 
+    polymorphic_allocator select_on_container_copy_construction(const polymorphic_allocator & dummy) const {
+        return polymorphic_allocator<T, uintptr_type>(*this);
+    }
+
+    template<class U> struct rebind {
+        typedef polymorphic_allocator<U, uintptr_type> other;
+    };
 };
 
-template< class T1, class T2 >
-bool operator==( const polymorphic_allocator<T1>& lhs,
-                 const polymorphic_allocator<T2>& rhs ) noexcept {
-    return *lhs.resource() == *rhs.resource();
+template<class T1, class T2, typename uintptr_type>
+bool operator==( const polymorphic_allocator<T1, uintptr_type>& lhs,
+                 const polymorphic_allocator<T2, uintptr_type>& rhs ) noexcept {
+    return *(lhs.resource()) == *(rhs.resource());
 }

@@ -54,7 +54,6 @@ namespace dynamic_array_traits {
 
 }
 
-
 template<typename T>
 class dynamic_array {
     using const_dynamic_array_ref = const dynamic_array<T> &;

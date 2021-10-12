@@ -240,7 +240,7 @@ public:
     dynamic_memory(void * ptr, unsigned int size_bytes, uptr alignment=sizeof (uintptr_type)) :
             base{2, alignment}, _ptr(ptr), _size(size_bytes) {
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "HELLO:: dynamic allocator hello"<< std::endl;
+        std::cout << std::endl << "HELLO:: dynamic memory resource"<< std::endl;
         std::cout << "* minimal block size due to headers, footers and alignment is "
         << minimal_size_of_any_block() << " bytes" <<std::endl;
         std::cout << "* requested alignment is " << this->alignment << " bytes" << std::endl;
@@ -266,12 +266,17 @@ public:
                 std::cout << "* error:: a pointer is not expressible as uintptr_type !!!"
                           << std::endl;
             if(!is_memory_valid_3)
-                std::cout << "* error:: memory does not satisfy minimal size requirements !!!"
+                std::cout << "* error:: alignment should be a power of 2 divisible by sizeof(uintptr_type) !!!"
                           << std::endl;
 #endif
         }
 
         print(false);
+    }
+
+    ~dynamic_memory() override {
+        _free_list_root=_ptr=nullptr;
+        _allocations=_size=0;
     }
 
     void * malloc(uptr size_bytes) override {
