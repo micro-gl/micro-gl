@@ -91,12 +91,10 @@ void test_std_allocator1() {
 }
 
 int main() {
-//    test_linear_allocator1();
-//    test_dynamic_allocator1();
-//    test_stack_allocator1();
-//    test_pool_allocator1();
-//    test_std_allocator1<std::vector>();
-
-    test_std_allocator1<dynamic_array>();
-
+    test_linear_allocator1<dynamic_array>();
+//    test_dynamic_allocator1<dynamic_array>();
+//    test_stack_allocator1<dynamic_array>();
+//    test_pool_allocator1<dynamic_array>();
+//    test_std_allocator1<dynamic_array>();
+//
 }

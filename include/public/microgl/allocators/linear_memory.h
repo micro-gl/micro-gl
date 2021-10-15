@@ -149,7 +149,7 @@ public:
     bool is_equal(const memory_resource<> &other) const noexcept override {
         bool equals = this->type_id() == other.type_id();
         if(!equals) return false;
-        const auto * casted_other = dynamic_cast<const linear_memory *>(&other);
+        const auto * casted_other = static_cast<const linear_memory *>(&other);
         equals = this->_ptr==casted_other->_ptr;
         return equals;
     }
