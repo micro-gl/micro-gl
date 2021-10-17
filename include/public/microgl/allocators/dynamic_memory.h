@@ -283,7 +283,7 @@ public:
     void * malloc(uptr size_bytes) override {
         size_bytes = align_up(size_bytes);
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "ALLOCATE:: dynamic allocator " << std::endl
+        std::cout << std::endl << "MALLOC:: dynamic allocator " << std::endl
                   << "- requested block size is " << size_bytes
                   << " bytes (aligned up)" << std::endl;
 #endif

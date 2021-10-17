@@ -40,7 +40,7 @@ public:
 
     void * malloc(uptr size_bytes) override {
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "ALLOCATE:: standard memory" << std::endl
+        std::cout << std::endl << "MALLOC:: standard memory" << std::endl
                   << "- request a block of size " << size_bytes
                   << std::endl;
 #endif

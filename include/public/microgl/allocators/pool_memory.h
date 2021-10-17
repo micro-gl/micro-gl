@@ -156,7 +156,7 @@ public:
 
     void * malloc(uptr size_bytes_dont_matter=0) override {
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "ALLOCATE:: pool memory resource"
+        std::cout << std::endl << "MALLOC:: pool memory resource"
                   << std::endl;
 #endif
 

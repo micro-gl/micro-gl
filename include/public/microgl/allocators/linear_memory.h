@@ -100,7 +100,7 @@ public:
         const bool has_requested_size_zero = size_bytes==0;
 
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "ALLOCATE:: linear allocator" << std::endl
+        std::cout << std::endl << "MALLOC:: linear allocator" << std::endl
                   << "- request a block of size " << size_bytes << " (aligned up)"
                   << std::endl;
 #endif

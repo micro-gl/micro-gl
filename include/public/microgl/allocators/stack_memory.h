@@ -107,7 +107,7 @@ public:
     void * malloc(uptr size_bytes) override {
         size_bytes = align_up(size_bytes);
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "ALLOCATE:: stack allocator"
+        std::cout << std::endl << "MALLOC:: stack allocator"
                   << std::endl << "- requested " << size_bytes << "bytes (aligned up)"
                   << std::endl;
 #endif
