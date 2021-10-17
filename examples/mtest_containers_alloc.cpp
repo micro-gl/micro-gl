@@ -8,6 +8,7 @@
 #include <microgl/allocators/std_memory.h>
 #include <microgl/allocators/polymorphic_allocator.h>
 #include <microgl/dynamic_array.h>
+#include <memory>
 
 struct test_t {
     int a;
@@ -18,7 +19,8 @@ struct test_t {
 
 template<typename Type, class Allocator, template<class T, class A> class Container>
 void test_container(Allocator & allocator) {
-    Container<Type, Allocator> container{allocator};
+    using container_t = Container<Type, Allocator>;
+    container_t container{allocator};
 
     container.push_back(test_t{1,1});
     container.push_back(test_t{2,2});
@@ -32,6 +34,10 @@ void test_container(Allocator & allocator) {
     container.push_back(test_t{7,7});
     container.pop_back();
     container.push_back(test_t{8,8});
+
+    container_t container2{container.get_allocator()};
+//    container2 = std::move(container);
+//    container_t container3 = std::move(container2);
 }
 
 template <template<class T, class A> class Container>

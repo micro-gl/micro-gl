@@ -76,7 +76,7 @@ private:
 
 
 public:
-    explicit dynamic_array(Alloc & alloc = Alloc()) noexcept : _alloc{alloc} {
+    explicit dynamic_array(const Alloc & alloc = Alloc()) noexcept : _alloc{alloc} {
     }
 
     dynamic_array(uint count, const T & value = T(), const Alloc & alloc = Alloc()) :
@@ -87,14 +87,14 @@ public:
     }
 
     template<class Iterable>
-    explicit dynamic_array(const Iterable &list, Alloc & alloc) noexcept :
+    explicit dynamic_array(const Iterable &list, const Alloc & alloc) noexcept :
             dynamic_array(alloc) {
         reserve(list.size());
         for (const auto & item : list)
             push_back(item);
     }
 
-    dynamic_array(const dynamic_array & other, Alloc & alloc) noexcept :
+    dynamic_array(const dynamic_array & other, const Alloc & alloc) noexcept :
             dynamic_array(other, alloc) {
     }
 
@@ -102,7 +102,7 @@ public:
             dynamic_array(other, other.get_allocator()) {
     }
 
-    dynamic_array(dynamic_array && other, Alloc & alloc) noexcept :
+    dynamic_array(dynamic_array && other, const Alloc & alloc) noexcept :
             dynamic_array(alloc) {
         reserve(other.size());
         for (const auto & item : other)
@@ -163,6 +163,7 @@ public:
             _data = other._data;
             other._data=nullptr;
             other._cap=0;
+            other._current=0;
         } else {
             if(other.size() >= capacity()) {
                 clear(); // clear and destruct current objects
@@ -177,6 +178,8 @@ public:
                 _data[ix] = dynamic_array_traits::move(other[ix]);
             for (int ix = other.size(); ix < capacity(); ++ix)
                 _data[ix] = T();
+            // no need to destruct other's items
+            other._current=0;
         }
 
         _current = other._current;
@@ -189,7 +192,7 @@ public:
     const T& operator[](index i) const noexcept { return _data[i]; }
     const T& peek() noexcept { return (*this)[_current]; }
 
-    Alloc & get_allocator() const noexcept { return _alloc; }
+    Alloc get_allocator() const noexcept { return _alloc; }
 
     void alloc_(bool up) noexcept {
         const auto old_size = _current;
