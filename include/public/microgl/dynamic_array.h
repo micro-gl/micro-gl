@@ -31,27 +31,38 @@ namespace dynamic_array_traits {
         return static_cast<_Tp&&>(__t);
     }
 
-    inline
-    void * memcpy(void *dst, const void *src, const unsigned len) noexcept
-     {
-         if ((unsigned long)dst % sizeof(long) == 0 &&
-             (unsigned long)src % sizeof(long) == 0 &&
-             len % sizeof(long) == 0) {
-             long *d = (long *)dst;
-             const long *s = (const long *)src;
-             for (int i=0; i<len/sizeof(long); i++)
-                 *d++ = *s++;
-         }
-         else {
-             char *d = (char *)dst;
-             const char *s = (char *)src;
-             for (int i=0; i<len; i++)
-                 *d++ = *s++;
-         }
+}
 
-         return dst;
+/**
+ * standard allocator
+ * @tparam T the allocated object type
+ */
+template<typename T>
+class std_allocator {
+public:
+    using value_type = T;
+    using size_t = unsigned long;
+public:
+    template<class U>
+    explicit std_allocator(const std_allocator<U> & other) noexcept { };
+    explicit std_allocator()=default;
+
+    template <class U, class... Args>
+    void construct(U* p, Args&&... args) {
+        new(p) U(dynamic_array_traits::forward<Args>(args)...);
     }
 
+    T * allocate(size_t n) { return (T *)operator new(n * sizeof(T)); }
+    void deallocate(T * p, size_t n=0) { operator delete (p); }
+
+    template<class U> struct rebind {
+        typedef std_allocator<U> other;
+    };
+};
+
+template<class T1, class T2>
+bool operator==(const std_allocator<T1>& lhs, const std_allocator<T2>& rhs ) noexcept {
+    return true;
 }
 
 /**
@@ -60,12 +71,13 @@ namespace dynamic_array_traits {
  * @tparam T the type
  * @tparam Alloc the allocator type
  */
-template<typename T, class Alloc>
+template<typename T, class Alloc=std_allocator<T>>
 class dynamic_array {
     using const_dynamic_array_ref = const dynamic_array<T, Alloc> &;
 public:
     using index = unsigned int;
     using type = T;
+    using uint = unsigned int;
     using allocator_t = Alloc;
 
 private:
@@ -73,7 +85,6 @@ private:
     Alloc _alloc;
     index _current = 0u;
     index _cap = 0u;
-
 
 public:
     explicit dynamic_array(const Alloc & alloc = Alloc()) noexcept : _alloc{alloc} {
@@ -87,7 +98,7 @@ public:
     }
 
     template<class Iterable>
-    explicit dynamic_array(const Iterable &list, const Alloc & alloc) noexcept :
+    dynamic_array(const Iterable &list, const Alloc & alloc= Alloc()) noexcept :
             dynamic_array(alloc) {
         reserve(list.size());
         for (const auto & item : list)
@@ -95,7 +106,10 @@ public:
     }
 
     dynamic_array(const dynamic_array & other, const Alloc & alloc) noexcept :
-            dynamic_array(other, alloc) {
+            dynamic_array(alloc) {
+        reserve(other.size());
+        for (const auto & item : other)
+            push_back(item);
     }
 
     dynamic_array(const dynamic_array & other) noexcept :
@@ -214,20 +228,6 @@ public:
         _cap = new_size;
     }
 
-    void alloc_222(bool up) noexcept {
-        const auto old_size = _current;
-        const auto new_size = up ? (_cap==0?1:_cap*2) : _cap/2;
-        const auto copy_size = old_size<new_size ? old_size : new_size;
-        T* _new = new T[new_size];
-        for (index ix = 0; ix < copy_size; ++ix)
-            _new[ix] = dynamic_array_traits::move(_data[ix]);
-        // this reduces binary size
-//        dynamic_array_traits::memcpy(_new, _data, copy_size*sizeof (T));
-        delete [] _data;
-        _data = reinterpret_cast<T*>(_new);
-        _cap = new_size;
-    }
-
     void push_back(const T & v) noexcept {
         if(int(_current)>int(_cap-1)) {
             // copy the value, edge case if v belongs
@@ -302,5 +302,4 @@ public:
     const T* end() const noexcept {return _data + size();}
     T* begin() noexcept {return _data;}
     T* end()  noexcept {return _data + size();}
-
 };

@@ -11,10 +11,10 @@
 #define H 640*1
 
 int main() {
-//    using number = float;
+    using number = float;
 //    using number = Q<5>;
 //    using number = Q<10>;
-    using number = Q<15>;
+//    using number = Q<15>;
 //    using number = Q<16>;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_32_BIT>;
@@ -50,10 +50,11 @@ int main() {
         // setup shader
         Shader shader;
         shader.matrix= mvp_1;
-        shader.color= {0,255,255,255};
+        shader.color= {0,0,0,255};
 
         // model to vertex buffers
-        dynamic_array<vertex_attributes> vertex_buffer{object.vertices.size()};
+        dynamic_array<vertex_attributes> vertex_buffer{};
+        vertex_buffer.reserve(object.vertices.size());
         for (const auto & vert : object.vertices) {
             vertex_attributes v{};
             v.point= vert;

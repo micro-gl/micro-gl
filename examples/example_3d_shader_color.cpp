@@ -50,7 +50,9 @@ int main() {
         shader.matrix= mvp;
 
         // model to vertex buffers
-        dynamic_array<vertex_attributes> vertex_buffer{object.vertices.size()};
+        dynamic_array<vertex_attributes> vertex_buffer{};
+        vertex_buffer.reserve(object.vertices.size());
+
         for (unsigned ix = 0; ix < object.vertices.size(); ++ix) {
             shader_::vertex_attributes v{};
             channel_t r= (ix%3)==0 ? 255:0;

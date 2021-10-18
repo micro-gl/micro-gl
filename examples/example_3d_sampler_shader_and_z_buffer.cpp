@@ -79,7 +79,9 @@ int main() {
         shader.sampler= &sampler;
 
         // model to vertex buffers
-        dynamic_array<vertex_attributes> vertex_buffer{object.vertices.size()};
+        dynamic_array<vertex_attributes> vertex_buffer{};
+        vertex_buffer.reserve(object.vertices.size());
+
         for (unsigned ix = 0; ix < object.vertices.size(); ++ix) {
             vertex_attributes v{};
             v.point= object.vertices[ix];
