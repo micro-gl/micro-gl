@@ -1,5 +1,7 @@
 #pragma once
 
+#include "memory_resource.h"
+
 //#define DEBUG_ALLOCATOR
 
 #ifdef DEBUG_ALLOCATOR
@@ -17,47 +19,29 @@
  *
  * @tparam uintptr_type unsigned integer type that can hold a pointer
  * @tparam alignment alignment requirement, must be valid power of 2, that can satisfy
- *         the highest alignment requirement that you wish to store in the memory dynamic_allocator.
+ *         the highest alignment requirement that you wish to store in the memory dynamic_memory.
  *         alignment of atomic types usually equals their size.
  *         alignment of struct types equals the maximal alignment among it's member types.
  *         if you have std lib, you can infer these, otherwise, just plug them if you know
  *
  * @author Tomer Riko Shalev
  */
-template<typename uintptr_type=unsigned long, uintptr_type alignment=sizeof(uintptr_type)>
-class linear_allocator {
+template<typename uintptr_type=unsigned long>
+class linear_memory : public memory_resource<uintptr_type> {
 private:
-    using uint = unsigned int;
-    using uptr = uintptr_type;
+    using base = memory_resource<uintptr_type>;
+    using typename base::uptr;
+    using typename base::uint;
+    using base::align_up;
+    using base::align_down;
+    using base::is_aligned;
+    using base::ptr_to_int;
+    using base::int_to_ptr;
+    using base::int_to;
 
-    void * _ptr=nullptr;
+    void * _ptr;
     void * _current_ptr=nullptr;
     uint _size=0;
-
-    static
-    inline uptr align_up(const uptr address)
-    {
-        constexpr uptr align_m_1 = alignment - 1;
-        constexpr uptr b = ~align_m_1;
-        uptr a = (address+align_m_1);
-        uptr c = a & b;
-        return c;
-    }
-
-    static inline
-    uptr is_aligned(const uptr address) { return align_down(address)==address; }
-
-    static inline uptr align_down(const uptr address)
-    {
-        constexpr uptr a = ~(alignment - 1);
-        return (address & a);
-    }
-
-    static uptr ptr_to_int(void * pointer) { return reinterpret_cast<uptr>(pointer); }
-    static void * int_to_ptr(uptr integer) { return reinterpret_cast<void *>(integer); }
-
-    template<typename T>
-    T int_to(uptr integer) { return reinterpret_cast<T>(integer); }
 
 public:
 
@@ -70,27 +54,32 @@ public:
      *          free an already free block at the cost of having free operation at O(free-list-size).
      *          If {False}, free will take O(1) operations like allocations.
      */
-    linear_allocator(void * ptr, uint size_bytes) :
-                            _ptr(ptr), _size(size_bytes) {
+    linear_memory(void * ptr, uint size_bytes, uptr alignment=sizeof (uintptr_type)) :
+            base{1, alignment}, _ptr(ptr), _size(size_bytes) {
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "HELLO:: linear allocator"<< std::endl;
+        std::cout << std::endl << "HELLO:: linear memory resource"<< std::endl;
         std::cout << "* requested alignment is " << alignment << " bytes" << std::endl;
+        std::cout << "* size is " << size_bytes << " bytes" << std::endl;
 #endif
-        _ptr = ptr;
         reset();
     }
 
+    ~linear_memory() override {
+        _current_ptr=_ptr=nullptr;
+        _size=0;
+    }
+
     void reset() {
-        _current_ptr = int_to<void *>(align_up(ptr_to_int(_ptr)));
+        _current_ptr = base:: template int_to<void *>(align_up(ptr_to_int(_ptr)));
 
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "RESET:: linear allocator" << std::endl
+        std::cout << std::endl << "RESET:: linear memory" << std::endl
                   << "- reset memory to start @ " << ptr_to_int(_current_ptr)
                   << " (aligned up)" << std::endl;
 #endif
     }
 
-    uptr available_size() const {
+    uptr available_size() const override {
         const uptr min = align_up(ptr_to_int(_current_ptr));
         const uptr delta = end_aligned_address() - min;
         return delta;
@@ -104,14 +93,14 @@ public:
         return align_down(ptr_to_int(_ptr) + _size);
     }
 
-    void * allocate(uptr size_bytes=0) {
+    void * malloc(uptr size_bytes) override {
         size_bytes = align_up(size_bytes);
         const uptr available_space = available_size();
         const bool has_available_size = size_bytes <= available_space;
         const bool has_requested_size_zero = size_bytes==0;
 
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "ALLOCATE:: linear allocator" << std::endl
+        std::cout << std::endl << "MALLOC:: linear allocator" << std::endl
                   << "- request a block of size " << size_bytes << " (aligned up)"
                   << std::endl;
 #endif
@@ -134,12 +123,12 @@ public:
         }
 
         auto * pointer = _current_ptr;
-        _current_ptr = int_to<void *>(ptr_to_int(pointer) + size_bytes);
+        _current_ptr = base:: template int_to<void *>(ptr_to_int(pointer) + size_bytes);
 
         return pointer;
     }
 
-    bool free(void * pointer) {
+    bool free(void * pointer) override {
 #ifdef DEBUG_ALLOCATOR
         std::cout << std::endl << "FREE:: linear allocator "
         << std::endl << "- linear allocator does not free space, use reset() instead "
@@ -149,12 +138,20 @@ public:
         return true;
     }
 
-    void print() const {
+    void print(bool embed) const override {
 #ifdef DEBUG_ALLOCATOR
         std::cout << std::endl << "PRINT:: linear allocator "
                   << std::endl << "- available size is " << available_size()
                   << std::endl;
 #endif
+    }
+
+    bool is_equal(const memory_resource<> &other) const noexcept override {
+        bool equals = this->type_id() == other.type_id();
+        if(!equals) return false;
+        const auto * casted_other = static_cast<const linear_memory *>(&other);
+        equals = this->_ptr==casted_other->_ptr;
+        return equals;
     }
 
 };

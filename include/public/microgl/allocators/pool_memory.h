@@ -1,5 +1,7 @@
 #pragma once
 
+#include "memory_resource.h"
+
 //#define DEBUG_ALLOCATOR
 
 #ifdef DEBUG_ALLOCATOR
@@ -18,18 +20,27 @@
  *
  * @tparam uintptr_type unsigned integer type that can hold a pointer
  * @tparam alignment alignment requirement, must be valid power of 2, that can satisfy
- *         the highest alignment requirement that you wish to store in the memory dynamic_allocator.
+ *         the highest alignment requirement that you wish to store in the memory dynamic_memory.
  *         alignment of atomic types usually equals their size.
  *         alignment of struct types equals the maximal alignment among it's member types.
  *         if you have std lib, you can infer these, otherwise, just plug them if you know
  *
  * @author Tomer Riko Shalev
  */
-template<typename uintptr_type=unsigned long, uintptr_type alignment=sizeof(uintptr_type)>
-class pool_allocator {
+template<typename uintptr_type=unsigned long>
+class pool_memory : public memory_resource<uintptr_type> {
 private:
-    using uint = unsigned int;
-    using uptr = uintptr_type;
+    using base = memory_resource<uintptr_type>;
+    using typename base::uptr;
+    using typename base::uint;
+    using base::align_up;
+    using base::align_down;
+    using base::is_aligned;
+    using base::ptr_to_int;
+    using base::int_to_ptr;
+
+    template<typename T>
+    static T int_to(uptr integer) { return reinterpret_cast<T>(integer); }
 
     struct header_t {
         header_t * next=nullptr;
@@ -42,31 +53,6 @@ private:
     uint _free_blocks_count=0;
     header_t * _free_list_root = nullptr;
     bool _guard_against_double_free=false;
-
-    static
-    inline uptr align_up(const uptr address)
-    {
-        constexpr uptr align_m_1 = alignment - 1;
-        constexpr uptr b = ~align_m_1;
-        uptr a = (address+align_m_1);
-        uptr c = a & b;
-        return c;
-    }
-
-    static inline
-    uptr is_aligned(const uptr address) { return align_down(address)==address; }
-
-    static inline uptr align_down(const uptr address)
-    {
-        constexpr uptr a = ~(alignment - 1);
-        return (address & a);
-    }
-
-    static uptr ptr_to_int(void * pointer) { return reinterpret_cast<uptr>(pointer); }
-    static void * int_to_ptr(uptr integer) { return reinterpret_cast<void *>(integer); }
-
-    template<typename T>
-    T int_to(uptr integer) { return reinterpret_cast<T>(integer); }
 
     uint minimal_size_of_any_block() const {
         return align_up(sizeof (header_t));
@@ -91,7 +77,7 @@ public:
         return _blocks_count;
     }
 
-    uint free_blocks_count() {
+    uint free_blocks_count() const {
         return _free_blocks_count;
     }
 
@@ -103,7 +89,7 @@ public:
         return align_down(ptr_to_int(_ptr) + _size);
     }
 
-    uptr available_size() const {
+    uptr available_size() const override {
         return free_blocks_count()*_block_size;
     }
 
@@ -116,12 +102,13 @@ public:
      *          free an already free block at the cost of having free operation at O(free-list-size).
      *          If {False}, free will take O(1) operations like allocations.
      */
-    pool_allocator(void * ptr, uint size_bytes, uint block_size,
-                   bool guard_against_double_free=false) :
-        _ptr(ptr), _size(size_bytes), _block_size(0),
+    pool_memory(void * ptr, uint size_bytes, uint block_size,
+                uptr alignment=sizeof (uintptr_type),
+                bool guard_against_double_free=false) :
+        base{3, alignment}, _ptr(ptr), _size(size_bytes), _block_size(0),
         _guard_against_double_free(guard_against_double_free) {
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "HELLO:: pool allocator hello"<< std::endl;
+        std::cout << std::endl << "HELLO:: pool memory resource"<< std::endl;
         std::cout << "* correct block size due to headers and alignment is "
         << correct_block_size(block_size) << " bytes" <<std::endl;
         std::cout << "* requested alignment is " << alignment << " bytes" << std::endl;
@@ -140,7 +127,13 @@ public:
 #endif
         }
 
-        print();
+        print(false);
+    }
+
+    ~pool_memory() override {
+        _free_list_root=nullptr;
+        _ptr=nullptr;
+        _blocks_count=_block_size=_size=0;
     }
 
     void reset(const uint block_size) {
@@ -161,9 +154,9 @@ public:
         int_to<header_t *>(current)->next = nullptr;
     }
 
-    void * allocate(uptr size_bytes_dont_matter=0) {
+    void * malloc(uptr size_bytes_dont_matter=0) override {
 #ifdef DEBUG_ALLOCATOR
-        std::cout << std::endl << "ALLOCATE:: pool allocator"
+        std::cout << std::endl << "MALLOC:: pool memory resource"
                   << std::endl;
 #endif
 
@@ -187,7 +180,7 @@ public:
         return current_node;
     }
 
-    bool free(void * pointer) {
+    bool free(void * pointer) override {
         auto address = ptr_to_int(pointer);
         const uptr min_range = align_up(ptr_to_int(_ptr));
         const uptr max_range = align_down(ptr_to_int(_ptr) + _size);
@@ -245,12 +238,20 @@ public:
         return true;
     }
 
-    void print() const {
+    void print(bool dummy) const override {
 #ifdef DEBUG_ALLOCATOR
         std::cout << std::endl << "PRINT:: pool allocator " << std::endl;
         std::cout << "- free list is [" << _free_blocks_count << "/" << _blocks_count << "]" << std::endl;
         std::cout << std::endl;
 #endif
+    }
+
+    bool is_equal(const memory_resource<> &other) const noexcept override {
+        bool equals = this->type_id() == other.type_id();
+        if(!equals) return false;
+        const auto * casted_other = reinterpret_cast<const pool_memory<> *>(&other);
+        equals = this->_ptr==casted_other->_ptr;
+        return equals;
     }
 
 };

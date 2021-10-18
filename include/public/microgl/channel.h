@@ -91,7 +91,7 @@ namespace microgl {
             constexpr uint_multiplier multiplier = one / b;
             constexpr uint8_t overall_bits = bits_a + bits_used_multiplier;
             using type_bits_overall = uint_t<overall_bits+1>;
-        constexpr bool overflow = overall_bits>=32;
+            constexpr bool overflow = overall_bits>=32;
 //            constexpr bool overflow = false;
 
             uint_result result = 0;
