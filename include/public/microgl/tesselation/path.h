@@ -211,6 +211,7 @@ namespace microgl {
                      const number & rotation, const number &startAngle, const number &endAngle,
                      bool anti_clockwise, unsigned divisions_count=32) -> path & {
                 container_template_type<vertex> output{divisions_count};
+                output.clear();
                 elliptic_arc_divider<number, container_template_type>::compute(
                         output, point.x, point.y, radius_x, radius_y,
                         rotation, startAngle, endAngle, divisions_count, anti_clockwise);

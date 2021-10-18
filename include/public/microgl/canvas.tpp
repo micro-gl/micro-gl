@@ -1288,9 +1288,9 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
     indices type;
     unsigned int tess_size=0;
     dynamic_array<index> indices;
-    dynamic_array<index> *indices_ptr = &indices;
+    dynamic_array<index> * indices_ptr = &indices;
     dynamic_array<boundary_info> boundary_buffer;
-    dynamic_array<boundary_info> *boundary_buffer_ptr=antialias? &boundary_buffer: nullptr;
+    dynamic_array<boundary_info> *boundary_buffer_ptr=antialias ? &boundary_buffer : nullptr;
     switch (hint) {
         case hints::CONCAVE:
         case hints::SIMPLE:
