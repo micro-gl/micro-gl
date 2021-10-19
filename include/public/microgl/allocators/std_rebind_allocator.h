@@ -37,11 +37,12 @@ namespace std_rebind_allocator_traits {
  * standard allocator
  * @tparam T the allocated object type
  */
-template<typename T>
+template<typename T=unsigned char>
 class std_rebind_allocator {
 public:
     using value_type = T;
     using size_t = unsigned long;
+
 public:
     template<class U>
     explicit std_rebind_allocator(const std_rebind_allocator<U> & other) noexcept { };

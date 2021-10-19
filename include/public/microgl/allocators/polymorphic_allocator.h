@@ -51,7 +51,7 @@ namespace poly_alloc_traits {
  * @tparam T the allocated object type
  * @tparam uintptr_type per system unsigned integral type that is the size of a pointer
  */
-template<typename T, typename uintptr_type=unsigned long>
+template<typename T=char, typename uintptr_type=unsigned long>
 class polymorphic_allocator {
 public:
     using value_type = T;
@@ -63,6 +63,8 @@ private:
     memory * _mem;
 
 public:
+    polymorphic_allocator()=delete;
+
     template<class U>
     explicit polymorphic_allocator(const polymorphic_allocator<U, uintptr_type> & other) noexcept
                     : polymorphic_allocator{other.resource()} {

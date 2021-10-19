@@ -1,15 +1,16 @@
 #pragma once
 
 #include <microgl/base_bitmap.h>
+#include <microgl/allocators/std_rebind_allocator.h>
 
 /**
  * regular bitmap
  *
  * @tparam pixel_coder_ the pixel coder
  */
-template <typename pixel_coder_>
-class bitmap : public base_bitmap<bitmap<pixel_coder_>, pixel_coder_> {
-    using base=base_bitmap<bitmap<pixel_coder_>, pixel_coder_>;
+template <typename pixel_coder_, class allocator_type=std_rebind_allocator<>>
+class bitmap : public base_bitmap<bitmap<pixel_coder_, allocator_type>, allocator_type, pixel_coder_> {
+    using base=base_bitmap<bitmap<pixel_coder_, allocator_type>, allocator_type, pixel_coder_>;
 public:
     using base::pixelAt;
     using base::writeAt;
@@ -23,8 +24,8 @@ public:
      * @return the new bitmap
      */
     template<typename CODER2>
-    bitmap<CODER2> * convertToBitmap() {
-        auto * bmp_2 = new bitmap<CODER2>(this->_width, this->_height);
+    bitmap<CODER2, allocator_type> * convertToBitmap() {
+        auto * bmp_2 = new bitmap<CODER2, allocator_type>(this->_width, this->_height);
         copyToBitmap(*bmp_2);
         return bmp_2;
     }
@@ -37,7 +38,7 @@ public:
      * @param bmp the other bitmap reference
      */
     template<typename CODER2>
-    void copyToBitmap(bitmap<CODER2> & bmp) {
+    void copyToBitmap(bitmap<CODER2, allocator_type> & bmp) {
         if(bmp.size()!=this->size()) return;
         const int size = this->size();
         microgl::color::color_t color_bmp_1, color_bmp_2;
@@ -54,14 +55,14 @@ public:
      * @param w width of bitmap
      * @param h height of bitmap
      */
-    bitmap(int w, int h) : base{w,h} {};
+    bitmap(int w, int h, const allocator_type & allocator) : base{w, h, allocator} {};
     /**
      * create a new bitmap with a given pixel array
      * @param $pixels
      * @param w width of bitmap
      * @param h height of bitmap
      */
-    bitmap(void *$pixels, int w, int h) : base{$pixels, w, h} {}
+    bitmap(void *$pixels, int w, int h, const allocator_type & allocator) : base{$pixels, w, h, allocator} {}
     bitmap(const bitmap & bmp) : base{bmp} {}
     bitmap(bitmap && bmp)  noexcept : base(microgl::traits::move(bmp)) {}
     bitmap & operator=(const bitmap & bmp) {
@@ -75,7 +76,7 @@ public:
     ~bitmap() = default;
 
     pixel pixelAt(int index) const {
-        return this->_buffer._data[index];
+        return this->_buffer[index];
     }
 
     void writeAt(int index, const pixel &value) {

@@ -68,6 +68,8 @@ public:
         return align_down(ptr_to_int(_ptr) + _size);
     }
 
+    stack_memory()=delete;
+
     /**
      * ctor
      *

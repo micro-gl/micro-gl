@@ -230,6 +230,8 @@ public:
         return align_down(this->ptr_to_int(_ptr) + _size);
     }
 
+    dynamic_memory()=delete;
+
     /**
      * ctor
      *

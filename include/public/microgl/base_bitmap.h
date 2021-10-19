@@ -15,21 +15,24 @@
  * 3. has interface to read/write pixels
  *
  * @tparam impl implementation type of derived class
+ * @tparam allocator_type the allocator type
  * @tparam pixel_coder_ the pixel coder type of the bitmap
  * @tparam buffer_element_type the type of the elements stored in the pixel array
  */
-template <typename impl, typename pixel_coder_,
+template <typename impl, class Allocator, typename pixel_coder_,
           typename buffer_element_type=typename pixel_coder_::pixel>
 class base_bitmap : public crpt<impl> {
 public:
     using pixel_coder=pixel_coder_;
     using pixel=typename pixel_coder::pixel;
     using rgba=typename pixel_coder::rgba;
+    using allocator_type = Allocator;
 
 protected:
+
     int _width = 0, _height = 0;
     pixel_coder _coder;
-    buffer<buffer_element_type> _buffer;
+    buffer<buffer_element_type, allocator_type> _buffer;
     // todo:: add a sub window feature, only involves translating x and y coords or a fixed index ?
 
 public:
@@ -37,16 +40,32 @@ public:
     static constexpr bool nativeAlphaChannelBits() { return hasNativeAlphaChannel() ? pixel_coder::rgba::a : 0; }
     static constexpr int maxNativeAlphaChannelValue() { return (1u<<nativeAlphaChannelBits())-1; }
 
-    base_bitmap(int w, int h) : base_bitmap(new buffer_element_type[w * h], w * h, w, h, true) {}
-    base_bitmap(void *$pixels, int w, int h) : base_bitmap($pixels, w*h, w, h, false) {}
-    base_bitmap(void *$pixels, int size, int w, int h, bool owner=false) :
+    base_bitmap(int w, int h, const allocator_type & allocator) :
+            _width{w}, _height{h}, _coder{}, _buffer(w*h, allocator) {}
+    base_bitmap(void *$pixels, int w, int h, const allocator_type & allocator) :
             _width{w}, _height{h}, _coder{},
-            _buffer(reinterpret_cast<buffer_element_type *>($pixels), size, owner) {
+            _buffer(reinterpret_cast<buffer_element_type *>($pixels), w*h, allocator) {}//base_bitmap($pixels, w*h, w, h, false) {}
+    base_bitmap(void *$pixels, int size, int w, int h,
+                const allocator_type & allocator = allocator_type()) :
+            _width{w}, _height{h}, _coder{},
+            _buffer(reinterpret_cast<buffer_element_type *>($pixels), size, allocator) {
+//                        _buffer(reinterpret_cast<buffer_element_type *>($pixels), size, owner) {
     }
+
+//    base_bitmap(int w, int h, const allocator_type & allocator) : base_bitmap(new buffer_element_type[w * h], w * h, w, h, true) {}
+//    base_bitmap(void *$pixels, int w, int h) : base_bitmap($pixels, w*h, w, h, false) {}
+//    base_bitmap(void *$pixels, int size, int w, int h, bool owner=false,
+//                const allocator_type & allocator = allocator_type()) :
+//            _width{w}, _height{h}, _coder{},
+//            _buffer($pixels, size, owner, allocator) {
+////                        _buffer(reinterpret_cast<buffer_element_type *>($pixels), size, owner) {
+//    }
+
     base_bitmap(const base_bitmap & bmp) : _buffer{bmp._buffer}, _width{bmp.width()}, _height{bmp.height()} {
     }
     base_bitmap(base_bitmap && bmp) noexcept : _buffer{microgl::traits::move(bmp._buffer)}, _width{bmp.width()}, _height{bmp.height()} {
     }
+
     base_bitmap & operator=(const base_bitmap & bmp) {
         _width=bmp.width(); _height=bmp.height();
         _buffer = bmp._buffer;
@@ -64,7 +83,8 @@ public:
     int width() const { return _width; }
     int height() const { return _height; }
     int size() const { return _buffer.size();}
-    pixel * data() const { return _buffer._data; }
+    const pixel * data() const { return _buffer.data(); }
+    pixel * data() { return _buffer.data(); }
 
     int locate(int x, int y) const { return y*this->_width + x; }
     pixel pixelAt(int x, int y) const { return this->pixelAt(y*this->_width + x); }

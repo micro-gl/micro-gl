@@ -93,6 +93,8 @@ public:
         return free_blocks_count()*_block_size;
     }
 
+    pool_memory()=delete;
+
     /**
      *
      * @param ptr start of memory

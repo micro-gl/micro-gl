@@ -45,6 +45,7 @@ private:
 
 public:
 
+    linear_memory()=delete;
     /**
      *
      * @param ptr start of memory

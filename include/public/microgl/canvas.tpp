@@ -67,7 +67,12 @@ int canvas<bitmap_type, options>::height() const {
 }
 
 template<typename bitmap_type, uint8_t options>
-auto canvas<bitmap_type, options>::pixels()  const -> pixel *{
+auto canvas<bitmap_type, options>::pixels() const -> const pixel * {
+    return _bitmap_canvas.data();
+}
+
+template<typename bitmap_type, uint8_t options>
+auto canvas<bitmap_type, options>::pixels() -> pixel * {
     return _bitmap_canvas.data();
 }
 

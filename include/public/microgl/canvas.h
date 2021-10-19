@@ -163,9 +163,9 @@ public:
         updateCanvasWindow(0, 0);
     }
 
-    template<class allocator_type=std_allocator<char>>
     canvas(int width, int height,
-           const allocator_type &allocator=allocator_type()) : _bitmap_canvas(width, height) {
+           const typename bitmap_type::allocator_type &allocator=typename bitmap_type::allocator_type()) :
+           _bitmap_canvas(width, height, allocator) {
         updateClipRect(0, 0, width, height);
         updateCanvasWindow(0, 0);
     }
@@ -276,7 +276,8 @@ public:
     // get size of pixel
     unsigned int sizeofPixel() const;
     // get the pixels array from the underlying bitmap
-    pixel * pixels() const;
+    const pixel * pixels() const;
+    pixel * pixels();
     // get a pixel by position
     pixel getPixel(int x, int y) const ;
     pixel getPixel(int index) const ;
