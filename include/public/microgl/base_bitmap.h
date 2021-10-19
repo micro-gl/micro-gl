@@ -49,17 +49,8 @@ public:
                 const allocator_type & allocator) :
             _width{w}, _height{h}, _coder{},
             _buffer(reinterpret_cast<buffer_element_type *>($pixels), size, allocator) {
-//                        _buffer(reinterpret_cast<buffer_element_type *>($pixels), size, owner) {
     }
 
-//    base_bitmap(int w, int h, const allocator_type & allocator) : base_bitmap(new buffer_element_type[w * h], w * h, w, h, true) {}
-//    base_bitmap(void *$pixels, int w, int h) : base_bitmap($pixels, w*h, w, h, false) {}
-//    base_bitmap(void *$pixels, int size, int w, int h, bool owner=false,
-//                const allocator_type & allocator = allocator_type()) :
-//            _width{w}, _height{h}, _coder{},
-//            _buffer($pixels, size, owner, allocator) {
-////                        _buffer(reinterpret_cast<buffer_element_type *>($pixels), size, owner) {
-//    }
 
     base_bitmap(const base_bitmap & bmp) : _buffer{bmp._buffer}, _width{bmp.width()}, _height{bmp.height()} {
     }

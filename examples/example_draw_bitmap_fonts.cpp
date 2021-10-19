@@ -22,7 +22,7 @@ int main() {
     Canvas24 canvas(W, H);;
     font32 font;
 
-    //    font = Resources::loadFont<Bitmap32_ARRAY>("minecraft-20");
+//        font = Resources::loadFont<Bitmap32_ARRAY>("minecraft-20");
 //    font = Resources::loadFont<Bitmap32_ARRAY>("digital_7-20");
     font = Resources::loadFont<Bitmap32_ARRAY>("roboto-thin-28");
 //    font = Resources::loadFont<Bitmap32_ARRAY>("roboto-thin-14");
@@ -37,7 +37,7 @@ int main() {
 //    font.lineHeight=19;
         format.letterSpacing=0;
         format.leading=5;
-//        format.fontSize=33;
+//        format.fontSize=40;
 //    format.horizontalAlign=text::hAlign::right;
         format.horizontalAlign=text::hAlign::left;
 //    format.horizontalAlign=text::hAlign::center;
@@ -51,7 +51,7 @@ int main() {
         canvas.drawText<true, true>("Welcome to micro{gl} Welcome to micro{gl} Welcome to "
                          "micro{gl} Welcome to micro{gl} Welcome to micro{gl} ",
 //        canvas.drawText("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!№;%:?*()_+-=.,/|\"'@#$^&{}[]",
-//        canvas.drawText("BBDDD dd",
+//        canvas.drawText("aaaaa",
                          font,
                          {255, 255, 255, 255},
                          format,

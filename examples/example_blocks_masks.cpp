@@ -11,6 +11,8 @@
 #define TEST_ITERATIONS 1
 #define W 640*1
 #define H 640*1
+#define BLOCK_SIZE W/8
+
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * sdl_texture;
@@ -30,10 +32,9 @@ void init_sdl(int width, int height);
 template <typename number>
 void render_blocks() {
     bool debug = 1;
-    int block_size = W/8;//W/10;//2;//W/13;
+    int block_size = BLOCK_SIZE;
     int count_blocks_horizontal = 1+((W-1)/block_size); // with integer ceil rounding
     int count_blocks_vertical = 1+((H-1)/block_size); // with integer ceil rounding
-    auto * bitmap = new Bitmap24(block_size, block_size);
     auto * sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STREAMING, block_size, block_size);
 
@@ -41,7 +42,7 @@ void render_blocks() {
     SDL_RenderClear(renderer);
     for (int iy = 0; iy < block_size*count_blocks_vertical; iy+=block_size) {
         for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
-            canvas_->updateCanvasWindow(ix, iy, bitmap);
+            canvas_->updateCanvasWindow(ix, iy);
             canvas_->clear({255,255,255,255});
             canvas_->drawRect<blendmode::Normal, porterduff::None<>, false, number>(
                     tex_uv,10, 10, 400, 400);
@@ -60,8 +61,6 @@ void render_blocks() {
 
     SDL_RenderPresent(renderer);
     SDL_DestroyTexture(sdl_texture);
-
-    delete bitmap;
 }
 
 void render() {
@@ -89,7 +88,8 @@ void init_sdl(int width, int height) {
     auto bmp_3_native = new bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
     tex_mask.updateBitmap(bmp_3_native->convertToBitmap<coder::RGB888_PACKED_32>());
-    canvas_ = new Canvas24(width, height);
+    canvas_ = new Canvas24(BLOCK_SIZE, BLOCK_SIZE);
+    canvas_->updateClipRect(0, 0, W, H);
 }
 
 int render_test(int N) {

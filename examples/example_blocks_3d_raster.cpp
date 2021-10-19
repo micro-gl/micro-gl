@@ -15,6 +15,8 @@
 #define TEST_ITERATIONS 100
 #define W 640*1
 #define H 640*1
+#define BLOCK_SIZE W/2
+
 SDL_Window * window;
 SDL_Renderer * renderer;
 
@@ -25,7 +27,6 @@ using Bitmap24= bitmap<coder::RGB888_PACKED_32>;
 using Canvas24= canvas<Bitmap24>;
 using Texture24= sampling::texture<Bitmap24, sampling::texture_filter::Bilinear>;
 Texture24 tex_uv;
-Canvas24 * canva;
 sampling::flat_color<> color_grey{{0,0,122,255}};
 void loop();
 void init_sdl(int width, int height);
@@ -39,7 +40,7 @@ float t=0;
 float z=0;
 
 template <typename number, typename z_buffer_type>
-void render_block(int block_x, int block_y, Bitmap24 *bmp, z_buffer_type * depth_buffer, const model_3d<number> & object) {
+void render_block(Canvas24 * canva, int block_x, int block_y, z_buffer_type *depth_buffer, const model_3d<number> &object) {
     using l64= long long;
     using vertex = vec3<number>;
     using camera = microgl::camera;
@@ -64,12 +65,13 @@ void render_block(int block_x, int block_y, Bitmap24 *bmp, z_buffer_type * depth
     mat4 mvp_2= projection*view*model_2;
 
     // setup shader
-   Shader shader;
+    Shader shader;
     shader.matrix= mvp_1;
     shader.sampler= &tex_uv;
 
     // model to vertex buffers
     dynamic_array<vertex_attributes> vertex_buffer{object.vertices.size()};
+    vertex_buffer.clear();
     for (unsigned ix = 0; ix < object.vertices.size(); ++ix) {
         vertex_attributes v{};
         v.point= object.vertices[ix];
@@ -80,7 +82,7 @@ void render_block(int block_x, int block_y, Bitmap24 *bmp, z_buffer_type * depth
     // clear z-buffer
     depth_buffer->clear();
 
-    canva->updateCanvasWindow(block_x, block_y, bmp);
+    canva->updateCanvasWindow(block_x, block_y);
     // draw model_1
     canva->drawTriangles<blendmode::Normal, porterduff::None<>, false, true, true>(
             shader, W, H,
@@ -109,36 +111,35 @@ template <typename number>
 void render_blocks() {
     auto model = cube_3d<number>;
     bool debug = 1;
-    int block_size = W/2;//W/10;//2;//W/13;
+    int block_size = BLOCK_SIZE;//W/10;//2;//W/13;
     int count_blocks_horizontal = 1+((W-1)/block_size); // with integer ceil rounding
     int count_blocks_vertical = 1+((H-1)/block_size); // with integer ceil rounding
-    auto * bitmap = new Bitmap24(block_size, block_size);
-    canva = new Canvas24(bitmap);
-    z_buffer<16> depth_buffer(canva->width(), canva->height());
+    auto bitmap = Bitmap24(block_size, block_size);
+    Canvas24 canva(bitmap);
+    z_buffer<16> depth_buffer(canva.width(), canva.height());
 
     auto * sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
                                            SDL_TEXTUREACCESS_STREAMING, block_size, block_size);
 
-    canva->updateClipRect(0, 0, W, H);
+    canva.updateClipRect(0, 0, W, H);
     SDL_RenderClear(renderer);
     for (int iy = 0; iy < block_size*count_blocks_vertical; iy+=block_size) {
         for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
-            canva->updateCanvasWindow(ix, iy, bitmap);
-            canva->clear({255,255,255,255});
-            render_block<number>(ix, iy, bitmap, &depth_buffer, model);
+            canva.updateCanvasWindow(ix, iy);
+            canva.clear({255,255,255,255});
+            render_block<number>(&canva, ix, iy, &depth_buffer, model);
             SDL_Rect rect_source {0, 0, block_size, block_size};
             SDL_Rect rect_dest {ix, iy, block_size-debug, block_size-debug};
             SDL_UpdateTexture(sdl_texture,
                               &rect_source,
-                              &canva->pixels()[0],
-                              (canva->width()) * canva->sizeofPixel());
+                              &canva.pixels()[0],
+                              (canva.width()) * canva.sizeofPixel());
             SDL_RenderCopy(renderer, sdl_texture, &rect_source, &rect_dest);
         }
     }
 
     SDL_RenderPresent(renderer);
     SDL_DestroyTexture(sdl_texture);
-    delete bitmap;
 }
 
 void render() {

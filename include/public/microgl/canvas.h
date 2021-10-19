@@ -154,12 +154,12 @@ public:
 //    }
 
     explicit canvas(bitmap_type && $bmp) : _bitmap_canvas(microgl::traits::move($bmp)) {
-        updateClipRect(0, 0, $bmp->width(), $bmp->height());
+        updateClipRect(0, 0, $bmp.width(), $bmp.height());
         updateCanvasWindow(0, 0);
     }
 
     explicit canvas(const bitmap_type & $bmp) : _bitmap_canvas($bmp) {
-        updateClipRect(0, 0, $bmp->width(), $bmp->height());
+        updateClipRect(0, 0, $bmp.width(), $bmp.height());
         updateCanvasWindow(0, 0);
     }
 

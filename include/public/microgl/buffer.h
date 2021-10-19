@@ -54,7 +54,7 @@ private:
 
     void copy_from(const buffer & val) {
         destroyIfPossibleAndReset();
-        _data = allocate_and_construct(val.size()); //new element_type[val.size()];
+        _data = allocate_and_construct(val.size(), _allocator); //new element_type[val.size()];
         _size = val.size();
         owner = true;
         for (int ix = 0; ix < _size; ++ix)

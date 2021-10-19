@@ -11,6 +11,8 @@
 #define TEST_ITERATIONS 1
 #define W 640*1
 #define H 640*1
+#define BLOCK_SIZE W/2
+
 SDL_Window * window;
 SDL_Renderer * renderer;
 SDL_Texture * sdl_texture;
@@ -63,7 +65,6 @@ void render_blocks() {
     int block_size = W/4;//2;//W/13;
     int count_blocks_horizontal = 1+((W-1)/block_size); // with integer ceil rounding
     int count_blocks_vertical = 1+((H-1)/block_size); // with integer ceil rounding
-    auto * bitmap = new Bitmap24(block_size, block_size);
     auto * sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
                                     SDL_TEXTUREACCESS_STREAMING, block_size, block_size);
 
@@ -71,7 +72,7 @@ void render_blocks() {
     SDL_RenderClear(renderer);
     for (int iy = 0; iy < block_size*count_blocks_vertical; iy+=block_size) {
         for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
-            canvas_->updateCanvasWindow(ix, iy, bitmap);
+            canvas_->updateCanvasWindow(ix, iy);
             canvas_->clear({255,255,255,255});
             canvas_->drawBezierPatch<blendmode::Normal, porterduff::None<>, false, false, number, number>(
 //                    color_grey,
@@ -96,7 +97,6 @@ void render_blocks() {
     SDL_DestroyTexture(sdl_texture);
 
     delete[] mesh;
-    delete bitmap;
 }
 
 void render() {
@@ -120,7 +120,7 @@ void init_sdl(int width, int height) {
     auto img_2 =Resources::loadImageFromCompressedPath("images/uv_512.png");
     auto bmp_uv_U8 = new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height);
     tex_uv.updateBitmap(bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>());
-    canvas_ = new Canvas24(width, height);
+    canvas_ = new Canvas24(BLOCK_SIZE, BLOCK_SIZE);
 }
 
 int render_test(int N) {

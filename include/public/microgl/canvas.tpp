@@ -1,24 +1,6 @@
 
 #include "canvas.h"
 
-//template<typename bitmap_type, uint8_t options>
-//canvas<bitmap_type, options>::canvas(bitmap_type *$bmp) : _bitmap_canvas($bmp) {
-//    updateCanvasWindow(0, 0, $bmp);
-//    updateClipRect(0, 0, $bmp->width(), $bmp->height());
-//}
-//
-////template<typename bitmap_type, uint8_t options>
-////template<class allocator_type>
-////canvas<bitmap_type, options>::canvas(int width, int height,
-////                                     allocator_type &allocator) {
-////
-////}
-//
-//template<typename bitmap_type, uint8_t options>
-//canvas<bitmap_type, options>::canvas(int width, int height) :
-//            canvas(new bitmap_type(width, height)) {
-//}
-
 template<typename bitmap_type, uint8_t options>
 auto canvas<bitmap_type, options>::coder() const -> const pixel_coder & {
     return _bitmap_canvas.coder();
@@ -1688,7 +1670,7 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
                         font_col.b = channel::mc<b_>(font_col.b, color.b);
                         font_col.a = channel::mc<a_>(font_col.a, color.a);
                     }
-                    blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_>(font_col, x, y, opacity, *this);
+                    blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_>(font_col, x, y, opacity);
                 }
             }
         }

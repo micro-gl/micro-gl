@@ -23,17 +23,17 @@ int main() {
     TexPalette tex;
 
 #if (PALETTE_SIZE==2)
-    auto * bitmap_packed = new PaletteBitmap{bitmap_1_2_colors_data, bitmap_1_2_colors_palette, 256, 256};
-    tex.updateBitmap(bitmap_packed);
+    auto bitmap_packed = new PaletteBitmap{bitmap_1_2_colors_data, bitmap_1_2_colors_palette, 256, 256};
+    tex.updateBitmap(&bitmap_packed);
 #elif (PALETTE_SIZE==4)
-    auto * bitmap_packed = new PaletteBitmap{bitmap_1_4_colors_data, bitmap_1_4_colors_palette, 256, 256};
-    tex.updateBitmap(bitmap_packed);
+    auto bitmap_packed = new PaletteBitmap{bitmap_1_4_colors_data, bitmap_1_4_colors_palette, 256, 256};
+    tex.updateBitmap(&bitmap_packed);
 #elif (PALETTE_SIZE==16)
-    auto * bitmap_packed = new PaletteBitmap{bitmap_1_16_colors_data, bitmap_1_16_colors_palette, 256, 256};
-    tex.updateBitmap(bitmap_packed);
+    auto bitmap_packed = PaletteBitmap{bitmap_1_16_colors_data, bitmap_1_16_colors_palette, 256, 256};
+    tex.updateBitmap(&bitmap_packed);
 #elif (PALETTE_SIZE==256)
-    auto * bitmap_packed = new PaletteBitmap{bitmap_1_256_colors_data, bitmap_1_256_colors_palette, 256, 256};
-    tex.updateBitmap(bitmap_packed);
+    auto bitmap_packed = new PaletteBitmap{bitmap_1_256_colors_data, bitmap_1_256_colors_palette, 256, 256};
+    tex.updateBitmap(&bitmap_packed);
 #endif
 
     auto render = [&]() -> void {
