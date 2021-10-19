@@ -55,14 +55,14 @@ public:
      * @param w width of bitmap
      * @param h height of bitmap
      */
-    bitmap(int w, int h, const allocator_type & allocator) : base{w, h, allocator} {};
+    bitmap(int w, int h, const allocator_type & allocator=allocator_type()) : base{w, h, allocator} {};
     /**
      * create a new bitmap with a given pixel array
      * @param $pixels
      * @param w width of bitmap
      * @param h height of bitmap
      */
-    bitmap(void *$pixels, int w, int h, const allocator_type & allocator) : base{$pixels, w, h, allocator} {}
+    bitmap(void *$pixels, int w, int h, const allocator_type & allocator=allocator_type()) : base{$pixels, w, h, allocator} {}
     bitmap(const bitmap & bmp) : base{bmp} {}
     bitmap(bitmap && bmp)  noexcept : base(microgl::traits::move(bmp)) {}
     bitmap & operator=(const bitmap & bmp) {

@@ -46,7 +46,7 @@ public:
             _width{w}, _height{h}, _coder{},
             _buffer(reinterpret_cast<buffer_element_type *>($pixels), w*h, allocator) {}//base_bitmap($pixels, w*h, w, h, false) {}
     base_bitmap(void *$pixels, int size, int w, int h,
-                const allocator_type & allocator = allocator_type()) :
+                const allocator_type & allocator) :
             _width{w}, _height{h}, _coder{},
             _buffer(reinterpret_cast<buffer_element_type *>($pixels), size, allocator) {
 //                        _buffer(reinterpret_cast<buffer_element_type *>($pixels), size, owner) {

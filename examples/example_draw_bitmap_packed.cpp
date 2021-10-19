@@ -10,7 +10,7 @@
 #include "data/packed_4.h"
 
 #define TEST_ITERATIONS 100
-#define BITS 2 // 1, 2, 4 bits
+#define BITS 4 // 1, 2, 4 bits
 #define W 640*1
 #define H 640*1
 

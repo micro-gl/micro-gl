@@ -9,7 +9,7 @@
 #include "data/bitmap_1_palette_4_colors.h"
 #include "data/bitmap_1_palette_2_colors.h"
 
-#define PALETTE_SIZE 256 // 2, 4, 16, 256
+#define PALETTE_SIZE 16 // 2, 4, 16, 256
 #define W 640*1
 #define H 640*1
 
