@@ -4,6 +4,7 @@ template<typename T, unsigned N=10>
 class static_array {
 
 public:
+    using value_type = T;
     using index = unsigned int;
     using type = T;
     static constexpr unsigned Capacity = N;

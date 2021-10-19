@@ -31,6 +31,7 @@
 #include <microgl/functions/orient2d.h>
 #include <microgl/functions/bits.h>
 #include <microgl/functions/distance.h>
+#include <microgl/allocators/std_rebind_allocator.h>
 
 using namespace microgl::triangles;
 using namespace microgl::polygons;
@@ -146,18 +147,36 @@ private:
     render_options_t _options;
 public:
 
-    /**
-     * ctor of canvas that receives a bitmap reference
-     *
-     * @param $bmp a bitmap reference
-     */
-    explicit canvas(bitmap_type * $bmp);
-    /**
-     * ctor of canvas that allocate a bitmap internally
-     * @param width     width of canvas
-     * @param height    height of canvas
-     */
-    canvas(int width, int height);
+    canvas(bitmap_type *$bmp) : _bitmap_canvas($bmp) {
+        updateClipRect(0, 0, $bmp->width(), $bmp->height());
+        updateCanvasWindow(0, 0);
+    }
+
+//template<typename bitmap_type, uint8_t options>
+//template<class allocator_type>
+//canvas<bitmap_type, options>::canvas(int width, int height,
+//                                     allocator_type &allocator) {
+//
+//}
+
+    canvas(int width, int height) :
+            canvas(new bitmap_type(width, height)) {
+    }
+
+//    /**
+//     * ctor of canvas that receives a bitmap reference
+//     *
+//     * @param $bmp a bitmap reference
+//     */
+//    explicit canvas(bitmap_type * $bmp);
+//    /**
+//     * ctor of canvas that allocate a bitmap internally
+//     * @param width     width of canvas
+//     * @param height    height of canvas
+//     */
+////    template<class allocator_type=std_allocator<pixel>>
+////    canvas(int width, int height, allocator_type & allocator = allocator_type());
+//    canvas(int width, int height);
 
     /**
      * update the clipping rectangle of the canvas
@@ -174,21 +193,23 @@ public:
     /**
      * where to position the bitmap relative to the canvas, this feature
      * can help with block rendering, where the bitmap is smaller than the canvas
-     * diensions.
+     * dimensions.
      *
      * @param left relative to x=0
      * @param top relative to y=0
-     * @param $bmp (Optional) the bitmap reference
+     * @param right relative to x=0
+     * @param bottom relative to y=0
      */
-    void updateCanvasWindow(int left, int top, bitmap_type * $bmp=nullptr) {
-        auto c_w = $bmp ? $bmp->width() : _window.canvas_rect.width();
-        auto c_h = $bmp ? $bmp->height() : _window.canvas_rect.height();
-        _window.canvas_rect = {left, top, left + c_w - 0, top + c_h - 0};
-        if($bmp) _bitmap_canvas=$bmp;
+    void updateCanvasWindow(int left, int top, int right, int bottom) {
+        _window.canvas_rect = {left, top, left + right, top + bottom };
         _window.index_correction= _window.canvas_rect.width()*_window.canvas_rect.top
-                + _window.canvas_rect.left;
+                                  + _window.canvas_rect.left;
         if(_window.clip_rect.empty())
             _window.clip_rect= _window.canvas_rect;
+    }
+
+    void updateCanvasWindow(int left, int top) {
+        updateCanvasWindow(left, top, _bitmap_canvas->width(), _bitmap_canvas->height());
     }
 
     /**

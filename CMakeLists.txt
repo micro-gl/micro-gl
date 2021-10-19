@@ -6,7 +6,7 @@ set (CMAKE_CXX_STANDARD 11)
 
 message("===============\n${PROJECT_NAME} project \n===============")
 
-add_library(${PROJECT_NAME} INTERFACE include/public/microgl/allocators/memory_resource.h include/public/microgl/allocators/polymorphic_allocator.h)
+add_library(${PROJECT_NAME} INTERFACE include/public/microgl/allocators/std_rebind_allocator.h)
 
 # expose public include directory
 target_include_directories(${PROJECT_NAME}

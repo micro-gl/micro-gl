@@ -1154,9 +1154,9 @@ namespace microgl {
                             if(requested_boundary_info) {
                                 triangles::boundary_info aa_info =
                                         triangles::create_boundary_info(
-                                                second->prev==start ? !infer_fill(start->twin->face->winding, rule) : false,
+                                                second->prev == start && !infer_fill(start->twin->face->winding, rule),
                                                 !infer_fill(second->twin->face->winding, rule),
-                                                third->next==start ? !infer_fill(third->twin->face->winding, rule) : false
+                                                third->next==start && !infer_fill(third->twin->face->winding, rule)
                                                 );
                                 boundary_buffer->push_back(aa_info);
                             }

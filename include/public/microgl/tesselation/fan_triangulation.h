@@ -37,7 +37,6 @@ namespace microgl {
                                                                 aa_second_edge,
                                                                 aa_third_edge);
                         boundary_buffer->push_back(aa_info);
-
                     }
 
                 }

@@ -75,10 +75,11 @@ template<typename T, class Alloc=std_allocator<T>>
 class dynamic_array {
     using const_dynamic_array_ref = const dynamic_array<T, Alloc> &;
 public:
+    using value_type = T;
+    using allocator_type = Alloc;
     using index = unsigned int;
     using type = T;
     using uint = unsigned int;
-    using allocator_t = Alloc;
 
 private:
     T *_data = nullptr;

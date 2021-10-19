@@ -1,14 +1,23 @@
 
-template<typename bitmap_type, uint8_t options>
-canvas<bitmap_type, options>::canvas(bitmap_type *$bmp) : _bitmap_canvas($bmp) {
-    updateCanvasWindow(0, 0, $bmp);
-    updateClipRect(0, 0, $bmp->width(), $bmp->height());
-}
+#include "canvas.h"
 
-template<typename bitmap_type, uint8_t options>
-canvas<bitmap_type, options>::canvas(int width, int height) :
-            canvas(new bitmap_type(width, height)) {
-}
+//template<typename bitmap_type, uint8_t options>
+//canvas<bitmap_type, options>::canvas(bitmap_type *$bmp) : _bitmap_canvas($bmp) {
+//    updateCanvasWindow(0, 0, $bmp);
+//    updateClipRect(0, 0, $bmp->width(), $bmp->height());
+//}
+//
+////template<typename bitmap_type, uint8_t options>
+////template<class allocator_type>
+////canvas<bitmap_type, options>::canvas(int width, int height,
+////                                     allocator_type &allocator) {
+////
+////}
+//
+//template<typename bitmap_type, uint8_t options>
+//canvas<bitmap_type, options>::canvas(int width, int height) :
+//            canvas(new bitmap_type(width, height)) {
+//}
 
 template<typename bitmap_type, uint8_t options>
 auto canvas<bitmap_type, options>::coder() const -> const pixel_coder & {
@@ -1687,3 +1696,4 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
     }
     updateClipRect(old.left, old.top, old.right, old.bottom);
 }
+
