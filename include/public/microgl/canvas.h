@@ -142,26 +142,37 @@ private:
     using rint =typename microgl::traits::conditional<
             options_big_integers(), rint_big, int32_t >::type;
 
-    bitmap_type * _bitmap_canvas = nullptr;
+//    bitmap_type * _bitmap_canvas = nullptr;
+    bitmap_type _bitmap_canvas;
     window_t _window;
     render_options_t _options;
 public:
 
-    canvas(bitmap_type *$bmp) : _bitmap_canvas($bmp) {
+//    canvas(bitmap_type *$bmp) : _bitmap_canvas($bmp) {
+//        updateClipRect(0, 0, $bmp->width(), $bmp->height());
+//        updateCanvasWindow(0, 0);
+//    }
+
+    explicit canvas(bitmap_type && $bmp) : _bitmap_canvas(microgl::traits::move($bmp)) {
         updateClipRect(0, 0, $bmp->width(), $bmp->height());
         updateCanvasWindow(0, 0);
     }
 
-//template<typename bitmap_type, uint8_t options>
-//template<class allocator_type>
-//canvas<bitmap_type, options>::canvas(int width, int height,
-//                                     allocator_type &allocator) {
-//
-//}
-
-    canvas(int width, int height) :
-            canvas(new bitmap_type(width, height)) {
+    explicit canvas(const bitmap_type & $bmp) : _bitmap_canvas($bmp) {
+        updateClipRect(0, 0, $bmp->width(), $bmp->height());
+        updateCanvasWindow(0, 0);
     }
+
+    template<class allocator_type=std_allocator<char>>
+    canvas(int width, int height,
+           const allocator_type &allocator=allocator_type()) : _bitmap_canvas(width, height) {
+        updateClipRect(0, 0, width, height);
+        updateCanvasWindow(0, 0);
+    }
+//
+//    canvas(int width, int height) :
+//            canvas(new bitmap_type(width, height)) {
+//    }
 
 //    /**
 //     * ctor of canvas that receives a bitmap reference
@@ -209,7 +220,7 @@ public:
     }
 
     void updateCanvasWindow(int left, int top) {
-        updateCanvasWindow(left, top, _bitmap_canvas->width(), _bitmap_canvas->height());
+        updateCanvasWindow(left, top, _bitmap_canvas.width(), _bitmap_canvas.height());
     }
 
     /**
@@ -281,7 +292,7 @@ public:
     /**
      * get the underlying bitmap pointer
      */
-    bitmap_type * bitmapCanvas() const;
+    bitmap_type & bitmapCanvas() const;
 
     /**
      * clear the canvas with a color intensity
@@ -345,7 +356,7 @@ public:
             static color_t backdrop{}, blended{};
             // normal blend and none composite do not require a backdrop
             if(!(skip_blending && none_compositing))
-                canva._bitmap_canvas->decode(index, backdrop); // not using getPixelColor to avoid extra subtraction
+                canva._bitmap_canvas.decode(index, backdrop); // not using getPixelColor to avoid extra subtraction
 
             // support compositing even if the surface is opaque.
             if(!hasBackdropAlphaChannel) backdrop.a = alpha_max_value;
@@ -390,12 +401,12 @@ public:
             // alpha multiplication
             PorterDuff::template composite<alpha_bits, premultiply_result>(backdrop, blended, result);
             canva.coder().encode(result, output);
-            canva._bitmap_canvas->writeAt(index, output);
+            canva._bitmap_canvas.writeAt(index, output);
         }
         else {
             pixel output;
             canva.coder().encode(val, output);
-            canva._bitmap_canvas->writeAt(index, output);
+            canva._bitmap_canvas.writeAt(index, output);
         }
     }
     /**

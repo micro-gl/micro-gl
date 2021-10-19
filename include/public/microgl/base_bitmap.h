@@ -45,14 +45,14 @@ public:
     }
     base_bitmap(const base_bitmap & bmp) : _buffer{bmp._buffer}, _width{bmp.width()}, _height{bmp.height()} {
     }
-    base_bitmap(base_bitmap && bmp)  noexcept : _buffer{microgl::traits::move(bmp._buffer)}, _width{bmp.width()}, _height{bmp.height()} {
+    base_bitmap(base_bitmap && bmp) noexcept : _buffer{microgl::traits::move(bmp._buffer)}, _width{bmp.width()}, _height{bmp.height()} {
     }
     base_bitmap & operator=(const base_bitmap & bmp) {
         _width=bmp.width(); _height=bmp.height();
         _buffer = bmp._buffer;
         return *this;
     }
-    base_bitmap & operator=(base_bitmap && bmp)  noexcept {
+    base_bitmap & operator=(base_bitmap && bmp) noexcept {
         _width=bmp.width(); _height=bmp.height();
         _buffer = microgl::traits::move(bmp._buffer);
         return *this;
@@ -60,11 +60,11 @@ public:
     virtual ~base_bitmap() = default;
 
     // does the underlying pixel buffer own the data ?
-    bool isOwner() { return _buffer.owner; }
+    bool isOwner() const { return _buffer.owner; }
     int width() const { return _width; }
     int height() const { return _height; }
     int size() const { return _buffer.size();}
-    pixel * data() { return _buffer._data; }
+    pixel * data() const { return _buffer._data; }
 
     int locate(int x, int y) const { return y*this->_width + x; }
     pixel pixelAt(int x, int y) const { return this->pixelAt(y*this->_width + x); }

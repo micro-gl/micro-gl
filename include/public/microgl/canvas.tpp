@@ -21,11 +21,11 @@
 
 template<typename bitmap_type, uint8_t options>
 auto canvas<bitmap_type, options>::coder() const -> const pixel_coder & {
-    return _bitmap_canvas->coder();
+    return _bitmap_canvas.coder();
 }
 
 template<typename bitmap_type, uint8_t options>
-inline bitmap_type *canvas<bitmap_type, options>::bitmapCanvas() const {
+inline bitmap_type & canvas<bitmap_type, options>::bitmapCanvas() const {
     return _bitmap_canvas;
 }
 
@@ -37,23 +37,23 @@ unsigned int canvas<bitmap_type, options>::sizeofPixel() const {
 template<typename bitmap_type, uint8_t options>
 auto canvas<bitmap_type, options>::getPixel(int x, int y) const -> pixel {
     // this is not good for high performance loop
-    return _bitmap_canvas->pixelAt(x, y);
+    return _bitmap_canvas.pixelAt(x, y);
 }
 
 template<typename bitmap_type, uint8_t options>
 auto canvas<bitmap_type, options>::getPixel(int index) const -> pixel {
     // this is better for high performance loop
-    return _bitmap_canvas->pixelAt(index);
+    return _bitmap_canvas.pixelAt(index);
 }
 
 template<typename bitmap_type, uint8_t options>
 void canvas<bitmap_type, options>::getPixelColor(int x, int y, color_t & output)  const {
-    this->_bitmap_canvas->decode(x, y, output);
+    this->_bitmap_canvas.decode(x, y, output);
 }
 
 template<typename bitmap_type, uint8_t options>
 void canvas<bitmap_type, options>::getPixelColor(int index, color_t & output)  const {
-    this->_bitmap_canvas->decode(index - _window.index_correction, output);
+    this->_bitmap_canvas.decode(index - _window.index_correction, output);
 }
 
 template<typename bitmap_type, uint8_t options>
@@ -68,7 +68,7 @@ int canvas<bitmap_type, options>::height() const {
 
 template<typename bitmap_type, uint8_t options>
 auto canvas<bitmap_type, options>::pixels()  const -> pixel *{
-    return _bitmap_canvas->data();
+    return _bitmap_canvas.data();
 }
 
 template<typename bitmap_type, uint8_t options>
@@ -76,14 +76,14 @@ template <typename number>
 void canvas<bitmap_type, options>::clear(const intensity<number> &color) {
     pixel output;
     microgl::coder::encode<number>(color, output, coder());
-    _bitmap_canvas->fill(output);
+    _bitmap_canvas.fill(output);
 }
 
 template<typename bitmap_type, uint8_t options>
 void canvas<bitmap_type, options>::clear(const color_t &color) {
     pixel output;
-    _bitmap_canvas->coder().encode(color, output);
-    _bitmap_canvas->fill(output);
+    _bitmap_canvas.coder().encode(color, output);
+    _bitmap_canvas.fill(output);
 }
 
 template<typename bitmap_type, uint8_t options>
@@ -94,12 +94,12 @@ void canvas<bitmap_type, options>::blendColor(const color_t &val, int x, int y, 
 
 template<typename bitmap_type, uint8_t options>
 void canvas<bitmap_type, options>::drawPixel(const pixel & val, int x, int y) {
-    _bitmap_canvas->writeAt(y*width()+x, val);
+    _bitmap_canvas.writeAt(y*width()+x, val);
 }
 
 template<typename bitmap_type, uint8_t options>
 inline void canvas<bitmap_type, options>::drawPixel(const pixel & val, int index) {
-    _bitmap_canvas->writeAt(index - _window.index_correction, val);
+    _bitmap_canvas.writeAt(index - _window.index_correction, val);
 }
 
 // fast common graphics shapes like circles and rounded rectangles
