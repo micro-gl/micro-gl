@@ -205,7 +205,7 @@ int main() {
                 255);
     };
 
-    const auto render = [&]() {
+    auto render = [&](void*, void*, void*) -> void {
         t+=.05f;
         static auto poly = poly_rect<number>();
 //        static auto poly = poly_3<number>();

@@ -57,7 +57,7 @@ int main() {
 
     };
 
-    auto render = [&](){
+    auto render = [&](void*, void*, void*){
         static auto model = tree_3d<number>;
 
         render_template(model);

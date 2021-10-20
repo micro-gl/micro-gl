@@ -25,7 +25,7 @@ int main() {
     boundary_info boundary[2] = {create_boundary_info(true,true,false),
                                  create_boundary_info(false,true,true)};
 
-    const auto render = [&]() {
+    auto render = [&](void*, void*, void*) -> void {
         t += 0.001;
         auto t_number_angle = number(t);
         static float sine = 0.0f;

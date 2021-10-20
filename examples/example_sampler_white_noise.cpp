@@ -18,7 +18,7 @@ int main() {
     Canvas24 canvas(W, H);
 
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         static long long counter = 0;
         if(counter++%50==0)
             sampler.update();

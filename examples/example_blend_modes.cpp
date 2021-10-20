@@ -38,7 +38,7 @@ int main() {
 
     Canvas24 canvas(W, H);
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         canvas.clear({0, 255, 255, 255});
         canvas.drawRect<blendmode::Multiply<true>, porterduff::FastSourceOverOnOpaque>(
 //        canvas.drawRect<blendmode::Normal, porterduff::None<true>>(

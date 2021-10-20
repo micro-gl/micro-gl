@@ -36,7 +36,7 @@ int main() {
     tex.updateBitmap(&bitmap_packed);
 #endif
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
 
         canvas.clear(color_t{0,0,0});
         canvas.drawRect<blendmode::Normal, porterduff::None<>, false>(

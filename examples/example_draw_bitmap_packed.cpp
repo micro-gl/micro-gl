@@ -42,7 +42,7 @@ int main() {
 
     bitmap_packed->pixelAt(0);
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
 
         canvas.clear(color_t{255,0,0});
         canvas.drawRect<blendmode::Normal, porterduff::None<>, false>(

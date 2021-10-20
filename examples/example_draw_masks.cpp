@@ -32,7 +32,7 @@ int main() {
     Texture24 tex_mask{new bitmap<coder::RGB888_ARRAY>(img_3.data, img_3.width, img_3.height)};
     Texture32 tex_mask_2{new bitmap<coder::RGBA8888_ARRAY>(img_0.data, img_0.width, img_0.height)};
 
-    auto render = [&]() {
+    auto render = [&](void*, void*, void*) -> void {
 
         canvas.clear({255,255,255,255});
         canvas.drawRect<blendmode::Normal, porterduff::None<>>(

@@ -37,7 +37,7 @@ int main() {
     float t = 0;
     Canvas24 canvas(W, H);
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         t+=0.001;
         for (int ix = 0; ix < size; ++ix) {
             number xx = number(ix)/(size-1);

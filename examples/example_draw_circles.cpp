@@ -35,7 +35,7 @@ int main() {
     gradient.addStop(0.50f, {0,255,0});
     gradient.addStop(1.f, {255,0,255});
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         t+=0.001;
         canvas.clear({255,255,255,255});
         canvas.drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(

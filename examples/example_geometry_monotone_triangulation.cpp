@@ -181,7 +181,7 @@ int main() {
                 255);
     };
 
-    auto render = [&]() {
+    auto render = [&](void*, void*, void*) -> void {
         static auto poly = poly_1_x_monotone<number>();
 //        static auto poly = poly_2_y_monotone<number>();
 

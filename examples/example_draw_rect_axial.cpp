@@ -28,7 +28,7 @@ int main() {
 
     Canvas24 canvas(W, H);
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         canvas.clear({255,255,255,255});
         canvas.drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
                 sampler,

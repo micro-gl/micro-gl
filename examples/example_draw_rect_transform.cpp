@@ -22,7 +22,7 @@ int main() {
     using number = Q<12>;
     float t =0;
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         t+=0.005;
 
         canvas.clear({255,255,255,255});

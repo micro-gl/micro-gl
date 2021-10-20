@@ -62,7 +62,7 @@ int main() {
         }
     };
 
-    const auto render = [&]() {
+    auto render = [&](void*, void*, void*) -> void {
 
         render_cubic_1(curve_cubic_1<number>());
     };

@@ -18,7 +18,7 @@ int main() {
     Canvas24 canvas(W, H);
     angular_linear_gradient<number, 4, Canvas24::rgba> gradient{0};
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         static number t = 0;
         t+=number(0.1);
 

@@ -30,7 +30,6 @@ if(SDL2_FOUND)
     set(SOURCES
             example_blocks_3d_raster.cpp
             example_blocks_rounded_rect.cpp
-            example_blocks_masks.cpp
             example_blocks_rect.cpp
             example_blocks_patch.cpp
             example_blend_modes.cpp

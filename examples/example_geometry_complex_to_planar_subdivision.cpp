@@ -161,7 +161,7 @@ int main() {
 
     };
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
 //        static auto polygons = poly_inter_star<number>();
         static auto polygons = poly_inter_star_2<number>();
 //        static auto polygons = box_1<number>();

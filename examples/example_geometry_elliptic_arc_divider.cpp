@@ -81,7 +81,7 @@ int main() {
     number radius_x = 50, radius_y = 75;
     number center_x = 200, center_y=200;
 
-    const auto render = [&](){
+    auto render = [&](void*, void*, void*) -> void {
         render_arc_internal(start_angle_rad, end_angle_rad,
                 center_x, center_y, radius_x, radius_y,
                 rotation,33);

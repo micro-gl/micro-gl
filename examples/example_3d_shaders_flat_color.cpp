@@ -74,7 +74,7 @@ int main() {
                 (z_buffer<0> *)nullptr);
     };
 
-    auto render = [&]() {
+    auto render = [&](void*, void*, void*) {
         static auto model = cube_3d<number>;
 
         test_shader_texture_3d(model);

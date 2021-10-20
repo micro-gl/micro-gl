@@ -68,7 +68,7 @@ int main() {
 
     };
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
 //        static auto poly = poly_hole<number>();
         static auto polygon = poly_diamond<number>();
 

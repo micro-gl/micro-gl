@@ -23,14 +23,14 @@ int main() {
     gradient.addStop(0.50f, {0,255,0});
     gradient.addStop(1.f, {255,0,255});
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         canvas.clear({255,255,255,255});
         canvas.drawRect<blendmode::Normal, porterduff::None<>, false, number>(
                 gradient,
                 0, 0, 400, 400);
     };
 
-    auto render2 = [&]() -> void {
+    auto render2 = [&](void*, void*, void*) -> void {
         canvas.clear({255,255,255,255});
         canvas.drawQuadrilateral<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
                 gradient,

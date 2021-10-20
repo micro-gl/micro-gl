@@ -93,7 +93,7 @@ int main() {
 
     };
 
-    auto render = [&]() {
+    auto render = [&](void*, void*, void*) {
         canvas.clear({255,255,255,255});
 
 //        test_shader_color_2d();

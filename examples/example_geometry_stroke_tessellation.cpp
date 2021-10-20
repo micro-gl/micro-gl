@@ -186,7 +186,7 @@ int main() {
 
     };
 
-    auto render = [&]() {
+    auto render = [&](void*, void*, void*) -> void {
         static auto path = path_rect<number>();
 //        static auto path = path_rect2<number>();
 //        static auto path = path_tri<number>();

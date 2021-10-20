@@ -79,7 +79,7 @@ int main() {
                 255);
     };
 
-    auto render = [&]() {
+    auto render = [&](void*, void*, void*) -> void {
         render_polygon(poly_diamond<number>());
     };
 

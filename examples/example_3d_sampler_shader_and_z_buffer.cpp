@@ -117,7 +117,7 @@ int main() {
 
     };
 
-    auto render = [&]() {
+    auto render = [&](void*, void*, void*) {
         static auto model = cube_3d<number>;
 
         test_shader_texture_3d(model);

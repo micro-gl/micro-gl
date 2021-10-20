@@ -23,7 +23,7 @@ int main() {
     gradient.addStop(0.5f, {0,255,0});
     gradient.addStop(1.f, {0,0,255});
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         static float t = 0;
         canvas.clear({255,255,255,255});
         canvas.drawRect<blendmode::Normal, porterduff::None<>, false, number>(gradient, t, t, 400, 400);

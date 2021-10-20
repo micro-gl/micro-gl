@@ -19,7 +19,7 @@ int main() {
     using Canvas24= canvas<Bitmap24>;
     using font32= microgl::text::bitmap_font<Bitmap32_ARRAY>;
 
-    Canvas24 canvas(W, H);;
+    Canvas24 canvas(W, H);
     font32 font;
 
 //        font = Resources::loadFont<Bitmap32_ARRAY>("minecraft-20");
@@ -29,7 +29,7 @@ int main() {
 //    font = Resources::loadFont<Bitmap32_ARRAY>("mont-med-16");
 //    font = Resources::loadFont<Bitmap32_ARRAY>("test");
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
 //        font.offsetX=5;
 //        font.offsetY=5;
         font.padding=5;

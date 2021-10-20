@@ -17,7 +17,7 @@ int main() {
     Canvas24 canvas(W, H);
     flat_color<> color_sampler{{255,122,0}};
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         canvas.clear({255,255,255,255});
         canvas.drawRect<blendmode::Normal, porterduff::None<>, false, number>(
                 color_sampler,

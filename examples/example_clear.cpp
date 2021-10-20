@@ -12,7 +12,7 @@ int main() {
 
     Canvas24 canvas(W, H);
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
 //        canvas.clear(intensity<Q<10>>{1.0, 0.50, 0.0,1.0});
         canvas.clear(color_t{255,0,0});
     };

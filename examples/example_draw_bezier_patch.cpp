@@ -61,7 +61,7 @@ int main() {
         delete [] mesh;
     };
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
 
         test_bezier(bi_cubic_1<number>(), 4, 4);
     };
