@@ -26,15 +26,15 @@ namespace microgl {
                     Uniform_16,
         };
 
-        template<typename number, template<typename...> class container_type>
+        template<typename number, class container_type>
         class curve_divider {
         public:
             using vertex = vec2<number>;
-            using output = container_type<vertex>;
+            using output = container_type;
             using index = unsigned int;
 //        static number HALF = number(1)/number(2);
 
-            explicit curve_divider() = default;
+            explicit curve_divider() = delete;
 
             static void compute(const vertex *points,
                                 output &output,

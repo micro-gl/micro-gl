@@ -16,9 +16,7 @@ namespace microgl {
         bool operator==(const rect_t& r) {
             return left==r.left && top=r.top && right=r.right && bottom=r.bottom;
         }
-        bool operator!=(const rect_t& r) {
-            return !(*this==r);
-        }
+        bool operator!=(const rect_t& r) { return !(*this==r); }
         // test inclusion
         bool operator<(const rect_t& r) {
             return left>r.left && top>r.top && right<r.right && bottom<r.bottom;
@@ -26,12 +24,8 @@ namespace microgl {
         bool operator<=(const rect_t& r) {
             return left>=r.left && top>=r.top && right<=r.right && bottom<=r.bottom;
         }
-        bool operator>(const rect_t& r) {
-            return !((*this)<=r);
-        }
-        bool operator>=(const rect_t& r) {
-            return !((*this)<r);
-        }
+        bool operator>(const rect_t& r) { return !((*this)<=r); }
+        bool operator>=(const rect_t& r) { return !((*this)<r); }
         rect_t intersect(const rect_t & r2) const {
             auto l = left>r2.left ? left : r2.left;
             auto t = top>r2.top ? top : r2.top;
@@ -39,18 +33,10 @@ namespace microgl {
             auto b = bottom < r2.bottom ? bottom : r2.bottom;
             return {l, t, r, b};
         }
-        bool intersects(const rect_t & r2) const {
-            return !intersect(r2).empty();
-        }
-        number width() const {
-            return right-left;
-        }
-        number height() const {
-            return bottom-top;
-        }
-        bool empty() const {
-            return width()<=0 || height()<=0;
-        }
+        bool intersects(const rect_t & r2) const { return !intersect(r2).empty(); }
+        number width() const { return right-left; }
+        number height() const { return bottom-top; }
+        bool empty() const { return width()<=0 || height()<=0; }
     };
 
 }

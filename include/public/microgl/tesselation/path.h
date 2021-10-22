@@ -163,7 +163,7 @@ namespace microgl {
                                             CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small)  {
                 vertex bezier[4] = {lastPointOfCurrentSubPath(), cp1, cp2, last};
                 container_template_type<vertex> output{32};
-                curve_divider<number, container_template_type>::compute(
+                curve_divider<number, decltype(output)>::compute(
                         bezier, output, bezier_curve_divider, CurveType::Cubic);
                 for (unsigned ix = 0; ix < output.size(); ++ix)
                     lineTo(output[ix]);
@@ -177,7 +177,7 @@ namespace microgl {
                     -> path & {
                 vertex bezier[3] = {lastPointOfCurrentSubPath(), cp, last};
                 container_template_type<vertex> output{32};
-                curve_divider<number, container_template_type>::compute(
+                curve_divider<number, decltype(output)>::compute(
                         bezier, output, bezier_curve_divider, CurveType::Quadratic);
                 for (unsigned ix = 0; ix < output.size(); ++ix)
                     lineTo(output[ix]);
@@ -211,7 +211,8 @@ namespace microgl {
                      const number & rotation, const number &startAngle, const number &endAngle,
                      bool anti_clockwise, unsigned divisions_count=32) -> path & {
                 container_template_type<vertex> output{divisions_count};
-                elliptic_arc_divider<number, container_template_type>::compute(
+                output.clear();
+                elliptic_arc_divider<number, decltype(output)>::compute(
                         output, point.x, point.y, radius_x, radius_y,
                         rotation, startAngle, endAngle, divisions_count, anti_clockwise);
                 for (int ix = 0; ix < output.size(); ++ix)

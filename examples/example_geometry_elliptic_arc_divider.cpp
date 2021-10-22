@@ -15,8 +15,8 @@ template<typename item_type>
 using static_arr = static_array<item_type, 100>;
 
 template<typename item_type>
-//using container = static_arr<item_type>;
-using container = dynamic_array<item_type>;
+using container = static_arr<item_type>;
+//using container = dynamic_array<item_type>;
 //using container = std::vector<item_type>;
 
 int main() {
@@ -35,11 +35,9 @@ int main() {
             const number& radius_x, const number& radius_y,
             const number& rotation,
             uint divisions_count) {
-        using ellipse = microgl::tessellation::elliptic_arc_divider<number, dynamic_array>;
-//        using ellipse = microgl::tessellation::elliptic_arc_divider<number, std::vector>;
-//        using ellipse = microgl::tessellation::elliptic_arc_divider<number, static_arr>;
-
         container<vec2<number>> arc_points;
+
+        using ellipse = microgl::tessellation::elliptic_arc_divider<number, decltype(arc_points)>;
 
         ellipse::compute(
                 arc_points,

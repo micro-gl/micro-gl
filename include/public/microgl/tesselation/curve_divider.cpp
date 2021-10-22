@@ -1,14 +1,13 @@
 namespace microgl {
     namespace tessellation {
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         bool curve_divider<number, container_type>::is_cubic_bezier_flat(const vertex *points,
                                                          number tolerance_distance_pixels) {
             return (compute_cubic_bezier_flatness(points) <
-                    number(16) * (tolerance_distance_pixels * tolerance_distance_pixels));//<<(precision<<1)));
-//        return (compute_cubic_bezier_flatness(points, precision) < threshold);
+                    number(16) * (tolerance_distance_pixels * tolerance_distance_pixels));
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         number
         curve_divider<number, container_type>::compute_quadratic_bezier_flatness(const vertex *points) {
             vertex cubic[4];
@@ -19,13 +18,13 @@ namespace microgl {
             return compute_cubic_bezier_flatness(cubic);
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         bool curve_divider<number, container_type>::is_quadratic_bezier_flat(const vertex *points,
                                                              unsigned int threshold) {
             return (compute_quadratic_bezier_flatness(points) < threshold);
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         number
         curve_divider<number, container_type>::compute_cubic_bezier_flatness(const vertex *points) {
 
@@ -50,7 +49,7 @@ namespace microgl {
             return ((ux + uy));
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         void curve_divider<number, container_type>::quadratic_to_cubic_bezier(
                 const vertex *points, vertex &p0, vertex &p1,
                 vertex &p2, vertex &p3) {
@@ -67,7 +66,7 @@ namespace microgl {
             p2.y = points[2].y + ((points[1].y - points[2].y) * 2) / 3;
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         void curve_divider<number, container_type>::split_quadratic_bezier_at(const number t,
                                                               const vertex *points,
                                                               vertex &left_1, vertex &left_2, vertex &left_3,
@@ -91,7 +90,7 @@ namespace microgl {
             right_3 = p3;
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         void curve_divider<number, container_type>::split_cubic_bezier_at(const number t,
                                                           const vertex *points,
                                                           vertex &left_1, vertex &left_2, vertex &left_3,
@@ -124,7 +123,7 @@ namespace microgl {
             right_4 = p4;
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         void curve_divider<number, container_type>::evaluate_cubic_bezier_at(const number t,
                                                              const vertex *points,
                                                              vertex &output,
@@ -159,7 +158,7 @@ namespace microgl {
 
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         void
         curve_divider<number, container_type>::evaluate_quadratic_bezier_at(const number t,
                                                             const vertex *points,
@@ -185,7 +184,7 @@ namespace microgl {
             }
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         auto
         curve_divider<number, container_type>::lerp(
                 const number t,
@@ -200,7 +199,7 @@ namespace microgl {
             return r;
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         void curve_divider<number, container_type>::compute(const vertex *points,
                                             output &output,
                                             CurveDivisionAlgorithm algorithm,
@@ -215,7 +214,7 @@ namespace microgl {
             }
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         void curve_divider<number, container_type>::sub_divide_cubic_bezier(const vertex *points,
                                                             output &output,
                                                             CurveDivisionAlgorithm algorithm) {
@@ -243,7 +242,7 @@ namespace microgl {
 
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         void
         curve_divider<number, container_type>::sub_divide_quadratic_bezier(const vertex *points,
                                                            output &output,
@@ -272,7 +271,7 @@ namespace microgl {
 
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         void curve_divider<number, container_type>::uniform_sub_divide_bezier_curve(const vertex *points,
                                                                     index segments,
                                                                     output &output,
@@ -299,7 +298,7 @@ namespace microgl {
 
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         void curve_divider<number, container_type>::adaptive_sub_divide_cubic_bezier_internal(const vertex *points,
                                                                               number tolerance_distance_pixels,
                                                                               output &output) {
@@ -322,7 +321,7 @@ namespace microgl {
 
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         void curve_divider<number, container_type>::adaptive_sub_divide_cubic_bezier(const vertex *points,
                                                                      number tolerance_distance_pixels,
                                                                      output &output) {
@@ -332,11 +331,10 @@ namespace microgl {
             adaptive_sub_divide_cubic_bezier_internal(points, tolerance_distance_pixels, output);
         }
 
-        template <typename number, template<typename...> class container_type>
+        template <typename number, class container_type>
         void curve_divider<number, container_type>::adaptive_sub_divide_quadratic_bezier(const vertex *points,
                                                                          number tolerance_distance_pixels,
                                                                          output &output) {
-
             vertex cubic[4];
             quadratic_to_cubic_bezier(points, cubic[0], cubic[1], cubic[2], cubic[3]);
             adaptive_sub_divide_cubic_bezier(cubic, tolerance_distance_pixels, output);

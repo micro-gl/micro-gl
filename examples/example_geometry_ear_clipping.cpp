@@ -1,4 +1,3 @@
-#include "src/Resources.h"
 #include "src/example.h"
 #include <microgl/canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
@@ -18,8 +17,8 @@ using static_arr = static_array<item_type, 100>;
 
 template<typename item_type>
 //using container = static_arr<item_type>;
-using container = dynamic_array<item_type>;
-//using container = std::vector<item_type>;
+//using container = dynamic_array<item_type>;
+using container = std::vector<item_type>;
 
 template <typename number>
 container<vec2<number>> poly_rect() {
@@ -164,25 +163,22 @@ int main() {
         using index = unsigned int;
 
         //polygon[1].x = 140 + 20 +  t;
-
-        canvas.clear({255,255,255,255});
-
-        using ear = microgl::tessellation::ear_clipping_triangulation<number, dynamic_array>;
-//        using ear = microgl::tessellation::ear_clipping_triangulation<number, static_arr>;
-//        using ear = microgl::tessellation::ear_clipping_triangulation<number, std::vector>;
-
         triangles::indices type;
         container<index> indices;
         container<boundary_info> boundary_buffer;
+
+        using ear = microgl::tessellation::ear_clipping_triangulation<number,
+                container<index>,
+                container<boundary_info>>;
 
         ear::compute(polygon.data(),
                      polygon.size(),
                      indices,
                      &boundary_buffer,
-                     type
-        );
+                     type);
 
         // draw triangles batch
+        canvas.clear({255,255,255,255});
         canvas.drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
                 color_red,
                 matrix_3x3<number>::identity(),

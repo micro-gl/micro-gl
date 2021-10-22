@@ -26,8 +26,8 @@ public:
 
 private:
     using type_ref = T &;
-    using type_pointer= T *;
-    using const_type_pointer= const T *;
+    using type_pointer = T *;
+    using const_type_pointer = const T *;
     using chunker_ref = chunker &;
     using const_chunker_ref = const chunker &;
 

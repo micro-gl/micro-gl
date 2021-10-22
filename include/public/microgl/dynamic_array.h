@@ -173,7 +173,7 @@ public:
             // clear and destruct current elements
             clear();
             // deallocate the current memory
-            _alloc.deallocate(_data);
+            _alloc.deallocate(_data, capacity());
             // move everything from other
             _data = other._data;
             other._data=nullptr;
@@ -182,7 +182,7 @@ public:
         } else {
             if(other.size() >= capacity()) {
                 clear(); // clear and destruct current objects
-                _alloc.deallocate(_data); // de allocate the chunk
+                _alloc.deallocate(_data, capacity()); // de allocate the chunk
                 _data = _alloc.allocate(other.size()); // create new chunk
                 // construct default objects for validity
                 for (int ix = 0; ix < other.size(); ++ix)
@@ -224,7 +224,7 @@ public:
             _new_data[ix] = dynamic_array_traits::move(_data[ix]);
 
         // de allocate old data
-        _alloc.deallocate(_data);
+        _alloc.deallocate(_data, capacity());
         _data = reinterpret_cast<T*>(_new_data);
         _cap = new_size;
     }
@@ -282,7 +282,7 @@ public:
     void drain() noexcept {
         clear();
         if(_data!=nullptr)
-            _alloc.deallocate(_data);
+            _alloc.deallocate(_data, capacity());
         _data = nullptr;
         _cap = 0;
         _current = 0;

@@ -6,7 +6,38 @@
 namespace microgl {
     namespace tessellation {
 
-        template<typename number, template<typename...> class container_type>
+        namespace micro_tess_traits {
+
+            template<class T1, class T2>
+            struct is_same {
+                const static bool value = false;
+            };
+            template<class T>
+            struct is_same<T, T> {
+                const static bool value = true;
+            };
+
+            template<class number>
+            constexpr bool is_float_point() {
+                return is_same<float, number>::value ||
+                       is_same<double, number>::value ||
+                       is_same<long double, number>::value;
+            }
+
+            template<bool B, class T, class F>
+            struct conditional {
+                typedef T type;
+            };
+            template<class T, class F>
+            struct conditional<false, T, F> {
+                typedef F type;
+            };
+
+            template<bool, class _Tp = void> struct enable_if {};
+            template<class _Tp> struct enable_if<true, _Tp> { typedef _Tp type; };
+        }
+
+        template<typename number, class container_output_indices, class container_output_boundary>
         class fan_triangulation {
             using index = unsigned int;
             using vertex = vec2<number>;
@@ -15,9 +46,19 @@ namespace microgl {
             static
             void compute(const vertex *points,
                          index size,
-                         container_type<index> &indices_buffer_triangulation,
-                         container_type<triangles::boundary_info> *boundary_buffer,
+                         container_output_indices &indices_buffer_triangulation,
+                         container_output_boundary *boundary_buffer,
                          triangles::indices &output_type) {
+
+                typename micro_tess_traits::enable_if<
+                        micro_tess_traits::is_same<typename container_output_indices::value_type,
+                        index>::value, bool>::type is_indices_container_valid;
+                typename micro_tess_traits::enable_if<
+                        micro_tess_traits::is_same<
+                                typename container_output_boundary::value_type, triangles::boundary_info>::value
+                        , bool>::type is_boundary_container_valid;
+
+
                 bool requested_triangles_with_boundary = boundary_buffer;
                 output_type=requested_triangles_with_boundary? microgl::triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY :
                             microgl::triangles::indices::TRIANGLES_FAN;

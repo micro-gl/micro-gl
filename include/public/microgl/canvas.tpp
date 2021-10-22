@@ -363,7 +363,7 @@ void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill
     const rint step = (rint(1)<<p);
     const rint half = step>>1;
     const rint stroke = stroke_size-step;//(10<<p)/1;
-    const rint aa_range = step;// (1<<p)/1;
+    const rint aa_range = step+1;// (1<<p)/1;
     const rint radius_squared=(rint_big(radius)*(radius))>>p;
     const rint stroke_radius = (rint_big(radius-(stroke-0))*(radius-(stroke-0)))>>p;
     const rint outer_aa_radius = (rint_big(radius+aa_range)*(radius+aa_range))>>p;
@@ -1291,7 +1291,7 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         case hints::CONCAVE:
         case hints::SIMPLE:
         {
-            using ect=microgl::tessellation::ear_clipping_triangulation<number1, dynamic_array>;
+            using ect=microgl::tessellation::ear_clipping_triangulation<number1, dynamic_array<boundary_info>, dynamic_array<boundary_info>, void>;
             ect::compute(points, size, indices, boundary_buffer_ptr, type);
             break;
         }

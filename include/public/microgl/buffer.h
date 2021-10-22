@@ -107,7 +107,7 @@ public:
         if(owner) {
             for (int ix = 0; ix < size(); ++ix)
                 _data[ix].~element_type();
-            _allocator.deallocate(_data);
+            _allocator.deallocate(_data, _size);
         }
         _data= nullptr;
         _size=0;

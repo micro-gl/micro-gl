@@ -10,9 +10,9 @@ template<typename item_type>
 using static_arr = static_array<item_type, 100>;
 
 template<typename item_type>
-//using container = static_arr<item_type>;
+using container = static_arr<item_type>;
 //using container = dynamic_array<item_type>;
-using container = std::vector<item_type>;
+//using container = std::vector<item_type>;
 
 #define W 640*1
 #define H 480*1
@@ -28,8 +28,8 @@ container<vec2<number>> curve_cubic_1() {
 
 
 int main() {
-    using number = float;
-//    using number = Q<12>;
+//    using number = float;
+    using number = Q<12>;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
 
@@ -39,12 +39,11 @@ int main() {
 
     const auto render_cubic_1 = [&](container<vec2<number>> curve) {
         static number t = 0;
-//        using curve_divider = microgl::tessellation::curve_divider<number, dynamic_array>;
-        using curve_divider = microgl::tessellation::curve_divider<number, std::vector>;
-//        using curve_divider = microgl::tessellation::curve_divider<number, static_arr>;
+        container<vec2<number>> output{};
+
+        using curve_divider = microgl::tessellation::curve_divider<number, decltype(output)>;
         auto algo = microgl::tessellation::CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium;
         auto type = microgl::tessellation::CurveType::Cubic;
-        container<vec2<number>> output{};
 
         t += number(0.08);
         curve[1].y -= t;

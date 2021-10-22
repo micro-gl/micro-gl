@@ -39,14 +39,15 @@ int main() {
 
     auto render_polygon = [&](const dynamic_array<vec2<number>> &polygon) {
         using index = unsigned int;
-        using fan = tessellation::fan_triangulation<number, dynamic_array>;
+
+        container<index> indices;
+        container<boundary_info> boundary_buffer;
+
+        using fan = tessellation::fan_triangulation<number, container<index>, container<boundary_info>>;
 
         canvas.clear({255, 255, 255, 255});
 
         auto type = triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY;
-
-        container<index> indices;
-        container<boundary_info> boundary_buffer;
 
         fan::compute(
                 polygon.data(),

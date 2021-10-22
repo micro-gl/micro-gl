@@ -8,11 +8,6 @@
 // Use (void) to silent unused warnings.
 #define assertm(exp, msg) assert((msg, exp))
 
-template <class lambda, bool = true>
-struct callback {
-    callback(lambda & lam);
-};
-
 template<typename canvas_type, typename render_callback>
 void example_run(canvas_type * canvas, int w, int h,
                  const render_callback & render,

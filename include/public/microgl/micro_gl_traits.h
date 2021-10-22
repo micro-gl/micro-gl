@@ -10,7 +10,9 @@ namespace microgl {
 
         template<class number>
         constexpr bool is_float_point() {
-            return is_same<float, number>::value || is_same<double, number>::value || is_same<long double , number>::value;
+            return is_same<float, number>::value ||
+                   is_same<double, number>::value ||
+                   is_same<long double , number>::value;
         }
 
         template<bool B, class T, class F>

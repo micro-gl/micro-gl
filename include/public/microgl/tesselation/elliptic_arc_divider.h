@@ -9,13 +9,13 @@ namespace microgl {
 
         using index = unsigned int;
 
-        template<typename number, template<typename...> class container_type>
+        template<typename number, class container_type>
         class elliptic_arc_divider {
         public:
             using vertex = vec2<number>;
 
             static void compute(
-                    container_type<vertex> &output,
+                    container_type &output,
                     number center_x,
                     number center_y,
                     number radius_x,
