@@ -2,40 +2,10 @@
 
 #include <microgl/vec2.h>
 #include <microgl/triangles.h>
+#include "micro_tess_traits.h"
 
 namespace microgl {
     namespace tessellation {
-
-        namespace micro_tess_traits {
-
-            template<class T1, class T2>
-            struct is_same {
-                const static bool value = false;
-            };
-            template<class T>
-            struct is_same<T, T> {
-                const static bool value = true;
-            };
-
-            template<class number>
-            constexpr bool is_float_point() {
-                return is_same<float, number>::value ||
-                       is_same<double, number>::value ||
-                       is_same<long double, number>::value;
-            }
-
-            template<bool B, class T, class F>
-            struct conditional {
-                typedef T type;
-            };
-            template<class T, class F>
-            struct conditional<false, T, F> {
-                typedef F type;
-            };
-
-            template<bool, class _Tp = void> struct enable_if {};
-            template<class _Tp> struct enable_if<true, _Tp> { typedef _Tp type; };
-        }
 
         template<typename number, class container_output_indices, class container_output_boundary>
         class fan_triangulation {
@@ -50,11 +20,11 @@ namespace microgl {
                          container_output_boundary *boundary_buffer,
                          triangles::indices &output_type) {
 
-                typename micro_tess_traits::enable_if<
-                        micro_tess_traits::is_same<typename container_output_indices::value_type,
+                typename microtess::traits::enable_if<
+                        microtess::traits::is_same<typename container_output_indices::value_type,
                         index>::value, bool>::type is_indices_container_valid;
-                typename micro_tess_traits::enable_if<
-                        micro_tess_traits::is_same<
+                typename microtess::traits::enable_if<
+                        microtess::traits::is_same<
                                 typename container_output_boundary::value_type, triangles::boundary_info>::value
                         , bool>::type is_boundary_container_valid;
 
@@ -86,6 +56,6 @@ namespace microgl {
 
         };
 
-
     }
+
 }
