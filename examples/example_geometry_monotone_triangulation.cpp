@@ -138,16 +138,12 @@ int main() {
         using mat = matrix_3x3<number>;
 
 //    polygon[1].x = 140 + 20 +  t;
-
-        canvas.clear({255,255,255,255});
-
-        using mpt = tessellation::monotone_polygon_triangulation<number, dynamic_array>;
-//        using mpt = tessellation::monotone_polygon_triangulation<number, std::vector>;
-//        using mpt = tessellation::monotone_polygon_triangulation<number, static_arr>;
-
         triangles::indices type;
         container<index> indices;
         container<boundary_info> boundary_buffer;
+
+
+        using mpt = tessellation::monotone_polygon_triangulation<number, container<index>, container<boundary_info>>;
 
         mpt::compute(polygon.data(),
                      polygon.size(),
@@ -159,6 +155,7 @@ int main() {
 
         mat transform = matrix_3x3<number>::scale(1,1);
         // draw triangles batch
+        canvas.clear({255,255,255,255});
         canvas.drawTriangles<blendmode::Normal, porterduff::None<>, false>(
                 color_red,
                 transform,
@@ -182,11 +179,9 @@ int main() {
     };
 
     auto render = [&](void*, void*, void*) -> void {
-        static auto poly = poly_1_x_monotone<number>();
-//        static auto poly = poly_2_y_monotone<number>();
-
-        render_polygon(poly, true);
-//        render_polygon(poly, false);
+        render_polygon(poly_1_x_monotone<number>(), true);
+//        render_polygon(poly_2_y_monotone<number>(), false);
+//        render_polygon(poly_rect<number>(), true);
     };
 
     example_run(&canvas, render);

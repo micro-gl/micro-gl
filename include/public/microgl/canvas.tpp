@@ -1291,14 +1291,14 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         case hints::CONCAVE:
         case hints::SIMPLE:
         {
-            using ect=microgl::tessellation::ear_clipping_triangulation<number1, dynamic_array<boundary_info>, dynamic_array<boundary_info>, void>;
+            using ect=microgl::tessellation::ear_clipping_triangulation<number1, dynamic_array<index>, dynamic_array<boundary_info>, void>;
             ect::compute(points, size, indices, boundary_buffer_ptr, type);
             break;
         }
         case hints::X_MONOTONE:
         case hints::Y_MONOTONE:
         {
-            using mpt=microgl::tessellation::monotone_polygon_triangulation<number1, dynamic_array>;
+            using mpt=microgl::tessellation::monotone_polygon_triangulation<number1, dynamic_array<index>, dynamic_array<boundary_info>, void>;
             typename mpt::monotone_axis axis=hint==hints::X_MONOTONE ? mpt::monotone_axis::x_monotone :
                                     mpt::monotone_axis::y_monotone;
             mpt::compute(points, size, axis, indices, boundary_buffer_ptr, type);
