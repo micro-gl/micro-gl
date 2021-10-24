@@ -2,7 +2,6 @@
 
 #include <microgl/vec2.h>
 #include <microgl/triangles.h>
-#include <microgl/dynamic_array.h>
 #include "std_rebind_allocator.h"
 
 namespace microgl {
@@ -27,11 +26,35 @@ namespace microgl {
             };
 
             struct node_t {
-                const vertex *pt = nullptr;
+            private:
+                // this is the linked-list data
+                // this is a compund data structure:
+                // [ 2*origin_index | 1 bit for if this is on chain B]
+                // part A is always even, therefore the last bit is unused, so we
+                // use it for chain B indication.
+                index _original_index_and_chain = 0;
+                static const index MASK = index(1);
+                static const index MASK_REVERSED = ~MASK;
+
+            public:
+                node_t() = default;
                 node_t *prev = nullptr;
                 node_t *next = nullptr;
-                index original_index = -1;
-                char chain_index=0;
+
+                void set_original_index(index original_index_of_point) {
+                    // warning, this resets the chain status flag
+                    _original_index_and_chain = original_index_of_point*2;
+                }
+                index original_index() const {
+                    return index(_original_index_and_chain & MASK_REVERSED) / 2;
+                }
+
+                void set_is_chain_B(bool is) {
+                    if(is) _original_index_and_chain |= MASK;
+                    else _original_index_and_chain &= MASK_REVERSED;
+                }
+
+                bool is_chain_B() const { return _original_index_and_chain & MASK; }
             };
 
             // rebinded allocator for nodes
@@ -49,11 +72,39 @@ namespace microgl {
                 }
                 ~pool_nodes_t() { _allocator.deallocate(pool, _count); }
                 node_t *get() { return &pool[_current++];}
+                index size() { return _count; }
+                node_t * get_pool() { return pool; }
             private:
                 rebind_alloc _allocator;
                 node_t *pool = nullptr;
                 index _current = 0;
                 index _count = 0;
+            };
+
+            /**
+             * stack from pool is a special data structure, that co-uses the pool's prev member,
+             * when they are known not to be used anymore by the pool, this helps with memory conservation.
+             * it cannot outlive the pool.
+             * Notice, this does not destruct anything because it is hosted inside another memory.
+             */
+            struct stack_from_pool_t {
+            private:
+                node_t * _pool;
+                index _current;
+                index _count;
+
+            public:
+                stack_from_pool_t(pool_nodes_t & pool) :
+                            _pool(pool.get_pool()), _count(pool.size()), _current(0) {
+                }
+
+                node_t * back() { return _pool[_current-1].prev; }
+                void push_back(node_t * item) { _pool[_current++].prev=item; }
+                void pop_back() { _current-=1; }
+                node_t * operator[](index i) noexcept { return _pool[i].prev; }
+                const node_t * operator[](index i) const noexcept { return _pool[i].prev; }
+                void clear() { _current=0; }
+                index size() { return _current; }
             };
 
         public:
@@ -67,7 +118,7 @@ namespace microgl {
                 if(size<=2) return;
                 pool_nodes_t pool{size, allocator};
                 auto * outer = polygon_to_linked_list(polygon, 0, size, false, pool);
-                compute(outer, size, axis, indices_buffer_triangulation, boundary_buffer, output_type);
+                compute(polygon, pool, outer, size, axis, indices_buffer_triangulation, boundary_buffer, output_type);
             }
 
         private:
@@ -83,8 +134,7 @@ namespace microgl {
                 for (index ix = 0; ix < size; ++ix) {
                     index idx = reverse ? size-1-ix : ix;
                     auto * node = pool.get();
-                    node->pt = &$pts[idx];
-                    node->original_index = offset + idx;
+                    node->set_original_index(offset + idx);
                     // record first node
                     if(first== nullptr) first = node;
                     // build the list
@@ -94,7 +144,7 @@ namespace microgl {
                     }
                     last = node;
                     auto * candidate_deg=last->prev;
-                    if(ix>=2 && isDegenerate(candidate_deg)){
+                    if(ix>=2 && isDegenerate(candidate_deg, $pts)){
                         candidate_deg->prev->next=candidate_deg->next;
                         candidate_deg->next->prev=candidate_deg->prev;
                         candidate_deg->prev=candidate_deg->next= nullptr;
@@ -104,7 +154,7 @@ namespace microgl {
                 last->next = first;
                 first->prev = last;
                 for (int ix = 0; ix < 2; ++ix) {
-                    if(isDegenerate(last)){
+                    if(isDegenerate(last, $pts)){
                         last->prev->next=last->next;
                         last->next->prev=last->prev;
                         auto *new_last=last->prev;
@@ -116,7 +166,9 @@ namespace microgl {
             }
 
             static void
-            compute(node_t *list, index size,
+            compute(const vertex *polygon,
+                    pool_nodes_t & pool,
+                    node_t *list, index size,
                     const monotone_axis & axis,
                     container_output_indices & indices_buffer_triangulation,
                     container_output_boundary * boundary_buffer,
@@ -129,8 +181,9 @@ namespace microgl {
 
                 // find monotone
                 node_t *min, *max, *iter;
-                find_min_max(list, axis, &min, &max);
-                int poly_orientation_sign=classify_point(*min->prev->pt, *min->pt, *min->next->pt);
+                find_min_max(list, axis, &min, &max, polygon);
+                int poly_orientation_sign=classify_point(polygon[min->prev->original_index()], polygon[min->original_index()],
+                                                         polygon[min->next->original_index()]);
                 orientation poly_orientation=poly_orientation_sign==-1?orientation::cw :orientation::ccw;
                 const bool is_poly_cw= poly_orientation==orientation::cw;
                 if(poly_orientation_sign==0) return;
@@ -138,7 +191,7 @@ namespace microgl {
                 // classify chain B as top chain from min(including) up to max(not including)
                 iter=min;
                 while (iter!=max) {
-                    iter->chain_index=1;
+                    iter->set_is_chain_B(true);
                     iter=is_poly_cw?iter->next:iter->prev;
                 }
 
@@ -149,7 +202,7 @@ namespace microgl {
                 auto * sorted_list = &sentinal;
                 index count=0;
                 while(count<size) {
-                    if(a_B_b(iter_chain_a, iter_chain_b, axis)) {
+                    if(a_B_b(iter_chain_a, iter_chain_b, axis, polygon)) {
                         sorted_list->next=iter_chain_a;
                         // progress on chain
                         iter_chain_a=is_poly_cw?iter_chain_a->prev:iter_chain_a->next;
@@ -171,41 +224,50 @@ namespace microgl {
                 auto * head_sorted = sentinal.next;
                 auto * tail_sorted = sorted_list;
 
-                dynamic_array<node_t *> stack{};
-                stack.push_back(head_sorted); // push u_1
-                stack.push_back(head_sorted->next); // push u_2
+                // from now on we cannot use .prev member of nodes except in stack,
+                // this is the memory reusage strategy I explored
+                auto * u_1 = head_sorted; // u_1
+                auto * u_2 = head_sorted->next; // u_2
                 auto * u_3 = head_sorted->next->next; // u_3
                 auto * u_n = tail_sorted; // u_n
-                for (auto * u_j=u_3; u_j!=u_n; u_j=u_j->next) { // u_3 till u_(n-1) not including
+                auto * u_j = u_3; // u_j
+                auto * u_j_m_1 = u_2; // u_(j-1)
+
+                stack_from_pool_t stack{pool};
+                stack.push_back(u_1); // push u_1
+                stack.push_back(u_2); // push u_2
+
+                for (u_j=u_3; u_j!=u_n; u_j_m_1=u_j, u_j=u_j->next) { // u_3 till u_(n-1) not including
                     auto * stack_top=stack.back();
-                    bool on_different_chains= u_j->chain_index != stack_top->chain_index;
+                    bool on_different_chains= u_j->is_chain_B() != stack_top->is_chain_B();
                     if(on_different_chains) {
                         if(stack.size()>=2) {
                             // insert a diagonal to every point on the stack except the last one
                             for (unsigned ix = 0; ix < stack.size()-1; ++ix) {
                                 const node_t * a=stack[ix];
                                 const node_t * b=stack[ix+1];
-                                triangle(indices, boundary_buffer, u_j->original_index,
-                                         a->original_index, b->original_index, size);
+                                triangle(indices, boundary_buffer, u_j->original_index(),
+                                         a->original_index(), b->original_index(), size);
                             }
                             stack.clear(); // empty the stack
                             // push u_(j-1) and u_j
-                            stack.push_back(u_j->prev); // push u_(j-1)
+                            stack.push_back(u_j_m_1); // push u_(j-1)
                             stack.push_back(u_j); // push u_j
                         }
                     } else {
                         // search for the longest chain for which diagonals work
-                        bool is_top_chain=u_j->chain_index==1;
+                        bool is_top_chain=u_j->is_chain_B();
                         if(stack.size()>=2) {
                             unsigned s_index=stack.size()-1;
                             for (unsigned ix = s_index; ix >= 1; --ix) {
                                 const node_t * a=stack[ix-1];
                                 const node_t * b=stack[ix];
-                                int cls=classify_point(*u_j->pt, *a->pt, *b->pt);
+                                int cls=classify_point(polygon[u_j->original_index()], polygon[a->original_index()],
+                                                       polygon[b->original_index()]);
                                 bool is_inside=is_top_chain?cls<0 : cls>0;
                                 if(is_inside) {
-                                    triangle(indices, boundary_buffer, u_j->original_index,
-                                             a->original_index, b->original_index, size);
+                                    triangle(indices, boundary_buffer, u_j->original_index(),
+                                             a->original_index(), b->original_index(), size);
                                     stack.pop_back();
                                 } else break;
                             }
@@ -218,40 +280,46 @@ namespace microgl {
                     for (unsigned ix = 0; ix < stack.size()-1; ++ix) {
                         const node_t * a=stack[ix];
                         const node_t * b=stack[ix+1];
-                        triangle(indices, boundary_buffer, u_n->original_index,
-                                 a->original_index, b->original_index, size);
+                        triangle(indices, boundary_buffer, u_n->original_index(),
+                                 a->original_index(), b->original_index(), size);
                     }
                 }
 
             }
 
-            static void find_min_max(node_t *list, const monotone_axis &axis, node_t **min, node_t **max) {
+            static void find_min_max(node_t *list, const monotone_axis &axis, node_t **min, node_t **max,
+                                     const vertex * polygon) {
                 *min = list, *max=list;
                 node_t * iter = list;
                 do {
-                    bool is_new_min=a_B_b(iter, *min, axis);
-                    bool is_new_max=a_G_b(iter, *max, axis);
+                    bool is_new_min=a_B_b(iter, *min, axis, polygon);
+                    bool is_new_max=a_G_b(iter, *max, axis, polygon);
                     if(is_new_min) *min=iter;
                     if(is_new_max) *max=iter;
                 } while ((iter = iter->next) && iter != list);
             }
 
-            static bool a_B_b(node_t *a, node_t *b, const monotone_axis & axis) {
+            static bool a_B_b(node_t *a, node_t *b, const monotone_axis & axis, const vertex * polygon) {
                 bool is_x_monotone= axis==monotone_axis::x_monotone;
-                bool is_before=is_x_monotone ? (a->pt->x<b->pt->x || (a->pt->x==b->pt->x && a->pt->y<b->pt->y)) :
-                               (a->pt->y<b->pt->y || (a->pt->y==b->pt->y && a->pt->x<b->pt->x));
+                const auto & p_a = polygon[a->original_index()];
+                const auto & p_b = polygon[b->original_index()];
+                bool is_before=is_x_monotone ? (p_a.x<p_b.x || (p_a.x==p_b.x && p_a.y<p_b.y)) :
+                               (p_a.y<p_b.y || (p_a.y==p_b.y && p_a.x<p_b.x));
                 return is_before;
             }
 
-            static bool a_G_b(node_t *a, node_t *b, const monotone_axis & axis) {
+            static bool a_G_b(node_t *a, node_t *b, const monotone_axis & axis, const vertex * polygon) {
                 bool is_x_monotone= axis==monotone_axis::x_monotone;
-                bool is_before=is_x_monotone ? (a->pt->x>b->pt->x || (a->pt->x==b->pt->x && a->pt->y>b->pt->y)) :
-                               (a->pt->y>b->pt->y || (a->pt->y==b->pt->y && a->pt->x>b->pt->x));
+                const auto & p_a = polygon[a->original_index()];
+                const auto & p_b = polygon[b->original_index()];
+                bool is_before=is_x_monotone ? (p_a.x>p_b.x || (p_a.x==p_b.x && p_a.y>p_b.y)) :
+                               (p_a.y>p_b.y || (p_a.y==p_b.y && p_a.x>p_b.x));
                 return is_before;
             }
 
-            static bool isDegenerate(const node_t *v) {
-                return classify_point(*v->prev->pt, *v->pt, *v->next->pt)==0;
+            static bool isDegenerate(const node_t *v, const vertex * polygon) {
+                return classify_point(polygon[v->prev->original_index()], polygon[v->original_index()],
+                                      polygon[v->next->original_index()])==0;
             }
 
             static int classify_point(const vertex & point, const vertex &a, const vertex & b) {

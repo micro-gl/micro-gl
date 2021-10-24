@@ -182,6 +182,7 @@ int main() {
         render_polygon(poly_1_x_monotone<number>(), true);
 //        render_polygon(poly_2_y_monotone<number>(), false);
 //        render_polygon(poly_rect<number>(), true);
+//        render_polygon(poly_tri<number>(), false);
     };
 
     example_run(&canvas, render);
