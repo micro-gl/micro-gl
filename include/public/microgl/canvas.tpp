@@ -1577,10 +1577,11 @@ void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
     constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
     static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
     if(void_sampler) return;
-    using tess= microgl::tessellation::bezier_patch_tesselator<number1, number2, dynamic_array>;
-    using vertex=vec2<number1>;
     dynamic_array<number1> v_a; // vertices attributes
     dynamic_array<index> indices;
+
+    using tess= microgl::tessellation::bezier_patch_tesselator<number1, number2, dynamic_array<number1>, dynamic_array<index>>;
+    using vertex=vec2<number1>;
     microgl::triangles::indices indices_type;
     tess::compute(mesh, uOrder, vOrder, uSamples, vSamples, v_a,
                   indices, indices_type, u0, v0, u1, v1);

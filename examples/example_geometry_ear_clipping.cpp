@@ -16,9 +16,9 @@ template<typename item_type>
 using static_arr = static_array<item_type, 100>;
 
 template<typename item_type>
-//using container = static_arr<item_type>;
+using container = static_arr<item_type>;
 //using container = dynamic_array<item_type>;
-using container = std::vector<item_type>;
+//using container = std::vector<item_type>;
 
 template <typename number>
 container<vec2<number>> poly_rect() {

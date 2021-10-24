@@ -5,7 +5,8 @@
 namespace microgl {
     namespace tessellation {
 
-        template <typename number1, typename number2, template<typename...> class container_type>
+        template <typename number1, typename number2, class container_output_attributes,
+                class container_output_indices>
         class bezier_patch_tesselator {
             using index = unsigned int;
             using vertex3 = vec3<number1>;
@@ -23,8 +24,8 @@ namespace microgl {
             void compute(const vertex3 *meshPoints,
                          const index uOrder, const index vOrder,
                          const index uSamples, const index vSamples,
-                         container_type<number1> &out_vertices_attributes,
-                         container_type<index> &out_indices,
+                         container_output_attributes &out_vertices_attributes,
+                         container_output_indices &out_indices,
                          triangles::indices & out_indices_type,
                          number2 tex_left=number2(0), number2 tex_top=number2(1),
                          number2 tex_right=number2(1), number2 tex_bottom=number2(0)) {
