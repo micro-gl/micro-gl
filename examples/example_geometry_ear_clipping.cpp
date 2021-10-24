@@ -203,8 +203,8 @@ int main() {
 
     auto render = [&](void*, void*, void*) -> void {
         t+=.05f;
-        static auto poly = poly_rect<number>();
-//        static auto poly = poly_3<number>();
+//        static auto poly = poly_rect<number>();
+        static auto poly = poly_3<number>();
 //        static auto poly = poly_hole<number>();
 //        static auto poly = poly_hole3<number>();
 //        static auto poly = poly_hole4<number>();
@@ -213,5 +213,5 @@ int main() {
         render_polygon(poly);
     };
 
-    example_run(&canvas, render);
+    example_run(&canvas, render, 100);
 }
