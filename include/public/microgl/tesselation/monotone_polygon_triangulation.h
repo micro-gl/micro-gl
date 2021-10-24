@@ -10,6 +10,22 @@ namespace microgl {
 
         using index = unsigned int;
 
+        /**
+         * Monotone polygon tesselation on X or Y Axis.
+         * O(n) computation, and O(n) memory.
+         * memory usage is reused and you have to read the code comments to understand some
+         * of the smart memory decisions, which include:
+         * 1. first, turn the polygon into a linked list
+         * 2. saving both original index and chain B status in a single number by making indices even.
+         * 3. then, sorting the vertices and re-arranging the linked list in-place
+         * 4. then, using the pool node's prev member as a stack holder, because this field is NOT used anymore.
+         * 5. all of the above, contribute to 1 compact memory allocation and then reusing it.
+         *
+         * @tparam number the number type of vertices
+         * @tparam container_output_indices ouput container for indices
+         * @tparam container_output_boundary output container for boundary info (Optional)
+         * @tparam computation_allocator custom allocator for internal computations.
+         */
         template<typename number,class container_output_indices,
                 class container_output_boundary,
                 class computation_allocator=microtess::std_rebind_allocator<>>
@@ -82,10 +98,10 @@ namespace microgl {
             };
 
             /**
-             * stack from pool is a special data structure, that co-uses the pool's prev member,
-             * when they are known not to be used anymore by the pool, this helps with memory conservation.
-             * it cannot outlive the pool.
-             * Notice, this does not destruct anything because it is hosted inside another memory.
+             * stack from pool is a special data structure, that co-uses the pool's
+             * prev member, when they are known not to be used anymore by the pool,
+             * this helps with memory conservation. it cannot outlive the pool. Notice,
+             * this does not destruct anything because it is hosted inside another memory.
              */
             struct stack_from_pool_t {
             private:
@@ -118,7 +134,8 @@ namespace microgl {
                 if(size<=2) return;
                 pool_nodes_t pool{size, allocator};
                 auto * outer = polygon_to_linked_list(polygon, 0, size, false, pool);
-                compute(polygon, pool, outer, size, axis, indices_buffer_triangulation, boundary_buffer, output_type);
+                compute(polygon, pool, outer, size, axis, indices_buffer_triangulation,
+                        boundary_buffer, output_type);
             }
 
         private:
@@ -175,14 +192,16 @@ namespace microgl {
                     microgl::triangles::indices &output_type) {
 
                 bool requested_triangles_with_boundary = boundary_buffer;
-                output_type=requested_triangles_with_boundary? microgl::triangles::indices::TRIANGLES_WITH_BOUNDARY :
+                output_type=requested_triangles_with_boundary?
+                        microgl::triangles::indices::TRIANGLES_WITH_BOUNDARY :
                             microgl::triangles::indices::TRIANGLES;
                 auto &indices = indices_buffer_triangulation;
 
                 // find monotone
                 node_t *min, *max, *iter;
                 find_min_max(list, axis, &min, &max, polygon);
-                int poly_orientation_sign=classify_point(polygon[min->prev->original_index()], polygon[min->original_index()],
+                int poly_orientation_sign=classify_point(polygon[min->prev->original_index()],
+                                                         polygon[min->original_index()],
                                                          polygon[min->next->original_index()]);
                 orientation poly_orientation=poly_orientation_sign==-1?orientation::cw :orientation::ccw;
                 const bool is_poly_cw= poly_orientation==orientation::cw;
@@ -353,7 +372,9 @@ namespace microgl {
                     bool third_edge = third_edge_index_distance==1 || third_edge_index_distance==size-1;
                     boundary_buffer->push_back(triangles::create_boundary_info(first_edge, second_edge, third_edge));
                 }
+
             }
+
         };
 
     }
