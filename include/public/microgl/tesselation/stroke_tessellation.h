@@ -3,6 +3,7 @@
 #include <microgl/vec2.h>
 #include <microgl/triangles.h>
 #include <microgl/functions/distance.h>
+#include "micro_tess_traits.h"
 
 namespace microgl {
     namespace tessellation {
@@ -56,6 +57,28 @@ namespace microgl {
 #define min__(a,b) (((a)<(b))?(a):(b))
 #define max__(a, b) ((a)>(b) ? (a) : (b))
 
+            /**
+             * SFIANE to support allocator aware containers and non-aware containers such
+             * as static arrays
+             */
+            template<bool on=false>
+            struct construct_for_allocator_aware_t {
+                const container_output_vertices & copy;
+                construct_for_allocator_aware_t(const container_output_vertices & vv) :
+                        copy{vv} {}
+                container_output_vertices create() { return container_output_vertices(); }
+            };
+
+            template<>
+            struct construct_for_allocator_aware_t<true> {
+                const container_output_vertices & copy;
+                construct_for_allocator_aware_t(const container_output_vertices & vv) :
+                    copy{vv} {}
+                container_output_vertices create() {
+                    return container_output_vertices(copy.get_allocator());
+                }
+            };
+
             template<class iterable>
             static
             void compute_with_dashes(const number &stroke_width,
@@ -104,7 +127,15 @@ namespace microgl {
                     if(ix==0) total_length=path_length; // adjusted to reflect current segment
                 }
 
-                container_output_vertices points_segments;
+                // SFIANE
+                // we use this method to detect if container_output_vertices is allocator-aware container:
+                // 1. if so, construct points_segments with the allocator of container_output_vertices.
+                // 2. otherwise, use the default constructor of the container
+                constexpr bool _is_allocator_aware =
+                        microtess::traits::is_allocator_aware<container_output_vertices>::value;
+                construct_for_allocator_aware_t<_is_allocator_aware> construct{output_vertices};
+                container_output_vertices points_segments = construct.create();
+
                 number dash_length, position;
 
                 // calculate first index
@@ -141,7 +172,7 @@ namespace microgl {
                             vertex seg_vec= (points[(current_seg+1)%size]- points[(current_seg)%size]);
                             number seg_len=microgl::functions::length(seg_vec.x, seg_vec.y);
                             const auto point = points[(current_seg)%size] + (seg_len==0 ? vertex{0,0} :
-                                                                             (seg_vec*(positions[ix]-(total_length-seg_len)))/seg_len);
+                                    (seg_vec*(positions[ix]-(total_length-seg_len)))/seg_len);
                             points_segments.push_back(point);
                         }
                         compute(stroke_width, false, cap, line_join, miter_limit,

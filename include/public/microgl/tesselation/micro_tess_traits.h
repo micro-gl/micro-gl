@@ -2,6 +2,8 @@
 
 namespace microtess {
     namespace traits {
+
+        // is same
         template<class T1, class T2>
         struct is_same {
             const static bool value = false;
@@ -11,6 +13,7 @@ namespace microtess {
             const static bool value = true;
         };
 
+        // is float point
         template<class number>
         constexpr bool is_float_point() {
             return is_same<float, number>::value ||
@@ -18,6 +21,7 @@ namespace microtess {
                    is_same<long double, number>::value;
         }
 
+        // conditional
         template<bool B, class T, class F>
         struct conditional {
             typedef T type;
@@ -29,6 +33,26 @@ namespace microtess {
 
         template<bool, class _Tp = void> struct enable_if {};
         template<class _Tp> struct enable_if<true, _Tp> { typedef _Tp type; };
+
+        // integral constant
+        template <class Tp, Tp _v>
+        struct integral_constant
+        {
+            static constexpr const Tp      value = _v;
+            typedef Tp               value_type;
+            typedef integral_constant type;
+            constexpr operator value_type() const noexcept {return value;}
+        };
+
+        typedef integral_constant<bool, true> true_type;
+        typedef integral_constant<bool, false> false_type;
+
+        // allocator aware traits with SFINAE
+        template <typename T, typename = int>
+        struct is_allocator_aware : microtess::traits::false_type { };
+
+        template <typename T>
+        struct is_allocator_aware <T, decltype((void) T().get_allocator(), 0)> : microtess::traits::true_type { };
 
     }
 }
