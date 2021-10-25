@@ -11,7 +11,7 @@
 #define H 640*1
 
 template<typename item>
-using stat_array = static_array<item, 800>;
+using stat_array = static_array<item, 1000>;
 
 template<typename item>
 //using container = dynamic_array<item>;
@@ -128,16 +128,18 @@ int main() {
     float t = 0;
     auto render_path = [&](const container<vec2<number>> & path, number stroke_width, bool close_path) {
         using index = unsigned int;
-//        using stroke_tess = microgl::tessellation::stroke_tessellation<number, dynamic_array>;
-//        using stroke_tess = microgl::tessellation::stroke_tessellation<number, std::vector>;
-        using stroke_tess = microgl::tessellation::stroke_tessellation<number, stat_array>;
 
         //auto type = triangles::indices::TRIANGLES_STRIP;
         auto type = triangles::indices::TRIANGLES_STRIP_WITH_BOUNDARY;
         t+=0.0128;
-        container<index> indices;
+
         container<vec2<number>> vertices;
+        container<index> indices;
         container<boundary_info> boundary_buffer;
+
+        using stroke_tess = microgl::tessellation::stroke_tessellation<number,
+                container<vec2<number>>, container<index>,
+                container<boundary_info>>;
 
         stroke_tess::compute_with_dashes(
                 stroke_width,

@@ -32,6 +32,7 @@
 #include <microgl/functions/bits.h>
 #include <microgl/functions/distance.h>
 #include <microgl/allocators/std_rebind_allocator.h>
+#include <microgl/dynamic_array.h>
 
 using namespace microgl::triangles;
 using namespace microgl::polygons;
