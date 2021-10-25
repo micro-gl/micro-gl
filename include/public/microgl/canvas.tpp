@@ -1565,7 +1565,7 @@ canvas<bitmap_type, options>::drawWuLinePath(const color_t &color,
 
 template<typename bitmap_type, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1,
-        typename number2, typename Sampler>
+        typename number2, typename Sampler, class Allocator>
 void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
                                               const matrix_3x3<number1> &transform,
                                               const vec3<number1> *mesh,
@@ -1573,14 +1573,21 @@ void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
                                               const unsigned uSamples, const unsigned vSamples,
                                               const number2 u0, const number2 v0,
                                               const number2 u1, const number2 v1,
-                                              const opacity_t opacity) {
+                                              const opacity_t opacity,
+                                              const Allocator & allocator) {
     constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
     static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
     if(void_sampler) return;
-    dynamic_array<number1> v_a; // vertices attributes
-    dynamic_array<index> indices;
+    using rebind_alloc_t1 = typename Allocator::template rebind<number1>::other;
+    using rebind_alloc_t2 = typename Allocator::template rebind<index>::other;
+    rebind_alloc_t1 rebind_1{allocator};
+    rebind_alloc_t2 rebind_2{allocator};
+    dynamic_array<number1, rebind_alloc_t1> v_a{rebind_1}; // vertices attributes
+    dynamic_array<index, rebind_alloc_t2> indices{rebind_2};
 
-    using tess= microgl::tessellation::bezier_patch_tesselator<number1, number2, dynamic_array<number1>, dynamic_array<index>>;
+    using tess= microgl::tessellation::bezier_patch_tesselator<number1, number2,
+                                    dynamic_array<number1, rebind_alloc_t1>,
+                                    dynamic_array<index, rebind_alloc_t2>>;
     using vertex=vec2<number1>;
     microgl::triangles::indices indices_type;
     tess::compute(mesh, uOrder, vOrder, uSamples, vSamples, v_a,

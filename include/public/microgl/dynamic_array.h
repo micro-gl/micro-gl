@@ -76,14 +76,14 @@ class dynamic_array {
     using const_dynamic_array_ref = const dynamic_array<T, Alloc> &;
 public:
     using value_type = T;
-    using allocator_type = Alloc;
+    using allocator_type = typename Alloc::template rebind<value_type>::other;
     using index = unsigned int;
     using type = T;
     using uint = unsigned int;
 
 private:
     T *_data = nullptr;
-    Alloc _alloc;
+    allocator_type _alloc;
     index _current = 0u;
     index _cap = 0u;
 

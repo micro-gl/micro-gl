@@ -52,9 +52,11 @@ public:
     }
 
 
-    base_bitmap(const base_bitmap & bmp) : _buffer{bmp._buffer}, _width{bmp.width()}, _height{bmp.height()} {
+    base_bitmap(const base_bitmap & bmp) : _buffer{bmp._buffer}, _width{bmp.width()},
+                            _height{bmp.height()} {
     }
-    base_bitmap(base_bitmap && bmp) noexcept : _buffer{microgl::traits::move(bmp._buffer)}, _width{bmp.width()}, _height{bmp.height()} {
+    base_bitmap(base_bitmap && bmp) noexcept : _buffer{microgl::traits::move(bmp._buffer)},
+                    _width{bmp.width()}, _height{bmp.height()} {
     }
 
     base_bitmap & operator=(const base_bitmap & bmp) {

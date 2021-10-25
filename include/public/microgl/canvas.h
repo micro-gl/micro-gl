@@ -142,16 +142,10 @@ private:
     using rint =typename microgl::traits::conditional<
             options_big_integers(), rint_big, int32_t >::type;
 
-//    bitmap_type * _bitmap_canvas = nullptr;
     bitmap_type _bitmap_canvas;
     window_t _window;
     render_options_t _options;
 public:
-
-//    canvas(bitmap_type *$bmp) : _bitmap_canvas($bmp) {
-//        updateClipRect(0, 0, $bmp->width(), $bmp->height());
-//        updateCanvasWindow(0, 0);
-//    }
 
     explicit canvas(bitmap_type && $bmp) : _bitmap_canvas(microgl::traits::move($bmp)) {
         updateClipRect(0, 0, $bmp.width(), $bmp.height());
@@ -169,25 +163,6 @@ public:
         updateClipRect(0, 0, width, height);
         updateCanvasWindow(0, 0);
     }
-//
-//    canvas(int width, int height) :
-//            canvas(new bitmap_type(width, height)) {
-//    }
-
-//    /**
-//     * ctor of canvas that receives a bitmap reference
-//     *
-//     * @param $bmp a bitmap reference
-//     */
-//    explicit canvas(bitmap_type * $bmp);
-//    /**
-//     * ctor of canvas that allocate a bitmap internally
-//     * @param width     width of canvas
-//     * @param height    height of canvas
-//     */
-////    template<class allocator_type=std_allocator<pixel>>
-////    canvas(int width, int height, allocator_type & allocator = allocator_type());
-//    canvas(int width, int height);
 
     /**
      * update the clipping rectangle of the canvas
@@ -1118,7 +1093,8 @@ public:
      * @param opacity       opacity [0..255]
      */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, bool debug=false, typename number1, typename number2=number1, typename Sampler>
+            bool antialias=false, bool debug=false, typename number1, typename number2=number1, typename Sampler,
+            class Allocator=std_rebind_allocator<>>
     void drawBezierPatch(const Sampler &sampler,
                          const matrix_3x3<number1> &transform,
                          const vec3<number1> *mesh,
@@ -1126,7 +1102,8 @@ public:
                          unsigned uSamples=20, unsigned vSamples=20,
                          number2 u0=number2(0), number2 v0=number2(1),
                          number2 u1=number2(1), number2 v1=number2(0),
-                         opacity_t opacity=255);
+                         opacity_t opacity=255,
+                         const Allocator & allocator=Allocator());
 
     // polygons
     /**
