@@ -18,7 +18,7 @@ namespace microgl {
         private:
             using index = unsigned int;
             using vertex = vec2<number>;
-            using chunker_t = chunker<vertex, container_template_type>;
+            using chunker_t = non_allocator_aware_chunker<vertex, container_template_type>;
             chunker_t _paths_vertices;
             bool _invalid=true;
 
@@ -59,7 +59,7 @@ namespace microgl {
                 return _paths_vertices.size();
             }
 
-            auto getSubPath(index idx) -> typename chunker<vertex, container_template_type>::chunk {
+            auto getSubPath(index idx) -> typename chunker_t::chunk {
                 return _paths_vertices[idx];
             }
 

@@ -13,17 +13,18 @@ template<typename item>
 using stat_array = static_array<item, 800>;
 
 template<typename number>
-//using chunker_t = chunker<vec2<number>, dynamic_array>;
-//using chunker_t = chunker<vec2<number>, std::vector>;
-using chunker_t = chunker<vec2<number>, stat_array>;
+using chunker_t = allocator_aware_chunker<vec2<number>, dynamic_array>;
+//using chunker_t = non_allocator_aware_chunker<vec2<number>, std::vector>;
+//using chunker_t = non_allocator_aware_chunker<vec2<number>, stat_array>;
 
 template<typename item>
-//using container = dynamic_array<item>;
-using container = std::vector<item>;
+using container = dynamic_array<item>;
+//using container = std::vector<item>;
 //using container = stat_array<item>;
 
 template <typename number>
-container<vec2<number>> box(float left, float top, float right, float bottom, bool ccw=false) {
+container<vec2<number>> box(float left, float top, float right,
+                            float bottom, bool ccw=false) {
     using il = std::initializer_list<vec2<number>>;
 
     if(!ccw)
@@ -94,9 +95,9 @@ chunker_t<number> poly_inter_star_2() {
     return A;
 }
 
-template <typename number, template<typename...> class chunker_container>
-chunker<vec2<number>, chunker_container> box_1() {
-    chunker<vec2<number>, chunker_container> A;
+template <typename number>
+chunker_t<number> box_1() {
+    chunker_t<number> A;
     A.push_back_and_cut(box<number>(50,50,300,300));
     return A;
 }
@@ -116,7 +117,7 @@ int main() {
 
     Canvas24 canvas(W, H);
 
-    auto render_polygon = [&](const chunker_t<number>& pieces) {
+    auto render_polygon = [&](const chunker_t<number> & pieces) {
         using index = unsigned int;
 
         container<vec2<number>> trapezes;

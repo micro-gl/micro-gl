@@ -31,39 +31,40 @@ namespace dynamic_array_traits {
         return static_cast<_Tp&&>(__t);
     }
 
-}
+    /**
+     * standard allocator
+     * @tparam T the allocated object type
+     */
+    template<typename T>
+    class std_allocator {
+    public:
+        using value_type = T;
+        using size_t = unsigned long;
+    public:
+        template<class U>
+        explicit std_allocator(const std_allocator<U> & other) noexcept { };
+        explicit std_allocator()=default;
 
-/**
- * standard allocator
- * @tparam T the allocated object type
- */
-template<typename T>
-class std_allocator {
-public:
-    using value_type = T;
-    using size_t = unsigned long;
-public:
-    template<class U>
-    explicit std_allocator(const std_allocator<U> & other) noexcept { };
-    explicit std_allocator()=default;
+        template <class U, class... Args>
+        void construct(U* p, Args&&... args) {
+            new(p) U(dynamic_array_traits::forward<Args>(args)...);
+        }
 
-    template <class U, class... Args>
-    void construct(U* p, Args&&... args) {
-        new(p) U(dynamic_array_traits::forward<Args>(args)...);
+        T * allocate(size_t n) { return (T *)operator new(n * sizeof(T)); }
+        void deallocate(T * p, size_t n=0) { operator delete (p); }
+
+        template<class U> struct rebind {
+            typedef std_allocator<U> other;
+        };
+    };
+
+    template<class T1, class T2>
+    bool operator==(const std_allocator<T1>& lhs, const std_allocator<T2>& rhs ) noexcept {
+        return true;
     }
 
-    T * allocate(size_t n) { return (T *)operator new(n * sizeof(T)); }
-    void deallocate(T * p, size_t n=0) { operator delete (p); }
-
-    template<class U> struct rebind {
-        typedef std_allocator<U> other;
-    };
-};
-
-template<class T1, class T2>
-bool operator==(const std_allocator<T1>& lhs, const std_allocator<T2>& rhs ) noexcept {
-    return true;
 }
+
 
 /**
  * minimal vector like container, does not obey all of the propagate syntax that
@@ -71,19 +72,21 @@ bool operator==(const std_allocator<T1>& lhs, const std_allocator<T2>& rhs ) noe
  * @tparam T the type
  * @tparam Alloc the allocator type
  */
-template<typename T, class Alloc=std_allocator<T>>
+template<typename T, class Alloc=dynamic_array_traits::std_allocator<T>>
 class dynamic_array {
     using const_dynamic_array_ref = const dynamic_array<T, Alloc> &;
 public:
     using value_type = T;
-    using allocator_type = typename Alloc::template rebind<value_type>::other;
+    using allocator_type = Alloc;
     using index = unsigned int;
     using type = T;
     using uint = unsigned int;
 
 private:
+    using rebind_allocator_type = typename Alloc::template rebind<value_type>::other;
+
     T *_data = nullptr;
-    allocator_type _alloc;
+    rebind_allocator_type _alloc;
     index _current = 0u;
     index _cap = 0u;
 
@@ -207,7 +210,7 @@ public:
     const T& operator[](index i) const noexcept { return _data[i]; }
     const T& peek() noexcept { return (*this)[_current]; }
 
-    Alloc get_allocator() const noexcept { return _alloc; }
+    Alloc get_allocator() const noexcept { return Alloc(_alloc); }
 
     void alloc_(bool up) noexcept {
         const auto old_size = _current;
