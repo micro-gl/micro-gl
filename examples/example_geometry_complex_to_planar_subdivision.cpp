@@ -14,8 +14,8 @@ using stat_array = static_array<item, 800>;
 
 template<typename number>
 //using chunker_t = chunker<vec2<number>, dynamic_array>;
-using chunker_t = chunker<vec2<number>, std::vector>;
-//using chunker_t = chunker<vec2<number>, stat_array>;
+//using chunker_t = chunker<vec2<number>, std::vector>;
+using chunker_t = chunker<vec2<number>, stat_array>;
 
 template<typename item>
 //using container = dynamic_array<item>;
@@ -118,16 +118,18 @@ int main() {
 
     auto render_polygon = [&](const chunker_t<number>& pieces) {
         using index = unsigned int;
-//        using psd = microgl::tessellation::planarize_division<number, dynamic_array>;
-        using psd = microgl::tessellation::planarize_division<number, std::vector>;
-//        using psd = microgl::tessellation::planarize_division<number, stat_array>;
 
         container<vec2<number>> trapezes;
         container<vec2<number>> vertices;
         container<index> indices;
         container<triangles::boundary_info> boundary;
         triangles::indices type;
-        psd::compute(pieces,
+
+        using psd = microgl::tessellation::planarize_division<number,
+                            decltype(vertices), decltype(indices),
+                            decltype(boundary)>;
+
+        psd::template compute<decltype(pieces)>(pieces,
                      tessellation::fill_rule::even_odd,
                      tessellation::tess_quality::better,
                      vertices, type, indices,

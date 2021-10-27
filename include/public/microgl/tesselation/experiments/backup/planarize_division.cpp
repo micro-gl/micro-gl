@@ -2,6 +2,10 @@ namespace microgl {
 
     namespace tessellation {
 
+#define abs__(x) (((x)<0)?(-(x)):(x))
+#define min__(a,b) (((a)<(b))?(a):(b))
+#define max__(a, b) ((a)>(b) ? (a) : (b))
+
         template <typename number, template<typename...> class container_type>
         auto planarize_division<number, container_type>::create_frame(const chunker_t &pieces,
                                                       dynamic_pool & dynamic_pool) -> half_edge_face * {
@@ -1534,5 +1538,10 @@ namespace microgl {
             auto result= (u * f).dot(v * f);
             return result;
         }
+
+#undef abs__
+#undef min__
+#undef max__
+
     }
 }

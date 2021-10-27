@@ -64,7 +64,7 @@ namespace microgl {
             template<bool on=false>
             struct construct_for_allocator_aware_t {
                 const container_output_vertices & copy;
-                construct_for_allocator_aware_t(const container_output_vertices & vv) :
+                explicit construct_for_allocator_aware_t(const container_output_vertices & vv) :
                         copy{vv} {}
                 container_output_vertices create() { return container_output_vertices(); }
             };
@@ -72,7 +72,7 @@ namespace microgl {
             template<>
             struct construct_for_allocator_aware_t<true> {
                 const container_output_vertices & copy;
-                construct_for_allocator_aware_t(const container_output_vertices & vv) :
+                explicit construct_for_allocator_aware_t(const container_output_vertices & vv) :
                     copy{vv} {}
                 container_output_vertices create() {
                     return container_output_vertices(copy.get_allocator());

@@ -6,6 +6,7 @@
 #include <microgl/tesselation/elliptic_arc_divider.h>
 #include <microgl/tesselation/stroke_tessellation.h>
 #include <microgl/tesselation/planarize_division.h>
+#include <microgl/chunker.h>
 
 namespace microgl {
     namespace tessellation {
@@ -318,6 +319,7 @@ namespace microgl {
             fill_cache_info _latest_fill_cache_info;
 
         public:
+            template<class computation_allocator>
             buffers & tessellateFill(const fill_rule &rule=fill_rule::non_zero,
                                      const tess_quality &quality=tess_quality::better,
                                      bool compute_boundary_buffer = true,
@@ -329,7 +331,10 @@ namespace microgl {
                     _latest_fill_cache_info=info;
                     _invalid=false;
                     _tess_fill.clear();
-                    planarize_division<number, container_template_type>::compute(
+                    planarize_division<number,
+                        decltype(_tess_fill.output_vertices),
+                        decltype(_tess_fill.output_indices),
+                        decltype(_tess_fill.output_boundary)>::template compute<decltype(_paths_vertices)>(
                             _paths_vertices, rule, quality,
                             _tess_fill.output_vertices,
                             _tess_fill.output_indices_type,

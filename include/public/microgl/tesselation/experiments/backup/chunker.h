@@ -20,8 +20,8 @@ template<typename T, template<typename...> class container_template_type>
 class chunker {
 public:
     using index = unsigned int;
-    using value_type = T;
-    using container_data_type = container_template_type<value_type>;
+    using type = T;
+    using container_data_type = container_template_type<type>;
     using container_index_type = container_template_type<index>;
 
 private:
@@ -35,16 +35,10 @@ private:
     container_index_type _locations;
 
 public:
-
     struct chunk {
-    public:
-        const T* _data=nullptr;
-        index _size;
-    public:
-        chunk(const T* data, index size) : _data(data), _size(size) {}
-        const T & operator[](unsigned idx) const { return data()[idx]; }
-        const T * data() const { return _data; }
-        index size() const { return _size; }
+        const T* data;
+        index size;
+//        index offset;
     };
 
     chunker(const_chunker_ref val) : _data{val._data}, _locations{val._locations} {
@@ -144,3 +138,4 @@ public:
 
     // todo : implement iterator
 };
+
