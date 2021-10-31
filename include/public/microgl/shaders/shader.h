@@ -1,8 +1,8 @@
 #pragma once
 
-#include <microgl/crpt.h>
-#include <microgl/vec4.h>
-#include <microgl/color.h>
+#include "../crpt.h"
+#include "../vec4.h"
+#include "../color.h"
 
 namespace microgl {
     namespace shading {

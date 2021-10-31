@@ -1,7 +1,7 @@
 #pragma once
 
-#include <microgl/color.h>
-#include <microgl/channel.h>
+#include "microgl/color.h"
+#include "microgl/channel.h"
 
 using namespace microgl::color;
 

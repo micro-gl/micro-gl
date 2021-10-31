@@ -1,7 +1,7 @@
 #pragma once
 
 #include <microgl/vec2.h>
-#include <microgl/triangles.h>
+#include "microgl/tesselation/triangles.h"
 #include <microgl/dynamic_array.h>
 
 namespace microgl {

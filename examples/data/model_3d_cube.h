@@ -1,7 +1,7 @@
 #pragma once
 
 #include "model_3d.h"
-#include <microgl/triangles.h>
+#include "microgl/tesselation/triangles.h"
 
 template <typename number>
 model_3d<number> cube_3d =

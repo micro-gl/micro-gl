@@ -10,11 +10,11 @@
 #include <microgl/porter_duff/DestinationIn.h>
 #include <microgl/porter_duff/None.h>
 #include <microgl/blend_modes/Normal.h>
-#include <microgl/shader.h>
+#include "microgl/shaders/shader.h"
 #include <microgl/samplers/texture.h>
 #include <microgl/samplers/void_sampler.h>
-#include <microgl/triangles.h>
-#include <microgl/polygons.h>
+#include "microgl/tesselation/triangles.h"
+#include "microgl/tesselation/polygons.h"
 #include <microgl/masks.h>
 #include <microgl/rgba_t.h>
 #include <microgl/math.h>
@@ -1243,6 +1243,7 @@ public:
      * @tparam number2          number type of uv coords
      * @tparam Sampler          Sampler type
      * @tparam path_container_template the template of the container used by path
+     * @tparam tessellation_allocator the allocator used for the tessellation computation
      *
      * @param sampler           sampler reference
      * @param transform         3x3 matrix for transform
@@ -1258,7 +1259,8 @@ public:
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool debug=false,
             typename number1=float, typename number2=float,
-            typename Sampler, template<typename...> class path_container_template>
+            typename Sampler, template<typename...> class path_container_template,
+            class tessellation_allocator=std_rebind_allocator<>>
     void drawPathFill(const Sampler &sampler,
                       const matrix_3x3<number1> &transform,
                       tessellation::path<number1, path_container_template> &path,
@@ -1266,7 +1268,8 @@ public:
                       const tessellation::tess_quality &quality=tessellation::tess_quality::better,
                       opacity_t opacity=255,
                       number2 u0=number2(0), number2 v0=number2(1),
-                      number2 u1=number2(1), number2 v1=number2(0));
+                      number2 u1=number2(1), number2 v1=number2(0),
+                      const tessellation_allocator & allocator=tessellation_allocator());
 
     /**
      * Draw Bitmap Fonts Text

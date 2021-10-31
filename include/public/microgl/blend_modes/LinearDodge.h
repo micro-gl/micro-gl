@@ -1,5 +1,7 @@
 #pragma once
 
+#include "blend_mode_base.h"
+
 namespace microgl {
     namespace blendmode {
 

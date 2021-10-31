@@ -1,5 +1,5 @@
 #include <microgl/tesselation/experiments/poly_heap_simplifier/qsort.h>
-#include <microgl/triangles.h>
+#include "microgl/tesselation/triangles.h"
 
 /*
  * A merge sort implementation, simplified from_sampler the qsort implementation

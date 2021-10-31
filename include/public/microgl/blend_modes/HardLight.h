@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/blend_modes/Overlay.h>
+#include "Overlay.h"
 
 namespace microgl {
     namespace blendmode {

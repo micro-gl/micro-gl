@@ -1,68 +1,85 @@
 #pragma once
 
-#include <microgl/triangles.h>
-#include <microgl/micro_gl_traits.h>
-#include <microgl/tesselation/curve_divider.h>
-#include <microgl/tesselation/elliptic_arc_divider.h>
-#include <microgl/tesselation/stroke_tessellation.h>
-#include <microgl/tesselation/planarize_division.h>
+#include "triangles.h"
+#include "curve_divider.h"
+#include "elliptic_arc_divider.h"
+#include "stroke_tessellation.h"
+#include "planarize_division.h"
 #include <microgl/chunker.h>
+#include "std_rebind_allocator.h"
+#include "micro_tess_traits.h"
 
 namespace microgl {
     namespace tessellation {
 
         using namespace microgl;
 
-        template<typename number, template<typename...> class container_template_type>
+        template<typename number,
+                 template<typename...> class container_template_type,
+                 class Allocator=std_rebind_allocator<>>
         class path {
-        private:
+        public:
+            struct buffers;
             using index = unsigned int;
             using vertex = vec2<number>;
-            using chunker_t = non_allocator_aware_chunker<vertex, container_template_type>;
+            using allocator_type = Allocator;
+            using chunker_t = allocator_aware_chunker<vertex, container_template_type, allocator_type>;
+
+        private:
             chunker_t _paths_vertices;
             bool _invalid=true;
+            allocator_type _allocator;
+            buffers _tess_fill;
+            buffers _tess_stroke;
 
             vertex firstPointOfCurrentSubPath() const {
                 auto current_path = _paths_vertices.back();
-                return current_path.data[0];
+                return current_path[0];
             }
             vertex lastPointOfCurrentSubPath() {
                 auto current_path = _paths_vertices.back();
-                return current_path.data[current_path.size-1]; // todo: size may be 0
+                return current_path[current_path.size()-1]; // todo: size may be 0
             }
             int sizeOfCurrentSubPath() {
-                return _paths_vertices.back().size;
+                return _paths_vertices.back().size();
             }
             vertex firstPointOfLastSubPath() {
                 auto current_path = _paths_vertices.back();
-                return current_path.data[current_path.size-1];
+                return current_path[current_path.size()-1];
             }
-        public:
 
-            path() = default;
-            path(const path & $path) {
-                _paths_vertices=$path._paths_vertices;
-            }
+        public:
+            explicit path(const allocator_type & allocator=allocator_type()) :
+                        _allocator(allocator), _paths_vertices(allocator),
+                        _tess_fill(allocator), _tess_stroke(allocator) {}
+            path(const path & $path) : _allocator($path.get_allocator()),
+                                       _paths_vertices($path._paths_vertices, _allocator),
+                                       _tess_fill(_allocator), _tess_stroke(_allocator) {}
+            path(path && $path) noexcept : _allocator($path.get_allocator()),
+                                       _paths_vertices(microtess::traits::move($path._paths_vertices)),
+                                       _tess_fill(microtess::traits::move($path._tess_fill)),
+                                       _tess_stroke(microtess::traits::move($path._tess_stroke)) {}
 
             ~path() = default;
 
             path &operator=(const path & $path) {
                 _paths_vertices=$path._paths_vertices;
+                _tess_fill=$path._tess_fill;
+                _tess_stroke=$path._tess_stroke;
                 return *this;
             }
             path &operator=(path && $path) noexcept {
-                _paths_vertices=traits::move($path._paths_vertices);
+                _paths_vertices=microtess::traits::move($path._paths_vertices);
+                _tess_fill=microtess::traits::move($path._tess_fill);
+                _tess_stroke=microtess::traits::move($path._tess_stroke);
                 return *this;
             }
 
-            int subpathsCount() const {
-                return _paths_vertices.size();
-            }
-
+            allocator_type get_allocator() { return _allocator; }
+            int subpathsCount() const { return _paths_vertices.size(); }
             auto getSubPath(index idx) -> typename chunker_t::chunk {
                 return _paths_vertices[idx];
             }
-
             auto clear() -> path & {
                 _paths_vertices.clear();
                 _tess_fill.clear();
@@ -110,8 +127,7 @@ namespace microgl {
              */
             template<class Iterable>
             auto linesTo(const Iterable & list) -> path & {
-                for (const auto & item : list)
-                    lineTo(item);
+                for (const auto & item : list) lineTo(item);
                 return *this;
             }
 
@@ -121,29 +137,26 @@ namespace microgl {
              */
             template<typename... Args>
             auto linesTo2(const number & x, const number & y, Args... args) -> path & {
-                linesTo2(x, y);
-                linesTo2(args...);
-                return *this;
+                linesTo2(x, y); linesTo2(args...); return *this;
             }
             auto linesTo2(const number & x, const number & y) -> path & {
-                lineTo({x, y});
-                return *this;
+                lineTo({x, y}); return *this;
             }
 
             auto lineTo(const vertex & point, number threshold=number(1)) -> path & {
                 auto current_path = _paths_vertices.back();
                 threshold=threshold<0 ? 0 : threshold;
                 bool avoid=false;
-                if(current_path.size) {
-                    const auto vec= current_path.data[current_path.size-1]-point;
-                    avoid= (vec.x*vec.x + vec.y*vec.y)<=threshold*threshold;
+                if(current_path.size()) {
+                    const auto vec= current_path[current_path.size()-1]-point;
+                    avoid=(vec.x*vec.x + vec.y*vec.y)<=threshold*threshold;
                 }
                 if(!avoid) {
-                    if(current_path.size==0) {
+                    if(current_path.size()==0) {
                         const auto paths= subpathsCount();
                         if(paths>=2) {
                             auto last_path = _paths_vertices[paths-2];
-                            _paths_vertices.push_back(last_path.data[last_path.size-1]);
+                            _paths_vertices.push_back(last_path[last_path.size()-1]);
                         }
                     }
                     _paths_vertices.push_back(point);
@@ -163,11 +176,11 @@ namespace microgl {
                                     CurveDivisionAlgorithm bezier_curve_divider=
                                             CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small)  {
                 vertex bezier[4] = {lastPointOfCurrentSubPath(), cp1, cp2, last};
-                container_template_type<vertex> output{32};
+                container_template_type<vertex, allocator_type> output{32, vertex(), _allocator};
+                output.clear();
                 curve_divider<number, decltype(output)>::compute(
                         bezier, output, bezier_curve_divider, CurveType::Cubic);
-                for (unsigned ix = 0; ix < output.size(); ++ix)
-                    lineTo(output[ix]);
+                for (unsigned ix = 0; ix < output.size(); ++ix) lineTo(output[ix]);
                 invalidate();
                 return *this;
             }
@@ -177,11 +190,11 @@ namespace microgl {
                             CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small)
                     -> path & {
                 vertex bezier[3] = {lastPointOfCurrentSubPath(), cp, last};
-                container_template_type<vertex> output{32};
+                container_template_type<vertex, allocator_type> output{32, vertex(), _allocator};
+                output.clear();
                 curve_divider<number, decltype(output)>::compute(
                         bezier, output, bezier_curve_divider, CurveType::Quadratic);
-                for (unsigned ix = 0; ix < output.size(); ++ix)
-                    lineTo(output[ix]);
+                for (unsigned ix = 0; ix < output.size(); ++ix) lineTo(output[ix]);
                 invalidate();
                 return *this;
             }
@@ -211,13 +224,12 @@ namespace microgl {
             auto ellipse(const vertex &point, const number &radius_x, const number &radius_y,
                      const number & rotation, const number &startAngle, const number &endAngle,
                      bool anti_clockwise, unsigned divisions_count=32) -> path & {
-                container_template_type<vertex> output{divisions_count};
+                container_template_type<vertex, allocator_type> output{divisions_count, vertex(), _allocator};
                 output.clear();
                 elliptic_arc_divider<number, decltype(output)>::compute(
                         output, point.x, point.y, radius_x, radius_y,
                         rotation, startAngle, endAngle, divisions_count, anti_clockwise);
-                for (int ix = 0; ix < output.size(); ++ix)
-                    lineTo(output[ix]);
+                for (int ix = 0; ix < output.size(); ++ix) lineTo(output[ix]);
                 return *this;
             }
 
@@ -227,30 +239,56 @@ namespace microgl {
             }
 
             struct buffers {
-                container_template_type<vertex> DEBUG_output_trapezes{};
-                container_template_type<vertex> output_vertices{};
-                container_template_type<index> output_indices{};
-                container_template_type<triangles::boundary_info> output_boundary{};
-                triangles::indices output_indices_type{};
-                explicit buffers()= default;
-                buffers(buffers && val) noexcept {
-                    move_from(val);
+                using allocator_type_vertices = typename allocator_type::template rebind<vertex>::other;
+                using allocator_type_indices = typename allocator_type::template rebind<index>::other;
+                using allocator_type_boundaries = typename allocator_type::template rebind<triangles::boundary_info>::other;
+
+                using vertices = container_template_type<vertex, allocator_type_vertices>;
+                using indices = container_template_type<index, allocator_type_indices>;
+                using boundaries = container_template_type<triangles::boundary_info,
+                        allocator_type_boundaries>;
+                using trapezes = vertices;
+
+                vertices output_vertices;
+                indices output_indices;
+                boundaries output_boundary;
+                trapezes DEBUG_output_trapezes;
+                triangles::indices output_indices_type;
+                const allocator_type & allocator;
+
+                explicit buffers(const allocator_type & allocator) :
+                        allocator(allocator),
+                        output_vertices(allocator_type_vertices(allocator)),
+                        output_indices(allocator_type_indices(allocator)),
+                        output_boundary(allocator_type_boundaries(allocator)),
+                        DEBUG_output_trapezes(allocator_type_vertices(allocator)),
+                        output_indices_type() {}
+                buffers(buffers && val) noexcept :
+                        allocator(val.allocator),
+                        output_vertices(microtess::traits::move(val.output_vertices)),
+                        output_indices(microtess::traits::move(val.output_indices)),
+                        output_boundary(microtess::traits::move(val.output_boundary)),
+                        DEBUG_output_trapezes(microtess::traits::move(val.DEBUG_output_trapezes)),
+                        output_indices_type(val.output_indices_type) {
                 }
+                buffers(const buffers & val) = delete;
                 buffers & operator=(buffers && val) noexcept {
                     move_from(val); return *this;
                 }
+                buffers & operator=(const buffers & val) = delete;
                 void move_from(buffers & val) {
-                    DEBUG_output_trapezes=traits::move(val.DEBUG_output_trapezes);
-                    output_vertices=traits::move(val.output_vertices);
-                    output_indices=traits::move(val.output_indices);
-                    output_boundary=traits::move(val.output_boundary);
+                    output_vertices=microtess::traits::move(val.output_vertices);
+                    output_indices=microtess::traits::move(val.output_indices);
+                    output_boundary=microtess::traits::move(val.output_boundary);
+                    DEBUG_output_trapezes=microtess::traits::move(val.DEBUG_output_trapezes);
                     output_indices_type=val.output_indices_type;
                 }
+                allocator_type get_allocator() { return allocator; }
                 void drain() {
-                    DEBUG_output_trapezes = container_template_type<vertex>{};
-                    output_vertices = container_template_type<vertex>{};
-                    output_indices = container_template_type<index>{};
-                    output_boundary = container_template_type<triangles::boundary_info>{};
+                    DEBUG_output_trapezes = trapezes(allocator);
+                    output_vertices = vertices(allocator);
+                    output_indices = indices(allocator);
+                    output_boundary = boundaries(allocator);
                 }
                 void clear() {
                     DEBUG_output_trapezes.clear();
@@ -319,7 +357,6 @@ namespace microgl {
             fill_cache_info _latest_fill_cache_info;
 
         public:
-            template<class computation_allocator>
             buffers & tessellateFill(const fill_rule &rule=fill_rule::non_zero,
                                      const tess_quality &quality=tess_quality::better,
                                      bool compute_boundary_buffer = true,
@@ -331,16 +368,21 @@ namespace microgl {
                     _latest_fill_cache_info=info;
                     _invalid=false;
                     _tess_fill.clear();
-                    planarize_division<number,
+
+                    using planarize_division_tess = planarize_division<number,
                         decltype(_tess_fill.output_vertices),
                         decltype(_tess_fill.output_indices),
-                        decltype(_tess_fill.output_boundary)>::template compute<decltype(_paths_vertices)>(
+                        decltype(_tess_fill.output_boundary),
+                        allocator_type>;
+
+                    planarize_division_tess::template compute<decltype(_paths_vertices)>(
                             _paths_vertices, rule, quality,
                             _tess_fill.output_vertices,
                             _tess_fill.output_indices_type,
                             _tess_fill.output_indices,
                             compute_boundary_buffer ? &_tess_fill.output_boundary : nullptr,
-                            debug_trapezes ? &_tess_fill.DEBUG_output_trapezes : nullptr);
+                            debug_trapezes ? &_tess_fill.DEBUG_output_trapezes : nullptr,
+                            _allocator);
                 }
                 return _tess_fill;
             }
@@ -366,19 +408,20 @@ namespace microgl {
                     unsigned paths = _paths_vertices.size();
                     for (unsigned ix = 0; ix < paths; ++ix) {
                         auto chunk = _paths_vertices[ix];
-                        if(chunk.size==0) continue;
-                        bool isClosing = chunk.size >= 3 && chunk.data[chunk.size - 3] == chunk.data[chunk.size - 1]
-                                         && chunk.data[chunk.size - 3] == chunk.data[chunk.size - 2];
+                        const auto chunk_size = chunk.size();
+                        if(chunk_size==0) continue;
+                        bool isClosing = chunk_size >= 3 && chunk[chunk_size - 3] == chunk[chunk_size - 1]
+                                         && chunk[chunk_size - 3] == chunk[chunk_size - 2];
                         using stroke_tess = stroke_tessellation<number, decltype(_tess_stroke.output_vertices),
-                                decltype(_tess_stroke.output_indices), decltype(_tess_stroke.output_boundary)>;
+                                    decltype(_tess_stroke.output_indices), decltype(_tess_stroke.output_boundary)>;
 
-                        stroke_tess::compute_with_dashes(
+                        stroke_tess::template compute_with_dashes<Iterable>(
                                 stroke_width,
                                 isClosing,
                                 cap, line_join,
                                 miter_limit,
                                 stroke_dash_array, stroke_dash_offset,
-                                chunk.data, chunk.size - (isClosing?2:0),
+                                chunk.data(), chunk_size - (isClosing?2:0),
                                 _tess_stroke.output_vertices,
                                 _tess_stroke.output_indices,
                                 _tess_stroke.output_indices_type,
@@ -394,22 +437,10 @@ namespace microgl {
                 _tess_stroke.drain();
                 _invalid=true;
             }
+            buffers & buffers_fill() { return _tess_fill; }
+            buffers & buffers_stroke() { return _tess_stroke; }
+            chunker_t & paths_vertices() { return _paths_vertices; }
 
-            buffers & buffers_fill() {
-                return _tess_fill;
-            }
-
-            buffers & buffers_stroke() {
-                return _tess_stroke;
-            }
-
-            chunker_t & paths_vertices() {
-                return _paths_vertices;
-            }
-
-        private:
-            buffers _tess_fill;
-            buffers _tess_stroke;
         };
 
     }

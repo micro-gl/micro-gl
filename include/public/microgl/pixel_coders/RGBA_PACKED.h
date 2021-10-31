@@ -1,10 +1,13 @@
 #pragma once
 
 #include <microgl/stdint.h>
+#include <microgl/color.h>
+#include <microgl/rgba_t.h>
 
 namespace microgl {
     namespace coder {
 
+        using namespace microgl::color;
         /**
          * create a pixel coder, that packs color channels at the smallest possible 2^N int.
          * this coder calculates all of this config at compile-time, and also supports different

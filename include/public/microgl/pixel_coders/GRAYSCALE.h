@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/pixel_coders/RGBA_PACKED.h>
+#include "RGBA_PACKED.h"
 
 namespace microgl {
     namespace coder {

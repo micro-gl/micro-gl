@@ -69,8 +69,10 @@ public:
     using value_type = T;
 
     using allocator_type = Allocator;
-    using container_data_type = container_template_type<value_type, allocator_type>;
-    using container_index_type = container_template_type<index, allocator_type>;
+    using allocator_type_data = typename allocator_type::template rebind<value_type>::other;
+    using allocator_type_index = typename allocator_type::template rebind<index>::other;
+    using container_data_type = container_template_type<value_type, allocator_type_data>;
+    using container_index_type = container_template_type<index, allocator_type_index>;
 
 private:
     using type_pointer = T *;
@@ -93,20 +95,24 @@ public:
         index size() const { return _size; }
     };
     allocator_aware_chunker(const_chunker_ref val, const allocator_type & allocator=allocator_type()) :
-                _data{val._data, allocator}, _locations{val._locations, allocator} {
+                _data{val._data, allocator_type_data(allocator)},
+                _locations{val._locations, allocator_type_index(allocator)} {
     }
     allocator_aware_chunker(allocator_aware_chunker && val) noexcept :
                 _data{chunker_traits::move(val._data)}, _locations(chunker_traits::move(val._locations)) {
     }
     explicit allocator_aware_chunker(const allocator_type & allocator=allocator_type())
-                : _data(allocator), _locations(allocator) {
+                : _data(allocator_type_data(allocator)), _locations(allocator_type_index(allocator)) {
         _locations.push_back(0);
+    }
+    allocator_type get_allocator() {
+        return allocator_type(_data.get_allocator());
     }
     chunk back() const { return chunk_for(size()-1); }
     chunk front() { return chunk_for(0); }
     void cut_chunk() { _locations.push_back(_data.size()); }
     void cut_chunk_if_current_not_empty() {
-        if(back().size==0) return;
+        if(back().size()==0) return;
         _locations.push_back(_data.size());
     }
     void push_back(const T & v) { _data.push_back(v); }
@@ -216,7 +222,7 @@ public:
     chunk front() { return chunk_for(0); }
     void cut_chunk() { _locations.push_back(_data.size()); }
     void cut_chunk_if_current_not_empty() {
-        if(back().size==0) return;
+        if(back().size()==0) return;
         _locations.push_back(_data.size());
     }
     void push_back(const T & v) { _data.push_back(v); }

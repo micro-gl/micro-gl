@@ -1393,7 +1393,8 @@ template<typename bitmap_type, uint8_t options>
 template <typename BlendMode, typename PorterDuff,
           bool antialias, bool debug,
           typename number1, typename number2,
-          typename Sampler, template<typename...> class path_container_template>
+          typename Sampler, template<typename...> class path_container_template,
+          class tessellation_allocator>
 void canvas<bitmap_type, options>::drawPathFill(const Sampler &sampler,
                                            const matrix_3x3<number1> &transform,
                                            tessellation::path<number1, path_container_template> & path,
@@ -1401,11 +1402,13 @@ void canvas<bitmap_type, options>::drawPathFill(const Sampler &sampler,
                                            const tessellation::tess_quality &quality,
                                            opacity_t opacity,
                                            const number2 u0, const number2 v0,
-                                           const number2 u1, const number2 v1) {
+                                           const number2 u1, const number2 v1,
+                                           const tessellation_allocator & allocator) {
     constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
     static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
     if(void_sampler) return;
-    const auto & buffers= path.tessellateFill(rule, quality, antialias, debug);
+    const auto & buffers= path.tessellateFill(rule, quality,
+            antialias, debug);
     if(buffers.output_vertices.size()==0) return;
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(
             sampler, transform,
@@ -1424,9 +1427,8 @@ void canvas<bitmap_type, options>::drawPathFill(const Sampler &sampler,
                                buffers.output_indices.size(),
                                buffers.output_indices_type,
                                40);
-        for (index ix = 0; ix < buffers.DEBUG_output_trapezes.size(); ix+=4) {
+        for (index ix = 0; ix < buffers.DEBUG_output_trapezes.size(); ix+=4)
             drawWuLinePath<number1>({0,0,0,255}, &buffers.DEBUG_output_trapezes[ix], 4, true);
-        }
     }
 }
 

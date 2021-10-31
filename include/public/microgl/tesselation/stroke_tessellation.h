@@ -1,7 +1,7 @@
 #pragma once
 
 #include <microgl/vec2.h>
-#include <microgl/triangles.h>
+#include "triangles.h"
 #include <microgl/functions/distance.h>
 #include "micro_tess_traits.h"
 
@@ -28,7 +28,8 @@ namespace microgl {
          * @tparam container_output_indices container type to store indices
          * @tparam container_output_boundary container type to store boundary info
          */
-        template<typename number, class container_output_vertices, class container_output_indices, 
+        template<typename number, class container_output_vertices,
+                class container_output_indices,
                 class container_output_boundary>
         class stroke_tessellation {
         public:

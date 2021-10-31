@@ -1,8 +1,8 @@
 #pragma once
 
-#include <microgl/rgba_t.h>
-#include <microgl/color.h>
-#include <microgl/crpt.h>
+#include "microgl/rgba_t.h"
+#include "microgl/color.h"
+#include "microgl/crpt.h"
 
 namespace microgl {
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/shader.h>
+#include "shader.h"
 
 namespace microgl {
     namespace shading {

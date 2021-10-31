@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/blend_modes/LinearBurn.h>
+#include "LinearBurn.h"
 
 namespace microgl {
     namespace blendmode {

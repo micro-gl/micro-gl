@@ -3,7 +3,7 @@
 #include <microgl/matrix_4x4.h>
 #include <microgl/vec2.h>
 #include <microgl/vec3.h>
-#include <microgl/triangles.h>
+#include "microgl/tesselation/triangles.h"
 #include <microgl/color.h>
 
 namespace microgl {

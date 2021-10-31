@@ -3,7 +3,7 @@
 #pragma once
 
 #include <microgl/vec2.h>
-#include <microgl/triangles.h>
+#include "microgl/tesselation/triangles.h"
 #include <microgl/tesselation/experiments/linked_list.h>
 #include <microgl/dynamic_array.h>
 

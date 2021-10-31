@@ -1,11 +1,11 @@
 #pragma once
 
-#include <microgl/pixel_coders/BPP_RGB.h>
+#include "BPP_RGB.h"
 
 namespace microgl {
     namespace coder {
 
-        template <channel R, channel G, channel B>
+        template <unsigned char R, unsigned char G, unsigned char B>
         using BPP_4_RGB = BPP_RGB<4, R,G,B>;
     }
 }

@@ -2,7 +2,6 @@
 #include <microgl/canvas.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
-#include <microgl/static_array.h>
 #include <vector>
 
 #define W 640*1
@@ -12,8 +11,8 @@ using microgl::tessellation::path;
 float t = 0;
 
 template<typename number>
-//using path_t = path<number, std::vector>;
-using path_t = path<number, dynamic_array>;
+using path_t = path<number, std::vector>;
+//using path_t = path<number, dynamic_array>;
 
 template <typename number>
 path_t<number> path_star() {
@@ -109,10 +108,10 @@ path_t<number> path_test() {
 
 int main() {
 //    using number = float;
-//    using number = double;
+    using number = double;
 //    using number = Q<8, long long>;
 //    using number = Q<2, int64_t>;
-    using number = Q<4, int32_t>;
+//    using number = Q<4, int32_t>;
 //    using number = Q<12>;
 
     using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
@@ -122,7 +121,7 @@ int main() {
 
     auto render_path = [&](path_t<number> & path) {
         canvas.clear({255, 255, 255, 255});
-        canvas.drawPathFill<blendmode::Normal, porterduff::None<>, false, true>(
+        canvas.drawPathFill<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, true>(
                 color_red,
                 matrix_3x3<number>::identity(),
                 path,

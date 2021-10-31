@@ -73,7 +73,7 @@ namespace microgl {
                     vertex4{-1,  0,  0, 1}, // right plane,     w-x >= 0
                     vertex4{ 0,  1,  0, 1}, // bottom plane,    y+w >= 0
                     vertex4{ 0, -1,  0, 1}, // top plane,       w-y >= 0
-                    vertex4{ 0,  0,  1, 1}, // near plane,      z+w >= 0, assume positive z is pointing away from_sampler us
+                    vertex4{ 0,  0,  1, 1}, // near plane,      z+w >= 0, assume positive z is pointing away from us
                     vertex4{ 0,  0, -1, 1}  // far plane,       w-z >= 0
                 };
 

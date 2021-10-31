@@ -1,7 +1,7 @@
 #pragma once
 
-#include <microgl/shader.h>
-#include <microgl/sampler.h>
+#include "shader.h"
+#include "microgl/samplers/sampler.h"
 #include <microgl/precision.h>
 
 namespace microgl {

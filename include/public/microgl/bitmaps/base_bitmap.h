@@ -1,11 +1,11 @@
 #pragma once
 
-#include <microgl/buffer.h>
-#include <microgl/crpt.h>
-#include <microgl/color.h>
-#include <microgl/pixel_coder.h>
-#include <microgl/micro_gl_traits.h>
-#include <microgl/stdint.h>
+#include "microgl/buffer.h"
+#include "microgl/crpt.h"
+#include "microgl/color.h"
+#include "microgl/pixel_coders/pixel_coder.h"
+#include "microgl/micro_gl_traits.h"
+#include "microgl/stdint.h"
 
 /**
  * a base bitmap type, use it with crpt design pattern for extension.

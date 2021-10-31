@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/triangles.h>
+#include "microgl/tesselation/triangles.h"
 #include <microgl/chunker.h>
 
 namespace tessellation {

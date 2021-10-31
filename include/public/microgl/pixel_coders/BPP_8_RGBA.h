@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/pixel_coders/BPP_RGBA.h>
+#include "BPP_RGBA.h"
 
 namespace microgl {
     namespace coder {

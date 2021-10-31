@@ -3,7 +3,7 @@
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
 #include <microgl/tesselation/ear_clipping_triangulation.h>
-#include <microgl/triangles.h>
+#include "microgl/tesselation/triangles.h"
 #include <vector>
 #include <microgl/static_array.h>
 

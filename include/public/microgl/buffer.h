@@ -1,13 +1,11 @@
 #pragma once
 
 namespace buffer_traits {
-
     template< class T > struct remove_reference      {typedef T type;};
     template< class T > struct remove_reference<T&>  {typedef T type;};
     template< class T > struct remove_reference<T&&> {typedef T type;};
 
-    template <class _Tp>
-    inline
+    template <class _Tp> inline
     typename remove_reference<_Tp>::type&&
     move(_Tp&& __t) noexcept
     {
@@ -15,34 +13,23 @@ namespace buffer_traits {
         return static_cast<_Up&&>(__t);
     }
 
-    template <class _Tp>
-    inline
-    _Tp&&
+    template <class _Tp> inline _Tp&&
     forward(typename remove_reference<_Tp>::type& __t) noexcept
-    {
-        return static_cast<_Tp&&>(__t);
-    }
+    { return static_cast<_Tp&&>(__t); }
 
-    template <class _Tp>
-    inline
-    _Tp&&
+    template <class _Tp> inline _Tp&&
     forward(typename remove_reference<_Tp>::type&& __t) noexcept
-    {
-        return static_cast<_Tp&&>(__t);
-    }
-
+    { return static_cast<_Tp&&>(__t); }
 }
 
 template<typename element_type, class allocator_type>
 class buffer {
-public:
-
 private:
     using rebind_alloc = typename allocator_type::template rebind<element_type>::other;
 
     rebind_alloc _allocator;
     element_type *_data = nullptr;
-    bool owner=false;
+    bool owner = false;
     int _size = 0;
 
     static element_type * allocate_and_construct(const int size, rebind_alloc & allocator) {
@@ -82,19 +69,18 @@ private:
         val.destroyIfPossibleAndReset();
     }
 
-
 public:
-
     buffer()=default;
     explicit buffer(int size, const allocator_type & allocator) :
             _size{size}, owner{true}, _allocator(allocator) {
         _data = allocate_and_construct(size, _allocator);
     }
     buffer(element_type* $data, int size,
-           const allocator_type & allocator=allocator_type())  :
+           const allocator_type & allocator=allocator_type()) :
                     _data{$data}, _size{size}, owner{false}, _allocator(allocator) {}
     buffer(const buffer & val) : _allocator(val._allocator) { copy_from(val); }
     buffer(buffer && val) noexcept : _allocator(val._allocator) { move_from(val); }
+    ~buffer() { destroyIfPossibleAndReset(); }
 
     buffer & operator=(const buffer & val) {
         if(&val==this) return *this;
@@ -109,41 +95,19 @@ public:
                 _data[ix].~element_type();
             _allocator.deallocate(_data, _size);
         }
-        _data= nullptr;
+        _data=nullptr;
         _size=0;
     };
-
-    ~buffer() {
-        destroyIfPossibleAndReset();
-    }
-    int size()  const {
-        return _size;
-    }
-    element_type & readAt(int index) {
-        return _data[index];
-    }
-
-    void writeAt(const element_type &value, int index) {
-        _data[index] = value;
-    }
-    const element_type &operator[](int index) const {
-        return _data[index];
-    }
-    element_type &operator[](int index) {
-        return _data[index];
-    }
-    element_type * data() {
-        return _data;
-    }
-    const element_type * data() const {
-        return _data;
-    }
+    int size()  const { return _size; }
+    element_type & readAt(int index) { return _data[index]; }
+    void writeAt(const element_type &value, int index) { _data[index] = value; }
+    const element_type &operator[](int index) const { return _data[index]; }
+    element_type &operator[](int index) { return _data[index]; }
+    element_type * data() { return _data; }
+    const element_type * data() const { return _data; }
     void fill(const element_type &value) {
         int size2 = _size;
         for (int ix = 0; ix < size2; ++ix)
             _data[ix] = value;
     }
-
-
-protected:
 };

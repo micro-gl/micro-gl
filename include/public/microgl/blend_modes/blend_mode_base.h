@@ -1,9 +1,9 @@
 #pragma once
 
-#include <microgl/color.h>
-#include <microgl/crpt.h>
-#include <microgl/channel.h>
-#include <microgl/stdint.h>
+#include "../color.h"
+#include "../crpt.h"
+#include "../channel.h"
+#include "../stdint.h"
 
 namespace microgl {
     namespace blendmode {

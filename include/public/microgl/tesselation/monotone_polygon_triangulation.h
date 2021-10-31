@@ -1,7 +1,7 @@
 #pragma once
 
 #include <microgl/vec2.h>
-#include <microgl/triangles.h>
+#include "triangles.h"
 #include "std_rebind_allocator.h"
 
 namespace microgl {

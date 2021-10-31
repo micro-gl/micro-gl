@@ -1,10 +1,12 @@
 #pragma once
 
 #include <microgl/lut_bits.h>
+#include <microgl/color.h>
 
 namespace microgl {
     namespace coder {
 
+        using namespace microgl::color;
         /**
          * map single channel with BPP bits to Alpha channel and
          * keep other channels maximum intensity. This is good for bitmap fonts
@@ -27,7 +29,7 @@ namespace microgl {
             microgl::lut::dynamic_lut_bits<BPP, rgba::a, false, same_alpha_bits> _lut_a;
 
         public:
-            BPP_RGB() : _lut_a{} {}
+            BPP_RGBA() : _lut_a{} {}
 
             inline void encode(const color_t &input, u8 &output) const {
             }

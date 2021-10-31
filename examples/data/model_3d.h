@@ -3,7 +3,7 @@
 #include <microgl/dynamic_array.h>
 #include <microgl/vec2.h>
 #include <microgl/vec3.h>
-#include <microgl/triangles.h>
+#include "microgl/tesselation/triangles.h"
 #include <initializer_list>
 
 template <typename number>
