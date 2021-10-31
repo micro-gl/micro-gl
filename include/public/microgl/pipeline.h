@@ -4,7 +4,7 @@
 #include "vec2.h"
 #include "vec3.h"
 #include "color.h"
-#include "microgl/tesselation/triangles.h"
+#include "tesselation/triangles.h"
 
 namespace microgl {
     namespace _3d {

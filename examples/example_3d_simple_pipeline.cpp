@@ -1,4 +1,5 @@
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/matrix_4x4.h>
 #include <microgl/camera.h>
 #include <microgl/pipeline.h>

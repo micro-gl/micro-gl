@@ -5,6 +5,7 @@
 #include <microgl/pixel_coders/BPP_RGB.h>
 #include <microgl/samplers/texture.h>
 #include <microgl/bitmaps/PackedBitmap.h>
+#include <microgl/bitmaps/bitmap.h>
 #include "data/packed_1.h"
 #include "data/packed_2.h"
 #include "data/packed_4.h"

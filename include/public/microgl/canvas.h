@@ -6,6 +6,7 @@
 #include "rect.h"
 #include "color.h"
 #include "micro_gl_traits.h"
+#include "pixel_coders/pixel_coder.h"
 #include "porter_duff/FastSourceOverOnOpaque.h"
 #include "porter_duff/DestinationIn.h"
 #include "porter_duff/None.h"

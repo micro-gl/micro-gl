@@ -6,8 +6,7 @@ namespace std_rebind_allocator_traits {
     template< class T > struct remove_reference<T&>  {typedef T type;};
     template< class T > struct remove_reference<T&&> {typedef T type;};
 
-    template <class _Tp>
-    inline
+    template <class _Tp> inline
     typename remove_reference<_Tp>::type&&
     move(_Tp&& __t) noexcept
     {
@@ -15,22 +14,17 @@ namespace std_rebind_allocator_traits {
         return static_cast<_Up&&>(__t);
     }
 
-    template <class _Tp>
-    inline
-    _Tp&&
+    template <class _Tp> inline _Tp&&
     forward(typename remove_reference<_Tp>::type& __t) noexcept
     {
         return static_cast<_Tp&&>(__t);
     }
 
-    template <class _Tp>
-    inline
-    _Tp&&
+    template <class _Tp> inline _Tp&&
     forward(typename remove_reference<_Tp>::type&& __t) noexcept
     {
         return static_cast<_Tp&&>(__t);
     }
-
 }
 
 /**

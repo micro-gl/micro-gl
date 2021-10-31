@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../color.h"
-#include "../channel.h"
 #include "../stdint.h"
+#include "../micro_gl_traits.h"
 
 namespace microgl {
     namespace blendmode {

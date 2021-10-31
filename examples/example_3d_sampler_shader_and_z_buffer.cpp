@@ -8,6 +8,7 @@
 #include <microgl/camera.h>
 #include <microgl/z_buffer.h>
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/shaders/sampler_shader.h>

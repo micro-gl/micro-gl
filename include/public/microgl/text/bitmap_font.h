@@ -1,8 +1,7 @@
 #pragma once
 
-#include <microgl/text/bitmap_glyph.h>
-#include <microgl/text/text_format.h>
-#include <microgl/bitmaps/bitmap.h>
+#include "bitmap_glyph.h"
+#include "text_format.h"
 
 namespace microgl {
     namespace text {
@@ -57,18 +56,15 @@ namespace microgl {
             bitmap_glyph gylphs[MAX_CHARS];
 
         public:
-            bitmap_font() {
-                addChar(CHAR_MISSING, 0,0,0,0,0,0,0);
-            }
+            bitmap_font() { addChar(CHAR_MISSING, 0,0,0,0,0,0,0); }
 
             void addChar(int id, int x, int y, int w, int h, int xOffset, int yOffset, int xAdvance) {
                 gylphs[count_internal++] = bitmap_glyph{id, x, y, w, h, xOffset, yOffset, xAdvance};
             }
 
             bitmap_glyph *charByID(int id) {
-                for (int ix = 0; ix < count_internal; ++ix) {
+                for (int ix = 0; ix < count_internal; ++ix)
                     if (gylphs[ix].id == id) return &gylphs[ix];
-                }
                 return nullptr;
             }
 

@@ -1,5 +1,6 @@
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/d1_function_sampler.h>
 #include <microgl/samplers/quantize_sampler.h>

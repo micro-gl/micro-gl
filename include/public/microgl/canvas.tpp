@@ -1684,10 +1684,10 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
                 for (int x = b_r.left; x < b_r.right; ++x) {
                     font.bitmap->decode(c.x + x - b_r.left, (c.y + y - b_r.top), font_col);
                     if(tint) {
-                        font_col.r = channel::mc<r_>(font_col.r, color.r);
-                        font_col.g = channel::mc<g_>(font_col.g, color.g);
-                        font_col.b = channel::mc<b_>(font_col.b, color.b);
-                        font_col.a = channel::mc<a_>(font_col.a, color.a);
+                        font_col.r = color::mc<r_>(font_col.r, color.r);
+                        font_col.g = color::mc<g_>(font_col.g, color.g);
+                        font_col.b = color::mc<b_>(font_col.b, color.b);
+                        font_col.a = color::mc<a_>(font_col.a, color.a);
                     }
                     blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_>(font_col, x, y, opacity);
                 }

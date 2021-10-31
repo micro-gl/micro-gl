@@ -1,7 +1,6 @@
 #pragma once
 
-#include "microgl/color.h"
-#include "microgl/channel.h"
+#include "../color.h"
 
 using namespace microgl::color;
 
@@ -34,12 +33,12 @@ namespace microgl {
             auto as = s.a; // 128
             auto ab = b.a; // 255
 
-            auto as_Fa = mc<bits>(as, Fa); // 128 * 255
+            auto as_Fa = color::mc<bits>(as, Fa); // 128 * 255
             auto ab_Fb = mc<bits>(ab, Fb); // 255 * (255 - 128) = 255 * 127
 
-            output.r = mc<bits>(as_Fa, s.r) + mc<bits>(ab_Fb, b.r);
-            output.g = mc<bits>(as_Fa, s.g) + mc<bits>(ab_Fb, b.g);
-            output.b = mc<bits>(as_Fa, s.b) + mc<bits>(ab_Fb, b.b);
+            output.r = color::mc<bits>(as_Fa, s.r) + color::mc<bits>(ab_Fb, b.r);
+            output.g = color::mc<bits>(as_Fa, s.g) + color::mc<bits>(ab_Fb, b.g);
+            output.b = color::mc<bits>(as_Fa, s.b) + color::mc<bits>(ab_Fb, b.b);
             output.a = as_Fa + ab_Fb; // 128 * 255 + 255 * 127 // may be (bits+1)
 
             // if desired result should be un multiplied

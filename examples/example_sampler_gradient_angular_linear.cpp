@@ -1,6 +1,7 @@
 #include "src/example.h"
 #define MICROGL_USE_STD_MATH
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/angular_linear_gradient.h>
 

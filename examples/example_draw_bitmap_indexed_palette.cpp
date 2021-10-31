@@ -4,6 +4,7 @@
 #include <microgl/pixel_coders/RGBA8888_ARRAY.h>
 #include <microgl/samplers/texture.h>
 #include <microgl/bitmaps/PaletteBitmap.h>
+#include <microgl/bitmaps/bitmap.h>
 #include "data/bitmap_1_palette_256_colors.h"
 #include "data/bitmap_1_palette_16_colors.h"
 #include "data/bitmap_1_palette_4_colors.h"

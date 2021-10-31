@@ -34,7 +34,6 @@ namespace static_array_traits {
  */
 template<typename T, unsigned N>
 class static_array {
-
 public:
     using value_type = T;
     using index = unsigned int;
@@ -45,15 +44,12 @@ private:
     index _current = 0;
 
 public:
-
     explicit static_array() = default;;
-
     template<class Iterable>
     static_array(const Iterable & list) {
         for (const auto & item : list)
             push_back(item);
     }
-
     static_array(const static_array & container) {
         for(auto ix = 0; ix < container.size(); ix++)
             push_back(container[ix]);
