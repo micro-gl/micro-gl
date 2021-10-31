@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../crpt.h"
 #include "../vec3.h"
 #include "../vec4.h"
 #include "../color.h"
@@ -21,7 +20,7 @@ namespace microgl {
         using shader_rgba = typename shader::rgba;
 
         template<typename rgba_, typename impl, typename vertex_attr, typename varying, typename number>
-        class shader_base : public crpt<impl> {
+        class shader_base : public microgl::traits::crpt<impl> {
         protected:
             using vertex3= vec3<number>;
             using vertex4= vec4<number>;

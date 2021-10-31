@@ -1,8 +1,8 @@
 #pragma once
 
 #include "base_bitmap.h"
-#include <microgl/allocators/std_rebind_allocator.h>
-#include <microgl/stdint.h>
+#include "../allocators/std_rebind_allocator.h"
+#include "../stdint.h"
 
 /**
  * a bitmap that uses a palette of pixels of size 2, 4, 16, 256. This way,

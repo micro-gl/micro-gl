@@ -1,7 +1,7 @@
 #pragma once
 
-#include "microgl/tesselation/vec4.h"
-#include <microgl/micro_gl_traits.h>
+#include "../vec4.h"
+#include "../micro_gl_traits.h"
 
 namespace microgl {
     namespace clipping {

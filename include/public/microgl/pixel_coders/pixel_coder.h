@@ -1,8 +1,7 @@
 #pragma once
 
-#include "microgl/rgba_t.h"
-#include "microgl/color.h"
-#include "microgl/crpt.h"
+#include "../rgba_t.h"
+#include "../color.h"
 
 namespace microgl {
 
@@ -61,7 +60,7 @@ namespace microgl {
          * @tparam impl the type of the derived class
          */
         template<typename pixel_, typename rgba_, typename impl>
-        class pixel_coder_base : public crpt<impl> {
+        class pixel_coder_base : public microgl::traits::crpt<impl> {
         public:
             using pixel= pixel_;
             using rgba= rgba_;

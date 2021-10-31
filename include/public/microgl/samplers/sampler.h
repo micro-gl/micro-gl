@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../crpt.h"
 #include "../math.h"
 #include "../precision.h"
 
@@ -46,7 +45,7 @@ namespace microgl {
          * @tparam impl the type of the derived class
          */
         template<typename rgba_, typename impl>
-        class base_sampler : public crpt<impl> {
+        class base_sampler : public microgl::traits::crpt<impl> {
         protected:
         public:
             using rgba = rgba_;

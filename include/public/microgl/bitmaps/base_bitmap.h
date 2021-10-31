@@ -1,11 +1,10 @@
 #pragma once
 
-#include "microgl/buffer.h"
-#include "microgl/crpt.h"
-#include "microgl/color.h"
-#include "microgl/pixel_coders/pixel_coder.h"
-#include "microgl/micro_gl_traits.h"
-#include "microgl/stdint.h"
+#include "../buffer.h"
+#include "../color.h"
+#include "../pixel_coders/pixel_coder.h"
+#include "../micro_gl_traits.h"
+#include "../stdint.h"
 
 /**
  * a base bitmap type, use it with crpt design pattern for extension.
@@ -21,7 +20,7 @@
  */
 template <typename impl, class Allocator, typename pixel_coder_,
           typename buffer_element_type=typename pixel_coder_::pixel>
-class base_bitmap : public crpt<impl> {
+class base_bitmap : public microgl::traits::crpt<impl> {
 public:
     using pixel_coder=pixel_coder_;
     using pixel=typename pixel_coder::pixel;

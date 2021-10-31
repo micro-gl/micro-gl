@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../color.h"
-#include "../crpt.h"
 #include "../channel.h"
 #include "../stdint.h"
 
@@ -14,7 +13,7 @@ namespace microgl {
         using cint = const int;
 
         template<typename impl>
-        class blend_mode_base : public crpt<impl> {
+        class blend_mode_base : public microgl::traits::crpt<impl> {
         protected:
         public:
 

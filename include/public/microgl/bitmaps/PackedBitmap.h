@@ -1,7 +1,7 @@
 #pragma once
 
 #include "base_bitmap.h"
-#include <microgl/allocators/std_rebind_allocator.h>
+#include "../allocators/std_rebind_allocator.h"
 
 /**
  * packed bitmap is a memory efficient bitmap, that encodes pixels as group of bits
