@@ -1,7 +1,6 @@
 #pragma once
 
-#include <microgl/stdint.h>
-
+// todo: use in-place overflow-less method
 template <unsigned P, typename container_integer=long long,
         typename intermediate_container_integer=long long>
 class Q {

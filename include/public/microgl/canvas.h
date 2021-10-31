@@ -1,43 +1,44 @@
 #pragma once
 
-#include <microgl/text/bitmap_font.h>
-#include "microgl/vec2.h"
-#include <microgl/matrix_3x3.h>
-#include <microgl/rect.h>
-#include <microgl/color.h>
-#include <microgl/micro_gl_traits.h>
-#include <microgl/porter_duff/FastSourceOverOnOpaque.h>
-#include <microgl/porter_duff/DestinationIn.h>
-#include <microgl/porter_duff/None.h>
-#include <microgl/blend_modes/Normal.h>
-#include "microgl/shaders/shader.h"
-#include <microgl/samplers/texture.h>
-#include <microgl/samplers/void_sampler.h>
-#include "microgl/tesselation/triangles.h"
-#include "microgl/tesselation/polygons.h"
-#include <microgl/masks.h>
-#include <microgl/rgba_t.h>
-#include <microgl/math.h>
-#include <microgl/stdint.h>
-#include <microgl/tesselation/path.h>
-#include <microgl/tesselation/monotone_polygon_triangulation.h>
-#include <microgl/tesselation/ear_clipping_triangulation.h>
-#include <microgl/tesselation/bezier_patch_tesselator.h>
-#include <microgl/clippers/cohen_sutherland_clipper.h>
-#include <microgl/clippers/homo_triangle_clipper.h>
-#include <microgl/functions/minmax.h>
-#include <microgl/functions/clamp.h>
-#include <microgl/functions/swap.h>
-#include <microgl/functions/orient2d.h>
-#include <microgl/functions/bits.h>
-#include <microgl/functions/distance.h>
-#include <microgl/allocators/std_rebind_allocator.h>
-#include <microgl/dynamic_array.h>
+#include "text/bitmap_font.h"
+#include "vec2.h"
+#include "matrix_3x3.h"
+#include "rect.h"
+#include "color.h"
+#include "micro_gl_traits.h"
+#include "porter_duff/FastSourceOverOnOpaque.h"
+#include "porter_duff/DestinationIn.h"
+#include "porter_duff/None.h"
+#include "blend_modes/Normal.h"
+#include "shaders/shader.h"
+#include "samplers/texture.h"
+#include "samplers/void_sampler.h"
+#include "tesselation/triangles.h"
+#include "tesselation/polygons.h"
+#include "masks.h"
+#include "rgba_t.h"
+#include "math.h"
+#include "stdint.h"
+#include "tesselation/path.h"
+#include "tesselation/monotone_polygon_triangulation.h"
+#include "tesselation/ear_clipping_triangulation.h"
+#include "tesselation/bezier_patch_tesselator.h"
+#include "clippers/cohen_sutherland_clipper.h"
+#include "clippers/homo_triangle_clipper.h"
+#include "functions/minmax.h"
+#include "functions/clamp.h"
+#include "functions/swap.h"
+#include "functions/orient2d.h"
+#include "functions/bits.h"
+#include "functions/distance.h"
+#include "allocators/std_rebind_allocator.h"
+#include "dynamic_array.h"
 
 using namespace microtess::triangles;
 using namespace microtess::polygons;
 using namespace microgl::shading;
 using namespace microgl::coder;
+using namespace microgl;
 
 /**
  * use big integers for 2d rasterizer, this implies a 64 bits place holders
@@ -105,7 +106,7 @@ using namespace microgl::coder;
 template<typename bitmap_type, uint8_t options=CANVAS_OPT_default>
 class canvas {
 public:
-    using rect = rect_t<int>;
+    using rect = microgl::rect_t<int>;
     using canvas_t = canvas<bitmap_type, options>;
     using bitmap_t = bitmap_type;
     using pixel = typename bitmap_type::pixel;

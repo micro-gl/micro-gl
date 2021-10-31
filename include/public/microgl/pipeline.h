@@ -1,10 +1,10 @@
 #pragma once
 
-#include <microgl/matrix_4x4.h>
-#include "microgl/tesselation/vec2.h"
-#include "microgl/tesselation/vec3.h"
+#include "matrix_4x4.h"
+#include "vec2.h"
+#include "vec3.h"
+#include "color.h"
 #include "microgl/tesselation/triangles.h"
-#include <microgl/color.h>
 
 namespace microgl {
     namespace _3d {

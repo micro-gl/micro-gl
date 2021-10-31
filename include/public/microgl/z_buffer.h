@@ -35,8 +35,6 @@ public:
     value_type &operator()(int x, int y) { return _data[y*_w+x]; }
     constexpr int maxValue() const { return max_value; }
     value_type * data() { return _data; }
-    void fill(const int &value) {
-        for (int ix=0; ix<_size; ++ix) _data[ix] = value;
-    }
+    void fill(const int &value) { for (int ix=0; ix<_size; ++ix) _data[ix] = value; }
     void clear() { fill(maxValue()); }
 };

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <microgl/intensity.h>
-#include <microgl/channel.h>
+#include "intensity.h"
+#include "channel.h"
 
 namespace microgl {
     namespace color {
@@ -12,8 +12,6 @@ namespace microgl {
         struct color_t {
             color_t(channel_t $r=0, channel_t $g=0, channel_t $b=0, channel_t $a=255) :
                     r{$r}, g{$g}, b{$b}, a{$a} {};
-//            color_t(const color_t &val) :
-//                        color_t(val.r, val.g, val.b, val.a){};
             color_t & operator=(const color_t & rhs) {
                 r=rhs.r;
                 g=rhs.g;

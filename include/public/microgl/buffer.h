@@ -70,7 +70,6 @@ private:
     }
 
 public:
-    buffer()=default;
     explicit buffer(int size, const allocator_type & allocator) :
             _size{size}, owner{true}, _allocator(allocator) {
         _data = allocate_and_construct(size, _allocator);

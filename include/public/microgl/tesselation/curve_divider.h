@@ -2,8 +2,6 @@
 
 #include "vec2.h"
 
-using namespace microgl;
-
 namespace microtess {
 
     enum class CurveType {

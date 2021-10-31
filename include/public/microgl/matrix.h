@@ -27,9 +27,7 @@ namespace microgl {
         }
 
         explicit
-        matrix(const_type_ref fill_value) {
-            fill(fill_value);
-        }
+        matrix(const_type_ref fill_value) { fill(fill_value); }
 
         matrix(const_matrix_ref mat) {
             for(index ix = 0; ix < _size; ix++)
@@ -49,33 +47,25 @@ namespace microgl {
         matrix<number, C, B> multiply(
                         const matrix<number, A, B> & m1,
                         const matrix<number, C, A> & m2) {
-
             matrix<number, C, B> result;
             // I use iterative indices to avoid multiplications
             index m1_row_start_index = 0;
             index result_row_start_index = 0;
-
             for(index row = 0; row < B; row++) {
-
                 for(index col = 0; col < C; col++) {
-
                     number c = 0;
                     index ix_m = 0;
-
                     for(index ix = 0; ix < A; ix++) {
                         const_type_ref a = m1[m1_row_start_index + ix];
                         const_type_ref b = m2[col + ix_m];
                         c += a*b;
                         ix_m += C;
                     }
-
                     result[result_row_start_index + col] = c;
                 }
-
                 result_row_start_index += C;
                 m1_row_start_index += A;
             }
-
             return result;
         }
 
@@ -115,25 +105,11 @@ namespace microgl {
             return *this;
         };
 
-        inline index to_index(index row, index col) const {
-            return row * W + col;
-        }
-
-        type_ref operator()(index row, index col) {
-            return _data[to_index(row, col)];
-        };
-
-        const_type_ref operator()(index row, index col) const {
-            return _data[to_index(row, col)];
-        };
-
-        type_ref operator[](const index ix) {
-            return _data[ix];
-        };
-
-        const_type_ref operator[](const index ix) const {
-            return _data[ix];
-        };
+        inline index to_index(index row, index col) const { return row * W + col; }
+        type_ref operator()(index row, index col) { return _data[to_index(row, col)]; };
+        const_type_ref operator()(index row, index col) const { return _data[to_index(row, col)]; };
+        type_ref operator[](const index ix) { return _data[ix]; };
+        const_type_ref operator[](const index ix) const { return _data[ix]; };
 
         bool operator==(const_matrix_ref mat) const {
             for(index ix = 0; ix < size(); ix++) {
@@ -160,34 +136,21 @@ namespace microgl {
 
         matrix<number, H, W> transpose() {
             matrix<number, H, W> result{};
-
             for (index row = 0; row < H; ++row) {
                 for (index col = 0; col < W; ++col) {
                     result(col, row) = (*this)(row, col);
                 }
-
             }
-
             return result;
         }
 
         void fill(const_type_ref value) {
-            for (index ix = 0; ix < size(); ++ix)
-                _data[ix] = value;
+            for (index ix = 0; ix < size(); ++ix) _data[ix] = value;
         }
 
-        inline index columns() const {
-            return _cols;
-        }
-
-        inline index rows() const {
-            return _rows;
-        }
-
-        inline index size() const {
-            return _size;
-        }
-
+        inline index columns() const { return _cols; }
+        inline index rows() const { return _rows; }
+        inline index size() const { return _size; }
     };
 
     template <typename T, unsigned N>

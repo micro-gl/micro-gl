@@ -12,8 +12,6 @@
 
 namespace microtess {
 
-//        using namespace microgl;
-
     template<typename number,
              template<typename...> class container_template_type,
              class Allocator=std_rebind_allocator<>>

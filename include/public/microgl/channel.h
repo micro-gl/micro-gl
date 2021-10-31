@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/stdint.h>
+#include "stdint.h"
 
 namespace microgl {
     namespace channel {

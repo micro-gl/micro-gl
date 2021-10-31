@@ -1,6 +1,6 @@
 #pragma once
 
-#include "microgl/tesselation/vec2.h"
+#include "vec2.h"
 
 namespace microgl {
 

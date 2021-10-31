@@ -12,7 +12,5 @@ namespace microgl {
                             r{r}, g{g}, b{b}, a{a} {}
             number r=0, g=0, b=0, a=number(1);
         };
-
     }
-
 }

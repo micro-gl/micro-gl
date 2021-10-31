@@ -58,7 +58,7 @@ namespace microtess {
     template <typename number>
     struct poly_info_t {
         half_edge_face_t<number> *conflict_face = nullptr;
-        const microgl::vec2<number> *points= nullptr;
+        const microtess::vec2<number> *points= nullptr;
         unsigned int size=0;
         int id=-1;
         bool is_closed=false;

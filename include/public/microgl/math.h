@@ -1,7 +1,7 @@
 #pragma once
 
-#include <microgl/math/base_math.h>
-#include <microgl/math/int_math.h>
+#include "math/base_math.h"
+#include "math/int_math.h"
 
 #ifdef MICROGL_AVOID_BUILTIN_MATH
 #elif defined(MICROGL_USE_STD_MATH)

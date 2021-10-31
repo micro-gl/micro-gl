@@ -1,7 +1,7 @@
 #pragma once
 
-#include <microgl/lut.h>
-#include <microgl/stdint.h>
+#include "lut.h"
+#include "stdint.h"
 
 namespace microgl {
     namespace lut {
