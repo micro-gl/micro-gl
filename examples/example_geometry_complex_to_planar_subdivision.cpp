@@ -13,13 +13,13 @@ template<typename item>
 using stat_array = static_array<item, 800>;
 
 template<typename number>
-using chunker_t = allocator_aware_chunker<vec2<number>, dynamic_array>;
-//using chunker_t = non_allocator_aware_chunker<vec2<number>, std::vector>;
+//using chunker_t = allocator_aware_chunker<vec2<number>, dynamic_array>;
+using chunker_t = allocator_aware_chunker<vec2<number>, std::vector>;
 //using chunker_t = non_allocator_aware_chunker<vec2<number>, stat_array>;
 
 template<typename item>
-using container = dynamic_array<item>;
-//using container = std::vector<item>;
+//using container = dynamic_array<item>;
+using container = std::vector<item>;
 //using container = stat_array<item>;
 
 template <typename number>
@@ -126,8 +126,10 @@ int main() {
         container<triangles::boundary_info> boundary;
         triangles::indices type;
 
-        using psd = microgl::tessellation::planarize_division<number,
-                            decltype(vertices), decltype(indices),
+        using psd = microgl::tessellation::planarize_division<
+                            number,
+                            decltype(vertices),
+                            decltype(indices),
                             decltype(boundary)>;
 
         psd::template compute<decltype(pieces)>(pieces,

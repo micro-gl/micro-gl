@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/chunker.h>
+#include "microgl/tesselation/chunker.h"
 #include <microgl/vec2.h>
 
 namespace tessellation {

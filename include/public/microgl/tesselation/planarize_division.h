@@ -80,16 +80,19 @@ namespace microgl {
                 vertex_allocator_t _allocator_vertex;
                 edge_allocator_t _allocator_edge;
                 edge_face_allocator_t _allocator_edge_face;
-                dynamic_array<half_edge_vertex *, computation_allocator> _vertices;
-                dynamic_array<half_edge *, computation_allocator> _edges;
-                dynamic_array<half_edge_face *, computation_allocator> _faces;
+                dynamic_array<half_edge_vertex *, vertex_allocator_t> _vertices;
+                dynamic_array<half_edge *, edge_allocator_t> _edges;
+                dynamic_array<half_edge_face *, edge_face_allocator_t> _faces;
 
             public:
                 explicit dynamic_pool(const computation_allocator & allocator) :
-                            _allocator{allocator}, _allocator_vertex{allocator},
-                            _allocator_edge{allocator}, _allocator_edge_face{allocator},
-                            _vertices{_allocator},
-                            _edges{_allocator}, _faces{_allocator}, t(1) {
+                            _allocator{allocator},
+                            _allocator_vertex{vertex_allocator_t(allocator)},
+                            _allocator_edge{edge_allocator_t(allocator)},
+                            _allocator_edge_face{edge_face_allocator_t(allocator)},
+                            _vertices{_allocator_vertex},
+                            _edges{_allocator_edge},
+                            _faces{_allocator_edge_face}, t(1) {
                 }
 
                 ~dynamic_pool() {
@@ -128,7 +131,7 @@ namespace microgl {
                     return v;
                 }
 
-                auto getFaces() -> dynamic_array<half_edge_face *, computation_allocator> & {
+                auto getFaces() -> dynamic_array<half_edge_face *, edge_face_allocator_t> & {
                     return _faces;
                 }
 
@@ -1813,7 +1816,6 @@ namespace microgl {
                 class container_boundary,
                 class computation_allocator>
         int planarize_division<number, container_vertices, container_indices, container_boundary, computation_allocator>::id_a(-1);
-
-        }
+    }
 
 }

@@ -11,8 +11,8 @@ using microgl::tessellation::path;
 float t = 0;
 
 template<typename number>
-using path_t = path<number, std::vector>;
-//using path_t = path<number, dynamic_array>;
+//using path_t = path<number, std::vector>;
+using path_t = path<number, dynamic_array>;
 
 template <typename number>
 path_t<number> path_star() {

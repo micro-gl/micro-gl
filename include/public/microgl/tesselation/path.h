@@ -5,7 +5,7 @@
 #include "elliptic_arc_divider.h"
 #include "stroke_tessellation.h"
 #include "planarize_division.h"
-#include <microgl/chunker.h>
+#include "chunker.h"
 #include "std_rebind_allocator.h"
 #include "micro_tess_traits.h"
 
@@ -26,9 +26,9 @@ namespace microgl {
             using chunker_t = allocator_aware_chunker<vertex, container_template_type, allocator_type>;
 
         private:
+            allocator_type _allocator;
             chunker_t _paths_vertices;
             bool _invalid=true;
-            allocator_type _allocator;
             buffers _tess_fill;
             buffers _tess_stroke;
 

@@ -1146,7 +1146,7 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
                 if(bary.w==0) bary={1,1,1,3};
             }
             if(depth_buffer_flag && should_sample) {
-                using z_type=typename depth_buffer_type::type;
+                using z_type=typename depth_buffer_type::value_type;
                 constexpr bool use_fpu=microgl::traits::is_float_point<number>(); // compile-time flag
                 rint denom= rint(v0_z) * b0_c + rint(v1_z) * b1_c + rint(v2_z) * b2_c;
                 z_type z=use_fpu ? z_type(number(denom)/area_c) : denom/area_c;

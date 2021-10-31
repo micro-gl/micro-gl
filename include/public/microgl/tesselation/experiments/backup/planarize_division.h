@@ -5,7 +5,7 @@
 
 #include "std_rebind_allocator.h"
 #include "half_edge.h"
-#include <microgl/chunker.h>
+#include "microgl/tesselation/chunker.h"
 
 #if DEBUG_PLANAR==true
 #include <stdexcept>
