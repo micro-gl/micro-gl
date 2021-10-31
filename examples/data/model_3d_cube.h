@@ -6,7 +6,7 @@
 template <typename number>
 model_3d<number> cube_3d =
         {
-        12, microgl::triangles::indices::TRIANGLES,
+        12, microtess::triangles::indices::TRIANGLES,
         { // vertices
             { -1, -1, 1 }, { 1, -1, 1}, { 1, -1, -1  }, { -1, -1, -1 }, // bottom wall
             { -1,  1, -1}, { 1, 1, -1  }, { 1, 1,  1 }, { -1, 1, 1   },  // top wall

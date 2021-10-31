@@ -91,8 +91,6 @@ if(SDL2_FOUND)
             mtest_coder_converter.cpp
             mtest_coder_generator.cpp
             mtest_lut.cpp
-            mtest_mem.cpp
-            mtest_resource.cpp
             mtest_containers.cpp
             mtest_math.cpp
             mtest_q_sort.cpp

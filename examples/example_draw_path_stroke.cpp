@@ -7,7 +7,7 @@
 #define W 640*1
 #define H 640*1
 
-using microgl::tessellation::path;
+using microtess::path;
 float t = 0;
 
 template<typename number>
@@ -130,12 +130,12 @@ int main() {
                 path,
                 number{12},
 //                tessellation::stroke_cap::butt,
-                tessellation::stroke_cap::round,
+                microtess::stroke_cap::round,
 //                tessellation::stroke_cap::square,
 //                tessellation::stroke_line_join::bevel,
 //                tessellation::stroke_line_join::miter,
 //                tessellation::stroke_line_join::miter_clip,
-                tessellation::stroke_line_join::round,
+                microtess::stroke_line_join::round,
 //                5, il{0, 0}, 0,
                 10, il{50, 50}, t,
                 122

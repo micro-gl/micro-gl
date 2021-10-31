@@ -99,7 +99,7 @@ int main() {
                 object.indices.data(),
                 object.indices.size(),
                 object.type,
-                triangles::face_culling::ccw,
+                microtess::triangles::face_culling::ccw,
                 &depth_buffer);
 //            (z_buffer<0> *)nullptr);
 
@@ -112,7 +112,7 @@ int main() {
                 object.indices.data(),
                 object.indices.size(),
                 object.type,
-                triangles::face_culling::ccw,
+                microtess::triangles::face_culling::ccw,
                 &depth_buffer);
 
     };

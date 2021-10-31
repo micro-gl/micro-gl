@@ -3,7 +3,7 @@
 #pragma clang diagnostic ignored "-Wunused-variable"
 #pragma once
 
-#include <microgl/vec2.h>
+#include "microgl/tesselation/vec2.h"
 #include <microgl/tesselation/AVLTree.h>
 #include <microgl/tesselation/Rational.h>
 #include <microgl/tesselation/Segment.h>

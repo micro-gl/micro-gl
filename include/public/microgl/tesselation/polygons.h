@@ -1,6 +1,6 @@
 #pragma once
 
-namespace microgl {
+namespace microtess {
     namespace polygons {
 
         enum class hints {

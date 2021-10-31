@@ -37,7 +37,7 @@ int main() {
             uint divisions_count) {
         container<vec2<number>> arc_points;
 
-        using ellipse = microgl::tessellation::elliptic_arc_divider<number, decltype(arc_points)>;
+        using ellipse = microtess::elliptic_arc_divider<number, decltype(arc_points)>;
 
         ellipse::compute(
                 arc_points,

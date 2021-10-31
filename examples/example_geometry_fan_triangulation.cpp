@@ -43,11 +43,11 @@ int main() {
         container<index> indices;
         container<boundary_info> boundary_buffer;
 
-        using fan = tessellation::fan_triangulation<number, container<index>, container<boundary_info>>;
+        using fan = microtess::fan_triangulation<number, container<index>, container<boundary_info>>;
 
         canvas.clear({255, 255, 255, 255});
 
-        auto type = triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY;
+        auto type = microtess::triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY;
 
         fan::compute(
                 polygon.data(),

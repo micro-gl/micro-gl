@@ -41,9 +41,9 @@ int main() {
         static number t = 0;
         container<vec2<number>> output{};
 
-        using curve_divider = microgl::tessellation::curve_divider<number, decltype(output)>;
-        auto algo = microgl::tessellation::CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium;
-        auto type = microgl::tessellation::CurveType::Cubic;
+        using curve_divider = microtess::curve_divider<number, decltype(output)>;
+        auto algo = microtess::CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium;
+        auto type = microtess::CurveType::Cubic;
 
         t += number(0.08);
         curve[1].y -= t;

@@ -52,7 +52,7 @@ int main() {
                 nullptr,
                 boundary,
                 4,
-                triangles::indices::TRIANGLES_FAN,
+                microtess::triangles::indices::TRIANGLES_FAN,
                 150);
     };
 

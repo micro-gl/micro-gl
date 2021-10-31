@@ -51,7 +51,7 @@ int main() {
                 object.indices.data(),
                 object.indices.size(),
                 mvp,
-                triangles::indices::TRIANGLES,
+                microtess::triangles::indices::TRIANGLES,
                 canvas, 255
         );
 

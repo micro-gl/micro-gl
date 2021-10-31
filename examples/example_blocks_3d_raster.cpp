@@ -89,7 +89,7 @@ int main() {
                 model.indices.data(),
                 model.indices.size(),
                 model.type,
-                triangles::face_culling::ccw,
+                microtess::triangles::face_culling::ccw,
                 &depth_buffer);
 
         //    return;
@@ -101,7 +101,7 @@ int main() {
                 model.indices.data(),
                 model.indices.size(),
                 model.type,
-                triangles::face_culling::ccw,
+                microtess::triangles::face_culling::ccw,
                 &depth_buffer);
     };
 

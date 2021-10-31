@@ -72,7 +72,7 @@ int main() {
                 object.indices.data(),
                 object.indices.size(),
                 object.type,
-                triangles::face_culling::ccw,
+                microtess::triangles::face_culling::ccw,
                 (z_buffer<0> *)nullptr);
     };
 

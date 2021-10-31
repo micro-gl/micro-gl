@@ -689,16 +689,16 @@ void canvas<bitmap_type, options>::drawTriangles(const Sampler &sampler,
             if(pt.x>max.x) max.x=pt.x; if(pt.y > max.y) max.y=pt.y;
         }
     }
-    triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
+    microtess::triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
           [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
               const index &edge_0_id, const index &edge_1_id, const index &edge_2_id) {
               bool aa_first_edge=true, aa_second_edge=true, aa_third_edge=true;
               if(antialias) {
                   if(boundary_buffer!=nullptr) {
                       const boundary_info aa_info = boundary_buffer[idx];
-                      aa_first_edge = triangles::classify_boundary_info(aa_info, edge_0_id);
-                      aa_second_edge = triangles::classify_boundary_info(aa_info, edge_1_id);
-                      aa_third_edge = triangles::classify_boundary_info(aa_info, edge_2_id);
+                      aa_first_edge = microtess::triangles::classify_boundary_info(aa_info, edge_0_id);
+                      aa_second_edge = microtess::triangles::classify_boundary_info(aa_info, edge_1_id);
+                      aa_third_edge = microtess::triangles::classify_boundary_info(aa_info, edge_2_id);
                   }
                   else if(type==indices::TRIANGLES_FAN_WITH_BOUNDARY) {
                       // for fan triangulation, that requires AA and does not have a boundary buffer,
@@ -734,10 +734,10 @@ void canvas<bitmap_type, options>::drawTriangles(Shader &shader,
                                             const index *indices,
                                             const index size,
                                             const enum indices type,
-                                            const triangles::face_culling & culling,
+                                            const microtess::triangles::face_culling & culling,
                                             depth_buffer_type *depth_buffer, const opacity_t opacity,
                                             const shader_number<Shader>& depth_range_near, const shader_number<Shader>& depth_range_far) {
-    triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
+    microtess::triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
           [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
               const index &edge_0_id, const index &edge_1_id, const index &edge_2_id) {
               drawTriangle<BlendMode, PorterDuff, antialias, perspective_correct, depth_buffer_flag>(
@@ -758,7 +758,7 @@ void canvas<bitmap_type, options>::drawTrianglesWireframe(const color_t &color,
                                                      const index size,
                                                      const enum indices type,
                                                      const opacity_t opacity) {
-    triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
+    microtess::triangles::iterate_triangles(indices, size, type, // we use lambda because of it's capturing capabilities
               [&](const index &idx, const index &first_index, const index &second_index, const index &third_index,
                   const index &edge_0_id, const index &edge_1_id, const index &edge_2_id) {
                   drawTriangleWireframe(color, transform*vertices[first_index], transform*vertices[second_index],
@@ -846,8 +846,8 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
         max_distance_canvas_space_anti_alias = 1 << bits_distance;
         max_distance_scaled_space_anti_alias = max_distance_canvas_space_anti_alias << P_AA;
     }
-    triangles::top_left_t top_left = // fill rules adjustments
-            triangles::classifyTopLeftEdges<rint>(false, v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
+    microtess::triangles::top_left_t top_left = // fill rules adjustments
+            microtess::triangles::classifyTopLeftEdges<rint>(false, v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
     int bias_w0=top_left.first?0:-1, bias_w1=top_left.second?0:-1, bias_w2=top_left.third?0:-1;
     vec2<rint> p = { bbox.left, bbox.top }; // Barycentric coordinates at minX/minY corner
     vec2<rint> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
@@ -971,7 +971,7 @@ void canvas<bitmap_type, options>::drawTriangle(Shader &shader,
                                            vertex_attributes<Shader> v0,
                                            vertex_attributes<Shader> v1,
                                            vertex_attributes<Shader> v2,
-                                           const opacity_t opacity, const triangles::face_culling & culling,
+                                           const opacity_t opacity, const microtess::triangles::face_culling & culling,
                                            depth_buffer_type *depth_buffer,
                                            const shader_number<Shader>& depth_range_near,
                                            const shader_number<Shader>& depth_range_far) {
@@ -1027,7 +1027,7 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
                             varying<Shader> varying_v0,
                             varying<Shader> varying_v1,
                             varying<Shader> varying_v2,
-                            opacity_t opacity, const triangles::face_culling & culling,
+                            opacity_t opacity, const microtess::triangles::face_culling & culling,
                             depth_buffer_type * depth_buffer,
                             number depth_range_near, number depth_range_far) {
     /*
@@ -1079,8 +1079,8 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
     // infer back-face culling
     const bool ccw = area<0;
     if(area==0) return; // discard degenerate triangles
-    if(ccw && culling==triangles::face_culling::ccw) return;
-    if(!ccw && culling==triangles::face_culling::cw) return;
+    if(ccw && culling==microtess::triangles::face_culling::ccw) return;
+    if(!ccw && culling==microtess::triangles::face_culling::cw) return;
     if(ccw) { // convert CCW to CW triangle
         functions::swap(v1_x, v2_x); functions::swap(v1_y, v2_y);
         area = -area;
@@ -1105,8 +1105,8 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
 #undef ceil_fixed
 #undef floor_fixed
     // fill rules configurations
-    triangles::top_left_t top_left =
-            triangles::classifyTopLeftEdges(false,
+    microtess::triangles::top_left_t top_left =
+            microtess::triangles::classifyTopLeftEdges(false,
                                             v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
     int bias_w0=top_left.first?0:-1, bias_w1=top_left.second?0:-1, bias_w2=top_left.third?0:-1;
     // Barycentric coordinates at minX/minY corner
@@ -1269,46 +1269,53 @@ void canvas<bitmap_type, options>::drawMask(const masks::chrome_mode &mode,
 }
 
 template<typename bitmap_type, uint8_t options>
-template <microgl::polygons::hints hint, typename BlendMode, typename PorterDuff, bool antialias, bool debug,
-        typename number1, typename number2, typename Sampler>
+template <microtess::polygons::hints hint, typename BlendMode, typename PorterDuff, bool antialias, bool debug,
+        typename number1, typename number2, typename Sampler, class tessellation_allocator>
 void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
                                           const matrix_3x3<number1> &transform,
                                           const vec2<number1> *points,
                                           index size, opacity_t opacity,
                                           const number2 u0, const number2 v0,
-                                          const number2 u1, const number2 v1) {
+                                          const number2 u1, const number2 v1,
+                                          const tessellation_allocator & allocator) {
     constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
     static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
     if(void_sampler) return;
 
     indices type;
     unsigned int tess_size=0;
-    dynamic_array<index> indices;
-    dynamic_array<index> *indices_ptr = &indices;
-    dynamic_array<boundary_info> boundary_buffer;
-    dynamic_array<boundary_info> *boundary_buffer_ptr=antialias? &boundary_buffer: nullptr;
+    using indices_allocator_t = typename tessellation_allocator::template rebind<index>::other;
+    using boundary_allocator_t = typename tessellation_allocator::template rebind<boundary_info>::other;
+    using indices_t = dynamic_array<index, indices_allocator_t>;
+    using boundaries_t = dynamic_array<boundary_info, boundary_allocator_t>;
+
+    indices_t indices{indices_allocator_t(allocator)};
+    indices_t *indices_ptr = &indices;
+    boundaries_t boundary_buffer{boundary_allocator_t(allocator)};
+    boundaries_t *boundary_buffer_ptr=antialias? &boundary_buffer: nullptr;
+
     switch (hint) {
         case hints::CONCAVE:
         case hints::SIMPLE:
         {
-            using ect=microgl::tessellation::ear_clipping_triangulation<number1, dynamic_array<index>, dynamic_array<boundary_info>, void>;
-            ect::compute(points, size, indices, boundary_buffer_ptr, type);
+            using ect=microtess::ear_clipping_triangulation<number1, indices_t, boundaries_t, tessellation_allocator>;
+            ect::compute(points, size, indices, boundary_buffer_ptr, type, allocator);
             break;
         }
         case hints::X_MONOTONE:
         case hints::Y_MONOTONE:
         {
-            using mpt=microgl::tessellation::monotone_polygon_triangulation<number1, dynamic_array<index>, dynamic_array<boundary_info>, void>;
+            using mpt=microtess::monotone_polygon_triangulation<number1, indices_t, boundaries_t, tessellation_allocator>;
             typename mpt::monotone_axis axis=hint==hints::X_MONOTONE ? mpt::monotone_axis::x_monotone :
                                     mpt::monotone_axis::y_monotone;
-            mpt::compute(points, size, axis, indices, boundary_buffer_ptr, type);
+            mpt::compute(points, size, axis, indices, boundary_buffer_ptr, type, allocator);
             break;
         }
         case hints::CONVEX:
         {
             // for convex, we don't need tesselation, we can do it in-place without allocating memory
-            type=antialias ? microgl::triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY :
-                    microgl::triangles::indices::TRIANGLES_FAN;
+            type=antialias ? microtess::triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY :
+                    microtess::triangles::indices::TRIANGLES_FAN;
             tess_size=size;
             break;
         }
@@ -1317,11 +1324,12 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         case hints::COMPLEX:
         case hints::MULTIPLE_POLYGONS:
         {
-            tessellation::path<number1, dynamic_array> path{};
+            microtess::path<number1, dynamic_array, tessellation_allocator> path{};
             path.addPoly(points, size);
-            drawPathFill<BlendMode, PorterDuff, antialias, debug, number1, number2, Sampler>(
-                    sampler, transform, path, tessellation::fill_rule::non_zero,
-                    tessellation::tess_quality::better, opacity, u0, v0, u1, v1);
+            drawPathFill<BlendMode, PorterDuff, antialias, debug, number1, number2, Sampler,
+                         dynamic_array, tessellation_allocator> (
+                    sampler, transform, path, microtess::fill_rule::non_zero,
+                    microtess::tess_quality::better, opacity, u0, v0, u1, v1, allocator);
             return;
         }
         default:
@@ -1352,13 +1360,14 @@ template<typename bitmap_type, uint8_t options>
 template <typename BlendMode, typename PorterDuff,
           bool antialias, bool debug, typename number1,
           typename number2, typename Sampler,
-          class Iterable, template<typename...> class path_container_template>
+          class Iterable, template<typename...> class path_container_template,
+          class tessellation_allocator>
 void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
                                              const matrix_3x3<number1> &transform,
-                                             tessellation::path<number1, path_container_template> & path,
+                                             microtess::path<number1, path_container_template, tessellation_allocator> & path,
                                              const number1 & stroke_width,
-                                             const tessellation::stroke_cap &cap,
-                                             const tessellation::stroke_line_join &line_join,
+                                             const microtess::stroke_cap &cap,
+                                             const microtess::stroke_line_join &line_join,
                                              const int miter_limit,
                                              const Iterable & stroke_dash_array,
                                              int stroke_dash_offset,
@@ -1397,9 +1406,9 @@ template <typename BlendMode, typename PorterDuff,
           class tessellation_allocator>
 void canvas<bitmap_type, options>::drawPathFill(const Sampler &sampler,
                                            const matrix_3x3<number1> &transform,
-                                           tessellation::path<number1, path_container_template> & path,
-                                           const tessellation::fill_rule &rule,
-                                           const tessellation::tess_quality &quality,
+                                           microtess::path<number1, path_container_template, tessellation_allocator> & path,
+                                           const microtess::fill_rule &rule,
+                                           const microtess::tess_quality &quality,
                                            opacity_t opacity,
                                            const number2 u0, const number2 v0,
                                            const number2 u1, const number2 v1,
@@ -1587,11 +1596,11 @@ void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
     dynamic_array<number1, rebind_alloc_t1> v_a{rebind_1}; // vertices attributes
     dynamic_array<index, rebind_alloc_t2> indices{rebind_2};
 
-    using tess= microgl::tessellation::bezier_patch_tesselator<number1, number2,
+    using tess= microtess::bezier_patch_tesselator<number1, number2,
                                     dynamic_array<number1, rebind_alloc_t1>,
                                     dynamic_array<index, rebind_alloc_t2>>;
     using vertex=vec2<number1>;
-    microgl::triangles::indices indices_type;
+    microtess::triangles::indices indices_type;
     tess::compute(mesh, uOrder, vOrder, uSamples, vSamples, v_a,
                   indices, indices_type, u0, v0, u1, v1);
     const index size = indices.size();

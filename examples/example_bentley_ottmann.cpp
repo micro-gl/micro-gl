@@ -6,7 +6,7 @@
 #include <SDL.h>
 #include <microgl/buffer.h>
 #include <microgl/canvas.h>
-#include <microgl/vec2.h>
+#include "microgl/tesselation/vec2.h"
 #include <microgl/color.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>

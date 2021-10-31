@@ -138,12 +138,12 @@ int main() {
         using mat = matrix_3x3<number>;
 
 //    polygon[1].x = 140 + 20 +  t;
-        triangles::indices type;
+        microtess::triangles::indices type;
         container<index> indices;
         container<boundary_info> boundary_buffer;
 
 
-        using mpt = tessellation::monotone_polygon_triangulation<number, container<index>, container<boundary_info>>;
+        using mpt = microtess::monotone_polygon_triangulation<number, container<index>, container<boundary_info>>;
 
         mpt::compute(polygon.data(),
                      polygon.size(),

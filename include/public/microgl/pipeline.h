@@ -1,8 +1,8 @@
 #pragma once
 
 #include <microgl/matrix_4x4.h>
-#include <microgl/vec2.h>
-#include <microgl/vec3.h>
+#include "microgl/tesselation/vec2.h"
+#include "microgl/tesselation/vec3.h"
 #include "microgl/tesselation/triangles.h"
 #include <microgl/color.h>
 
@@ -66,7 +66,7 @@ namespace microgl {
                         const index * indices,
                         const index indices_size,
                         const mat4 & mvp,
-                        const triangles::indices & type,
+                        const microtess::triangles::indices & type,
                         canvas_type & canva,
                         const uint8_t opacity=255) {
                 // todo:: noe this renders lines but does not clip them to the frustum, but only to the viewport
@@ -76,8 +76,8 @@ namespace microgl {
                 const unsigned height = canva.height();
 
                 switch (type) {
-                    case triangles::indices::TRIANGLES:
-                    case triangles::indices::TRIANGLES_WITH_BOUNDARY:
+                    case microtess::triangles::indices::TRIANGLES:
+                    case microtess::triangles::indices::TRIANGLES_WITH_BOUNDARY:
 
                         for (index ix = 0; ix < indices_size; ix+=3) {
 

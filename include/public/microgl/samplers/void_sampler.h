@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/rgba_t.h>
+#include "../rgba_t.h"
 
 namespace microgl {
     namespace sampling {

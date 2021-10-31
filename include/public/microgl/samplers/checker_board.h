@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sampler.h"
+#include <microgl/samplers/sampler.h>
 
 namespace microgl {
     namespace sampling {

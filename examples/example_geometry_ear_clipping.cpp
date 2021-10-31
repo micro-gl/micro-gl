@@ -163,11 +163,11 @@ int main() {
         using index = unsigned int;
 
         //polygon[1].x = 140 + 20 +  t;
-        triangles::indices type;
+        microtess::triangles::indices type;
         container<index> indices;
         container<boundary_info> boundary_buffer;
 
-        using ear = microgl::tessellation::ear_clipping_triangulation<number,
+        using ear = microtess::ear_clipping_triangulation<number,
                 container<index>,
                 container<boundary_info>>;
 

@@ -2,7 +2,7 @@
 
 #include <microgl/matrix_4x4.h>
 #include <microgl/math.h>
-#include <microgl/vec4.h>
+#include "microgl/tesselation/vec4.h"
 
 namespace microgl {
 
@@ -100,6 +100,22 @@ namespace microgl {
             return mat;
         }
 
+        template <typename number>
+        vec3<number> cross(const vec3<number>& a, const vec3<number>& b) const {
+            return {a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x};
+        }
+
+        template <typename number>
+        vec3<number> & normalize(const vec3<number> & v) {
+            auto d = (v.x*v.x) + (v.y*v.y) + (v.z*v.z);
+            if(d==number(0))
+                return *this;
+            auto inv_len = number(1) / microgl::math::sqrt(d);
+            v.x *= inv_len;
+            v.y *= inv_len;
+            v.z *= inv_len;
+            return *this;
+        }
 
         /**
          * set view matrix equivalent to gluLookAt() VIEW MATRIX

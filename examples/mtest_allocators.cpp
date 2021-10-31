@@ -129,8 +129,6 @@ void test_std_allocator() {
     alloc.free(p1);
     alloc.free(p2);
     alloc.free(p3);
-    alloc.free(p3);
-    alloc.free(p3);
 //    alloc.reset();
 
     void  * p4 = alloc.malloc(512);

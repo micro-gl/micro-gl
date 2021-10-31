@@ -1,8 +1,8 @@
 #pragma once
 
-#include "microgl/crpt.h"
-#include "microgl/math.h"
-#include "microgl/precision.h"
+#include "../crpt.h"
+#include "../math.h"
+#include "../precision.h"
 
 namespace microgl {
     namespace sampling {

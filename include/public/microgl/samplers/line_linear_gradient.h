@@ -1,7 +1,7 @@
 #pragma once
 
 #include <microgl/rgba_t.h>
-#include <microgl/vec2.h>
+#include <microgl/tesselation/vec2.h>
 #include <microgl/functions/distance.h>
 
 namespace microgl {
@@ -96,7 +96,8 @@ namespace microgl {
 
             void addStop(const number & where, const color_t &color) {
                 const rint where_fixed= math::to_fixed(where, p_bits);
-                const auto p_64= _start+((_direction * where_fixed) >> p_bits);
+                const auto p_64 = point_int{_start.x + ((_direction.x * where_fixed) >> p_bits),
+                                   _start.y + ((_direction.y * where_fixed) >> p_bits)};
                 auto & stop = _stops[index];
 
                 stop.line.updateLine(p_64, _direction);

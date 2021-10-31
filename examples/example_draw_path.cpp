@@ -7,7 +7,7 @@
 #define W 640*1
 #define H 640*1
 
-using microgl::tessellation::path;
+using microtess::path;
 float t = 0;
 
 template<typename number>
@@ -125,8 +125,8 @@ int main() {
                 color_red,
                 matrix_3x3<number>::identity(),
                 path,
-                tessellation::fill_rule::even_odd,
-                tessellation::tess_quality::prettier_with_extra_vertices,
+                microtess::fill_rule::even_odd,
+                microtess::tess_quality::prettier_with_extra_vertices,
 //            tessellation::tess_quality::better,
                 255
         );

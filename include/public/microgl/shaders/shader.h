@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../crpt.h"
+#include "../vec3.h"
 #include "../vec4.h"
 #include "../color.h"
 

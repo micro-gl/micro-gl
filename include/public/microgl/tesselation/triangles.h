@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace microgl {
+namespace microtess {
     namespace triangles {
 
         enum class indices {

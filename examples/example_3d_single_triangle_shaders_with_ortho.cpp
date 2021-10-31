@@ -48,7 +48,7 @@ int main() {
                 W/2, H/2,
                 v0, v1, v2,
                 255,
-                triangles::face_culling::none,
+                microtess::triangles::face_culling::none,
                 (z_buffer<0> *)nullptr);
     };
 
@@ -68,7 +68,7 @@ int main() {
                 W, H,
                 v0, v1, v2,
                 255,
-                triangles::face_culling::none,
+                microtess::triangles::face_culling::none,
                 (z_buffer<0> *)nullptr);
 
     };
@@ -88,7 +88,7 @@ int main() {
         t+=0.001f;
         canvas.drawTriangle<blendmode::Normal, porterduff::None<>, false, false, false>(
                 shader, W, H, v0, v1, v2, 255,
-                triangles::face_culling::none,
+                microtess::triangles::face_culling::none,
                 (z_buffer<0> *)nullptr);
 
     };

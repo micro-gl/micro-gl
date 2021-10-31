@@ -123,20 +123,20 @@ int main() {
         container<vec2<number>> trapezes;
         container<vec2<number>> vertices;
         container<index> indices;
-        container<triangles::boundary_info> boundary;
-        triangles::indices type;
+        container<microtess::triangles::boundary_info> boundary;
+        microtess::triangles::indices type;
 
-        using psd = microgl::tessellation::planarize_division<
+        using psd = microtess::planarize_division<
                             number,
                             decltype(vertices),
                             decltype(indices),
                             decltype(boundary)>;
 
         psd::template compute<decltype(pieces)>(pieces,
-                     tessellation::fill_rule::even_odd,
-                     tessellation::tess_quality::better,
-                     vertices, type, indices,
-                     &boundary, &trapezes);
+                microtess::fill_rule::even_odd,
+                microtess::tess_quality::better,
+                vertices, type, indices,
+                &boundary, &trapezes);
 
         canvas.clear({255, 255, 255, 255});
         canvas.drawTriangles<blendmode::Normal, porterduff::None<>, false>(

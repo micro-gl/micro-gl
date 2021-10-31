@@ -1,7 +1,7 @@
 #pragma once
 
 #include <microgl/text/bitmap_font.h>
-#include <microgl/vec2.h>
+#include "microgl/vec2.h"
 #include <microgl/matrix_3x3.h>
 #include <microgl/rect.h>
 #include <microgl/color.h>
@@ -34,8 +34,8 @@
 #include <microgl/allocators/std_rebind_allocator.h>
 #include <microgl/dynamic_array.h>
 
-using namespace microgl::triangles;
-using namespace microgl::polygons;
+using namespace microtess::triangles;
+using namespace microtess::polygons;
 using namespace microgl::shading;
 using namespace microgl::coder;
 
@@ -835,7 +835,7 @@ public:
                        const index *indices,
                        index size,
                        enum indices type,
-                       const triangles::face_culling & culling= triangles::face_culling::none,
+                       const microtess::triangles::face_culling & culling= microtess::triangles::face_culling::none,
                        depth_buffer_type *depth_buffer=(nullptr),
                        opacity_t opacity=255,
                        const shader_number<Shader>& depth_range_near=shader_number<Shader>(0),
@@ -975,7 +975,7 @@ public:
                       vertex_attributes<Shader> v0,
                       vertex_attributes<Shader> v1,
                       vertex_attributes<Shader> v2,
-                      opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
+                      opacity_t opacity, const microtess::triangles::face_culling & culling= microtess::triangles::face_culling::none,
                       depth_buffer_type * depth_buffer=nullptr,
                       const shader_number<Shader>& depth_range_near=shader_number<Shader>(0),
                       const shader_number<Shader>& depth_range_far=shader_number<Shader>(1));
@@ -1017,7 +1017,7 @@ private:
                                            varying<Shader> varying_v0,
                                            varying<Shader> varying_v1,
                                            varying<Shader> varying_v2,
-                                           opacity_t opacity, const triangles::face_culling & culling= triangles::face_culling::none,
+                                           opacity_t opacity, const microtess::triangles::face_culling & culling= microtess::triangles::face_culling::none,
                                            depth_buffer_type * depth_buffer=nullptr,
                                            number depth_range_near=number(0), number depth_range_far=number(1));
 
@@ -1131,15 +1131,17 @@ public:
      * @param u1            uv coord
      * @param v1            uv coord
      */
-    template <microgl::polygons::hints hint=polygons::hints::SIMPLE, typename BlendMode=blendmode::Normal,
+    template <microtess::polygons::hints hint=microtess::polygons::hints::SIMPLE, typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false, bool debug=false,
-            typename number1=float, typename number2=number1, typename Sampler>
+            typename number1=float, typename number2=number1, typename Sampler,
+            class tessellation_allocator=std_rebind_allocator<>>
     void drawPolygon(const Sampler &sampler,
                      const matrix_3x3<number1> &transform,
                      const vec2<number1> * points,
                      index size, opacity_t opacity=255,
                      number2 u0=number2(0), number2 v0=number2(1),
-                     number2 u1=number2(1), number2 v1=number2(0));
+                     number2 u1=number2(1), number2 v1=number2(0),
+                     const tessellation_allocator & allocator=tessellation_allocator());
 private:
     /**
      * Internal WU-lines drawing
@@ -1219,13 +1221,14 @@ public:
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool debug=false,
             typename number1=float, typename number2=float,
-            typename Sampler, class Iterable, template<typename...> class path_container_template>
+            typename Sampler, class Iterable, template<typename...> class path_container_template,
+            class tessellation_allocator=std_rebind_allocator<>>
     void drawPathStroke(const Sampler &sampler,
                         const matrix_3x3<number1> &transform,
-                        tessellation::path<number1, path_container_template> &path,
+                        microtess::path<number1, path_container_template, tessellation_allocator> &path,
                         const number1 &stroke_width=number1(1),
-                        const tessellation::stroke_cap &cap=tessellation::stroke_cap::butt,
-                        const tessellation::stroke_line_join &line_join=tessellation::stroke_line_join::bevel,
+                        const microtess::stroke_cap &cap=microtess::stroke_cap::butt,
+                        const microtess::stroke_line_join &line_join=microtess::stroke_line_join::bevel,
                         int miter_limit=4,
                         const Iterable & stroke_dash_array={},
                         int stroke_dash_offset=0, opacity_t opacity=255,
@@ -1263,9 +1266,9 @@ public:
             class tessellation_allocator=std_rebind_allocator<>>
     void drawPathFill(const Sampler &sampler,
                       const matrix_3x3<number1> &transform,
-                      tessellation::path<number1, path_container_template> &path,
-                      const tessellation::fill_rule &rule=tessellation::fill_rule::non_zero,
-                      const tessellation::tess_quality &quality=tessellation::tess_quality::better,
+                      microtess::path<number1, path_container_template, tessellation_allocator> &path,
+                      const microtess::fill_rule &rule=microtess::fill_rule::non_zero,
+                      const microtess::tess_quality &quality=microtess::tess_quality::better,
                       opacity_t opacity=255,
                       number2 u0=number2(0), number2 v0=number2(1),
                       number2 u1=number2(1), number2 v1=number2(0),

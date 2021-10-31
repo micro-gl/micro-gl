@@ -2,7 +2,7 @@
 
 #include <microgl/matrix.h>
 #include <microgl/math.h>
-#include <microgl/vec2.h>
+#include "vec2.h"
 
 namespace microgl {
 

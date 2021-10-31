@@ -130,28 +130,28 @@ int main() {
         using index = unsigned int;
 
         //auto type = triangles::indices::TRIANGLES_STRIP;
-        auto type = triangles::indices::TRIANGLES_STRIP_WITH_BOUNDARY;
+        auto type = microtess::triangles::indices::TRIANGLES_STRIP_WITH_BOUNDARY;
         t+=0.0128;
 
         container<vec2<number>> vertices;
         container<index> indices;
         container<boundary_info> boundary_buffer;
 
-        using stroke_tess = microgl::tessellation::stroke_tessellation<number,
+        using stroke_tess = microtess::stroke_tessellation<number,
                 container<vec2<number>>, container<index>,
                 container<boundary_info>>;
 
         stroke_tess::compute_with_dashes(
                 stroke_width,
                 close_path,
-                tessellation::stroke_cap::butt,
-//            tessellation::stroke_cap::square,
-//            tessellation::stroke_cap::round,
-                tessellation::stroke_line_join::round,
-//            tessellation::stroke_line_join::bevel,
-//            tessellation::stroke_line_join::miter_clip,
-//            tessellation::stroke_line_join::miter,
-//            tessellation::stroke_line_join::none,
+                microtess::stroke_cap::butt,
+//            microtess::stroke_cap::square,
+//            microtess::stroke_cap::round,
+                microtess::stroke_line_join::round,
+//            microtess::stroke_line_join::bevel,
+//            microtess::stroke_line_join::miter_clip,
+//            microtess::stroke_line_join::miter,
+//            microtess::stroke_line_join::none,
                 8,
                 std::initializer_list<int>{50, 20}, t,
                 path.data(),
