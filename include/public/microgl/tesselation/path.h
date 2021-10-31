@@ -176,7 +176,8 @@ namespace microgl {
                                     CurveDivisionAlgorithm bezier_curve_divider=
                                             CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small)  {
                 vertex bezier[4] = {lastPointOfCurrentSubPath(), cp1, cp2, last};
-                container_template_type<vertex, allocator_type> output{32, vertex(), _allocator};
+                using rebind_alloc = typename allocator_type::template rebind<vertex>::other;
+                container_template_type<vertex, rebind_alloc> output{32, vertex(), rebind_alloc(_allocator)};
                 output.clear();
                 curve_divider<number, decltype(output)>::compute(
                         bezier, output, bezier_curve_divider, CurveType::Cubic);
@@ -190,7 +191,8 @@ namespace microgl {
                             CurveDivisionAlgorithm::Adaptive_tolerance_distance_Small)
                     -> path & {
                 vertex bezier[3] = {lastPointOfCurrentSubPath(), cp, last};
-                container_template_type<vertex, allocator_type> output{32, vertex(), _allocator};
+                using rebind_alloc = typename allocator_type::template rebind<vertex>::other;
+                container_template_type<vertex, rebind_alloc> output{32, vertex(), rebind_alloc(_allocator)};
                 output.clear();
                 curve_divider<number, decltype(output)>::compute(
                         bezier, output, bezier_curve_divider, CurveType::Quadratic);
@@ -224,7 +226,8 @@ namespace microgl {
             auto ellipse(const vertex &point, const number &radius_x, const number &radius_y,
                      const number & rotation, const number &startAngle, const number &endAngle,
                      bool anti_clockwise, unsigned divisions_count=32) -> path & {
-                container_template_type<vertex, allocator_type> output{divisions_count, vertex(), _allocator};
+                using rebind_alloc = typename allocator_type::template rebind<vertex>::other;
+                container_template_type<vertex, rebind_alloc> output{divisions_count, vertex(), rebind_alloc(_allocator)};
                 output.clear();
                 elliptic_arc_divider<number, decltype(output)>::compute(
                         output, point.x, point.y, radius_x, radius_y,

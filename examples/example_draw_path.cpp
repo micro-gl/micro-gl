@@ -134,10 +134,10 @@ int main() {
     };
 
     auto render = [&](void*, void*, void*) -> void {
-        static auto path = path_star_2<number>();
+//        static auto path = path_star_2<number>();
 //        static auto path = path_star<number>();
 //        static auto path = path_rects<number>();
-//        auto path = path_arc_animation<number>();
+        auto path = path_arc_animation<number>();
 //        static auto path = path_test<number>();
 
         render_path(path);
