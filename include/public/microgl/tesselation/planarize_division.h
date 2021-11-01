@@ -35,7 +35,7 @@ namespace microtess {
         // triangles out of each trapeze in a way similar to ear clipping, this
         // fights zero area triangles on the boundary, so you can use SDF AA
         better,
-        // fast algorithm, that produces eye pleasing reaults, but uses around
+        // fast algorithm, that produces eye pleasing results, but uses around
         // x2 memory for indices because it adds a center vertex in a trapeze and
         // therefore adds two more triangles per trapeze on average
         prettier_with_extra_vertices

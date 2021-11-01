@@ -42,6 +42,5 @@ namespace microgl {
         static Q<N, integer> sqrt(const Q<N, integer> &val) {
             return val.sqrt();
         }
-
     }
 }

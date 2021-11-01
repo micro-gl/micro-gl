@@ -45,7 +45,7 @@ namespace microgl {
         template<typename number>
         number sin_bhaskara_cpu(number radians) {
             const auto pii = microgl::math::pi<number>();
-            const auto pii2 = microgl::math::pi<number>()*2.0f;
+            const auto pii2 = microgl::math::pi<number>()*number(2);
 
             auto modd = mod_cpu<number>(radians, pii2);
             modd = modd<0 ? modd+pii2 : (modd>pii2 ? pii2 : modd);
@@ -67,6 +67,5 @@ namespace microgl {
         number tan_bhaskara_cpu(number radians) {
             return sin_bhaskara_cpu<number>(radians)/cos_bhaskara_cpu<number>(radians);
         }
-
     };
 }

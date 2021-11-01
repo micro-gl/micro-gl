@@ -4,7 +4,7 @@
 #include "micro_gl_traits.h"
 #include "tesselation/std_rebind_allocator.h"
 
-template<unsigned Bits, class Allocator=std_rebind_allocator<>>
+template<unsigned Bits, class Allocator=microtess::std_rebind_allocator<>>
 class z_buffer {
 private:
     template<bool B, class T, class F>

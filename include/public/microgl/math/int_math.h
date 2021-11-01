@@ -84,6 +84,5 @@ namespace microgl {
             }
             return res;
         }
-
     }
 }

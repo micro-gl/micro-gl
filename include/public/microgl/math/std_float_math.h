@@ -55,8 +55,5 @@ namespace microgl {
         double tan(const double radians) {
             return std::tan(radians);
         }
-
-
     }
-
 }

@@ -4,9 +4,9 @@
 6. test my allocators with tess algorithms
 7. make boundary_buffer conditional
 9. encapsulate containers in their own package
-10. add vec classes into tess
 11. re-work functions into tess
 14. add author copyrights
+10. DONE: add vec classes into tess
 3. DONE: make planar sub division allocator aware
 4. DONE: make chunker allocator-aware
 5. DONE: make path allocator aware

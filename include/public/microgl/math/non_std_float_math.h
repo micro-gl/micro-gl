@@ -54,7 +54,5 @@ namespace microgl {
         double tan(const double radians) {
             return microgl::math::tan_bhaskara_cpu<double>(radians);
         }
-
     }
-
 }

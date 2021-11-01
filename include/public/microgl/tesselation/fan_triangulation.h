@@ -6,11 +6,12 @@
 
 namespace microtess {
 
-    template<typename number, class container_output_indices, class container_output_boundary>
+    template<typename number, class container_output_indices,
+            class container_output_boundary>
     class fan_triangulation {
+    public:
         using index = unsigned int;
         using vertex = microtess::vec2<number>;
-    public:
 
         static
         void compute(const vertex *points,
@@ -26,7 +27,6 @@ namespace microtess {
                     microtess::traits::is_same<
                             typename container_output_boundary::value_type, triangles::boundary_info>::value
                     , bool>::type is_boundary_container_valid;
-
 
             bool requested_triangles_with_boundary = boundary_buffer;
             output_type=requested_triangles_with_boundary? triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY :

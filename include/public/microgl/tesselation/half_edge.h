@@ -25,7 +25,7 @@ namespace microtess {
 
     template <typename number>
     struct half_edge_vertex_t {
-        microgl::vec2<number> coords;
+        microtess::vec2<number> coords;
         // pointer to any edge that has this vertex as starting point
         half_edge_t<number> * edge = nullptr;
         // used to locate inside the output vertices buffer
