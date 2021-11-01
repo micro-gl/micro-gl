@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/math.h>
+#include "math.h"
 
 namespace microtess {
 
@@ -35,7 +35,7 @@ namespace microtess {
             auto d = (x*x) + (y*y) + (z*z);
             if(d==number(0))
                 return *this;
-            auto inv_len = number(1) / microgl::math::sqrt(d);
+            auto inv_len = number(1) / microtess::math::sqrt_cpu(d);
             x *= inv_len;
             y *= inv_len;
             z *= inv_len;

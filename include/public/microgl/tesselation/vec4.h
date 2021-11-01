@@ -54,7 +54,5 @@ namespace microtess {
             this->w = static_cast<number>(a.w);
             return *this;
         }
-
     };
-
 }

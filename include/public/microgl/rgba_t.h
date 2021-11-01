@@ -20,7 +20,9 @@ namespace microgl {
 
         rgba_t() = delete;
         rgba_t(const rgba_t &) = delete;
+        rgba_t(rgba_t &&) = delete;
         rgba_t& operator=(const rgba_t &) = delete;
+        rgba_t& operator=(rgba_t &&) = delete;
         ~rgba_t() = delete;
     };
 

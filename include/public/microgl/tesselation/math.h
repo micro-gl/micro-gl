@@ -1,6 +1,6 @@
 #pragma once
 
-namespace microgl {
+namespace microtess {
     namespace math {
 
 #define PI        3.14159265358979323846264338327950288
@@ -23,7 +23,7 @@ namespace microgl {
         template<typename number>
         inline
         number deg_to_rad(const number &degrees) {
-            return ((degrees*number(microgl::math::pi<number>()))/number{180});
+            return ((degrees*number(microtess::math::pi<number>()))/number{180});
         }
 
         template<typename number>
@@ -33,7 +33,7 @@ namespace microgl {
         }
 
         template<typename number>
-        number sqrt_cpu(const number val, const number epsilon) {
+        number sqrt_cpu(const number val, const number epsilon=number(1)/number(1<<8)) {
             number x = val, y = number(1);
             while (abs<number>(x - y) > epsilon) {
                 x = (x + y) / number(2);
@@ -43,9 +43,9 @@ namespace microgl {
         }
 
         template<typename number>
-        number sin_bhaskara_cpu(number radians) {
-            const auto pii = microgl::math::pi<number>();
-            const auto pii2 = microgl::math::pi<number>()*number(2);
+        number sin_cpu(number radians) {
+            const auto pii = microtess::math::pi<number>();
+            const auto pii2 = microtess::math::pi<number>()*number(2);
 
             auto modd = mod_cpu<number>(radians, pii2);
             modd = modd<0 ? modd+pii2 : (modd>pii2 ? pii2 : modd);
@@ -59,13 +59,13 @@ namespace microgl {
         }
 
         template<typename number>
-        number cos_bhaskara_cpu(number radians) {
-            return sin_bhaskara_cpu<number>(radians + microgl::math::half_pi<number>());
+        number cos_cpu(number radians) {
+            return sin_cpu<number>(radians + microtess::math::half_pi<number>());
         }
 
         template<typename number>
-        number tan_bhaskara_cpu(number radians) {
-            return sin_bhaskara_cpu<number>(radians)/cos_bhaskara_cpu<number>(radians);
+        number tan_cpu(number radians) {
+            return sin_cpu<number>(radians)/cos_cpu<number>(radians);
         }
-    };
+    }
 }

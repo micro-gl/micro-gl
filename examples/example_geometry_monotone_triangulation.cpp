@@ -4,7 +4,7 @@
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
 #include <microgl/tesselation/monotone_polygon_triangulation.h>
-#include <microgl/static_array.h>
+#include "microgl/tesselation/static_array.h"
 #include <vector>
 
 #define W 640*1

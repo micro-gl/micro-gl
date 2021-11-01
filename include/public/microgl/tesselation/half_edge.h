@@ -4,12 +4,9 @@
 
 namespace microtess {
 
-    template <typename number>
-    struct half_edge_vertex_t;
-    template <typename number>
-    struct half_edge_face_t;
-    template <typename number>
-    struct poly_info_t;
+    template <typename number> struct half_edge_vertex_t;
+    template <typename number> struct half_edge_face_t;
+    template <typename number> struct poly_info_t;
 
     template <typename number>
     struct half_edge_t {
@@ -25,7 +22,7 @@ namespace microtess {
 
     template <typename number>
     struct half_edge_vertex_t {
-        microtess::vec2<number> coords;
+        microtess::vec2<number> coords{};
         // pointer to any edge that has this vertex as starting point
         half_edge_t<number> * edge = nullptr;
         // used to locate inside the output vertices buffer

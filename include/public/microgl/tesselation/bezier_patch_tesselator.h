@@ -12,6 +12,13 @@ namespace microtess {
         using vertex3 = microtess::vec3<number1>;
     public:
 
+        bezier_patch_tesselator()=delete;
+        bezier_patch_tesselator(const bezier_patch_tesselator &)=delete;
+        bezier_patch_tesselator(bezier_patch_tesselator &&)=delete;
+        bezier_patch_tesselator & operator=(const bezier_patch_tesselator &)=delete;
+        bezier_patch_tesselator & operator=(bezier_patch_tesselator &&)=delete;
+        ~bezier_patch_tesselator()=delete;
+
         static const char BI_QUADRATIC = 0;
         static const char BI_CUBIC = 1;
 

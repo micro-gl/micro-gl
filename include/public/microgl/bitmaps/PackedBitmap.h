@@ -76,10 +76,7 @@ public:
 //        return masked<<7;
     }
 
-    uint8_t pixelAt(int index) const {
-        return extract_pixel(index);
-    }
-
+    uint8_t pixelAt(int index) const { return extract_pixel(index); }
     void writeAt(int index1, const uint8_t &value) {
         // todo:: measure performance on this method
         byte mm=M, kk=K, tt=T, mask=MASK; // debug
@@ -106,5 +103,4 @@ public:
             byte_rendered |= (masked<<(BPP*pos));
         this->_buffer.fill(byte_rendered);
     }
-
 };

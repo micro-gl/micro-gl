@@ -7,33 +7,23 @@ namespace microtess {
         template< class T > struct remove_reference<T&>  {typedef T type;};
         template< class T > struct remove_reference<T&&> {typedef T type;};
 
-        template <class _Tp> inline
-        typename remove_reference<_Tp>::type&&
-        move(_Tp&& __t) noexcept
-        {
+        template <class _Tp> inline typename remove_reference<_Tp>::type&&
+        move(_Tp&& __t) noexcept {
             typedef typename remove_reference<_Tp>::type _Up;
             return static_cast<_Up&&>(__t);
         }
-
         template <class _Tp> inline _Tp&&
         forward(typename remove_reference<_Tp>::type& __t) noexcept {
             return static_cast<_Tp&&>(__t);
         }
-
         template <class _Tp> inline _Tp&&
         forward(typename remove_reference<_Tp>::type&& __t) noexcept {
             return static_cast<_Tp&&>(__t);
         }
 
         // is same
-        template<class T1, class T2>
-        struct is_same {
-            const static bool value = false;
-        };
-        template<class T>
-        struct is_same<T, T> {
-            const static bool value = true;
-        };
+        template<class T1, class T2> struct is_same { const static bool value = false; };
+        template<class T> struct is_same<T, T> { const static bool value = true; };
 
         // is float point
         template<class number>
@@ -45,13 +35,9 @@ namespace microtess {
 
         // conditional
         template<bool B, class T, class F>
-        struct conditional {
-            typedef T type;
-        };
+        struct conditional { typedef T type; };
         template<class T, class F>
-        struct conditional<false, T, F> {
-            typedef F type;
-        };
+        struct conditional<false, T, F> { typedef F type; };
 
         template<bool, class _Tp = void> struct enable_if {};
         template<class _Tp> struct enable_if<true, _Tp> { typedef _Tp type; };
@@ -75,6 +61,5 @@ namespace microtess {
 
         template <typename T>
         struct is_allocator_aware <T, decltype((void) T().get_allocator(), 0)> : microtess::traits::true_type { };
-
     }
 }

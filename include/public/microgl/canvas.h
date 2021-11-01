@@ -33,7 +33,7 @@
 #include "functions/bits.h"
 #include "functions/distance.h"
 #include "allocators/std_rebind_allocator.h"
-#include "dynamic_array.h"
+#include "tesselation/dynamic_array.h"
 
 using namespace microtess::triangles;
 using namespace microtess::polygons;

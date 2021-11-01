@@ -4,7 +4,7 @@
 #include <chrono>
 #include "src/Resources.h"
 #include <SDL.h>
-#include <microgl/buffer.h>
+#include "microgl/bitmaps/buffer.h"
 #include <microgl/canvas.h>
 #include "microgl/tesselation/vec2.h"
 #include <microgl/color.h>

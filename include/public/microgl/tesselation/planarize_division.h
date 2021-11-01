@@ -5,7 +5,7 @@
 
 #include "std_rebind_allocator.h"
 #include "half_edge.h"
-#include <microgl/dynamic_array.h>
+#include "dynamic_array.h"
 
 #if DEBUG_PLANAR==true
 #include <stdexcept>
@@ -57,6 +57,13 @@ namespace microtess {
     class planarize_division {
     public:
         using vertex = microtess::vec2<number>;
+
+        planarize_division()=delete;
+        planarize_division(const planarize_division &)=delete;
+        planarize_division(planarize_division &&)=delete;
+        planarize_division & operator=(const planarize_division &)=delete;
+        planarize_division & operator=(planarize_division &&)=delete;
+        ~planarize_division()=delete;
 
     private:
         using index = unsigned int;

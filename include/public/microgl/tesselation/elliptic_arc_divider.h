@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vec2.h"
-#include <microgl/math.h>
+#include "math.h"
 
 namespace microtess {
 
@@ -31,7 +31,7 @@ namespace microtess {
                 unsigned divisions=32,
                 bool anti_clockwise=false) {
             if(divisions<=0) return;
-            const auto pi = number(3.1415926535897f);
+            const auto pi = microtess::math::pi<number>();
             const auto two_pi = pi * number(2);
             const auto half_pi = pi / number(2);
             const auto zero = number(0);
@@ -55,8 +55,8 @@ namespace microtess {
             // we test_texture for greater in case of precision issues
             delta = delta / number(divisions-(full_circle_or_more?1:0));
             auto radians = start_angle_rad;
-            auto rotation_sin = microgl::math::sin(rotation);
-            auto rotation_cos = microgl::math::cos(rotation);
+            auto rotation_sin = microtess::math::sin_cpu(rotation);
+            auto rotation_cos = microtess::math::cos_cpu(rotation);
             index first_index= output.size(), last_index=first_index;
             number min_degree=start_angle_rad<=end_angle_rad?start_angle_rad:end_angle_rad;
             number max_degree=start_angle_rad>=end_angle_rad?start_angle_rad:end_angle_rad;
@@ -66,8 +66,8 @@ namespace microtess {
                     if(radians<min_degree) radians_clipped=min_degree;
                     if(radians>max_degree) radians_clipped=max_degree;
                 }
-                auto sine = microgl::math::sin(radians_clipped);
-                auto cosine = microgl::math::sin(radians_clipped + half_pi);
+                auto sine = microtess::math::sin_cpu(radians_clipped);
+                auto cosine = microtess::math::sin_cpu(radians_clipped + half_pi);
                 // currently , we assume pixel coords and radians have the same precision
                 // this probably is not a very good idea
                 auto x = cosine * radius_x;

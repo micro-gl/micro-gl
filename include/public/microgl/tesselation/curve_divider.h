@@ -30,7 +30,12 @@ namespace microtess {
         using output = container_type;
         using index = unsigned int;
 
-        explicit curve_divider() = delete;
+        curve_divider()=delete;
+        curve_divider(const curve_divider &)=delete;
+        curve_divider(curve_divider &&)=delete;
+        curve_divider & operator=(const curve_divider &)=delete;
+        curve_divider & operator=(curve_divider &&)=delete;
+        ~curve_divider()=delete;
 
         static void compute(const vertex *points,
                             output &output,

@@ -121,9 +121,7 @@ public:
         return masked;
     }
 
-    pixel pixelAt(int index) const {
-        return palette[extract_pixel_index(index)];
-    }
+    pixel pixelAt(int index) const { return palette[extract_pixel_index(index)]; }
 
     int locate_index_color_of_pixel_in_palette(const pixel & pixel) {
         for (int ix = 0; ix < int(PALETTE_SIZE); ++ix) {
@@ -160,5 +158,4 @@ public:
             byte_rendered |= (masked<<(BPI * pos));
         this->_buffer.fill(byte_rendered);
     }
-
 };

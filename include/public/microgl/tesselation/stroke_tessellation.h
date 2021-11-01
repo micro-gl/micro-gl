@@ -3,6 +3,7 @@
 #include "vec2.h"
 #include "triangles.h"
 #include "micro_tess_traits.h"
+#include "math.h"
 
 namespace microtess {
 
@@ -35,6 +36,7 @@ namespace microtess {
         using index = unsigned int;
         using boundary_info = microtess::triangles::boundary_info;
         using precision = unsigned char;
+
     private:
         struct edge { vertex a, b; };
 
@@ -320,7 +322,7 @@ namespace microtess {
         };
 
         static number norm(const vertex & p) {
-            return microgl::math::sqrt(p.x*p.x + p.y*p.y);
+            return microtess::math::sqrt_cpu<number>(p.x*p.x + p.y*p.y, number(1)/number(1<<8));
         }
 
         static

@@ -95,6 +95,13 @@ namespace microtess {
         };
 
     public:
+        ear_clipping_triangulation()=delete;
+        ear_clipping_triangulation(const ear_clipping_triangulation &)=delete;
+        ear_clipping_triangulation(ear_clipping_triangulation &&)=delete;
+        ear_clipping_triangulation & operator=(const ear_clipping_triangulation &)=delete;
+        ear_clipping_triangulation & operator=(ear_clipping_triangulation &&)=delete;
+        ~ear_clipping_triangulation()=delete;
+
         static void compute(const vertex *polygon,
                             index size,
                             container_output_indices &indices_buffer_triangulation,

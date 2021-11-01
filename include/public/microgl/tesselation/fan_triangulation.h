@@ -13,6 +13,13 @@ namespace microtess {
         using index = unsigned int;
         using vertex = microtess::vec2<number>;
 
+        fan_triangulation()=delete;
+        fan_triangulation(const fan_triangulation &)=delete;
+        fan_triangulation(fan_triangulation &&)=delete;
+        fan_triangulation & operator=(const fan_triangulation &)=delete;
+        fan_triangulation & operator=(fan_triangulation &&)=delete;
+        ~fan_triangulation()=delete;
+
         static
         void compute(const vertex *points,
                      index size,

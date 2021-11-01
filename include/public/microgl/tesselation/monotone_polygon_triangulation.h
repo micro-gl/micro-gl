@@ -31,6 +31,13 @@ namespace microtess {
     public:
         using vertex = microtess::vec2<number>;
 
+        monotone_polygon_triangulation()=delete;
+        monotone_polygon_triangulation(const monotone_polygon_triangulation &)=delete;
+        monotone_polygon_triangulation(monotone_polygon_triangulation &&)=delete;
+        monotone_polygon_triangulation & operator=(const monotone_polygon_triangulation &)=delete;
+        monotone_polygon_triangulation & operator=(monotone_polygon_triangulation &&)=delete;
+        ~monotone_polygon_triangulation()=delete;
+
         enum class monotone_axis {
             x_monotone, y_monotone
         };

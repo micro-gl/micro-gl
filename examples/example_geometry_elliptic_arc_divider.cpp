@@ -5,7 +5,7 @@
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
 #include <microgl/tesselation/elliptic_arc_divider.h>
-#include <microgl/static_array.h>
+#include "microgl/tesselation/static_array.h"
 #include <vector>
 
 #define W 640*1

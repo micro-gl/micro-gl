@@ -75,17 +75,7 @@ public:
     }
     ~bitmap() = default;
 
-    pixel pixelAt(int index) const {
-        return this->_buffer[index];
-    }
-
-    void writeAt(int index, const pixel &value) {
-        this->_buffer.writeAt(value, index);
-    }
-
-    void fill(const pixel &value) {
-        this->_buffer.fill(value);
-    }
-
-protected:
+    pixel pixelAt(int index) const { return this->_buffer[index]; }
+    void writeAt(int index, const pixel &value) { this->_buffer.writeAt(value, index); }
+    void fill(const pixel &value) { this->_buffer.fill(value); }
 };

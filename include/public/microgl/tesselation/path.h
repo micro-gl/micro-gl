@@ -57,7 +57,6 @@ namespace microtess {
                                    _paths_vertices(microtess::traits::move($path._paths_vertices)),
                                    _tess_fill(microtess::traits::move($path._tess_fill)),
                                    _tess_stroke(microtess::traits::move($path._tess_stroke)) {}
-
         ~path() = default;
 
         path &operator=(const path & $path) {
@@ -443,5 +442,4 @@ namespace microtess {
         chunker_t & paths_vertices() { return _paths_vertices; }
 
     };
-
 }

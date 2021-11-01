@@ -6,7 +6,7 @@
 #include <microgl/tesselation/ear_clipping_triangulation.h>
 #include "microgl/tesselation/triangles.h"
 #include <vector>
-#include <microgl/static_array.h>
+#include "microgl/tesselation/static_array.h"
 
 #define W 640*1
 #define H 480*1

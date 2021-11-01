@@ -109,8 +109,8 @@ path_t<number> path_test() {
 
 int main() {
 //    using number = float;
-//    using number = double;
-    using number = Q<8>;
+    using number = double;
+//    using number = Q<8>;
 //    using number = Q<8>;
 //    using number = Q<14, long long>;
 //    using number = Q<12, int32_t>;

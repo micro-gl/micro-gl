@@ -5,7 +5,7 @@
 #include "microgl/tesselation/vec2.h"
 #include "microgl/tesselation/triangles.h"
 #include <microgl/tesselation/experiments/linked_list.h>
-#include <microgl/dynamic_array.h>
+#include "microgl/tesselation/dynamic_array.h"
 
 namespace tessellation {
 
