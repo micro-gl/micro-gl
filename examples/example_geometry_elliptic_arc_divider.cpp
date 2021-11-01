@@ -21,8 +21,8 @@ using container = static_arr<item_type>;
 //using container = std::vector<item_type>;
 
 int main() {
-    using number = float;
-//    using number = Q<15>;
+//    using number = float;
+    using number = Q<15>;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     sampling::flat_color<> color_red{{255,0,0,255}};

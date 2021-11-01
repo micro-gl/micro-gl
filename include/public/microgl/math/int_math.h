@@ -11,7 +11,6 @@ namespace microgl {
         inline int to_fixed(const unsigned &val, unsigned char precision) {
             return (int(val) << precision);
         }
-
         inline int to_fixed(const int &val, unsigned char precision) {
             const bool isNegative = val < 0;
             int value_abs = microgl::math::abs(int(val)) << precision;
@@ -20,30 +19,12 @@ namespace microgl {
 
         inline u32 sqrt_64(ul64 a_nInput);
         inline u32 sqrt_32(u32 a_nInput);
-
-        inline unsigned int sqrt(unsigned int val) {
-            return sqrt_32(val);
-        }
-        inline unsigned int sqrt(int val) {
-            return sqrt_32((unsigned int)val);
-        }
-
-        inline unsigned int sqrt(unsigned long long val) {
-            return sqrt_64(val);
-        }
-        inline unsigned int sqrt(long long val) {
-            return sqrt_64((unsigned long long)val);
-        }
-
-        inline int mod(int numer, int denom) {
-            return numer % denom;
-        }
-
-        inline
-        l64 mod(l64 numer, l64 denom) {
-            return numer % denom;
-        }
-
+        inline unsigned int sqrt(unsigned int val) { return sqrt_32(val); }
+        inline unsigned int sqrt(int val) { return sqrt_32((unsigned int)val); }
+        inline unsigned int sqrt(unsigned long long val) { return sqrt_64(val); }
+        inline unsigned int sqrt(long long val) { return sqrt_64((unsigned long long)val); }
+        inline int mod(int numer, int denom) { return numer % denom; }
+        inline l64 mod(l64 numer, l64 denom) { return numer % denom; }
 
         inline
         u32 sqrt_64(ul64 a_nInput) {

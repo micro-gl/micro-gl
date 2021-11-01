@@ -12,6 +12,13 @@ namespace microtess {
     public:
         using vertex = microtess::vec2<number>;
 
+        elliptic_arc_divider()=delete;
+        elliptic_arc_divider(const elliptic_arc_divider &)=delete;
+        elliptic_arc_divider(elliptic_arc_divider &&)=delete;
+        elliptic_arc_divider & operator=(const elliptic_arc_divider &)=delete;
+        elliptic_arc_divider & operator=(elliptic_arc_divider &&)=delete;
+        ~elliptic_arc_divider()=delete;
+
         static void compute(
                 container_type &output,
                 number center_x,
@@ -24,16 +31,16 @@ namespace microtess {
                 unsigned divisions=32,
                 bool anti_clockwise=false) {
             if(divisions<=0) return;
-            const auto two_pi = microgl::math::pi<number>() * number(2);
-            const auto half_pi = microgl::math::pi<number>() / number(2);
+            const auto pi = number(3.1415926535897f);
+            const auto two_pi = pi * number(2);
+            const auto half_pi = pi / number(2);
             const auto zero = number(0);
             while(start_angle_rad<zero) start_angle_rad+=two_pi;
             while(end_angle_rad<zero) end_angle_rad+=two_pi;
             auto delta = end_angle_rad - start_angle_rad;
             if (delta==0) return;
-            const bool full_circle_or_more= microgl::math::abs(delta) >= two_pi;
-//                start_angle_rad = microgl::math::mod(start_angle_rad, two_pi);
-//                end_angle_rad = microgl::math::mod(end_angle_rad, two_pi);
+            const auto delta_abs = delta<0 ? -delta : delta;
+            const bool full_circle_or_more= delta_abs >= two_pi;
             if(start_angle_rad<zero) start_angle_rad+=two_pi;
             if(end_angle_rad<zero) end_angle_rad+=two_pi;
             delta = end_angle_rad - start_angle_rad;
@@ -56,10 +63,8 @@ namespace microtess {
             for (index ix = 0; ix < divisions; ++ix) {
                 number radians_clipped=radians;
                 { // due to precision errors when adding radians they might overflow at the end
-                    if(radians<min_degree)
-                        radians_clipped=min_degree;
-                    if(radians>max_degree)
-                        radians_clipped=max_degree;
+                    if(radians<min_degree) radians_clipped=min_degree;
+                    if(radians>max_degree) radians_clipped=max_degree;
                 }
                 auto sine = microgl::math::sin(radians_clipped);
                 auto cosine = microgl::math::sin(radians_clipped + half_pi);

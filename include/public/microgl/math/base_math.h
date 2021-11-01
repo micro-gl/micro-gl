@@ -42,6 +42,18 @@ namespace microgl {
             return x;
         }
 
+        inline float sqrt4(const float m)
+        {
+            int i=0;
+            while( (i*i) <= m )
+                i++;
+            i--;
+            float d = m - i*i;
+            float p=d/(2*i);
+            float a=i+p;
+            return a-(p*p)/(2*a);
+        }
+
         template<typename number>
         number sin_bhaskara_cpu(number radians) {
             const auto pii = microgl::math::pi<number>();

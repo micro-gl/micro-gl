@@ -2,7 +2,6 @@
 
 #include "vec2.h"
 #include "triangles.h"
-#include <microgl/functions/distance.h>
 #include "micro_tess_traits.h"
 
 namespace microtess {
@@ -20,7 +19,7 @@ namespace microtess {
     };
 
     /**
-     * stroke tessalator
+     * stroke tessellator
      *
      * @tparam number number type of vertices
      * @tparam container_output_vertices container type to store vertices
@@ -41,17 +40,22 @@ namespace microtess {
 
         struct poly_4 {
             // clock wise around the bone
-            vertex left, top, right, bottom;
+            vertex left{}, top{}, right{}, bottom{};
             int left_index=-1, top_index=-1, right_index=-1, bottom_index=-1;
         };
 
         struct poly_inter_result {
-            vertex left, right;
+            vertex left{}, right{};
             int left_index=-1, right_index=-1;
             bool has_left=false, has_right=false;
         };
-
     public:
+        stroke_tessellation()=delete;
+        stroke_tessellation(const stroke_tessellation &)=delete;
+        stroke_tessellation(stroke_tessellation &&)=delete;
+        stroke_tessellation & operator=(const stroke_tessellation &)=delete;
+        stroke_tessellation & operator=(stroke_tessellation &&)=delete;
+        ~stroke_tessellation()=delete;
 
 #define abs__(x) (((x)<0)?(-(x)):(x))
 #define min__(a,b) (((a)<(b))?(a):(b))
@@ -123,7 +127,7 @@ namespace microtess {
             // calculate path length
             for (index ix = 0; ix < segments_count; ++ix) {
                 const auto vec= points[(ix+1)%size]-points[ix%size];
-                path_length+=microgl::functions::length(vec.x, vec.y);
+                path_length+=norm(vec);
                 if(ix==0) total_length=path_length; // adjusted to reflect current segment
             }
 
@@ -165,12 +169,12 @@ namespace microtess {
                         while(positions[ix]>total_length) {
                             current_seg++;
                             const auto seg_vec= (points[(current_seg+1)%size]- points[(current_seg)%size]);
-                            const auto seg_len=microgl::functions::length(seg_vec.x, seg_vec.y); total_length+=seg_len;
+                            const auto seg_len=norm(seg_vec); total_length+=seg_len;
                             if(ix==1 && seg_len) points_segments.push_back(points[current_seg%size]);
                         }
                         // compute start-point
                         vertex seg_vec= (points[(current_seg+1)%size]- points[(current_seg)%size]);
-                        number seg_len=microgl::functions::length(seg_vec.x, seg_vec.y);
+                        number seg_len=norm(seg_vec);
                         const auto point = points[(current_seg)%size] + (seg_len==0 ? vertex{0,0} :
                                 (seg_vec*(positions[ix]-(total_length-seg_len)))/seg_len);
                         points_segments.push_back(point);
@@ -315,8 +319,13 @@ namespace microtess {
             intersect, none, parallel, degenerate_line
         };
 
+        static number norm(const vertex & p) {
+            return microgl::math::sqrt(p.x*p.x + p.y*p.y);
+        }
+
         static
-        auto build_quadrilateral(const vertex &a, const vertex &b, const number &stroke_width)-> poly_4 {
+        auto build_quadrilateral(const vertex &a, const vertex &b,
+                                 const number &stroke_width)-> poly_4 {
             poly_4 result;
             comp_parallel_ray(a, b, result.left, result.top, stroke_width);
             vertex dir=a-result.left;
@@ -331,8 +340,9 @@ namespace microtess {
                                          const vertex &c, const vertex &d,
                                          vertex & intersection,
                                          number &alpha, number &alpha1) -> intersection_status {
-            // this procedure will find proper and improper(touches) intersections, but no
-            // overlaps, since overlaps induce parallel classification, this would have to be resolved outside
+            // this procedure will find proper and improper(touches) intersections,
+            // but no overlaps, since overlaps induce parallel classification, this
+            // would have to be resolved outside
             if(a==b || c==d)
                 return intersection_status::degenerate_line;
             auto ab = b - a;
@@ -405,20 +415,21 @@ namespace microtess {
                                number stroke) {
             vertex vec = pt1==pt0 ? vertex{1,0} : pt1 - pt0;
             vertex normal = {vec.y, -vec.x};
-            number length = microgl::functions::length(normal.x, normal.y);
+            number length = norm(normal);
             vertex dir = length ? (normal*stroke)/length : normal*stroke;
             pt_out_0 = pt0 + dir;
             pt_out_1 = pt1 + dir;
         }
 
         static
-        auto resolve_left_right_walls_intersections(const poly_4 &a, const poly_4 &b) -> poly_inter_result {
+        auto resolve_left_right_walls_intersections(const poly_4 &a, const poly_4 &b)
+                                                    -> poly_inter_result {
             poly_inter_result result{};
             vertex result_inter;
             number alpha;
             // left walls
-            auto status= finite_segment_intersection_test(a.left, a.top, b.left, b.top,
-                                                          result_inter, alpha, alpha);
+            auto status= finite_segment_intersection_test(a.left, a.top,
+                                               b.left, b.top, result_inter, alpha, alpha);
             if(status==intersection_status::parallel) {
                 if(a.top==b.left) {
                     result.left= a.top;
@@ -444,7 +455,8 @@ namespace microtess {
 
         static
         int classify_point(const vertex &point, const vertex &a, const vertex &b) {
-            // Use the sign of the determinant of vectors (AB,AM), where M(X,Y) is the query point:
+            // Use the sign of the determinant of vectors (AB,AM), where M(X,Y)
+            // is the query point:
             // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
             //    Input:  three points p, a, b
             //    Return: >0 for P left of the line through a and b
@@ -458,18 +470,19 @@ namespace microtess {
         }
 
         static edge
-        compute_distanced_tangent_at_joint(const vertex &a, const vertex &b, const vertex &c, number mag) {
+        compute_distanced_tangent_at_joint(const vertex &a, const vertex &b,
+                                           const vertex &c, number mag) {
             edge result;
             vertex tangent1 = b-a, tangent2 = c-b;
             vertex normal1 = {tangent1.y, -tangent1.x}, normal2 = {tangent2.y, -tangent2.x};
-            normal1 = normal1/microgl::functions::length(normal1.x, normal1.y);
-            normal2 = normal2/microgl::functions::length(normal2.x, normal2.y);
+            normal1 = normal1/norm(normal1);
+            normal2 = normal2/norm(normal2);
             vertex pre_normal_join= normal1+normal2;
             if(pre_normal_join==vertex{0,0}) {
                 pre_normal_join=b-a;
                 mag= mag<0 ? -mag : mag;
             }
-            const number length= microgl::functions::length(pre_normal_join.x, pre_normal_join.y);
+            const number length= norm(pre_normal_join);
             const vertex direction=length ? (pre_normal_join*mag)/length : (pre_normal_join*mag);
             result.a = b + direction;
             result.b = result.a + vertex{direction.y, -direction.x};
@@ -488,7 +501,8 @@ namespace microtess {
             bool done= (dir.x*dir.x + dir.y*dir.y)<=max_distance_squared;
             if(done) return;
             const auto e= compute_distanced_tangent_at_joint(from, root, to, radius);
-            bool not_in_cone_precision_issues= classify_point(e.a, root, from)>=0 || classify_point(e.a, root, to)<=0;
+            bool not_in_cone_precision_issues= classify_point(e.a, root, from)>=0 ||
+                    classify_point(e.a, root, to)<=0;
             if(not_in_cone_precision_issues) return; // in case, the bisecting point was not in cone
             compute_arc(from, root, e.a, radius, max_distance_squared, root_index,
                         output_vertices, output_indices, boundary_buffer);
@@ -536,7 +550,7 @@ namespace microtess {
                 {
                     const auto dir=b-a;
                     const auto n=vertex{dir.y, -dir.x};
-                    const auto dir2 = (n*radius)/microgl::functions::length(n.x, n.y);
+                    const auto dir2 = (n*radius)/norm(n);
                     output_vertices.push_back(a+dir2); const auto ext_a_index= output_vertices.size()-1;
                     output_vertices.push_back(b+dir2); const auto ext_b_index= output_vertices.size()-1;
                     output_indices.push_back(ext_a_index); b1;
@@ -553,8 +567,8 @@ namespace microtess {
         }
 
         static
-        void apply_line_join(const stroke_line_join &line_join,
-                             const index &first_index, const index &join_index, const index &last_index,
+        void apply_line_join(const stroke_line_join &line_join, const index &first_index,
+                             const index &join_index, const index &last_index,
                              const number &join_radius, const number &miter_limit,
                              container_output_vertices &output_vertices,
                              container_output_indices &output_indices,

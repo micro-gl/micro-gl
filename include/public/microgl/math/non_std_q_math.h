@@ -40,7 +40,9 @@ namespace microgl {
 
         template<unsigned N, typename integer>
         static Q<N, integer> sqrt(const Q<N, integer> &val) {
-            return val.sqrt();
+            using q = Q<N, integer>;
+            return microgl::math::sqrt_cpu(val, q(1)/q(1u<<N));
+//            return val.sqrt();
         }
     }
 }
