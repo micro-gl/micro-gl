@@ -191,9 +191,6 @@ namespace microgl {
                 result.bary= v0.bary + (v1.bary-v0.bary)*t;
                 return result;
             }
-
         };
-
     }
-
 }

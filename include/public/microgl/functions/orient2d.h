@@ -15,6 +15,5 @@ namespace microgl {
                  const number &c_y) {
             return (b_x-a_x)*(c_y-a_y) - (b_y-a_y)*(c_x-a_x);
         }
-
     }
 }

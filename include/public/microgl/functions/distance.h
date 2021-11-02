@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/math.h>
+#include "../math.h"
 
 namespace microgl {
     namespace functions {
@@ -16,7 +16,5 @@ namespace microgl {
             auto dy= p0_y-p1_y;
             return length(dx, dy);
         }
-
-
     }
 }

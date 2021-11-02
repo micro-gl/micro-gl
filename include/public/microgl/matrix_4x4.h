@@ -9,14 +9,20 @@ namespace microgl {
     template<typename number>
     class matrix_4x4 : public matrix<number, 4, 4> {
     private:
+        using base__ = matrix<number, 4, 4>;
+
+    public:
+        // in this derived class I overload * operator, this will default in
+        // c++ to hiding all previous * overloading, so we have to re-expose it
+        using base__::operator*;
         using index = unsigned;
-        using vertex3 = vec3<number>;
-        using vertex4 = vec4<number>;
-        using base__ =  matrix<number, 4, 4>;
+        using value_type = number;
         using type_ref = number &;
         using const_type_ref = const number &;
         using matrix_ref = matrix_4x4<number> &;
         using const_matrix_ref = const matrix_4x4<number> &;
+        using vertex3 = microgl::vec3<number>;
+        using vertex4 = microgl::vec4<number>;
 
         static const index SX = 0;
         static const index SY = 5;
@@ -24,11 +30,6 @@ namespace microgl {
         static const index numberX = 3;
         static const index numberY = 7;
         static const index numberZ = 11;
-
-    public:
-        // in this derived class I overload * operator, this will default in
-        // c++ to hiding all previous * overloading, so we have to re-expose it
-        using base__::operator*;
 
         static
         matrix_4x4 translate(const_type_ref tx, const_type_ref ty, const_type_ref tz) {
@@ -122,24 +123,13 @@ namespace microgl {
             return mat;
         }
 
-        matrix_4x4() {
-            identity();
-        };
-
+        matrix_4x4() { identity(); };
         template<class Iterable>
-        matrix_4x4(const Iterable & list) : base__{list} {
-        }
-
-        matrix_4x4(const_type_ref fill_value) :
-                base__(fill_value) {}
-
-        matrix_4x4(const base__ & mat) :
-                base__(mat) {}
-
+        matrix_4x4(const Iterable & list) : base__{list} {}
+        matrix_4x4(const_type_ref fill_value) : base__(fill_value) {}
+        matrix_4x4(const base__ & mat) : base__(mat) {}
         template<typename number2>
-        matrix_4x4(const matrix<number2, 4, 4> & mat) :
-                base__(mat) {}
-
+        matrix_4x4(const matrix<number2, 4, 4> & mat) : base__(mat) {}
         virtual ~matrix_4x4() = default;
 
         void fill_diagonal(const_type_ref value) {
@@ -173,12 +163,10 @@ namespace microgl {
         vertex4 operator*(const vertex4 & point) const {
             vertex4 res;
             const auto & m = (*this);
-
             res.x = m[0]*point.x + m[1]*point.y + m[2]*point.z + m[3]*point.w;
             res.y = m[4]*point.x + m[5]*point.y + m[6]*point.z + m[7]*point.w;
             res.z = m[8]*point.x + m[9]*point.y + m[10]*point.z + m[11]*point.w;
             res.w = m[12]*point.x + m[13]*point.y + m[14]*point.z + m[15]*point.w;
-
             return res;
         }
 
@@ -190,7 +178,5 @@ namespace microgl {
                     this->_data[8]==zero  && this->_data[9]==zero  && this->_data[10]==one  && this->_data[11]==zero &&
                     this->_data[12]==zero && this->_data[13]==zero && this->_data[14]==zero && this->_data[15]==one);
         }
-
     };
-
 }

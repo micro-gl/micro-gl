@@ -9,17 +9,17 @@
 namespace microgl {
     namespace _3d {
 
+        /**
+         * this is a simple fixed 3d pipeline interface
+         */
         template <typename number, class canvas_type>
         class pipeline {
-            /**
-             * this is a simple fixed 3d pipeline interface
-             */
         private:
             using index = unsigned;
             using const_ref = const number &;
-            using vertex2 = vec2<number>;
-            using vertex3 = vec3<number>;
-            using vertex4 = vec4<number>;
+            using vertex2 = microgl::vec2<number>;
+            using vertex3 = microgl::vec3<number>;
+            using vertex4 = microgl::vec4<number>;
             using mat4 = matrix_4x4<number>;
         public:
 
@@ -139,9 +139,6 @@ namespace microgl {
 #undef IND
 
             }
-
         };
-
     }
-
 }

@@ -54,5 +54,4 @@ namespace microgl {
         static_assert_rgb<rgba_1, rgba_2, mute>();
         static_assert(mute || rgba_1::a!=rgba_2::a, "Alpha channel bits is not equal");
     }
-
 }

@@ -4,13 +4,15 @@ namespace microgl {
     // this is a column major matrix
     template <typename number, unsigned W, unsigned H>
     class matrix {
-    protected:
+    public:
         using index = unsigned;
+        using value_type = number;
         using matrix_ref = matrix<number, W, H> &;
         using const_matrix_ref = const matrix<number, W, H> &;
         using type_ref = number &;
         using const_type_ref = const number &;
 
+    protected:
         number _data[W * H];
         static constexpr index _cols = W;
         static constexpr index _rows = H;
@@ -18,6 +20,7 @@ namespace microgl {
 
     public:
         explicit matrix() = default;
+        explicit matrix(const_type_ref fill_value) { fill(fill_value); }
 
         template<class Iterable>
         matrix(const Iterable & list) {
@@ -25,9 +28,6 @@ namespace microgl {
             for (const auto & item : list)
                 _data[ix++] = number(item);
         }
-
-        explicit
-        matrix(const_type_ref fill_value) { fill(fill_value); }
 
         matrix(const_matrix_ref mat) {
             for(index ix = 0; ix < _size; ix++)
@@ -43,8 +43,7 @@ namespace microgl {
         virtual ~matrix() = default;
 
         template<unsigned A, unsigned B, unsigned C>
-        static
-        matrix<number, C, B> multiply(
+        static matrix<number, C, B> multiply(
                         const matrix<number, A, B> & m1,
                         const matrix<number, C, A> & m2) {
             matrix<number, C, B> result;
@@ -69,11 +68,8 @@ namespace microgl {
             return result;
         }
 
-        static
-        void multiply(matrix_ref m1,
-                      const_type_ref value) {
-            for (int ix = 0; ix < m1.size(); ++ix)
-                m1[ix] *= value;
+        static void multiply(matrix_ref m1, const_type_ref value) {
+            for (int ix = 0; ix < m1.size(); ++ix) m1[ix] *= value;
         }
 
         template<unsigned A>
@@ -95,13 +91,11 @@ namespace microgl {
         };
 
         matrix operator*=(const_type_ref value) {
-            multiply(*this, value);
-            return *this;
+            multiply(*this, value); return *this;
         };
 
         matrix_ref operator=(const_matrix_ref mat) {
-            for(index ix = 0; ix < _size; ix++)
-                _data[ix] = mat[ix];
+            for(index ix = 0; ix < _size; ix++) _data[ix] = mat[ix];
             return *this;
         };
 
@@ -148,13 +142,11 @@ namespace microgl {
             for (index ix = 0; ix < size(); ++ix) _data[ix] = value;
         }
 
-        inline index columns() const { return _cols; }
-        inline index rows() const { return _rows; }
-        inline index size() const { return _size; }
+        inline constexpr index columns() const { return _cols; }
+        inline constexpr index rows() const { return _rows; }
+        inline constexpr index size() const { return _size; }
     };
 
-    template <typename T, unsigned N>
-    using column_vector = matrix<T, 1, N>;
-    template <typename T, unsigned N>
-    using row_vector = matrix<T, N, 1>;
+    template <typename T, unsigned N> using column_vector = matrix<T, 1, N>;
+    template <typename T, unsigned N> using row_vector = matrix<T, N, 1>;
 }

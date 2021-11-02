@@ -38,5 +38,4 @@ namespace microgl {
         number height() const { return bottom-top; }
         bool empty() const { return width()<=0 || height()<=0; }
     };
-
 }

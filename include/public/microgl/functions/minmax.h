@@ -46,7 +46,5 @@ namespace microgl {
             const auto max = abs_min<number>(a, b);
             return abs_min<number>(max, args...);
         }
-
     }
-
 }

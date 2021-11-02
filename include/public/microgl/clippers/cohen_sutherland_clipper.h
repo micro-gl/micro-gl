@@ -123,7 +123,6 @@ namespace microgl {
 
                 return code;
             }
-
         };
     }
 }

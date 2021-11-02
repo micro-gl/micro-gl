@@ -9,12 +9,19 @@ namespace microgl {
     template<typename number>
     class matrix_3x3 : public matrix<number, 3, 3> {
     private:
+        using base__ = matrix<number, 3, 3>;
+
+    public:
+        // in this derived class I overload * operator, this will default in
+        // c++ to hiding all previous * overloading, so we have to re-expose it
+        using base__::operator*;
+        using value_type = number;
         using index = unsigned;
-        using base__ =  matrix<number, 3, 3>;
         using type_ref = number &;
         using const_type_ref = const number &;
         using matrix_ref = matrix_3x3<number> &;
         using const_matrix_ref = const matrix_3x3<number> &;
+        using vertex = microgl::vec2<number>;
 
         static const index SX = 0;
         static const index SY = 4;
@@ -23,15 +30,7 @@ namespace microgl {
         static const index SKEWX = 1;
         static const index SKEWY = 3;
 
-    public:
-        // in this derived class I overload * operator, this will default in
-        // c++ to hiding all previous * overloading, so we have to re-expose it
-        using base__::operator*;
-
-        static
-        matrix_3x3 identity() {
-            return matrix_3x3{};
-        }
+        static matrix_3x3 identity() { return matrix_3x3{}; }
 
         static
         matrix_3x3 translate(const_type_ref tx, const_type_ref ty) {
@@ -132,28 +131,18 @@ namespace microgl {
             return mat;
         }
 
-        matrix_3x3() {
-            identity_fill();
-        };
+        matrix_3x3() { identity_fill(); };
 
         template<class Iterable>
-        matrix_3x3(const Iterable & list) : base__{list} {
-        }
-
-        matrix_3x3(const_type_ref fill_value) :
-                base__(fill_value) {}
-
-        matrix_3x3(const base__ & mat) :
-                base__(mat) {}
-
+        matrix_3x3(const Iterable & list) : base__{list} {}
+        matrix_3x3(const_type_ref fill_value) : base__(fill_value) {}
+        matrix_3x3(const base__ & mat) : base__(mat) {}
         template<typename T2>
-        matrix_3x3(const matrix<T2, 3, 3> & mat) :
-                base__(mat) {}
-
+        matrix_3x3(const matrix<T2, 3, 3> & mat) : base__(mat) {}
         virtual ~matrix_3x3() = default;
 
-        vec2<number> operator*(const vec2<number>& point) const {
-            vec2<number> res;
+        vertex operator*(const vertex & point) const {
+            vertex res;
             const auto & m = (*this);
             res.x = m[0]*point.x + m[1]*point.y + m[2];
             res.y = m[3]*point.x + m[4]*point.y + m[5];
@@ -180,7 +169,5 @@ namespace microgl {
                 this->_data[3]==zero && this->_data[4]==one  && this->_data[5]==zero &&
                 this->_data[6]==zero && this->_data[7]==zero && this->_data[8]==one);
         }
-
     };
-
 }
