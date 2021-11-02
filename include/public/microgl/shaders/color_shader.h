@@ -25,6 +25,7 @@ namespace microgl {
                 microgl::color::color_t color{255,0,0};
 
                 // you must implement the interpolation function
+//                template <typename bary_integer>
                 void interpolate(const varying &varying_a,
                                  const varying &varying_b,
                                  const varying &varying_c,

@@ -1051,8 +1051,8 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
     const auto v2_ndc = p2/p2.w; const auto one_over_w2=number(1)/(p2.w);
     // viewport transform: NDC space -> window/viewport/raster space
     const number w= viewport_width, h= viewport_height;
-    const number drn=microgl::functions::clamp<number>(depth_range_near, 0, 1);
-    const number drf=microgl::functions::clamp<number>(depth_range_far, 0, 1);
+    const number drn=microgl::functions::clamp<number>(depth_range_near, number(0), number(1));
+    const number drf=microgl::functions::clamp<number>(depth_range_far, number(0), number(1));
     const number range =(drf-drn)/number(2), one = number(1), two=number(2);
     vec3<number> v0_viewport = {((v0_ndc.x + one)*w)/two, h - ((v0_ndc.y + one)*h)/two, drn+(v0_ndc.z+one)*range};
     vec3<number> v1_viewport = {((v1_ndc.x + one)*w)/two, h - ((v1_ndc.y + one)*h)/two, drn+(v1_ndc.z+one)*range};
@@ -1065,11 +1065,11 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
     rint one_over_w0_fixed= f(one_over_w0, w_bits), one_over_w1_fixed= f(one_over_w1, w_bits),
                                 one_over_w2_fixed= f(one_over_w2, w_bits);
     /// overflow detection
+    auto bits_used_max_w=microgl::functions::used_integer_bits(microgl::functions::abs_max(
+            one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed));
     if(options_avoid_overflow()) { // compile time flag
         precision size_of_int_bits = sizeof(rint)<<3, size_of_big_int_bits = sizeof(rint_big)<<3;
         auto bits_used_max_area=microgl::functions::used_integer_bits(area);
-        auto bits_used_max_w=microgl::functions::used_integer_bits(microgl::functions::abs_max(
-                one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed));
         if(!perspective_correct) bits_used_max_w=0;
         const bool first_test = bits_used_max_area + bits_used_max_w - sub_pixel_precision - 1 < size_of_int_bits;
         if(!first_test) return;
@@ -1139,11 +1139,12 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
             if(!area_c) continue; // compression can cause zero area
             auto bary = vec4<rint>{b0_c, b1_c, b2_c, area_c};
             if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
-                bary.x= (b0_c * one_over_w0_fixed) >> w_bits;
-                bary.y= (b1_c * one_over_w1_fixed) >> w_bits;
-                bary.z= (b2_c * one_over_w2_fixed) >> w_bits;
+                // compress bits
+                bary.x= (b0_c * one_over_w0_fixed) >> bits_used_max_w;
+                bary.y= (b1_c * one_over_w1_fixed) >> bits_used_max_w;
+                bary.z= (b2_c * one_over_w2_fixed) >> bits_used_max_w;
                 bary.w=bary.x+bary.y+bary.z;
-                if(bary.w==0) bary={1,1,1,3};
+                if(bary.w==0) bary={1, 1, 1, 3};
             }
             if(depth_buffer_flag && should_sample) {
                 using z_type=typename depth_buffer_type::value_type;
@@ -1157,6 +1158,7 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
             if(should_sample) {
                 // cast to user's number types vec4<number> casted_bary= bary;, I decided to stick with l64
                 // because other wise this would have wasted bits for Q types although it would have been more elegant.
+//                interpolated_varying.template interpolate<rint>(varying_v0, varying_v1, varying_v2, bary);
                 interpolated_varying.interpolate(varying_v0, varying_v1, varying_v2, bary);
                 auto color = $shader.fragment(interpolated_varying);
                 blendColor<BlendMode, PorterDuff, shader_type::rgba::a>(color, index + p.x, opacity_sample, *this);

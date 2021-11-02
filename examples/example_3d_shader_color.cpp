@@ -11,13 +11,13 @@
 #define H 640*1
 
 int main() {
-//    using number = float;
+    using number = float;
 //    using number = Q<5>;
 //    using number = Q<10>;
-    using number = Q<15>;
+//    using number = Q<15>;
 //    using number = Q<16>;
 
-    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_64_BIT>;
     Canvas24 canvas(W, H);
     float t = -30.0;
 

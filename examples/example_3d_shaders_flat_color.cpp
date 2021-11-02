@@ -18,7 +18,7 @@ int main() {
 //    using number = Q<15>;
 //    using number = Q<16>;
 
-    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_32_BIT>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_64_BIT>;
     Canvas24 canvas(W, H);
 
     float t = -30.0;

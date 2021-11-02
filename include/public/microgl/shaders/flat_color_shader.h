@@ -16,10 +16,11 @@ namespace microgl {
             };
 
             struct varying {
+                template <typename bary_integer>
                 void interpolate(const varying &varying_a,
                                  const varying &varying_b,
                                  const varying &varying_c,
-                                 const vec4<int> &bary) {
+                                 const vec4<bary_integer> &bary) {
                 }
             };
 

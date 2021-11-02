@@ -29,6 +29,7 @@ int main() {
 //    using number = Q<15>;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
+//    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_64_BIT_FREE>;
     Canvas24 canvas(W, H);
 
 #ifdef SAMPLER_TEXTURE
@@ -41,9 +42,9 @@ int main() {
                             10, 10};
 #endif
 
-    z_buffer<12> depth_buffer(canvas.width(), canvas.height());
+    z_buffer<14> depth_buffer(canvas.width(), canvas.height());
 
-    float t = -0.0;
+    float t = 0.0;
     constexpr bool enable_z_buffer = true;
 
     auto test_shader_texture_3d = [&](const model_3d<number> & object) {
@@ -55,13 +56,14 @@ int main() {
         using Shader = sampler_shader<number, decltype(sampler)>;
         using vertex_attributes = Shader::vertex_attributes;
 
-        t-=0.1425;
+        t+=0.1425;
 
         // setup mvp matrix
         number radians = math::deg_to_rad(number{t} / 2);
         vertex rotation = {radians, radians, radians};
-        vertex translation = {-5,0, -t/10.f};
-        vertex scale = {10,10,10};
+        vertex translation = {-5,0, t/10.f};
+//        vertex translation = {-5,0, -50.};
+        vertex scale = {10, 10, 10};
 
         mat4 model_1 = mat4::transform(rotation, translation, scale);
         mat4 model_2 = mat4::transform(rotation*2, translation + vertex{10,0,0}, scale);

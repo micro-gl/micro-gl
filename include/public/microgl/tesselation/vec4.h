@@ -13,10 +13,10 @@ namespace microtess {
         vec4(const number & $x, const number & $y,
              const number & $z, const number & $w=number(0)) :
                 x{$x}, y{$y}, z{$z}, w{$w} {}
-        explicit vec4(const vec3<number> vec3) : vec4{vec3.x, vec3.y, vec3.z, number{1}} {}
+        vec4(const vec3<number> vec3) : vec4{vec3.x, vec3.y, vec3.z, number{1}} {}
 
         template<typename F>
-        explicit vec4(const vec4<F> & a) {
+        vec4(const vec4<F> & a) {
             this->x = static_cast<number>(a.x);
             this->y = static_cast<number>(a.y);
             this->z = static_cast<number>(a.z);
