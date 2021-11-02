@@ -1,7 +1,7 @@
 #pragma once
 
 #include <microgl/rgba_t.h>
-#include <microgl/tesselation/vec2.h>
+#include <microgl/vec2.h>
 
 namespace microgl {
     namespace sampling {
@@ -29,8 +29,8 @@ namespace microgl {
             using rgba = rgba_;
             using rint= typename microgl::traits::conditional<precision_bits>=16,
                     int64_t, int32_t>::type;
-            using vertex = vec2<number>;
-            using ivertex = vec2<rint>;
+            using vertex = microgl::vec2<number>;
+            using ivertex = microgl::vec2<rint>;
             static constexpr rint ONE= rint(1)<<precision_bits;
             static constexpr rint stroke_band = 1u << stroke_bits;
 

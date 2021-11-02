@@ -1,13 +1,12 @@
 #pragma once
 
-#include "blend_mode_base.h"
+#include <microgl/blend_modes/blend_mode_base.h>
 
 namespace microgl {
     namespace blendmode {
 
         class Divide {
         private:
-
             template<uint8_t bits>
             static inline
             uint blend_Divide(cuint b, cuint s) {
@@ -25,8 +24,6 @@ namespace microgl {
                 output.g = blend_Divide<G>(b.g, s.g);
                 output.b = blend_Divide<B>(b.b, s.b);
             }
-
         };
-
     }
 }

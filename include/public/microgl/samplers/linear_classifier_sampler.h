@@ -1,7 +1,7 @@
 #pragma once
 
 #include <microgl/rgba_t.h>
-#include <microgl/tesselation/vec2.h>
+#include <microgl/vec2.h>
 #include <microgl/math.h>
 #include <microgl/precision.h>
 
@@ -24,13 +24,13 @@ namespace microgl {
         class linear_classifier_sampler {
         public:
             using rgba = rgba_;
-            using vertex = vec2<number>;
+            using vertex = microgl::vec2<number>;
         private:
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
         public:
             using rint= typename microgl::traits::conditional<p_bits>=16,
                                         int64_t, int32_t>::type;
-            using ivertex = vec2<rint>;
+            using ivertex = microgl::vec2<rint>;
 
             color_t color_left= {(1u<<rgba::r)-1, 0, 0, (1u<<rgba::a)-1};
             color_t color_right= {0, (1u<<rgba::g)-1, 0, (1u<<rgba::a)-1};

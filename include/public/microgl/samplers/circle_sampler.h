@@ -1,7 +1,7 @@
 #pragma once
 
 #include <microgl/rgba_t.h>
-#include <microgl/tesselation/vec2.h>
+#include <microgl/vec2.h>
 #include <microgl/math.h>
 #include <microgl/precision.h>
 
@@ -28,7 +28,7 @@ namespace microgl {
         class circle_sampler {
         public:
             using rgba = rgba_;
-            using vertex = vec2<number>;
+            using vertex = microgl::vec2<number>;
         private:
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
         public:

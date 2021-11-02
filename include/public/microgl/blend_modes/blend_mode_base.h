@@ -24,9 +24,6 @@ namespace microgl {
 
                 impl::template blend<R, G, B>(b, s, output);
             }
-
         };
-
     }
-
 }

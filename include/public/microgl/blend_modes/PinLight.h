@@ -1,6 +1,6 @@
 #pragma once
 
-#include "blend_mode_base.h"
+#include <microgl/blend_modes/blend_mode_base.h>
 
 namespace microgl {
     namespace blendmode {
@@ -32,8 +32,6 @@ namespace microgl {
                 output.g = blend_channel<G>(b.g, s.g);
                 output.b = blend_channel<B>(b.b, s.b);
             }
-
         };
-
     }
 }

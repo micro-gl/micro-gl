@@ -1,13 +1,12 @@
 #pragma once
 
-#include "blend_mode_base.h"
+#include <microgl/blend_modes/blend_mode_base.h>
 
 namespace microgl {
     namespace blendmode {
 
         class HardMix {
         private:
-
             template<uint8_t bits>
             static inline uint
             blend_HardMix(cuint b, cuint s) {
@@ -17,7 +16,6 @@ namespace microgl {
             }
 
         public:
-
             template<uint8_t R, uint8_t G, uint8_t B>
             static inline void blend(const color_t &b,
                                      const color_t &s,
@@ -26,8 +24,6 @@ namespace microgl {
                 output.g = blend_HardMix<G>(b.g, s.g);
                 output.b = blend_HardMix<B>(b.b, s.b);
             }
-
         };
-
     }
 }

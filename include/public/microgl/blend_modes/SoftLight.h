@@ -1,6 +1,6 @@
 #pragma once
 
-#include "blend_mode_base.h"
+#include <microgl/blend_modes/blend_mode_base.h>
 
 namespace microgl {
     namespace blendmode {
@@ -8,13 +8,11 @@ namespace microgl {
         template <bool fast =true>
         class SoftLight {
         public:
-
             template<uint8_t bits>
             static inline
             uint blend_channel(cuint b, cuint s) {
                 constexpr cint max= (uint(1)<<bits)-1;
                 constexpr cint max_double= max*max;
-
                 if(fast)
                     return (((max-2*int(s))*int(b)*int(b))>>(bits<<1)) + (int(2*s*b)>>bits);
                 else
@@ -29,8 +27,6 @@ namespace microgl {
                 output.g = blend_channel<G>(b.g, s.g);
                 output.b = blend_channel<B>(b.b, s.b);
             }
-
         };
-
     }
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <microgl/rgba_t.h>
-#include <microgl/tesselation/vec2.h>
 #include <microgl/math.h>
 #include <microgl/precision.h>
 #include <microgl/Q.h>

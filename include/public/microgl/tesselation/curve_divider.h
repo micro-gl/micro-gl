@@ -10,17 +10,17 @@ namespace microtess {
 
     enum class CurveDivisionAlgorithm {
         // highest quality for adaptive based on distance to real curve
-                Adaptive_tolerance_distance_Small,
+        Adaptive_tolerance_distance_Small,
         // medium quality for adaptive based on distance to real curve
-                Adaptive_tolerance_distance_Medium,
+        Adaptive_tolerance_distance_Medium,
         // low quality for adaptive based on distance to real curve
-                Adaptive_tolerance_distance_Large,
+        Adaptive_tolerance_distance_Large,
         // highest quality for uniform subdivision
-                Uniform_64,
+        Uniform_64,
         // medium quality for uniform subdivision
-                Uniform_32,
+        Uniform_32,
         // low quality for uniform subdivision
-                Uniform_16,
+        Uniform_16,
     };
 
     template<typename number, class container_type>

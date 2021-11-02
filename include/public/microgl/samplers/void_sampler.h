@@ -19,6 +19,5 @@ namespace microgl {
                                color_t &output) const {
             }
         };
-
     }
 }

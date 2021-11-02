@@ -1,12 +1,11 @@
 #pragma once
 
-#include "blend_mode_base.h"
+#include <microgl/blend_modes/blend_mode_base.h>
 
 namespace microgl {
     namespace blendmode {
 
         struct Normal {
-
             template<uint8_t R, uint8_t G, uint8_t B>
             static inline void blend(const color_t &b,
                                      const color_t &s,
@@ -15,8 +14,6 @@ namespace microgl {
                 output.g = s.g;
                 output.b = s.b;
             }
-
         };
-
     }
 }

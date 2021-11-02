@@ -7,7 +7,6 @@ namespace microgl {
 
         template <bool fast=true, bool use_FPU=false>
         struct Overlay {
-
             template<uint8_t bits>
             static inline uint blend_Overlay(cuint b, cuint s) {
                 constexpr cuint max = (uint(1)<<bits)-1;
@@ -24,14 +23,10 @@ namespace microgl {
             static inline void blend(const color_t &b,
                                      const color_t &s,
                                      color_t &output) {
-
                 output.r = blend_Overlay<R>(b.r, s.r);
                 output.g = blend_Overlay<G>(b.g, s.g);
                 output.b = blend_Overlay<B>(b.b, s.b);
             }
-
         };
-
     }
-
 }

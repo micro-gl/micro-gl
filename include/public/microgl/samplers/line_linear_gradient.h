@@ -1,7 +1,7 @@
 #pragma once
 
 #include <microgl/rgba_t.h>
-#include <microgl/tesselation/vec2.h>
+#include <microgl/vec2.h>
 #include <microgl/functions/distance.h>
 
 namespace microgl {
@@ -24,8 +24,8 @@ namespace microgl {
             using rint= typename microgl::traits::conditional<p_bits>=16, int64_t, int32_t>::type;
             static constexpr precision_t p_bits_double= p_bits<<1;
             static constexpr rint ONE= rint(1)<<p_bits;
-            using point_int= vec2<rint>;
-            using point= vec2<number>;
+            using point_int= microgl::vec2<rint>;
+            using point= microgl::vec2<number>;
 
             // ax + by + c = 0
             struct line_t {

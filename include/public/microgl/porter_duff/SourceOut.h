@@ -1,6 +1,6 @@
 #pragma once
 
-#include "porter_duff_base.h"
+#include <microgl/porter_duff/porter_duff_base.h>
 
 namespace microgl {
     namespace porterduff {

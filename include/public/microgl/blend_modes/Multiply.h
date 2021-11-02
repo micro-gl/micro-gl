@@ -1,18 +1,16 @@
 #pragma once
 
-#include "blend_mode_base.h"
+#include <microgl/blend_modes/blend_mode_base.h>
 
 namespace microgl {
     namespace blendmode {
 
         template <bool fast=true>
         struct Multiply {
-
             template<uint8_t R, uint8_t G, uint8_t B>
             static inline void blend(const color_t &b,
                                      const color_t &s,
                                      color_t &output) {
-
                 if(fast) {
                     using cuint=unsigned int;
                     output.r = (cuint(b.r) * s.r) >> R;
@@ -23,10 +21,7 @@ namespace microgl {
                     output.g = mul_channels_correct<G>(b.g, s.g);
                     output.b = mul_channels_correct<B>(b.b, s.b);
                 }
-
             }
-
         };
-
     }
 }

@@ -1,12 +1,11 @@
 #pragma once
 
-#include "LinearBurn.h"
+#include <microgl/blend_modes/LinearBurn.h>
 
 namespace microgl {
     namespace blendmode {
 
         struct LinearLight {
-
             template<uint8_t bits>
             static inline
             uint blend_channel(cuint b, cuint s) {
@@ -23,8 +22,6 @@ namespace microgl {
                 output.g = blend_channel<G>(b.g, s.g);
                 output.b = blend_channel<B>(b.b, s.b);
             }
-
         };
-
     }
 }
