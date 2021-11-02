@@ -1065,12 +1065,14 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
     rint one_over_w0_fixed= f(one_over_w0, w_bits), one_over_w1_fixed= f(one_over_w1, w_bits),
                                 one_over_w2_fixed= f(one_over_w2, w_bits);
     /// overflow detection
-    auto bits_used_max_w=microgl::functions::used_integer_bits(microgl::functions::abs_max(
+    const auto bits_used_min_w=microgl::functions::used_integer_bits(microgl::functions::abs_min(
             one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed));
     if(options_avoid_overflow()) { // compile time flag
         precision size_of_int_bits = sizeof(rint)<<3, size_of_big_int_bits = sizeof(rint_big)<<3;
         auto bits_used_max_area=microgl::functions::used_integer_bits(area);
-        if(!perspective_correct) bits_used_max_w=0;
+        const auto bits_used_max_w=perspective_correct ?
+                microgl::functions::used_integer_bits(microgl::functions::abs_max(
+                one_over_w0_fixed, one_over_w1_fixed, one_over_w2_fixed)) : 0;
         const bool first_test = bits_used_max_area + bits_used_max_w - sub_pixel_precision - 1 < size_of_int_bits;
         if(!first_test) return;
     }
@@ -1140,9 +1142,9 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
             auto bary = vec4<rint>{b0_c, b1_c, b2_c, area_c};
             if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
                 // compress bits
-                bary.x= (b0_c * one_over_w0_fixed) >> bits_used_max_w;
-                bary.y= (b1_c * one_over_w1_fixed) >> bits_used_max_w;
-                bary.z= (b2_c * one_over_w2_fixed) >> bits_used_max_w;
+                bary.x= (b0_c * one_over_w0_fixed) >> bits_used_min_w;
+                bary.y= (b1_c * one_over_w1_fixed) >> bits_used_min_w;
+                bary.z= (b2_c * one_over_w2_fixed) >> bits_used_min_w;
                 bary.w=bary.x+bary.y+bary.z;
                 if(bary.w==0) bary={1, 1, 1, 3};
             }
