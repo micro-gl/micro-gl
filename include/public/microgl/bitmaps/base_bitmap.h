@@ -3,7 +3,7 @@
 #include "buffer.h"
 #include "../color.h"
 #include "../pixel_coders/pixel_coder.h"
-#include "../micro_gl_traits.h"
+#include "../traits.h"
 #include "../stdint.h"
 
 /**

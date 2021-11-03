@@ -1,7 +1,7 @@
 #pragma once
 
 #include <microgl/stdint.h>
-#include <microgl/micro_gl_traits.h>
+#include <microgl/traits.h>
 
 namespace microgl {
     namespace coder {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../vec3.h"
-#include "../vec4.h"
+#include "microgl/math/vertex3.h"
+#include "microgl/math/vertex4.h"
 #include "../color.h"
 
 namespace microgl {

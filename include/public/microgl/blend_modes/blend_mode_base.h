@@ -2,7 +2,7 @@
 
 #include "../color.h"
 #include "../stdint.h"
-#include "../micro_gl_traits.h"
+#include "../traits.h"
 
 namespace microgl {
     namespace blendmode {

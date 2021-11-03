@@ -1,6 +1,6 @@
 #include <microgl/canvas.h>
 #include <microgl/bitmaps/bitmap.h>
-#include <microgl/matrix_4x4.h>
+#include "microgl/math/matrix_4x4.h"
 #include <microgl/camera.h>
 #include <microgl/pipeline.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>

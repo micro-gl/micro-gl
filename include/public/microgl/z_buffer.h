@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdint.h"
-#include "micro_gl_traits.h"
+#include "traits.h"
 #include "tesselation/std_rebind_allocator.h"
 
 template<unsigned Bits, class Allocator=microtess::std_rebind_allocator<>>

@@ -1,5 +1,5 @@
 #include <microgl/rgba_t.h>
-#include <microgl/micro_gl_traits.h>
+#include <microgl/traits.h>
 
 namespace microgl {
     namespace sampling {

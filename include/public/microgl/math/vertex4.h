@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tesselation/vec4.h"
-#include "vec3.h"
+#include "../tesselation/vec4.h"
+#include "vertex3.h"
 
 namespace microgl {
     template<typename number>

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "microgl/tesselation/dynamic_array.h"
-#include <microgl/vec2.h>
-#include <microgl/vec3.h>
+#include "microgl/math/vertex2.h"
+#include "microgl/math/vertex3.h"
 #include <microgl/tesselation/triangles.h>
 #include <initializer_list>
 

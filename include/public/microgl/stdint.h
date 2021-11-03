@@ -1,6 +1,6 @@
 #pragma once
 
-#include "micro_gl_traits.h"
+#include "traits.h"
 
 using int8_t = signed char;
 using uint8_t = unsigned char;

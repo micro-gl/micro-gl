@@ -1,6 +1,6 @@
 #pragma once
 
-#include "micro_gl_traits.h"
+#include "traits.h"
 
 namespace microgl {
     namespace lut {

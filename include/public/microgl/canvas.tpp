@@ -1160,7 +1160,6 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
             if(should_sample) {
                 // cast to user's number types vec4<number> casted_bary= bary;, I decided to stick with l64
                 // because other wise this would have wasted bits for Q types although it would have been more elegant.
-//                interpolated_varying.template interpolate<rint>(varying_v0, varying_v1, varying_v2, bary);
                 interpolated_varying.interpolate(varying_v0, varying_v1, varying_v2, bary);
                 auto color = $shader.fragment(interpolated_varying);
                 blendColor<BlendMode, PorterDuff, shader_type::rgba::a>(color, index + p.x, opacity_sample, *this);

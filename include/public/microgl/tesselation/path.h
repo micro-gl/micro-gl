@@ -8,7 +8,7 @@
 #include "planarize_division.h"
 #include "chunker.h"
 #include "std_rebind_allocator.h"
-#include "micro_tess_traits.h"
+#include "traits.h"
 
 namespace microtess {
 

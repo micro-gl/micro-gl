@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tesselation/vec2.h"
+#include "../tesselation/vec2.h"
 
 namespace microgl {
     template<typename number>

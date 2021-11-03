@@ -1,8 +1,8 @@
 #pragma once
 
-#include "matrix_4x4.h"
-#include "vec2.h"
-#include "vec3.h"
+#include "math/matrix_4x4.h"
+#include "math/vertex2.h"
+#include "math/vertex3.h"
 #include "color.h"
 #include "tesselation/triangles.h"
 

@@ -2,7 +2,7 @@
 
 #include "vec2.h"
 #include "triangles.h"
-#include "micro_tess_traits.h"
+#include "traits.h"
 #include "math.h"
 
 namespace microtess {

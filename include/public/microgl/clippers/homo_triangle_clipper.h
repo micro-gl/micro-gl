@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../vec4.h"
-#include "../micro_gl_traits.h"
+#include "../math/vertex4.h"
+#include "../traits.h"
 
 namespace microgl {
     namespace clipping {

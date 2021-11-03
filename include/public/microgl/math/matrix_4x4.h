@@ -1,8 +1,8 @@
 #pragma once
 
 #include "matrix.h"
-#include "math.h"
-#include "vec4.h"
+#include "../math.h"
+#include "vertex4.h"
 
 namespace microgl {
 

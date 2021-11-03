@@ -21,19 +21,11 @@ private:
                        this->precision);
     }
 
-    template<class number>
-            static inline
-            number abs(const number & val) {
+    template<class number> static inline number abs(const number & val) {
         return val<0?-val:val;
     }
-    static inline
-    integer abs2(const integer & val) {
-        return val<0?-val:val;
-    }
-    static inline
-    integer sign(const integer & val) {
-        return val<0?-1:1;
-    }
+    static inline integer abs2(const integer & val) { return val<0?-val:val; }
+    static inline integer sign(const integer & val) { return val<0?-1:1; }
 
 public:
     integer _value = 0;
@@ -62,34 +54,20 @@ public:
     Q(const_ref q) : _value{integer(q.value())} {}
     // conversion constructor, this reduces many other
     template <unsigned P_2>
-    Q(const Q<P_2> &q) {
-        this->_value = convert(integer(q.value()), P_2, P);
-    }
-    Q(const_signed_ref q_val, precision_t q_precision) {
-        this->_value = convert(q_val, q_precision, P);
-    }
+    Q(const Q<P_2> &q) { this->_value = convert(integer(q.value()), P_2, P); }
+    Q(const_signed_ref q_val, precision_t q_precision) { this->_value = convert(q_val, q_precision, P); }
     // this is Q<0>, so we promote it to Q<P>
-    Q(const unsigned int_val) {
-        this->_value = integer(int_val)<<P;
-    }
-
+    Q(const unsigned int_val) { this->_value = integer(int_val)<<P; }
     Q(const signed int_val) {
         const bool isNegative=int_val<0;
         this->_value = abs(integer(int_val))<<P;
         if(isNegative) this->_value = -this->_value;
     }
-    Q(const float val) {
-        this->_value = integer(val * float(1u<<P));
-    }
-    Q(const double val) {
-        this->_value = integer(val * double(1u<<P));
-    }
+    Q(const float val) { this->_value = integer(val * float(1u<<P)); }
+    Q(const double val) { this->_value = integer(val * double(1u<<P)); }
 
     // with assignments operators
-    q_ref operator =(const_ref q) {
-        this->_value = q.value();
-        return *this;
-    }
+    q_ref operator =(const_ref q) { this->_value = q.value(); return *this; }
     q_ref operator *=(const_ref q) {
         intermediate_container_integer inter = ((intermediate_container_integer)this->_value*q.value());
         const bool isNegative=inter<0;
@@ -104,30 +82,14 @@ public:
         if(isNegative) this->_value = -this->_value;
         return *this;
     }
-    q_ref operator +=(const_ref q) {
-        this->_value+=q.value(); return *this;
-    }
-    q_ref operator -=(const_ref q) {
-        this->_value-=q.value(); return *this;
-    }
+    q_ref operator +=(const_ref q) { this->_value+=q.value(); return *this; }
+    q_ref operator -=(const_ref q) { this->_value-=q.value(); return *this; }
 
     // intermediate Q
-    Q operator +(const_ref q) const {
-        Q temp{*this}; temp+=q;
-        return temp;
-    }
-    Q operator -(const_ref q) const {
-        Q temp{*this}; temp-=q;
-        return temp;
-    }
-    Q operator *(const_ref q) const {
-        Q temp{*this}; temp*=q;
-        return temp;
-    }
-    Q operator /(const_ref q) const {
-        Q temp{*this}; temp/=q;
-        return temp;
-    }
+    Q operator +(const_ref q) const { Q temp{*this}; temp+=q; return temp; }
+    Q operator -(const_ref q) const { Q temp{*this}; temp-=q; return temp; }
+    Q operator *(const_ref q) const { Q temp{*this}; temp*=q; return temp; }
+    Q operator /(const_ref q) const { Q temp{*this}; temp/=q; return temp; }
 
     // negate
     Q operator -() const { return Q{-this->value(), P}; }
@@ -166,18 +128,11 @@ public:
     inline integer value() const { return _value; }
     inline void updateValue(const_signed_ref val) { this->_value=val; }
 
-    Q<P> sqrt() const {
-        return Q<P>((sqrt_<unsigned>(unsigned(_value))), P/2);
-    }
-    Q<P> abs() const {
-        return _value<0? Q{-_value}:Q{_value};
-    }
-    Q<P> mod(const_ref val) const {
-        return (*this)%val;
-    }
+    Q<P> sqrt() const { return Q<P>((sqrt_<unsigned>(unsigned(_value))), P/2); }
+    Q<P> abs() const { return _value<0? Q{-_value}:Q{_value}; }
+    Q<P> mod(const_ref val) const { return (*this)%val; }
 
 private:
-
     template<typename integer_type>
     static
     integer_type sqrt_(integer_type val) {

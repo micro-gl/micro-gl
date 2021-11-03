@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/matrix_4x4.h>
+#include "microgl/math/matrix_4x4.h"
 #include <microgl/shaders/shader.h>
 
 namespace microgl {
