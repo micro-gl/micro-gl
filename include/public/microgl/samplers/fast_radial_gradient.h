@@ -1,4 +1,4 @@
-#include <microgl/rgba_t.h>
+#include <microgl/rgba.h>
 #include <microgl/traits.h>
 
 namespace microgl {

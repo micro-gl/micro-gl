@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/rgba_t.h>
+#include <microgl/rgba.h>
 #include <microgl/math/vertex2.h>
 #include <microgl/functions/distance.h>
 

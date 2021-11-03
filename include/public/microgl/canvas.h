@@ -4,7 +4,7 @@
 #include "color.h"
 #include "traits.h"
 #include "masks.h"
-#include "rgba_t.h"
+#include "rgba.h"
 #include "math.h"
 #include "stdint.h"
 #include "math/vertex2.h"

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <microgl/stdint.h>
-#include <microgl/color.h>
-#include <microgl/rgba_t.h>
+#include "../stdint.h"
+#include "../color.h"
+#include "../rgba.h"
 
 namespace microgl {
     namespace coder {

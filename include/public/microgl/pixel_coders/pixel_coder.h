@@ -1,14 +1,13 @@
 #pragma once
 
-#include "../rgba_t.h"
+#include "../rgba.h"
 #include "../color.h"
+#include "../traits.h"
 
 namespace microgl {
-
     namespace coder {
 
         using namespace microgl::color;
-        using namespace microgl::traits;
 
         /**
          * encode intensity into a pixel with a pixel coder
@@ -166,9 +165,6 @@ namespace microgl {
                 convert<CODER2>(input_decoded, output_converted);
                 coder2.encode(output_converted, output);
             }
-
         };
-
     }
-
 }

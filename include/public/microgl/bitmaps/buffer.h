@@ -5,10 +5,8 @@ namespace buffer_traits {
     template< class T > struct remove_reference<T&>  {typedef T type;};
     template< class T > struct remove_reference<T&&> {typedef T type;};
 
-    template <class _Tp> inline
-    typename remove_reference<_Tp>::type&&
-    move(_Tp&& __t) noexcept
-    {
+    template <class _Tp> inline typename remove_reference<_Tp>::type&&
+    move(_Tp&& __t) noexcept {
         typedef typename remove_reference<_Tp>::type _Up;
         return static_cast<_Up&&>(__t);
     }
