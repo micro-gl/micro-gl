@@ -19,9 +19,9 @@ using container = dynamic_array<item_type>;
 //using container = std::vector<item_type>;
 
 template <typename number>
-container<vec2<number>> poly_rect() {
-    using il = std::initializer_list<vec2<number>>;
-    using vertex=vec2<number>;
+container<vertex2<number>> poly_rect() {
+    using il = std::initializer_list<vertex2<number>>;
+    using vertex=vertex2<number>;
     vertex p0 = {100,100};
     vertex p1 = {300, 100};
     vertex p2 = {300, 300};
@@ -30,9 +30,9 @@ container<vec2<number>> poly_rect() {
 }
 
 template <typename number>
-container<vec2<number>> poly_tri() {
-    using il = std::initializer_list<vec2<number>>;
-    using vertex=vec2<number>;
+container<vertex2<number>> poly_tri() {
+    using il = std::initializer_list<vertex2<number>>;
+    using vertex=vertex2<number>;
     vertex p0 = {100,100};
     vertex p3 = {300, 100};
     vertex p4 = {100, 300};
@@ -41,8 +41,8 @@ container<vec2<number>> poly_tri() {
 }
 
 template <typename number>
-container<vec2<number>> poly_1_x_monotone() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_1_x_monotone() {
+    using il = std::initializer_list<vertex2<number>>;
     return il{
             {50,100},
             {100,50},
@@ -64,8 +64,8 @@ container<vec2<number>> poly_1_x_monotone() {
 }
 
 template <typename number>
-container<vec2<number>> poly_1_y_monotone() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_1_y_monotone() {
+    using il = std::initializer_list<vertex2<number>>;
     return il{
             {100, 50},
             {50, 100},
@@ -87,8 +87,8 @@ container<vec2<number>> poly_1_y_monotone() {
 }
 
 template <typename number>
-container<vec2<number>> poly_2_x_monotone() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_2_x_monotone() {
+    using il = std::initializer_list<vertex2<number>>;
     return il{
             {50,200},
             {50,100},
@@ -105,8 +105,8 @@ container<vec2<number>> poly_2_x_monotone() {
 }
 
 template <typename number>
-container<vec2<number>> poly_2_y_monotone() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_2_y_monotone() {
+    using il = std::initializer_list<vertex2<number>>;
     return il{
             {200,50},
             {100,50},
@@ -134,7 +134,7 @@ int main() {
     Canvas24 canvas(W, H);
     float t = 0;
 
-    auto render_polygon = [&](const container<vec2<number>> & polygon, bool x_monotone_or_y) {
+    auto render_polygon = [&](const container<vertex2<number>> & polygon, bool x_monotone_or_y) {
         using index = unsigned int;
         using mat = matrix_3x3<number>;
 
@@ -161,7 +161,7 @@ int main() {
                 color_red,
                 transform,
                 polygon.data(),
-                (vec2<number> *)nullptr,
+                (vertex2<number> *)nullptr,
                 indices.data(),
                 boundary_buffer.data(),
                 indices.size(),

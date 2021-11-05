@@ -21,7 +21,7 @@ namespace microgl {
         class rect_sampler {
         public:
             using rgba = rgba_;
-            using vertex = microgl::vec2<number>;
+            using vertex = microgl::vertex2<number>;
         private:
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
         public:
@@ -29,7 +29,7 @@ namespace microgl {
                                         int64_t, int32_t>::type;
             static constexpr rint ONE= rint(1)<<p_bits;
 
-            using ivertex = microgl::vec2<rint>;
+            using ivertex = microgl::vertex2<rint>;
 
             color_t color_fill= {0, 0, 0, (1u<<rgba::a)-1};
             color_t color_background= {(1u<<rgba::r)-1, (1u<<rgba::g)-1, (1u<<rgba::b)-1, 0};

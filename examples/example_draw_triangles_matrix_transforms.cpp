@@ -12,7 +12,7 @@ float t = 0.0f;
 
 int main() {
     using number  =float;
-    using vertex = vec2<number>;
+    using vertex = vertex2<number>;
     using mat = matrix_3x3<number>;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
@@ -49,7 +49,7 @@ int main() {
                 color_red,
                 transform,
                 vertices,
-                (vec2<number> *) nullptr,
+                (vertex2<number> *) nullptr,
                 nullptr,
                 boundary,
                 4,

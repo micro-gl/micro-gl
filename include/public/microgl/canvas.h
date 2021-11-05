@@ -784,8 +784,8 @@ public:
             bool antialias=false, typename number1=float, typename number2=float, typename Sampler>
     void drawTriangles(const Sampler & sampler,
                        const matrix_3x3<number1> &transform,
-                       const vec2<number1> *vertices= nullptr,
-                       const vec2<number2> *uvs=nullptr,
+                       const vertex2<number1> *vertices= nullptr,
+                       const vertex2<number2> *uvs=nullptr,
                        const index *indices= nullptr,
                        const boundary_info * boundary_buffer= nullptr,
                        index size=0,
@@ -863,7 +863,7 @@ public:
             bool antialias=false, typename number=float>
     void drawTrianglesWireframe(const color_t & color,
                                 const matrix_3x3<number> &transform,
-                                const vec2<number> *vertices,
+                                const vertex2<number> *vertices,
                                 const index *indices,
                                 index size,
                                 enum indices type,
@@ -881,9 +881,9 @@ public:
      */
     template<typename number=float>
     void drawTriangleWireframe(const color_t &color,
-                               const vec2<number> &p0,
-                               const vec2<number> &p1,
-                               const vec2<number> &p2,
+                               const vertex2<number> &p0,
+                               const vertex2<number> &p1,
+                               const vertex2<number> &p2,
                                opacity_t opacity=255);
 
 private:
@@ -1015,7 +1015,7 @@ private:
             typename Shader, typename number, typename depth_buffer_type >
     void drawTriangle_shader_homo_internal(Shader &$shader,
                                            int viewport_width, int viewport_height,
-                                           const vec4<number> &p0, const vec4<number> &p1, const vec4<number> &p2,
+                                           const vertex4<number> &p0, const vertex4<number> &p1, const vertex4<number> &p2,
                                            varying<Shader> varying_v0,
                                            varying<Shader> varying_v1,
                                            varying<Shader> varying_v2,
@@ -1100,7 +1100,7 @@ public:
             class Allocator=std_rebind_allocator<>>
     void drawBezierPatch(const Sampler &sampler,
                          const matrix_3x3<number1> &transform,
-                         const vec3<number1> *mesh,
+                         const vertex3<number1> *mesh,
                          unsigned uOrder, unsigned vOrder,
                          unsigned uSamples=20, unsigned vSamples=20,
                          number2 u0=number2(0), number2 v0=number2(1),
@@ -1139,7 +1139,7 @@ public:
             class tessellation_allocator=std_rebind_allocator<>>
     void drawPolygon(const Sampler &sampler,
                      const matrix_3x3<number1> &transform,
-                     const vec2<number1> * points,
+                     const vertex2<number1> * points,
                      index size, opacity_t opacity=255,
                      number2 u0=number2(0), number2 v0=number2(1),
                      number2 u1=number2(1), number2 v1=number2(0),
@@ -1189,7 +1189,7 @@ public:
      */
     template <typename number>
     void drawWuLinePath(const color_t & color,
-                        const vec2<number> *points,
+                        const vertex2<number> *points,
                         unsigned int size = 4,
                         bool closed_path = false);
 

@@ -12,25 +12,25 @@ using namespace microtess;
 using namespace microgl::sampling;
 
 template <typename number>
-dynamic_array<microgl::vec2<number>> poly_hole() {
-    using il = std::initializer_list<microgl::vec2<number>>;
-    microgl::vec2<number> p0 = {100,100};
-    microgl::vec2<number> p1 = {300, 100};
-    microgl::vec2<number> p2 = {300, 300};
-    microgl::vec2<number> p3 = {100, 300};
+dynamic_array<microgl::vertex2<number>> poly_hole() {
+    using il = std::initializer_list<microgl::vertex2<number>>;
+    microgl::vertex2<number> p0 = {100, 100};
+    microgl::vertex2<number> p1 = {300, 100};
+    microgl::vertex2<number> p2 = {300, 300};
+    microgl::vertex2<number> p3 = {100, 300};
 
-    microgl::vec2<number> p4 = {150,150};
-    microgl::vec2<number> p7 = {150, 250};
-    microgl::vec2<number> p6 = {250, 250};
-    microgl::vec2<number> p5 = {250, 150};
+    microgl::vertex2<number> p4 = {150, 150};
+    microgl::vertex2<number> p7 = {150, 250};
+    microgl::vertex2<number> p6 = {250, 250};
+    microgl::vertex2<number> p5 = {250, 150};
 
 //    return {p4, p5, p6, p7};
     return il{p0, p1, p2, p3,   p4, p7, p6, p5, p4,p3};//,p5_,p4_};
 }
 
 template <typename number>
-dynamic_array<microgl::vec2<number>> poly_diamond() {
-    using il = std::initializer_list<microgl::vec2<number>>;
+dynamic_array<microgl::vertex2<number>> poly_diamond() {
+    using il = std::initializer_list<microgl::vertex2<number>>;
     return il{{300, 100}, {400, 300}, {300, 400}, {100,300}};
 }
 
@@ -45,7 +45,7 @@ int main() {
 
     Canvas24 canvas(W, H);
 
-    auto render_polygon = [&](dynamic_array<microgl::vec2<number>> & polygon) -> void {
+    auto render_polygon = [&](dynamic_array<microgl::vertex2<number>> & polygon) -> void {
         static float t =0;
 
         t+=.015f;

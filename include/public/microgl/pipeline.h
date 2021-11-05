@@ -17,9 +17,9 @@ namespace microgl {
         private:
             using index = unsigned;
             using const_ref = const number &;
-            using vertex2 = microgl::vec2<number>;
-            using vertex3 = microgl::vec3<number>;
-            using vertex4 = microgl::vec4<number>;
+            using vertex2 = microgl::vertex2<number>;
+            using vertex3 = microgl::vertex3<number>;
+            using vertex4 = microgl::vertex4<number>;
             using mat4 = matrix_4x4<number>;
         public:
 

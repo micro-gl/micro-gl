@@ -510,7 +510,7 @@ void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
     static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
     constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
     if(void_sampler) return;
-    vec2<number1> p0{left, top}, p1{left, bottom}, p2{right, bottom}, p3{right, top};
+    vertex2<number1> p0{left, top}, p1{left, bottom}, p2{right, bottom}, p3{right, top};
     if(!transform.isIdentity()) {p0=transform*p0; p1=transform*p1; p2=transform*p2; p3=transform*p3;}
     drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(sampler,
                                         p0.x,p0.y,u0,v0, p1.x,p1.y,u0,v1, p2.x,p2.y,u1,v1, opacity, true, true, false);
@@ -664,8 +664,8 @@ template<typename bitmap_type, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename Sampler>
 void canvas<bitmap_type, options>::drawTriangles(const Sampler &sampler,
                                             const matrix_3x3<number1> &transform,
-                                            const vec2<number1> *vertices,
-                                            const vec2<number2> *uvs,
+                                            const vertex2<number1> *vertices,
+                                            const vertex2<number2> *uvs,
                                             const index *indices,
                                             const boundary_info * boundary_buffer,
                                             const index size,
@@ -679,7 +679,7 @@ void canvas<bitmap_type, options>::drawTriangles(const Sampler &sampler,
 #define f microgl::math::to_fixed
     const precision p = renderingOptions()._2d_raster_bits_sub_pixel;
     const precision uv_p = renderingOptions()._2d_raster_bits_uv;
-    vec2<number1> min, max;
+    vertex2<number1> min, max;
     if(!uvs) { // if we don't have per-vertex uv, then let's compute
         min.x=max.x=vertices[0].x;
         min.y=max.y=vertices[0].y;
@@ -710,10 +710,10 @@ void canvas<bitmap_type, options>::drawTriangles(const Sampler &sampler,
               }
 
               auto p1= vertices[first_index], p2=vertices[second_index], p3=vertices[third_index];
-              vec2<number2> uv_s{u0,v0}, uv_e{u1,v1}, uv_d{u1-u0,v1-v0};
-              auto uv1= uvs?uvs[first_index] : vec2<number2>(p1-min)/vec2<number2>(max-min);
-              auto uv2= uvs?uvs[second_index] : vec2<number2>(p2-min)/vec2<number2>(max-min);
-              auto uv3= uvs?uvs[third_index] : vec2<number2>(p3-min)/vec2<number2>(max-min);
+              vertex2<number2> uv_s{u0, v0}, uv_e{u1, v1}, uv_d{u1 - u0, v1 - v0};
+              auto uv1= uvs? uvs[first_index] : vertex2<number2>(p1 - min) / vertex2<number2>(max - min);
+              auto uv2= uvs? uvs[second_index] : vertex2<number2>(p2 - min) / vertex2<number2>(max - min);
+              auto uv3= uvs? uvs[third_index] : vertex2<number2>(p3 - min) / vertex2<number2>(max - min);
               uv1= uv_s+uv1*uv_d, uv2= uv_s+uv2*uv_d, uv3= uv_s+uv3*uv_d;
               p1=transform*p1;p2=transform*p2;p3=transform*p3;
               drawTriangle<BlendMode, PorterDuff, antialias, false, Sampler>(sampler,
@@ -753,7 +753,7 @@ template<typename bitmap_type, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
 void canvas<bitmap_type, options>::drawTrianglesWireframe(const color_t &color,
                                                      const matrix_3x3<number> &transform,
-                                                     const vec2<number> *vertices,
+                                                     const vertex2<number> *vertices,
                                                      const index *indices,
                                                      const index size,
                                                      const enum indices type,
@@ -769,9 +769,9 @@ void canvas<bitmap_type, options>::drawTrianglesWireframe(const color_t &color,
 template<typename bitmap_type, uint8_t options>
 template<typename number>
 void canvas<bitmap_type, options>::drawTriangleWireframe(const color_t &color,
-                                                    const vec2<number> &p0,
-                                                    const vec2<number> &p1,
-                                                    const vec2<number> &p2,
+                                                    const vertex2<number> &p0,
+                                                    const vertex2<number> &p1,
+                                                    const vertex2<number> &p2,
                                                     const opacity_t opacity) {
     drawWuLine(color, p0.x, p0.y, p1.x, p1.y, opacity);
     drawWuLine(color, p1.x, p1.y, p2.x, p2.y, opacity);
@@ -849,9 +849,9 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler &sampler,
     microtess::triangles::top_left_t top_left = // fill rules adjustments
             microtess::triangles::classifyTopLeftEdges<rint>(false, v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
     int bias_w0=top_left.first?0:-1, bias_w1=top_left.second?0:-1, bias_w2=top_left.third?0:-1;
-    vec2<rint> p = { bbox.left, bbox.top }; // Barycentric coordinates at minX/minY corner
-    vec2<rint> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
-    p_fixed = p_fixed + vec2<rint> {(rint(1)<<(sub_pixel_precision))>>1, (rint(1)<<(sub_pixel_precision))>>1}; // we sample at the center
+    vertex2<rint> p = {bbox.left, bbox.top }; // Barycentric coordinates at minX/minY corner
+    vertex2<rint> p_fixed = {bbox.left << sub_pixel_precision, bbox.top << sub_pixel_precision };
+    p_fixed = p_fixed + vertex2<rint> {(rint(1) << (sub_pixel_precision)) >> 1, (rint(1) << (sub_pixel_precision)) >> 1}; // we sample at the center
     // this can produce a 2B+2P bits number if the points form a a perpendicular triangle
     // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
     // I still need to explain to myself why it works so well :) compress down to (2B+P) after
@@ -1001,9 +1001,9 @@ void canvas<bitmap_type, options>::drawTriangle(Shader &shader,
         const auto & bary_2= result_clipping[ix+2].bary;
         // convert bary to 16 bits fixed points
         constexpr precision p = 15; // this is not a problem, bary coords of clipping are always [0, 1] with bary.w=1
-        const vec4<int> bary_0_fixed= {f(bary_0.x, p), f(bary_0.y, p), f(bary_0.z, p), f(bary_0.w, p)};
-        const vec4<int> bary_1_fixed= {f(bary_1.x, p), f(bary_1.y, p), f(bary_1.z, p), f(bary_1.w, p)};
-        const vec4<int> bary_2_fixed= {f(bary_2.x, p), f(bary_2.y, p), f(bary_2.z, p), f(bary_2.w, p)};
+        const vertex4<int> bary_0_fixed= {f(bary_0.x, p), f(bary_0.y, p), f(bary_0.z, p), f(bary_0.w, p)};
+        const vertex4<int> bary_1_fixed= {f(bary_1.x, p), f(bary_1.y, p), f(bary_1.z, p), f(bary_1.w, p)};
+        const vertex4<int> bary_2_fixed= {f(bary_2.x, p), f(bary_2.y, p), f(bary_2.z, p), f(bary_2.w, p)};
         varying_v0_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_0_fixed);
         varying_v1_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_1_fixed);
         varying_v2_clip.interpolate(varying_v0, varying_v1, varying_v2, bary_2_fixed);
@@ -1021,15 +1021,15 @@ template<typename bitmap_type, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename Shader, typename number, typename depth_buffer_type>
 void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
-                            Shader & $shader,
-                            int viewport_width, int viewport_height,
-                            const vec4<number> &p0, const vec4<number> &p1, const vec4<number> &p2,
-                            varying<Shader> varying_v0,
-                            varying<Shader> varying_v1,
-                            varying<Shader> varying_v2,
-                            opacity_t opacity, const microtess::triangles::face_culling & culling,
-                            depth_buffer_type * depth_buffer,
-                            number depth_range_near, number depth_range_far) {
+        Shader & $shader,
+        int viewport_width, int viewport_height,
+        const vertex4<number> &p0, const vertex4<number> &p1, const vertex4<number> &p2,
+        varying<Shader> varying_v0,
+        varying<Shader> varying_v1,
+        varying<Shader> varying_v2,
+        opacity_t opacity, const microtess::triangles::face_culling & culling,
+        depth_buffer_type * depth_buffer,
+        number depth_range_near, number depth_range_far) {
     /*
      * given triangle coords in a homogeneous coords, a $shader, and corresponding interpolated varying
      * vertex attributes. we pass varying because somewhere in the pipeline we might have clipped things
@@ -1054,9 +1054,9 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
     const number drn=microgl::functions::clamp<number>(depth_range_near, number(0), number(1));
     const number drf=microgl::functions::clamp<number>(depth_range_far, number(0), number(1));
     const number range =(drf-drn)/number(2), one = number(1), two=number(2);
-    vec3<number> v0_viewport = {((v0_ndc.x + one)*w)/two, h - ((v0_ndc.y + one)*h)/two, drn+(v0_ndc.z+one)*range};
-    vec3<number> v1_viewport = {((v1_ndc.x + one)*w)/two, h - ((v1_ndc.y + one)*h)/two, drn+(v1_ndc.z+one)*range};
-    vec3<number> v2_viewport = {((v2_ndc.x + one)*w)/two, h - ((v2_ndc.y + one)*h)/two, drn+(v2_ndc.z+one)*range};
+    vertex3<number> v0_viewport = {((v0_ndc.x + one) * w) / two, h - ((v0_ndc.y + one) * h) / two, drn + (v0_ndc.z + one) * range};
+    vertex3<number> v1_viewport = {((v1_ndc.x + one) * w) / two, h - ((v1_ndc.y + one) * h) / two, drn + (v1_ndc.z + one) * range};
+    vertex3<number> v2_viewport = {((v2_ndc.x + one) * w) / two, h - ((v2_ndc.y + one) * h) / two, drn + (v2_ndc.z + one) * range};
     // collect values for interpolation as fixed point integers
     int v0_x= f(v0_viewport.x, sub_pixel_precision), v0_y= f(v0_viewport.y, sub_pixel_precision);
     int v1_x= f(v1_viewport.x, sub_pixel_precision), v1_y= f(v1_viewport.y, sub_pixel_precision);
@@ -1112,10 +1112,10 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
                                             v0_x, v0_y, v1_x, v1_y, v2_x, v2_y);
     int bias_w0=top_left.first?0:-1, bias_w1=top_left.second?0:-1, bias_w2=top_left.third?0:-1;
     // Barycentric coordinates at minX/minY corner
-    vec2<int> p = { bbox.left, bbox.top };
-    vec2<int> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
+    vertex2<int> p = {bbox.left, bbox.top };
+    vertex2<int> p_fixed = {bbox.left << sub_pixel_precision, bbox.top << sub_pixel_precision };
     int half= (int(1)<<(sub_pixel_precision))>>1;
-    p_fixed = p_fixed + vec2<int> {half, half}; // we sample at the center
+    p_fixed = p_fixed + vertex2<int> {half, half}; // we sample at the center
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
     // I still need to explain to myself why it works so well :)
@@ -1139,7 +1139,7 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
             rint b0_c = b0>>sub_pixel_precision, b1_c = b1>>sub_pixel_precision, b2_c = b2>>sub_pixel_precision;
             rint area_c = b0_c + b1_c + b2_c;
             if(!area_c) continue; // compression can cause zero area
-            auto bary = vec4<rint>{b0_c, b1_c, b2_c, area_c};
+            auto bary = vertex4<rint>{b0_c, b1_c, b2_c, area_c};
             if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
                 // compress bits
                 bary.x= (b0_c * one_over_w0_fixed) >> bits_used_min_w;
@@ -1158,7 +1158,7 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
                 else zbuff[z_index]=z;
             }
             if(should_sample) {
-                // cast to user's number types vec4<number> casted_bary= bary;, I decided to stick with l64
+                // cast to user's number types vertex4<number> casted_bary= bary;, I decided to stick with l64
                 // because other wise this would have wasted bits for Q types although it would have been more elegant.
                 interpolated_varying.interpolate(varying_v0, varying_v1, varying_v2, bary);
                 auto color = $shader.fragment(interpolated_varying);
@@ -1276,7 +1276,7 @@ template <microtess::polygons::hints hint, typename BlendMode, typename PorterDu
         typename number1, typename number2, typename Sampler, class tessellation_allocator>
 void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
                                           const matrix_3x3<number1> &transform,
-                                          const vec2<number1> *points,
+                                          const vertex2<number1> *points,
                                           index size, opacity_t opacity,
                                           const number2 u0, const number2 v0,
                                           const number2 u1, const number2 v1,
@@ -1339,7 +1339,7 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
             return;
     }
     if(indices.size()) tess_size=indices.size();
-    const vec2<number2> * uvs= nullptr;//uv_map<number1, number2>::compute(points, size, u0, v0, u1, v1);
+    const vertex2<number2> * uvs= nullptr;//uv_map<number1, number2>::compute(points, size, u0, v0, u1, v1);
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(
             sampler, transform,
             points,
@@ -1385,7 +1385,7 @@ void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(
             sampler, transform,
             buffers.output_vertices.data(),
-            static_cast<vec2<number2> *>(nullptr),
+            static_cast<vertex2<number2> *>(nullptr),
             buffers.output_indices.data(),
             buffers.output_boundary.data(),
             buffers.output_indices.size(),
@@ -1425,7 +1425,7 @@ void canvas<bitmap_type, options>::drawPathFill(const Sampler &sampler,
     drawTriangles<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(
             sampler, transform,
             buffers.output_vertices.data(),
-            static_cast<vec2<number2> *>(nullptr),
+            static_cast<vertex2<number2> *>(nullptr),
             buffers.output_indices.data(),
             buffers.output_boundary.data(),
             buffers.output_indices.size(),
@@ -1566,7 +1566,7 @@ template<typename bitmap_type, uint8_t options>
 template <typename number>
 void
 canvas<bitmap_type, options>::drawWuLinePath(const color_t &color,
-                                        const vec2<number> *points,
+                                        const vertex2<number> *points,
                                         unsigned int size,
                                         bool closed_path) {
     index jx = 0;
@@ -1582,7 +1582,7 @@ template<typename BlendMode, typename PorterDuff, bool antialias, bool debug, ty
         typename number2, typename Sampler, class Allocator>
 void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
                                               const matrix_3x3<number1> &transform,
-                                              const vec3<number1> *mesh,
+                                              const vertex3<number1> *mesh,
                                               const unsigned uOrder, const unsigned vOrder,
                                               const unsigned uSamples, const unsigned vSamples,
                                               const number2 u0, const number2 v0,
@@ -1602,7 +1602,7 @@ void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
     using tess= microtess::bezier_patch_tesselator<number1, number2,
                                     dynamic_array<number1, rebind_alloc_t1>,
                                     dynamic_array<index, rebind_alloc_t2>>;
-    using vertex=vec2<number1>;
+    using vertex=vertex2<number1>;
     microtess::triangles::indices indices_type;
     tess::compute(mesh, uOrder, vOrder, uSamples, vSamples, v_a,
                   indices, indices_type, u0, v0, u1, v1);

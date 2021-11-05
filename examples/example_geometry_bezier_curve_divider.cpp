@@ -21,9 +21,9 @@ using container = static_arr<item_type>;
 float t = 0;
 
 template <typename number>
-container<vec2<number>> curve_cubic_1() {
-    using il=std::initializer_list<vec2<number>>;
-    using vertex=vec2<number>;
+container<vertex2<number>> curve_cubic_1() {
+    using il=std::initializer_list<vertex2<number>>;
+    using vertex=vertex2<number>;
     return il{{5, H - 5}, {W/8, H/4}, {W/3, H/2}, {W/2, H/2}};
 }
 
@@ -38,9 +38,9 @@ int main() {
 
     Canvas24 canvas(W, H);
 
-    const auto render_cubic_1 = [&](container<vec2<number>> curve) {
+    const auto render_cubic_1 = [&](container<vertex2<number>> curve) {
         static number t = 0;
-        container<vec2<number>> output{};
+        container<vertex2<number>> output{};
 
         using curve_divider = microtess::curve_divider<number, decltype(output)>;
         auto algo = microtess::CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium;

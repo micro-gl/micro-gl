@@ -14,7 +14,7 @@ int main() {
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using number = float;
 //    using number = Q<12>;
-//    using vertex = vec2<number>;
+//    using vertex = vertex2<number>;
 
     capsule_sampler<number> sampler{};
 

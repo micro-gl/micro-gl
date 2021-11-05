@@ -14,9 +14,9 @@ template<typename item>
 using stat_array = static_array<item, 800>;
 
 template<typename number>
-//using chunker_t = allocator_aware_chunker<vec2<number>, dynamic_array>;
-using chunker_t = allocator_aware_chunker<vec2<number>, std::vector>;
-//using chunker_t = non_allocator_aware_chunker<vec2<number>, stat_array>;
+//using chunker_t = allocator_aware_chunker<vertex2<number>, dynamic_array>;
+using chunker_t = allocator_aware_chunker<vertex2<number>, std::vector>;
+//using chunker_t = non_allocator_aware_chunker<vertex2<number>, stat_array>;
 
 template<typename item>
 //using container = dynamic_array<item>;
@@ -24,9 +24,9 @@ using container = std::vector<item>;
 //using container = stat_array<item>;
 
 template <typename number>
-container<vec2<number>> box(float left, float top, float right,
-                            float bottom, bool ccw=false) {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> box(float left, float top, float right,
+                               float bottom, bool ccw=false) {
+    using il = std::initializer_list<vertex2<number>>;
 
     if(!ccw)
         return il{
@@ -46,7 +46,7 @@ container<vec2<number>> box(float left, float top, float right,
 
 template <typename number>
 chunker_t<number> poly_inter_star() {
-    using il = std::initializer_list<vec2<number>>;
+    using il = std::initializer_list<vertex2<number>>;
     chunker_t<number> A;
 
     A.push_back_and_cut(il{
@@ -62,7 +62,7 @@ chunker_t<number> poly_inter_star() {
 
 template <typename number>
 chunker_t<number> poly_inter_star_2() {
-    using il = std::initializer_list<vec2<number>>;
+    using il = std::initializer_list<vertex2<number>>;
     chunker_t<number> A;
 
     A.push_back_and_cut(il{
@@ -121,8 +121,8 @@ int main() {
     auto render_polygon = [&](const chunker_t<number> & pieces) {
         using index = unsigned int;
 
-        container<vec2<number>> trapezes;
-        container<vec2<number>> vertices;
+        container<vertex2<number>> trapezes;
+        container<vertex2<number>> vertices;
         container<index> indices;
         container<microtess::triangles::boundary_info> boundary;
         microtess::triangles::indices type;
@@ -144,7 +144,7 @@ int main() {
                 color_red,
                 matrix_3x3<number>::identity(),
                 vertices.data(),
-                (vec2<number> *)nullptr,
+                (vertex2<number> *)nullptr,
                 indices.data(),
                 boundary.data(),
                 indices.size(),

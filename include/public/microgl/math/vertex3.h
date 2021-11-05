@@ -4,5 +4,5 @@
 
 namespace microgl {
     template<typename number>
-    using vec3 = microtess::vec3<number>;
+    using vertex3 = microtess::vec3<number>;
 }

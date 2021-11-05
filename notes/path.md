@@ -1,5 +1,5 @@
 #include <microgl/tesselation/stroke_tessellation.h>
-#include <microgl/vec2.h>
+#include <microgl/vertex2.h>
 
 namespace tessellation {
 #define min_(a, b) ((a)<(b) ? (a) : (b))

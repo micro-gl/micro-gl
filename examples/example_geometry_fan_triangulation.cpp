@@ -20,8 +20,8 @@ using container = dynamic_array<item_type>;
 //using container = std::vector<item_type>;
 
 template <typename number>
-container<vec2<number>> poly_diamond() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_diamond() {
+    using il = std::initializer_list<vertex2<number>>;
     return il{
         {100,300},
         {300, 100},
@@ -38,7 +38,7 @@ int main() {
     Canvas24 canvas(W, H);
     sampling::flat_color<> color_red{{255, 0, 0, 255}};
 
-    auto render_polygon = [&](const dynamic_array<vec2<number>> &polygon) {
+    auto render_polygon = [&](const dynamic_array<vertex2<number>> &polygon) {
         using index = unsigned int;
 
         container<index> indices;
@@ -63,7 +63,7 @@ int main() {
                 color_red,
                 matrix_3x3<number>::identity(),
                 polygon.data(),
-                (vec2<number> *) nullptr,
+                (vertex2<number> *) nullptr,
                 indices.data(),
                 boundary_buffer.data(),
                 indices.size(),

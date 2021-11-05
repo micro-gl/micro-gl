@@ -15,14 +15,14 @@ namespace microgl {
 
         template <typename number>
         static
-        vec3<number> viewport(const vec3<number> &ndc, unsigned width, unsigned height) {
+        vertex3<number> viewport(const vertex3<number> &ndc, unsigned width, unsigned height) {
             // given NDC= Normalized Device Coordinates, then transform them into
             // raster/canvas/viewport coords. We assume, that NDC coords are [-1,1] range.
             // todo:; currently I assume no z clipping has occured
             // z value is mapped to [0,1] range
             // convert to raster space
             const number zero=number(0), one = number(1), two=number(2);
-            vec3<number> result{};
+            vertex3<number> result{};
             result.x = ((ndc.x + one)*width)/two;
             result.y = number(height) - (((ndc.y + one)*number(height))/two);
             result.z = (ndc.z + one)/two;
@@ -65,11 +65,11 @@ namespace microgl {
          * @tparam roll     z-axis rotation
         **/
         template <typename number>
-        static matrix_4x4<number> angleAt(const vec3<number> & position,
+        static matrix_4x4<number> angleAt(const vertex3<number> & position,
                                           const number & pitch,
                                           const number & yaw,
                                           const number & roll) {
-            using vertex3 = vec3<number>;
+            using vertex3 = vertex3<number>;
             matrix_4x4<number> mat;
             vertex3 vec;
             // rotation angle about X-axis (pitch)
@@ -101,12 +101,12 @@ namespace microgl {
         }
 
         template <typename number>
-        vec3<number> cross(const vec3<number>& a, const vec3<number>& b) const {
+        vertex3<number> cross(const vertex3<number>& a, const vertex3<number>& b) const {
             return {a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x};
         }
 
         template <typename number>
-        vec3<number> & normalize(const vec3<number> & v) {
+        vertex3<number> & normalize(const vertex3<number> & v) {
             auto d = (v.x*v.x) + (v.y*v.y) + (v.z*v.z);
             if(d==number(0))
                 return *this;
@@ -138,11 +138,11 @@ namespace microgl {
          * @return
          */
         template <typename number>
-        static matrix_4x4<number> lookAt(const vec3<number> & position,
-                                         const vec3<number>& target,
-                                         const vec3<number>& up)
+        static matrix_4x4<number> lookAt(const vertex3<number> & position,
+                                         const vertex3<number>& target,
+                                         const vertex3<number>& up)
         {
-            using vertex3 = vec3<number>;
+            using vertex3 = vertex3<number>;
             matrix_4x4<number> result{};
 
             // 3 axis of rotation matrix for scene

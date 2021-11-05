@@ -12,11 +12,11 @@ namespace microgl {
             using number = number_;
             // the rgba info
             using rgba = rgba_;
-            using gl_position= vec4<number>;
+            using gl_position= vertex4<number>;
 
             // per vertex attributes
             struct vertex_attributes {
-                vec3<number> point;
+                vertex3<number> point;
                 microgl::color::color_t color;
             };
 
@@ -29,11 +29,11 @@ namespace microgl {
                 void interpolate(const varying &varying_a,
                                  const varying &varying_b,
                                  const varying &varying_c,
-                                 const vec4<int> &bary) {
-                    color.r = int(vec4<number>{varying_a.color.r, varying_b.color.r, varying_c.color.r, 0}.dot(vec4<number>(bary))/bary.w);
-                    color.g = int(vec4<number>{varying_a.color.g, varying_b.color.g, varying_c.color.g, 0}.dot(vec4<number>(bary))/bary.w);
-                    color.b = int(vec4<number>{varying_a.color.b, varying_b.color.b, varying_c.color.b, 0}.dot(vec4<number>(bary))/bary.w);
-                    color.a = int(vec4<number>{varying_a.color.a, varying_b.color.a, varying_c.color.a, 0}.dot(vec4<number>(bary))/bary.w);
+                                 const vertex4<int> &bary) {
+                    color.r = int(vertex4<number>{varying_a.color.r, varying_b.color.r, varying_c.color.r, 0}.dot(vertex4<number>(bary)) / bary.w);
+                    color.g = int(vertex4<number>{varying_a.color.g, varying_b.color.g, varying_c.color.g, 0}.dot(vertex4<number>(bary)) / bary.w);
+                    color.b = int(vertex4<number>{varying_a.color.b, varying_b.color.b, varying_c.color.b, 0}.dot(vertex4<number>(bary)) / bary.w);
+                    color.a = int(vertex4<number>{varying_a.color.a, varying_b.color.a, varying_c.color.a, 0}.dot(vertex4<number>(bary)) / bary.w);
                 }
             };
 

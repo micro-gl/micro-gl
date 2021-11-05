@@ -22,10 +22,10 @@ namespace microgl {
         template<typename rgba_, typename impl, typename vertex_attr, typename varying, typename number>
         class shader_base : public microgl::traits::crpt<impl> {
         protected:
-            using vertex3= vec3<number>;
-            using vertex4= vec4<number>;
-            using gl_position= vec4<number>;
-            using gl_FragCoord= vec4<number>;
+            using vertex3= microgl::vertex3<number>;
+            using vertex4= microgl::vertex4<number>;
+            using gl_position= vertex4;
+            using gl_FragCoord= vertex4;
             gl_FragCoord _frag_coord;
         public:
             using rgba = rgba_;

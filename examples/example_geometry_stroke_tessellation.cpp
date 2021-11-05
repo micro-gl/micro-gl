@@ -1,7 +1,7 @@
 #include "src/example.h"
 #include <microgl/canvas.h>
 #include <microgl/bitmaps/bitmap.h>
-#include <microgl/Q.h>
+#include "microgl/math/Q.h"
 #include <microgl/samplers/flat_color.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/tesselation/stroke_tessellation.h>
@@ -20,40 +20,40 @@ template<typename item>
 using container = stat_array<item>;
 
 template <typename number>
-container<vec2<number>> path_diagonal() {
-    using il = std::initializer_list<vec2<number>>;
-    vec2<number> p0 = {100, 100};
-    vec2<number> p1 = {200, 200};
-    vec2<number> p2 = {300, 300};
+container<vertex2<number>> path_diagonal() {
+    using il = std::initializer_list<vertex2<number>>;
+    vertex2<number> p0 = {100, 100};
+    vertex2<number> p1 = {200, 200};
+    vertex2<number> p2 = {300, 300};
 
     return il{p0, p1, p2};
 }
 
 template <typename number>
-container<vec2<number>> path_horizontal() {
-    using il = std::initializer_list<vec2<number>>;
-    vec2<number> p0 = {100, 100};
-    vec2<number> p1 = {300, 100};
-    vec2<number> p2 = {500, 100};
+container<vertex2<number>> path_horizontal() {
+    using il = std::initializer_list<vertex2<number>>;
+    vertex2<number> p0 = {100, 100};
+    vertex2<number> p1 = {300, 100};
+    vertex2<number> p2 = {500, 100};
     return il{p0, p1};
 }
 
 template <typename number>
-container<vec2<number>> path_resh() {
-    using il = std::initializer_list<vec2<number>>;
-    vec2<number> p0 = {100, 100};
-    vec2<number> p1 = {300, 100};
-    vec2<number> p2 = {300, 300};
+container<vertex2<number>> path_resh() {
+    using il = std::initializer_list<vertex2<number>>;
+    vertex2<number> p0 = {100, 100};
+    vertex2<number> p1 = {300, 100};
+    vertex2<number> p2 = {300, 300};
     return il{p0, p1, p2};
 }
 
 template <typename number>
-container<vec2<number>> path_2() {
-    using il = std::initializer_list<vec2<number>>;
-    vec2<number> p0 = {100, 100};
-    vec2<number> p1 = {300, 400};
-    vec2<number> p2 = {400, 100};
-    vec2<number> p3 = {400, 300};
+container<vertex2<number>> path_2() {
+    using il = std::initializer_list<vertex2<number>>;
+    vertex2<number> p0 = {100, 100};
+    vertex2<number> p1 = {300, 400};
+    vertex2<number> p2 = {400, 100};
+    vertex2<number> p3 = {400, 300};
 
 //    return {p0,p1,p2, p3, {50,50}};
     return il{p0,p1,p2, p3};//, {250,320}};
@@ -61,58 +61,58 @@ container<vec2<number>> path_2() {
 }
 
 template <typename number>
-container<vec2<number>> path_3() {
-    using il = std::initializer_list<vec2<number>>;
-    vec2<number> p0 = {100, 100};
-    vec2<number> p1 = {300, 100};
-    vec2<number> p2 = {300, 300};
-    vec2<number> p3 = {400, 300};
+container<vertex2<number>> path_3() {
+    using il = std::initializer_list<vertex2<number>>;
+    vertex2<number> p0 = {100, 100};
+    vertex2<number> p1 = {300, 100};
+    vertex2<number> p2 = {300, 300};
+    vertex2<number> p3 = {400, 300};
 
     return il{p0, p1,p2};//, p3};
 }
 
 
 template <typename number>
-container<vec2<number>> path_line() {
-    using il = std::initializer_list<vec2<number>>;
-    vec2<number> p0 = {100, 100};
-    vec2<number> p1 = {300, 100};
+container<vertex2<number>> path_line() {
+    using il = std::initializer_list<vertex2<number>>;
+    vertex2<number> p0 = {100, 100};
+    vertex2<number> p1 = {300, 100};
 
     return il{p0, p1};
 }
 
 template <typename number>
-container<vec2<number>> path_tri() {
-    using il = std::initializer_list<vec2<number>>;
-    vec2<number> p0 = {100, 100};
-    vec2<number> p1 = {200, 100};
-    vec2<number> p2 = {200, 200};
-//    vec2<T> p3 = {220, 100};
-    vec2<number> p3 = {300, 200};
+container<vertex2<number>> path_tri() {
+    using il = std::initializer_list<vertex2<number>>;
+    vertex2<number> p0 = {100, 100};
+    vertex2<number> p1 = {200, 100};
+    vertex2<number> p2 = {200, 200};
+//    vertex2<T> p3 = {220, 100};
+    vertex2<number> p3 = {300, 200};
 
     return il{p0, p1, p2, p3};
 //    return {p0, p1};
 }
 
 template <typename number>
-container<vec2<number>> path_rect() {
-    using il = std::initializer_list<vec2<number>>;
-    vec2<number> p0 = {100, 200};
-    vec2<number> p1 = {420, 100};
-    vec2<number> p2 = {200, 100};
-    vec2<number> p3 = {50, 50};
+container<vertex2<number>> path_rect() {
+    using il = std::initializer_list<vertex2<number>>;
+    vertex2<number> p0 = {100, 200};
+    vertex2<number> p1 = {420, 100};
+    vertex2<number> p2 = {200, 100};
+    vertex2<number> p3 = {50, 50};
 
     return il{p0, p1, p2, p3};
 }
 
 template <typename number>
-container<vec2<number>> path_rect2() {
-    using il = std::initializer_list<vec2<number>>;
-    vec2<number> p0 = {100, 200};
-    vec2<number> p1 = {100, 100};
-    vec2<number> p2 = {200, 100};
-    vec2<number> p3 = {200, 200};
-    vec2<number> p4 = {100, 200};
+container<vertex2<number>> path_rect2() {
+    using il = std::initializer_list<vertex2<number>>;
+    vertex2<number> p0 = {100, 200};
+    vertex2<number> p1 = {100, 100};
+    vertex2<number> p2 = {200, 100};
+    vertex2<number> p3 = {200, 200};
+    vertex2<number> p4 = {100, 200};
 
     return il{p0, p1, p2, p3, p4,p4};
 }
@@ -127,18 +127,18 @@ int main() {
     sampling::flat_color<> color_red{{255,0,0,255}};
     Canvas24 canvas(W, H);
 
-    auto render_path = [&](const container<vec2<number>> & path, number stroke_width, bool close_path) {
+    auto render_path = [&](const container<vertex2<number>> & path, number stroke_width, bool close_path) {
         using index = unsigned int;
 
         //auto type = triangles::indices::TRIANGLES_STRIP;
         auto type = microtess::triangles::indices::TRIANGLES_STRIP_WITH_BOUNDARY;
 
-        container<vec2<number>> vertices;
+        container<vertex2<number>> vertices;
         container<index> indices;
         container<boundary_info> boundary_buffer;
 
         using stroke_tess = microtess::stroke_tessellation<number,
-                                    container<vec2<number>>, container<index>,
+                                    container<vertex2<number>>, container<index>,
                                     container<boundary_info>>;
 
         stroke_tess::compute(
@@ -167,7 +167,7 @@ int main() {
                 color_red,
                 matrix_3x3<number>::identity(),
                 vertices.data(),
-                (vec2<number> *)nullptr,
+                (vertex2<number> *)nullptr,
                 indices.data(),
                 boundary_buffer.data(),
                 indices.size(),

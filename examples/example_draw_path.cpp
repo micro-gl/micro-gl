@@ -1,3 +1,5 @@
+#define MICROGL_USE_STD_MATH
+
 #include "src/example.h"
 #include <microgl/canvas.h>
 #include <microgl/bitmaps/bitmap.h>
@@ -98,7 +100,7 @@ path_t<number> path_test() {
 //    t+=0.01;
     t=137.999039f;
     path.linesTo({{100,100}, {300,100}, {300, 300}, {100,300}});
-    vec2<number> start{22.0f, 150.0f-0.002323204};
+    vertex2<number> start{22.0f, 150.0f - 0.002323204};
     path.moveTo(start);
     path.linesTo({start, {300,120.002323204-t}, {300, 300}, {100,300}});
     path.moveTo({200, 200});
@@ -111,7 +113,7 @@ int main() {
 //    using number = float;
 //    using number = double;
 //    using number = Q<15, long long>;
-    using number = Q<8, int32_t, int64_t>;
+    using number = Q<8, int32_t, int64_t, 0>;
 //    using number = Q<2, int64_t>;
 //    using number = Q<4, int32_t>;
 //    using number = Q<12>;

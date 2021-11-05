@@ -42,7 +42,7 @@ int main() {
 
     auto render_block = [&](int block_x, int block_y) -> void {
         using l64= long long;
-        using vertex = vec3<number>;
+        using vertex = vertex3<number>;
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
         using namespace microgl::math;

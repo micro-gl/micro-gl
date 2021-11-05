@@ -36,7 +36,7 @@ int main() {
             const number& radius_x, const number& radius_y,
             const number& rotation,
             uint divisions_count) {
-        container<vec2<number>> arc_points;
+        container<vertex2<number>> arc_points;
 
         using ellipse = microtess::elliptic_arc_divider<number, decltype(arc_points)>;
 

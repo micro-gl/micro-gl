@@ -14,7 +14,7 @@ namespace microgl {
             using number = number_;
 
             struct vertex_attributes {
-                vec3<number> point;
+                vertex3<number> point;
                 vec2<number> uv;
             };
 
@@ -24,7 +24,7 @@ namespace microgl {
                 void interpolate(const varying &varying_a,
                                  const varying &varying_b,
                                  const varying &varying_c,
-                                 const vec4<int> &bary) {
+                                 const vertex4<int> &bary) {
                     uv.x = (varying_a.uv.x*bary.x + varying_b.uv.x*bary.y + varying_c.uv.x*bary.z)/bary.w;
                     uv.y = (varying_a.uv.y*bary.x + varying_b.uv.y*bary.y + varying_c.uv.y*bary.z)/bary.w;
                 }
@@ -33,10 +33,10 @@ namespace microgl {
             matrix_4x4<number> matrix;
             S *sampler= nullptr;
 
-            inline vec4<number>
+            inline vertex4<number>
             vertex(const vertex_attributes &attributes, varying &output) {
                 output.uv = attributes.uv;
-                return matrix * vec4<number>{attributes.point};
+                return matrix * vertex4<number>{attributes.point};
             }
 
             inline color::color_t

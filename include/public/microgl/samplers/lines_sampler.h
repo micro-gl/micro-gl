@@ -6,9 +6,9 @@
 namespace microgl {
     namespace sampling {
 
-//        float sdSegment( in vec2 p, in vec2 a, in vec2 b )
+//        float sdSegment( in vertex2 p, in vertex2 a, in vertex2 b )
 //        {
-//            vec2 pa = p-a, ba = b-a;
+//            vertex2 pa = p-a, ba = b-a;
 //            float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
 //            return length( pa - ba*h );
 //        }
@@ -20,8 +20,8 @@ namespace microgl {
             using rint_big=int64_t;
             using rint= typename microgl::traits::conditional<useBigIntegers,
                                     int64_t, int32_t>::type;
-            using vertex = microgl::vec2<number>;
-            using ivertex = microgl::vec2<rint>;
+            using vertex = microgl::vertex2<number>;
+            using ivertex = microgl::vertex2<rint>;
             static constexpr precision_t p_bits= 15;
             static constexpr precision_t p_bits_double= p_bits<<1;
             static constexpr rint ONE= rint(1)<<p_bits;

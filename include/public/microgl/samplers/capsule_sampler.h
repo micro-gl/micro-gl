@@ -8,9 +8,9 @@
 namespace microgl {
     namespace sampling {
 
-//        float sdSegment( in vec2 p, in vec2 a, in vec2 b )
+//        float sdSegment( in vertex2 p, in vertex2 a, in vertex2 b )
 //        {
-//            vec2 pa = p-a, ba = b-a;
+//            vertex2 pa = p-a, ba = b-a;
 //            float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
 //            return length( pa - ba*h );
 //        }
@@ -28,7 +28,7 @@ namespace microgl {
         class capsule_sampler {
         public:
             using rgba = rgba_;
-            using vertex = microgl::vec2<number>;
+            using vertex = microgl::vertex2<number>;
         private:
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
         public:
@@ -36,7 +36,7 @@ namespace microgl {
                                         int64_t, int32_t>::type;
             static constexpr rint ONE= rint(1)<<p_bits;
 
-            using ivertex = vec2<rint>;
+            using ivertex = vertex2<rint>;
 
             color_t color_fill= {0, 0, 0, (1u<<rgba::a)-1};
             color_t color_background= {(1u<<rgba::r)-1, (1u<<rgba::g)-1, (1u<<rgba::b)-1, 0};

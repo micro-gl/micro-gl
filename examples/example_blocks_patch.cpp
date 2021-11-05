@@ -19,12 +19,12 @@ using index_t = unsigned int;
 
 
 template <typename number>
-using cubic_mesh = vec3<number> *;
+using cubic_mesh = vertex3<number> *;
 
 template <typename number>
-vec3<number>* bi_cubic_1(){
+vertex3<number>* bi_cubic_1(){
 
-    return new vec3<number>[4*4] {
+    return new vertex3<number>[4 * 4] {
             {1.0f, 0.0f},
             {170.66f, 0.0f},
             {341.333f, 0.0f},

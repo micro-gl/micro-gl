@@ -2,7 +2,7 @@
 #include "src/example.h"
 
 #include <microgl/math/std_float_math.h>
-#include <microgl/math/std_q_math.h>
+#include <microgl/math/non_std_q_math.h>
 #define MICROGL_AVOID_BUILTIN_MATH
 
 #include <microgl/camera.h>
@@ -49,7 +49,7 @@ int main() {
 
     auto test_shader_texture_3d = [&](const model_3d<number> & object) {
 
-        using vertex = vec3<number>;
+        using vertex = vertex3<number>;
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
         using namespace microgl::math;

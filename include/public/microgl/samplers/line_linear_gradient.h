@@ -24,8 +24,8 @@ namespace microgl {
             using rint= typename microgl::traits::conditional<p_bits>=16, int64_t, int32_t>::type;
             static constexpr precision_t p_bits_double= p_bits<<1;
             static constexpr rint ONE= rint(1)<<p_bits;
-            using point_int= microgl::vec2<rint>;
-            using point= microgl::vec2<number>;
+            using point_int= microgl::vertex2<rint>;
+            using point= microgl::vertex2<number>;
 
             // ax + by + c = 0
             struct line_t {
@@ -77,12 +77,12 @@ namespace microgl {
 
         public:
             line_linear_gradient()=default;
-            line_linear_gradient(const vec2<number> & start, const vec2<number> & end) :
+            line_linear_gradient(const vertex2<number> & start, const vertex2<number> & end) :
                     line_linear_gradient() {
                 setNewLine(start, end);
             };
 
-            void setNewLine(const vec2<number> & start, const vec2<number> & end) {
+            void setNewLine(const vertex2<number> & start, const vertex2<number> & end) {
                 const auto dir= end-start;
                 const auto length= microgl::functions::length(dir.x, dir.y);
 #define f math::to_fixed

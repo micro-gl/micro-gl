@@ -9,8 +9,8 @@
 template <typename number>
 struct model_3d {
     using index = unsigned int;
-    using vertex2 = microgl::vec2<number>;
-    using vertex3 = microgl::vec3<number>;
+    using vertex2 = microgl::vertex2<number>;
+    using vertex3 = microgl::vertex3<number>;
     model_3d(index triangles, microtess::triangles::indices type,
              const dynamic_array<vertex3> &vertices,
              const dynamic_array<vertex2> &uvs,

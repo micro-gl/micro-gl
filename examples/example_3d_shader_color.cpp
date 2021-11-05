@@ -23,7 +23,7 @@ int main() {
 
     auto test_shader_texture_3d = [&](const model_3d<number> & object) {
 
-        using vertex = vec3<number>;
+        using vertex = vertex3<number>;
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
         using namespace microgl::math;

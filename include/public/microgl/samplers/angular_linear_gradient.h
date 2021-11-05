@@ -12,7 +12,7 @@ namespace microgl {
                 enum precision $precision=precision::medium>
         class angular_linear_gradient : public line_linear_gradient<number, N, rgba_, $precision> {
             using base= line_linear_gradient<number, N, rgba_, $precision>;
-            using point= vec2<number>;
+            using point= vertex2<number>;
 
             point intersect(const point &a, const point &b,
                             const point &c, const point &d) const {

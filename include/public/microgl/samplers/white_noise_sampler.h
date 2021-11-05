@@ -3,7 +3,7 @@
 #include <microgl/rgba.h>
 #include <microgl/math.h>
 #include <microgl/precision.h>
-#include <microgl/Q.h>
+#include "microgl/math/Q.h"
 
 namespace microgl {
     namespace sampling {

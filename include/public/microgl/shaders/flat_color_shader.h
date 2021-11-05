@@ -9,10 +9,10 @@ namespace microgl {
         struct flat_color_shader {
             using number = number_;
             using rgba = rgba_;
-            using gl_position= vec4<number>;
+            using gl_position= vertex4<number>;
 
             struct vertex_attributes {
-                vec3<number> point;
+                vertex3<number> point;
             };
 
             struct varying {
@@ -20,7 +20,7 @@ namespace microgl {
                 void interpolate(const varying &varying_a,
                                  const varying &varying_b,
                                  const varying &varying_c,
-                                 const vec4<bary_integer> &bary) {
+                                 const vertex4<bary_integer> &bary) {
                 }
             };
 
@@ -29,7 +29,7 @@ namespace microgl {
 
             inline gl_position
             vertex(const vertex_attributes &attributes, varying &output) {
-                return matrix * vec4<number>{attributes.point};
+                return matrix * vertex4<number>{attributes.point};
             }
 
             inline color::color_t

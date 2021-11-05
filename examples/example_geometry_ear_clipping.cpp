@@ -22,9 +22,9 @@ using container = dynamic_array<item_type>;
 //using container = std::vector<item_type>;
 
 template <typename number>
-container<vec2<number>> poly_rect() {
-    using il = std::initializer_list<vec2<number>>;
-    using vertex=vec2<number>;
+container<vertex2<number>> poly_rect() {
+    using il = std::initializer_list<vertex2<number>>;
+    using vertex=vertex2<number>;
     vertex p0 = {100,100};
     vertex p1 = {300, 100};
     vertex p2 = {300, 300};
@@ -34,9 +34,9 @@ container<vec2<number>> poly_rect() {
 
 float b = 1;
 template <typename number>
-container<vec2<number>> poly_2_x_monotone() {
-    using il = std::initializer_list<vec2<number>>;
-    using vertex=vec2<number>;
+container<vertex2<number>> poly_2_x_monotone() {
+    using il = std::initializer_list<vertex2<number>>;
+    using vertex=vertex2<number>;
     vertex p0 = {100,100};
     vertex p1 = {300, 100};
     vertex p2 = {300, 300};
@@ -47,9 +47,9 @@ container<vec2<number>> poly_2_x_monotone() {
 }
 
 template <typename number>
-container<vec2<number>> poly_tri() {
-    using il = std::initializer_list<vec2<number>>;
-    using vertex=vec2<number>;
+container<vertex2<number>> poly_tri() {
+    using il = std::initializer_list<vertex2<number>>;
+    using vertex=vertex2<number>;
     vertex p0 = {100,100};
     vertex p3 = {300, 100};
     vertex p4 = {100, 300};
@@ -58,9 +58,9 @@ container<vec2<number>> poly_tri() {
 }
 
 template <typename number>
-container<vec2<number>> poly_hole() {
-    using il = std::initializer_list<vec2<number>>;
-    using vertex=vec2<number>;
+container<vertex2<number>> poly_hole() {
+    using il = std::initializer_list<vertex2<number>>;
+    using vertex=vertex2<number>;
     vertex p0 = {100,100};
     vertex p1 = {300, 100};
     vertex p2 = {300, 300};
@@ -86,8 +86,8 @@ container<vec2<number>> poly_hole() {
 }
 
 template <typename number>
-container<vec2<number>> poly_hole3() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_hole3() {
+    using il = std::initializer_list<vertex2<number>>;
     int M=10;
     return il{
             {10,10},
@@ -106,8 +106,8 @@ container<vec2<number>> poly_hole3() {
 }
 
 template <typename number>
-container<vec2<number>> poly_hole4() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_hole4() {
+    using il = std::initializer_list<vertex2<number>>;
     int M=10;
     return il{
             {10,10},
@@ -126,8 +126,8 @@ container<vec2<number>> poly_hole4() {
 }
 
 template <typename number>
-container<vec2<number>> poly_3() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_3() {
+    using il = std::initializer_list<vertex2<number>>;
     return il{
             {50,100},
             {100,50},
@@ -160,7 +160,7 @@ int main() {
 
     Canvas24 canvas(W, H);
 
-    const auto render_polygon = [&](container<vec2<number>> & polygon) {
+    const auto render_polygon = [&](container<vertex2<number>> & polygon) {
         using index = unsigned int;
 
         //polygon[1].x = 140 + 20 +  t;
@@ -184,7 +184,7 @@ int main() {
                 color_red,
                 matrix_3x3<number>::identity(),
                 polygon.data(),
-                (vec2<number> *)nullptr,
+                (vertex2<number> *)nullptr,
                 indices.data(),
                 boundary_buffer.data(),
                 indices.size(),

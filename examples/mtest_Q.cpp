@@ -1,5 +1,4 @@
-#include <microgl/Q.h>
-#include <microgl/math/std_q_math.h>
+#include "microgl/math/Q.h"
 #include <iostream>
 
 template<typename number_type>

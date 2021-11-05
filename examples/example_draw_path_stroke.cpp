@@ -30,7 +30,7 @@ path_t<number> path_star() {
 
 template <typename number>
 path_t<number> path_star_2() {
-    using il = std::initializer_list<vec2<number>>;
+    using il = std::initializer_list<vertex2<number>>;
     path_t<number> path{};
     path.linesTo(il{{150, 150},
                   {450,150},
@@ -91,14 +91,14 @@ path_t<number> path_rects() {
 
 template <typename number>
 path_t<number> path_test() {
-    using il = std::initializer_list<vec2<number>>;
+    using il = std::initializer_list<vertex2<number>>;
 
     path_t<number> path{};
     int div=32;
 //    t+=0.01;
     t=137.999039f;
     path.linesTo(il{{100,100}, {300,100}, {300, 300}, {100,300}});
-    vec2<number> start{22.0f, 150.0f-0.002323204};
+    vertex2<number> start{22.0f, 150.0f - 0.002323204};
     path.moveTo(start);
     path.linesTo(il{start, {300,120.002323204-t}, {300, 300}, {100,300}});
     path.moveTo({200, 200});
@@ -109,10 +109,10 @@ path_t<number> path_test() {
 
 int main() {
 //    using number = float;
-    using number = double;
+//    using number = double;
 //    using number = Q<8>;
 //    using number = Q<8>;
-//    using number = Q<14, long long>;
+    using number = Q<14, long long>;
 //    using number = Q<12, int32_t>;
 //    using number = Q<4, int64_t>;
 

@@ -21,7 +21,7 @@ namespace microgl {
         using const_type_ref = const number &;
         using matrix_ref = matrix_3x3<number> &;
         using const_matrix_ref = const matrix_3x3<number> &;
-        using vertex = microgl::vec2<number>;
+        using vertex = microgl::vertex2<number>;
 
         static const index SX = 0;
         static const index SY = 4;
