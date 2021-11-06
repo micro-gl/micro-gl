@@ -172,7 +172,5 @@ namespace microgl {
             output.b = number(input.b)/number((1u << rgba::b) - 1);
             output.a = number(input.a)/number((1u << rgba::a) - 1);
         }
-
     }
-
 }

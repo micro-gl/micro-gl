@@ -113,12 +113,9 @@ public:
     using pixel = typename bitmap_type::pixel;
     using pixel_coder = typename bitmap_type::pixel_coder;
     using rgba = typename pixel_coder::rgba;
-
-    struct window_t {
-        rect canvas_rect;
-        rect clip_rect;
-        int index_correction=0;
-    };
+    using index = unsigned int;
+    using precision = unsigned char;
+    using opacity_t = unsigned char;
 
     static constexpr bool options_compress_bits() { return options & CANVAS_OPT_COMPRESS_BITS; }
     static constexpr bool options_big_integers() { return options & CANVAS_OPT_USE_BIG_INT; }
@@ -126,6 +123,10 @@ public:
     static constexpr bool options_use_division() { return options & CANVAS_OPT_USE_DIVISION; }
     static constexpr bool hasNativeAlphaChannel() { return pixel_coder::rgba::a != 0;}
 
+    // rasterizer integers
+    using rint_big = int64_t;
+    using rint =typename microgl::traits::conditional<
+            canvas_t::options_big_integers(), rint_big, int32_t >::type;
     /**
      * rendering options of rasterizer
      */
@@ -136,20 +137,18 @@ public:
         uint8_t _3d_raster_bits_w= options_big_integers() ? 15 : 12;
     };
 
+    struct window_t {
+        rect canvas_rect;
+        rect clip_rect;
+        int index_correction=0;
+    };
 private:
-    using index = unsigned int;
-    using precision = unsigned char;
-    using opacity_t = unsigned char;
-    // rasterizer integers
-    using rint_big = int64_t;
-    using rint =typename microgl::traits::conditional<
-            options_big_integers(), rint_big, int32_t >::type;
 
     bitmap_type _bitmap_canvas;
     window_t _window;
     render_options_t _options;
-public:
 
+public:
     explicit canvas(bitmap_type && $bmp) : _bitmap_canvas(microgl::traits::move($bmp)) {
         updateClipRect(0, 0, $bmp.width(), $bmp.height());
         updateCanvasWindow(0, 0);

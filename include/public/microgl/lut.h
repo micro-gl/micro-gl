@@ -47,7 +47,8 @@ namespace microgl {
                 }
             };
 
-            typename traits::conditional<heap, heap_lut, typename traits::conditional<!mute, stack_lut, empty_lut>::type>::type lut;
+            typename traits::conditional<heap, heap_lut, typename traits::conditional<!mute,
+                        stack_lut, empty_lut>::type>::type lut;
         public:
             explicit dynamic_lut() : lut{} {}
 
@@ -92,16 +93,11 @@ namespace microgl {
             constexpr static Table tab=generate(gen_seq<size>{});
 
         public:
-            static type get(const int & n) {
-                return tab.data[n];
-            }
-
+            static type get(const int & n) { return tab.data[n]; }
         };
 
         // definition
         template <typename type, unsigned size, typename function>
         constexpr typename static_lut<type, size, function>::Table static_lut<type, size, function>::tab;
-
     }
-
 }
