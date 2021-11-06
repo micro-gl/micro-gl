@@ -15,11 +15,11 @@ namespace microgl {
 
             struct vertex_attributes {
                 vertex3<number> point;
-                vec2<number> uv;
+                vertex2<number> uv;
             };
 
             struct varying {
-                vec2<number> uv;
+                vertex2<number> uv;
 
                 void interpolate(const varying &varying_a,
                                  const varying &varying_b,

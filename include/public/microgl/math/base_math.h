@@ -34,8 +34,9 @@ namespace microgl {
 
         template<typename number>
         number sqrt_cpu(const number val, const number epsilon) {
+            int ix = 0;
             number x = val, y = number(1);
-            while (abs<number>(x - y) > epsilon) {
+            while ((abs<number>(x - y) > epsilon) and (ix++<10)) {
                 x = (x + y) / number(2);
                 y = val / x;
             }

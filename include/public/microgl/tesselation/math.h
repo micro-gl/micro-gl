@@ -34,8 +34,10 @@ namespace microtess {
 
         template<typename number>
         number sqrt_cpu(const number val, const number epsilon=number(1)/number(1<<8)) {
+            int ix = 0;
             number x = val, y = number(1);
-            while (abs<number>(x - y) > epsilon) {
+            if(val==number(0)) return val;
+            while ((abs<number>(x - y) > epsilon) and (ix++<10)) {
                 x = (x + y) / number(2);
                 y = val / x;
             }

@@ -23,10 +23,7 @@
 
 namespace microtess {
 
-    enum class fill_rule {
-        non_zero, even_odd
-    };
-
+    enum class fill_rule { non_zero, even_odd };
     enum class tess_quality {
         // the fastest algorithm, but nay produce zero area triangles on the
         // boundary. might be a problem if you are using SDF based AA
@@ -104,12 +101,9 @@ namespace microtess {
                 const auto size_v = _vertices.size();
                 const auto size_e = _edges.size();
                 const auto size_f = _faces.size();
-                for (index ix = 0; ix < size_v; ++ix)
-                    _allocator_vertex.deallocate(_vertices[ix]);
-                for (index ix = 0; ix < size_e; ++ix)
-                    _allocator_edge.deallocate(_edges[ix]);
-                for (index ix = 0; ix < size_f; ++ix)
-                    _allocator_edge_face.deallocate(_faces[ix]);
+                for (index ix = 0; ix < size_v; ++ix) _allocator_vertex.deallocate(_vertices[ix]);
+                for (index ix = 0; ix < size_e; ++ix) _allocator_edge.deallocate(_edges[ix]);
+                for (index ix = 0; ix < size_f; ++ix) _allocator_edge_face.deallocate(_faces[ix]);
             };
 
             auto create_vertex(const vertex &coords) -> half_edge_vertex * {
@@ -139,7 +133,6 @@ namespace microtess {
             auto getFaces() -> dynamic_array<half_edge_face *, edge_face_allocator_t> & {
                 return _faces;
             }
-
         };
 
         struct trapeze_t {
@@ -161,9 +154,7 @@ namespace microtess {
             strictly_inside, left_wall, right_wall, top_wall, bottom_wall, boundary_vertex, outside, unknown
         };
 
-        enum class intersection_status {
-            intersect, none, parallel, degenerate_line
-        };
+        enum class intersection_status { intersect, none, parallel, degenerate_line };
 
         struct conflicting_edge_intersection_status {
             vertex point_of_interest;
@@ -275,8 +266,7 @@ namespace microtess {
         };
 
     public:
-        template<class pieces_type>
-        static
+        template<class pieces_type> static
         void compute(const pieces_type &pieces,
                    const fill_rule &rule,
                    const tess_quality &quality,
@@ -331,8 +321,7 @@ namespace microtess {
 #define min__(a,b) (((a)<(b))?(a):(b))
 #define max__(a, b) ((a)>(b) ? (a) : (b))
 
-        template<class pieces_type>
-        static
+        template<class pieces_type> static
         auto build_poly_and_conflicts(const pieces_type &pieces,
                                       half_edge_face & main_frame,
                                       poly_info * poly_list,
@@ -368,8 +357,7 @@ namespace microtess {
             main_frame.conflict_list = conflict_first;
         }
 
-        static
-        void face_to_trapeze_vertices(half_edge_face * face, container_vertices &vertices) {
+        static void face_to_trapeze_vertices(half_edge_face * face, container_vertices &vertices) {
             if(face->edge== nullptr)
                 return;
             auto trapeze = infer_trapeze(face);
@@ -379,8 +367,7 @@ namespace microtess {
             vertices.push_back(trapeze.left_bottom->origin->coords);
         }
 
-        static void
-        tessellate(half_edge_face **faces, index size, const fill_rule &rule,
+        static void tessellate(half_edge_face **faces, index size, const fill_rule &rule,
                 tess_quality quality, container_vertices &output_vertices,
                 triangles::indices & output_indices_type,
                    container_indices &output_indices,
@@ -413,7 +400,6 @@ namespace microtess {
                         iter=iter->next;
                     } while (iter!=face->edge);
                 }
-//                quality=tess_quality::prettier_with_extra_vertices;
                 switch (quality) {
 
                     case tess_quality::fine:
@@ -521,12 +507,10 @@ namespace microtess {
                         count_active_faces++;
                     face_to_trapeze_vertices(faces[ix], *debug_trapezes);
                 }
-//                std::cout<< "# active faces: " << count_active_faces <<std::endl;
             }
         }
 
-        template<class pieces_type>
-        static
+        template<class pieces_type> static
         auto create_frame(const pieces_type &pieces, dynamic_pool & dynamic_pool) -> half_edge_face * {
             const auto pieces_length = pieces.size();
             vertex left_top= pieces[0][0]; // candidate
@@ -607,8 +591,7 @@ namespace microtess {
             return face;
         }
 
-        static
-        int classify_point(const vertex &point, const vertex &a, const vertex &b) {
+        static int classify_point(const vertex &point, const vertex &a, const vertex &b) {
             auto a_p=point-a, a_b=b-a;
             auto result= robust_dot(a_b.orthogonalLeft(), a_p);
             if(result>0) return 1;
@@ -616,8 +599,7 @@ namespace microtess {
             else return 0;
         }
 
-        static
-        intersection_status finite_segment_intersection_test(const vertex &a, const vertex &b,
+        static intersection_status finite_segment_intersection_test(const vertex &a, const vertex &b,
                                                              const vertex &c, const vertex &d,
                                                              vertex &intersection,
                                                              number &alpha, number &alpha1) {
@@ -659,8 +641,7 @@ namespace microtess {
             return intersection_status::intersect;
         }
 
-        static
-        auto infer_trapeze(const half_edge_face *face) -> trapeze_t {
+        static auto infer_trapeze(const half_edge_face *face) -> trapeze_t {
             if(face==nullptr || face->edge==nullptr)
                 throw_regular(string_debug("infer_trapeze()::trying to infer a trapeze of a probably merged/deleted face !!!"));
             auto * e = face->edge;
@@ -687,8 +668,7 @@ namespace microtess {
             return trapeze;
         }
 
-        static
-        auto handle_vertical_face_cut(const trapeze_t &trapeze,
+        static auto handle_vertical_face_cut(const trapeze_t &trapeze,
                                       const vertex & a,
                                       const point_class_with_trapeze &a_classs,
                                       dynamic_pool &pool) -> vertical_face_cut_result {
@@ -772,8 +752,8 @@ namespace microtess {
             return result;
         }
 
-        static
-        auto try_split_edge_at(const vertex& point, half_edge *edge, dynamic_pool &pool) -> half_edge * {
+        static auto try_split_edge_at(const vertex& point, half_edge *edge, dynamic_pool &pool)
+                                    -> half_edge * {
             // let's shorten both edge and it's twin,each from_sampler it's side
             // main frame does not have twins because are needed.
             //  ------edge----->
@@ -871,17 +851,14 @@ namespace microtess {
             return nullptr;
         }
 
-        static
-        number evaluate_line_at_x(number x, const vertex &a, const vertex &b) {
+        static number evaluate_line_at_x(number x, const vertex &a, const vertex &b) {
             if(x==a.x) return a.y; if(x==b.x) return b.y;
             return a.y + (((b.y-a.y)*(x-a.x))/(b.x-a.x));
         }
 
-        static
-        auto
-        insert_edge_between_non_co_linear_vertices(half_edge *vertex_a_edge, half_edge *vertex_b_edge,
-                const vertex &extra_direction_for_split,
-                dynamic_pool & pool) -> half_edge * {
+        static auto insert_edge_between_non_co_linear_vertices(half_edge *vertex_a_edge,
+                         half_edge *vertex_b_edge, const vertex &extra_direction_for_split,
+                         dynamic_pool & pool) -> half_edge * {
             // insert edge between two vertices in a face, that are not co linear with one of the 4 walls, located
             // by their leaving edges. co linearity means the vertices lie on the same boundary ray.
             // for that case, we have a different procedure to handle.
@@ -918,9 +895,9 @@ namespace microtess {
             return e;
         }
 
-        static
-        auto classify_conflict_against_two_faces(const half_edge *face_separator,
-                const vertex &c, const vertex &d, const vertex &extra_direction_for_split={0,0})->half_edge_face * {
+        static auto classify_conflict_against_two_faces(const half_edge *face_separator,
+                const vertex &c, const vertex &d, const vertex &extra_direction_for_split={0,0})
+                        -> half_edge_face * {
             // note:: edge's face always points to the face that lies to it's left.
             // 1. if the first point lie completely to the left of the edge, then they belong to f1, other wise f2
             // 2. if they lie exactly on the edge, then we test_texture the second end-point
@@ -943,9 +920,8 @@ namespace microtess {
             return face_separator->face; // both lie on the separator
         };
 
-        static
-        void re_distribute_conflicts_of_split_face(conflict *conflict_list, const half_edge *face_separator,
-                const vertex &extra_direction_for_split={0,0}) {
+        static void re_distribute_conflicts_of_split_face(conflict *conflict_list,
+                     const half_edge *face_separator, const vertex &extra_direction_for_split={0,0}) {
             // given that a face f was just split into two faces with
             // face_separator edge, let's redistribute the conflicts
             auto * f1 = face_separator->face;
@@ -969,8 +945,7 @@ namespace microtess {
             }
         }
 
-        static
-        void walk_and_update_edges_face(half_edge *edge_start, half_edge_face *face) {
+        static void walk_and_update_edges_face(half_edge *edge_start, half_edge_face *face) {
             // start walk at edge and update all face references.
             auto * e_ref = edge_start;
             const auto * const e_end = edge_start;
@@ -980,19 +955,16 @@ namespace microtess {
             } while(e_ref!=e_end);
         }
 
-        static
-        number clamp(const number &val, number a, number b) {
+        static number clamp(const number &val, number a, number b) {
             if(a>b) { auto c=a;a=b;b=c; }
             if(val<a) return a;
             if(val>b) return b;
             return val;
         }
 
-        static
-        auto
-        compute_conflicting_edge_intersection_against_trapeze(const trapeze_t &trapeze,
-                                                              vertex &a, vertex b, const point_class_with_trapeze & a_class)
-                                                              -> conflicting_edge_intersection_status {
+        static auto compute_conflicting_edge_intersection_against_trapeze(const trapeze_t &trapeze,
+                                vertex &a, vertex b, const point_class_with_trapeze & a_class)
+                                     -> conflicting_edge_intersection_status {
             // given that edge (a,b), vertex (a) is conflicting, i.e on boundary or completely inside
             // and we know that the edge passes through the trapeze or lies on the boundary,
             // find the second interesting point, intersection or overlap or completely inside
@@ -1114,8 +1086,7 @@ namespace microtess {
             return result;
         }
 
-        static
-        point_class_with_trapeze
+        static point_class_with_trapeze
         do_a_b_lies_on_same_trapeze_wall(const trapeze_t &trapeze, const vertex &a, const vertex &b,
                                               const point_class_with_trapeze &a_class,
                                               const point_class_with_trapeze &b_class) {
@@ -1129,16 +1100,14 @@ namespace microtess {
             return point_class_with_trapeze::unknown;
         }
 
-        static
-        int infer_edge_winding(const vertex &a, const vertex &b) {
+        static int infer_edge_winding(const vertex &a, const vertex &b) {
             // infer winding of edge (a,b)
             if(b.y<a.y || (b.y==a.y && b.x<a.x)) return 1; // rising/ascending edge
             else if(b.y>a.y || (b.y==a.y && b.x>a.x)) return -1; // descending edge
             return 0;
         }
 
-        static
-        bool is_a_before_or_equal_b_on_same_boundary(const vertex &a, const vertex &b,
+        static bool is_a_before_or_equal_b_on_same_boundary(const vertex &a, const vertex &b,
                                                      const point_class_with_trapeze &wall) {
             switch (wall) {
                 case point_class_with_trapeze::left_wall: return (a.y<=b.y);
@@ -1152,8 +1121,7 @@ namespace microtess {
             }
         }
 
-        static
-        void handle_co_linear_edge_with_trapeze(const trapeze_t &trapeze, half_edge *edge_vertex_a,
+        static void handle_co_linear_edge_with_trapeze(const trapeze_t &trapeze, half_edge *edge_vertex_a,
                                                 half_edge *edge_vertex_b,
                                                 const point_class_with_trapeze &wall_class,
                                                 int winding) {
@@ -1172,8 +1140,7 @@ namespace microtess {
             }
         }
 
-        static
-        face_split_result
+        static face_split_result
         handle_face_split(const trapeze_t &trapeze, const vertex &a, vertex b,
                           vertex extra_direction,
                           const point_class_with_trapeze &a_class,
@@ -1285,8 +1252,8 @@ namespace microtess {
             return result;
         }
 
-        static
-        half_edge *locate_half_edge_of_face_rooted_at_vertex(const half_edge_vertex *root, const half_edge_face *face) {
+        static half_edge *locate_half_edge_of_face_rooted_at_vertex(const half_edge_vertex *root,
+                                                                    const half_edge_face *face) {
             auto *iter = root->edge;
             const auto * const end = root->edge;
             do {
@@ -1297,8 +1264,7 @@ namespace microtess {
             return nullptr;
         }
 
-        static
-        auto locate_face_of_a_b(const half_edge_vertex &a, const vertex &b) -> half_edge * {
+        static auto locate_face_of_a_b(const half_edge_vertex &a, const vertex &b) -> half_edge * {
             // given edge (a,b) as half_edge_vertex a and a vertex b, find out to which
             // adjacent face does this edge should belong. we return the half_edge that
             // has this face to it's left and vertex 'a' as an origin. we walk CW around
@@ -1347,9 +1313,8 @@ namespace microtess {
             return nullptr;
         }
 
-        static
-        bool is_distance_to_line_less_than_epsilon(const vertex &v, const vertex &a, const vertex &b, number epsilon) {
-            //            return false;
+        static bool is_distance_to_line_less_than_epsilon(const vertex &v, const vertex &a,
+                                                          const vertex &b, number epsilon) {
             // we use the equation 2*A = h*d(a,b)
             // where A = area of triangle spanned by (a,b,v), h= distance of v to (a,b)
             // we raise everything to quads to avoid square function and we avoid division.
@@ -1362,20 +1327,16 @@ namespace microtess {
             number ab_length_quad = (b.y - a.y)*(b.y - a.y) + (b.x - a.x)*(b.x - a.x); // (length(a,b))^2
             number epsilon_quad = epsilon*epsilon;
 
-//            return numerator_abs.toFloat() < epsilon.toFloat()*std::sqrt(ab_length_quad.toFloat());
-            // error detection, this fights overflows that wraps to negative, and because merging is optional
-            // we can avoid
+            // error detection, this fights overflows that wraps to negative, and because
+            // merging is optional we can avoid.
             if(numerator_quad<number(0))
                 return false;
-//            return numerator_abs < epsilon*(ab_length_quad.sqrt());
             if(epsilon==number(1))
                 return numerator_quad < ab_length_quad;
             return numerator_quad < epsilon_quad*ab_length_quad;
-//            return numerator_quad/epsilon_quad < ab_length_quad;
         }
 
-        static
-        void remove_edge(half_edge *edge) {
+        static void remove_edge(half_edge *edge) {
             // remove an edge and it's twin, then:
             // 1.  re-connect adjacent edges
             // 2.  merge faces
@@ -1413,8 +1374,7 @@ namespace microtess {
             face_2->edge=nullptr; face_2->conflict_list= nullptr;
         }
 
-        static
-        void handle_face_merge(const half_edge_vertex *vertex_on_vertical_wall) {
+        static void handle_face_merge(const half_edge_vertex *vertex_on_vertical_wall) {
             // given that vertex v is on a past vertical wall (left/right) boundary, we want to check 2 things:
             // 1. the vertical top/bottom edge that adjacent to it, is single(not divided) in it's adjacent trapezes
             // 2. has winding==0
@@ -1474,9 +1434,6 @@ namespace microtess {
                     // now test_texture how much is a-b-c looks like a line
                     // we do it by calculating the distance from_sampler vertex c to line (a,b)
                     // the illustration above is for top_edge= v-->b
-//                    const auto & a = candidate_edge->next->twin->origin->coords;
-//                    const auto & b = candidate_edge->twin->origin->coords;
-//                    const auto & c = candidate_edge->twin->prev->origin->coords;
                     ////
                     const auto trap_left=infer_trapeze(candidate_edge->face);
                     const auto trap_right=infer_trapeze(candidate_edge->twin->face);
@@ -1503,8 +1460,7 @@ namespace microtess {
             }
         }
 
-        static
-        point_class_with_trapeze
+        static point_class_with_trapeze
         round_vertex_to_trapeze(vertex &point, const trapeze_t &trapeze) {
             // given that point that should belong to trapeze, BUT may not sit properly or outside because
             // of precision errors, geometrically round it into place
@@ -1535,8 +1491,7 @@ namespace microtess {
             return point_class_with_trapeze::unknown;
         }
 
-        static
-        int compute_face_windings(half_edge_face *face) {
+        static int compute_face_windings(half_edge_face *face) {
             // given that we have an unordered graph of planar subdivision and that we have
             // already have computed windings for edges, it is enough to pick any point in the face
             // to compute the winding via a ray that spans infinitely until we are outside.
@@ -1554,8 +1509,7 @@ namespace microtess {
             return face->winding;
         }
 
-        static
-        bool infer_fill(int winding, const fill_rule &rule) {
+        static bool infer_fill(int winding, const fill_rule &rule) {
             unsigned int abs_winding = winding < 0 ? -winding : winding;
             switch (rule) {
                 case fill_rule::non_zero:
@@ -1565,8 +1519,7 @@ namespace microtess {
             }
         }
 
-        static
-        half_edge *locate_next_trapeze_boundary_vertex_from(half_edge *a, const trapeze_t &trapeze) {
+        static half_edge *locate_next_trapeze_boundary_vertex_from(half_edge *a, const trapeze_t &trapeze) {
             half_edge *iter = a;
             const half_edge *end = iter;
             do {
@@ -1578,8 +1531,7 @@ namespace microtess {
             return nullptr;
         }
 
-        static
-        half_edge *locate_prev_trapeze_boundary_vertex_from(half_edge *a, const trapeze_t &trapeze) {
+        static half_edge *locate_prev_trapeze_boundary_vertex_from(half_edge *a, const trapeze_t &trapeze) {
             half_edge *iter = a;
             const half_edge *end = iter;
             do {
@@ -1591,8 +1543,7 @@ namespace microtess {
             return iter;
         }
 
-        static
-        void insert_poly(poly_info &poly, dynamic_pool &dynamic_pool) {
+        static void insert_poly(poly_info &poly, dynamic_pool &dynamic_pool) {
             const unsigned size= poly.size;
             half_edge_vertex *last_edge_last_planar_vertex=nullptr, *first_edge_first_planar_vertex=nullptr;
             bool first_edge=true;
@@ -1610,7 +1561,6 @@ namespace microtess {
                 if(zero_edge) continue;
                 int winding=infer_edge_winding(a, b);
                 if(first_edge) {
-//                    first_edge=false;
                     // first edge always needs to consult with the conflicts info
                     face=poly.conflict_face;
                     trapeze=infer_trapeze(face);
@@ -1619,18 +1569,21 @@ namespace microtess {
                     if(class_a!=point_class_with_trapeze::strictly_inside) {
                         // due to rounding errors, we may need to re-consider the
                         // starting trapeze.
-                        const auto * e= try_insert_vertex_on_trapeze_boundary_at(a, trapeze, class_a, dynamic_pool);
+                        const auto * e= try_insert_vertex_on_trapeze_boundary_at(a, trapeze,
+                                                                       class_a, dynamic_pool);
                         half_edge * located_face_edge= locate_face_of_a_b(*(e->origin), b);
                         face = located_face_edge->face;
                         trapeze=infer_trapeze(face);
-                        class_a = locate_and_classify_vertex_that_is_already_on_trapeze(e->origin, trapeze).classs;
+                        class_a = locate_and_classify_vertex_that_is_already_on_trapeze(e->origin,
+                                                                                trapeze).classs;
                     }
                 } else {
                     a=last_edge_last_planar_vertex->coords;
                     half_edge * located_face_edge= locate_face_of_a_b(*last_edge_last_planar_vertex, b);
                     face = located_face_edge->face;
                     trapeze=infer_trapeze(face);
-                    class_a = locate_and_classify_vertex_that_is_already_on_trapeze(last_edge_last_planar_vertex, trapeze).classs;
+                    class_a = locate_and_classify_vertex_that_is_already_on_trapeze(
+                            last_edge_last_planar_vertex, trapeze).classs;
                 }
                 const vertex direction=b-a;
                 half_edge_vertex *a_planar=nullptr, *b_tag_planar=nullptr;
@@ -1712,8 +1665,7 @@ namespace microtess {
             }
         }
 
-        static
-        vertex_location_result
+        static vertex_location_result
         locate_and_classify_vertex_that_is_already_on_trapeze(const half_edge_vertex *v, const trapeze_t &trapeze) {
             // given that the planar vertex IS present on the trapeze boundary
             if(v==trapeze.left_top->origin) return {point_class_with_trapeze::boundary_vertex, trapeze.left_top};
@@ -1733,8 +1685,7 @@ namespace microtess {
             return {point_class_with_trapeze::unknown, nullptr};
         }
 
-        static
-        auto contract_edge(half_edge *e) -> half_edge_vertex * {
+        static auto contract_edge(half_edge *e) -> half_edge_vertex * {
             // given edge (e)=(a,b) contract it,  which is like removal and connecting it's neighbors
             auto * origin_a=e->origin;
             auto * origin_b=e->twin->origin;
@@ -1758,8 +1709,7 @@ namespace microtess {
             return origin_b;
         }
 
-        static
-        number robust_dot(const vertex &u, const vertex &v) {
+        static number robust_dot(const vertex &u, const vertex &v) {
             int f1=1, f2=1;
             bool skip=u.x>=1 || u.y>=1 || v.x>=1 || v.y>=1;
 //            skip=false;
@@ -1776,16 +1726,14 @@ namespace microtess {
             return result;
         }
 
-        static void
-        wall_vertex_endpoints(const trapeze_t &trapeze, const point_class_with_trapeze &wall,
+        static void wall_vertex_endpoints(const trapeze_t &trapeze, const point_class_with_trapeze &wall,
                               vertex &start, vertex &end) {
             half_edge *edge_start, *edge_end;
             wall_edge_endpoints(trapeze, wall, &edge_start, &edge_end);
             start=edge_start->origin->coords; end=edge_end->origin->coords;
         }
 
-        static void
-        wall_edge_endpoints(const trapeze_t & trapeze, const point_class_with_trapeze & wall,
+        static void wall_edge_endpoints(const trapeze_t & trapeze, const point_class_with_trapeze & wall,
                        half_edge ** start, half_edge ** end) {
             switch (wall) {
                 case point_class_with_trapeze::left_wall: {*start=trapeze.left_top;*end=trapeze.left_bottom;return;}
@@ -1796,8 +1744,7 @@ namespace microtess {
             }
         }
 
-        static
-        vertex clamp_vertex_to_trapeze_wall(const vertex &v, const point_class_with_trapeze &wall,
+        static vertex clamp_vertex_to_trapeze_wall(const vertex &v, const point_class_with_trapeze &wall,
                                             const trapeze_t &trapeze) {
             vertex start, end, result=v;
             wall_vertex_endpoints(trapeze, wall, start, end);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "microgl/math/vertex2.h"
 #include "microgl/math/vertex3.h"
 #include "microgl/math/vertex4.h"
 #include "../color.h"

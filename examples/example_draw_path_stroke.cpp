@@ -112,9 +112,10 @@ int main() {
 //    using number = double;
 //    using number = Q<8>;
 //    using number = Q<8>;
-    using number = Q<14, long long>;
+//    using number = Q<14, long long>;
 //    using number = Q<12, int32_t>;
 //    using number = Q<4, int64_t>;
+    using number = Q<4, int32_t, int32_t, 0>;
 
     using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
     using il = std::initializer_list<int>;

@@ -49,12 +49,12 @@ private:
         return result;
     }
 
-    template<unsigned char S> inline void multiply(const integer & val) {}
-    template<> inline void multiply<0>(const integer & val) {
+    template<unsigned char S> inline void multiply(const integer val) {}
+    template<> inline void multiply<0>(const integer val) {
         inter_integer inter = ((inter_integer)_value)*val;
         _value = shift_right_correctly_by<inter_integer>(inter, P);
     }
-    template<> inline void multiply<1>(const integer & val) {
+    template<> inline void multiply<1>(const integer val) {
         using int_t = inter_integer;
         const int_t fpValue1 = _value;
         const int_t fpValue2 = val;
@@ -66,7 +66,7 @@ private:
         _value = ((intPart1 * intPart2)<<P) + (intPart1 * fracPart2) +
                  (fracPart1 * intPart2) + (((fracPart1 * fracPart2)>>P) & MASK_FRAC_BITS);
     }
-    template<> inline void multiply<2>(const integer & val)
+    template<> inline void multiply<2>(const integer val)
             { _value = (((inter_integer)_value)*val)>>P; }
 
 public:
@@ -94,7 +94,8 @@ public:
     // conversion constructor, this reduces many other
     template <unsigned P_2, typename c1, typename c2, char s>
     Q(const Q<P_2, c1, c2, s> &q) : _value(convert_compile_time_variant<P_2, P>(q._value)) {}
-    Q(const integer & q_val, precision_t q_precision) : _value(convert_runtime_variant(q_val, q_precision, P)) {}
+    Q(const integer & q_val, precision_t q_precision) :
+                _value(convert_runtime_variant(q_val, q_precision, P)) {}
     // this is Q<0>, so we promote it to Q<P>
     Q(const unsigned val) : _value(integer(val)<<P) {}
     Q(const signed val) : _value(val<<P) {}
@@ -148,7 +149,8 @@ public:
     explicit operator unsigned char() const { return toInt(); }
 
     integer toInt() const { return shift_right_correctly_by<integer>(_value, P); }
-    integer toFixed(const precision_t precision_value) const { return convert_runtime_variant(_value, P, precision_value); }
+    integer toFixed(const precision_t precision_value) const
+    { return convert_runtime_variant(_value, P, precision_value); }
     template<unsigned precision_value>
     integer toFixedFaster() const { return convert_compile_time_variant<P, precision_value>(_value); }
     float toFloat() const { return float(_value)/float(1u<<P); }

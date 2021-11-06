@@ -93,6 +93,7 @@ namespace microgl {
                         }
 
                         break;
+                    default: break;
 //                    case indices::TRIANGLES_FAN:
 //                    case indices::TRIANGLES_FAN_WITH_BOUNDARY:
 //

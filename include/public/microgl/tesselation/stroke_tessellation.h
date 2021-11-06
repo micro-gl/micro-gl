@@ -7,17 +7,9 @@
 
 namespace microtess {
 
-    enum class stroke_cap {
-        butt, round, square
-    };
-
-    enum class stroke_line_join {
-        none, miter, miter_clip, round, bevel
-    };
-
-    enum class stroke_gravity {
-        center, inward, outward
-    };
+    enum class stroke_cap { butt, round, square };
+    enum class stroke_line_join { none, miter, miter_clip, round, bevel };
+    enum class stroke_gravity { center, inward, outward };
 
     /**
      * stroke tessellator
@@ -39,18 +31,17 @@ namespace microtess {
 
     private:
         struct edge { vertex a, b; };
-
         struct poly_4 {
             // clock wise around the bone
             vertex left{}, top{}, right{}, bottom{};
             int left_index=-1, top_index=-1, right_index=-1, bottom_index=-1;
         };
-
         struct poly_inter_result {
             vertex left{}, right{};
             int left_index=-1, right_index=-1;
             bool has_left=false, has_right=false;
         };
+
     public:
         stroke_tessellation()=delete;
         stroke_tessellation(const stroke_tessellation &)=delete;
@@ -67,16 +58,13 @@ namespace microtess {
          * SFIANE to support allocator aware containers and non-aware containers such
          * as static arrays
          */
-        template<bool on=false>
-        struct construct_for_allocator_aware_t {
+        template<bool on=false> struct construct_for_allocator_aware_t {
             const container_output_vertices & copy;
             explicit construct_for_allocator_aware_t(const container_output_vertices & vv) :
                     copy{vv} {}
             container_output_vertices create() { return container_output_vertices(); }
         };
-
-        template<>
-        struct construct_for_allocator_aware_t<true> {
+        template<> struct construct_for_allocator_aware_t<true> {
             const container_output_vertices & copy;
             explicit construct_for_allocator_aware_t(const container_output_vertices & vv) :
                 copy{vv} {}
@@ -85,9 +73,7 @@ namespace microtess {
             }
         };
 
-        template<class iterable>
-        static
-        void compute_with_dashes(const number &stroke_width,
+        template<class iterable> static void compute_with_dashes(const number &stroke_width,
                                  bool closePath,
                                  const stroke_cap &cap,
                                  const stroke_line_join &line_join,
@@ -192,8 +178,7 @@ namespace microtess {
             }
         }
 
-        static
-        void compute(const number &stroke_width,
+        static void compute(const number &stroke_width,
                      bool closePath,
                      const stroke_cap &cap,
                      const stroke_line_join &line_join,
@@ -306,7 +291,6 @@ namespace microtess {
                 output_indices[first_left_index+1]=output_indices[count-2];
                 output_indices[first_left_index+2]=output_indices[count-1];
             }
-
 #undef reinforce
 #undef b1
 #undef b2
@@ -316,17 +300,16 @@ namespace microtess {
         }
 
     private:
-
-        enum class intersection_status {
-            intersect, none, parallel, degenerate_line
-        };
+        enum class intersection_status { intersect, none, parallel, degenerate_line };
 
         static number norm(const vertex & p) {
-            return microtess::math::sqrt_cpu<number>(p.x*p.x + p.y*p.y, number(1)/number(1<<8));
+            const auto epsilon = number(1)/number(1<<8);
+            const auto test = p.x*p.x + p.y*p.y;
+            const auto test2 = p.x*p.x + p.y*p.y;
+            return microtess::math::sqrt_cpu<number>(p.x*p.x + p.y*p.y, epsilon);
         }
 
-        static
-        auto build_quadrilateral(const vertex &a, const vertex &b,
+        static auto build_quadrilateral(const vertex &a, const vertex &b,
                                  const number &stroke_width)-> poly_4 {
             poly_4 result;
             comp_parallel_ray(a, b, result.left, result.top, stroke_width);
@@ -336,9 +319,7 @@ namespace microtess {
             return result;
         }
 
-
-        static
-        auto finite_segment_intersection_test(const vertex &a, const vertex &b,
+        static auto finite_segment_intersection_test(const vertex &a, const vertex &b,
                                          const vertex &c, const vertex &d,
                                          vertex & intersection,
                                          number &alpha, number &alpha1) -> intersection_status {
@@ -393,8 +374,7 @@ namespace microtess {
             return intersection_status::intersect;
         }
 
-        static
-        bool rays_intersect(const vertex &a, const vertex &b,
+        static bool rays_intersect(const vertex &a, const vertex &b,
                 const vertex &c, const vertex &d, vertex &intersection) {
             // given, that infinite lines that pass through segments (a,b) and (c,d)
             // are not parallel, compute intersection.
@@ -409,8 +389,7 @@ namespace microtess {
             return det!=0;
         }
 
-        static
-        void comp_parallel_ray(const vertex &pt0,
+        static void comp_parallel_ray(const vertex &pt0,
                                const vertex &pt1,
                                vertex &pt_out_0,
                                vertex &pt_out_1,
@@ -423,8 +402,7 @@ namespace microtess {
             pt_out_1 = pt1 + dir;
         }
 
-        static
-        auto resolve_left_right_walls_intersections(const poly_4 &a, const poly_4 &b)
+        static auto resolve_left_right_walls_intersections(const poly_4 &a, const poly_4 &b)
                                                     -> poly_inter_result {
             poly_inter_result result{};
             vertex result_inter;
@@ -455,8 +433,8 @@ namespace microtess {
             return result;
         }
 
-        static
-        int classify_point(const vertex &point, const vertex &a, const vertex &b) {
+        static int classify_point(const vertex &point, const vertex &a, const vertex &b) {
+            // todo: make it super robust with boosting
             // Use the sign of the determinant of vectors (AB,AM), where M(X,Y)
             // is the query point:
             // position = sign((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax))
@@ -471,17 +449,14 @@ namespace microtess {
             else return 0;
         }
 
-        static edge
-        compute_distanced_tangent_at_joint(const vertex &a, const vertex &b,
-                                           const vertex &c, number mag) {
+        static edge compute_distanced_tangent_at_joint(const vertex &a, const vertex &b,
+                                                       const vertex &c, number mag) {
             edge result;
             vertex tangent1 = b-a, tangent2 = c-b;
-            vertex normal1 = {tangent1.y, -tangent1.x}, normal2 = {tangent2.y, -tangent2.x};
-            normal1 = normal1/norm(normal1);
-            normal2 = normal2/norm(normal2);
-            vertex pre_normal_join= normal1+normal2;
+            vertex perp_1 = {tangent1.y, -tangent1.x}, perp_2 = {tangent2.y, -tangent2.x};
+            vertex pre_normal_join= perp_1+perp_2;
             if(pre_normal_join==vertex{0,0}) {
-                pre_normal_join=b-a;
+                pre_normal_join=c-a;
                 mag= mag<0 ? -mag : mag;
             }
             const number length= norm(pre_normal_join);
@@ -491,8 +466,7 @@ namespace microtess {
             return result;
         }
 
-        static
-        void compute_arc(const vertex &from, const vertex &root, const vertex &to,
+        static void compute_arc(const vertex &from, const vertex &root, const vertex &to,
                          const number &radius, const number &max_distance_squared,
                          const index & root_index,
                          container_output_vertices &output_vertices,
@@ -516,8 +490,7 @@ namespace microtess {
                         output_vertices, output_indices, boundary_buffer);
         }
 
-        static void
-        apply_cap(const stroke_cap &cap,
+        static void apply_cap(const stroke_cap &cap,
                     bool is_start, const vertex &root,
                     const index &a_index, const index &b_index,
                   const number &radius,
@@ -568,8 +541,7 @@ namespace microtess {
 #undef b3
         }
 
-        static
-        void apply_line_join(const stroke_line_join &line_join, const index &first_index,
+        static void apply_line_join(const stroke_line_join &line_join, const index &first_index,
                              const index &join_index, const index &last_index,
                              const number &join_radius, const number &miter_limit,
                              container_output_vertices &output_vertices,
@@ -664,7 +636,5 @@ namespace microtess {
                 output_indices.push_back(output_indices.back()); b1_(boundary_buffer, output_indices);
             }
         }
-
     };
-
 }

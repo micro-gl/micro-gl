@@ -87,7 +87,5 @@ namespace microtess {
             // to use first sample as last one
             if(full_circle_or_more) output[last_index]=output[first_index];
         }
-
     };
-
 }
