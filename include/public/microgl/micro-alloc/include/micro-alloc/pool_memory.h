@@ -107,29 +107,33 @@ public:
     pool_memory(void * ptr, uint size_bytes, uint block_size,
                 uptr alignment=sizeof (uintptr_type),
                 bool guard_against_double_free=false) :
-        base{3, alignment}, _ptr(ptr), _size(size_bytes), _block_size(0),
-        _guard_against_double_free(guard_against_double_free) {
+            base{3, alignment}, _ptr(ptr), _size(size_bytes), _block_size(0),
+            _guard_against_double_free(guard_against_double_free) {
+        const bool is_memory_valid_1 = correct_block_size(block_size) <= size_bytes;
+        const bool is_memory_valid_2 = sizeof(void *)==sizeof(uintptr_type);
+        const bool is_memory_valid_3 = alignment % sizeof(uintptr_type)==0;
+        const bool is_memory_valid = is_memory_valid_1 and is_memory_valid_2 and is_memory_valid_3;
+        if(is_memory_valid) reset(block_size);
+        this->_is_valid = is_memory_valid;
+
 #ifdef DEBUG_ALLOCATOR
         std::cout << std::endl << "HELLO:: pool memory resource"<< std::endl;
         std::cout << "* correct block size due to headers and alignment is "
-        << correct_block_size(block_size) << " bytes" <<std::endl;
+                  << correct_block_size(block_size) << " bytes" <<std::endl;
         std::cout << "* requested alignment is " << alignment << " bytes" << std::endl;
-#endif
-        _ptr = ptr;
-        const bool is_memory_valid = correct_block_size(block_size) <= size_bytes;
-        if(is_memory_valid) {
-            reset(block_size);
-#ifdef DEBUG_ALLOCATOR
+        if(is_memory_valid)
             std::cout << "* first block @ " << ptr_to_int(_free_list_root) << std::endl;
-#endif
-        } else {
-#ifdef DEBUG_ALLOCATOR
+        if(!is_memory_valid_1)
             std::cout << "* memory does not satisfy minimal size requirements !!!"
-            << std::endl;
-#endif
-        }
-
+                      << std::endl;
+        if(!is_memory_valid_2)
+            std::cout << "* error:: a pointer is not expressible as uintptr_type !!!"
+                      << std::endl;
+        if(!is_memory_valid_3)
+            std::cout << "* error:: alignment should be a power of 2 divisible by sizeof(uintptr_type)="
+                      << sizeof(uintptr_type) << " !!!" << std::endl;
         print(false);
+#endif
     }
 
     ~pool_memory() override {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <microgl/lut_bits.h>
+#include "lut_bits.h"
 
 namespace microgl {
     namespace coder {

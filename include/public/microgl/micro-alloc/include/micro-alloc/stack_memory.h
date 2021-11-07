@@ -78,20 +78,28 @@ public:
      */
     stack_memory(void * ptr, uint size_bytes, uptr alignment=sizeof (uintptr_type)) :
         base{4, alignment}, _ptr(ptr), _size(size_bytes) {
+        const bool is_memory_valid_1 = aligned_size_of_footer() <= size_bytes;
+        const bool is_memory_valid_2 = sizeof(void *)==sizeof(uintptr_type);
+        const bool is_memory_valid_3 = alignment % sizeof(uintptr_type)==0;
+        const bool is_memory_valid = is_memory_valid_1 and is_memory_valid_2 and is_memory_valid_3;
+        if(is_memory_valid) _current_head = align_up(ptr_to_int(_ptr));
+        this->_is_valid = is_memory_valid;
+
 #ifdef DEBUG_ALLOCATOR
         std::cout << std::endl << "HELLO:: stack memory resource"<< std::endl;
         std::cout << "* minimal block size due to headers and alignment is "
                   << aligned_size_of_footer() << " bytes" << std::endl;
         std::cout << "* requested alignment is " << this->alignment << " bytes" << std::endl;
-#endif
-        const bool is_memory_valid = aligned_size_of_footer() <= size_bytes;
-        if(!is_memory_valid) {
-#ifdef DEBUG_ALLOCATOR
+        if(!is_memory_valid_1)
             std::cout << "* memory does not satisfy minimal size requirements !!!"
-            << std::endl;
+                      << std::endl;
+        if(!is_memory_valid_2)
+            std::cout << "* error:: a pointer is not expressible as uintptr_type !!!"
+                      << std::endl;
+        if(!is_memory_valid_3)
+            std::cout << "* error:: alignment should be a power of 2 divisible by sizeof(uintptr_type)="
+                      << sizeof(uintptr_type) << " !!!" << std::endl;
 #endif
-        } else
-            _current_head = align_up(ptr_to_int(_ptr));
     }
 
     ~stack_memory() override {

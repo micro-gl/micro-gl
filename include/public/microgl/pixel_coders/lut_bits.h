@@ -1,11 +1,10 @@
 #pragma once
 
 #include "lut.h"
-#include "stdint.h"
+#include "../stdint.h"
 
 namespace microgl {
     namespace lut {
-
         /**
          * dynamic runtime (stack or heap storage) lookup table generation
          * @tparam bits1 from bits

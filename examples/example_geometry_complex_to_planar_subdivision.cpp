@@ -5,7 +5,7 @@
 #include <microgl/tesselation/planarize_division.h>
 #include <microgl/samplers/flat_color.h>
 #include <vector>
-#include <microgl/micro-tess/static_array.h>
+#include "microgl/micro-tess/include/micro-tess/static_array.h"
 
 #define W 640*1
 #define H 640*1

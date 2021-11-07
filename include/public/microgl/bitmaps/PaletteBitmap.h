@@ -1,7 +1,6 @@
 #pragma once
 
 #include "base_bitmap.h"
-#include "../allocators/std_rebind_allocator.h"
 #include "../stdint.h"
 
 /**
@@ -13,7 +12,7 @@
  * @tparam CODER the pixel coder for the palette
  * @tparam reverse_elements_pos_in_byte can help with endian-ness issues
  */
-template <unsigned PALETTE_SIZE, typename CODER, bool reverse_elements_pos_in_byte=false, class allocator_type=std_rebind_allocator<>>
+template <unsigned PALETTE_SIZE, typename CODER, bool reverse_elements_pos_in_byte=false, class allocator_type=microgl::traits::std_rebind_allocator<>>
 class PaletteBitmap : public base_bitmap<PaletteBitmap<PALETTE_SIZE, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, uint8_t> {
     using base=base_bitmap<PaletteBitmap<PALETTE_SIZE, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, uint8_t>;
     using byte=unsigned char;

@@ -5,9 +5,7 @@ namespace microgl {
         template<typename number>
         class cohen_sutherland_clipper {
         private:
-            using const_ref = const number &;
             using code = unsigned int;
-
             static const code INSIDE = 0b0000; // 0000
             static const code LEFT = 0b0001;   // 0001
             static const code RIGHT = 0b0010;  // 0010
@@ -15,17 +13,16 @@ namespace microgl {
             static const code TOP = 0b1000;    // 1000
 
         public:
-
+            using const_ref = const number &;
             struct result {
                 number x0, y0, x1, y1;
                 number alpha_0, alpha_1;
                 bool inside;
             };
 
-            static
-            auto compute(const_ref x0, const_ref y0, const_ref x1, const_ref y1,
-                         const_ref left, const_ref top,
-                         const_ref right, const_ref bottom) -> result {
+            static auto compute(const_ref x0, const_ref y0, const_ref x1,
+                                const_ref y1, const_ref left, const_ref top,
+                                const_ref right, const_ref bottom) -> result {
                 result r;
                 r.alpha_0 = number(0);
                 r.alpha_1 = number(1);
@@ -97,30 +94,20 @@ namespace microgl {
                             r.alpha_1 = alpha;
                             out_code_1 = compute_out_code(r.x1, r.y1, left, top, right, bottom);
                         }
-
                     }
-
                 }
-
                 return r;
             }
 
         private:
-            static
-            code compute_out_code(const_ref x, const_ref y,
-                                  const_ref left, const_ref top,
-                                  const_ref right, const_ref bottom) {
-                code code = INSIDE;          // initialised as being inside of [[clip window]]
-
-                if (x < left)           // to the left of clip window
-                    code |= LEFT;
-                else if (x > right)      // to the right of clip window
-                    code |= RIGHT;
-                if (y < top)           // below the clip window
-                    code |= TOP;
-                else if (y > bottom)      // above the clip window
-                    code |= BOTTOM;
-
+            static code compute_out_code(const_ref x, const_ref y,
+                                         const_ref left, const_ref top,
+                                         const_ref right, const_ref bottom) {
+                code code = INSIDE;     // initialised as being inside of [[clip window]]
+                if (x < left)  code |= LEFT;            // to the left of clip window
+                else if (x > right) code |= RIGHT;      // to the right of clip window
+                if (y < top) code |= TOP;               // below the clip window
+                else if (y > bottom) code |= BOTTOM;    // above the clip window
                 return code;
             }
         };

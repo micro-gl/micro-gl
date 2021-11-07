@@ -57,12 +57,23 @@ public:
      */
     linear_memory(void * ptr, uint size_bytes, uptr alignment=sizeof (uintptr_type)) :
             base{1, alignment}, _ptr(ptr), _size(size_bytes) {
+        const bool is_memory_valid_1 = sizeof(void *)==sizeof(uintptr_type);
+        const bool is_memory_valid_2 = alignment % sizeof(uintptr_type)==0;
+        const bool is_memory_valid = is_memory_valid_1 and is_memory_valid_2;
+        if(is_memory_valid) reset();
+        this->_is_valid = is_memory_valid;
+
 #ifdef DEBUG_ALLOCATOR
         std::cout << std::endl << "HELLO:: linear memory resource"<< std::endl;
         std::cout << "* requested alignment is " << alignment << " bytes" << std::endl;
         std::cout << "* size is " << size_bytes << " bytes" << std::endl;
+        if(!is_memory_valid_1)
+            std::cout << "* error:: a pointer is not expressible as uintptr_type !!!"
+                      << std::endl;
+        if(!is_memory_valid_2)
+            std::cout << "* error:: alignment should be a power of 2 divisible by sizeof(uintptr_type)="
+                      << sizeof(uintptr_type) << " !!!" << std::endl;
 #endif
-        reset();
     }
 
     ~linear_memory() override {

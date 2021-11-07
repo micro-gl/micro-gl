@@ -62,5 +62,4 @@ public:
         bool equals = this->type_id() == other.type_id();
         return equals;
     }
-
 };

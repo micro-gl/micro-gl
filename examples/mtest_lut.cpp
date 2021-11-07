@@ -1,5 +1,5 @@
 #include <iostream>
-#include <microgl/lut_bits.h>
+#include "microgl/pixel_coders/lut_bits.h"
 
 void test_static_lut() {
     std::cout << int(microgl::lut::static_lut_bits<5,8>::get(15)) << std::endl;

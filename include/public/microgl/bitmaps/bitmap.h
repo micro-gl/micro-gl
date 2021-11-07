@@ -1,14 +1,13 @@
 #pragma once
 
 #include "base_bitmap.h"
-#include "../allocators/std_rebind_allocator.h"
 
 /**
  * regular bitmap
  *
  * @tparam pixel_coder_ the pixel coder
  */
-template <typename pixel_coder_, class allocator_type=std_rebind_allocator<>>
+template <typename pixel_coder_, class allocator_type=microgl::traits::std_rebind_allocator<>>
 class bitmap : public base_bitmap<bitmap<pixel_coder_, allocator_type>, allocator_type, pixel_coder_> {
     using base=base_bitmap<bitmap<pixel_coder_, allocator_type>, allocator_type, pixel_coder_>;
 public:

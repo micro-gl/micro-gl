@@ -2,7 +2,7 @@
 
 #include "stdint.h"
 #include "traits.h"
-#include "micro-tess/std_rebind_allocator.h"
+#include "micro-tess/include/micro-tess/std_rebind_allocator.h"
 
 template<unsigned Bits, class Allocator=microtess::std_rebind_allocator<>>
 class z_buffer {

@@ -241,45 +241,41 @@ public:
      */
     dynamic_memory(void * ptr, unsigned int size_bytes, uptr alignment=sizeof (uintptr_type)) :
             base{2, alignment}, _ptr(ptr), _size(size_bytes) {
+        const auto block = create_free_block(this->ptr_to_int(ptr), this->ptr_to_int(ptr) + size_bytes);
+        const bool is_memory_valid_1 = block.size() >= minimal_size_of_any_block();
+        const bool is_memory_valid_2 = sizeof(void *)==sizeof(uintptr_type);
+        const bool is_memory_valid_3 = alignment % sizeof(uintptr_type)==0;
+        const bool is_memory_valid = is_memory_valid_1 and is_memory_valid_2 and is_memory_valid_3;
+
+        if(is_memory_valid) _free_list_root = block.header();
+        this->_is_valid = is_memory_valid;
+
 #ifdef DEBUG_ALLOCATOR
         std::cout << std::endl << "HELLO:: dynamic memory resource"<< std::endl;
         std::cout << "* minimal block size due to headers, footers and alignment is "
-        << minimal_size_of_any_block() << " bytes" <<std::endl;
+                  << minimal_size_of_any_block() << " bytes" <<std::endl;
         std::cout << "* requested alignment is " << this->alignment << " bytes" << std::endl;
-#endif
-        _ptr = ptr;
-        auto block = create_free_block(this->ptr_to_int(ptr), this->ptr_to_int(ptr) + size_bytes);
-        bool is_memory_valid_1 = block.size() >= minimal_size_of_any_block();
-        bool is_memory_valid_2 = sizeof(void *)==sizeof(uintptr_type);
-        bool is_memory_valid_3 = alignment % sizeof(uintptr_type)==0;
-        bool is_memory_valid = is_memory_valid_1 and is_memory_valid_2 and is_memory_valid_3;
-#ifdef DEBUG_ALLOCATOR
         std::cout << "* principal memory block after alignment is " << block.size() << " bytes"
-        << std::endl;
-#endif
-        if(is_memory_valid) {
-            _free_list_root = block.header();
-        } else {
-#ifdef DEBUG_ALLOCATOR
-            if(!is_memory_valid_1)
-                std::cout << "* error:: memory does not satisfy minimal size requirements !!!"
-                          << std::endl;
-            if(!is_memory_valid_2)
-                std::cout << "* error:: a pointer is not expressible as uintptr_type !!!"
-                          << std::endl;
-            if(!is_memory_valid_3)
-                std::cout << "* error:: alignment should be a power of 2 divisible by sizeof(uintptr_type)="
-                          << sizeof(uintptr_type) << " !!!" << std::endl;
-#endif
-        }
+                  << std::endl;
 
+        if(!is_memory_valid_1)
+            std::cout << "* error:: memory does not satisfy minimal size requirements !!!"
+                      << std::endl;
+        if(!is_memory_valid_2)
+            std::cout << "* error:: a pointer is not expressible as uintptr_type !!!"
+                      << std::endl;
+        if(!is_memory_valid_3)
+            std::cout << "* error:: alignment should be a power of 2 divisible by sizeof(uintptr_type)="
+                      << sizeof(uintptr_type) << " !!!" << std::endl;
         print(false);
+#endif
     }
 
     ~dynamic_memory() override {
         _free_list_root= nullptr;
         _ptr=nullptr;
         _allocations=_size=0;
+        this->_is_valid=false;
     }
 
     void * malloc(uptr size_bytes) override {

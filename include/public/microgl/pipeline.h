@@ -4,24 +4,22 @@
 #include "math/vertex2.h"
 #include "math/vertex3.h"
 #include "color.h"
-#include "micro-tess/triangles.h"
+#include "micro-tess/include/micro-tess/triangles.h"
 
 namespace microgl {
     namespace _3d {
-
         /**
          * this is a simple fixed 3d pipeline interface
          */
         template <typename number, class canvas_type>
         class pipeline {
-        private:
+        public:
             using index = unsigned;
             using const_ref = const number &;
             using vertex2 = microgl::vertex2<number>;
             using vertex3 = microgl::vertex3<number>;
             using vertex4 = microgl::vertex4<number>;
             using mat4 = matrix_4x4<number>;
-        public:
 
             static
             vertex3 world_to_raster_space(const vertex3 &world, const mat4 &mvp, index width, index height) {
@@ -37,8 +35,7 @@ namespace microgl {
                 return viewport(clip_space, width, height);
             }
 
-            static
-            vertex3 viewport(const vertex4 &ndc, index width, index height) {
+            static vertex3 viewport(const vertex4 &ndc, index width, index height) {
                 // given NDC= Normalized Device Coordinates, then transform them into
                 // raster/canvas/viewport coords. We assume, that NDC coords are [-1,1] range.
                 // todo:; currently I assume no z clipping has occured
@@ -58,9 +55,7 @@ namespace microgl {
                 return result;
             }
 
-            //            template <>
-            static
-            void render(const color_t & color,
+            static void render(const color_t & color,
                         const vertex3 * vertices,
                         const index vertices_size,
                         const index * indices,
@@ -134,11 +129,8 @@ namespace microgl {
 //
 //                        break;
 //                    }
-
                 }
-
 #undef IND
-
             }
         };
     }

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "microgl/tesselation/dynamic_array.h"
-#include "microgl/math/vertex2.h"
-#include "microgl/math/vertex3.h"
-#include <microgl/tesselation/triangles.h>
+#include <microgl/micro-tess/include/micro-tess/dynamic_array.h>
+#include <microgl/micro-tess/include/micro-tess/triangles.h>
+#include <microgl/math/vertex2.h>
+#include <microgl/math/vertex3.h>
 #include <initializer_list>
 
 template <typename number>

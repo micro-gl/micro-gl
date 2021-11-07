@@ -1,7 +1,6 @@
 #pragma once
 
 #include "base_bitmap.h"
-#include "../allocators/std_rebind_allocator.h"
 
 /**
  * packed bitmap is a memory efficient bitmap, that encodes pixels as group of bits
@@ -11,7 +10,7 @@
  * @tparam CODER the pixel coder to decode the pixels
  * @tparam reverse_elements_pos_in_byte this can help with endian-ness issues
  */
-template <unsigned BPP, typename CODER, bool reverse_elements_pos_in_byte=false, class allocator_type=std_rebind_allocator<>>
+template <unsigned BPP, typename CODER, bool reverse_elements_pos_in_byte=false, class allocator_type=microgl::traits::std_rebind_allocator<>>
 class PackedBitmap : public base_bitmap<PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, uint8_t> {
     using base=base_bitmap<PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte>, allocator_type, CODER, uint8_t>;
     using byte=unsigned char;

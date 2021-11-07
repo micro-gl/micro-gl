@@ -37,22 +37,18 @@ public:
     using value_type = T;
     using size_t = unsigned long;
 
-public:
     template<class U>
     explicit std_rebind_allocator(const std_rebind_allocator<U> & other) noexcept { };
     explicit std_rebind_allocator()=default;
 
-    template <class U, class... Args>
-    void construct(U* p, Args&&... args) {
+    template <class U, class... Args> void construct(U* p, Args&&... args) {
         new(p) U(std_rebind_allocator_traits::forward<Args>(args)...);
     }
 
     T * allocate(size_t n) { return (T *)operator new(n * sizeof(T)); }
     void deallocate(T * p, size_t n=0) { operator delete (p); }
 
-    template<class U> struct rebind {
-        typedef std_rebind_allocator<U> other;
-    };
+    template<class U> struct rebind { typedef std_rebind_allocator<U> other; };
 };
 
 template<class T1, class T2>

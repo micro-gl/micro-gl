@@ -1,7 +1,7 @@
 #pragma once
 
-#include <microgl/lut_bits.h>
-#include <microgl/color.h>
+#include "lut_bits.h"
+#include "../color.h"
 
 namespace microgl {
     namespace coder {

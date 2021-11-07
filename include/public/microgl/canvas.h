@@ -17,13 +17,13 @@
 #include "shaders/shader.h"
 #include "samplers/texture.h"
 #include "samplers/void_sampler.h"
-#include "micro-tess/triangles.h"
-#include "micro-tess/polygons.h"
-#include "micro-tess/path.h"
-#include "micro-tess/monotone_polygon_triangulation.h"
-#include "micro-tess/ear_clipping_triangulation.h"
-#include "micro-tess/bezier_patch_tesselator.h"
-#include "micro-tess/dynamic_array.h"
+#include "micro-tess/include/micro-tess/triangles.h"
+#include "micro-tess/include/micro-tess/polygons.h"
+#include "micro-tess/include/micro-tess/path.h"
+#include "micro-tess/include/micro-tess/monotone_polygon_triangulation.h"
+#include "micro-tess/include/micro-tess/ear_clipping_triangulation.h"
+#include "micro-tess/include/micro-tess/bezier_patch_tesselator.h"
+#include "micro-tess/include/micro-tess/dynamic_array.h"
 #include "functions/minmax.h"
 #include "functions/clamp.h"
 #include "functions/swap.h"
@@ -32,7 +32,6 @@
 #include "functions/distance.h"
 #include "clippers/cohen_sutherland_clipper.h"
 #include "clippers/homo_triangle_clipper.h"
-#include "allocators/std_rebind_allocator.h"
 #include "text/bitmap_font.h"
 
 using namespace microtess::triangles;
@@ -1096,7 +1095,7 @@ public:
      */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool debug=false, typename number1, typename number2=number1, typename Sampler,
-            class Allocator=std_rebind_allocator<>>
+            class Allocator=microgl::traits::std_rebind_allocator<>>
     void drawBezierPatch(const Sampler &sampler,
                          const matrix_3x3<number1> &transform,
                          const vertex3<number1> *mesh,
@@ -1135,7 +1134,7 @@ public:
     template <microtess::polygons::hints hint=microtess::polygons::hints::SIMPLE, typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false, bool debug=false,
             typename number1=float, typename number2=number1, typename Sampler,
-            class tessellation_allocator=std_rebind_allocator<>>
+            class tessellation_allocator=microgl::traits::std_rebind_allocator<>>
     void drawPolygon(const Sampler &sampler,
                      const matrix_3x3<number1> &transform,
                      const vertex2<number1> * points,
@@ -1223,7 +1222,7 @@ public:
             bool antialias=false, bool debug=false,
             typename number1=float, typename number2=float,
             typename Sampler, class Iterable, template<typename...> class path_container_template,
-            class tessellation_allocator=std_rebind_allocator<>>
+            class tessellation_allocator=microgl::traits::std_rebind_allocator<>>
     void drawPathStroke(const Sampler &sampler,
                         const matrix_3x3<number1> &transform,
                         microtess::path<number1, path_container_template, tessellation_allocator> &path,
@@ -1264,7 +1263,7 @@ public:
             bool antialias=false, bool debug=false,
             typename number1=float, typename number2=float,
             typename Sampler, template<typename...> class path_container_template,
-            class tessellation_allocator=std_rebind_allocator<>>
+            class tessellation_allocator=microgl::traits::std_rebind_allocator<>>
     void drawPathFill(const Sampler &sampler,
                       const matrix_3x3<number1> &transform,
                       microtess::path<number1, path_container_template, tessellation_allocator> &path,

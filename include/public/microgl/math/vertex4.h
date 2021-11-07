@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../micro-tess/vec4.h"
+#include "microgl/micro-tess/include/micro-tess/vec4.h"
 #include "vertex3.h"
 
 namespace microgl {

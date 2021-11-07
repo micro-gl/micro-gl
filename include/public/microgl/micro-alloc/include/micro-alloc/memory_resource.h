@@ -8,6 +8,8 @@ template<typename uintptr_type=unsigned long>
 class memory_resource {
 private:
     const char _type_id;
+protected:
+    bool _is_valid;
 public:
     using uint = unsigned int;
     using uptr = uintptr_type;
@@ -49,10 +51,13 @@ public:
      * @param alignment alignment requirement, needs to be a power of 2 that is divisible by sizeof(uintptr_type)
      */
     explicit memory_resource(char type_id=-1, uptr alignment= sizeof(uintptr_type)) :
-                _type_id{type_id}, alignment{alignment} {
-    }
-
+                _type_id{type_id}, alignment{alignment}, _is_valid(true) {}
     virtual ~memory_resource() = default;
+
+    /**
+     * is this memory resource a valid one ?
+     */
+    bool is_valid() const { return _is_valid; };
 
     /**
      * allocate raw memory

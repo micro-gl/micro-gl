@@ -8,7 +8,7 @@ check out our website at [micro-gl.github.io](micro-gl.github.io)
 # Usage
 Because `microgl` is a headers only library, installing just means copying the `include/public/microgl`
 folder to your system search path or another folder and then set the include path in your build.
-the `cmake` file also has an install target.
+the `cmake` file also has an install target, that will copy everything in your system via ```cmake install```.
 
 ## Using *CMake*
 Download the project to a sub folder of your project. inside your **`CMakeLists.txt`** add

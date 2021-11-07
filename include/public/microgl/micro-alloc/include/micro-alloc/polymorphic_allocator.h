@@ -3,35 +3,24 @@
 #include "memory_resource.h"
 
 namespace poly_alloc_traits {
+    template<class T> struct remove_reference      {typedef T type;};
+    template<class T> struct remove_reference<T&>  {typedef T type;};
+    template<class T> struct remove_reference<T&&> {typedef T type;};
 
-    template< class T > struct remove_reference      {typedef T type;};
-    template< class T > struct remove_reference<T&>  {typedef T type;};
-    template< class T > struct remove_reference<T&&> {typedef T type;};
-
-    template <class _Tp>
-    inline
-    typename remove_reference<_Tp>::type&&
+    template <class _Tp> inline typename remove_reference<_Tp>::type&&
     move(_Tp&& __t) noexcept
     {
         typedef typename remove_reference<_Tp>::type _Up;
         return static_cast<_Up&&>(__t);
     }
 
-    template <class _Tp>
-    inline
-    _Tp&&
+    template <class _Tp> inline _Tp&&
     forward(typename remove_reference<_Tp>::type& __t) noexcept
-    {
-        return static_cast<_Tp&&>(__t);
-    }
+    { return static_cast<_Tp&&>(__t); }
 
-    template <class _Tp>
-    inline
-    _Tp&&
+    template <class _Tp> inline _Tp&&
     forward(typename remove_reference<_Tp>::type&& __t) noexcept
-    {
-        return static_cast<_Tp&&>(__t);
-    }
+    { return static_cast<_Tp&&>(__t); }
 
     template <class Tp, Tp _v>
     struct integral_constant
@@ -67,38 +56,23 @@ public:
 
     template<class U>
     explicit polymorphic_allocator(const polymorphic_allocator<U, uintptr_type> & other) noexcept
-                    : polymorphic_allocator{other.resource()} {
+                    : polymorphic_allocator{other.resource()} {}
+    explicit polymorphic_allocator(memory_resource<uintptr_type> * r) : _mem{r} {}
 
-    }
+    memory * resource() const { return _mem; }
 
-    explicit polymorphic_allocator(memory_resource<uintptr_type> * r) : _mem{r} {
-    }
-
-    memory * resource() const {
-        return _mem;
-    }
-
-    template <class U, class... Args>
-    void construct(U* p, Args&&... args) {
+    template <class U, class... Args> void construct(U* p, Args&&... args) {
         new(p) U(poly_alloc_traits::forward<Args>(args)...);
     }
 
-    T * allocate(size_t n) {
-        return (T *)_mem->malloc(n * sizeof(T));
-    }
+    T * allocate(size_t n) { return (T *)_mem->malloc(n * sizeof(T)); }
+    void deallocate(T * p, size_t n=0) { _mem->free(p); }
 
-    void deallocate(T * p, size_t n=0) {
-        _mem->free(p);
-    }
-
-    void* allocate_bytes(size_t nbytes,
-                         size_t alignment = default_align) {
+    void* allocate_bytes(size_t nbytes, size_t alignment = default_align) {
         return _mem->malloc(nbytes);
     }
 
-    void deallocate_bytes(void* p,
-                          size_t nbytes,
-                          size_t alignment = default_align) {
+    void deallocate_bytes(void* p, size_t nbytes, size_t alignment = default_align) {
         _mem->free(p);
     }
 
@@ -107,8 +81,7 @@ public:
         return allocate_bytes(n * sizeof(U), alignof(U));
     }
 
-    template <class U>
-    void deallocate_object(U * p, size_t n = 1) {
+    template <class U> void deallocate_object(U * p, size_t n = 1) {
         deallocate_bytes(p, sizeof(U), alignof(U));
     }
 

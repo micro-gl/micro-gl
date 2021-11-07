@@ -5,6 +5,7 @@
 4. make boundary_buffer conditional
 5. add author copyrights
 6. refactor private drawing algorithms as _internal
+6. make allocators seperate lib
 7. 
 8. DONE: try make Q within-place 32 bits
 9. DONE: re-work functions into tess

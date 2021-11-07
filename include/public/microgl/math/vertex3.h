@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../micro-tess/vec3.h"
+#include "microgl/micro-tess/include/micro-tess/vec3.h"
 
 namespace microgl {
     template<typename number>
