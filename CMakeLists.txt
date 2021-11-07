@@ -6,7 +6,8 @@ set (CMAKE_CXX_STANDARD 11)
 
 message("===============\n${PROJECT_NAME} project \n===============")
 
-add_subdirectory(include/public/microgl/micro-alloc)
+#add_subdirectory(include/public/microgl/micro-alloc)
+#add_subdirectory(include/public/microgl/micro-tess)
 
 
 add_library(${PROJECT_NAME} INTERFACE)
@@ -16,7 +17,7 @@ target_include_directories(${PROJECT_NAME}
         INTERFACE
         ${PROJECT_SOURCE_DIR}/include/public
         )
-target_link_libraries(${PROJECT_NAME} INTERFACE micro-alloc)
+#target_link_libraries(${PROJECT_NAME} INTERFACE micro-alloc micro-tess)
 
 # Don't make the install target depend on the all target.
 set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)

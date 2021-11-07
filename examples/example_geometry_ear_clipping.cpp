@@ -3,8 +3,8 @@
 #include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
-#include "microgl/micro-tess/include/micro-tess/ear_clipping_triangulation.h"
-#include "microgl/micro-tess/include/micro-tess/triangles.h"
+#include <microgl/micro-tess/include/micro-tess/ear_clipping_triangulation.h>
+#include <microgl/micro-tess/include/micro-tess/triangles.h>
 #include <vector>
 #include "microgl/micro-tess/include/micro-tess/static_array.h"
 

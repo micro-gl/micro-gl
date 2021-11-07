@@ -4,8 +4,8 @@
 #include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
+#include <microgl/micro-tess/include/micro-tess/static_array.h>
 #include <vector>
-#include "microgl/micro-tess/include/micro-tess/static_array.h"
 
 template<typename item_type>
 using static_arr = static_array<item_type, 100>;

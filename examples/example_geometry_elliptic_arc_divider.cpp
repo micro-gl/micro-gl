@@ -4,8 +4,8 @@
 #include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
-#include "microgl/micro-tess/include/micro-tess/elliptic_arc_divider.h"
-#include "microgl/micro-tess/include/micro-tess/static_array.h"
+#include <microgl/micro-tess/include/micro-tess/elliptic_arc_divider.h>
+#include <microgl/micro-tess/include/micro-tess/static_array.h>
 #include <vector>
 
 #define W 640*1

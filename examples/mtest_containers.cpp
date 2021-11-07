@@ -1,7 +1,7 @@
 #include <iostream>
 #include <initializer_list>
 #include <vector>
-#include "microgl/tesselation/dynamic_array.h"
+#include <microgl/micro-tess/dynamic_array.h>
 
 struct dummy {
     dummy() {

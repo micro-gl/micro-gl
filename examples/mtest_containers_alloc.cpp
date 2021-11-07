@@ -7,7 +7,7 @@
 #include <microgl/allocators/stack_memory.h>
 #include <microgl/allocators/std_memory.h>
 #include <microgl/allocators/polymorphic_allocator.h>
-#include "microgl/tesselation/dynamic_array.h"
+#include <microgl/tesselation/dynamic_array.h>
 #include <memory>
 
 struct test_t {
