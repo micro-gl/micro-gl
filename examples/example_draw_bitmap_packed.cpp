@@ -4,7 +4,7 @@
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/BPP_RGB.h>
 #include <microgl/samplers/texture.h>
-#include <microgl/bitmaps/PackedBitmap.h>
+#include <microgl/bitmaps/packed_bitmap.h>
 #include <microgl/bitmaps/bitmap.h>
 #include "data/packed_1.h"
 #include "data/packed_2.h"
@@ -20,7 +20,7 @@ using namespace microgl::sampling;
 
 int main() {
     using index_t = unsigned int;
-    using BitmapPacked= PackedBitmap<BITS, coder::BPP_RGB<BITS, 8,8,8>, true>;
+    using BitmapPacked= packed_bitmap<BITS, coder::BPP_RGB<BITS, 8,8,8>, true>;
     using Canvas24= canvas<bitmap<microgl::coder::RGB888_PACKED_32>>;
     using TexPacked= sampling::texture<BitmapPacked>;
 

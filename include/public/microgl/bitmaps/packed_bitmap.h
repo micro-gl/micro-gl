@@ -11,8 +11,8 @@
  * @tparam reverse_elements_pos_in_byte this can help with endian-ness issues
  */
 template <unsigned BPP, typename CODER, bool reverse_elements_pos_in_byte=false, class allocator_type=microgl::traits::std_rebind_allocator<>>
-class PackedBitmap : public base_bitmap<PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, uint8_t> {
-    using base=base_bitmap<PackedBitmap<BPP, CODER, reverse_elements_pos_in_byte>, allocator_type, CODER, uint8_t>;
+class packed_bitmap : public base_bitmap<packed_bitmap<BPP, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, uint8_t> {
+    using base=base_bitmap<packed_bitmap<BPP, CODER, reverse_elements_pos_in_byte>, allocator_type, CODER, uint8_t>;
     using byte=unsigned char;
     static constexpr bool is_1_2_4_8 = BPP==1||BPP==2||BPP==4||BPP==8;
     typename microgl::traits::enable_if<is_1_2_4_8, bool>::type fails_if_else;
@@ -39,8 +39,8 @@ public:
      * @param w the bitmap width
      * @param h the bitmap height
      */
-    PackedBitmap(void* $pixels, int w, int h,
-                 const allocator_type & allocator=allocator_type()) :
+    packed_bitmap(void* $pixels, int w, int h,
+                  const allocator_type & allocator=allocator_type()) :
                  base {$pixels, round(w*h), w, h, allocator} {};
     /**
      * construct a bitmap and allocate a pixel array
@@ -48,19 +48,19 @@ public:
      * @param w the bitmap width
      * @param h the bitmap height
      */
-    PackedBitmap(int w, int h, const allocator_type & allocator=allocator_type()) :
+    packed_bitmap(int w, int h, const allocator_type & allocator=allocator_type()) :
                     base{w, h, allocator} {};
-    PackedBitmap(const PackedBitmap & bmp) : base{bmp} {}
-    PackedBitmap(PackedBitmap && bmp)  noexcept : base(microgl::traits::move(bmp)) {}
-    PackedBitmap & operator=(const PackedBitmap & bmp) {
+    packed_bitmap(const packed_bitmap & bmp) : base{bmp} {}
+    packed_bitmap(packed_bitmap && bmp)  noexcept : base(microgl::traits::move(bmp)) {}
+    packed_bitmap & operator=(const packed_bitmap & bmp) {
         base::operator=(bmp);
         return *this;
     }
-    PackedBitmap & operator=(PackedBitmap && bmp) noexcept {
+    packed_bitmap & operator=(packed_bitmap && bmp) noexcept {
         base::operator=(microgl::traits::move(bmp));
         return *this;
     }
-    ~PackedBitmap() = default;
+    ~packed_bitmap() = default;
 
     uint8_t extract_pixel(unsigned int index1) const {
         byte mm=M, kk=K, tt=T, mask=MASK; // debug

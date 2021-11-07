@@ -9,7 +9,6 @@ message("===============\n${PROJECT_NAME} project \n===============")
 #add_subdirectory(include/public/microgl/micro-alloc)
 #add_subdirectory(include/public/microgl/micro-tess)
 
-
 add_library(${PROJECT_NAME} INTERFACE)
 
 # expose public include directory

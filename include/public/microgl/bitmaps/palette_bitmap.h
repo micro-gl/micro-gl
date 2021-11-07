@@ -13,8 +13,8 @@
  * @tparam reverse_elements_pos_in_byte can help with endian-ness issues
  */
 template <unsigned PALETTE_SIZE, typename CODER, bool reverse_elements_pos_in_byte=false, class allocator_type=microgl::traits::std_rebind_allocator<>>
-class PaletteBitmap : public base_bitmap<PaletteBitmap<PALETTE_SIZE, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, uint8_t> {
-    using base=base_bitmap<PaletteBitmap<PALETTE_SIZE, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, uint8_t>;
+class palette_bitmap : public base_bitmap<palette_bitmap<PALETTE_SIZE, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, uint8_t> {
+    using base=base_bitmap<palette_bitmap<PALETTE_SIZE, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, uint8_t>;
     using byte=unsigned char;
     static constexpr byte BPI = PALETTE_SIZE==2 ? 1 : (PALETTE_SIZE==4 ? 2 : (PALETTE_SIZE==16 ? 4 : (PALETTE_SIZE==256 ? 8 : 0)));
     static constexpr bool is_1_2_4_8_bits = BPI!=0;
@@ -33,14 +33,14 @@ public:
 private:
     pixel * palette = nullptr;
 
-    void move_from(PaletteBitmap & bmp) {
+    void move_from(palette_bitmap & bmp) {
         owns_palette = bmp.owns_palette;
         bmp.owns_palette=false;
         palette = bmp.palette;
         bmp.palette= nullptr;
     }
 
-    void copy_from(const PaletteBitmap & bmp) {
+    void copy_from(const palette_bitmap & bmp) {
         if(owns_palette) delete [] palette;
         owns_palette = true;
         palette = new pixel[PALETTE_SIZE];
@@ -62,8 +62,8 @@ public:
      * @param w the bitmap width
      * @param h the bitmap height
      */
-    PaletteBitmap(void* $indices, void * $palette, int w, int h,
-                  const allocator_type & allocator=allocator_type()) :
+    palette_bitmap(void* $indices, void * $palette, int w, int h,
+                   const allocator_type & allocator=allocator_type()) :
                 base{$indices, round(w*h), w, h, allocator},
                 palette{reinterpret_cast<pixel *>($palette)} {
     };
@@ -72,27 +72,27 @@ public:
      * @param w the bitmap width
      * @param h the bitmap height
      */
-    PaletteBitmap(int w, int h, const allocator_type & allocator=allocator_type()) :
+    palette_bitmap(int w, int h, const allocator_type & allocator=allocator_type()) :
                 base{w, h, allocator} {};
 
-    PaletteBitmap(const PaletteBitmap & bmp) : base{bmp} {
+    palette_bitmap(const palette_bitmap & bmp) : base{bmp} {
         copy_from(bmp);
     }
-    PaletteBitmap(PaletteBitmap && bmp)  noexcept : base(microgl::traits::move(bmp)) {
+    palette_bitmap(palette_bitmap && bmp)  noexcept : base(microgl::traits::move(bmp)) {
         move_from(bmp);
     }
-    PaletteBitmap & operator=(const PaletteBitmap & bmp) {
+    palette_bitmap & operator=(const palette_bitmap & bmp) {
         if(this==&bmp) return *this;
         base::operator=(bmp);
         copy_from(bmp);
         return *this;
     }
-    PaletteBitmap & operator=(PaletteBitmap && bmp) noexcept {
+    palette_bitmap & operator=(palette_bitmap && bmp) noexcept {
         base::operator=(microgl::traits::move(bmp));
         move_from(bmp);
         return *this;
     }
-    ~PaletteBitmap() {
+    ~palette_bitmap() {
         if(owns_palette) delete [] palette;
     }
 
