@@ -27,8 +27,7 @@ namespace microtess {
          * todo: support arbitrary patches
          *
          */
-        static
-        void compute(const vertex3 *meshPoints,
+        static void compute(const vertex3 *meshPoints,
                      const index uOrder, const index vOrder,
                      const index uSamples, const index vSamples,
                      container_output_attributes &out_vertices_attributes,
@@ -80,13 +79,9 @@ namespace microtess {
                             out_indices.push_back((i+1)*vSamples);
                             // i think it is missing another one
                         }
-
                     }
-
                 }
-
             }
-
         }
 
         static
@@ -168,8 +163,5 @@ namespace microtess {
 
             return result;
         };
-
     };
-
-
 }

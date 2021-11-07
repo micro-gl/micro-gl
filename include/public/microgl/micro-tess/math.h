@@ -3,7 +3,7 @@
 namespace microtess {
     namespace math {
 
-#define PI        3.14159265358979323846264338327950288
+#define PI 3.14159265358979323846264338327950288
 
         template<typename number>
         number abs(const number &val) {
@@ -21,8 +21,7 @@ namespace microtess {
         }
 
         template<typename number>
-        inline
-        number deg_to_rad(const number &degrees) {
+        inline number deg_to_rad(const number &degrees) {
             return ((degrees*number(microtess::math::pi<number>()))/number{180});
         }
 

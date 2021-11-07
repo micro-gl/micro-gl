@@ -90,23 +90,20 @@ public:
     dynamic_array(uint count, const T & value = T(), const Alloc & alloc = Alloc()) :
             dynamic_array(alloc) {
         reserve(count);
-        for (int ix = 0; ix < count; ++ix)
-            push_back(value);
+        for (int ix = 0; ix < count; ++ix) push_back(value);
     }
 
     template<class Iterable>
     dynamic_array(const Iterable &list, const Alloc & alloc= Alloc()) noexcept :
             dynamic_array(alloc) {
         reserve(list.size());
-        for (const auto & item : list)
-            push_back(item);
+        for (const auto & item : list) push_back(item);
     }
 
     dynamic_array(const dynamic_array & other, const Alloc & alloc) noexcept :
             dynamic_array(alloc) {
         reserve(other.size());
-        for (const auto & item : other)
-            push_back(item);
+        for (const auto & item : other) push_back(item);
     }
 
     dynamic_array(const dynamic_array & other) noexcept :
@@ -116,8 +113,7 @@ public:
     dynamic_array(dynamic_array && other, const Alloc & alloc) noexcept :
             dynamic_array(alloc) {
         reserve(other.size());
-        for (const auto & item : other)
-            push_back(dynamic_array_traits::move(item));
+        for (const auto & item : other) push_back(dynamic_array_traits::move(item));
     }
 
     dynamic_array(dynamic_array && other) noexcept : dynamic_array{other.get_allocator()} {
@@ -203,8 +199,6 @@ public:
     const T& operator[](index i) const noexcept { return _data[i]; }
     const T& peek() noexcept { return (*this)[_current]; }
 
-    Alloc get_allocator() const noexcept { return Alloc(_alloc); }
-
     void alloc_(bool up) noexcept {
         const auto old_size = _current;
         const auto new_size = up ? (_cap==0?1:_cap*2) : _cap/2;
@@ -232,9 +226,7 @@ public:
             const T vv = v;
             alloc_(true);
             _data[_current++] = vv;
-        } else {
-            _data[_current++] = v;
-        }
+        } else _data[_current++] = v;
     }
 
     void push_back(T && v) noexcept {
@@ -244,15 +236,12 @@ public:
             const T vv = dynamic_array_traits::move(v);
             alloc_(true);
             _data[_current++] = dynamic_array_traits::move(vv);
-        } else {
-            _data[_current++] = dynamic_array_traits::move(v);
-        }
+        } else _data[_current++] = dynamic_array_traits::move(v);
     }
 
     template<typename... ARGS>
     int emplace_back(ARGS&&... args) noexcept {
-        if(int(_current)>int(_cap-1))
-            alloc_(true);
+        if(int(_current)>int(_cap-1)) alloc_(true);
         auto * mem_loc = &_data[_current++];
         new (mem_loc) T(dynamic_array_traits::forward<ARGS>(args)...);
         return _current-1;
@@ -260,8 +249,7 @@ public:
 
     void push_back(const_dynamic_array_ref container) noexcept {
         const int count = container.size();
-        for (int ix = 0; ix < count; ++ix)
-            this->push_back(container[ix]);
+        for (int ix = 0; ix < count; ++ix) this->push_back(container[ix]);
     }
 
     void pop_back() noexcept {
@@ -271,8 +259,7 @@ public:
     }
 
     void move(index idx) noexcept {
-        if(idx < capacity())
-            _current = idx;
+        if(idx < capacity()) _current = idx;
     }
 
     void drain() noexcept {
@@ -285,10 +272,10 @@ public:
     }
 
     void clear() noexcept {
-        for (int ix = 0; ix < capacity(); ++ix)
-            _data[ix].~T();
+        for (int ix = 0; ix < capacity(); ++ix) _data[ix].~T();
         _current = 0;
     }
+    Alloc get_allocator() const noexcept { return Alloc(_alloc); }
     T* data() noexcept { return _data; }
     const T* data() const noexcept { return _data; }
     T& back() noexcept { return _data[_current-1]; }

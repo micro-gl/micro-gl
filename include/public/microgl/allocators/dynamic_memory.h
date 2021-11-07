@@ -268,8 +268,8 @@ public:
                 std::cout << "* error:: a pointer is not expressible as uintptr_type !!!"
                           << std::endl;
             if(!is_memory_valid_3)
-                std::cout << "* error:: alignment should be a power of 2 divisible by sizeof(uintptr_type) !!!"
-                          << std::endl;
+                std::cout << "* error:: alignment should be a power of 2 divisible by sizeof(uintptr_type)="
+                          << sizeof(uintptr_type) << " !!!" << std::endl;
 #endif
         }
 
