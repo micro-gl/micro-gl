@@ -65,10 +65,10 @@ void render_star() {
     }
 
     for (auto & segment : segments) {
-        canvas->drawWuLine({0,0,0,255},
-                         segment.p0.x, segment.p0.y,
-                         segment.p1.x, segment.p1.y,
-                         0
+        canvas->drawWuLine_internal({0, 0, 0, 255},
+                                    segment.p0.x, segment.p0.y,
+                                    segment.p1.x, segment.p1.y,
+                                    0
         );
 
     }
@@ -126,10 +126,10 @@ void render_chaos() {
     }
 
     for (auto & segment : segments) {
-        canvas->drawWuLine({0,0,0,255},
-                         segment.p0.x, segment.p0.y,
-                         segment.p1.x, segment.p1.y,
-                         0
+        canvas->drawWuLine_internal({0, 0, 0, 255},
+                                    segment.p0.x, segment.p0.y,
+                                    segment.p1.x, segment.p1.y,
+                                    0
         );
 
     }

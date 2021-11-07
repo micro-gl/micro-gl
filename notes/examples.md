@@ -4,7 +4,7 @@ template<typename BlendMode, typename PorterDuff,
          bool antialias,
          typename P2, typename CODER2>
 void
-canvas<P, CODER>::drawTriangle(bitmap<P2, CODER2> & bmp,
+canvas<P, CODER>::drawTriangle_internal(bitmap<P2, CODER2> & bmp,
                                int v0_x, int v0_y, float u0, float v0,
                                int v1_x, int v1_y, float u1, float v1,
                                int v2_x, int v2_y, float u2, float v2,
@@ -397,7 +397,7 @@ template<typename BlendMode, typename PorterDuff,
         bool antialias,
         typename P2, typename CODER2>
 void
-canvas<P, CODER>::drawTriangle(const bitmap<P2, CODER2> & bmp,
+canvas<P, CODER>::drawTriangle_internal(const bitmap<P2, CODER2> & bmp,
                                int v0_x, int v0_y, float u0, float v0,
                                int v1_x, int v1_y, float u1, float v1,
                                int v2_x, int v2_y, float u2, float v2,
@@ -594,7 +594,7 @@ template<typename BlendMode, typename PorterDuff,
         bool antialias, bool perspective_correct,
         typename P2, typename CODER2>
 void
-canvas<P, CODER>::drawTriangle(const bitmap<P2, CODER2> & bmp,
+canvas<P, CODER>::drawTriangle_internal(const bitmap<P2, CODER2> & bmp,
                                const fixed_signed v0_x, const fixed_signed v0_y, float u0, float v0, float q0,
                                const fixed_signed v1_x, const fixed_signed v1_y, float u1, float v1, float q1,
                                const fixed_signed v2_x, const fixed_signed v2_y, float u2, float v2, float q2,
@@ -1014,7 +1014,7 @@ lines
 
 ```
 template<typename P, typename CODER>
-void canvas<P, CODER>::drawWuLine(const color_f_t &color, int x0, int y0, int x1, int y1) {
+void canvas<P, CODER>::drawWuLine_internal(const color_f_t &color, int x0, int y0, int x1, int y1) {
     int X0 = x0, Y0 = y0, X1 = x1, Y1=y1;
     color_t color_input{};
 
@@ -1955,7 +1955,7 @@ canvas<P, CODER>::drawTriangleFast(const bitmap<P2, CODER2> & bmp,
 // rounded rectangle
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
-void canvas<P, CODER>::drawRoundedRect(const color_f_t &color,
+void canvas<P, CODER>::drawRoundedRect_internal(const color_f_t &color,
                                        int left, int top,
                                        int right, int bottom, int radius,
                                        precision sub_pixel_precision,  canvas::opacity_t opacity) {
@@ -2149,7 +2149,7 @@ void canvas<P, CODER>::drawCircleOLD(const color_f_t & color,
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
-void canvas<P, CODER>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
+void canvas<P, CODER>::drawRoundedRect_internal(const sampling::sampler<S1> & sampler_fill,
                                        const sampling::sampler<S2> & sampler_stroke,
                                        int left, int top,
                                        int right, int bottom,

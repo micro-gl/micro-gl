@@ -604,14 +604,14 @@ private:
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename Sampler1, typename Sampler2>
-    void drawRoundedRect(const Sampler1 & sampler_fill,
-                         const Sampler2 & sampler_stroke,
-                         int left, int top,
-                         int right, int bottom,
-                         int radius, int stroke_size,
-                         int u0, int v0, int u1, int v1,
-                         precision sub_pixel_precision, precision uv_precision,
-                         opacity_t opacity= 255);
+    void drawRoundedRect_internal(const Sampler1 & sampler_fill,
+                                  const Sampler2 & sampler_stroke,
+                                  int left, int top,
+                                  int right, int bottom,
+                                  int radius, int stroke_size,
+                                  int u0, int v0, int u1, int v1,
+                                  precision sub_pixel_precision, precision uv_precision,
+                                  opacity_t opacity=255);
 
     /**
      * internal method, that draws rectangle after conversion to fixed pooints
@@ -620,13 +620,13 @@ private:
      */
     template <typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, typename Sampler>
-    void drawRect(const Sampler &sampler,
-                  int left, int top,
-                  int right, int bottom,
-                  int u0, int v0,
-                  int u1, int v1,
-                  precision sub_pixel_precision, precision uv_precision,
-                  opacity_t opacity);
+    void drawRect_internal(const Sampler &sampler,
+                           int left, int top,
+                           int right, int bottom,
+                           int u0, int v0,
+                           int u1, int v1,
+                           precision sub_pixel_precision, precision uv_precision,
+                           opacity_t opacity);
 
 public:
 
@@ -895,12 +895,12 @@ private:
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool perspective_correct=false,
             typename Sampler>
-    void drawTriangle(const Sampler &sample,
-                      int v0_x, int v0_y, int u0, int v0, int q0,
-                      int v1_x, int v1_y, int u1, int v1, int q1,
-                      int v2_x, int v2_y, int u2, int v2, int q2,
-                      opacity_t opacity, precision sub_pixel_precision, precision uv_precision,
-                      bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
+    void drawTriangle_internal(const Sampler &sample,
+                               int v0_x, int v0_y, int u0, int v0, int q0,
+                               int v1_x, int v1_y, int u1, int v1, int q1,
+                               int v2_x, int v2_y, int u2, int v2, int q2,
+                               opacity_t opacity, precision sub_pixel_precision, precision uv_precision,
+                               bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
 
 public:
     /**
@@ -1059,14 +1059,14 @@ private:
      * @param uv_precision          bit count for uv coords precision
      */
     template <typename Sampler>
-    void drawMask(const masks::chrome_mode &mode,
-                  const Sampler &sampler,
-                  int left, int top,
-                  int right, int bottom,
-                  int u0, int v0,
-                  int u1, int v1,
-                  precision sub_pixel_precision, precision uv_precision,
-                  opacity_t opacity = 255);
+    void drawMask_internal(const masks::chrome_mode &mode,
+                           const Sampler &sampler,
+                           int left, int top,
+                           int right, int bottom,
+                           int u0, int v0,
+                           int u1, int v1,
+                           precision sub_pixel_precision, precision uv_precision,
+                           opacity_t opacity = 255);
 
 public:
     /**
@@ -1153,9 +1153,9 @@ private:
      * @param bits      precision for position
      * @param opacity   opacity [0..255]
      */
-    void drawWuLine(const color_t & color,
-                    int x0, int y0, int x1, int y1,
-                    precision bits = 0, opacity_t opacity=255);
+    void drawWuLine_internal(const color_t & color,
+                             int x0, int y0, int x1, int y1,
+                             precision bits = 0, opacity_t opacity= 255);
 
 public:
     // Wu lines
@@ -1292,10 +1292,10 @@ public:
      * @param frame draw a frame ?
      * @param opacity opacity [0..255]
      */
-    template<bool tint=true, bool smooth=false, typename bitmap_font_type>
+    template<bool tint=true, bool smooth=false, bool frame=false, typename bitmap_font_type>
     void drawText(const char *text, microgl::text::bitmap_font<bitmap_font_type> &font, const color_t & color,
                   microgl::text::text_format & format,
-                  int left, int top, int right, int bottom, bool frame, opacity_t opacity=255);
+                  int left, int top, int right, int bottom, opacity_t opacity=255);
 
 };
 
