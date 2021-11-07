@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../math.h"
-#include "../precision.h"
+#include "precision.h"
 
 namespace microgl {
     namespace sampling {

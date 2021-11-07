@@ -2,8 +2,8 @@
 
 #include <microgl/rgba.h>
 #include <microgl/math.h>
-#include <microgl/precision.h>
-#include "microgl/math/Q.h"
+#include <microgl/samplers/precision.h>
+#include <microgl/math/Q.h>
 
 namespace microgl {
     namespace sampling {

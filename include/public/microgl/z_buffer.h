@@ -2,9 +2,8 @@
 
 #include "stdint.h"
 #include "traits.h"
-#include "micro-tess/include/micro-tess/std_rebind_allocator.h"
 
-template<unsigned Bits, class Allocator=microtess::std_rebind_allocator<>>
+template<unsigned Bits, class Allocator=microgl::traits::std_rebind_allocator<>>
 class z_buffer {
 private:
     template<bool B, class T, class F>
