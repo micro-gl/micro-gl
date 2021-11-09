@@ -33,7 +33,7 @@
 http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.htm
 
 #### code bloat
-- vec2 is intantiated all over the place it seems
+- vertex2 is intantiated all over the place it seems
 - array container virtual methods are included in every instance of template, consider throwing it away,
   I have seen a 6kb reduction in release mode which is a lot
 - follow http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rt-abi

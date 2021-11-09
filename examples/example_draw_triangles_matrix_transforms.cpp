@@ -1,5 +1,6 @@
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
 
@@ -11,7 +12,7 @@ float t = 0.0f;
 
 int main() {
     using number  =float;
-    using vertex = vec2<number>;
+    using vertex = vertex2<number>;
     using mat = matrix_3x3<number>;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
@@ -25,7 +26,7 @@ int main() {
     boundary_info boundary[2] = {create_boundary_info(true,true,false),
                                  create_boundary_info(false,true,true)};
 
-    const auto render = [&]() {
+    auto render = [&](void*, void*, void*) -> void {
         t += 0.001;
         auto t_number_angle = number(t);
         static float sine = 0.0f;
@@ -48,11 +49,11 @@ int main() {
                 color_red,
                 transform,
                 vertices,
-                (vec2<number> *) nullptr,
+                (vertex2<number> *) nullptr,
                 nullptr,
                 boundary,
                 4,
-                triangles::indices::TRIANGLES_FAN,
+                microtess::triangles::indices::TRIANGLES_FAN,
                 150);
     };
 

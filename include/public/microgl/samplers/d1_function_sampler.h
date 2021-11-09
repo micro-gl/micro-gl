@@ -1,7 +1,17 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
-#include <microgl/rgba_t.h>
-#include <microgl/vec2.h>
+#include <microgl/color.h>
+#include <microgl/math/vertex2.h>
 
 namespace microgl {
     namespace sampling {
@@ -29,8 +39,8 @@ namespace microgl {
             using rgba = rgba_;
             using rint= typename microgl::traits::conditional<precision_bits>=16,
                     int64_t, int32_t>::type;
-            using vertex = vec2<number>;
-            using ivertex = vec2<rint>;
+            using vertex = microgl::vertex2<number>;
+            using ivertex = microgl::vertex2<rint>;
             static constexpr rint ONE= rint(1)<<precision_bits;
             static constexpr rint stroke_band = 1u << stroke_bits;
 

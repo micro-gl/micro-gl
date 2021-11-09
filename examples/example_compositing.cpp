@@ -1,6 +1,7 @@
 #include "src/Resources.h"
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/pixel_coders/RGBA8888_ARRAY.h>
@@ -43,25 +44,25 @@ int main() {
     Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
     Texture32 tex_uv_32{new bitmap<coder::RGBA8888_ARRAY>(img_1.data, img_1.width, img_1.height)};
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         canvas.clear({255,255,255,255});
-//        canvas.drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::None<false>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::None<false>, false, number>(
         canvas.drawRect<blendmode::Normal, porterduff::SourceOver<true>, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::XOR<true>, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::Clear<true>, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::Copy<true>, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::Destination<true>, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::DestinationAtop<true>, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::DestinationIn<true>, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::DestinationOut<true>, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::DestinationOver<true>, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::Lighter<true>, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::None<true>, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::Source<true>, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::SourceAtop<true>, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::SourceIn<true>, false, number>(
-//        canvas.drawRect<blendmode::Normal, porterduff::SourceOut<true>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::XOR<true>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::Clear<true>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::Copy<true>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::Destination<true>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::DestinationAtop<true>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::DestinationIn<true>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::DestinationOut<true>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::DestinationOver<true>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::Lighter<true>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::None<true>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::Source<true>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::SourceAtop<true>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::SourceIn<true>, false, number>(
+//        canvas.drawRect_internal<blendmode::Normal, porterduff::SourceOut<true>, false, number>(
 //                tex_uv,
                 tex_uv_32,
                 0, 0, 300, 300,

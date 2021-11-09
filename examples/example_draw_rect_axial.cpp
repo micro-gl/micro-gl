@@ -1,6 +1,7 @@
 #include "src/Resources.h"
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/texture.h>
@@ -28,7 +29,7 @@ int main() {
 
     Canvas24 canvas(W, H);
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         canvas.clear({255,255,255,255});
         canvas.drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
                 sampler,

@@ -1,12 +1,12 @@
-#include "src/Resources.h"
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
-#include <microgl/tesselation/ear_clipping_triangulation.h>
-#include <microgl/triangles.h>
+#include <microgl/micro-tess/include/micro-tess/ear_clipping_triangulation.h>
+#include <microgl/micro-tess/include/micro-tess/triangles.h>
 #include <vector>
-#include <microgl/static_array.h>
+#include "microgl/micro-tess/include/micro-tess/static_array.h"
 
 #define W 640*1
 #define H 480*1
@@ -22,9 +22,9 @@ using container = dynamic_array<item_type>;
 //using container = std::vector<item_type>;
 
 template <typename number>
-container<vec2<number>> poly_rect() {
-    using il = std::initializer_list<vec2<number>>;
-    using vertex=vec2<number>;
+container<vertex2<number>> poly_rect() {
+    using il = std::initializer_list<vertex2<number>>;
+    using vertex=vertex2<number>;
     vertex p0 = {100,100};
     vertex p1 = {300, 100};
     vertex p2 = {300, 300};
@@ -34,9 +34,9 @@ container<vec2<number>> poly_rect() {
 
 float b = 1;
 template <typename number>
-container<vec2<number>> poly_2_x_monotone() {
-    using il = std::initializer_list<vec2<number>>;
-    using vertex=vec2<number>;
+container<vertex2<number>> poly_2_x_monotone() {
+    using il = std::initializer_list<vertex2<number>>;
+    using vertex=vertex2<number>;
     vertex p0 = {100,100};
     vertex p1 = {300, 100};
     vertex p2 = {300, 300};
@@ -47,9 +47,9 @@ container<vec2<number>> poly_2_x_monotone() {
 }
 
 template <typename number>
-container<vec2<number>> poly_tri() {
-    using il = std::initializer_list<vec2<number>>;
-    using vertex=vec2<number>;
+container<vertex2<number>> poly_tri() {
+    using il = std::initializer_list<vertex2<number>>;
+    using vertex=vertex2<number>;
     vertex p0 = {100,100};
     vertex p3 = {300, 100};
     vertex p4 = {100, 300};
@@ -58,9 +58,9 @@ container<vec2<number>> poly_tri() {
 }
 
 template <typename number>
-container<vec2<number>> poly_hole() {
-    using il = std::initializer_list<vec2<number>>;
-    using vertex=vec2<number>;
+container<vertex2<number>> poly_hole() {
+    using il = std::initializer_list<vertex2<number>>;
+    using vertex=vertex2<number>;
     vertex p0 = {100,100};
     vertex p1 = {300, 100};
     vertex p2 = {300, 300};
@@ -86,8 +86,8 @@ container<vec2<number>> poly_hole() {
 }
 
 template <typename number>
-container<vec2<number>> poly_hole3() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_hole3() {
+    using il = std::initializer_list<vertex2<number>>;
     int M=10;
     return il{
             {10,10},
@@ -106,8 +106,8 @@ container<vec2<number>> poly_hole3() {
 }
 
 template <typename number>
-container<vec2<number>> poly_hole4() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_hole4() {
+    using il = std::initializer_list<vertex2<number>>;
     int M=10;
     return il{
             {10,10},
@@ -126,8 +126,8 @@ container<vec2<number>> poly_hole4() {
 }
 
 template <typename number>
-container<vec2<number>> poly_3() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_3() {
+    using il = std::initializer_list<vertex2<number>>;
     return il{
             {50,100},
             {100,50},
@@ -160,34 +160,31 @@ int main() {
 
     Canvas24 canvas(W, H);
 
-    const auto render_polygon = [&](container<vec2<number>> & polygon) {
+    const auto render_polygon = [&](container<vertex2<number>> & polygon) {
         using index = unsigned int;
 
         //polygon[1].x = 140 + 20 +  t;
-
-        canvas.clear({255,255,255,255});
-
-        using ear = microgl::tessellation::ear_clipping_triangulation<number, dynamic_array>;
-//        using ear = microgl::tessellation::ear_clipping_triangulation<number, static_arr>;
-//        using ear = microgl::tessellation::ear_clipping_triangulation<number, std::vector>;
-
-        triangles::indices type;
+        microtess::triangles::indices type;
         container<index> indices;
         container<boundary_info> boundary_buffer;
+
+        using ear = microtess::ear_clipping_triangulation<number,
+                container<index>,
+                container<boundary_info>>;
 
         ear::compute(polygon.data(),
                      polygon.size(),
                      indices,
                      &boundary_buffer,
-                     type
-        );
+                     type);
 
         // draw triangles batch
+        canvas.clear({255,255,255,255});
         canvas.drawTriangles<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
                 color_red,
                 matrix_3x3<number>::identity(),
                 polygon.data(),
-                (vec2<number> *)nullptr,
+                (vertex2<number> *)nullptr,
                 indices.data(),
                 boundary_buffer.data(),
                 indices.size(),
@@ -205,10 +202,10 @@ int main() {
                 255);
     };
 
-    const auto render = [&]() {
+    auto render = [&](void*, void*, void*) -> void {
         t+=.05f;
-        static auto poly = poly_rect<number>();
-//        static auto poly = poly_3<number>();
+//        static auto poly = poly_rect<number>();
+        static auto poly = poly_3<number>();
 //        static auto poly = poly_hole<number>();
 //        static auto poly = poly_hole3<number>();
 //        static auto poly = poly_hole4<number>();
@@ -217,5 +214,5 @@ int main() {
         render_polygon(poly);
     };
 
-    example_run(&canvas, render);
+    example_run(&canvas, render, 100);
 }

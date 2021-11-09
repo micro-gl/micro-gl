@@ -1,3 +1,13 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
 #include <microgl/masks.h>
@@ -57,28 +67,28 @@ namespace microgl {
                     case masks::chrome_mode::red_channel_inverted:
                         if (not_requires_conversion) alpha=mask_color.r;
                         else {
-                            alpha = channel::convert_channel_correct<sampler_mask::rgba::r, alpha_bits>(mask_color.r);
+                            alpha = microgl::convert_channel_correct<sampler_mask::rgba::r, alpha_bits>(mask_color.r);
                         }
                         break;
                     case masks::chrome_mode::green_channel:
                     case masks::chrome_mode::green_channel_inverted:
                         if (not_requires_conversion) alpha=mask_color.g;
                         else {
-                            alpha = channel::convert_channel_correct<sampler_mask::rgba::g, alpha_bits>(mask_color.g);
+                            alpha = microgl::convert_channel_correct<sampler_mask::rgba::g, alpha_bits>(mask_color.g);
                         }
                         break;
                     case masks::chrome_mode::blue_channel:
                     case masks::chrome_mode::blue_channel_inverted:
                         if (not_requires_conversion) alpha=mask_color.b;
                         else {
-                            alpha = channel::convert_channel_correct<sampler_mask::rgba::b, alpha_bits>(mask_color.b);
+                            alpha = microgl::convert_channel_correct<sampler_mask::rgba::b, alpha_bits>(mask_color.b);
                         }
                         break;
                     case masks::chrome_mode::alpha_channel:
                     case masks::chrome_mode::alpha_channel_inverted:
                         if (not_requires_conversion) alpha=mask_color.a;
                         else {
-                            alpha = channel::convert_channel_correct<sampler_mask::rgba::a, alpha_bits>(mask_color.a);
+                            alpha = microgl::convert_channel_correct<sampler_mask::rgba::a, alpha_bits>(mask_color.a);
                         }
                         break;
                 }

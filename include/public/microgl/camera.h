@@ -1,8 +1,18 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
-#include <microgl/matrix_4x4.h>
-#include <microgl/math.h>
-#include <microgl/vec4.h>
+#include "math/vertex4.h"
+#include "math/matrix_4x4.h"
+#include "math.h"
 
 namespace microgl {
 
@@ -13,16 +23,15 @@ namespace microgl {
         camera & operator=(const camera &)=delete;
         ~camera()=delete;
 
-        template <typename number>
-        static
-        vec3<number> viewport(const vec3<number> &ndc, unsigned width, unsigned height) {
+        template <typename number> static
+        vertex3<number> viewport(const vertex3<number> &ndc, unsigned width, unsigned height) {
             // given NDC= Normalized Device Coordinates, then transform them into
             // raster/canvas/viewport coords. We assume, that NDC coords are [-1,1] range.
             // todo:; currently I assume no z clipping has occured
             // z value is mapped to [0,1] range
             // convert to raster space
             const number zero=number(0), one = number(1), two=number(2);
-            vec3<number> result{};
+            vertex3<number> result{};
             result.x = ((ndc.x + one)*width)/two;
             result.y = number(height) - (((ndc.y + one)*number(height))/two);
             result.z = (ndc.z + one)/two;
@@ -65,11 +74,11 @@ namespace microgl {
          * @tparam roll     z-axis rotation
         **/
         template <typename number>
-        static matrix_4x4<number> angleAt(const vec3<number> & position,
+        static matrix_4x4<number> angleAt(const vertex3<number> & position,
                                           const number & pitch,
                                           const number & yaw,
                                           const number & roll) {
-            using vertex3 = vec3<number>;
+            using vertex3 = vertex3<number>;
             matrix_4x4<number> mat;
             vertex3 vec;
             // rotation angle about X-axis (pitch)
@@ -100,6 +109,22 @@ namespace microgl {
             return mat;
         }
 
+        template <typename number>
+        vertex3<number> cross(const vertex3<number>& a, const vertex3<number>& b) const {
+            return {a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x};
+        }
+
+        template <typename number>
+        vertex3<number> & normalize(const vertex3<number> & v) {
+            auto d = (v.x*v.x) + (v.y*v.y) + (v.z*v.z);
+            if(d==number(0))
+                return *this;
+            auto inv_len = number(1) / microgl::math::sqrt(d);
+            v.x *= inv_len;
+            v.y *= inv_len;
+            v.z *= inv_len;
+            return *this;
+        }
 
         /**
          * set view matrix equivalent to gluLookAt() VIEW MATRIX
@@ -122,11 +147,11 @@ namespace microgl {
          * @return
          */
         template <typename number>
-        static matrix_4x4<number> lookAt(const vec3<number> & position,
-                                         const vec3<number>& target,
-                                         const vec3<number>& up)
+        static matrix_4x4<number> lookAt(const vertex3<number> & position,
+                                         const vertex3<number>& target,
+                                         const vertex3<number>& up)
         {
-            using vertex3 = vec3<number>;
+            using vertex3 = vertex3<number>;
             matrix_4x4<number> result{};
 
             // 3 axis of rotation matrix for scene
@@ -161,8 +186,7 @@ namespace microgl {
          *
          * @return matrix_4x4<number> result
          */
-        template <typename number>
-        static
+        template <typename number> static
         matrix_4x4<number> perspective(const number &horizontal_fov_radians,
                                        const number & screen_width, const number & screen_height,
                                        const number & near, const number & far) {
@@ -181,8 +205,7 @@ namespace microgl {
          *
          * @return matrix_4x4<number> result
          */
-        template <typename number>
-        static
+        template <typename number> static
         matrix_4x4<number> perspective(const number & horizontal_fov_radians,
                                        const number & aspect_ratio,
                                        const number & near, const number & far) {
@@ -221,8 +244,7 @@ namespace microgl {
          *
          * @return matrix_4x4<number> result
          */
-        template <typename number>
-        static
+        template <typename number> static
         matrix_4x4<number> perspective(const number & l, const number & r,
                                        const number & b, const number & t,
                                        const number & n, const number & f) {
@@ -254,8 +276,7 @@ namespace microgl {
          *
          * @return matrix_4x4<number> result
          */
-        template <typename number>
-        static
+        template <typename number> static
         matrix_4x4<number> orthographic(const number & l, const number & r,
                                         const number & b, const number & t,
                                         const number & n, const number & f) {
@@ -274,7 +295,5 @@ namespace microgl {
 
             return m;
         }
-
     };
-
 }

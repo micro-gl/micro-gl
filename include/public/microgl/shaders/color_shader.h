@@ -1,7 +1,17 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
-#include <microgl/shader.h>
-#include <microgl/matrix_4x4.h>
+#include "microgl/math/matrix_4x4.h"
+#include <microgl/shaders/shader.h>
 
 namespace microgl {
     namespace shading {
@@ -12,27 +22,28 @@ namespace microgl {
             using number = number_;
             // the rgba info
             using rgba = rgba_;
-            using gl_position= vec4<number>;
+            using gl_position= vertex4<number>;
 
             // per vertex attributes
             struct vertex_attributes {
-                vec3<number> point;
-                microgl::color::color_t color;
+                vertex3<number> point;
+                microgl::color_t color;
             };
 
             // varying attributes
             struct varying {
-                microgl::color::color_t color{255,0,0};
+                microgl::color_t color{255,0,0};
 
                 // you must implement the interpolation function
+//                template <typename bary_integer>
                 void interpolate(const varying &varying_a,
                                  const varying &varying_b,
                                  const varying &varying_c,
-                                 const vec4<int> &bary) {
-                    color.r = int(vec4<number>{varying_a.color.r, varying_b.color.r, varying_c.color.r, 0}.dot(vec4<number>(bary))/bary.w);
-                    color.g = int(vec4<number>{varying_a.color.g, varying_b.color.g, varying_c.color.g, 0}.dot(vec4<number>(bary))/bary.w);
-                    color.b = int(vec4<number>{varying_a.color.b, varying_b.color.b, varying_c.color.b, 0}.dot(vec4<number>(bary))/bary.w);
-                    color.a = int(vec4<number>{varying_a.color.a, varying_b.color.a, varying_c.color.a, 0}.dot(vec4<number>(bary))/bary.w);
+                                 const vertex4<int> &bary) {
+                    color.r = int(vertex4<number>{varying_a.color.r, varying_b.color.r, varying_c.color.r, 0}.dot(vertex4<number>(bary)) / bary.w);
+                    color.g = int(vertex4<number>{varying_a.color.g, varying_b.color.g, varying_c.color.g, 0}.dot(vertex4<number>(bary)) / bary.w);
+                    color.b = int(vertex4<number>{varying_a.color.b, varying_b.color.b, varying_c.color.b, 0}.dot(vertex4<number>(bary)) / bary.w);
+                    color.a = int(vertex4<number>{varying_a.color.a, varying_b.color.a, varying_c.color.a, 0}.dot(vertex4<number>(bary)) / bary.w);
                 }
             };
 
@@ -50,7 +61,7 @@ namespace microgl {
             }
 
             // pixel shader
-            inline color::color_t
+            inline microgl::color_t
             fragment(const varying &input) {
                 return input.color;
             }

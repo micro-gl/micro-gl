@@ -1,16 +1,26 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
-#include <microgl/vec4.h>
-#include <microgl/micro_gl_traits.h>
+#include "../math/vertex4.h"
+#include "../traits.h"
 
 namespace microgl {
     namespace clipping {
 
         template<typename number>
         class homo_triangle_clipper {
-        private:
+        public:
             using const_ref = const number &;
-            using vertex4 = vec4<number>;
+            using vertex4 = vertex4<number>;
             using vertex4_const_ref = const vertex4 &;
 
             struct super_vertex {
@@ -40,18 +50,15 @@ namespace microgl {
                     list.clear();
                     return *this;
                 }
-                void clear() {
-                    _count=0;
-                }
+                void clear() { _count=0; }
             };
 
-        public:
             // maximum of 9 vertices against max 6 clipping planes,
             // better put it on the stack then allocate from_sampler the heap
             using vertices_list= typed_vertices_list<9>;
 
-            static
-            bool compute(vertex4_const_ref $v0, vertex4_const_ref $v1, vertex4_const_ref $v2, vertices_list &out_list) {
+            static bool compute(vertex4_const_ref $v0, vertex4_const_ref $v1,
+                                vertex4_const_ref $v2, vertices_list &out_list) {
                 super_vertex v0, v1, v2;
                 // convert input vertices into our own representation
                 v0.point= $v0; v0.bary= {1,0,0,1};
@@ -73,7 +80,7 @@ namespace microgl {
                     vertex4{-1,  0,  0, 1}, // right plane,     w-x >= 0
                     vertex4{ 0,  1,  0, 1}, // bottom plane,    y+w >= 0
                     vertex4{ 0, -1,  0, 1}, // top plane,       w-y >= 0
-                    vertex4{ 0,  0,  1, 1}, // near plane,      z+w >= 0, assume positive z is pointing away from_sampler us
+                    vertex4{ 0,  0,  1, 1}, // near plane,      z+w >= 0, assume positive z is pointing away from us
                     vertex4{ 0,  0, -1, 1}  // far plane,       w-z >= 0
                 };
 
@@ -158,9 +165,7 @@ namespace microgl {
                     }
                 }
 
-                if (out_list.size() < 3) //discard triangle
-                    out_list.clear();
-
+                if (out_list.size() < 3) out_list.clear(); //discard triangle
                 return out_list.size()!=0;
             }
 
@@ -185,15 +190,13 @@ namespace microgl {
                 return v / (v1 + v);
             }
 
-            inline static super_vertex lerpSuperVertex(const number t, const super_vertex & v0, const super_vertex & v1) {
+            inline static super_vertex lerpSuperVertex(const number t, const super_vertex & v0,
+                                                       const super_vertex & v1) {
                 super_vertex result;
                 result.point= v0.point + (v1.point-v0.point)*t;
                 result.bary= v0.bary + (v1.bary-v0.bary)*t;
                 return result;
             }
-
         };
-
     }
-
 }

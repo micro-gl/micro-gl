@@ -1,5 +1,6 @@
 #include <microgl/canvas.h>
-#include <microgl/matrix_4x4.h>
+#include <microgl/bitmaps/bitmap.h>
+#include "microgl/math/matrix_4x4.h"
 #include <microgl/camera.h>
 #include <microgl/pipeline.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
@@ -19,7 +20,7 @@ int main() {
     Canvas24 canvas(W, H);
 
     auto render_template = [&](const model_3d<number> & object) {
-        using vertex = vec3<number>;
+        using vertex = vertex3<number>;
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
         using namespace microgl::math;
@@ -51,13 +52,13 @@ int main() {
                 object.indices.data(),
                 object.indices.size(),
                 mvp,
-                triangles::indices::TRIANGLES,
+                microtess::triangles::indices::TRIANGLES,
                 canvas, 255
         );
 
     };
 
-    auto render = [&](){
+    auto render = [&](void*, void*, void*){
         static auto model = tree_3d<number>;
 
         render_template(model);

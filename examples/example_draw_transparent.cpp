@@ -1,6 +1,7 @@
 #include "src/Resources.h"
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/pixel_coders/RGBA8888_ARRAY.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
@@ -31,7 +32,7 @@ int main() {
     Texture24 tex_1{new bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height)};
     Texture32 tex_0{new bitmap<coder::RGBA8888_ARRAY>(img_0.data, img_0.width, img_0.height)};
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         canvas.clear({0,255,255});
         canvas.drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque>(
                 tex_1,

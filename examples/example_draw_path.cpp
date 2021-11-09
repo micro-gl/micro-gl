@@ -1,14 +1,16 @@
+#define MICROGL_USE_STD_MATH
+
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
-#include <microgl/static_array.h>
 #include <vector>
 
 #define W 640*1
 #define H 640*1
 
-using microgl::tessellation::path;
+using microtess::path;
 float t = 0;
 
 template<typename number>
@@ -98,7 +100,7 @@ path_t<number> path_test() {
 //    t+=0.01;
     t=137.999039f;
     path.linesTo({{100,100}, {300,100}, {300, 300}, {100,300}});
-    vec2<number> start{22.0f, 150.0f-0.002323204};
+    vertex2<number> start{22.0f, 150.0f - 0.002323204};
     path.moveTo(start);
     path.linesTo({start, {300,120.002323204-t}, {300, 300}, {100,300}});
     path.moveTo({200, 200});
@@ -110,9 +112,10 @@ path_t<number> path_test() {
 int main() {
 //    using number = float;
 //    using number = double;
-//    using number = Q<8, long long>;
+//    using number = Q<15, long long>;
+    using number = Q<8, int32_t, int64_t, 0>;
 //    using number = Q<2, int64_t>;
-    using number = Q<4, int32_t>;
+//    using number = Q<4, int32_t>;
 //    using number = Q<12>;
 
     using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
@@ -122,23 +125,23 @@ int main() {
 
     auto render_path = [&](path_t<number> & path) {
         canvas.clear({255, 255, 255, 255});
-        canvas.drawPathFill<blendmode::Normal, porterduff::None<>, false, true>(
+        canvas.drawPathFill<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, true>(
                 color_red,
                 matrix_3x3<number>::identity(),
                 path,
-                tessellation::fill_rule::even_odd,
-                tessellation::tess_quality::prettier_with_extra_vertices,
+                microtess::fill_rule::even_odd,
+                microtess::tess_quality::prettier_with_extra_vertices,
 //            tessellation::tess_quality::better,
                 255
         );
 
     };
 
-    auto render = [&]() {
-        static auto path = path_star_2<number>();
+    auto render = [&](void*, void*, void*) -> void {
+//        static auto path = path_star_2<number>();
 //        static auto path = path_star<number>();
 //        static auto path = path_rects<number>();
-//        auto path = path_arc_animation<number>();
+        auto path = path_arc_animation<number>();
 //        static auto path = path_test<number>();
 
         render_path(path);

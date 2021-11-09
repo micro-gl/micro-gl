@@ -1,9 +1,10 @@
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
-#include <microgl/tesselation/monotone_polygon_triangulation.h>
-#include <microgl/static_array.h>
+#include <microgl/micro-tess/include/micro-tess/monotone_polygon_triangulation.h>
+#include <microgl/micro-tess/include/micro-tess/static_array.h>
 #include <vector>
 
 #define W 640*1
@@ -18,9 +19,9 @@ using container = dynamic_array<item_type>;
 //using container = std::vector<item_type>;
 
 template <typename number>
-container<vec2<number>> poly_rect() {
-    using il = std::initializer_list<vec2<number>>;
-    using vertex=vec2<number>;
+container<vertex2<number>> poly_rect() {
+    using il = std::initializer_list<vertex2<number>>;
+    using vertex=vertex2<number>;
     vertex p0 = {100,100};
     vertex p1 = {300, 100};
     vertex p2 = {300, 300};
@@ -29,9 +30,9 @@ container<vec2<number>> poly_rect() {
 }
 
 template <typename number>
-container<vec2<number>> poly_tri() {
-    using il = std::initializer_list<vec2<number>>;
-    using vertex=vec2<number>;
+container<vertex2<number>> poly_tri() {
+    using il = std::initializer_list<vertex2<number>>;
+    using vertex=vertex2<number>;
     vertex p0 = {100,100};
     vertex p3 = {300, 100};
     vertex p4 = {100, 300};
@@ -40,8 +41,8 @@ container<vec2<number>> poly_tri() {
 }
 
 template <typename number>
-container<vec2<number>> poly_1_x_monotone() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_1_x_monotone() {
+    using il = std::initializer_list<vertex2<number>>;
     return il{
             {50,100},
             {100,50},
@@ -63,8 +64,8 @@ container<vec2<number>> poly_1_x_monotone() {
 }
 
 template <typename number>
-container<vec2<number>> poly_1_y_monotone() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_1_y_monotone() {
+    using il = std::initializer_list<vertex2<number>>;
     return il{
             {100, 50},
             {50, 100},
@@ -86,8 +87,8 @@ container<vec2<number>> poly_1_y_monotone() {
 }
 
 template <typename number>
-container<vec2<number>> poly_2_x_monotone() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_2_x_monotone() {
+    using il = std::initializer_list<vertex2<number>>;
     return il{
             {50,200},
             {50,100},
@@ -104,8 +105,8 @@ container<vec2<number>> poly_2_x_monotone() {
 }
 
 template <typename number>
-container<vec2<number>> poly_2_y_monotone() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_2_y_monotone() {
+    using il = std::initializer_list<vertex2<number>>;
     return il{
             {200,50},
             {100,50},
@@ -133,21 +134,17 @@ int main() {
     Canvas24 canvas(W, H);
     float t = 0;
 
-    auto render_polygon = [&](const container<vec2<number>> & polygon, bool x_monotone_or_y) {
+    auto render_polygon = [&](const container<vertex2<number>> & polygon, bool x_monotone_or_y) {
         using index = unsigned int;
         using mat = matrix_3x3<number>;
 
 //    polygon[1].x = 140 + 20 +  t;
-
-        canvas.clear({255,255,255,255});
-
-        using mpt = tessellation::monotone_polygon_triangulation<number, dynamic_array>;
-//        using mpt = tessellation::monotone_polygon_triangulation<number, std::vector>;
-//        using mpt = tessellation::monotone_polygon_triangulation<number, static_arr>;
-
-        triangles::indices type;
+        microtess::triangles::indices type;
         container<index> indices;
         container<boundary_info> boundary_buffer;
+
+
+        using mpt = microtess::monotone_polygon_triangulation<number, container<index>, container<boundary_info>>;
 
         mpt::compute(polygon.data(),
                      polygon.size(),
@@ -159,11 +156,12 @@ int main() {
 
         mat transform = matrix_3x3<number>::scale(1,1);
         // draw triangles batch
+        canvas.clear({255,255,255,255});
         canvas.drawTriangles<blendmode::Normal, porterduff::None<>, false>(
                 color_red,
                 transform,
                 polygon.data(),
-                (vec2<number> *)nullptr,
+                (vertex2<number> *)nullptr,
                 indices.data(),
                 boundary_buffer.data(),
                 indices.size(),
@@ -181,12 +179,11 @@ int main() {
                 255);
     };
 
-    auto render = [&]() {
-        static auto poly = poly_1_x_monotone<number>();
-//        static auto poly = poly_2_y_monotone<number>();
-
-        render_polygon(poly, true);
-//        render_polygon(poly, false);
+    auto render = [&](void*, void*, void*) -> void {
+        render_polygon(poly_1_x_monotone<number>(), true);
+//        render_polygon(poly_2_y_monotone<number>(), false);
+//        render_polygon(poly_rect<number>(), true);
+//        render_polygon(poly_tri<number>(), false);
     };
 
     example_run(&canvas, render);

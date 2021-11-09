@@ -1,8 +1,17 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
-#include <microgl/text/bitmap_glyph.h>
-#include <microgl/text/text_format.h>
-#include <microgl/bitmaps/bitmap.h>
+#include "bitmap_glyph.h"
+#include "text_format.h"
 
 namespace microgl {
     namespace text {
@@ -57,18 +66,15 @@ namespace microgl {
             bitmap_glyph gylphs[MAX_CHARS];
 
         public:
-            bitmap_font() {
-                addChar(CHAR_MISSING, 0,0,0,0,0,0,0);
-            }
+            bitmap_font() { addChar(CHAR_MISSING, 0,0,0,0,0,0,0); }
 
             void addChar(int id, int x, int y, int w, int h, int xOffset, int yOffset, int xAdvance) {
                 gylphs[count_internal++] = bitmap_glyph{id, x, y, w, h, xOffset, yOffset, xAdvance};
             }
 
             bitmap_glyph *charByID(int id) {
-                for (int ix = 0; ix < count_internal; ++ix) {
+                for (int ix = 0; ix < count_internal; ++ix)
                     if (gylphs[ix].id == id) return &gylphs[ix];
-                }
                 return nullptr;
             }
 

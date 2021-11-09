@@ -2,12 +2,13 @@
 #include "src/example.h"
 
 #include <microgl/math/std_float_math.h>
-#include <microgl/math/std_q_math.h>
+#include <microgl/math/non_std_q_math.h>
 #define MICROGL_AVOID_BUILTIN_MATH
 
 #include <microgl/camera.h>
 #include <microgl/z_buffer.h>
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/shaders/sampler_shader.h>
@@ -28,6 +29,7 @@ int main() {
 //    using number = Q<15>;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
+//    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_64_BIT_FREE>;
     Canvas24 canvas(W, H);
 
 #ifdef SAMPLER_TEXTURE
@@ -40,27 +42,28 @@ int main() {
                             10, 10};
 #endif
 
-    z_buffer<12> depth_buffer(canvas.width(), canvas.height());
+    z_buffer<14> depth_buffer(canvas.width(), canvas.height());
 
-    float t = -0.0;
+    float t = 0.0;
     constexpr bool enable_z_buffer = true;
 
     auto test_shader_texture_3d = [&](const model_3d<number> & object) {
 
-        using vertex = vec3<number>;
+        using vertex = vertex3<number>;
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
         using namespace microgl::math;
         using Shader = sampler_shader<number, decltype(sampler)>;
         using vertex_attributes = Shader::vertex_attributes;
 
-        t-=0.1425;
+        t+=0.1425;
 
         // setup mvp matrix
         number radians = math::deg_to_rad(number{t} / 2);
         vertex rotation = {radians, radians, radians};
-        vertex translation = {-5,0, -t/10.f};
-        vertex scale = {10,10,10};
+        vertex translation = {-5,0, t/10.f};
+//        vertex translation = {-5,0, -50.};
+        vertex scale = {10, 10, 10};
 
         mat4 model_1 = mat4::transform(rotation, translation, scale);
         mat4 model_2 = mat4::transform(rotation*2, translation + vertex{10,0,0}, scale);
@@ -99,7 +102,7 @@ int main() {
                 object.indices.data(),
                 object.indices.size(),
                 object.type,
-                triangles::face_culling::ccw,
+                microtess::triangles::face_culling::ccw,
                 &depth_buffer);
 //            (z_buffer<0> *)nullptr);
 
@@ -112,12 +115,12 @@ int main() {
                 object.indices.data(),
                 object.indices.size(),
                 object.type,
-                triangles::face_culling::ccw,
+                microtess::triangles::face_culling::ccw,
                 &depth_buffer);
 
     };
 
-    auto render = [&]() {
+    auto render = [&](void*, void*, void*) {
         static auto model = cube_3d<number>;
 
         test_shader_texture_3d(model);

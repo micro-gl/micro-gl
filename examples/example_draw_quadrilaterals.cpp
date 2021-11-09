@@ -1,6 +1,7 @@
 #include "src/Resources.h"
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/texture.h>
@@ -23,7 +24,7 @@ int main() {
     tex_1.updateBitmap(new bitmap<coder::RGB888_ARRAY>(img_1.data, img_1.width, img_1.height));
     tex_2.updateBitmap(new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height));
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         using number = float;
 //        using number = Q<15>;
 

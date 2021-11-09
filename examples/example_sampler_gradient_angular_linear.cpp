@@ -1,6 +1,7 @@
 #include "src/example.h"
 #define MICROGL_USE_STD_MATH
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/angular_linear_gradient.h>
 
@@ -12,13 +13,13 @@ using namespace microgl::sampling;
 
 int main() {
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
-//    using number = float;
-    using number = Q<12>;
+    using number = float;
+//    using number = Q<12>;
 
     Canvas24 canvas(W, H);
-    angular_linear_gradient<number, 4, Canvas24::rgba> gradient{0};
+    angular_linear_gradient<number, 4, Canvas24::rgba, precision::high> gradient{0};
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         static number t = 0;
         t+=number(0.1);
 

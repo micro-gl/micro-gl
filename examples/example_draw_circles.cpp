@@ -1,6 +1,7 @@
 #include "src/Resources.h"
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/fast_radial_gradient.h>
 #include <microgl/samplers/linear_gradient_2_colors.h>
@@ -35,7 +36,7 @@ int main() {
     gradient.addStop(0.50f, {0,255,0});
     gradient.addStop(1.f, {255,0,255});
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         t+=0.001;
         canvas.clear({255,255,255,255});
         canvas.drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(

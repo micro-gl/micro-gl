@@ -1,5 +1,6 @@
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/white_noise_sampler.h>
 
@@ -18,7 +19,7 @@ int main() {
     Canvas24 canvas(W, H);
 
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         static long long counter = 0;
         if(counter++%50==0)
             sampler.update();

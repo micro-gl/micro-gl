@@ -1,27 +1,35 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
-#include <microgl/matrix_4x4.h>
-#include <microgl/vec2.h>
-#include <microgl/vec3.h>
-#include <microgl/triangles.h>
-#include <microgl/color.h>
+#include "math/matrix_4x4.h"
+#include "math/vertex2.h"
+#include "math/vertex3.h"
+#include "color.h"
+#include "micro-tess/include/micro-tess/triangles.h"
 
 namespace microgl {
     namespace _3d {
-
+        /**
+         * this is a simple fixed 3d pipeline interface
+         */
         template <typename number, class canvas_type>
         class pipeline {
-            /**
-             * this is a simple fixed 3d pipeline interface
-             */
-        private:
+        public:
             using index = unsigned;
             using const_ref = const number &;
-            using vertex2 = vec2<number>;
-            using vertex3 = vec3<number>;
-            using vertex4 = vec4<number>;
+            using vertex2 = microgl::vertex2<number>;
+            using vertex3 = microgl::vertex3<number>;
+            using vertex4 = microgl::vertex4<number>;
             using mat4 = matrix_4x4<number>;
-        public:
 
             static
             vertex3 world_to_raster_space(const vertex3 &world, const mat4 &mvp, index width, index height) {
@@ -37,8 +45,7 @@ namespace microgl {
                 return viewport(clip_space, width, height);
             }
 
-            static
-            vertex3 viewport(const vertex4 &ndc, index width, index height) {
+            static vertex3 viewport(const vertex4 &ndc, index width, index height) {
                 // given NDC= Normalized Device Coordinates, then transform them into
                 // raster/canvas/viewport coords. We assume, that NDC coords are [-1,1] range.
                 // todo:; currently I assume no z clipping has occured
@@ -58,15 +65,13 @@ namespace microgl {
                 return result;
             }
 
-            //            template <>
-            static
-            void render(const color_t & color,
+            static void render(const color_t & color,
                         const vertex3 * vertices,
                         const index vertices_size,
                         const index * indices,
                         const index indices_size,
                         const mat4 & mvp,
-                        const triangles::indices & type,
+                        const microtess::triangles::indices & type,
                         canvas_type & canva,
                         const uint8_t opacity=255) {
                 // todo:: noe this renders lines but does not clip them to the frustum, but only to the viewport
@@ -76,8 +81,8 @@ namespace microgl {
                 const unsigned height = canva.height();
 
                 switch (type) {
-                    case triangles::indices::TRIANGLES:
-                    case triangles::indices::TRIANGLES_WITH_BOUNDARY:
+                    case microtess::triangles::indices::TRIANGLES:
+                    case microtess::triangles::indices::TRIANGLES_WITH_BOUNDARY:
 
                         for (index ix = 0; ix < indices_size; ix+=3) {
 
@@ -93,6 +98,7 @@ namespace microgl {
                         }
 
                         break;
+                    default: break;
 //                    case indices::TRIANGLES_FAN:
 //                    case indices::TRIANGLES_FAN_WITH_BOUNDARY:
 //
@@ -133,15 +139,9 @@ namespace microgl {
 //
 //                        break;
 //                    }
-
                 }
-
 #undef IND
-
             }
-
         };
-
     }
-
 }

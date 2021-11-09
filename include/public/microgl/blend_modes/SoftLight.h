@@ -1,4 +1,16 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
+
+#include <microgl/blend_modes/blend_mode_base.h>
 
 namespace microgl {
     namespace blendmode {
@@ -6,13 +18,11 @@ namespace microgl {
         template <bool fast =true>
         class SoftLight {
         public:
-
             template<uint8_t bits>
             static inline
             uint blend_channel(cuint b, cuint s) {
                 constexpr cint max= (uint(1)<<bits)-1;
                 constexpr cint max_double= max*max;
-
                 if(fast)
                     return (((max-2*int(s))*int(b)*int(b))>>(bits<<1)) + (int(2*s*b)>>bits);
                 else
@@ -27,8 +37,6 @@ namespace microgl {
                 output.g = blend_channel<G>(b.g, s.g);
                 output.b = blend_channel<B>(b.b, s.b);
             }
-
         };
-
     }
 }

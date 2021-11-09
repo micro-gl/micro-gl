@@ -14,7 +14,7 @@ Resources::image_info_t Resources::loadImageFromCompressedPath(const std::string
 Resources::image_info_t Resources::loadImageFromCompressedMemory(unsigned char *byte_array,
                                                                  unsigned int length_bytes,
                                                                  const std::string & name) {
-    stbi_set_flip_vertically_on_load(true);
+//    stbi_set_flip_vertically_on_load(true);
     int width, height, nrChannels;
     unsigned char * data = stbi_load_from_memory(byte_array, length_bytes, &width, &height, &nrChannels, 0);
     image_info_t info { "", name, width, height, nrChannels, data };

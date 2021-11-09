@@ -4,9 +4,9 @@
 #include <chrono>
 #include "src/Resources.h"
 #include <SDL.h>
-#include <microgl/buffer.h>
+#include "microgl/bitmaps/buffer.h"
 #include <microgl/canvas.h>
-#include <microgl/vec2.h>
+#include "microgl/tesselation/vec2.h"
 #include <microgl/color.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
@@ -65,10 +65,10 @@ void render_star() {
     }
 
     for (auto & segment : segments) {
-        canvas->drawWuLine({0,0,0,255},
-                         segment.p0.x, segment.p0.y,
-                         segment.p1.x, segment.p1.y,
-                         0
+        canvas->drawWuLine_internal({0, 0, 0, 255},
+                                    segment.p0.x, segment.p0.y,
+                                    segment.p1.x, segment.p1.y,
+                                    0
         );
 
     }
@@ -126,10 +126,10 @@ void render_chaos() {
     }
 
     for (auto & segment : segments) {
-        canvas->drawWuLine({0,0,0,255},
-                         segment.p0.x, segment.p0.y,
-                         segment.p1.x, segment.p1.y,
-                         0
+        canvas->drawWuLine_internal({0, 0, 0, 255},
+                                    segment.p0.x, segment.p0.y,
+                                    segment.p1.x, segment.p1.y,
+                                    0
         );
 
     }

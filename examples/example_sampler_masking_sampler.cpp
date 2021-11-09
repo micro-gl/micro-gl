@@ -1,6 +1,7 @@
 #include "src/Resources.h"
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/pixel_coders/RGBA8888_ARRAY.h>
@@ -35,7 +36,7 @@ int main() {
     sampling::flat_color<> color_red{{255, 255, 0}};
     sampling::flat_color<rgba_t<8,8,8,8>> color_red_trans{{255, 0, 0, 128}};
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         canvas.clear({255,255,255,255});
         canvas.drawRect<blendmode::Normal, porterduff::None<>, false, number>(
                 color_red,

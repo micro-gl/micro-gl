@@ -1,7 +1,7 @@
 #pragma once
 
 #include "model_3d.h"
-#include <microgl/triangles.h>
+#include <microgl/micro-tess/include/micro-tess/triangles.h>
 
 template <typename number>
 model_3d<number> tree_3d =
@@ -9,7 +9,7 @@ model_3d<number> tree_3d =
 //        .triangles=146, .type=triangles::indices::TRIANGLES, .vertices={{0,0,0}}, .indices={1}
 //};
         {
-        146, microgl::triangles::indices::TRIANGLES,
+        146, microtess::triangles::indices::TRIANGLES,
         { // 146
                 {        0,    39.034,         0}, {  0.76212,    36.843,         0},
                 {        3,    36.604,         0}, {        1,    35.604,         0},

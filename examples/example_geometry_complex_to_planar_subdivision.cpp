@@ -1,10 +1,11 @@
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/tesselation/planarize_division.h>
+#include <microgl/micro-tess/include/micro-tess/planarize_division.h>
+#include <microgl/micro-tess/include/micro-tess/static_array.h>
 #include <microgl/samplers/flat_color.h>
 #include <vector>
-#include <microgl/static_array.h>
 
 #define W 640*1
 #define H 640*1
@@ -13,9 +14,9 @@ template<typename item>
 using stat_array = static_array<item, 800>;
 
 template<typename number>
-//using chunker_t = chunker<vec2<number>, dynamic_array>;
-using chunker_t = chunker<vec2<number>, std::vector>;
-//using chunker_t = chunker<vec2<number>, stat_array>;
+//using chunker_t = allocator_aware_chunker<vertex2<number>, dynamic_array>;
+using chunker_t = allocator_aware_chunker<vertex2<number>, std::vector>;
+//using chunker_t = non_allocator_aware_chunker<vertex2<number>, stat_array>;
 
 template<typename item>
 //using container = dynamic_array<item>;
@@ -23,8 +24,9 @@ using container = std::vector<item>;
 //using container = stat_array<item>;
 
 template <typename number>
-container<vec2<number>> box(float left, float top, float right, float bottom, bool ccw=false) {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> box(float left, float top, float right,
+                               float bottom, bool ccw=false) {
+    using il = std::initializer_list<vertex2<number>>;
 
     if(!ccw)
         return il{
@@ -44,7 +46,7 @@ container<vec2<number>> box(float left, float top, float right, float bottom, bo
 
 template <typename number>
 chunker_t<number> poly_inter_star() {
-    using il = std::initializer_list<vec2<number>>;
+    using il = std::initializer_list<vertex2<number>>;
     chunker_t<number> A;
 
     A.push_back_and_cut(il{
@@ -60,7 +62,7 @@ chunker_t<number> poly_inter_star() {
 
 template <typename number>
 chunker_t<number> poly_inter_star_2() {
-    using il = std::initializer_list<vec2<number>>;
+    using il = std::initializer_list<vertex2<number>>;
     chunker_t<number> A;
 
     A.push_back_and_cut(il{
@@ -94,9 +96,9 @@ chunker_t<number> poly_inter_star_2() {
     return A;
 }
 
-template <typename number, template<typename...> class chunker_container>
-chunker<vec2<number>, chunker_container> box_1() {
-    chunker<vec2<number>, chunker_container> A;
+template <typename number>
+chunker_t<number> box_1() {
+    chunker_t<number> A;
     A.push_back_and_cut(box<number>(50,50,300,300));
     return A;
 }
@@ -116,29 +118,33 @@ int main() {
 
     Canvas24 canvas(W, H);
 
-    auto render_polygon = [&](const chunker_t<number>& pieces) {
+    auto render_polygon = [&](const chunker_t<number> & pieces) {
         using index = unsigned int;
-//        using psd = microgl::tessellation::planarize_division<number, dynamic_array>;
-        using psd = microgl::tessellation::planarize_division<number, std::vector>;
-//        using psd = microgl::tessellation::planarize_division<number, stat_array>;
 
-        container<vec2<number>> trapezes;
-        container<vec2<number>> vertices;
+        container<vertex2<number>> trapezes;
+        container<vertex2<number>> vertices;
         container<index> indices;
-        container<triangles::boundary_info> boundary;
-        triangles::indices type;
-        psd::compute(pieces,
-                     tessellation::fill_rule::even_odd,
-                     tessellation::tess_quality::better,
-                     vertices, type, indices,
-                     &boundary, &trapezes);
+        container<microtess::triangles::boundary_info> boundary;
+        microtess::triangles::indices type;
+
+        using psd = microtess::planarize_division<
+                            number,
+                            decltype(vertices),
+                            decltype(indices),
+                            decltype(boundary)>;
+
+        psd::template compute<decltype(pieces)>(pieces,
+                microtess::fill_rule::even_odd,
+                microtess::tess_quality::better,
+                vertices, type, indices,
+                &boundary, &trapezes);
 
         canvas.clear({255, 255, 255, 255});
         canvas.drawTriangles<blendmode::Normal, porterduff::None<>, false>(
                 color_red,
                 matrix_3x3<number>::identity(),
                 vertices.data(),
-                (vec2<number> *)nullptr,
+                (vertex2<number> *)nullptr,
                 indices.data(),
                 boundary.data(),
                 indices.size(),
@@ -161,7 +167,7 @@ int main() {
 
     };
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
 //        static auto polygons = poly_inter_star<number>();
         static auto polygons = poly_inter_star_2<number>();
 //        static auto polygons = box_1<number>();

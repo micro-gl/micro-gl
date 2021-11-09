@@ -1,9 +1,18 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
-
-#include <microgl/rgba_t.h>
-#include <microgl/vec2.h>
+#include <microgl/math/vertex2.h>
 #include <microgl/math.h>
-#include <microgl/precision.h>
+#include <microgl/samplers/precision.h>
+#include <microgl/color.h>
 
 namespace microgl {
     namespace sampling {
@@ -24,13 +33,13 @@ namespace microgl {
         class linear_classifier_sampler {
         public:
             using rgba = rgba_;
-            using vertex = vec2<number>;
+            using vertex = microgl::vertex2<number>;
         private:
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
         public:
             using rint= typename microgl::traits::conditional<p_bits>=16,
                                         int64_t, int32_t>::type;
-            using ivertex = vec2<rint>;
+            using ivertex = microgl::vertex2<rint>;
 
             color_t color_left= {(1u<<rgba::r)-1, 0, 0, (1u<<rgba::a)-1};
             color_t color_right= {0, (1u<<rgba::g)-1, 0, (1u<<rgba::a)-1};

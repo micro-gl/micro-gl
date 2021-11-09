@@ -2,7 +2,7 @@
 ```c++
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias>
-void canvas<P, CODER>::drawTriangle(const color_f_t &color,
+void canvas<P, CODER>::drawTriangle_internal(const color_f_t &color,
                                     int v0_x, int v0_y,
                                     int v1_x, int v1_y,
                                     int v2_x, int v2_y,
@@ -80,8 +80,8 @@ void canvas<P, CODER>::drawTriangle(const color_f_t &color,
     int A20_block_m_1 = A20_block - A20, B20_block_m_1 = B20_block - B20;
 
     // Barycentric coordinates at minX/minY corner
-    vec2<int> p_fixed = {minX<<sub_pixel_precision, minY<<sub_pixel_precision};
-    vec2<int> p = {minX , minY};
+    vertex2<int> p_fixed = {minX<<sub_pixel_precision, minY<<sub_pixel_precision};
+    vertex2<int> p = {minX , minY};
 
     int w0_row = functions::orient2d(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w0;
     int w1_row = functions::orient2d(v1_x, v1_y, v2_x, v2_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w1;
@@ -309,7 +309,7 @@ void canvas<P, CODER>::drawTriangle(const color_f_t &color,
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
-void canvas<P, CODER>::drawTriangle(const color_f_t &color,
+void canvas<P, CODER>::drawTriangle_internal(const color_f_t &color,
                                     const number v0_x, const number v0_y,
                                     const number v1_x, const number v1_y,
                                     const number v2_x, const number v2_y,
@@ -317,7 +317,7 @@ void canvas<P, CODER>::drawTriangle(const color_f_t &color,
                                     bool aa_first_edge, bool aa_second_edge, bool aa_third_edge) {
     const precision precision = 8;
 #define f_pos(v) microgl::math::to_fixed((v), precision)
-    drawTriangle<BlendMode, PorterDuff, antialias>(color,
+    drawTriangle_internal<BlendMode, PorterDuff, antialias>(color,
             f_pos(v0_x), f_pos(v0_y), f_pos(v1_x), f_pos(v1_y), f_pos(v2_x), f_pos(v2_y),
             opacity, precision,
             aa_first_edge, aa_second_edge, aa_third_edge);
@@ -328,7 +328,7 @@ void canvas<P, CODER>::drawTriangle(const color_f_t &color,
 ```c++
 template<typename P, typename CODER>
 template <typename BlendMode, typename PorterDuff, typename S>
-void canvas<P, CODER>::drawRect(const sampling::sampler<S> & sampler,
+void canvas<P, CODER>::drawRect_internal(const sampling::sampler<S> & sampler,
                                 const int left, const int top,
                                 const int right, const int bottom,
                                 int u0, int v0,
@@ -372,7 +372,7 @@ void canvas<P, CODER>::drawRect(const sampling::sampler<S> & sampler,
 
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, typename S>
-void canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
+void canvas<P, CODER>::drawTriangle_internal(const sampling::sampler<S> &sampler,
                                     int v0_x, int v0_y, int u0, int v0, int q0,
                                     int v1_x, int v1_y, int u1, int v1, int q1,
                                     int v2_x, int v2_y, int u2, int v2, int q2,
@@ -432,8 +432,8 @@ void canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
     minX = functions::max<l64>(0, minX); minY = functions::max<l64>(0, minY);
     maxX = functions::min<l64>(width()-1, maxX); maxY = functions::min<l64>(height()-1, maxY);
     // Barycentric coordinates at minX/minY corner
-    vec2<l64> p = { minX, minY };
-    vec2<l64> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
+    vertex2<l64> p = { minX, minY };
+    vertex2<l64> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     l64 half= l64(1)<<(sub_pixel_precision-1);
     l64 w0_row = functions::orient2d(v0_x, v0_y, v1_x, v1_y, p_fixed.x, p_fixed.y, sub_pixel_precision) + bias_w0;
@@ -544,7 +544,7 @@ void canvas<P, CODER>::drawTriangle(const sampling::sampler<S> &sampler,
 ```c++
 template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
-void canvas<P, CODER>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
+void canvas<P, CODER>::drawRoundedRect_internal(const sampling::sampler<S1> & sampler_fill,
                                        const sampling::sampler<S2> & sampler_stroke,
                                        int left, int top,
                                        int right, int bottom,
@@ -665,7 +665,7 @@ template<typename P, typename CODER>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename impl, typename vertex_attr, typename varying, typename number>
 void canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
-                                                         const vec4<number> &p0,  const vec4<number> &p1,  const vec4<number> &p2,
+                                                         const vertex4<number> &p0,  const vertex4<number> &p1,  const vertex4<number> &p2,
                                                          varying &varying_v0, varying &varying_v1, varying &varying_v2,
                                                          opacity_t opacity, const triangles::face_culling & culling,
                                                          long long * depth_buffer,
@@ -687,9 +687,9 @@ void canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
     const number w= width();
     const number h= height();
     number one = number(1), two=number(2);
-    vec3<number> v0_viewport = {((v0_ndc.x + one)*w)/two, h - ((v0_ndc.y + one)*h)/two, (v0_ndc.z + one)/two};
-    vec3<number> v1_viewport = {((v1_ndc.x + one)*w)/two, h - ((v1_ndc.y + one)*h)/two, (v1_ndc.z + one)/two};
-    vec3<number> v2_viewport = {((v2_ndc.x + one)*w)/two, h - ((v2_ndc.y + one)*h)/two, (v2_ndc.z + one)/two};
+    vertex3<number> v0_viewport = {((v0_ndc.x + one)*w)/two, h - ((v0_ndc.y + one)*h)/two, (v0_ndc.z + one)/two};
+    vertex3<number> v1_viewport = {((v1_ndc.x + one)*w)/two, h - ((v1_ndc.y + one)*h)/two, (v1_ndc.z + one)/two};
+    vertex3<number> v2_viewport = {((v2_ndc.x + one)*w)/two, h - ((v2_ndc.y + one)*h)/two, (v2_ndc.z + one)/two};
 
     // collect values for interpolation as fixed point integers
     int v0_x= f(v0_viewport.x, sub_pixel_precision), v0_y= f(v0_viewport.y, sub_pixel_precision);
@@ -763,10 +763,10 @@ void canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
     int bias_w1 = top_left.second ? 0 : -1;
     int bias_w2 = top_left.third  ? 0 : -1;
     // Barycentric coordinates at minX/minY corner
-    vec2<l64> p = { minX, minY };
-    vec2<l64> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
+    vertex2<l64> p = { minX, minY };
+    vertex2<l64> p_fixed = { minX<<sub_pixel_precision, minY<<sub_pixel_precision };
     l64 half= (l64(1)<<(sub_pixel_precision))>>1;
-    p_fixed = p_fixed + vec2<l64> {half, half}; // we sample at the center
+    p_fixed = p_fixed + vertex2<l64> {half, half}; // we sample at the center
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
     // I still need to explain to myself why it works so well :)
@@ -812,7 +812,7 @@ void canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
             const bool in_closure= (w0|w1|w2)>=0;
             bool should_sample= in_closure;
             auto opacity_sample = opacity;
-            auto bary = vec4<l64>{w0, w1, w2, area};
+            auto bary = vertex4<l64>{w0, w1, w2, area};
             if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
                 bary.x= (l64(w0)*v0_w)>>w_bits, bary.y= (l64(w1)*v1_w)>>w_bits, bary.z= (l64(w2)*v2_w)>>w_bits;
                 bary.w=bary.x+bary.y+bary.z;
@@ -860,7 +860,7 @@ void canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
                 else depth_buffer[index + p.x]=z;
             }
             if(should_sample) {
-                // cast to user's number types vec4<number> casted_bary= bary;, I decided to stick with l64
+                // cast to user's number types vertex4<number> casted_bary= bary;, I decided to stick with l64
                 // because other wise this would have wasted bits for Q types although it would have been more elegant.
                 interpolated_varying.interpolate(
                         varying_v0,
@@ -895,7 +895,7 @@ void canvas<P, CODER>::drawTriangle_shader_homo_internal(shader_base<impl, verte
 ```c++
 template<typename bitmap_, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, typename S>
-void canvas<bitmap_, options>::drawTriangle(const sampling::sampler<S> &sampler,
+void canvas<bitmap_, options>::drawTriangle_internal(const sampling::sampler<S> &sampler,
                                   int v0_x, int v0_y, int u0, int v0, int q0,
                                   int v1_x, int v1_y, int u1, int v1, int q1,
                                   int v2_x, int v2_y, int u2, int v2, int q2,
@@ -952,10 +952,10 @@ void canvas<bitmap_, options>::drawTriangle(const sampling::sampler<S> &sampler,
     int bias_w1 = top_left.second ? 0 : -(1);
     int bias_w2 = top_left.third  ? 0 : -(1);
     // Barycentric coordinates at minX/minY corner
-    vec2<l64> p = { bbox.left, bbox.top };
-    vec2<l64> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
+    vertex2<l64> p = { bbox.left, bbox.top };
+    vertex2<l64> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
     l64 half= (l64(1)<<(sub_pixel_precision))>>1;
-    p_fixed = p_fixed + vec2<l64> {half, half}; // we sample at the center
+    p_fixed = p_fixed + vertex2<l64> {half, half}; // we sample at the center
     ///
     int bits_used=0;
     { while (int(area)>int(1<<(bits_used++))) {
@@ -1081,7 +1081,7 @@ void canvas<bitmap_, options>::drawTriangle(const sampling::sampler<S> &sampler,
 ```c++
 template<typename bitmap_, uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename S>
-void canvas<bitmap_, options>::drawRect(const sampling::sampler<S> & sampler,
+void canvas<bitmap_, options>::drawRect_internal(const sampling::sampler<S> & sampler,
                               int left, int top,
                               int right, int bottom,
                               int u0, int v0,
@@ -1167,7 +1167,7 @@ void canvas<bitmap_, options>::drawRect(const sampling::sampler<S> & sampler,
 ```c++
 template<typename bitmap_, uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename S1, typename S2>
-void canvas<bitmap_, options>::drawRoundedRect(const sampling::sampler<S1> & sampler_fill,
+void canvas<bitmap_, options>::drawRoundedRect_internal(const sampling::sampler<S1> & sampler_fill,
                                      const sampling::sampler<S2> & sampler_stroke,
                                      int left, int top,
                                      int right, int bottom,
@@ -1288,7 +1288,7 @@ template<typename BlendMode, typename PorterDuff, bool antialias, bool perspecti
         typename impl, typename vertex_attr, typename varying, typename number>
 void canvas<bitmap_, options>::drawTriangle_shader_homo_internal(shader_base<impl, vertex_attr, varying, number> &shader,
                                                          int viewport_width, int viewport_height,
-                                                         const vec4<number> &p0,  const vec4<number> &p1,  const vec4<number> &p2,
+                                                         const vertex4<number> &p0,  const vertex4<number> &p1,  const vertex4<number> &p2,
                                                          varying &varying_v0, varying &varying_v1, varying &varying_v2,
                                                          opacity_t opacity, const triangles::face_culling & culling,
                                                          long long * depth_buffer) {
@@ -1311,9 +1311,9 @@ void canvas<bitmap_, options>::drawTriangle_shader_homo_internal(shader_base<imp
     const number w= viewport_width;
     const number h= viewport_height;
     number one = number(1), two=number(2);
-    vec3<number> v0_viewport = {((v0_ndc.x + one)*w)/two, h - ((v0_ndc.y + one)*h)/two, (v0_ndc.z + one)/two};
-    vec3<number> v1_viewport = {((v1_ndc.x + one)*w)/two, h - ((v1_ndc.y + one)*h)/two, (v1_ndc.z + one)/two};
-    vec3<number> v2_viewport = {((v2_ndc.x + one)*w)/two, h - ((v2_ndc.y + one)*h)/two, (v2_ndc.z + one)/two};
+    vertex3<number> v0_viewport = {((v0_ndc.x + one)*w)/two, h - ((v0_ndc.y + one)*h)/two, (v0_ndc.z + one)/two};
+    vertex3<number> v1_viewport = {((v1_ndc.x + one)*w)/two, h - ((v1_ndc.y + one)*h)/two, (v1_ndc.z + one)/two};
+    vertex3<number> v2_viewport = {((v2_ndc.x + one)*w)/two, h - ((v2_ndc.y + one)*h)/two, (v2_ndc.z + one)/two};
     // collect values for interpolation as fixed point integers
     int v0_x= f(v0_viewport.x, sub_pixel_precision), v0_y= f(v0_viewport.y, sub_pixel_precision);
     int v1_x= f(v1_viewport.x, sub_pixel_precision), v1_y= f(v1_viewport.y, sub_pixel_precision);
@@ -1367,10 +1367,10 @@ void canvas<bitmap_, options>::drawTriangle_shader_homo_internal(shader_base<imp
     int bias_w1 = top_left.second ? 0 : -1;
     int bias_w2 = top_left.third  ? 0 : -1;
     // Barycentric coordinates at minX/minY corner
-    vec2<l64> p = { bbox.left, bbox.top };
-    vec2<l64> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
+    vertex2<l64> p = { bbox.left, bbox.top };
+    vertex2<l64> p_fixed = { bbox.left<<sub_pixel_precision, bbox.top<<sub_pixel_precision };
     l64 half= (l64(1)<<(sub_pixel_precision))>>1;
-    p_fixed = p_fixed + vec2<l64> {half, half}; // we sample at the center
+    p_fixed = p_fixed + vertex2<l64> {half, half}; // we sample at the center
     // this can produce a 2P bits number if the points form a a perpendicular triangle
     // this is my patent for correct fill rules without wasting bits, amazingly works and accurate,
     // I still need to explain to myself why it works so well :)
@@ -1389,7 +1389,7 @@ void canvas<bitmap_, options>::drawTriangle_shader_homo_internal(shader_base<imp
             const bool in_closure= (w0|w1|w2)>=0;
             bool should_sample= in_closure;
             auto opacity_sample = opacity;
-            auto bary = vec4<l64>{w0, w1, w2, area};
+            auto bary = vertex4<l64>{w0, w1, w2, area};
             if(in_closure && perspective_correct) { // compute perspective-correct and transform to sub-pixel-space
                 bary.x= (l64(w0)*v0_w)>>w_bits, bary.y= (l64(w1)*v1_w)>>w_bits, bary.z= (l64(w2)*v2_w)>>w_bits;
                 bary.w=bary.x+bary.y+bary.z;
@@ -1407,7 +1407,7 @@ void canvas<bitmap_, options>::drawTriangle_shader_homo_internal(shader_base<imp
                 else depth_buffer[z_index]=z;
             }
             if(should_sample) {
-                // cast to user's number types vec4<number> casted_bary= bary;, I decided to stick with l64
+                // cast to user's number types vertex4<number> casted_bary= bary;, I decided to stick with l64
                 // because other wise this would have wasted bits for Q types although it would have been more elegant.
                 interpolated_varying.interpolate(varying_v0, varying_v1, varying_v2, bary);
                 auto color = shader.fragment(interpolated_varying);

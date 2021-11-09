@@ -1,6 +1,7 @@
 #include "src/Resources.h"
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
 #include <microgl/samplers/flat_color.h>
@@ -24,7 +25,7 @@ int main() {
     Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
     flat_color<> color_sampler{{255,122,0}};
 
-    auto render_flat = [&]() -> void {
+    auto render_flat = [&](void*, void *, void*) -> void {
         canvas.clear({255,255,255,255});
         canvas.drawTriangle<blendmode::Normal, porterduff::None<true>, false, number, number>(
                 color_sampler,
@@ -34,7 +35,7 @@ int main() {
                 255);
     };
 
-    auto render_tex = [&]() -> void {
+    auto render_tex = [&](void*, void *, void*) -> void {
         t+=0.01f;
         canvas.clear({255,255,255,255});
         canvas.drawTriangle<blendmode::Normal, porterduff::None<>, false, number, number>(
@@ -45,7 +46,7 @@ int main() {
                 255);
     };
 
-    auto render_tex_aa = [&]() -> void {
+    auto render_tex_aa = [&](void*, void *, void*) -> void {
 //        t+=0.01f;
         canvas.clear({255,255,255,255});
         canvas.drawTriangle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number, number>(

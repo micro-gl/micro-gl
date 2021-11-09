@@ -1,6 +1,7 @@
 #include "src/Resources.h"
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/z_buffer.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/pixel_coders/RGB888_ARRAY.h>
@@ -48,7 +49,7 @@ int main() {
                 W/2, H/2,
                 v0, v1, v2,
                 255,
-                triangles::face_culling::none,
+                microtess::triangles::face_culling::none,
                 (z_buffer<0> *)nullptr);
     };
 
@@ -68,7 +69,7 @@ int main() {
                 W, H,
                 v0, v1, v2,
                 255,
-                triangles::face_culling::none,
+                microtess::triangles::face_culling::none,
                 (z_buffer<0> *)nullptr);
 
     };
@@ -88,12 +89,12 @@ int main() {
         t+=0.001f;
         canvas.drawTriangle<blendmode::Normal, porterduff::None<>, false, false, false>(
                 shader, W, H, v0, v1, v2, 255,
-                triangles::face_culling::none,
+                microtess::triangles::face_culling::none,
                 (z_buffer<0> *)nullptr);
 
     };
 
-    auto render = [&]() {
+    auto render = [&](void*, void*, void*) {
         canvas.clear({255,255,255,255});
 
 //        test_shader_color_2d();

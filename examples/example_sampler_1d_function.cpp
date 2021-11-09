@@ -1,6 +1,7 @@
 #include "src/example.h"
 #define MICROGL_USE_STD_MATH
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/d1_function_sampler.h>
 
@@ -14,7 +15,7 @@ int main() {
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     using number = float;
 //    using number = Q<12>;
-    using vertex = vec2<number>;
+    using vertex = vertex2<number>;
 
     const unsigned size = 100;
     vertex points[size];
@@ -38,7 +39,7 @@ int main() {
     float t = 0;
     Canvas24 canvas(W, H);
 
-    auto render = [&]() -> void {
+    auto render = [&](void*, void*, void*) -> void {
         t+=0.001;
         for (int ix = 0; ix < size; ++ix) {
             number xx = number(ix)/(size-1);

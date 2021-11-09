@@ -1,10 +1,19 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
 #include <microgl/color.h>
 
 namespace microgl {
     namespace coder {
-        using namespace microgl::color;
 
         /**
          * a coder that rescales it's rgba_t values. it is advised to use a custom one,
@@ -29,7 +38,7 @@ namespace microgl {
 
             inline void encode(const color_t &input, pixel_from &output) const {
                 color_t converted_color{};
-                color::convert_color<rgba , typename from_coder::rgba>(
+                microgl::convert_color<rgba , typename from_coder::rgba>(
                         input, converted_color);
                 _coder_from.encode(converted_color, output);
             }
@@ -37,7 +46,7 @@ namespace microgl {
             inline void decode(const pixel_from &input, color_t &output) const {
                 color_t converted_color;
                 _coder_from.decode(input, converted_color);
-                color::convert_color<typename from_coder::rgba, rgba>(
+                microgl::convert_color<typename from_coder::rgba, rgba>(
                         converted_color, output);
             };
 

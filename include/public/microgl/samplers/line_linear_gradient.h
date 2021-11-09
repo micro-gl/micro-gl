@@ -1,7 +1,17 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
-#include <microgl/rgba_t.h>
-#include <microgl/vec2.h>
+#include <microgl/color.h>
+#include <microgl/math/vertex2.h>
 #include <microgl/functions/distance.h>
 
 namespace microgl {
@@ -24,8 +34,8 @@ namespace microgl {
             using rint= typename microgl::traits::conditional<p_bits>=16, int64_t, int32_t>::type;
             static constexpr precision_t p_bits_double= p_bits<<1;
             static constexpr rint ONE= rint(1)<<p_bits;
-            using point_int= vec2<rint>;
-            using point= vec2<number>;
+            using point_int= microgl::vertex2<rint>;
+            using point= microgl::vertex2<number>;
 
             // ax + by + c = 0
             struct line_t {
@@ -77,12 +87,12 @@ namespace microgl {
 
         public:
             line_linear_gradient()=default;
-            line_linear_gradient(const vec2<number> & start, const vec2<number> & end) :
+            line_linear_gradient(const vertex2<number> & start, const vertex2<number> & end) :
                     line_linear_gradient() {
                 setNewLine(start, end);
             };
 
-            void setNewLine(const vec2<number> & start, const vec2<number> & end) {
+            void setNewLine(const vertex2<number> & start, const vertex2<number> & end) {
                 const auto dir= end-start;
                 const auto length= microgl::functions::length(dir.x, dir.y);
 #define f math::to_fixed
@@ -96,7 +106,8 @@ namespace microgl {
 
             void addStop(const number & where, const color_t &color) {
                 const rint where_fixed= math::to_fixed(where, p_bits);
-                const auto p_64= _start+((_direction * where_fixed) >> p_bits);
+                const auto p_64 = point_int{_start.x + ((_direction.x * where_fixed) >> p_bits),
+                                   _start.y + ((_direction.y * where_fixed) >> p_bits)};
                 auto & stop = _stops[index];
 
                 stop.line.updateLine(p_64, _direction);

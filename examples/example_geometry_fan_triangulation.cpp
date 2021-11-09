@@ -1,9 +1,10 @@
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/samplers/flat_color.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
-#include <microgl/tesselation/fan_triangulation.h>
-#include <microgl/static_array.h>
+#include <microgl/micro-tess/include/micro-tess/fan_triangulation.h>
+#include <microgl/micro-tess/include/micro-tess/static_array.h>
 #include <vector>
 
 #define W 640*1
@@ -19,8 +20,8 @@ using container = dynamic_array<item_type>;
 //using container = std::vector<item_type>;
 
 template <typename number>
-container<vec2<number>> poly_diamond() {
-    using il = std::initializer_list<vec2<number>>;
+container<vertex2<number>> poly_diamond() {
+    using il = std::initializer_list<vertex2<number>>;
     return il{
         {100,300},
         {300, 100},
@@ -37,16 +38,17 @@ int main() {
     Canvas24 canvas(W, H);
     sampling::flat_color<> color_red{{255, 0, 0, 255}};
 
-    auto render_polygon = [&](const dynamic_array<vec2<number>> &polygon) {
+    auto render_polygon = [&](const dynamic_array<vertex2<number>> &polygon) {
         using index = unsigned int;
-        using fan = tessellation::fan_triangulation<number, dynamic_array>;
-
-        canvas.clear({255, 255, 255, 255});
-
-        auto type = triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY;
 
         container<index> indices;
         container<boundary_info> boundary_buffer;
+
+        using fan = microtess::fan_triangulation<number, container<index>, container<boundary_info>>;
+
+        canvas.clear({255, 255, 255, 255});
+
+        auto type = microtess::triangles::indices::TRIANGLES_FAN_WITH_BOUNDARY;
 
         fan::compute(
                 polygon.data(),
@@ -61,7 +63,7 @@ int main() {
                 color_red,
                 matrix_3x3<number>::identity(),
                 polygon.data(),
-                (vec2<number> *) nullptr,
+                (vertex2<number> *) nullptr,
                 indices.data(),
                 boundary_buffer.data(),
                 indices.size(),
@@ -79,7 +81,7 @@ int main() {
                 255);
     };
 
-    auto render = [&]() {
+    auto render = [&](void*, void*, void*) -> void {
         render_polygon(poly_diamond<number>());
     };
 

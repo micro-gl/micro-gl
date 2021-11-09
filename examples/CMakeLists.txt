@@ -30,7 +30,6 @@ if(SDL2_FOUND)
     set(SOURCES
             example_blocks_3d_raster.cpp
             example_blocks_rounded_rect.cpp
-            example_blocks_masks.cpp
             example_blocks_rect.cpp
             example_blocks_patch.cpp
             example_blend_modes.cpp
@@ -92,8 +91,6 @@ if(SDL2_FOUND)
             mtest_coder_converter.cpp
             mtest_coder_generator.cpp
             mtest_lut.cpp
-            mtest_mem.cpp
-            mtest_resource.cpp
             mtest_containers.cpp
             mtest_math.cpp
             mtest_q_sort.cpp

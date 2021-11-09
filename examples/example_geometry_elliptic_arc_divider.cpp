@@ -1,10 +1,11 @@
 #include "src/Resources.h"
 #include "src/example.h"
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/samplers/flat_color.h>
-#include <microgl/tesselation/elliptic_arc_divider.h>
-#include <microgl/static_array.h>
+#include <microgl/micro-tess/include/micro-tess/elliptic_arc_divider.h>
+#include <microgl/micro-tess/include/micro-tess/static_array.h>
 #include <vector>
 
 #define W 640*1
@@ -15,13 +16,13 @@ template<typename item_type>
 using static_arr = static_array<item_type, 100>;
 
 template<typename item_type>
-//using container = static_arr<item_type>;
-using container = dynamic_array<item_type>;
+using container = static_arr<item_type>;
+//using container = dynamic_array<item_type>;
 //using container = std::vector<item_type>;
 
 int main() {
-    using number = float;
-//    using number = Q<15>;
+//    using number = float;
+    using number = Q<15>;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
     sampling::flat_color<> color_red{{255,0,0,255}};
@@ -35,11 +36,9 @@ int main() {
             const number& radius_x, const number& radius_y,
             const number& rotation,
             uint divisions_count) {
-        using ellipse = microgl::tessellation::elliptic_arc_divider<number, dynamic_array>;
-//        using ellipse = microgl::tessellation::elliptic_arc_divider<number, std::vector>;
-//        using ellipse = microgl::tessellation::elliptic_arc_divider<number, static_arr>;
+        container<vertex2<number>> arc_points;
 
-        container<vec2<number>> arc_points;
+        using ellipse = microtess::elliptic_arc_divider<number, decltype(arc_points)>;
 
         ellipse::compute(
                 arc_points,
@@ -81,7 +80,7 @@ int main() {
     number radius_x = 50, radius_y = 75;
     number center_x = 200, center_y=200;
 
-    const auto render = [&](){
+    auto render = [&](void*, void*, void*) -> void {
         render_arc_internal(start_angle_rad, end_angle_rad,
                 center_x, center_y, radius_x, radius_y,
                 rotation,33);

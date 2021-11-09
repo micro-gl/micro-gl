@@ -1,6 +1,7 @@
 #include "src/example.h"
 #include <microgl/camera.h>
 #include <microgl/canvas.h>
+#include <microgl/bitmaps/bitmap.h>
 #include <microgl/z_buffer.h>
 #include <microgl/pixel_coders/RGB888_PACKED_32.h>
 #include <microgl/shaders/flat_color_shader.h>
@@ -17,14 +18,14 @@ int main() {
 //    using number = Q<15>;
 //    using number = Q<16>;
 
-    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_32_BIT>;
+    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_64_BIT>;
     Canvas24 canvas(W, H);
 
     float t = -30.0;
 
     auto test_shader_texture_3d = [&](const model_3d<number> & object) {
 
-        using vertex = vec3<number>;
+        using vertex = vertex3<number>;
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
         using namespace microgl::math;
@@ -70,11 +71,11 @@ int main() {
                 object.indices.data(),
                 object.indices.size(),
                 object.type,
-                triangles::face_culling::ccw,
+                microtess::triangles::face_culling::ccw,
                 (z_buffer<0> *)nullptr);
     };
 
-    auto render = [&]() {
+    auto render = [&](void*, void*, void*) {
         static auto model = cube_3d<number>;
 
         test_shader_texture_3d(model);

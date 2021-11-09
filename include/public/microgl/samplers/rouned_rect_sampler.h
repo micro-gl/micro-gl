@@ -1,16 +1,26 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
-#include <microgl/rgba_t.h>
-#include <microgl/vec2.h>
+#include <microgl/color.h>
+#include <microgl/math/vertex2.h>
 #include <microgl/math.h>
-#include <microgl/precision.h>
+#include <microgl/samplers/precision.h>
 
 namespace microgl {
     namespace sampling {
 
-//        float sdSegment( in vec2 p, in vec2 a, in vec2 b )
+//        float sdSegment( in vertex2 p, in vertex2 a, in vertex2 b )
 //        {
-//            vec2 pa = p-a, ba = b-a;
+//            vertex2 pa = p-a, ba = b-a;
 //            float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
 //            return length( pa - ba*h );
 //        }
@@ -28,7 +38,7 @@ namespace microgl {
         class rouned_rect_sampler {
         public:
             using rgba = rgba_;
-            using vertex = vec2<number>;
+            using vertex = microgl::vertex2<number>;
         private:
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
         public:
@@ -36,7 +46,7 @@ namespace microgl {
                                         int64_t, int32_t>::type;
             static constexpr rint ONE= rint(1)<<p_bits;
 
-            using ivertex = vec2<rint>;
+            using ivertex = microgl::vertex2<rint>;
 
             color_t color_fill= {0, 0, 0, (1u<<rgba::a)-1};
             color_t color_background= {(1u<<rgba::r)-1, (1u<<rgba::g)-1, (1u<<rgba::b)-1, 0};
