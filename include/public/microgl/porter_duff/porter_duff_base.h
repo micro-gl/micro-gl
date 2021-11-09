@@ -1,8 +1,16 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
 #include "../color.h"
-
-using namespace microgl::color;
 
 namespace microgl {
     namespace porterduff {
@@ -33,12 +41,12 @@ namespace microgl {
             auto as = s.a; // 128
             auto ab = b.a; // 255
 
-            auto as_Fa = color::mc<bits>(as, Fa); // 128 * 255
+            auto as_Fa = microgl::mc<bits>(as, Fa); // 128 * 255
             auto ab_Fb = mc<bits>(ab, Fb); // 255 * (255 - 128) = 255 * 127
 
-            output.r = color::mc<bits>(as_Fa, s.r) + color::mc<bits>(ab_Fb, b.r);
-            output.g = color::mc<bits>(as_Fa, s.g) + color::mc<bits>(ab_Fb, b.g);
-            output.b = color::mc<bits>(as_Fa, s.b) + color::mc<bits>(ab_Fb, b.b);
+            output.r = microgl::mc<bits>(as_Fa, s.r) + microgl::mc<bits>(ab_Fb, b.r);
+            output.g = microgl::mc<bits>(as_Fa, s.g) + microgl::mc<bits>(ab_Fb, b.g);
+            output.b = microgl::mc<bits>(as_Fa, s.b) + microgl::mc<bits>(ab_Fb, b.b);
             output.a = as_Fa + ab_Fb; // 128 * 255 + 255 * 127 // may be (bits+1)
 
             // if desired result should be un multiplied

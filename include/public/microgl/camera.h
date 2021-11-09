@@ -1,8 +1,18 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
+#include "math/vertex4.h"
 #include "math/matrix_4x4.h"
 #include "math.h"
-#include "math/vertex4.h"
 
 namespace microgl {
 
@@ -13,8 +23,7 @@ namespace microgl {
         camera & operator=(const camera &)=delete;
         ~camera()=delete;
 
-        template <typename number>
-        static
+        template <typename number> static
         vertex3<number> viewport(const vertex3<number> &ndc, unsigned width, unsigned height) {
             // given NDC= Normalized Device Coordinates, then transform them into
             // raster/canvas/viewport coords. We assume, that NDC coords are [-1,1] range.
@@ -177,8 +186,7 @@ namespace microgl {
          *
          * @return matrix_4x4<number> result
          */
-        template <typename number>
-        static
+        template <typename number> static
         matrix_4x4<number> perspective(const number &horizontal_fov_radians,
                                        const number & screen_width, const number & screen_height,
                                        const number & near, const number & far) {
@@ -197,8 +205,7 @@ namespace microgl {
          *
          * @return matrix_4x4<number> result
          */
-        template <typename number>
-        static
+        template <typename number> static
         matrix_4x4<number> perspective(const number & horizontal_fov_radians,
                                        const number & aspect_ratio,
                                        const number & near, const number & far) {
@@ -237,8 +244,7 @@ namespace microgl {
          *
          * @return matrix_4x4<number> result
          */
-        template <typename number>
-        static
+        template <typename number> static
         matrix_4x4<number> perspective(const number & l, const number & r,
                                        const number & b, const number & t,
                                        const number & n, const number & f) {
@@ -270,8 +276,7 @@ namespace microgl {
          *
          * @return matrix_4x4<number> result
          */
-        template <typename number>
-        static
+        template <typename number> static
         matrix_4x4<number> orthographic(const number & l, const number & r,
                                         const number & b, const number & t,
                                         const number & n, const number & f) {
@@ -290,7 +295,5 @@ namespace microgl {
 
             return m;
         }
-
     };
-
 }

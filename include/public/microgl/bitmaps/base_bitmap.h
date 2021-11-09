@@ -1,3 +1,13 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
 #include "buffer.h"
@@ -87,43 +97,43 @@ public:
 
     const pixel_coder &coder() const { return _coder; }
 
-    void decode(int x, int y, microgl::color::color_t &output) const{
+    void decode(int x, int y, microgl::color_t &output) const{
         _coder.decode(pixelAt(x, y), output);
     }
 
-    void decode(int index, microgl::color::color_t &output) const{
+    void decode(int index, microgl::color_t &output) const{
         _coder.decode(pixelAt(index), output);
     }
 
     template <typename number>
-    void decode(int x, int y, microgl::color::intensity<number> &output) const {
+    void decode(int x, int y, microgl::intensity<number> &output) const {
         microgl::coder::decode<number, pixel_coder>(pixelAt(x, y), output, coder());
     }
 
     template <typename number>
-    void decode(int index, microgl::color::intensity<number> &output) const {
+    void decode(int index, microgl::intensity<number> &output) const {
         microgl::coder::decode<number, pixel_coder>(pixelAt(index), output, coder());
     }
 
-    void writeColor(int index, const microgl::color::color_t &color) {
+    void writeColor(int index, const microgl::color_t &color) {
         pixel output;
         _coder.encode(color, output);
         writeAt(index, output);
     }
 
-    void writeColor(int x, int y, const microgl::color::color_t &color) {
+    void writeColor(int x, int y, const microgl::color_t &color) {
         writeColor(y*_width + x, color);
     }
 
     template <typename number>
-    void writeColor(int index, const microgl::color::intensity<number> &color) {
+    void writeColor(int index, const microgl::intensity<number> &color) {
         pixel output;
         microgl::coder::encode<number, pixel_coder>(color, output, coder());
         writeAt(index, output);
     }
 
     template <typename number>
-    void writeColor(int x, int y, const microgl::color::intensity<number> &color) {
+    void writeColor(int x, int y, const microgl::intensity<number> &color) {
         writeColor<number>(y*_width + x, color);
     }
 

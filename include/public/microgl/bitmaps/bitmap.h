@@ -1,3 +1,13 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
 #include "base_bitmap.h"
@@ -40,10 +50,10 @@ public:
     void copyToBitmap(bitmap<CODER2, allocator_type> & bmp) {
         if(bmp.size()!=this->size()) return;
         const int size = this->size();
-        microgl::color::color_t color_bmp_1, color_bmp_2;
+        microgl::color_t color_bmp_1, color_bmp_2;
         for (int index = 0; index < size; ++index) {
             this->decode(index, color_bmp_1);
-            microgl::color::convert_color<typename base::rgba, typename CODER2::rgba>(
+            microgl::convert_color<typename base::rgba, typename CODER2::rgba>(
                     color_bmp_1, color_bmp_2);
             bmp.writeColor(index, color_bmp_2);
         }

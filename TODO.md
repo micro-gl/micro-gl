@@ -1,10 +1,11 @@
 # TODO
 1. add static asserts for geometric container types
-2. create fit repos for micro-tess and micro-alloc
+2. create git repos for micro-tess and micro-alloc
 3. test my allocators with tess algorithms
 4. make boundary_buffer conditional
-5. add author copyrights
+5. add rgba_t to color.h and remove color namespace
 6. 
+5. DONE: add author copyrights
 7. DONE: refactor private drawing algorithms as _internal
 8. DONE: make allocators seperate lib
 9. DONE: try make Q within-place 32 bits

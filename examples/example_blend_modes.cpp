@@ -31,7 +31,7 @@
 #define W 640*1
 #define H 480*1
 
-using namespace microgl::color;
+using namespace microgl;
 
 int main() {
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;

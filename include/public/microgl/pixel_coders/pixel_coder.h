@@ -1,13 +1,20 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
-#include "../rgba.h"
 #include "../color.h"
 #include "../traits.h"
 
 namespace microgl {
     namespace coder {
-
-        using namespace microgl::color;
 
         /**
          * encode intensity into a pixel with a pixel coder
@@ -24,7 +31,7 @@ namespace microgl {
         encode(const intensity<number> &input, typename Coder::pixel &output,
                const Coder & $coder) {
             color_t int_color{};
-            color::convert_intensity_to_color<number, typename Coder::rgba>(input, int_color);
+            microgl::convert_intensity_to_color<number, typename Coder::rgba>(input, int_color);
             $coder.encode(int_color, output);
         }
 
@@ -43,7 +50,7 @@ namespace microgl {
                     const Coder & $coder) {
             color_t int_color{};
             $coder.decode(input, int_color);
-            color::convert_color_to_intensity<number, typename Coder::rgba>(int_color, output);
+            microgl::convert_color_to_intensity<number, typename Coder::rgba>(int_color, output);
         }
 
         /**
@@ -119,7 +126,7 @@ namespace microgl {
              */
             template <typename number>
             void convert(const intensity<number> &input, color_t &output) const {
-                color::convert_intensity_to_color<number, rgba>(input, output);
+                microgl::convert_intensity_to_color<number, rgba>(input, output);
             }
 
             /**
@@ -132,7 +139,7 @@ namespace microgl {
              */
             template <typename number>
             void convert(const color_t &input, intensity<number> &output) const {
-                color::convert_color_to_intensity<number, rgba>(input, output);
+                microgl::convert_color_to_intensity<number, rgba>(input, output);
             }
 
             /**
@@ -146,7 +153,7 @@ namespace microgl {
             template<typename CODER2>
             void convert(const color_t &input, color_t &output) const {
                 // convert input color of my space into a color in coder2 space
-                color::convert_color<rgba, typename CODER2::rgba>(input, output);
+                microgl::convert_color<rgba, typename CODER2::rgba>(input, output);
             }
 
             /**

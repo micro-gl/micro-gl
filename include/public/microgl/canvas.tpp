@@ -1,3 +1,13 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 
 #include "canvas.h"
 
@@ -1708,10 +1718,10 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
                 for (int x = b_r.left; x < b_r.right; ++x) {
                     font.bitmap->decode(c.x + x - b_r.left, (c.y + y - b_r.top), font_col);
                     if(tint) {
-                        font_col.r = color::mc<r_>(font_col.r, color.r);
-                        font_col.g = color::mc<g_>(font_col.g, color.g);
-                        font_col.b = color::mc<b_>(font_col.b, color.b);
-                        font_col.a = color::mc<a_>(font_col.a, color.a);
+                        font_col.r = microgl::mc<r_>(font_col.r, color.r);
+                        font_col.g = microgl::mc<g_>(font_col.g, color.g);
+                        font_col.b = microgl::mc<b_>(font_col.b, color.b);
+                        font_col.a = microgl::mc<a_>(font_col.a, color.a);
                     }
                     blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_>(font_col, x, y, opacity);
                 }

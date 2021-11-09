@@ -1,3 +1,22 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. If this file is to be used or derived and any of the following conditions apply:
+    a. for commercial usage by any company, entity or person, or
+    b. by a registered company/entity/corporation for commercial or non-commercial usage,
+    Then, a special permission has to be granted by the Author (Tomer Shalev) for that entity.
+    As a consequence of the above conditions, ONLY entities which are not companies such as a person,
+    or a group who want to use or derive this file for non-commercial usage are permitted without
+    being given a special permission by the Author (Tomer Shalev)
+
+ 2. In any case of granted permission to use this file according to case 1 (see above), derivative
+    work and usage of this file should be credited to the project and the author of this project.
+
+ 3. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 #define DEBUG_PLANAR false
 #define MAX_ITERATIONS 200

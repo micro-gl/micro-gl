@@ -1,3 +1,13 @@
+/*========================================================================================
+ Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
+ All Rights Reserved.
+ License is a custom open source semi-permissive license with the following guidelines:
+ 1. unless otherwise stated, derivative work and usage of this file is permitted and
+    should be credited to the project and the author of this project.
+ 2. Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+========================================================================================*/
 #pragma once
 
 #include "microgl/math/matrix_4x4.h"
@@ -17,12 +27,12 @@ namespace microgl {
             // per vertex attributes
             struct vertex_attributes {
                 vertex3<number> point;
-                microgl::color::color_t color;
+                microgl::color_t color;
             };
 
             // varying attributes
             struct varying {
-                microgl::color::color_t color{255,0,0};
+                microgl::color_t color{255,0,0};
 
                 // you must implement the interpolation function
 //                template <typename bary_integer>
@@ -51,7 +61,7 @@ namespace microgl {
             }
 
             // pixel shader
-            inline color::color_t
+            inline microgl::color_t
             fragment(const varying &input) {
                 return input.color;
             }
