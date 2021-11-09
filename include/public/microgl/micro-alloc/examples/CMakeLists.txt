@@ -34,17 +34,7 @@ foreach( testsourcefile ${SOURCES} )
     include_directories("${PROJECT_BINARY_DIR}")
 
     add_executable( ${testname} ${testsourcefile} ${SOURCES_SHARED} )
-    #        add_executable( ${testname} ${testsourcefile}  )
     # Make sure YourLib is linked to each app
     target_link_libraries( ${testname} ${libs} )
-    # this is redundant, as target file dir is always delegated to CMAKE_RUNTIME_OUTPUT_DIRECTORY
-#    add_custom_command(TARGET ${testname} POST_BUILD COMMAND
-#            ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets
-#            $<TARGET_FILE_DIR:${testname}>/assets)
 endforeach( testsourcefile ${SOURCES} )
-
-
-# newer clion does not make the binary executable location the current working dir,
-# so I copy the assets also to the top level build directory.
-#file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 
