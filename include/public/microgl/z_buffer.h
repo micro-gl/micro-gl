@@ -24,7 +24,7 @@ namespace microgl {
         using value_type = typename cond<log == 1, uint8_t, typename cond<log == 2, uint16_t, uint32_t>::type>::type;
         using allocator_type = typename Allocator::template rebind<value_type>::other;
         static constexpr int bits = Bits;
-        static constexpr value_type max_value = (uint64_t(1) << (Bits)) - 1;
+        static constexpr value_type max_value = ~value_type(0);
     private:
         allocator_type _allocator;
         value_type *_data = nullptr;
