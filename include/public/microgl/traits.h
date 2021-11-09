@@ -84,6 +84,5 @@ namespace microgl {
         bool operator==(const std_rebind_allocator<T1>& lhs, const std_rebind_allocator<T2>& rhs ) noexcept {
             return true;
         }
-
     }
 }

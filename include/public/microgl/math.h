@@ -1,4 +1,3 @@
-#pragma once
 /*========================================================================================
  Copyright (2021), Tomer Shalev (tomer.shalev@gmail.com, https://github.com/HendrixString).
  All Rights Reserved.
