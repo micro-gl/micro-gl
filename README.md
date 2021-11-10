@@ -8,7 +8,13 @@ check out our website at [micro-gl.github.io](micro-gl.github.io)
 # Usage
 Because `microgl` is a headers only library, installing just means copying the `include/public/microgl`
 folder to your system search path or another folder and then set the include path in your build.
-the `cmake` file also has an install target, that will copy everything in your system via ```cmake install```.
+the `cmake` file also has an install target, that will copy everything in your system via 
+```
+$ mkdir cmake-build-release
+$ cd cmake-build-release
+$ cmake -DCMAKE_BUILD_TYPE=Release ..
+$ cmake --install .
+```
 
 ## Using *CMake*
 Download the project to a sub folder of your project. inside your **`CMakeLists.txt`** add
@@ -39,5 +45,5 @@ $ ../examples/bin/example_clear
 ```
 
 ```text
-Author: Tomer Shalev, tomer.shalev@gmail.com
+Author: Tomer Shalev, tomer.shalev@gmail.com, all rights reserved (2021)
 ```

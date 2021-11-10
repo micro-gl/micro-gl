@@ -7,7 +7,13 @@ check out our website at [micro-gl.github.io/docs/micro-tess/](micro-gl.github.i
 # Usage
 Because `micro-tess` is a headers only library, installing just means copying the `include/`
 folder to your system search path or another folder and then set the include path in your build.
-the `cmake` file also has an install target, that will copy everything in your system via ```cmake install```.
+the `cmake` file also has an install target, that will copy everything in your system via
+```bash
+$ mkdir cmake-build-release
+$ cd cmake-build-release
+$ cmake -DCMAKE_BUILD_TYPE=Release ..
+$ cmake --install .
+```
 
 ## Using *CMake*
 Download the project to a sub folder of your project. inside your **`CMakeLists.txt`** add
@@ -24,5 +30,5 @@ target_include_directories(app path/to/micro-tess/install/include/)
 lib is tested when embedded with one of the `micro-gl` libraries for rendering
 
 ```text
-Author: Tomer Shalev, tomer.shalev@gmail.com
+Author: Tomer Shalev, tomer.shalev@gmail.com, all rights reserved (2021)
 ```

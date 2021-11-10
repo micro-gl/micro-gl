@@ -19,4 +19,4 @@ set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
 install(TARGETS micro-tess LIBRARY DESTINATION "lib"
         ARCHIVE DESTINATION "lib"
         RUNTIME DESTINATION "bin")
-install(DIRECTORY include/micro-tess DESTINATION include/micro-tess)
+install(DIRECTORY include/micro-tess DESTINATION include)

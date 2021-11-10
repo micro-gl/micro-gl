@@ -19,7 +19,7 @@ set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
 install(TARGETS micro-alloc LIBRARY DESTINATION "lib"
         ARCHIVE DESTINATION "lib"
         RUNTIME DESTINATION "bin")
-install(DIRECTORY include/micro-alloc DESTINATION include/micro-alloc)
+install(DIRECTORY include/micro-alloc DESTINATION include)
 
 # add the targets examples project
 add_subdirectory(examples)

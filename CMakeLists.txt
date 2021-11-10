@@ -23,7 +23,7 @@ set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
 install(TARGETS microgl LIBRARY DESTINATION "lib"
         ARCHIVE DESTINATION "lib"
         RUNTIME DESTINATION "bin")
-install(DIRECTORY include/public/microgl DESTINATION include/microgl)
+install(DIRECTORY include/public/microgl DESTINATION include)
 
 # add the targets examples project
 add_subdirectory(examples)
