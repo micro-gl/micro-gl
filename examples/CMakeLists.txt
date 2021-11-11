@@ -11,7 +11,6 @@ set(CMAKE_CXX_FLAGS_RELEASE " -fno-rtti -fno-exceptions -fno-unwind-tables \
                             -fdata-sections -ffunction-sections \
                             " CACHE INTERNAL "" FORCE)
 #-nostdlib
-message("using compiler: ${CMAKE_CXX_COMPILER_ID}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -19,14 +18,6 @@ find_package(SDL2 REQUIRED)
 
 if(SDL2_FOUND)
     set(libs ${SDL2_LIBRARY} microgl)
-
-    message(${CMAKE_BINARY_DIR})
-    message(${SDL2_FOUND})
-    message(${SDL2_INCLUDE_DIR})
-    message(${CMAKE_MODULE_PATH})
-    message(${PROJECT_SOURCE_DIR})
-    message(${PROJECT_BINARY_DIR})
-
     set(SOURCES
             example_blocks_3d_raster.cpp
             example_blocks_rounded_rect.cpp

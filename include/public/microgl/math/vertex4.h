@@ -10,7 +10,11 @@
 ========================================================================================*/
 #pragma once
 
+#ifndef MICROGL_USE_EXTERNAL_MICRO_TESS
 #include "../micro-tess/include/micro-tess/vec4.h"
+#else
+#include <micro-tess/vec4.h>
+#endif
 #include "vertex3.h"
 
 namespace microgl {

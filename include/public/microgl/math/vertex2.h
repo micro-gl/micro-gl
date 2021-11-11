@@ -10,7 +10,11 @@
 ========================================================================================*/
 #pragma once
 
+#ifndef MICROGL_USE_EXTERNAL_MICRO_TESS
 #include "../micro-tess/include/micro-tess/vec2.h"
+#else
+#include <micro-tess/vec2.h>
+#endif
 
 namespace microgl {
     template<typename number>

@@ -26,6 +26,7 @@
 #include "shaders/shader.h"
 #include "samplers/texture.h"
 #include "samplers/void_sampler.h"
+#ifndef MICROGL_USE_EXTERNAL_MICRO_TESS
 #include "micro-tess/include/micro-tess/triangles.h"
 #include "micro-tess/include/micro-tess/polygons.h"
 #include "micro-tess/include/micro-tess/path.h"
@@ -33,6 +34,15 @@
 #include "micro-tess/include/micro-tess/ear_clipping_triangulation.h"
 #include "micro-tess/include/micro-tess/bezier_patch_tesselator.h"
 #include "micro-tess/include/micro-tess/dynamic_array.h"
+#else
+#include <micro-tess/triangles.h>
+#include <micro-tess/polygons.h>
+#include <micro-tess/path.h>
+#include <micro-tess/monotone_polygon_triangulation.h>
+#include <micro-tess/ear_clipping_triangulation.h>
+#include <micro-tess/bezier_patch_tesselator.h>
+#include <micro-tess/dynamic_array.h>
+#endif
 #include "functions/minmax.h"
 #include "functions/clamp.h"
 #include "functions/swap.h"
@@ -844,7 +854,8 @@ public:
                        const index *indices,
                        index size,
                        enum indices type,
-                       const microtess::triangles::face_culling & culling= microtess::triangles::face_culling::none,
+                       const microtess::triangles::face_culling & culling=
+                               microtess::triangles::face_culling::none,
                        depth_buffer_type *depth_buffer=(nullptr),
                        opacity_t opacity=255,
                        const shader_number<Shader>& depth_range_near=shader_number<Shader>(0),
@@ -908,8 +919,9 @@ private:
                                int v0_x, int v0_y, int u0, int v0, int q0,
                                int v1_x, int v1_y, int u1, int v1, int q1,
                                int v2_x, int v2_y, int u2, int v2, int q2,
-                               opacity_t opacity, precision sub_pixel_precision, precision uv_precision,
-                               bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
+                               opacity_t opacity, precision sub_pixel_precision,
+                               precision uv_precision, bool aa_first_edge = true,
+                               bool aa_second_edge = true, bool aa_third_edge = true);
 
 public:
     /**
@@ -950,7 +962,8 @@ public:
                       const number1 &v0_x, const number1 &v0_y, const number2 &u0, const number2 &v0,
                       const number1 &v1_x, const number1 &v1_y, const number2 &u1, const number2 &v1,
                       const number1 &v2_x, const number1 &v2_y, const number2 &u2, const number2 &v2,
-                      opacity_t opacity = 255, bool aa_first_edge = true, bool aa_second_edge = true, bool aa_third_edge = true);
+                      opacity_t opacity = 255, bool aa_first_edge = true, bool aa_second_edge = true,
+                      bool aa_third_edge = true);
 
     /**
      * Draw a triangle with 3d shader
@@ -984,7 +997,8 @@ public:
                       vertex_attributes<Shader> v0,
                       vertex_attributes<Shader> v1,
                       vertex_attributes<Shader> v2,
-                      opacity_t opacity, const microtess::triangles::face_culling & culling= microtess::triangles::face_culling::none,
+                      opacity_t opacity, const microtess::triangles::face_culling & culling=
+                              microtess::triangles::face_culling::none,
                       depth_buffer_type * depth_buffer=nullptr,
                       const shader_number<Shader>& depth_range_near=shader_number<Shader>(0),
                       const shader_number<Shader>& depth_range_far=shader_number<Shader>(1));
@@ -1022,11 +1036,14 @@ private:
             typename Shader, typename number, typename depth_buffer_type >
     void drawTriangle_shader_homo_internal(Shader &$shader,
                                            int viewport_width, int viewport_height,
-                                           const vertex4<number> &p0, const vertex4<number> &p1, const vertex4<number> &p2,
+                                           const vertex4<number> &p0,
+                                           const vertex4<number> &p1,
+                                           const vertex4<number> &p2,
                                            varying<Shader> varying_v0,
                                            varying<Shader> varying_v1,
                                            varying<Shader> varying_v2,
-                                           opacity_t opacity, const microtess::triangles::face_culling & culling= microtess::triangles::face_culling::none,
+                                           opacity_t opacity, const microtess::triangles::face_culling & culling=
+                                                   microtess::triangles::face_culling::none,
                                            depth_buffer_type * depth_buffer=nullptr,
                                            number depth_range_near=number(0), number depth_range_far=number(1));
 
@@ -1103,8 +1120,8 @@ public:
      * @param opacity       opacity [0..255]
      */
     template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            bool antialias=false, bool debug=false, typename number1, typename number2=number1, typename Sampler,
-            class Allocator=microgl::traits::std_rebind_allocator<>>
+            bool antialias=false, bool debug=false, typename number1, typename number2=number1,
+            typename Sampler, class Allocator=microgl::traits::std_rebind_allocator<>>
     void drawBezierPatch(const Sampler &sampler,
                          const matrix_3x3<number1> &transform,
                          const vertex3<number1> *mesh,
@@ -1140,8 +1157,10 @@ public:
      * @param u1            uv coord
      * @param v1            uv coord
      */
-    template <microtess::polygons::hints hint=microtess::polygons::hints::SIMPLE, typename BlendMode=blendmode::Normal,
-            typename PorterDuff=porterduff::FastSourceOverOnOpaque, bool antialias=false, bool debug=false,
+    template <microtess::polygons::hints hint=microtess::polygons::hints::SIMPLE,
+            typename BlendMode=blendmode::Normal,
+            typename PorterDuff=porterduff::FastSourceOverOnOpaque,
+            bool antialias=false, bool debug=false,
             typename number1=float, typename number2=number1, typename Sampler,
             class tessellation_allocator=microgl::traits::std_rebind_allocator<>>
     void drawPolygon(const Sampler &sampler,

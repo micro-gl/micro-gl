@@ -14,7 +14,11 @@
 #include "math/vertex2.h"
 #include "math/vertex3.h"
 #include "color.h"
+#ifndef MICROGL_USE_EXTERNAL_MICRO_TESS
 #include "micro-tess/include/micro-tess/triangles.h"
+#else
+#include <micro-tess/triangles.h>
+#endif
 
 namespace microgl {
     namespace _3d {
