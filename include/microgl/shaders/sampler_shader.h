@@ -12,7 +12,7 @@
 
 #include <microgl/shaders/shader.h>
 #include <microgl/samplers/sampler.h>
-#include "microgl/samplers/precision.h"
+#include <microgl/samplers/precision.h>
 
 namespace microgl {
     namespace shading {

@@ -10,7 +10,7 @@
 ========================================================================================*/
 #pragma once
 
-#include "microgl/math/matrix_4x4.h"
+#include <microgl/math/matrix_4x4.h>
 #include <microgl/shaders/shader.h>
 
 namespace microgl {

@@ -17,12 +17,12 @@ add_library(${PROJECT_NAME} INTERFACE)
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 # expose public include directory
-#target_include_directories(${PROJECT_NAME} INTERFACE ${PROJECT_SOURCE_DIR}/include/public)
+#target_include_directories(${PROJECT_NAME} INTERFACE ${PROJECT_SOURCE_DIR}/include)
 # define target includes for both direct build via add_subdirectory() and for
 # defined installation configuration to allow easier package find
 target_include_directories(
         ${PROJECT_NAME} INTERFACE
-        $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include/public>
+        $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 #target_link_libraries(${PROJECT_NAME} INTERFACE micro-alloc micro-tess)
@@ -61,4 +61,4 @@ install(FILES
         "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
 # install include files
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/public/microgl DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/microgl DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
