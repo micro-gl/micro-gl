@@ -1,6 +1,6 @@
 # micro{gl}
-fast, super slim, embeddable, headers files only **`C++11`** graphics library, that  
-can run on any 32/64 bits computer without **FPU** or **GPU**. **no standard library required**.
+**Fast**, Super **Slim**, **Embeddable**, **Headers files** only **`C++11`** graphics library, that  
+can run on any 32/64 bits computer without **FPU** or **GPU**. **No standard library required**.
 
 check out our website at [micro-gl.github.io/docs](https://micro-gl.github.io/docs)
 

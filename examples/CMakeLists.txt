@@ -1,3 +1,4 @@
+# This file must be included by add_subdirectory() from parent, it doesn't work as standalone
 cmake_minimum_required(VERSION 3.12)
 project(microgl-sdl-examples)
 message(\n===========\n${PROJECT_NAME} \n===========\n)

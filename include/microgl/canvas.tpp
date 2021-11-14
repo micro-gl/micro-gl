@@ -1444,8 +1444,7 @@ void canvas<bitmap_type, options>::drawPathFill(const Sampler &sampler,
                                            const microtess::tess_quality &quality,
                                            opacity_t opacity,
                                            const number2 u0, const number2 v0,
-                                           const number2 u1, const number2 v1,
-                                           const tessellation_allocator & allocator) {
+                                           const number2 u1, const number2 v1) {
     constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
     static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba, void_sampler>();
     if(void_sampler) return;

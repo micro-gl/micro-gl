@@ -1299,8 +1299,7 @@ public:
                       const microtess::tess_quality &quality=microtess::tess_quality::better,
                       opacity_t opacity=255,
                       number2 u0=number2(0), number2 v0=number2(1),
-                      number2 u1=number2(1), number2 v1=number2(0),
-                      const tessellation_allocator & allocator=tessellation_allocator());
+                      number2 u1=number2(1), number2 v1=number2(0));
 
     /**
      * Draw Bitmap Fonts Text
