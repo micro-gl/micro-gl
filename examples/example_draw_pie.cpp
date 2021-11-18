@@ -31,12 +31,12 @@ int main() {
     gradient.addStop(1.f, {255,0,255});
 
     auto render = [&](void*, void*, void*) -> void {
-        t+=0.17;
+//        t+=0.17;
         canvas.clear({255,255,255,255});
         canvas.drawPie<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number,  number>(
                 gradient2Colors,
                 200, 200,
-                350+0,
+                150+0,
                 90+t, 90+60+t*2,
 //                45, 90,
                 true, // clock-wise

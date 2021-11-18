@@ -15,9 +15,9 @@ set(CMAKE_CXX_FLAGS_RELEASE " -fno-rtti -fno-exceptions -fno-unwind-tables \
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-find_package(SDL2 REQUIRED)
+find_package(SDL2)
 
-if(SDL2_FOUND)
+if(DEFINED SDL2_FOUND)
     set(libs ${SDL2_LIBRARY} microgl)
     set(SOURCES
             example_blocks_3d_raster.cpp

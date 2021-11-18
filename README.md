@@ -7,7 +7,7 @@ check out our website at [micro-gl.github.io/docs](https://micro-gl.github.io/do
 ## Installing `micro{gl}`
 `microgl` is a headers only library, which gives the following install possibilities:
 1. Using `cmake` to invoke the `install` target, that will copy everything in your system via
-```
+```bash
 $ mkdir cmake-build-release
 $ cd cmake-build-release
 $ cmake -DCMAKE_BUILD_TYPE=Release ..
