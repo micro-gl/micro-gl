@@ -1357,12 +1357,12 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
         case hints::COMPLEX:
         case hints::MULTIPLE_POLYGONS:
         {
-            microtess::path<number1, dynamic_array, tessellation_allocator> path{};
+            microtess::path<number1, dynamic_array, tessellation_allocator> path(allocator);
             path.addPoly(points, size);
             drawPathFill<BlendMode, PorterDuff, antialias, debug, number1, number2, Sampler,
                          dynamic_array, tessellation_allocator> (
                     sampler, transform, path, microtess::fill_rule::non_zero,
-                    microtess::tess_quality::better, opacity, u0, v0, u1, v1, allocator);
+                    microtess::tess_quality::better, opacity, u0, v0, u1, v1);
             return;
         }
         default:
