@@ -15,7 +15,12 @@
 #include "traits.h"
 
 namespace microtess {
-
+    /**
+     * Fan triangulation
+     * @tparam number the number type of a vertex
+     * @tparam container_output_indices the output indices container type
+     * @tparam container_output_boundary the output boundary container type
+     */
     template<typename number, class container_output_indices,
             class container_output_boundary>
     class fan_triangulation {
@@ -65,11 +70,7 @@ namespace microtess {
                                                             aa_third_edge);
                     boundary_buffer->push_back(aa_info);
                 }
-
             }
-
         }
-
     };
-
 }

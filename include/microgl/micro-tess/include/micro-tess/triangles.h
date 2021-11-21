@@ -15,17 +15,13 @@ namespace microtess {
 
         enum class indices {
             TRIANGLES,
-            // every fourth element is a boundary info element
             TRIANGLES_WITH_BOUNDARY,
             // triangle fan, first vertex is the main vertex to which all triangles
             // are expended into
             TRIANGLES_FAN,
-            // every second element is a boundary info element
-            // starting from_sampler the fourth element
             TRIANGLES_FAN_WITH_BOUNDARY,
             // triangle strip
             TRIANGLES_STRIP,
-            // triangle strip with boundary info
             TRIANGLES_STRIP_WITH_BOUNDARY,
         };
 
@@ -77,7 +73,14 @@ namespace microtess {
             return result;
         }
 
-
+        /**
+         * Iterate triangles encoded in a list of indices
+         * @tparam iterator_callback a callback struct or lambda
+         * @param indices pointer to indices array
+         * @param size size of indices list
+         * @param type the type of triangles
+         * @param callback the callback instance
+         */
         template<typename iterator_callback>
         void iterate_triangles(const index *indices,
                                const index &size,

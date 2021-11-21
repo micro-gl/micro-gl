@@ -15,6 +15,25 @@
 
 namespace microtess {
 
+    /**
+     * BiQuad/BiCubic Bezier Patch Tessellation. Triangulates 3d surfaces, but usually
+     * used for 2d triangulation with ignoring the z component,
+     *
+     * NOTES:
+     * 1. Output attributes are stored in interleaved format in the supplied number container, example
+     *    output = [x,y,z,u,v, x,y,z,u,v, x,y,z,u,v, ....]
+     * 2. Output indices of triangulation is stored in a sperate indices container
+     * 3. the type of triangulation is always TRIANGLES_STRIP to save memory
+     * 4. Configurable horizontal/vertical Triangulation resolution
+     * 5. Also interpolates correct UV coords
+     *
+     * todo: support arbitrary patches
+     *
+     * @tparam number1 x,y,z number type
+     * @tparam number2 u, v number type
+     * @tparam container_output_attributes container type of output vertices [x,y,z,u,v,...[
+     * @tparam container_output_indices container for indices
+     */
     template <typename number1, typename number2, class container_output_attributes,
             class container_output_indices>
     class bezier_patch_tesselator {
@@ -31,11 +50,28 @@ namespace microtess {
 
         static const char BI_QUADRATIC = 0;
         static const char BI_CUBIC = 1;
+        // index of
+        static const char I_X = 0;
+        static const char I_Y = 1;
+        static const char I_Z = 2;
+        static const char I_U = 3;
+        static const char I_V = 4;
+        static const char ATTRIBUTES_COUNT = 5;
 
         /**
-         * right now I only support cubic and quadratic patches.
-         * todo: support arbitrary patches
          *
+         * @param meshPoints array of 9/16 vec3 for quadratic/cubic respectively
+         * @param uOrder should be 3/4 for quadratic/cubic respectively
+         * @param vOrder should be 3/4 for quadratic/cubic respectively
+         * @param uSamples number of horizontal subdivisions
+         * @param vSamples number of vertical subdivisions
+         * @param out_vertices_attributes output container of attributes [x,y,z,u,v,...]
+         * @param out_indices output container for indices
+         * @param out_indices_type output triangles type
+         * @param tex_left left UV bounding box
+         * @param tex_top top UV bounding box
+         * @param tex_right right UV bounding box
+         * @param tex_bottom bottom UV bounding box
          */
         static void compute(const vertex3 *meshPoints,
                      const index uOrder, const index vOrder,
@@ -75,8 +111,8 @@ namespace microtess {
                     out_vertices_attributes.push_back(p.y);
                     out_vertices_attributes.push_back(p.z);
                     // we need to separate this into another buffer, because number1!=number2 always
-                    out_vertices_attributes.push_back(tex_left + u*factor_remap_u);
-                    out_vertices_attributes.push_back(tex_top + v*factor_remap_v);
+                    out_vertices_attributes.push_back(number1(tex_left + u*factor_remap_u));
+                    out_vertices_attributes.push_back(number1(tex_top + v*factor_remap_v));
 
                     // indices
                     if(i < uSamples - 1) {

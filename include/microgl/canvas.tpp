@@ -702,7 +702,7 @@ void canvas<bitmap_type, options>::drawTriangles(const Sampler &sampler,
     const precision p = renderingOptions()._2d_raster_bits_sub_pixel;
     const precision uv_p = renderingOptions()._2d_raster_bits_uv;
     vertex2<number1> min, max;
-    if(!uvs) { // if we don't have per-vertex uv, then let's compute
+    if(!uvs && size) { // if we don't have per-vertex uv, then let's compute
         min.x=max.x=vertices[0].x;
         min.y=max.y=vertices[0].y;
         for (unsigned ix = 0; ix < size; ++ix) { // compute bounding box

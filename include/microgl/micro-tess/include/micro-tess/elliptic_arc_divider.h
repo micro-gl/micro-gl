@@ -17,6 +17,11 @@ namespace microtess {
 
     using index = unsigned int;
 
+    /**
+     * Elliptic Arc divider
+     * @tparam number the number type of a vertex
+     * @tparam container_type the output container type
+     */
     template<typename number, class container_type>
     class elliptic_arc_divider {
     public:

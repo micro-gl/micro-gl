@@ -22,7 +22,7 @@ namespace microtess {
     enum class stroke_gravity { center, inward, outward };
 
     /**
-     * stroke tessellator
+     * Stroke Tessellation
      *
      * @tparam number number type of vertices
      * @tparam container_output_vertices container type to store vertices
@@ -206,7 +206,8 @@ namespace microtess {
             if(size==0) return;
             const auto indices_offset= output_indices.size();
             output_indices_type=triangles::indices::TRIANGLES_STRIP;
-            number stroke_size = max__(number(1), stroke_width / number(2));
+//            number stroke_size = max__(number(1), stroke_width / number(2));
+            number stroke_size = stroke_width / number(2);
             index start_index=0; // find the first non-degenerate index
             while((start_index+1<size) && points[start_index]==points[start_index+1]) {
                 start_index++;
@@ -524,7 +525,7 @@ namespace microtess {
                     output_indices.push_back(a_index); b1;
                     output_indices.push_back(a_index); b1;
                     output_indices.push_back(root_index); b1;
-                    compute_arc(a, root, b, radius, 1,
+                    compute_arc(a, root, b, radius, radius*number(4),
                                 root_index, output_vertices, output_indices, boundary_buffer);
                     output_indices.push_back(b_index); b2;
                     output_indices.push_back(root_index); b1;
@@ -610,7 +611,7 @@ namespace microtess {
                 case stroke_line_join::round:
                 {
                     compute_arc(first_vertex, join_vertex, last_vertex,
-                                join_radius, 1,
+                                join_radius, join_radius*number(4),
                                 join_index, output_vertices, output_indices, boundary_buffer);
                     break;
                 }

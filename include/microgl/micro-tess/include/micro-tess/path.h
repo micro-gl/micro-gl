@@ -31,15 +31,37 @@
 
 namespace microtess {
 
+    /**
+     * Path is a modern interface for vector graphics, where you can
+     * define multiple paths with tools such as:
+     * 1. Lines, Rectangles
+     * 2. Bezier curves
+     * 3. Elliptic arcs
+     * and then you can tessellate then using:
+     * 1. Fill Tessellation
+     * 2. Stroke Tessellation
+     *
+     * Note:
+     * - After Fill or Stroke Tessellation, internal buffers are cached, so re-tessellation
+     *   will happen only if something is invalid. This is done to save energy.
+     * - Internal cache buffers can be drained using the drainBuffers() method
+     *
+     * @tparam number the number type of a vertex
+     * @tparam container_template_type a template of a linear container of the
+     *          form Container<value_type, allocator_type> for internal usage
+     * @tparam Allocator an allocator type for internal usage
+     */
     template<typename number,
-             template<typename...> class container_template_type,
+             template<typename...> class container_template_type=dynamic_array,
              class Allocator=std_rebind_allocator<>>
     class path {
     public:
         struct buffers;
         using index = unsigned int;
+        using number_type = number;
         using vertex = microtess::vec2<number>;
         using allocator_type = Allocator;
+        using value_type = vertex;
         using chunker_t = allocator_aware_chunker<vertex, container_template_type, allocator_type>;
 
     private:
@@ -110,15 +132,19 @@ namespace microtess {
             return *this;
         }
 
-        auto addPoly(const container_template_type<vertex> & poly) -> path & {
-            return addPoly(poly.data(), poly.size());
+        template<class Iterable>
+        auto addPoly(const Iterable & poly) -> path & {
+            if(poly.size()==0) return *this;
+            _paths_vertices.cut_chunk_if_current_not_empty();
+            for (const auto & v : poly) lineTo(v);
+            invalidate();
+            return *this;
         }
 
         auto addPoly(const vertex *poly, unsigned size) -> path & {
             if(size==0) return *this;
             _paths_vertices.cut_chunk_if_current_not_empty();
-            for (unsigned ix = 0; ix < size; ++ix)
-                lineTo(poly[ix]);
+            for (unsigned ix = 0; ix < size; ++ix) lineTo(poly[ix]);
             invalidate();
             return *this;
         }
@@ -354,8 +380,8 @@ namespace microtess {
                     if(integer(item) > max)
                         max = integer(item);
                 }
-                auto bits = used_integer_bits(max);
-                auto base = 1u<<bits;
+                const auto bits = used_integer_bits(max);
+                const auto base = 1u<<bits;
                 integer result=0, index=0;
                 for (const auto & item : iterable)
                     result += (integer(item)) * pow(base, index++);
@@ -376,6 +402,7 @@ namespace microtess {
         fill_cache_info _latest_fill_cache_info;
 
     public:
+        template <bool APPLY_MERGE=true, unsigned MAX_ITERATIONS=200>
         buffers & tessellateFill(const fill_rule &rule=fill_rule::non_zero,
                                  const tess_quality &quality=tess_quality::better,
                                  bool compute_boundary_buffer = true,
@@ -392,7 +419,8 @@ namespace microtess {
                     decltype(_tess_fill.output_vertices),
                     decltype(_tess_fill.output_indices),
                     decltype(_tess_fill.output_boundary),
-                    allocator_type>;
+                    allocator_type,
+                    APPLY_MERGE, MAX_ITERATIONS>;
 
                 planarize_division_tess::template compute<decltype(_paths_vertices)>(
                         _paths_vertices, rule, quality,

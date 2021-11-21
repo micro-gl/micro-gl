@@ -70,7 +70,7 @@ namespace dynamic_array_traits {
 }
 
 /**
- * minimal vector like container, does not obey all of the propagate syntax that
+ * Minimal vector like container, does not obey all of the propagate syntax that
  * Allocator Aware Container follows
  * @tparam T the type
  * @tparam Alloc the allocator type
@@ -97,7 +97,7 @@ public:
     explicit dynamic_array(const Alloc & alloc = Alloc()) noexcept : _alloc{alloc} {
     }
 
-    dynamic_array(uint count, const T & value = T(), const Alloc & alloc = Alloc()) :
+    dynamic_array(const uint count, const T & value = T(), const Alloc & alloc = Alloc()) :
             dynamic_array(alloc) {
         reserve(count);
         for (int ix = 0; ix < count; ++ix) push_back(value);

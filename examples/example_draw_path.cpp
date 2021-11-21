@@ -113,7 +113,7 @@ int main() {
 //    using number = float;
 //    using number = double;
 //    using number = Q<15, long long>;
-    using number = Q<8, int32_t, int64_t, 0>;
+    using number = Q<8, int32_t, int64_t, 1>;
 //    using number = Q<2, int64_t>;
 //    using number = Q<4, int32_t>;
 //    using number = Q<12>;

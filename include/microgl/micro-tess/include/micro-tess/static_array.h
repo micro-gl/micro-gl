@@ -18,47 +18,79 @@ namespace static_array_traits {
 
     template <class _Tp> inline
     typename remove_reference<_Tp>::type&&
-    move(_Tp&& __t) noexcept
-    {
+    move(_Tp&& __t) noexcept {
         typedef typename remove_reference<_Tp>::type _Up;
         return static_cast<_Up&&>(__t);
     }
-
     template <class _Tp> inline _Tp&&
-    forward(typename remove_reference<_Tp>::type& __t) noexcept
-    {
+    forward(typename remove_reference<_Tp>::type& __t) noexcept {
+        return static_cast<_Tp&&>(__t);
+    }
+    template <class _Tp> inline _Tp&&
+    forward(typename remove_reference<_Tp>::type&& __t) noexcept {
         return static_cast<_Tp&&>(__t);
     }
 
-    template <class _Tp> inline _Tp&&
-    forward(typename remove_reference<_Tp>::type&& __t) noexcept
-    {
-        return static_cast<_Tp&&>(__t);
+    template<typename T=unsigned char>
+    class void_allocator {
+    public:
+        using value_type = T;
+        using size_t = unsigned long;
+
+        template<class U>
+        explicit void_allocator(const void_allocator<U> & other) noexcept { };
+        explicit void_allocator()=default;
+
+        template <class U, class... Args>
+        void construct(U* p, Args&&... args) {
+            new(p) U(forward<Args>(args)...);
+        }
+
+        T * allocate(size_t n) { return nullptr; }
+        void deallocate(T * p, size_t n=0) { }
+
+        template<class U> struct rebind {
+            typedef void_allocator<U> other;
+        };
+    };
+
+    template<class T1, class T2>
+    bool operator==(const void_allocator<T1>& lhs, const void_allocator<T2>& rhs ) noexcept {
+        return true;
     }
 }
 
 /**
- * static array, equivalent to std::array
+ * Static array, equivalent to std::array, but with some mods:
+ * 1. contains FAKE allocator interface, so it can be compatible with many allocator-aware algorithms.
+ *
  * @tparam T item type
  * @tparam N the fixed capacity
+ * @tparam fake_allocator A fake allocator
  */
-template<typename T, unsigned N>
+template<typename T, unsigned N, class fake_allocator=static_array_traits::void_allocator<>>
 class static_array {
 public:
     using value_type = T;
+    using allocator_type = fake_allocator;
     using index = unsigned int;
     using type = T;
+    using uint = unsigned int;
 
 private:
     T _data[N];
     index _current = 0;
 
 public:
-    explicit static_array() = default;;
+    explicit static_array() = default;
     template<class Iterable>
     static_array(const Iterable & list) {
-        for (const auto & item : list)
-            push_back(item);
+        for (const auto & item : list) push_back(item);
+    }
+    static_array(const allocator_type & allocator) {}
+    static_array(const uint count, const T & value = T(),
+                 const allocator_type & alloc = allocator_type()) {
+        for (int ix = 0; ix < count; ++ix) push_back(value);
     }
     static_array(const static_array & container) {
         for(auto ix = 0; ix < container.size(); ix++)
@@ -112,6 +144,7 @@ public:
     }
     index size() const { return _current; }
     constexpr index capacity() const { return N; }
+    allocator_type get_allocator() const { return allocator_type(); }
 
     T* begin() { return _data; }
     T* end() { return _data + _current; }

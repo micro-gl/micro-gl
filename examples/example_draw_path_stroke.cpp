@@ -110,14 +110,20 @@ path_t<number> path_test() {
 int main() {
 //    using number = float;
 //    using number = double;
-//    using number = Q<8>;
-//    using number = Q<8>;
-//    using number = Q<14, long long>;
-//    using number = Q<12, int32_t>;
-//    using number = Q<4, int64_t>;
-    using number = Q<4, int32_t, int32_t, 0>;
+    using number = Q<4, int32_t, int64_t, 1>;
+//    using number = Q<6, int32_t>;
+//    using number = Q<16, int64_t, int64_t, 1>;
+//    using number = Q<4, int32_t>;
+//    using number = Q<4, int32_t, int32_t, 0>;
 
-    using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
+//
+    number a = 1;
+    number b = 0.01;
+//    number c = a/b;
+//    float d = float(c);
+//
+
+    using Canvas24= canvas<bitmap<RGB888_PACKED_32>, CANVAS_OPT_64_BIT_FREE>;
     using il = std::initializer_list<int>;
     sampling::flat_color<> color_red {{255,0,255,255}};
     sampling::flat_color<> color_green {{22,22,22,255}};

@@ -32,7 +32,7 @@ namespace microtess {
 
         template<typename number>
         inline number deg_to_rad(const number &degrees) {
-            return ((degrees*number(microtess::math::pi<number>()))/number{180});
+            return ((degrees*number(microtess::math::pi<number>()))/180);
         }
 
         template<typename number>
@@ -47,7 +47,7 @@ namespace microtess {
             number x = val, y = number(1);
             if(val==number(0)) return val;
             while ((abs<number>(x - y) > epsilon) and (ix++<10)) {
-                x = (x + y) / number(2);
+                x = (x + y) / 2;
                 y = val / x;
             }
             return x;
@@ -56,7 +56,7 @@ namespace microtess {
         template<typename number>
         number sin_cpu(number radians) {
             const auto pii = microtess::math::pi<number>();
-            const auto pii2 = microtess::math::pi<number>()*number(2);
+            const auto pii2 = microtess::math::pi<number>()*2;
 
             auto modd = mod_cpu<number>(radians, pii2);
             modd = modd<0 ? modd+pii2 : (modd>pii2 ? pii2 : modd);
@@ -65,7 +65,8 @@ namespace microtess {
 
             // bhaskara approximation is in [0, pi], so we clip
             const auto x = modd>=pii ? pii : modd;
-            auto expr = (number(16)*x*(pii-x))/(number(5)*pii*pii -number(4)*x*(pii-x));
+            const auto x_pi_x = x*(pii-x)*4;
+            auto expr = (x_pi_x*4)/((pii*pii*5) - x_pi_x);
             return expr * sign;
         }
 

@@ -71,10 +71,10 @@ private:
         // no need to do non-arithmatic shift because it is part
         // of a big picture
         const int_t intPart1 = fpValue1>>P, intPart2 = fpValue2>>P;
-        const int_t fracPart1 = fpValue1 & int_t(MASK_FRAC_BITS);
-        const int_t fracPart2 = fpValue2 & int_t(MASK_FRAC_BITS);
-        _value = int_t(((intPart1 * intPart2)<<P) + (intPart1 * fracPart2) +
-                 (fracPart1 * intPart2) + (((fracPart1 * fracPart2)>>P) & int_t(MASK_FRAC_BITS)));
+        const int_t fracPart1 = fpValue1 & MASK_FRAC_BITS;
+        const int_t fracPart2 = fpValue2 & MASK_FRAC_BITS;
+        _value = ((intPart1 * intPart2)<<P) + (intPart1 * fracPart2) +
+                 (fracPart1 * intPart2) + (((fracPart1 * fracPart2)>>P) & MASK_FRAC_BITS);
     }
     template<> inline void multiply<2>(const integer val)
             { _value = (((inter_integer)_value)*val)>>P; }
@@ -121,7 +121,7 @@ public:
     q_ref operator *=(signed val) {_value *= val; return *this;}
     q_ref operator /=(const_ref q) {
         const inter_integer inter=(inter_integer(_value)) << P;
-        _value = ((inter_integer(_value)) << P)/(inter_integer)q.value();
+        _value = inter/(inter_integer)q.value();
         return *this;
     }
     q_ref operator /=(unsigned val) {_value /= val; return *this;}
