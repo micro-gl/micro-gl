@@ -21,8 +21,8 @@
  *                                  2 = (fastest, inaccurate for signed right shift, big-inter)
  */
 template <unsigned P,
-          typename integer=long long,
-          typename inter_integer=integer,
+          typename integer=int,
+          typename inter_integer=long long,
           char multiplication_strategy=-1>
 class Q {
 public:
