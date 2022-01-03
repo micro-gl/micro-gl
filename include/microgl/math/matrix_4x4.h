@@ -16,10 +16,10 @@
 
 namespace microgl {
 
-    template<typename number>
-    class matrix_4x4 : public matrix<number, 4, 4> {
+    template<typename number, bool column_major=true>
+    class matrix_4x4 : public matrix<number, 4, 4, column_major> {
     private:
-        using base__ = matrix<number, 4, 4>;
+        using base__ = matrix<number, 4, 4, column_major>;
 
     public:
         // in this derived class I overload * operator, this will default in
@@ -34,28 +34,17 @@ namespace microgl {
         using vertex3 = microgl::vertex3<number>;
         using vertex4 = microgl::vertex4<number>;
 
-        static const index SX = 0;
-        static const index SY = 5;
-        static const index SZ = 10;
-        static const index numberX = 3;
-        static const index numberY = 7;
-        static const index numberZ = 11;
-
         static
         matrix_4x4 translate(const_type_ref tx, const_type_ref ty, const_type_ref tz) {
-            matrix_4x4 mat{};
-            mat[numberX] = tx;
-            mat[numberY] = ty;
-            mat[numberZ] = tz;
+            matrix_4x4 mat;
+            mat(0,3) = tx; mat(1,3) = ty; mat(2,3) = tz;
             return mat;
         }
 
         static
         matrix_4x4 scale(const_type_ref sx, const_type_ref sy, const_type_ref sz) {
-            matrix_4x4 mat{};
-            mat[SX] = sx;
-            mat[SY] = sy;
-            mat[SZ] = sz;
+            matrix_4x4 mat;
+            mat[0] = sx; mat[5] = sy; mat[10] = sz;
             return mat;
         }
 
@@ -139,7 +128,7 @@ namespace microgl {
         matrix_4x4(const_type_ref fill_value) : base__(fill_value) {}
         matrix_4x4(const base__ & mat) : base__(mat) {}
         template<typename number2>
-        matrix_4x4(const matrix<number2, 4, 4> & mat) : base__(mat) {}
+        matrix_4x4(const matrix<number2, 4, 4, column_major> & mat) : base__(mat) {}
         virtual ~matrix_4x4() = default;
 
         void fill_diagonal(const_type_ref value) {
@@ -155,28 +144,24 @@ namespace microgl {
             return *this;
         }
 
-        void setColumn(const index column_index, const vertex3 & val) {
+        void setColumn(const index column, const vertex3 & val) {
             auto & me = *this;
-            me[column_index] = val.x;
-            me[column_index+4] = val.y;
-            me[column_index+8] = val.z;
+            me(0,column)=val.x; me(1,column)=val.y; me(2,column)=val.z;
         }
 
-        void setRow(const index row_index, const vertex3 & val) {
+        void setRow(const index row, const vertex3 & val) {
             auto & me = *this;
-            const index start = row_index*4;
-            me[start + 0] = val.x;
-            me[start + 1] = val.y;
-            me[start + 2] = val.z;
+            me(row,0)=val.x; me(row,1)=val.y; me(row,2)=val.z;
         }
 
         vertex4 operator*(const vertex4 & point) const {
+            constexpr bool c = column_major; // much faster
             vertex4 res;
             const auto & m = (*this);
-            res.x = m[0]*point.x + m[1]*point.y + m[2]*point.z + m[3]*point.w;
-            res.y = m[4]*point.x + m[5]*point.y + m[6]*point.z + m[7]*point.w;
-            res.z = m[8]*point.x + m[9]*point.y + m[10]*point.z + m[11]*point.w;
-            res.w = m[12]*point.x + m[13]*point.y + m[14]*point.z + m[15]*point.w;
+            res.x = m[0]*point.x      + m[c?4:1]*point.y  + m[c?8:2]*point.z   + m[c?12:3]*point.w;
+            res.y = m[c?1:4]*point.x  + m[5]*point.y      + m[c?9:6]*point.z   + m[c?13:7]*point.w;
+            res.z = m[c?2:8]*point.x  + m[c?6:9]*point.y  + m[10]*point.z      + m[c?14:11]*point.w;
+            res.w = m[c?3:12]*point.x + m[c?7:13]*point.y + m[c?11:14]*point.z + m[15]*point.w;
             return res;
         }
 

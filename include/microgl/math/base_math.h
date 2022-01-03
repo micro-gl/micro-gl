@@ -22,18 +22,18 @@ namespace microgl {
 
         template<typename number>
         static number pi() {
-            return number{float(PI)};
+            return number(float(PI));
         }
 
         template<typename number>
         static number half_pi() {
-            return number{float(PI/2.0f)};
+            return number(float(PI/2.0f));
         }
 
         template<typename number>
         inline
         number deg_to_rad(const number &degrees) {
-            return ((degrees*number(microgl::math::pi<number>()))/number{180});
+            return ((degrees*number(microgl::math::pi<number>()))/number(180));
         }
 
         template<typename number>

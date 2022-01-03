@@ -16,10 +16,10 @@
 
 namespace microgl {
 
-    template<typename number>
-    class matrix_3x3 : public matrix<number, 3, 3> {
+    template<typename number, bool column_major=true>
+    class matrix_3x3 : public matrix<number, 3, 3, column_major> {
     private:
-        using base__ = matrix<number, 3, 3>;
+        using base__ = matrix<number, 3, 3, column_major>;
 
     public:
         // in this derived class I overload * operator, this will default in
@@ -33,28 +33,21 @@ namespace microgl {
         using const_matrix_ref = const matrix_3x3<number> &;
         using vertex = microgl::vertex2<number>;
 
-        static const index SX = 0;
-        static const index SY = 4;
-        static const index TX = 2;
-        static const index TY = 5;
-        static const index SKEWX = 1;
-        static const index SKEWY = 3;
-
         static matrix_3x3 identity() { return matrix_3x3{}; }
 
         static
         matrix_3x3 translate(const_type_ref tx, const_type_ref ty) {
-            matrix_3x3 mat{};
-            mat[TX] = tx;
-            mat[TY] = ty;
+            matrix_3x3 mat;
+            mat(0, 2) = tx;
+            mat(1, 2) = ty;
             return mat;
         }
 
         static
         matrix_3x3 scale(const_type_ref sx, const_type_ref sy) {
-            matrix_3x3 mat{};
-            mat[SX] = sx;
-            mat[SY] = sy;
+            matrix_3x3 mat;
+            mat(0, 0) = sx;
+            mat(1, 1) = sy;
             return mat;
         }
 
@@ -66,28 +59,28 @@ namespace microgl {
         static
         matrix_3x3 shear_x(const_type_ref angles) {
             matrix_3x3 mat{};
-            mat[SKEWX] = microgl::math::tan(angles);
+            mat(0, 1) = microgl::math::tan(angles);
             return mat;
         }
 
         static
         matrix_3x3 shear_y(const_type_ref angles) {
             matrix_3x3 mat{};
-            mat[SKEWY] = microgl::math::tan(angles);
+            mat(1, 0) = microgl::math::tan(angles);
             return mat;
         }
 
         static
         matrix_3x3 rotation(const_type_ref angle) {
-            matrix_3x3 mat{};
+            matrix_3x3 mat;
 
             const_type_ref cos_ = microgl::math::cos(angle);
             const_type_ref sin_ = microgl::math::sin(angle);
 
-            mat[0] = cos_;
-            mat[1] = -sin_;
-            mat[3] = sin_;
-            mat[4] = cos_;
+            mat(0,0) = cos_;
+            mat(0,1) = -sin_;
+            mat(1,0) = sin_;
+            mat(1,1) = cos_;
             return mat;
         }
 
@@ -95,22 +88,22 @@ namespace microgl {
         matrix_3x3 rotation(const_type_ref angle,
                             const_type_ref px,
                             const_type_ref py) {
-            matrix_3x3 mat{};
+            matrix_3x3 mat;
 
             const_type_ref cos_ = microgl::math::cos(angle);
             const_type_ref sin_ = microgl::math::sin(angle);
 
-            mat[0] = cos_;
-            mat[1] = -sin_;
-            mat[2] = -cos_*px + sin_*py + px;
+            mat(0,0) = cos_;
+            mat(0,1) = -sin_;
+            mat(0,2) = -cos_*px + sin_*py + px;
 
-            mat[3] = sin_;
-            mat[4] = cos_;
-            mat[5] = -sin_*px - cos_*py + py;
+            mat(1,0) = sin_;
+            mat(1,1) = cos_;
+            mat(1,2) = -sin_*px - cos_*py + py;
 
-            mat[6] = 0;
-            mat[7] = 0;
-            mat[8] = number(1);
+            mat(2,0) = 0;
+            mat(2,1) = 0;
+            mat(2,2) = number(1);
 
             return mat;
         }
@@ -126,17 +119,17 @@ namespace microgl {
             const_type_ref cos_ = microgl::math::cos(angle);
             const_type_ref sin_ = microgl::math::sin(angle);
 
-            mat[0] = sx*cos_;
-            mat[1] = -sy*sin_;
-            mat[2] = -sx*cos_*px + sy*sin_*py + px;
+            mat(0,0) = sx*cos_;
+            mat(0,1) = -sy*sin_;
+            mat(0,2) = -sx*cos_*px + sy*sin_*py + px;
 
-            mat[3] = sx*sin_;
-            mat[4] = sy*cos_;
-            mat[5] = -sx*sin_*px - sy*cos_*py + py;
+            mat(1,0) = sx*sin_;
+            mat(1,1) = sy*cos_;
+            mat(1,2) = -sx*sin_*px - sy*cos_*py + py;
 
-            mat[6] = 0;
-            mat[7] = 0;
-            mat[8] = number(1);
+            mat(2,0) = 0;
+            mat(2,1) = 0;
+            mat(2,2) = number(1);
 
             return mat;
         }
@@ -148,14 +141,15 @@ namespace microgl {
         matrix_3x3(const_type_ref fill_value) : base__(fill_value) {}
         matrix_3x3(const base__ & mat) : base__(mat) {}
         template<typename T2>
-        matrix_3x3(const matrix<T2, 3, 3> & mat) : base__(mat) {}
+        matrix_3x3(const matrix<T2, 3, 3, column_major> & mat) : base__(mat) {}
         virtual ~matrix_3x3() = default;
 
         vertex operator*(const vertex & point) const {
             vertex res;
             const auto & m = (*this);
-            res.x = m[0]*point.x + m[1]*point.y + m[2];
-            res.y = m[3]*point.x + m[4]*point.y + m[5];
+            constexpr bool c = column_major;
+            res.x = m[0]*point.x + m[c?3:1]*point.y + m[c?6:2];
+            res.y = m[c?1:3]*point.x + m[4]*point.y + m[c?7:5];
             return res;
         }
 
