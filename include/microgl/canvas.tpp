@@ -522,8 +522,10 @@ void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
     static_assert_rgb<typename pixel_coder::rgba, typename Sampler::rgba>();
     constexpr bool void_sampler = microgl::traits::is_same<Sampler, microgl::sampling::void_sampler>::value;
     if(void_sampler) return;
-    vertex2<number1> p0{left, top}, p1{left, bottom}, p2{right, bottom}, p3{right, top};
+    vertex2<number1> p0(left, top), p1(left, bottom), p2(right, bottom), p3(right, top), a(left,top);
+    p0=p0-a;p1=p1-a;p2=p2-a;p3=p3-a;
     if(!transform.isIdentity()) {p0=transform*p0; p1=transform*p1; p2=transform*p2; p3=transform*p3;}
+    p0=p0+a;p1=p1+a;p2=p2+a;p3=p3+a;
     drawTriangle<BlendMode, PorterDuff, antialias, number1, number2, Sampler>(sampler,
                                                                                p0.x, p0.y, u0, v0, p1.x, p1.y,
                                                                                u0, v1, p2.x, p2.y, u1, v1,

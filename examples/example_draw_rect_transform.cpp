@@ -31,11 +31,14 @@ int main() {
 
         canvas.clear({255,255,255,255});
         canvas.drawRect<blendmode::Normal, porterduff::None<>, false, number>(
+                tex_uv,matrix_3x3<number>::identity(),
+                0, 0, 128, 128);
+        canvas.drawRect<blendmode::Normal, porterduff::None<>, false, number>(
                 tex_uv,
-//                mat,
+                //                mat,
                 matrix_3x3<number>::rotation(microgl::math::deg_to_rad(5.0f+t), 128, 128),
                 // matrix_3x3<number>::identity(),
-                0, 0, 256<<0, 256<<0);
+                200, 200, 200+256, 200+256);
     };
 
     example_run(&canvas, render);

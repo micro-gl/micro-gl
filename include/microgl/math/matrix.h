@@ -85,9 +85,7 @@ namespace microgl {
                     // dot product
                     index m1_col_off=m1_row_begin_off, m2_row_off=m2_col_begin_off;
                     for(index ix=0; ix < A; ++ix, m1_col_off+=stride_col_m1, m2_row_off+=stride_row_m2) {
-                        const_type_ref a = m1[m1_col_off];
-                        const_type_ref b = m2[m2_row_off];
-                        acc += a*b;
+                        acc += m1[m1_col_off]*m2[m2_row_off];
                     }
                     m3[m3_col_off] = acc;
                 }

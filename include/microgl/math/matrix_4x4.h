@@ -85,7 +85,7 @@ namespace microgl {
                              const vertex3 & translation = {0, 0, 0},
                              const vertex3 & scale = {1, 1, 1})
         {
-            matrix_4x4 result {};
+            matrix_4x4 result;
             number sx, sy, sz, cx, cy, cz;
             vertex3 vec;
             // rotation angle about X-axis (pitch)
