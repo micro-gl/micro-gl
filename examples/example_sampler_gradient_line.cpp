@@ -18,7 +18,7 @@ int main() {
 //    using number = Q<12>;
 
     Canvas24 canvas(W, H);
-    line_linear_gradient<number, 3, Canvas24::rgba> gradient{{0,1}, {2, 0}};
+    line_linear_gradient<number, 3, Canvas24::rgba> gradient{{0,1}, {1, 0}};
 
     gradient.addStop(0.0f, {255,0,0});
     gradient.addStop(0.5f, {0,255,0});

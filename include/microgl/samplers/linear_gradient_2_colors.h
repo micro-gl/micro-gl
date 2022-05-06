@@ -38,7 +38,7 @@ namespace microgl {
                 else if(degree<=180) t=(rint(1)<<bits)-u;
                 else if(degree<=225) t=(rint(1)<<bits)-((u+v)>>1);
                 else if(degree<=270) t=(rint(1)<<bits)-v;
-                else if(degree<=315) t=((u-v)>>1)-h;
+                else if(degree<=315) t=((u-v)>>1)+h;
                 output.r= rint(color1.r) + ((rint(color2.r-color1.r)*t)>>bits);
                 output.g= rint(color1.g) + ((rint(color2.g-color1.g)*t)>>bits);
                 output.b= rint(color1.b) + ((rint(color2.b-color1.b)*t)>>bits);

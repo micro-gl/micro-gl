@@ -16,7 +16,7 @@ int main() {
     using number = float;
 //    using number = Q<12>;
 
-    linear_gradient_2_colors<45> gradient{{255,0,0}, {0,0,255}};
+    linear_gradient_2_colors<315> gradient{{255,0,0}, {0,0,255}};
 
     Canvas24 canvas(W, H);
 
