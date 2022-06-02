@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.21.1)
-project("micro-tess"
+cmake_minimum_required(VERSION 3.20)
+project(micro-tess
         VERSION
         1.0.0
         DESCRIPTION

@@ -4,7 +4,7 @@
 library for vector graphics, that can run on any 32/64 bits computer with or without **FPU**.  
 **No standard library required**.
 
-check out our website at [micro-gl.github.io/docs/micro-tess/](micro-gl.github.io/)
+check out our website at [micro-gl.github.io/docs/micro-tess/](https://micro-gl.github.io/docs/micro-tess)
 
 ## Installing `micro{tess}`
 `micro-tess` is a headers only library, which gives the following install possibilities:
