@@ -84,6 +84,8 @@ namespace microtess {
             number2 factor_remap_u = (tex_right - tex_left);
             number2 factor_remap_v = (tex_bottom-tex_top);
 
+            out_indices_type = microtess::triangles::indices::TRIANGLES_STRIP;
+
             // iterates top to bottom and left to right
             // use the parametric time value 0 to 1
             for(index i=0; i < uSamples; i++) { // left to right
