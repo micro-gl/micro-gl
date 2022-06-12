@@ -22,29 +22,34 @@ template <typename number>
 using cubic_mesh = vertex3<number> *;
 
 template <typename number>
-vertex3<number>* bi_cubic_1(){
+number * bi_cubic_1(){
+    static number geo[4 * 4 * 2] {
+        // row 0
+        1.0f,     0.0f,
+        170.66f,  0.0f,
+        341.333f, 0.0f,
+        512.0f,   0.0f,
 
-    return new vertex3<number>[4 * 4] {
-            {1.0f, 0.0f},
-            {170.66f, 0.0f},
-            {341.333f, 0.0f},
-            {512.0f, 0.0f},
+        // row 1
+        1.0f,     170.66f,
+        293.44f,  162.78f,
+        746.68f,  144.65f,
+        512.0f,   170.66f,
 
-            {1.0f,       170.66f},
-            {293.44f,    162.78f},
-            {746.68f,    144.65f},
-            {512.0f,     170.66f},
+        // row 2
+        1.0f,     341.33f,
+        383.12f,  327.69f,
+        1042.79f, 296.31f,
+        512.0f,   341.33f,
 
-            {1.0f,       341.33f},
-            {383.12f,    327.69f},
-            {1042.79f,   296.31f},
-            {512.0f,     341.33f},
+        // row 3
+        1.0f,     512.0f,
+        170.66f,  512.0f,
+        341.333f, 512.0f,
+        512.0f,   512.0f,
+        };
 
-            {1.0f,       512.0f},
-            {170.66f,    512.0f},
-            {341.333f,   512.0f},
-            {512.0f,     512.0f}
-    };
+    return geo;
 }
 
 int main() {
@@ -61,7 +66,7 @@ int main() {
 
     Canvas24 canvas(BLOCK_SIZE, BLOCK_SIZE);
     Texture24 tex_uv{bmp_uv_U8->convertToBitmap<coder::RGB888_PACKED_32>()};
-    const auto mesh= bi_cubic_1<number>();
+    const auto mesh = bi_cubic_1<number>();
 
     canvas.updateClipRect(0, 0, W, H);
 
@@ -78,10 +83,10 @@ int main() {
             for (int ix = 0; ix < block_size*count_blocks_horizontal; ix+=block_size) {
                 canvas.updateCanvasWindow(ix, iy);
                 canvas.clear({255,255,255,255});
-                canvas.drawBezierPatch<blendmode::Normal, porterduff::None<>, false, false, number, number>(
+                canvas.drawBezierPatch<microtess::patch_type::BI_CUBIC, blendmode::Normal, porterduff::None<>, false, false, number, number>(
                         tex_uv,
                         matrix_3x3<number>::identity(),
-                        mesh, 4, 4, 20, 20,
+                        mesh, 20, 20,
                         0, 1, 1, 0,
                         255);
 

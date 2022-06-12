@@ -11,34 +11,34 @@
 #pragma once
 
 #include "triangles.h"
-#include "vec3.h"
 
 namespace microtess {
 
+    enum class patch_type { BI_QUADRATIC, BI_CUBIC };
     /**
-     * BiQuad/BiCubic Bezier Patch Tessellation. Triangulates 3d surfaces, but usually
-     * used for 2d triangulation with ignoring the z component,
+     * BiQuad/BiCubic Bezier Patch Tessellation. Triangulates any dimensional (1d/2d/3d...) surfaces, but usually
+     * used for 2d/3d
      *
      * NOTES:
      * 1. Output attributes are stored in interleaved format in the supplied number container, example
-     *    output = [x,y,z,u,v, x,y,z,u,v, x,y,z,u,v, ....]
-     * 2. Output indices of triangulation is stored in a sperate indices container
-     * 3. the type of triangulation is always TRIANGLES_STRIP to save memory
-     * 4. Configurable horizontal/vertical Triangulation resolution
-     * 5. Also interpolates correct UV coords
-     *
-     * todo: support arbitrary patches
+     *    output = [x,y,z,u,v, x,y,z,u,v, x,y,z,u,v, ....] (with 3 channels points and uvs output), or
+     *    output = [x,y, x,y, x,y,.... ] (with 2 channels points and ignored uvs output)
+     * 2. You can decide how many channels a point is 1, 2, 3, 4 etc...
+     * 3. You can decide if to output points, uvs or both
+     * 4. Output indices of triangulation is stored in a separate indices container
+     * 5. the type of triangulation is always TRIANGLES_STRIP to save memory
+     * 6. Configurable horizontal/vertical Triangulation resolution
      *
      * @tparam number1 x,y,z number type
      * @tparam number2 u, v number type
      * @tparam container_output_attributes container type of output vertices [x,y,z,u,v,...[
      * @tparam container_output_indices container for indices
      */
-    template <typename number1, typename number2, class container_output_attributes,
-            class container_output_indices>
+    template <typename number1, typename number2,
+            class container_output_attributes,
+                    class container_output_indices>
     class bezier_patch_tesselator {
         using index = unsigned int;
-        using vertex3 = microtess::vec3<number1>;
     public:
 
         bezier_patch_tesselator()=delete;
@@ -50,21 +50,16 @@ namespace microtess {
 
         static const char BI_QUADRATIC = 0;
         static const char BI_CUBIC = 1;
-        // index of
-        static const char I_X = 0;
-        static const char I_Y = 1;
-        static const char I_Z = 2;
-        static const char I_U = 3;
-        static const char I_V = 4;
-        static const char ATTRIBUTES_COUNT = 5;
 
         /**
          *
-         * @param meshPoints array of 9/16 vec3 for quadratic/cubic respectively
-         * @param uOrder should be 3/4 for quadratic/cubic respectively
-         * @param vOrder should be 3/4 for quadratic/cubic respectively
+         * @tparam type Patch type { BI_QUADRATIC (9 points), BI_CUBIC (16 points) }
+         * @param meshPoints array of (9 or 16) * (channels) for quadratic/cubic respectively
+         * @param channels how many components in each point (x, y)=>2, (x,y,z)=>3 etc...
          * @param uSamples number of horizontal subdivisions
          * @param vSamples number of vertical subdivisions
+         * @param flag_output_points include interpolated points in output ?
+         * @param flag_output_uvs include interpolated uvs in output ?
          * @param out_vertices_attributes output container of attributes [x,y,z,u,v,...]
          * @param out_indices output container for indices
          * @param out_indices_type output triangles type
@@ -73,18 +68,16 @@ namespace microtess {
          * @param tex_right right UV bounding box
          * @param tex_bottom bottom UV bounding box
          */
-        static void compute(const vertex3 *meshPoints,
-                     const index uOrder, const index vOrder,
+        template<patch_type type>
+        static int compute(const number1 *meshPoints,
+                     index channels,
                      const index uSamples, const index vSamples,
+                     bool flag_output_points, bool flag_output_uvs,
                      container_output_attributes &out_vertices_attributes,
                      container_output_indices &out_indices,
                      triangles::indices & out_indices_type,
                      number2 tex_left=number2(0), number2 tex_top=number2(1),
                      number2 tex_right=number2(1), number2 tex_bottom=number2(0)) {
-            bool supported= uOrder == vOrder && (uOrder == 3 || uOrder == 4);
-            if(!supported) return;
-            const char type= uOrder == 3 ? BI_QUADRATIC : BI_CUBIC;
-
             auto du = number2(1) / number2(uSamples - 1);
             auto dv = number2(1) / number2(vSamples - 1);
 
@@ -98,21 +91,26 @@ namespace microtess {
                 for(index j=0; j < vSamples; j++) { // top to bottom
                     // calculate the parametric v value
                     number2 v = number2(j) * dv;
-                    // calculate the point on the surface
-                    vertex3 p;
-                    if(type==BI_QUADRATIC)
-                        p = evaluateBiQuadraticSurface(u,v, meshPoints);
-                    else if (type==BI_CUBIC)
-                        p = evaluateBiCubicSurface(u,v, meshPoints);
-                    else return;
 
-                    //int idx = i * vSamples + j;
-                    out_vertices_attributes.push_back(p.x);
-                    out_vertices_attributes.push_back(p.y);
-                    out_vertices_attributes.push_back(p.z);
+                    if(flag_output_points) {
+                        // calculate the point on the surface
+                        number1 p[channels];
+                        // compile time branching
+                        if(type==patch_type::BI_QUADRATIC)
+                            evaluateBiQuadraticSurface(u,v, meshPoints, channels, p);
+                        else if (type==patch_type::BI_CUBIC)
+                            evaluateBiCubicSurface(u,v, meshPoints, channels, p);
+                        else return 0;
+                        //int idx = i * vSamples + j;
+                        for (int jx = 0; jx < channels; ++jx)
+                            out_vertices_attributes.push_back(p[jx]);
+                    }
+
                     // we need to separate this into another buffer, because number1!=number2 always
-                    out_vertices_attributes.push_back(number1(tex_left + u*factor_remap_u));
-                    out_vertices_attributes.push_back(number1(tex_top + v*factor_remap_v));
+                    if(flag_output_uvs) {
+                        out_vertices_attributes.push_back(number1(tex_left + u*factor_remap_u));
+                        out_vertices_attributes.push_back(number1(tex_top + v*factor_remap_v));
+                    }
 
                     // indices
                     if(i < uSamples - 1) {
@@ -128,13 +126,25 @@ namespace microtess {
                     }
                 }
             }
+            int window_size = (flag_output_points ? channels : 0) + (flag_output_uvs ? 2 : 0);
+            return window_size;
         }
 
+        /**
+         * evaluate one point by 2d uv location
+         * @param u u coord
+         * @param v v coord
+         * @param meshPoints array of size [4 * 4 * channels]
+         * @param channels how many channels/coords in point
+         * @param result array of size channels
+         * @return
+         */
         static
-        vertex3 evaluateBiCubicSurface(number1 u, number1 v, const vertex3 *meshPoints
-//                                           vertex3 (*meshPoints)[4],
-                                       ) {
-            vertex3 temp[4], result;
+        number1 * evaluateBiCubicSurface(number1 u, number1 v,
+                                       const number1 *meshPoints,
+                                       unsigned int channels,
+                                       number1 * result) {
+            number1 temp[4][channels];
 
             // 3rd degree bernstein polynomials coefficients
             // the t value inverted
@@ -149,10 +159,13 @@ namespace microtess {
             // direction. The points from_sampler those will be stored in this
             // temporary array
             for (index ix = 0; ix < 4; ++ix) {
-                index idx=ix*4;
-                temp[ix].x = b0*meshPoints[idx+0].x + b1*meshPoints[idx+1].x + b2*meshPoints[idx+2].x + b3*meshPoints[idx+3].x;
-                temp[ix].y = b0*meshPoints[idx+0].y + b1*meshPoints[idx+1].y + b2*meshPoints[idx+2].y + b3*meshPoints[idx+3].y;
-                temp[ix].z = b0*meshPoints[idx+0].z + b1*meshPoints[idx+1].z + b2*meshPoints[idx+2].z + b3*meshPoints[idx+3].z;
+                // start of ix row in the flattened array
+                index row = ix*4*channels;
+                for (index jx = 0; jx < channels; ++jx) {
+                    // go over all points in a given row
+                    index p_1=row, p_2=p_1+channels, p_3=p_2+channels, p_4=p_3+channels;
+                    temp[ix][jx] = b0*meshPoints[p_1+jx] + b1*meshPoints[p_2+jx] + b2*meshPoints[p_3+jx] + b3*meshPoints[p_4+jx];
+                }
             }
 
             t = v;
@@ -165,16 +178,27 @@ namespace microtess {
             // having got 4 points, we can use it as a bezier curve
             // to calculate the v direction. This should give us our
             // final point
-            result.x = b0*temp[0].x + b1*temp[1].x + b2*temp[2].x + b3*temp[3].x;
-            result.y = b0*temp[0].y + b1*temp[1].y + b2*temp[2].y + b3*temp[3].y;
-            result.z = b0*temp[0].z + b1*temp[1].z + b2*temp[2].z + b3*temp[3].z;
+            for (index jx = 0; jx < channels; ++jx)
+                result[jx] = b0*temp[0][jx] + b1*temp[1][jx] + b2*temp[2][jx] + b3*temp[3][jx];
 
             return result;
         };
 
+        /**
+         * evaluate one point by 2d uv location
+         * @param u u coord
+         * @param v v coord
+         * @param meshPoints array of size [3 * 3 * channels]
+         * @param channels how many channels/coords in point
+         * @param result output array of size channels
+         * @return result
+         */
         static
-        vertex3 evaluateBiQuadraticSurface(number1 u, number1 v, const vertex3 *meshPoints) {
-            vertex3 temp[3], result;
+        number1 * evaluateBiQuadraticSurface(number1 u, number1 v,
+                                           const number1 *meshPoints,
+                                           unsigned int channels,
+                                           float * result) {
+            number1 temp[3][channels];
 
             // 2rd degree bernstein polynomials coefficients
             // the t value inverted
@@ -188,10 +212,12 @@ namespace microtess {
             // direction. The points from_sampler those will be stored in this
             // temporary array
             for (index ix = 0; ix < 3; ++ix) {
-                index idx=ix*3;
-                temp[ix].x = b0*meshPoints[idx+0].x + b1*meshPoints[idx+1].x + b2*meshPoints[idx+2].x;
-                temp[ix].y = b0*meshPoints[idx+0].y + b1*meshPoints[idx+1].y + b2*meshPoints[idx+2].y;
-                temp[ix].z = b0*meshPoints[idx+0].z + b1*meshPoints[idx+1].z + b2*meshPoints[idx+2].z;
+                index row=ix*3*channels;
+                for (index jx = 0; jx < channels; ++jx) {
+                    // go over all points in a given row
+                    index p_1=row, p_2=p_1+channels, p_3=p_2+channels;
+                    temp[ix][jx] = b0*meshPoints[p_1+jx] + b1*meshPoints[p_2+jx] + b2*meshPoints[p_3+jx];
+                }
             }
 
             t = v;
@@ -203,9 +229,8 @@ namespace microtess {
             // having got 3 points, we can use it as a bezier curve
             // to calculate the v direction. This should give us our
             // final point
-            result.x = b0*temp[0].x + b1*temp[1].x + b2*temp[2].x;
-            result.y = b0*temp[0].y + b1*temp[1].y + b2*temp[2].y;
-            result.z = b0*temp[0].z + b1*temp[1].z + b2*temp[2].z;
+            for (index jx = 0; jx < channels; ++jx)
+                result[jx] = b0*temp[0][jx] + b1*temp[1][jx] + b2*temp[2][jx];
 
             return result;
         };

@@ -1098,6 +1098,7 @@ public:
     /**
      * Draw a Quadratic or Cubic bezier patch
      *
+     * @tparam patch_type  { microtess::patch_type::BI_QUADRATIC, microtess::patch_type::BI_CUBIC } enum
      * @tparam BlendMode    the blend mode struct
      * @tparam PorterDuff   the alpha compositing struct
      * @tparam antialias    enable/disable anti-aliasing, currently NOT supported
@@ -1108,7 +1109,7 @@ public:
      *
      * @param sampler       sampler reference
      * @param transform     3x3 matrix transform
-     * @param mesh          4*4=16 or 3*3=9 patch
+     * @param mesh          4*4*2=32 or 3*3*2=18 patch, flattened array of row-major (x, y) points
      * @param uOrder        3 or 4 (quadratic vs cubic)
      * @param vOrder        3 or 4 (quadratic vs cubic)
      * @param uSamples      the number of samples to take along U axis
@@ -1119,13 +1120,13 @@ public:
      * @param v1            uv coord
      * @param opacity       opacity [0..255]
      */
-    template<typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
+    template<microtess::patch_type patch_type,
+            typename BlendMode=blendmode::Normal, typename PorterDuff=porterduff::FastSourceOverOnOpaque,
             bool antialias=false, bool debug=false, typename number1, typename number2=number1,
             typename Sampler, class Allocator=microgl::traits::std_rebind_allocator<>>
     void drawBezierPatch(const Sampler &sampler,
                          const matrix_3x3<number1> &transform,
-                         const vertex3<number1> *mesh,
-                         unsigned uOrder, unsigned vOrder,
+                         const number1 *mesh,
                          unsigned uSamples=20, unsigned vSamples=20,
                          number2 u0=number2(0), number2 v0=number2(1),
                          number2 u1=number2(1), number2 v1=number2(0),
@@ -1229,6 +1230,7 @@ public:
      * @tparam number1              number type of path
      * @tparam number2              number type of uv coords
      * @tparam Sampler              Sampler type
+     * @tparam Iterable Any numbers iterable container (implements begin()/)end())
      * @tparam path_container_template the template of the container used by path
      *
      * @param sampler               sampler reference

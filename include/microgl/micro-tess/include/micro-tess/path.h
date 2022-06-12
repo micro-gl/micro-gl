@@ -185,6 +185,18 @@ namespace microtess {
             lineTo({x, y}); return *this;
         }
 
+        /**
+         * unpacked variadic version of lines to
+         *
+         */
+        template<typename... Args>
+        auto linesTo3(const vec2<number> & p, Args... args) -> path & {
+            linesTo3(p); linesTo3(args...); return *this;
+        }
+        auto linesTo3(const vec2<number> & p) -> path & {
+            lineTo(p); return *this;
+        }
+
         auto lineTo(const vertex & point, number threshold=number(1)) -> path & {
             auto current_path = _paths_vertices.back();
             threshold=threshold<0 ? 0 : threshold;

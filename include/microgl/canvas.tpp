@@ -1611,12 +1611,12 @@ canvas<bitmap_type, options>::drawWuLinePath(const color_t &color,
 }
 
 template<typename bitmap_type, uint8_t options>
-template<typename BlendMode, typename PorterDuff, bool antialias, bool debug, typename number1,
+template<microtess::patch_type patch_type,typename BlendMode, typename PorterDuff,
+        bool antialias, bool debug, typename number1,
         typename number2, typename Sampler, class Allocator>
 void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
                                               const matrix_3x3<number1> &transform,
-                                              const vertex3<number1> *mesh,
-                                              const unsigned uOrder, const unsigned vOrder,
+                                              const number1 *mesh,
                                               const unsigned uSamples, const unsigned vSamples,
                                               const number2 u0, const number2 v0,
                                               const number2 u1, const number2 v1,
@@ -1637,11 +1637,10 @@ void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
                                     dynamic_array<index, rebind_alloc_t2>>;
     using vertex=vertex2<number1>;
     microtess::triangles::indices indices_type;
-    tess::compute(mesh, uOrder, vOrder, uSamples, vSamples, v_a,
+    const auto window_size = tess::template compute<patch_type>(mesh, 2, uSamples, vSamples, true, true, v_a,
                   indices, indices_type, u0, v0, u1, v1);
     const index size = indices.size();
-    const index window_size=5;
-    const index I_X=0, I_Y=1, I_Z=2, I_U=3, I_V=4;
+    const index I_X=0, I_Y=1, I_U=2, I_V=3;
     if(size==0) return;
 #define IND(a) indices[(a)]
     bool even = true;

@@ -138,12 +138,12 @@ int main() {
                 matrix_3x3<number>::identity(),
                 path,
                 number{12},
-//                tessellation::stroke_cap::butt,
+                //microtess::stroke_cap::butt,
                 microtess::stroke_cap::round,
-//                tessellation::stroke_cap::square,
-//                tessellation::stroke_line_join::bevel,
-//                tessellation::stroke_line_join::miter,
-//                tessellation::stroke_line_join::miter_clip,
+//                microtess::stroke_cap::square,
+//                microtess::stroke_line_join::bevel,
+//                microtess::stroke_line_join::miter,
+//                microtess::stroke_line_join::miter_clip,
                 microtess::stroke_line_join::round,
 //                5, il{0, 0}, 0,
                 10, il{50, 50}, t,
@@ -153,11 +153,11 @@ int main() {
     };
 
     auto render = [&](void*, void*, void*) -> void {
-        static auto path = path_star<number>();
+//        static auto path = path_star<number>();
 //        static auto path = path_star_2<number>();
 //        static auto path = path_rects<number>();
 //        static auto path = path_arc_animation<number>();
-//        static auto path = path_test<number>();
+        static auto path = path_test<number>();
 
         render_path(path);
     };
