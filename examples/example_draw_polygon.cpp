@@ -53,8 +53,8 @@ int main() {
         polygon[3].y = 300 -  t;
         canvas.clear({255,255,255,255});
         canvas.drawPolygon<
-//                polygons::hints::CONVEX,
-                polygons::hints::SIMPLE,
+                polygons::hints::CONVEX,
+//                polygons::hints::SIMPLE,
 //                polygons::hints::CONCAVE,
 //                polygons::hints::X_MONOTONE,
 //                polygons::hints::Y_MONOTONE,

@@ -1325,7 +1325,6 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
     using boundaries_t = dynamic_array<boundary_info, boundary_allocator_t>;
 
     indices_t indices{indices_allocator_t(allocator)};
-    indices_t *indices_ptr = &indices;
     boundaries_t boundary_buffer{boundary_allocator_t(allocator)};
     boundaries_t *boundary_buffer_ptr=antialias? &boundary_buffer: nullptr;
 
@@ -1687,6 +1686,8 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
         int u0, v0, u1, v1;
         for (unsigned ix = 0; ix < count; ++ix) {
             const auto & l= result.locations[ix];
+            // i invert vertical axis because bitmap fonts atlas space is top to bottom,
+            // but uv space is inverted
             u0=(l.character->x<<UVP)/font.bitmap->width();
             u1=((l.character->x+l.character->width)<<UVP)/font.bitmap->width();
             v0= ((font.bitmap->height() - l.character->y) << UVP) / font.bitmap->height();

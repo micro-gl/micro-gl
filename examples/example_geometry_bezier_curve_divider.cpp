@@ -30,7 +30,7 @@ container<vertex2<number>> curve_cubic_1() {
 
 int main() {
 //    using number = float;
-    using number = Q<12>;
+    using number = Q<8>;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
 
@@ -46,7 +46,7 @@ int main() {
         auto algo = microtess::CurveDivisionAlgorithm::Adaptive_tolerance_distance_Medium;
         auto type = microtess::CurveType::Cubic;
 
-        t += number(0.08);
+        t += number(0.8);
         curve[1].y -= t;
         curve_divider::compute(curve.data(), output, algo, type);
 
