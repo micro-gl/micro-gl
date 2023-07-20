@@ -1,10 +1,11 @@
+<div align='center'>
+<img src='microgl-512-logo-rounded.png' style='height: 200px;'/>
+</div>
+
 # micro{gl}
 **Fast**, Super **Slim**, **Embeddable**, **Headers files** only **`C++11`** graphics library, that  
 can run on any 32/64 bits computer without **FPU** or **GPU**. **No standard library required**.
 
-<div align='center'>
-<img src='microgl-512-logo-rounded.png' style='height: 100px;'/>
-</div>
 
 check out our website at [micro-gl.github.io/docs/microgl](https://micro-gl.github.io/docs/microgl)
 
