@@ -6,30 +6,45 @@ on:
       - master
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - macos-latest
-          - ubuntu-latest
-          - windows-latest
-        compiler:
-          - llvm
-          - gcc
-          - msvc
+  ubuntu_build:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          compiler: ${{ matrix.compiler }}
-          cmake: true # build system
-          vcpkg: true # package manager
-      - name: Build & Install
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies(Ubuntu)
+        run: |
+          sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu `lsb_release -sc` main universe restricted multiverse" -y
+          sudo apt-get install libsdl2-dev -y
+          sudo apt-get install gcc cmake -y
+
+      - name: Build & Install(Ubuntu)
         run: |
           mkdir cmake-build-release
           cd cmake-build-release
           cmake -DCMAKE_BUILD_TYPE=Release ..
           cmake --install .
+
+  windows_build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies(Windows)
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+          scoop bucket add extras
+          scoop install cmake
+          scoop install sdl2
+
+      - name: Build & Install(Windows)
+        shell: pwsh
+        run: |
+          mkdir cmake-build-release
+          cd cmake-build-release
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --install .
+  # macos_build:
+  # Add ...
