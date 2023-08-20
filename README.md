@@ -9,6 +9,39 @@ can run on any 32/64 bits computer without **FPU** or **GPU**. **No standard lib
 
 check out our website at [micro-gl.github.io/docs/microgl](https://micro-gl.github.io/docs/microgl)
 
+## Features
+
+
+> **Language** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- **`C++11`**, does not use any **`STL`** library and **standard library**.
+- **headers only** library
+- most functions are templates, which means you compile only what is used
+- compile-time polymorphism (no runtime virtual methods)
+- support for 32 bits and 64 bits
+- self contained and modular.
+
+> **Graphics** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- very modular design. if something does not exist, you can implement your own
+- over 10 blending modes impemented, you can wrote your own and supply as well
+- **`porter-duff`** alpha compositing
+- support for 2d sampler
+- can support any pixel coding you need, we implemeted a lot out of the box
+- can render 3d geometries
+- we support 3d shaders
+- no need for **GPU**, it is all **CPU**
+- no need for **FPU**
+- support for any number system including **`Q`** numbers (fixed point), no need to use float points
+
+> **Geometry** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- fast implementation for common shapes (rect, rounded rectangles, circles, triangles)
+- batch traingles like **GPU** would
+- support polygons of any type convex, simple, and complex polygons 
+- path fills(with even-odd or zero-one fill rule) in any precision
+- stroke fills
+- quadrilaterals
+- bezier patches
+- we providea dynamic array, but you can plug your own.
+
 ## Installing `micro{gl}`
 `microgl` is a headers only library, which gives the following install possibilities:
 1. Using `cmake` to invoke the `install` target, that will copy everything in your system via
