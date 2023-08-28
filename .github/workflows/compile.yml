@@ -37,7 +37,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install dependencies(Windows)
-        shell: pwsh
+        shell: powershell
         run: |
           Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
           irm get.scoop.sh | iex
@@ -47,13 +47,14 @@ jobs:
           scoop install sdl2
 
       - name: Build & Install(Windows)
-        shell: pwsh
+        shell: powershell
         run: |
           sudo mkdir cmake-build-release
           cd cmake-build-release
           sudo cmake -DCMAKE_BUILD_TYPE=Release ..
           sudo cmake --install .
       - name: Build all examples(Windows)
+        shell: powershell
         run: |
           cd cmake-build-release
           cmake -DCMAKE_BUILD_TYPE=Release ..
