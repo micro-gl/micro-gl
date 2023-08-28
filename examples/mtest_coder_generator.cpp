@@ -7,7 +7,6 @@
 #define H 640*1
 
 using namespace microgl;
-using namespace microgl::color;
 using index_t = unsigned int;
 float t=0;
 

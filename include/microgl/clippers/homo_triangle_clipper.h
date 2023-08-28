@@ -20,7 +20,7 @@ namespace microgl {
         class homo_triangle_clipper {
         public:
             using const_ref = const number &;
-            using vertex4 = vertex4<number>;
+            using vertex4 = microgl::vertex4<number>;
             using vertex4_const_ref = const vertex4 &;
 
             struct super_vertex {

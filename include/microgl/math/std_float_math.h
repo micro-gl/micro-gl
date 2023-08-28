@@ -22,8 +22,8 @@ namespace microgl {
         inline int to_fixed(const double val, unsigned char precision) {
             return int(val * double((long long)(1ull) << precision));
         }
-        inline float mod(float numer, float denom) { return std::fmodf(numer, denom); }
-        inline double mod(double numer, double denom) { return std::fmod(numer, denom); }
+        inline float mod(float numer, float denom) { return fmodf(numer, denom); }
+        inline double mod(double numer, double denom) { return fmod(numer, denom); }
         inline float sqrt(const float val) { return std::sqrt(val); }
         inline double sqrt(const double val) { return std::sqrt(val); }
         inline float sin(const float radians) { return std::sin(radians); }

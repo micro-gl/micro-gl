@@ -11,7 +11,6 @@ void test_dynamic_lut() {
 }
 
 int main() {
-    std::cout <<std::to_string(_LIBCPP_STD_VER) << std::endl;
     test_static_lut();
     test_dynamic_lut();
 }
