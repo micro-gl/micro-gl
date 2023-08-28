@@ -8,6 +8,7 @@
 
 using index_t = unsigned int;
 float t=0;
+using namespace microgl;
 
 bool color_equals(color_t c1, color_t c2) {
     return c1.r==c2.r && c1.g==c2.g && c1.b==c2.b &&c1.a==c2.a;

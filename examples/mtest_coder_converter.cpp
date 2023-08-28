@@ -6,6 +6,7 @@
 #include <microgl/pixel_coders/coder_converter_rgba.h>
 
 using namespace microgl::coder;
+using namespace microgl;
 
 bool color_equals_rgb(color_t c1, color_t c2) {
     return c1.r==c2.r && c1.g==c2.g && c1.b==c2.b;
