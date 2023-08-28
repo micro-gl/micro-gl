@@ -43,7 +43,7 @@ namespace microgl {
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
         public:
             using rint= typename microgl::traits::conditional<p_bits>=16,
-                                        int64_t, int32_t>::type;
+                    microgl::int64_t, microgl::int32_t>::type;
             static constexpr rint ONE= rint(1)<<p_bits;
 
             using ivertex = vertex2<rint>;

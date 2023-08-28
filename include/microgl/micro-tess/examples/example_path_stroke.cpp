@@ -119,9 +119,9 @@ int main() {
 //    using number = Q<8>;
 //    using number = Q<8>;
 //    using number = Q<14, long long>;
-    using number = Q<12, int32_t, int64_t>;
-//    using number = Q<4, int64_t>;
-//    using number = Q<4, int32_t, int32_t, 0>;
+    using number = Q<12, microgl::int32_t, microgl::int64_t>;
+//    using number = Q<4, microgl::int64_t>;
+//    using number = Q<4, microgl::int32_t, microgl::int32_t, 0>;
 
     // microgl drawing setup START
     using Canvas24 = canvas<bitmap<RGB888_PACKED_32>>;

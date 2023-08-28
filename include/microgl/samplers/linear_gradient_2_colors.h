@@ -18,7 +18,7 @@ namespace microgl {
         template <unsigned degree=90, typename rgba_=rgba_t<8,8,8,0>, bool useBigIntegers=false>
         struct linear_gradient_2_colors {
             using rgba = rgba_;
-            using rint= typename microgl::traits::conditional<useBigIntegers, int64_t, int32_t>::type;
+            using rint= typename microgl::traits::conditional<useBigIntegers, microgl::int64_t, microgl::int32_t>::type;
 
         public:
             linear_gradient_2_colors() : linear_gradient_2_colors({0,0,0,0}, {0,0,0,0}) {}

@@ -27,9 +27,9 @@ namespace microgl {
                   bool useBigIntegers=true>
         struct lines_sampler {
             using rgba = rgba_;
-            using rint_big=int64_t;
+            using rint_big=microgl::int64_t;
             using rint= typename microgl::traits::conditional<useBigIntegers,
-                                    int64_t, int32_t>::type;
+                    microgl::int64_t, microgl::int32_t>::type;
             using vertex = microgl::vertex2<number>;
             using ivertex = microgl::vertex2<rint>;
             static constexpr precision_t p_bits= 15;

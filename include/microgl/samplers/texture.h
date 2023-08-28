@@ -35,16 +35,16 @@ namespace microgl {
 
             void tint_color(color_t & color, const color_t & color_tint) const {
                 // todo: this is fast and inaccurate, flag on convert_channel methods
-                color.r = (uint16_t (color.r)*color_tint.r)>>rgba::r;
-                color.g = (uint16_t (color.g)*color_tint.g)>>rgba::g;
-                color.b = (uint16_t (color.b)*color_tint.b)>>rgba::b;
-                color.a = (uint16_t (color.a)*color_tint.a)>>rgba::a;
+                color.r = (microgl::uint16_t (color.r)*color_tint.r)>>rgba::r;
+                color.g = (microgl::uint16_t (color.g)*color_tint.g)>>rgba::g;
+                color.b = (microgl::uint16_t (color.b)*color_tint.b)>>rgba::b;
+                color.a = (microgl::uint16_t (color.a)*color_tint.a)>>rgba::a;
             }
 
-            static constexpr uint8_t r_max_val = (1u<<rgba::r) - 1;
-            static constexpr uint8_t g_max_val = (1u<<rgba::g) - 1;
-            static constexpr uint8_t b_max_val = (1u<<rgba::b) - 1;
-            static constexpr uint8_t a_max_val = (1u<<rgba::a) - 1;
+            static constexpr microgl::uint8_t r_max_val = (1u<<rgba::r) - 1;
+            static constexpr microgl::uint8_t g_max_val = (1u<<rgba::g) - 1;
+            static constexpr microgl::uint8_t b_max_val = (1u<<rgba::b) - 1;
+            static constexpr microgl::uint8_t a_max_val = (1u<<rgba::a) - 1;
 
         public:
 

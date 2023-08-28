@@ -25,9 +25,9 @@ namespace microgl {
         struct fast_radial_gradient {
             using rgba = rgba_;
         private:
-            using rint_big=int64_t;
+            using rint_big=microgl::int64_t;
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
-            using rint= typename microgl::traits::conditional<p_bits>=16, int64_t, int32_t>::type;
+            using rint= typename microgl::traits::conditional<p_bits>=16, microgl::int64_t, microgl::int32_t>::type;
             static constexpr precision_t p_bits_double= p_bits<<1;
             static constexpr rint ONE= rint(1)<<p_bits;
             static constexpr rint HALF= ONE>>1;

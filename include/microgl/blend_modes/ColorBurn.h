@@ -11,13 +11,14 @@
 #pragma once
 
 #include <microgl/blend_modes/blend_mode_base.h>
+#include <microgl/stdint.h>
 
 namespace microgl {
     namespace blendmode {
 
         class ColorBurn {
         private:
-            template<uint8_t bits>
+            template<microgl::uint8_t bits>
             static inline
             uint blend_ColorBurn(cuint b, cuint s) {
                 constexpr cuint max = (uint(1) << bits) - 1;
@@ -27,7 +28,7 @@ namespace microgl {
             }
 
         public:
-            template<uint8_t R, uint8_t G, uint8_t B>
+            template<microgl::uint8_t R, microgl::uint8_t G, microgl::uint8_t B>
             static inline void blend(const color_t &b,
                                      const color_t &s,
                                      color_t &output) {

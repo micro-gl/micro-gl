@@ -64,27 +64,27 @@ using namespace microgl;
  * for all or most calculations inside the rasterizer. bigger integers imply
  * overflow is harder to come by
  */
-#define CANVAS_OPT_USE_BIG_INT uint8_t(0b00000001)
+#define CANVAS_OPT_USE_BIG_INT microgl::uint8_t(0b00000001)
 /**
  * inside the 2d rasterizer, use division for uv-mapping, this reduces
  * the number of bits used BUT is slower. Generally this HAS to be used
  * on a forced 32 bit rasterizer, in case you want a pure 32 bit integers
  * only during rasterization. Do not use it when in BIG INT mode.
  */
-#define CANVAS_OPT_USE_DIVISION uint8_t(0b00000010)
+#define CANVAS_OPT_USE_DIVISION microgl::uint8_t(0b00000010)
 /**
  * inside the rasterizers, allow some bit compression in-order to minimize
  * overflow in 32 bit mode. disable it if 3d rendering for example starts
  * to jitter.
  */
-#define CANVAS_OPT_COMPRESS_BITS uint8_t(0b00001000)
+#define CANVAS_OPT_COMPRESS_BITS microgl::uint8_t(0b00001000)
 /**
  * the 2d and 3d rasterizer can detect overflow of uv mapping, the detection
  * feature is great for debugging the rasterizer. this flag enables detection
  * and if so, exits the rendering. This is helpful for when using a 32 bit mode,
  * where overflows are likely to happen
  */
-#define CANVAS_OPT_AVOID_RENDER_WITH_OVERFLOWS uint8_t(0b00000100)
+#define CANVAS_OPT_AVOID_RENDER_WITH_OVERFLOWS microgl::uint8_t(0b00000100)
 /**
  * use a true 32 bit mode in the 2d and 3d rasterizer, this means regular 32 bit integers
  * and also the usage of division in order to reduce overflow and also detecting
@@ -122,7 +122,7 @@ using namespace microgl;
  * @tparam bitmap_type the bitmap type
  * @tparam options the options bitset
  */
-template<typename bitmap_type, uint8_t options=CANVAS_OPT_default>
+template<typename bitmap_type, microgl::uint8_t options=CANVAS_OPT_default>
 class canvas {
 public:
     using rect = microgl::rect_t<int>;
@@ -142,17 +142,17 @@ public:
     static constexpr bool hasNativeAlphaChannel() { return pixel_coder::rgba::a != 0;}
 
     // rasterizer integers
-    using rint_big = int64_t;
+    using rint_big = microgl::int64_t;
     using rint =typename microgl::traits::conditional<
-            canvas_t::options_big_integers(), rint_big, int32_t >::type;
+            canvas_t::options_big_integers(), rint_big, microgl::int32_t >::type;
     /**
      * rendering options of rasterizer
      */
     struct render_options_t {
-        uint8_t _2d_raster_bits_sub_pixel= options_big_integers() ? 8 : 4;
-        uint8_t _2d_raster_bits_uv= options_big_integers() ? 15 : 10;
-        uint8_t _3d_raster_bits_sub_pixel= options_big_integers() ? 8 : 4;
-        uint8_t _3d_raster_bits_w= options_big_integers() ? 15 : 12;
+        microgl::uint8_t _2d_raster_bits_sub_pixel= options_big_integers() ? 8 : 4;
+        microgl::uint8_t _2d_raster_bits_uv= options_big_integers() ? 15 : 10;
+        microgl::uint8_t _3d_raster_bits_sub_pixel= options_big_integers() ? 8 : 4;
+        microgl::uint8_t _3d_raster_bits_w= options_big_integers() ? 15 : 12;
     };
 
     struct window_t {
@@ -315,12 +315,12 @@ public:
      */
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            uint8_t a_src>
+            microgl::uint8_t a_src>
     void blendColor(const color_t &val, int x, int y, opacity_t opacity);
 
     template<typename BlendMode=blendmode::Normal,
             typename PorterDuff=porterduff::FastSourceOverOnOpaque,
-            uint8_t a_src>
+            microgl::uint8_t a_src>
 //    __attribute__((noinline))
     static void blendColor(const color_t &val, int index, opacity_t opacity, canvas & canva) {
         // correct index position when window is not at the (0,0) costs one subtraction.
@@ -333,10 +333,10 @@ public:
         // multiply result with alpha
         constexpr bool hasBackdropAlphaChannel = pixel_coder::rgba::a != 0;
         constexpr bool hasSrcAlphaChannel = a_src != 0;
-        constexpr uint8_t canvas_a_bits = hasBackdropAlphaChannel ? pixel_coder::rgba::a : (a_src ? a_src : 8);
-        constexpr uint8_t src_a_bits = a_src ? a_src : 8;
-        constexpr uint8_t alpha_bits = src_a_bits;
-        constexpr unsigned int alpha_max_value = uint16_t (1 << alpha_bits) - 1;
+        constexpr microgl::uint8_t canvas_a_bits = hasBackdropAlphaChannel ? pixel_coder::rgba::a : (a_src ? a_src : 8);
+        constexpr microgl::uint8_t src_a_bits = a_src ? a_src : 8;
+        constexpr microgl::uint8_t alpha_bits = src_a_bits;
+        constexpr unsigned int alpha_max_value = microgl::uint16_t (1 << alpha_bits) - 1;
         constexpr bool is_source_over = microgl::traits::is_same<PorterDuff, porterduff::FastSourceOverOnOpaque>::value;
         constexpr bool none_compositing = microgl::traits::is_same<PorterDuff, porterduff::None<>>::value;
         constexpr bool skip_blending =microgl::traits::is_same<BlendMode, blendmode::Normal>::value;

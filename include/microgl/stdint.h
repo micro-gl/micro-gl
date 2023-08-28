@@ -34,18 +34,18 @@ namespace microgl {
                 typename microgl::traits::conditional<
                         BITS <= 16, uint16_t,
                         typename microgl::traits::conditional<
-                                BITS <= 32, uint32_t, uint64_t>::type>::type>::type;
+                                BITS <= 32, microgl::uint32_t, microgl::uint64_t>::type>::type>::type;
     };
 
     template<uint8_t BITS>
     struct signed_type_infer {
         static constexpr uint8_t bits = BITS;
         using type = typename microgl::traits::conditional<
-                BITS <= 8, int8_t,
+                BITS <= 8, microgl::int8_t,
                 typename microgl::traits::conditional<
                         BITS <= 16, int16_t,
                         typename microgl::traits::conditional<
-                                BITS <= 32, int32_t, int64_t>::type>::type>::type;
+                                BITS <= 32, microgl::int32_t, microgl::int64_t>::type>::type>::type;
     };
 
     template<uint8_t bits>

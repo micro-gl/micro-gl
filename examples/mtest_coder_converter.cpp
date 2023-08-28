@@ -16,12 +16,12 @@ bool color_equals_rgba(color_t c1, color_t c2) {
     return color_equals_rgb(c1, c2) && c1.a==c2.a;
 }
 
-template<uint8_t r, uint8_t g, uint8_t b, uint8_t a>
+template<microgl::uint8_t r, microgl::uint8_t g, microgl::uint8_t b, microgl::uint8_t a>
 color_t infer_max_color() {
     return {(1<<r)-1, (1<<g)-1, (1<<b)-1, (1<<a)-1};
 }
 
-template<typename Coder, uint8_t r, uint8_t g, uint8_t b, uint8_t a>
+template<typename Coder, microgl::uint8_t r, microgl::uint8_t g, microgl::uint8_t b, microgl::uint8_t a>
 void test_coder_converter_rgba() {
     using coder_conv = coder::coder_converter_rgba<Coder, rgba_t<r,g,b,a>>;
     const color_t color = infer_max_color<r,g,b,a>();

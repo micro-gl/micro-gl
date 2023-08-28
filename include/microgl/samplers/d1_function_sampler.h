@@ -38,7 +38,7 @@ namespace microgl {
         public:
             using rgba = rgba_;
             using rint= typename microgl::traits::conditional<precision_bits>=16,
-                    int64_t, int32_t>::type;
+                    microgl::int64_t, microgl::int32_t>::type;
             using vertex = microgl::vertex2<number>;
             using ivertex = microgl::vertex2<rint>;
             static constexpr rint ONE= rint(1)<<precision_bits;

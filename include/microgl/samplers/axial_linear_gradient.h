@@ -23,8 +23,8 @@ namespace microgl {
         private:
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
             static constexpr precision_t p_bits_double= p_bits<<1;
-            using rint_big=int64_t;
-            using rint= typename microgl::traits::conditional<p_bits>=16, int64_t, int32_t>::type;
+            using rint_big=microgl::int64_t;
+            using rint= typename microgl::traits::conditional<p_bits>=16, microgl::int64_t, microgl::int32_t>::type;
 
             struct stop_t {
                 rint where=0;

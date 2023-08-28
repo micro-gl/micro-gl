@@ -77,7 +77,7 @@ namespace microgl {
                         const mat4 & mvp,
                         const microtess::triangles::indices & type,
                         canvas_type & canva,
-                        const uint8_t opacity=255) {
+                        const microgl::uint8_t opacity=255) {
                 // todo:: noe this renders lines but does not clip them to the frustum, but only to the viewport
                 // this will cause strange effects due to the twisting mirror effect of the projection matrix
 #define IND(a) indices[(a)]

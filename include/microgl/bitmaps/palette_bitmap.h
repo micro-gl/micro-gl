@@ -23,8 +23,8 @@
  * @tparam reverse_elements_pos_in_byte can help with endian-ness issues
  */
 template <unsigned PALETTE_SIZE, typename CODER, bool reverse_elements_pos_in_byte=false, class allocator_type=microgl::traits::std_rebind_allocator<>>
-class palette_bitmap : public base_bitmap<palette_bitmap<PALETTE_SIZE, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, uint8_t> {
-    using base=base_bitmap<palette_bitmap<PALETTE_SIZE, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, uint8_t>;
+class palette_bitmap : public base_bitmap<palette_bitmap<PALETTE_SIZE, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, microgl::uint8_t> {
+    using base=base_bitmap<palette_bitmap<PALETTE_SIZE, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, microgl::uint8_t>;
     using byte=unsigned char;
     static constexpr byte BPI = PALETTE_SIZE==2 ? 1 : (PALETTE_SIZE==4 ? 2 : (PALETTE_SIZE==16 ? 4 : (PALETTE_SIZE==256 ? 8 : 0)));
     static constexpr bool is_1_2_4_8_bits = BPI!=0;

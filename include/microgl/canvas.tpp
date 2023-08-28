@@ -11,64 +11,64 @@
 
 #include "canvas.h"
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::uint8_t options>
 auto canvas<bitmap_type, options>::coder() const -> const pixel_coder & {
     return _bitmap_canvas.coder();
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::uint8_t options>
 inline bitmap_type & canvas<bitmap_type, options>::bitmapCanvas() const {
     return _bitmap_canvas;
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::uint8_t options>
 unsigned int canvas<bitmap_type, options>::sizeofPixel() const {
     return sizeof(pixel{});
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::uint8_t options>
 auto canvas<bitmap_type, options>::getPixel(int x, int y) const -> pixel {
     // this is not good for high performance loop
     return _bitmap_canvas.pixelAt(x, y);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::uint8_t options>
 auto canvas<bitmap_type, options>::getPixel(int index) const -> pixel {
     // this is better for high performance loop
     return _bitmap_canvas.pixelAt(index);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::uint8_t options>
 void canvas<bitmap_type, options>::getPixelColor(int x, int y, color_t & output)  const {
     this->_bitmap_canvas.decode(x, y, output);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::uint8_t options>
 void canvas<bitmap_type, options>::getPixelColor(int index, color_t & output)  const {
     this->_bitmap_canvas.decode(index - _window.index_correction, output);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::uint8_t options>
 int canvas<bitmap_type, options>::width() const {
     return _window.canvas_rect.width();
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::uint8_t options>
 int canvas<bitmap_type, options>::height() const {
     return _window.canvas_rect.height();
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::uint8_t options>
 auto canvas<bitmap_type, options>::pixels() const -> const pixel * {
     return _bitmap_canvas.data();
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::uint8_t options>
 auto canvas<bitmap_type, options>::pixels() -> pixel * {
     return _bitmap_canvas.data();
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::uint8_t options>
 template <typename number>
 void canvas<bitmap_type, options>::clear(const intensity<number> &color) {
     pixel output;
@@ -76,15 +76,15 @@ void canvas<bitmap_type, options>::clear(const intensity<number> &color) {
     _bitmap_canvas.fill(output);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::uint8_t options>
 void canvas<bitmap_type, options>::clear(const color_t &color) {
     pixel output;
     _bitmap_canvas.coder().encode(color, output);
     _bitmap_canvas.fill(output);
 }
 
-template<typename bitmap_type, uint8_t options>
-template<typename BlendMode, typename PorterDuff, uint8_t a_src>
+template<typename bitmap_type, microgl::uint8_t options>
+template<typename BlendMode, typename PorterDuff, microgl::uint8_t a_src>
 void canvas<bitmap_type, options>::blendColor(const color_t &val, int x, int y, opacity_t opacity) {
     blendColor<BlendMode, PorterDuff, a_src>(val, y*width() + x, opacity, *this);
 }
@@ -1265,7 +1265,7 @@ void canvas<bitmap_type, options>::drawMask_internal(const masks::chrome_mode &m
     const int u_start= u0+(du>>1)+dx*du, pitch= width();
     int index= bbox_r_c.top * pitch;
     constexpr bits alpha_bits = pixel_coder::rgba::a ? pixel_coder::rgba::a : 8;
-    constexpr channel_t max_alpha_value = (uint16_t(1)<<alpha_bits) - 1;
+    constexpr channel_t max_alpha_value = (microgl::uint16_t(1)<<alpha_bits) - 1;
     for (int y=bbox_r_c.top, v=v0+(du>>1)+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
         for (int x=bbox_r_c.left, u=u_start; x<=bbox_r_c.right; x++, u+=du) {
             sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
@@ -1505,7 +1505,7 @@ void canvas<bitmap_type, options>::drawWuLine_internal(const color_t &color,
     unsigned int IntensityBits = 8;
     unsigned int NumLevels = 1u << IntensityBits;
     unsigned int maxIntensity = NumLevels - 1;
-    uint32_t IntensityShift, ErrorAdj, ErrorAcc;
+    microgl::uint32_t IntensityShift, ErrorAdj, ErrorAcc;
     unsigned int ErrorAccTemp, Weighting, WeightingComplementMask;
     int DeltaX, DeltaY, Temp, XDir;//, YDir;
     int one = int(1)<<bits;
