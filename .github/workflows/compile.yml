@@ -26,6 +26,8 @@ jobs:
           cmake --install .
       - name: Build all examples(Ubuntu)
         run: |
+          mkdir cmake-build-release
+          cd cmake-build-release
           cmake -DCMAKE_BUILD_TYPE=Release ..
           cmake --build .
 
