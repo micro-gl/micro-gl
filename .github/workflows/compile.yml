@@ -49,10 +49,10 @@ jobs:
       - name: Build & Install(Windows)
         shell: powershell
         run: |
-          sudo mkdir cmake-build-release
+          mkdir cmake-build-release
           cd cmake-build-release
-          sudo cmake -DCMAKE_BUILD_TYPE=Release ..
-          sudo cmake --install .
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --install .
       - name: Build all examples(Windows)
         shell: powershell
         run: |
