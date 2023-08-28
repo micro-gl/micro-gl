@@ -17,6 +17,25 @@
 
 namespace microtess {
 
+    namespace detaill {
+        template<typename container_output_vertices, bool on=false>
+        struct construct_for_allocator_aware_t {
+            const container_output_vertices & copy;
+            explicit construct_for_allocator_aware_t(const container_output_vertices & vv) :
+                    copy{vv} {}
+            container_output_vertices create() { return container_output_vertices(); }
+        };
+        template<typename container_output_vertices>
+        struct construct_for_allocator_aware_t<container_output_vertices, true> {
+            const container_output_vertices & copy;
+            explicit construct_for_allocator_aware_t(const container_output_vertices & vv) :
+                    copy{vv} {}
+            container_output_vertices create() {
+                return container_output_vertices(copy.get_allocator());
+            }
+        };
+    }
+
     enum class stroke_cap { butt, round, square };
     enum class stroke_line_join { none, miter, miter_clip, round, bevel };
     enum class stroke_gravity { center, inward, outward };
@@ -68,20 +87,20 @@ namespace microtess {
          * SFIANE to support allocator aware containers and non-aware containers such
          * as static arrays
          */
-        template<bool on=false> struct construct_for_allocator_aware_t {
-            const container_output_vertices & copy;
-            explicit construct_for_allocator_aware_t(const container_output_vertices & vv) :
-                    copy{vv} {}
-            container_output_vertices create() { return container_output_vertices(); }
-        };
-        template<> struct construct_for_allocator_aware_t<true> {
-            const container_output_vertices & copy;
-            explicit construct_for_allocator_aware_t(const container_output_vertices & vv) :
-                copy{vv} {}
-            container_output_vertices create() {
-                return container_output_vertices(copy.get_allocator());
-            }
-        };
+//        template<bool on=false> struct construct_for_allocator_aware_t {
+//            const container_output_vertices & copy;
+//            explicit construct_for_allocator_aware_t(const container_output_vertices & vv) :
+//                    copy{vv} {}
+//            container_output_vertices create() { return container_output_vertices(); }
+//        };
+//        template<> struct construct_for_allocator_aware_t<true> {
+//            const container_output_vertices & copy;
+//            explicit construct_for_allocator_aware_t(const container_output_vertices & vv) :
+//                copy{vv} {}
+//            container_output_vertices create() {
+//                return container_output_vertices(copy.get_allocator());
+//            }
+//        };
 
         template<class iterable> static void compute_with_dashes(const number &stroke_width,
                                  bool closePath,
@@ -135,7 +154,7 @@ namespace microtess {
             // 2. otherwise, use the default constructor of the container
             constexpr bool _is_allocator_aware =
                     microtess::traits::is_allocator_aware<container_output_vertices>::value;
-            construct_for_allocator_aware_t<_is_allocator_aware> construct{output_vertices};
+            detaill::construct_for_allocator_aware_t<container_output_vertices, _is_allocator_aware> construct{output_vertices};
             container_output_vertices points_segments = construct.create();
 
             number dash_length, position;
@@ -647,5 +666,39 @@ namespace microtess {
                 output_indices.push_back(output_indices.back()); b1_(boundary_buffer, output_indices);
             }
         }
+
     };
+
+//    template<typename number, class container_output_vertices, class container_output_indices, class container_output_boundary>
+//    int
+//    stroke_tessellation<number, container_output_vertices, container_output_indices, container_output_boundary>::f() {
+//        return 0;
+//    }
+
+//    template<typename number, class container_output_vertices, class container_output_indices, class container_output_boundary>
+//    template<bool on>
+//    struct stroke_tessellation<number, container_output_vertices, container_output_indices, container_output_boundary>::construct_for_allocator_aware_t {
+//        const container_output_vertices & copy;
+//        explicit construct_for_allocator_aware_t(const container_output_vertices & vv) :
+//                copy{vv} {}
+//        container_output_vertices create() { return container_output_vertices(); }
+//    };
+//
+//    template<typename number, class container_output_vertices, class container_output_indices, class container_output_boundary>
+//    template<>
+//    struct stroke_tessellation<number, container_output_vertices, container_output_indices, container_output_boundary>::construct_for_allocator_aware_t<true> {
+//        const container_output_vertices & copy;
+//        explicit construct_for_allocator_aware_t(const container_output_vertices & vv) :
+//                copy{vv} {}
+//        container_output_vertices create() { return container_output_vertices(); }
+//    };
+
+//    template<> struct construct_for_allocator_aware_t<true> {
+//        const container_output_vertices & copy;
+//        explicit construct_for_allocator_aware_t(const container_output_vertices & vv) :
+//                copy{vv} {}
+//        container_output_vertices create() {
+//            return container_output_vertices(copy.get_allocator());
+//        }
+//    };
 }

@@ -151,12 +151,21 @@ namespace microgl {
         };
 
     private:
-        template<bool columnMajor> inline index _to_index(index row, index col) const {}
-        template<> inline index _to_index<true>(index row, index col) const { return row + col*H; }
-        template<> inline index _to_index<false>(index row, index col) const { return row*W + col; }
+//        template<bool columnMajor> inline index _to_index(index row, index col) const {}
+//        template<> inline index _to_index<true>(index row, index col) const { return row + col*H; }
+//        template<> inline index _to_index<false>(index row, index col) const { return row*W + col; }
+
+        inline index _to_index(index row, index col) const {
+            if(column_major)
+                return row + col*H;
+            else
+                return row*W + col;
+        }
+//        template<> inline index _to_index<true>(index row, index col) const { return row + col*H; }
+//        template<> inline index _to_index<false>(index row, index col) const { return row*W + col; }
 
     public:
-        inline index to_index(index row, index col) const { return _to_index<column_major>(row, col);}
+        inline index to_index(index row, index col) const { return _to_index(row, col);}
         type_ref operator()(index row, index col) { return _data[to_index(row, col)]; };
         const_type_ref operator()(index row, index col) const { return _data[to_index(row, col)]; };
         type_ref operator[](const index ix) { return _data[ix]; };

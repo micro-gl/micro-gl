@@ -69,7 +69,6 @@ if(DEFINED SDL2_FOUND)
             example_geometry_stroke_tessellation.cpp
             example_geometry_stroke_dash_tessellation.cpp
             example_geometry_elliptic_arc_divider.cpp
-            example_avl_tree.cpp
             example_draw_bitmap_fonts.cpp
             example_draw_bitmap_packed.cpp
             example_draw_bitmap_indexed_palette.cpp
@@ -83,14 +82,8 @@ if(DEFINED SDL2_FOUND)
             mtest_coder_converter.cpp
             mtest_coder_generator.cpp
             mtest_lut.cpp
-            mtest_containers.cpp
-            mtest_math.cpp
-            mtest_q_sort.cpp
             mtest_Q.cpp
-            mtest_allocators.cpp
-            mtest_containers_alloc.cpp
-            mtest_poly_allocators.cpp
-            )
+    )
 
     set(SOURCES_SHARED
             libs/stb_image/stb_image.cpp

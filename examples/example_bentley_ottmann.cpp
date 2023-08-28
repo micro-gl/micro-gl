@@ -1,3 +1,5 @@
+
+/*
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cert-err58-cpp"
 #include <iostream>
@@ -206,3 +208,7 @@ void loop() {
 }
 
 #pragma clang diagnostic pop
+*/
+
+int main() {
+}

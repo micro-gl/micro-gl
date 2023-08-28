@@ -5,6 +5,7 @@
 #pragma once
 
 #include <iostream>
+#include <cstring>
 #include <fstream>
 #include <vector>
 #include <microgl/text/bitmap_font.h>

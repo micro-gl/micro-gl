@@ -59,16 +59,23 @@ private:
         return result;
     }
 
-    template<unsigned char S> inline void multiply(const integer val) {}
-    template<> inline void multiply<0>(const integer val) {
+    inline void multiply(const integer val) {
+        constexpr bool is_0 = inferred_mul_strategy==0;
+        constexpr bool is_1 = inferred_mul_strategy==1;
+        constexpr bool is_2 = inferred_mul_strategy==2;
+        if(is_0) multiply_0(val);
+        else if(is_1) multiply_1(val);
+        else multiply_2(val);
+    }
+    inline void multiply_0(const integer val) {
         inter_integer inter = ((inter_integer)_value)*val;
         _value = shift_right_correctly_by<inter_integer>(inter, P);
     }
-    template<> inline void multiply<1>(const integer val) {
+    inline void multiply_1(const integer val) {
         using int_t = inter_integer;
         const int_t fpValue1 = _value;
         const int_t fpValue2 = val;
-        // no need to do non-arithmatic shift because it is part
+        // no need to do non-arithmetic shift because it is part
         // of a big picture
         const int_t intPart1 = fpValue1>>P, intPart2 = fpValue2>>P;
         const int_t fracPart1 = fpValue1 & int_t(MASK_FRAC_BITS);
@@ -76,14 +83,14 @@ private:
         _value = int_t(((intPart1 * intPart2)<<P) + (intPart1 * fracPart2) +
                  (fracPart1 * intPart2) + (((fracPart1 * fracPart2)>>P) & int_t(MASK_FRAC_BITS)));
     }
-    template<> inline void multiply<2>(const integer val)
+    inline void multiply_2(const integer val)
             { _value = (((inter_integer)_value)*val)>>P; }
 
 public:
 
     template<unsigned from_precision, unsigned to_precision>
     static inline integer convert_compile_time_variant(const integer from_value) {
-        // the constexpr will elliminate the branching at compile time with simple compiler optimization
+        // the constexpr will eliminate the branching at compile time with simple compiler optimization
         constexpr auto delta = from_precision - to_precision;
         if(delta==0) return from_value;
         else if(delta>0) return shift_right_correctly_by<integer>(from_value, delta);
@@ -115,7 +122,8 @@ public:
     // with assignments operators
     q_ref operator =(const_ref q) { _value = q.value(); return *this; }
     q_ref operator *=(const_ref q) {
-        multiply<inferred_mul_strategy>(q.value()); return *this;
+        multiply(q.value()); return *this;
+//        multiply<inferred_mul_strategy>(q.value()); return *this;
     }
     q_ref operator *=(unsigned val) {_value *= val; return *this;}
     q_ref operator *=(signed val) {_value *= val; return *this;}

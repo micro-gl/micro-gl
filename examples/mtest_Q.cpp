@@ -33,7 +33,6 @@ int abs_2(const number_type & x) {
 }
 
 int main() {
-    std::cout <<std::to_string(_LIBCPP_STD_VER) << std::endl;
 
     using q = Q<16, int32_t>;
 

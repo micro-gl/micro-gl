@@ -10,7 +10,7 @@
 ========================================================================================*/
 #pragma once
 
-#include "stdint.h"
+#include "./stdint.h"
 
 namespace microgl {
     using namespace microgl::traits;

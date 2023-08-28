@@ -15,6 +15,19 @@
 namespace microgl {
     namespace lut {
 
+        namespace detail {
+            template<int... Is> struct seq{};
+
+            template<int N, int... Is>
+            struct gen_seq : gen_seq<(N)-(1), (N)-(1), (Is)...>{};
+
+            template<int... Is>
+            struct gen_seq<(0), Is...> : seq<(Is)...>{};
+
+            template<>
+            struct gen_seq<(0)> : seq<0>{};
+        }
+
         /**
          * dynamic runtime lookup table generation
          * @tparam type the type of element of the LUT
@@ -84,23 +97,23 @@ namespace microgl {
         private:
             struct Table { type data[size]; };
 
-            template<int... Is> struct seq{};
+//            template<int... Is> struct seq{};
 
-            template<int N, int... Is>
-            struct gen_seq : gen_seq<(N)-(1), (N)-(1), (Is)...>{};
+//            template<int N, int... Is>
+//            struct gen_seq : gen_seq<(N)-(1), (N)-(1), (Is)...>{};
+//
+//            template<int... Is>
+//            struct gen_seq<(0), Is...> : seq<(Is)...>{};
+//
+//            template<>
+//            struct gen_seq<(0)> : seq<0>{};
 
             template<int... Is>
-            struct gen_seq<(0), Is...> : seq<(Is)...>{};
-
-            template<>
-            struct gen_seq<(0)> : seq<0>{};
-
-            template<int... Is>
-            static constexpr Table generate(seq<Is...>){
+            static constexpr Table generate(detail::seq<Is...>){
                 return {{ function::apply(Is)... }};
             }
 
-            constexpr static Table tab=generate(gen_seq<size>{});
+            constexpr static Table tab=generate(detail::gen_seq<size>{});
 
         public:
             static type get(const int & n) { return tab.data[n]; }
