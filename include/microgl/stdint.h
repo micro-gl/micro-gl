@@ -26,32 +26,32 @@ namespace microgl {
     using int64_t = signed long long;
     using uint64_t = unsigned long long;
 
-    template<uint8_t BITS>
+    template<microgl::uint8_t BITS>
     struct unsigned_type_infer {
-        static constexpr uint8_t bits = BITS;
+        static constexpr microgl::uint8_t bits = BITS;
         using type = typename microgl::traits::conditional<
-                BITS <= 8, uint8_t,
+                BITS <= 8, microgl::uint8_t,
                 typename microgl::traits::conditional<
-                        BITS <= 16, uint16_t,
+                        BITS <= 16, microgl::uint16_t,
                         typename microgl::traits::conditional<
                                 BITS <= 32, microgl::uint32_t, microgl::uint64_t>::type>::type>::type;
     };
 
-    template<uint8_t BITS>
+    template<microgl::uint8_t BITS>
     struct signed_type_infer {
-        static constexpr uint8_t bits = BITS;
+        static constexpr microgl::uint8_t bits = BITS;
         using type = typename microgl::traits::conditional<
                 BITS <= 8, microgl::int8_t,
                 typename microgl::traits::conditional<
-                        BITS <= 16, int16_t,
+                        BITS <= 16, microgl::int16_t,
                         typename microgl::traits::conditional<
                                 BITS <= 32, microgl::int32_t, microgl::int64_t>::type>::type>::type;
     };
 
-    template<uint8_t bits>
+    template<microgl::uint8_t bits>
     using uint_t = typename unsigned_type_infer<bits>::type;
 
-    template<uint8_t bits>
+    template<microgl::uint8_t bits>
     using int_t = typename signed_type_infer<bits>::type;
 
 }

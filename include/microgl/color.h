@@ -10,7 +10,7 @@
 ========================================================================================*/
 #pragma once
 
-#include "stdint.h"
+#include "./stdint.h"
 
 namespace microgl {
     using namespace microgl::traits;
@@ -95,15 +95,15 @@ namespace microgl {
         if(bits_to==0) return 0;
         if(bits_from==0) return 0;
 
-        using uint_bits_from = uint_t<bits_from>;
-        using uint_bits_to = uint_t<bits_to>;
+        using uint_bits_from = microgl::uint_t<bits_from>;
+        using uint_bits_to = microgl::uint_t<bits_to>;
 
         constexpr uint_bits_from max_input= (1u << bits_from) - 1;
         constexpr uint_bits_to max_output= (1u << bits_to) - 1;
         constexpr microgl::uint8_t p = bits_from + 12;
         constexpr microgl::uint8_t bits_used = p + 1 - bits_from;
-        using type_bits_used = uint_t<bits_used>;
-        using type_bits_p = uint_t<p>;
+        using type_bits_used = microgl::uint_t<bits_used>;
+        using type_bits_p = microgl::uint_t<p>;
         constexpr type_bits_p one = (type_bits_p(1u)<<p);
         constexpr type_bits_p half = one>>1;
         // the condition max_input!=0 is just to prevent the compiler from detecting
@@ -121,25 +121,25 @@ namespace microgl {
     }
 
     template<microgl::uint8_t bits>
-    inline uint_t<bits> mul_channels_correct(
-            const uint_t<bits> & a,
-            const uint_t<bits> & b) {
+    inline microgl::uint_t<bits> mul_channels_correct(
+            const microgl::uint_t<bits> & a,
+            const microgl::uint_t<bits> & b) {
 
         // blinn's method
         if(bits==8) return (microgl::uint32_t (a)*b*257 + 257)>>16;
         else if(bits==0) return 0;
 
-        using type_bits = uint_t<bits>;
+        using type_bits = microgl::uint_t<bits>;
         constexpr type_bits max_value= (1u<<bits)-1;
         constexpr microgl::uint8_t p = bits + 12;
         constexpr microgl::uint8_t bits_used = p + 1 - bits;
-        using type_bits_used = uint_t<bits_used>;
-        using type_bits_p = uint_t<p>;
+        using type_bits_used = microgl::uint_t<bits_used>;
+        using type_bits_p = microgl::uint_t<p>;
         constexpr type_bits_p one = (type_bits_p(1u)<<p);
         constexpr type_bits_p half = one>>1;
         constexpr type_bits_used multiplier = one/max_value;
         constexpr microgl::uint8_t overall_bits = bits+bits+bits_used;
-        using type_bits_overall = uint_t<overall_bits+1>;
+        using type_bits_overall = microgl::uint_t<overall_bits+1>;
 
 //            constexpr bool overflow = false;
 //            constexpr bool overflow = true;
@@ -152,9 +152,9 @@ namespace microgl {
     }
 
     template<microgl::uint8_t bits>
-    inline uint_t<bits> mc(
-            const uint_t<bits> & a,
-            const uint_t<bits> & b) {
+    inline microgl::uint_t<bits> mc(
+            const microgl::uint_t<bits> & a,
+            const microgl::uint_t<bits> & b) {
         return mul_channels_correct<bits>(a,b);
     }
 
@@ -171,7 +171,7 @@ namespace microgl {
         constexpr uint_p half = one>>1;
         constexpr uint_multiplier multiplier = one / b;
         constexpr microgl::uint8_t overall_bits = bits_a + bits_used_multiplier;
-        using type_bits_overall = uint_t<overall_bits+1>;
+        using type_bits_overall = microgl::uint_t<overall_bits+1>;
         constexpr bool overflow = overall_bits>=32;
 //            constexpr bool overflow = false;
 
