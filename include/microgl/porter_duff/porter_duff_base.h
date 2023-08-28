@@ -17,6 +17,7 @@ namespace microgl {
 
         using cuint = const unsigned int;
         using uint = unsigned int;
+        using uint8_t = microgl::ints::uint8_t;
         // a0 = αs x Fa + αb x Fb
         // co = αs x Fa x Cs + αb x Fb x Cb
         // according to PDF spec, page 322, if we use source-over

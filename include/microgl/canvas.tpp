@@ -11,64 +11,64 @@
 
 #include "canvas.h"
 
-template<typename bitmap_type, microgl::uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 auto canvas<bitmap_type, options>::coder() const -> const pixel_coder & {
     return _bitmap_canvas.coder();
 }
 
-template<typename bitmap_type, microgl::uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 inline bitmap_type & canvas<bitmap_type, options>::bitmapCanvas() const {
     return _bitmap_canvas;
 }
 
-template<typename bitmap_type, microgl::uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 unsigned int canvas<bitmap_type, options>::sizeofPixel() const {
     return sizeof(pixel{});
 }
 
-template<typename bitmap_type, microgl::uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 auto canvas<bitmap_type, options>::getPixel(int x, int y) const -> pixel {
     // this is not good for high performance loop
     return _bitmap_canvas.pixelAt(x, y);
 }
 
-template<typename bitmap_type, microgl::uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 auto canvas<bitmap_type, options>::getPixel(int index) const -> pixel {
     // this is better for high performance loop
     return _bitmap_canvas.pixelAt(index);
 }
 
-template<typename bitmap_type, microgl::uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 void canvas<bitmap_type, options>::getPixelColor(int x, int y, color_t & output)  const {
     this->_bitmap_canvas.decode(x, y, output);
 }
 
-template<typename bitmap_type, microgl::uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 void canvas<bitmap_type, options>::getPixelColor(int index, color_t & output)  const {
     this->_bitmap_canvas.decode(index - _window.index_correction, output);
 }
 
-template<typename bitmap_type, microgl::uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 int canvas<bitmap_type, options>::width() const {
     return _window.canvas_rect.width();
 }
 
-template<typename bitmap_type, microgl::uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 int canvas<bitmap_type, options>::height() const {
     return _window.canvas_rect.height();
 }
 
-template<typename bitmap_type, microgl::uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 auto canvas<bitmap_type, options>::pixels() const -> const pixel * {
     return _bitmap_canvas.data();
 }
 
-template<typename bitmap_type, microgl::uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 auto canvas<bitmap_type, options>::pixels() -> pixel * {
     return _bitmap_canvas.data();
 }
 
-template<typename bitmap_type, microgl::uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template <typename number>
 void canvas<bitmap_type, options>::clear(const intensity<number> &color) {
     pixel output;
@@ -76,32 +76,32 @@ void canvas<bitmap_type, options>::clear(const intensity<number> &color) {
     _bitmap_canvas.fill(output);
 }
 
-template<typename bitmap_type, microgl::uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 void canvas<bitmap_type, options>::clear(const color_t &color) {
     pixel output;
     _bitmap_canvas.coder().encode(color, output);
     _bitmap_canvas.fill(output);
 }
 
-template<typename bitmap_type, microgl::uint8_t options>
-template<typename BlendMode, typename PorterDuff, microgl::uint8_t a_src>
+template<typename bitmap_type, microgl::ints::uint8_t options>
+template<typename BlendMode, typename PorterDuff, microgl::ints::uint8_t a_src>
 void canvas<bitmap_type, options>::blendColor(const color_t &val, int x, int y, opacity_t opacity) {
     blendColor<BlendMode, PorterDuff, a_src>(val, y*width() + x, opacity, *this);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 void canvas<bitmap_type, options>::drawPixel(const pixel & val, int x, int y) {
     _bitmap_canvas.writeAt(y*width()+x, val);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 inline void canvas<bitmap_type, options>::drawPixel(const pixel & val, int index) {
     _bitmap_canvas.writeAt(index - _window.index_correction, val);
 }
 
 // fast common graphics shapes like circles and rounded rectangles
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias,
         typename number1, typename number2, typename Sampler1, typename Sampler2>
 void canvas<bitmap_type, options>::drawCircle(const Sampler1 & sampler_fill,
@@ -118,7 +118,7 @@ void canvas<bitmap_type, options>::drawCircle(const Sampler1 & sampler_fill,
             u0, v0, u1, v1);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename Sampler1, typename Sampler2>
 void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill,
                                               const Sampler2 & sampler_stroke,
@@ -144,7 +144,7 @@ void canvas<bitmap_type, options>::drawRoundedRect(const Sampler1 & sampler_fill
 #undef f_p
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias,
         typename number1, typename number2, typename Sampler>
 void canvas<bitmap_type, options>::drawArc(const Sampler &sampler_fill,
@@ -190,7 +190,7 @@ void canvas<bitmap_type, options>::drawArc(const Sampler &sampler_fill,
 #undef f_p
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias,
         typename number1, typename number2, typename Sampler>
 void canvas<bitmap_type, options>::drawPie(const Sampler &sampler_fill,
@@ -236,7 +236,7 @@ void canvas<bitmap_type, options>::drawPie(const Sampler &sampler_fill,
 #undef f_p
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename Sampler>
 void canvas<bitmap_type, options>::drawArcOrPie_internal(const Sampler &sampler_fill,
                                                          int centerX, int centerY,
@@ -356,7 +356,7 @@ void canvas<bitmap_type, options>::drawArcOrPie_internal(const Sampler &sampler_
     }
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename Sampler1, typename Sampler2>
 void canvas<bitmap_type, options>::drawRoundedRect_internal(const Sampler1 & sampler_fill,
                                                             const Sampler2 & sampler_stroke,
@@ -489,7 +489,7 @@ void canvas<bitmap_type, options>::drawRoundedRect_internal(const Sampler1 & sam
     }
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename Sampler>
 void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
                                        const number1 & left, const number1 & top,
@@ -510,7 +510,7 @@ void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
             p_sub, p_uv, opacity);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename Sampler>
 void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
                                        const matrix_3x3<number1> &transform,
@@ -536,7 +536,7 @@ void canvas<bitmap_type, options>::drawRect(const Sampler & sampler,
                                                                                opacity, true, true, false);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template <typename BlendMode, typename PorterDuff, bool antialias, typename Sampler>
 void canvas<bitmap_type, options>::drawRect_internal(const Sampler & sampler,
                                                      int left, int top,
@@ -622,7 +622,7 @@ void canvas<bitmap_type, options>::drawRect_internal(const Sampler & sampler,
 #undef floor_fixed
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename BlendMode, typename PorterDuff,
         bool antialias, typename number1, typename number2, class Shader>
 void canvas<bitmap_type, options>::drawQuadrilateral(const Shader & sampler,
@@ -630,7 +630,7 @@ void canvas<bitmap_type, options>::drawQuadrilateral(const Shader & sampler,
                                                 const number1 & v1_x, const number1 & v1_y, const number2 & u1, const number2 & v1,
                                                 const number1 & v2_x, const number1 & v2_y, const number2 & u2, const number2 & v2,
                                                 const number1 & v3_x, const number1 & v3_y, const number2 & u3, const number2 & v3,
-                                                const uint8_t opacity) {
+                                                const microgl::ints::uint8_t opacity) {
     const precision uv_p = renderingOptions()._2d_raster_bits_uv, pixel_p = renderingOptions()._2d_raster_bits_sub_pixel;
 #define f microgl::math::to_fixed
     number2 q0 = 1, q1 = 1, q2 = 1, q3 = 1;
@@ -684,7 +684,7 @@ void canvas<bitmap_type, options>::drawQuadrilateral(const Shader & sampler,
 
 // Triangles
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename Sampler>
 void canvas<bitmap_type, options>::drawTriangles(const Sampler &sampler,
                                             const matrix_3x3<number1> &transform,
@@ -753,7 +753,7 @@ void canvas<bitmap_type, options>::drawTriangles(const Sampler &sampler,
 #undef f
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename Shader, typename depth_buffer_type>
 void canvas<bitmap_type, options>::drawTriangles(Shader &shader,
@@ -777,7 +777,7 @@ void canvas<bitmap_type, options>::drawTriangles(Shader &shader,
           });
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number>
 void canvas<bitmap_type, options>::drawTrianglesWireframe(const color_t &color,
                                                      const matrix_3x3<number> &transform,
@@ -794,7 +794,7 @@ void canvas<bitmap_type, options>::drawTrianglesWireframe(const color_t &color,
               });
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename number>
 void canvas<bitmap_type, options>::drawTriangleWireframe(const color_t &color,
                                                     const vertex2<number> &p0,
@@ -807,7 +807,7 @@ void canvas<bitmap_type, options>::drawTriangleWireframe(const color_t &color,
 }
 
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, typename Sampler>
 void canvas<bitmap_type, options>::drawTriangle_internal(const Sampler &sampler,
                                                          int v0_x, int v0_y, int u0, int v0, int q0,
@@ -909,7 +909,7 @@ void canvas<bitmap_type, options>::drawTriangle_internal(const Sampler &sampler,
         if(antialias) { w0_h=w0_row_h; w1_h=w1_row_h; w2_h=w2_row_h; }
         for (p.x = bbox.left; p.x <= bbox.right; p.x++) {
             bool should_sample=false;
-            uint8_t blend=opacity;
+            microgl::ints::uint8_t blend=opacity;
             if((w0|w1|w2)>=0) should_sample=true;
             else if(antialias) { // cheap AA based on SDF
                 const rint distance = functions::min<rint>((w0_h), (w1_h), (w2_h));
@@ -967,7 +967,7 @@ void canvas<bitmap_type, options>::drawTriangle_internal(const Sampler &sampler,
     }
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, typename number1, typename number2, typename Sampler>
 void canvas<bitmap_type, options>::drawTriangle(const Sampler & sampler,
                                            const number1 &v0_x, const number1 &v0_y, const number2 &u0, const number2 &v0,
@@ -995,7 +995,7 @@ void canvas<bitmap_type, options>::drawTriangle(const Sampler & sampler,
 #undef f_uv
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename Shader, typename depth_buffer_type>
 void canvas<bitmap_type, options>::drawTriangle(Shader &shader,
@@ -1049,7 +1049,7 @@ void canvas<bitmap_type, options>::drawTriangle(Shader &shader,
 #undef f
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename BlendMode, typename PorterDuff, bool antialias, bool perspective_correct, bool depth_buffer_flag,
         typename Shader, typename number, typename depth_buffer_type>
 void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
@@ -1201,7 +1201,7 @@ void canvas<bitmap_type, options>::drawTriangle_shader_homo_internal(
 #undef f
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template <typename number1, typename number2, typename Sampler>
 void canvas<bitmap_type, options>::drawMask(const masks::chrome_mode &mode,
                                        const Sampler & sampler,
@@ -1223,7 +1223,7 @@ void canvas<bitmap_type, options>::drawMask(const masks::chrome_mode &mode,
     );
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template <typename Sampler>
 void canvas<bitmap_type, options>::drawMask_internal(const masks::chrome_mode &mode,
                                                      const Sampler & sampler,
@@ -1265,7 +1265,7 @@ void canvas<bitmap_type, options>::drawMask_internal(const masks::chrome_mode &m
     const int u_start= u0+(du>>1)+dx*du, pitch= width();
     int index= bbox_r_c.top * pitch;
     constexpr bits alpha_bits = pixel_coder::rgba::a ? pixel_coder::rgba::a : 8;
-    constexpr channel_t max_alpha_value = (microgl::uint16_t(1)<<alpha_bits) - 1;
+    constexpr channel_t max_alpha_value = (microgl::ints::uint16_t(1)<<alpha_bits) - 1;
     for (int y=bbox_r_c.top, v=v0+(du>>1)+dy*dv; y<=bbox_r_c.bottom; y++, v+=dv, index+=pitch) {
         for (int x=bbox_r_c.left, u=u_start; x<=bbox_r_c.right; x++, u+=du) {
             sampler.sample(u>>boost_u, v>>boost_v, uv_precision, col_bmp);
@@ -1303,7 +1303,7 @@ void canvas<bitmap_type, options>::drawMask_internal(const masks::chrome_mode &m
     }
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template <microtess::polygons::hints hint, typename BlendMode, typename PorterDuff, bool antialias, bool debug,
         typename number1, typename number2, typename Sampler, class tessellation_allocator>
 void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
@@ -1390,7 +1390,7 @@ void canvas<bitmap_type, options>::drawPolygon(const Sampler &sampler,
                 type, 255);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template <typename BlendMode, typename PorterDuff,
           bool antialias, bool debug, typename number1,
           typename number2, typename Sampler,
@@ -1432,7 +1432,7 @@ void canvas<bitmap_type, options>::drawPathStroke(const Sampler &sampler,
                                255);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template <typename BlendMode, typename PorterDuff,
           bool antialias, bool debug,
           typename number1, typename number2,
@@ -1474,7 +1474,7 @@ void canvas<bitmap_type, options>::drawPathFill(const Sampler &sampler,
     }
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<typename number>
 void canvas<bitmap_type, options>::drawWuLine(const color_t &color,
                                          const number &x0, const number &y0,
@@ -1493,19 +1493,19 @@ void canvas<bitmap_type, options>::drawWuLine(const color_t &color,
     drawWuLine_internal(color, x0_, y0_, x1_, y1_, p, opacity);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 void canvas<bitmap_type, options>::drawWuLine_internal(const color_t &color,
                                                        int x0, int y0,
                                                        int x1, int y1,
                                                        precision bits, opacity_t opacity) {
-    constexpr uint8_t a_bits = hasNativeAlphaChannel() ? pixel_coder::rgba::a : 8;
+    constexpr microgl::ints::uint8_t a_bits = hasNativeAlphaChannel() ? pixel_coder::rgba::a : 8;
     // we assume that the line is in the closure (interior+boundary) of the canvas window
     int X0 = x0, Y0 = y0, X1 = x1, Y1=y1;
     color_t color_input=color;
     unsigned int IntensityBits = 8;
     unsigned int NumLevels = 1u << IntensityBits;
     unsigned int maxIntensity = NumLevels - 1;
-    microgl::uint32_t IntensityShift, ErrorAdj, ErrorAcc;
+    microgl::ints::uint32_t IntensityShift, ErrorAdj, ErrorAcc;
     unsigned int ErrorAccTemp, Weighting, WeightingComplementMask;
     int DeltaX, DeltaY, Temp, XDir;//, YDir;
     int one = int(1)<<bits;
@@ -1592,7 +1592,7 @@ void canvas<bitmap_type, options>::drawWuLine_internal(const color_t &color,
     blendColor<blendmode::Normal, porterduff::FastSourceOverOnOpaque, a_bits>(color_input, (X1+round)>>bits, (Y1+round)>>bits, opacity);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template <typename number>
 void
 canvas<bitmap_type, options>::drawWuLinePath(const color_t &color,
@@ -1609,7 +1609,7 @@ canvas<bitmap_type, options>::drawWuLinePath(const color_t &color,
                             points[jx - 1].y);
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<microtess::patch_type patch_type,typename BlendMode, typename PorterDuff,
         bool antialias, bool debug, typename number1,
         typename number2, typename Sampler, class Allocator>
@@ -1665,7 +1665,7 @@ void canvas<bitmap_type, options>::drawBezierPatch(const Sampler & sampler,
 #undef IND
 }
 
-template<typename bitmap_type, uint8_t options>
+template<typename bitmap_type, microgl::ints::uint8_t options>
 template<bool tint, bool smooth, bool frame, typename bitmap_font_type>
 void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bitmap_font<bitmap_font_type> &font,
                                        const color_t & color, microgl::text::text_format & format,
@@ -1702,10 +1702,10 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
         }
     }
     else { // the sampler above gives amazing results for unscaled graphics, but I  to go for the most accurate version
-        constexpr uint8_t r_ = bitmap_font_type::rgba::r;
-        constexpr uint8_t g_ = bitmap_font_type::rgba::g;
-        constexpr uint8_t b_ = bitmap_font_type::rgba::b;
-        constexpr uint8_t a_ = bitmap_font_type::rgba::a;
+        constexpr microgl::ints::uint8_t r_ = bitmap_font_type::rgba::r;
+        constexpr microgl::ints::uint8_t g_ = bitmap_font_type::rgba::g;
+        constexpr microgl::ints::uint8_t b_ = bitmap_font_type::rgba::b;
+        constexpr microgl::ints::uint8_t a_ = bitmap_font_type::rgba::a;
         for (unsigned ix = 0; ix < count; ++ix) {
             const auto & l= result.locations[ix];
             const auto & c= *l.character;

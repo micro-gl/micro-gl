@@ -7,7 +7,6 @@
 #define W 640
 #define H 640
 
-using namespace microgl;
 using namespace microgl::sampling;
 
 int main() {

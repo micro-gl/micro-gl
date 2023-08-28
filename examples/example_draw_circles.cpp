@@ -11,7 +11,6 @@
 #define W 640*1
 #define H 640*1
 
-using namespace microgl;
 using namespace microgl::sampling;
 float t=0;
 

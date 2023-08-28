@@ -14,44 +14,46 @@
 
 namespace microgl {
 
-    using int8_t = signed char;
-    using uint8_t = unsigned char;
+    namespace ints {
 
-    using int16_t = signed short;
-    using uint16_t = unsigned short;
+        using int8_t = signed char;
+        using uint8_t = unsigned char;
 
-    using int32_t = signed int;
-    using uint32_t = unsigned int;
+        using int16_t = signed short;
+        using uint16_t = unsigned short;
 
-    using int64_t = signed long long;
-    using uint64_t = unsigned long long;
+        using int32_t = signed int;
+        using uint32_t = unsigned int;
 
-    template<microgl::uint8_t BITS>
-    struct unsigned_type_infer {
-        static constexpr microgl::uint8_t bits = BITS;
-        using type = typename microgl::traits::conditional<
-                BITS <= 8, microgl::uint8_t,
-                typename microgl::traits::conditional<
-                        BITS <= 16, microgl::uint16_t,
-                        typename microgl::traits::conditional<
-                                BITS <= 32, microgl::uint32_t, microgl::uint64_t>::type>::type>::type;
-    };
+        using int64_t = signed long long;
+        using uint64_t = unsigned long long;
 
-    template<microgl::uint8_t BITS>
-    struct signed_type_infer {
-        static constexpr microgl::uint8_t bits = BITS;
-        using type = typename microgl::traits::conditional<
-                BITS <= 8, microgl::int8_t,
-                typename microgl::traits::conditional<
-                        BITS <= 16, microgl::int16_t,
-                        typename microgl::traits::conditional<
-                                BITS <= 32, microgl::int32_t, microgl::int64_t>::type>::type>::type;
-    };
+        template<microgl::ints::uint8_t BITS>
+        struct unsigned_type_infer {
+            static constexpr microgl::ints::uint8_t bits = BITS;
+            using type = typename microgl::traits::conditional<
+                    BITS <= 8, microgl::ints::uint8_t,
+                    typename microgl::traits::conditional<
+                            BITS <= 16, microgl::ints::uint16_t,
+                            typename microgl::traits::conditional<
+                                    BITS <= 32, microgl::ints::uint32_t, microgl::ints::uint64_t>::type>::type>::type;
+        };
 
-    template<microgl::uint8_t bits>
-    using uint_t = typename unsigned_type_infer<bits>::type;
+        template<microgl::ints::uint8_t BITS>
+        struct signed_type_infer {
+            static constexpr microgl::ints::uint8_t bits = BITS;
+            using type = typename microgl::traits::conditional<
+                    BITS <= 8, microgl::ints::int8_t,
+                    typename microgl::traits::conditional<
+                            BITS <= 16, microgl::ints::int16_t,
+                            typename microgl::traits::conditional<
+                                    BITS <= 32, microgl::ints::int32_t, microgl::ints::int64_t>::type>::type>::type;
+        };
 
-    template<microgl::uint8_t bits>
-    using int_t = typename signed_type_infer<bits>::type;
+        template<microgl::ints::uint8_t bits>
+        using uint_t = typename unsigned_type_infer<bits>::type;
 
+        template<microgl::ints::uint8_t bits>
+        using int_t = typename signed_type_infer<bits>::type;
+    }
 }

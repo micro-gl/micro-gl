@@ -110,11 +110,11 @@ path_t<number> path_test() {
 int main() {
 //    using number = float;
 //    using number = double;
-    using number = Q<4, microgl::int32_t, microgl::int64_t, 1>;
-//    using number = Q<6, microgl::int32_t>;
-//    using number = Q<16, microgl::int64_t, microgl::int64_t, 1>;
-//    using number = Q<4, microgl::int32_t>;
-//    using number = Q<4, microgl::int32_t, microgl::int32_t, 0>;
+    using number = Q<4, microgl::ints::int32_t, microgl::ints::int64_t, 1>;
+//    using number = Q<6, microgl::ints::int32_t>;
+//    using number = Q<16, microgl::ints::int64_t, microgl::ints::int64_t, 1>;
+//    using number = Q<4, microgl::ints::int32_t>;
+//    using number = Q<4, microgl::ints::int32_t, microgl::ints::int32_t, 0>;
 
 //
     number a = 1;

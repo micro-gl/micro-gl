@@ -29,8 +29,8 @@ namespace microgl {
             using rgba = rgba_;
 
             using rint= typename microgl::traits::conditional<block_bits>=16,
-                    microgl::int64_t, microgl::int32_t>::type;
-            using q = Q<14, microgl::int64_t>;
+                    microgl::ints::int64_t, microgl::ints::int32_t>::type;
+            using q = Q<14, microgl::ints::int64_t>;
 
             white_noise_sampler() = default;
 

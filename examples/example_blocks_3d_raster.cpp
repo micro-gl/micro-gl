@@ -17,7 +17,6 @@
 #define H 640*1
 #define BLOCK_SIZE W/4
 
-using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
 

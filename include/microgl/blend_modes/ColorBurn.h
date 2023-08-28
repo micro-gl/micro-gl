@@ -18,7 +18,7 @@ namespace microgl {
 
         class ColorBurn {
         private:
-            template<microgl::uint8_t bits>
+            template<microgl::ints::uint8_t bits>
             static inline
             uint blend_ColorBurn(cuint b, cuint s) {
                 constexpr cuint max = (uint(1) << bits) - 1;
@@ -28,7 +28,7 @@ namespace microgl {
             }
 
         public:
-            template<microgl::uint8_t R, microgl::uint8_t G, microgl::uint8_t B>
+            template<microgl::ints::uint8_t R, microgl::ints::uint8_t G, microgl::ints::uint8_t B>
             static inline void blend(const color_t &b,
                                      const color_t &s,
                                      color_t &output) {

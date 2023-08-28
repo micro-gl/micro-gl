@@ -11,7 +11,6 @@
 #define H 640*1
 //#define USE_TEXTURE
 
-using namespace microgl;
 using namespace microgl::sampling;
 
 int main() {

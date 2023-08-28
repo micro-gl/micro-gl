@@ -36,7 +36,7 @@ namespace microgl {
         class RGBA_PACKED {
         public:
             using rgba = rgba_t<r,g,b,a>;
-            using pixel = uint_t<r+g+b+a>;
+            using pixel = microgl::ints::uint_t<r+g+b+a>;
             using u8 = unsigned char;
             static constexpr u8 size_pixel = sizeof (pixel);
 

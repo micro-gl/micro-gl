@@ -63,7 +63,7 @@ namespace microgl {
             base_sampler()= default;
 
             inline void sample(const int u, const int v,
-                               const uint8_t bits, color_t &output) const {
+                               const microgl::ints::uint8_t bits, color_t &output) const {
                 this->derived().sample(u, v, bits, output);
             }
 

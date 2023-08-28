@@ -38,7 +38,7 @@ namespace microgl {
             static constexpr precision_t p_bits= static_cast<precision_t>($precision);
         public:
             using rint= typename microgl::traits::conditional<p_bits>=16,
-                    microgl::int64_t, microgl::int32_t>::type;
+                    microgl::ints::int64_t, microgl::ints::int32_t>::type;
             using ivertex = microgl::vertex2<rint>;
 
             color_t color_left= {(1u<<rgba::r)-1, 0, 0, (1u<<rgba::a)-1};

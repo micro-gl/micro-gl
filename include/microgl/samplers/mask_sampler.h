@@ -26,7 +26,7 @@ namespace microgl {
          *                        and in case it doesn't have an alpha channel (rgba::a=0),
          *                        we can make an alpha channel with `alpha_fallback` bits
          */
-        template<masks::chrome_mode chrome, class sampler_from, class sampler_mask, microgl::uint8_t alpha_fallback=8>
+        template<masks::chrome_mode chrome, class sampler_from, class sampler_mask, microgl::ints::uint8_t alpha_fallback=8>
         struct mask_sampler {
             using cr = masks::chrome_mode;
             using rgba = rgba_dangling_a<sampler_rgba<sampler_from>, alpha_fallback>;
@@ -34,8 +34,8 @@ namespace microgl {
         private:
             sampler_from _s_from;
             sampler_mask _s_mask;
-            static constexpr microgl::uint8_t alpha_bits= rgba::a;
-            static constexpr microgl::uint8_t max_alpha_value=(microgl::uint16_t(1)<<alpha_bits) - 1;
+            static constexpr microgl::ints::uint8_t alpha_bits= rgba::a;
+            static constexpr microgl::ints::uint8_t max_alpha_value=(microgl::ints::uint16_t(1)<<alpha_bits) - 1;
             static constexpr bool r_test=((chrome==cr::red_channel || chrome==cr::red_channel_inverted) &&
                     alpha_bits==sampler_mask::rgba::r);
             static constexpr bool g_test=((chrome==cr::green_channel || chrome==cr::green_channel_inverted) &&
@@ -60,7 +60,7 @@ namespace microgl {
                 color_t color_main{}, mask_color{};
                 _s_from.sample(u, v, bits, color_main);
                 _s_mask.sample(u, v, bits, mask_color);
-                microgl::uint8_t alpha;
+                microgl::ints::uint8_t alpha;
 
                 switch (chrome) {
                     case masks::chrome_mode::red_channel:
@@ -99,7 +99,7 @@ namespace microgl {
                 output.g=color_main.g;
                 output.b=color_main.b;
                 // todo: add a precise division
-                output.a=(microgl::uint16_t(color_main.a)*alpha)>>alpha_bits;
+                output.a=(microgl::ints::uint16_t(color_main.a)*alpha)>>alpha_bits;
             }
 
         };

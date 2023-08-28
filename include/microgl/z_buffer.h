@@ -10,7 +10,7 @@
 ========================================================================================*/
 #pragma once
 
-#include "stdint.h"
+#include "./stdint.h"
 #include "traits.h"
 
 namespace microgl {
@@ -21,7 +21,7 @@ namespace microgl {
         using cond = microgl::traits::conditional<B, T, F>;
         static constexpr int log = Bits <= 8 ? 1 : (Bits <= 16 ? 2 : 4);
     public:
-        using value_type = typename cond<log == 1, microgl::uint8_t, typename cond<log == 2, microgl::uint16_t, microgl::uint32_t>::type>::type;
+        using value_type = typename cond<log == 1, microgl::ints::uint8_t, typename cond<log == 2, microgl::ints::uint16_t, microgl::ints::uint32_t>::type>::type;
         using allocator_type = typename Allocator::template rebind<value_type>::other;
         static constexpr int bits = Bits;
         static constexpr value_type max_value = ~value_type(0);

@@ -12,7 +12,8 @@
 
 namespace microgl {
     namespace functions {
-        using bits= unsigned char;
+        using bits = unsigned char;
+        using uint8_t = unsigned char;
 
         constexpr inline bool is_set(const uint8_t ops, const uint8_t feature)  {
             return ops & feature;

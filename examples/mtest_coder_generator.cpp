@@ -6,7 +6,6 @@
 #define W 640*1
 #define H 640*1
 
-using namespace microgl;
 using index_t = unsigned int;
 float t=0;
 
@@ -14,13 +13,13 @@ bool color_equals(color_t c1, color_t c2) {
     return c1.r==c2.r && c1.g==c2.g && c1.b==c2.b &&c1.a==c2.a;
 }
 
-template<microgl::uint8_t r, microgl::uint8_t g, microgl::uint8_t b, microgl::uint8_t a>
+template<microgl::ints::uint8_t r, microgl::ints::uint8_t g, microgl::ints::uint8_t b, microgl::ints::uint8_t a>
 color_t infer_max_color() {
     return {(1<<r)-1, (1<<g)-1, (1<<b)-1, (1<<a)-1};
 }
 
-template<microgl::uint8_t r, microgl::uint8_t g, microgl::uint8_t b, microgl::uint8_t a,
-        microgl::uint8_t ri=0, microgl::uint8_t gi=1, microgl::uint8_t bi=2, microgl::uint8_t ai=3>
+template<microgl::ints::uint8_t r, microgl::ints::uint8_t g, microgl::ints::uint8_t b, microgl::ints::uint8_t a,
+        microgl::ints::uint8_t ri=0, microgl::ints::uint8_t gi=1, microgl::ints::uint8_t bi=2, microgl::ints::uint8_t ai=3>
 void test_packed_coder() {
     using Coder = coder::RGBA_PACKED<r,g,b,a, ri,gi,bi,ai>;
     Coder coder;
@@ -32,7 +31,7 @@ void test_packed_coder() {
     assertm(color_equals(color_input, color_output), "test_packed_coder failed");
 }
 
-template<microgl::uint8_t r, microgl::uint8_t g, microgl::uint8_t b, microgl::uint8_t a>
+template<microgl::ints::uint8_t r, microgl::ints::uint8_t g, microgl::ints::uint8_t b, microgl::ints::uint8_t a>
 void test_unpacked_coder() {
     using Coder = coder::RGBA_UNPACKED<r,g,b,a>;
     Coder coder;

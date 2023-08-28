@@ -21,8 +21,8 @@
  * @tparam reverse_elements_pos_in_byte this can help with endian-ness issues
  */
 template <unsigned BPP, typename CODER, bool reverse_elements_pos_in_byte=false, class allocator_type=microgl::traits::std_rebind_allocator<>>
-class packed_bitmap : public base_bitmap<packed_bitmap<BPP, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, microgl::uint8_t> {
-    using base=base_bitmap<packed_bitmap<BPP, CODER, reverse_elements_pos_in_byte>, allocator_type, CODER, microgl::uint8_t>;
+class packed_bitmap : public base_bitmap<packed_bitmap<BPP, CODER, reverse_elements_pos_in_byte, allocator_type>, allocator_type, CODER, microgl::ints::uint8_t> {
+    using base=base_bitmap<packed_bitmap<BPP, CODER, reverse_elements_pos_in_byte>, allocator_type, CODER, microgl::ints::uint8_t>;
     using byte=unsigned char;
     static constexpr bool is_1_2_4_8 = BPP==1||BPP==2||BPP==4||BPP==8;
     typename microgl::traits::enable_if<is_1_2_4_8, bool>::type fails_if_else;
@@ -72,7 +72,7 @@ public:
     }
     ~packed_bitmap() = default;
 
-    microgl::uint8_t extract_pixel(unsigned int index1) const {
+    microgl::ints::uint8_t extract_pixel(unsigned int index1) const {
         byte mm=M, kk=K, tt=T, mask=MASK; // debug
         unsigned int idx2=(index1)>>T; // index inside the elements array
         byte element= this->_buffer[idx2]; // inside this element we need to extract the pixel
@@ -85,8 +85,8 @@ public:
 //        return masked<<7;
     }
 
-    microgl::uint8_t pixelAt(int index) const { return extract_pixel(index); }
-    void writeAt(int index1, const microgl::uint8_t &value) {
+    microgl::ints::uint8_t pixelAt(int index) const { return extract_pixel(index); }
+    void writeAt(int index1, const microgl::ints::uint8_t &value) {
         // todo:: measure performance on this method
         byte mm=M, kk=K, tt=T, mask=MASK; // debug
         byte masked_value=value&MASK; // mask the value
@@ -103,7 +103,7 @@ public:
         this->_buffer[idx2] = element; // record
     }
 
-    void fill(const microgl::uint8_t &value) {
+    void fill(const microgl::ints::uint8_t &value) {
         // fast fill
         byte masked=value&MASK;
         byte byte_rendered=0;

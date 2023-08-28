@@ -20,6 +20,7 @@ namespace microgl {
         using uint = unsigned int;
         using cuint = const unsigned int;
         using cint = const int;
+        using uint8_t = microgl::ints::uint8_t;
 
         template<typename impl>
         class blend_mode_base : public microgl::traits::crpt<impl> {

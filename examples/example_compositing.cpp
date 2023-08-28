@@ -26,7 +26,6 @@
 #define W 640*1
 #define H 640*1
 
-using namespace microgl;
 using namespace microgl::sampling;
 using index_t = unsigned int;
 float t=0;

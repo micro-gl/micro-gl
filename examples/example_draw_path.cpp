@@ -114,9 +114,9 @@ int main() {
 //    using number = float;
 //    using number = double;
 //    using number = Q<15, long long>;
-    using number = Q<8, microgl::int32_t, microgl::int64_t, 1>;
-//    using number = Q<2, microgl::int64_t>;
-//    using number = Q<4, microgl::int32_t>;
+    using number = Q<8, microgl::ints::int32_t, microgl::ints::int64_t, 1>;
+//    using number = Q<2, microgl::ints::int64_t>;
+//    using number = Q<4, microgl::ints::int32_t>;
 //    using number = Q<12>;
 
     using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
