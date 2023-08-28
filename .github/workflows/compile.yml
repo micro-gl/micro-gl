@@ -1,0 +1,78 @@
+name: compile
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  ubuntu_build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies(Ubuntu)
+        run: |
+          sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu `lsb_release -sc` main universe restricted multiverse" -y
+          sudo apt-get install libsdl2-dev -y
+          sudo apt-get install gcc cmake -y
+
+      - name: Build & Install(Ubuntu)
+        run: |
+          mkdir cmake-build-release
+          cd cmake-build-release
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --install .
+      - name: Build all examples(Ubuntu)
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --build .
+
+  windows_build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies(Windows)
+        shell: pwsh
+        run: |
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+          irm get.scoop.sh | iex
+          scoop bucket add extras
+          scoop update
+          scoop install cmake
+          scoop install sdl2
+
+      - name: Build & Install(Windows)
+        shell: pwsh
+        run: |
+          mkdir cmake-build-release
+          cd cmake-build-release
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --install .
+      - name: Build all examples(Windows)
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --build .
+
+  macos_build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+            
+      - name: Install dependencies(MacOS)
+        run: |
+          brew install cmake sdl2
+      - name: Build & Install(MacOS)
+        run: |
+          mkdir cmake-build-release
+          cd cmake-build-release
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --install .
+      - name: Build all examples(MacOS)
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --build .
