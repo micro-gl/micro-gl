@@ -26,7 +26,6 @@ jobs:
           sudo cmake --install .
       - name: Build all examples(Ubuntu)
         run: |
-          sudo mkdir cmake-build-release
           cd cmake-build-release
           sudo cmake -DCMAKE_BUILD_TYPE=Release ..
           sudo cmake --build .
@@ -56,6 +55,7 @@ jobs:
           sudo cmake --install .
       - name: Build all examples(Windows)
         run: |
+          cd cmake-build-release
           cmake -DCMAKE_BUILD_TYPE=Release ..
           cmake --build .
 
@@ -76,7 +76,6 @@ jobs:
           sudo cmake --install .
       - name: Build all examples(MacOS)
         run: |
-          sudo mkdir cmake-build-release
           cd cmake-build-release
           sudo cmake -DCMAKE_BUILD_TYPE=Release ..
           cmake --build .
