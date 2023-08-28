@@ -78,4 +78,4 @@ jobs:
         run: |
           cd cmake-build-release
           sudo cmake -DCMAKE_BUILD_TYPE=Release ..
-          cmake --build .
+          sudo cmake --build .
