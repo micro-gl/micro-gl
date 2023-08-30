@@ -46,7 +46,7 @@ namespace microtess {
             int ix = 0;
             number x = val, y = number(1);
             if(val==number(0)) return val;
-            while ((abs<number>(x - y) > epsilon) and (ix++<10)) {
+            while ((abs<number>(x - y) > epsilon) && (ix++<10)) {
                 x = (x + y) / 2;
                 y = val / x;
             }

@@ -53,7 +53,7 @@ int main() {
         using camera = microgl::camera;
         using mat4 = matrix_4x4<number>;
         using namespace microgl::math;
-        using Shader = sampler_shader<number, decltype(sampler)>;
+        using Shader = sampler_shader<number, sampling::checker_board<>>;
         using vertex_attributes = Shader::vertex_attributes;
 
         t+=0.1425;
