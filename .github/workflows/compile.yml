@@ -47,13 +47,13 @@ jobs:
         run: |
           mkdir cmake-build-release
           cd cmake-build-release
-          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems/vcpkg.cmake
           cmake --install .
       - name: Build all examples(Windows)
         shell: powershell
         run: |
           cd cmake-build-release
-          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
           cmake --build .
 
   macos_build:
