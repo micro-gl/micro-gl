@@ -11,7 +11,6 @@ enable_language(CXX)
 set (CMAKE_CXX_STANDARD 11)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
-find_package(SDL2 REQUIRED)
 message("===============\n${PROJECT_NAME} v${PROJECT_VERSION} project \n===============")
 
 add_library(${PROJECT_NAME} INTERFACE)
