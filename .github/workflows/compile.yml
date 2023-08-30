@@ -39,23 +39,20 @@ jobs:
       - name: Install dependencies(Windows)
         shell: powershell
         run: |
-          iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
-          scoop bucket add extras
-          scoop update
-          scoop install sdl2
+          vcpkg install sdl2
 
       - name: Build & Install(Windows)
         shell: powershell
         run: |
           mkdir cmake-build-release
           cd cmake-build-release
-          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
           cmake --install .
       - name: Build all examples(Windows)
         shell: powershell
         run: |
           cd cmake-build-release
-          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
           cmake --build .
 
   macos_build:
