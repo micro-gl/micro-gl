@@ -17,7 +17,7 @@
 namespace microgl {
     namespace shading {
 
-        template<typename number_, typename S>
+        template<typename number_, class S>
         struct sampler_shader {
 
             using rgba = typename S::rgba;
