@@ -117,11 +117,13 @@ namespace microtess {
                                  container_output_boundary *boundary_buffer= nullptr) {
             int offset=stroke_dash_offset, sum_dashes=0;
             index dash_arr_length=stroke_dash_array.size()*2;
-            int dash_array[dash_arr_length];
+            int dash_array[50];
+//            int dash_array[dash_arr_length];
             { // copy to an even array
                 int ix=0;
                 for (auto& dash : stroke_dash_array) {
-                    dash_array[ix]=dash_array[ix+stroke_dash_array.size()]=dash;
+                    dash_array[ix]=dash;
+                    dash_array[ix+stroke_dash_array.size()]=dash;
                     ix++;
                 }
             }

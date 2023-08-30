@@ -56,7 +56,7 @@ int main() {
 
         canvas.clear({255,255,255,255});
 
-        for (uint ix = 0; ix < arc_points.size()-0; ++ix) {
+        for (unsigned int ix = 0; ix < arc_points.size()-0; ++ix) {
             canvas.drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
                     color_red, color_red,
                     arc_points[ix].x,

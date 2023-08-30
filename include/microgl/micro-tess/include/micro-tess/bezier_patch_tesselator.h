@@ -146,7 +146,7 @@ namespace microtess {
                                        const number1 *meshPoints,
                                        unsigned int channels,
                                        number1 * result) {
-            number1 temp[4][channels];
+            number1 temp[4][3];
 
             // 3rd degree bernstein polynomials coefficients
             // the t value inverted
@@ -200,7 +200,7 @@ namespace microtess {
                                            const number1 *meshPoints,
                                            unsigned int channels,
                                            float * result) {
-            number1 temp[3][channels];
+            number1 temp[3][3];
 
             // 2rd degree bernstein polynomials coefficients
             // the t value inverted
