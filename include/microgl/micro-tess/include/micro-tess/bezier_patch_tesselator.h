@@ -96,7 +96,7 @@ namespace microtess {
 
                     if(flag_output_points) {
                         // calculate the point on the surface
-                        number1 p[channels];
+                        number1 p[3];
                         // compile time branching
                         if(type==patch_type::BI_QUADRATIC)
                             evaluateBiQuadraticSurface(u,v, meshPoints, channels, p);

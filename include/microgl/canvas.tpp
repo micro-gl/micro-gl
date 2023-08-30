@@ -1673,7 +1673,7 @@ void canvas<bitmap_type, options>::drawText(const char * text, microgl::text::bi
     rect old=clipRect(); updateClipRect(left, top, right, bottom);
     unsigned int text_size=0;
     { const char * iter=text; while(*iter++!= '\0' && ++text_size); }
-    microgl::text::char_location loc_buffer[text_size];
+    microgl::text::char_location loc_buffer[256];
     const auto result=font.layout_text(text, text_size, right-left, bottom-top, format, loc_buffer);
     unsigned count= result.end_index;
     const int s=result.scale, PP=result.precision;

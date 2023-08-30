@@ -36,7 +36,7 @@ public:
     static constexpr char intermid_size = sizeof(integer);
     static constexpr char integer_size = sizeof(inter_integer);
     static constexpr char recommended_mul_strategy =
-            ((intermid_size>integer_size) or integer_size==8) ? 2 : 1;
+            ((intermid_size>integer_size) || integer_size==8) ? 2 : 1;
     static constexpr char inferred_mul_strategy = multiplication_strategy==-1 ?
                          recommended_mul_strategy : multiplication_strategy;
 
