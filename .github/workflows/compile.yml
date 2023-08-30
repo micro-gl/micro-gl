@@ -42,7 +42,6 @@ jobs:
           iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
           scoop bucket add extras
           scoop update
-          scoop install cmake
           scoop install sdl2
 
       - name: Build & Install(Windows)
