@@ -59,4 +59,6 @@ int main() {
 //    example_run(&canvas, render_flat);
     example_run(&canvas, render_tex);
 //    example_run(&canvas, render_tex_aa);
+
+    return 0;
 }

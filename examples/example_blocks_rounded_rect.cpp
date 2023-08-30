@@ -69,4 +69,6 @@ int main() {
     };
 
     example_run(&canvas, W, H, render, 100, true);
+
+    return 0;
 }

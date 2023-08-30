@@ -45,7 +45,7 @@ int main() {
     z_buffer<14> depth_buffer(canvas.width(), canvas.height());
 
     float t = 0.0;
-    constexpr bool enable_z_buffer = true;
+    constexpr const bool enable_z_buffer = true;
 
     auto test_shader_texture_3d = [&](const model_3d<number> & object) {
 
@@ -127,5 +127,7 @@ int main() {
     };
 
     example_run(&canvas, render);
+
+    return 0;
 }
 

@@ -45,4 +45,6 @@ int main() {
     auto & render3 = render;
 
     example_run(&canvas, render3);
+
+    return 0;
 }
