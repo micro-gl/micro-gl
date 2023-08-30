@@ -10,7 +10,7 @@ can run on any 32/64 bits computer without **FPU** or **GPU**. **No standard lib
 check out our website at [micro-gl.github.io/docs/microgl](https://micro-gl.github.io/docs/microgl)
 
 <div align='center'>
-<img src='micro-gl-sample.png' style='height: 200px; opacity: 0.75'/>
+<img src='micro-gl-sample.png' style='opacity: 0.75; max-height: 200'/>
 </div>
 
 ## Features
