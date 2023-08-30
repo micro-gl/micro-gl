@@ -18,7 +18,7 @@ int main() {
 
     fast_radial_gradient<number> gradient{0.5, 0.5, 0.75};
     linear_gradient_2_colors<120> gradient2Colors{{255,0,255}, {255,0,0}};
-    flat_color<> flatColor{{133,133,133, 255}};
+    flat_color<> flatColor{{189,	50,	187	, 255}};
 
     Canvas24 canvas(W, H);;
 
@@ -30,8 +30,8 @@ int main() {
     auto render = [&](void*, void*, void*) -> void {
         canvas.clear({255/1,255,255,255});
         canvas.drawRoundedRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
-                flatColor,
                 gradient2Colors,
+                flatColor,
                 10, 10, 300, 300,
                 50, 10);
     };

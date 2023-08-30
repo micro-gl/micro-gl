@@ -116,10 +116,10 @@ namespace microgl {
                 output={255,0,0,0};
 
                 if((dis)<=0) {
-                    output={0,0,0, 255};
+                    output={color1.r, color1.g,color1.b, 255};
                 } else if (dis < aa_band) {
                     const unsigned char factor = ((color1.a*(aa_band-dis)) >> aa_bits);
-                    output={0,0,0, factor};
+                    output={color1.r, color1.g,color1.b, factor};
                 }
 
             }

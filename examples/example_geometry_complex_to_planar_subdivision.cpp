@@ -151,7 +151,7 @@ int main() {
                 type,
                 255);
 
-        return;
+//        return;
         canvas.drawTrianglesWireframe({0,0,0,255},
                                        matrix_3x3<number>::identity(),
                                        vertices.data(),

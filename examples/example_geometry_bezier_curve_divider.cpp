@@ -47,7 +47,7 @@ int main() {
         auto type = microtess::CurveType::Cubic;
 
         t += number(0.8);
-        curve[1].y -= t;
+//        curve[1].y -= t;
         curve_divider::compute(curve.data(), output, algo, type);
 
         canvas.clear({255,255,255,255});
@@ -58,7 +58,7 @@ int main() {
 
         for (auto & p : output) {
             canvas.drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true>(
-                    red, red, p.x, p.y, number{5}, number{0});
+                    red, red, p.x, p.y, number{7.5f}, number{0});
         }
     };
 

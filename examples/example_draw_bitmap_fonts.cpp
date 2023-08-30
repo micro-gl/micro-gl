@@ -48,14 +48,13 @@ int main() {
         format.wordWrap=text::wordWrap::break_word;
 
         canvas.clear({73,84,101,255});
-        canvas.drawText<true, true, true>("Welcome to micro{gl} Welcome to micro{gl} Welcome to "
-                         "micro{gl} Welcome to micro{gl} Welcome to micro{gl} ",
+        canvas.drawText<true, true, true>("Welcome to micro{gl} ",
 //        canvas.drawText("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!№;%:?*()_+-=.,/|\"'@#$^&{}[]",
 //        canvas.drawText("aaaaa",
                          font,
                          {255, 255, 255, 255},
                          format,
-                         0, 0, 300, 300,
+                         0, 0, 130, 300,
                          255);
 
     };

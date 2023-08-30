@@ -33,14 +33,14 @@ int main() {
     };
 
     lines_sampler<float> sampler{};
-
+    sampler.color1 = {220, 62, 158, 255	};
     sampler.updatePoints(points, size/1, 0.04);
 //    sampler.updatePoints(points2, 2, 0.25);
 
     Canvas24 canvas(W, H);
 
     auto render = [&](void*, void*, void*) -> void {
-        canvas.clear({255,0,255,255});
+        canvas.clear({255,255,255,255});
         canvas.drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
                 sampler,
                 0, 0, 500/2, 500/2);

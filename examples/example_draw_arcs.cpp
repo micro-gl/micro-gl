@@ -35,7 +35,7 @@ int main() {
         canvas.drawArc<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number,  number>(
                 gradient2Colors,
                 200, 200,
-                50+0, 20,
+                150+0, 20,
                 90+t, 90+60+t*2,
 //                45, 90,
                 true, // clock-wise

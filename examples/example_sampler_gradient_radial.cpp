@@ -21,7 +21,7 @@ int main() {
     gradient.addStop(0.0f, {255,0,0});
     gradient.addStop(0.45f, {255,0,0});
     gradient.addStop(0.50f, {0,255,0});
-    gradient.addStop(1.f, {255,0,255});
+    gradient.addStop(1.f, {255,255,255});
 
     auto render = [&](void*, void*, void*) -> void {
         canvas.clear({255,255,255,255});

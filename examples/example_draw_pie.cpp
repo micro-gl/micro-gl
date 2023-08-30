@@ -30,7 +30,7 @@ int main() {
     gradient.addStop(1.f, {255,0,255});
 
     auto render = [&](void*, void*, void*) -> void {
-//        t+=0.17;
+        t+=0.17;
         canvas.clear({255,255,255,255});
         canvas.drawPie<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number,  number>(
                 gradient2Colors,
