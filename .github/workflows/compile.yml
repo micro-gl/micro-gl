@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies(Windows)
         shell: powershell
         run: |
-          vcpkg install sdl2
+          vcpkg install sdl2:x64-windows
           vcpkg integrate install
 
       - name: Build & Install(Windows)
