@@ -95,7 +95,7 @@ int main() {
         canvas.clear({255,255,255,255});
         depth_buffer.clear();
         // draw model_1
-        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer>(
+        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer, Shader, z_buffer<14>>(
                 shader,
                 canvas.width(), canvas.height(),
                 vertex_buffer.data(),
