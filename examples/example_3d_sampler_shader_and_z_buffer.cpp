@@ -95,7 +95,7 @@ int main() {
         canvas.clear({255,255,255,255});
         depth_buffer.clear();
         // draw model_1
-        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer, Shader, z_buffer<14>>(
+        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, true, true, true>(
                 shader,
                 canvas.width(), canvas.height(),
                 vertex_buffer.data(),
@@ -108,7 +108,7 @@ int main() {
 
         // draw model_2
         shader.matrix= mvp_2;
-        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, true, true, enable_z_buffer>(
+        canvas.drawTriangles<blendmode::Normal, porterduff::None<>, true, true, true>(
                 shader,
                 canvas.width(), canvas.height(),
                 vertex_buffer.data(),
