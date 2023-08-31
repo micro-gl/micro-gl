@@ -2,7 +2,7 @@
 <img src='microgl-512-logo-rounded.png' style='height: 200px;'/>
 </div>
 
-# micro{gl}
+# micro{gl} [![compile](https://github.com/micro-gl/micro-gl/actions/workflows/compile.yml/badge.svg)](https://github.com/micro-gl/micro-gl/actions/workflows/compile.yml)
 **Fast**, Super **Slim**, **Embeddable**, **Headers** only **`C++11`** vector graphics library, that  
 can run on any 32/64 bits computer without **FPU** or **GPU**. **No standard library required**.
 
