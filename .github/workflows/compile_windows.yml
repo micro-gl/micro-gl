@@ -1,0 +1,30 @@
+name: windows
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  windows_build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          vcpkg install sdl2:x64-windows
+          vcpkg integrate install
+
+      - name: Build & Install
+        run: |
+          mkdir cmake-build-release
+          cd cmake-build-release
+          cmake -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake
+          cmake --install .
+      - name: Build all examples
+        run: |
+          cd cmake-build-release
+          cmake -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake
+          cmake --build .
