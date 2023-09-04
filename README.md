@@ -3,6 +3,10 @@
 </div>
 
 # micro{gl}
+[![mac-os](https://github.com/micro-gl/micro-gl/actions/workflows/compile_macos.yml/badge.svg)](https://github.com/micro-gl/micro-gl/actions/workflows/compile_macos.yml)
+[![ubuntu](https://github.com/micro-gl/micro-gl/actions/workflows/compile_ubuntu.yml/badge.svg)](https://github.com/micro-gl/micro-gl/actions/workflows/compile_ubuntu.yml)
+[![windows](https://github.com/micro-gl/micro-gl/actions/workflows/compile_windows.yml/badge.svg)](https://github.com/micro-gl/micro-gl/actions/workflows/compile_windows.yml)
+
 **Fast**, Super **Slim**, **Embeddable**, **Headers** only **`C++11`** vector graphics library, that  
 can run on any 32/64 bits computer without **FPU** or **GPU**. **No standard library required**.
 
@@ -10,7 +14,10 @@ can run on any 32/64 bits computer without **FPU** or **GPU**. **No standard lib
 check out our website at [micro-gl.github.io/docs/microgl](https://micro-gl.github.io/docs/microgl)
 
 <div align='center'>
-<img src='micro-gl-sample.png' style='opacity: 0.75; max-height: 200'/>
+<img src='intro_1.png' style='opacity: 0.75; max-height: 200'/>
+</div>
+<div align='center'>
+<img src='intro_2.png' style='opacity: 0.75; max-height: 200'/>
 </div>
 
 ## Features
