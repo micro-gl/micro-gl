@@ -1,0 +1,29 @@
+name: mac-os
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+
+  macos_build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+            
+      - name: Install dependencies
+        run: |
+          brew install sdl2
+      - name: Build & Install
+        run: |
+          sudo mkdir cmake-build-release
+          cd cmake-build-release
+          sudo cmake -DCMAKE_BUILD_TYPE=Release ..
+          sudo cmake --install .
+      - name: Build all examples
+        run: |
+          cd cmake-build-release
+          sudo cmake -DCMAKE_BUILD_TYPE=Release ..
+          sudo cmake --build .
