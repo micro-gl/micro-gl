@@ -7,8 +7,7 @@
 [![ubuntu](https://github.com/micro-gl/micro-gl/actions/workflows/compile_ubuntu.yml/badge.svg)](https://github.com/micro-gl/micro-gl/actions/workflows/compile_ubuntu.yml)
 [![windows](https://github.com/micro-gl/micro-gl/actions/workflows/compile_windows.yml/badge.svg)](https://github.com/micro-gl/micro-gl/actions/workflows/compile_windows.yml)
 
-**Fast**, Super **Slim**, **Embeddable**, **Headers** only **`C++11`** vector graphics library, that  
-can run on any 32/64 bits computer without **FPU** or **GPU**. **No standard library required**.
+**Fast**, Super **Slim**, **Embeddable**, **Headers** only **`C++11`** vector graphics library, that can run on any 32/64 bits computer without **FPU** or **GPU**. **No standard library required**.
 
 
 check out our website at [micro-gl.github.io/docs/microgl](https://micro-gl.github.io/docs/microgl)
