@@ -13,8 +13,8 @@ using namespace microgl::sampling;
 float t=0;
 
 int main() {
-//    using number = Q<12>;
-    using number = float;
+    using number = Q<12>;
+//    using number = float;
 
     using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_32_BIT>;
 

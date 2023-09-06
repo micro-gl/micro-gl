@@ -10,6 +10,11 @@
 ========================================================================================*/
 #pragma once
 
+namespace detail_Q {
+    template<int T>
+    struct identity { constexpr static int N = T; };
+}
+
 /**
  *
  * @tparam P
@@ -21,9 +26,9 @@
  *                                  2 = (fastest, inaccurate for signed right shift, big-inter)
  */
 template <unsigned P,
-          typename integer=int,
-          typename inter_integer=long long,
-          char multiplication_strategy=-1>
+        typename integer=int,
+        typename inter_integer=long long,
+        char multiplication_strategy=-1>
 class Q {
 public:
     using precision_t = unsigned char;
@@ -36,9 +41,10 @@ public:
     static constexpr char intermid_size = sizeof(integer);
     static constexpr char integer_size = sizeof(inter_integer);
     static constexpr char recommended_mul_strategy =
-            ((intermid_size>integer_size) or integer_size==8) ? 2 : 1;
+            ((intermid_size>integer_size) || integer_size==8) ? 2 : 1;
     static constexpr char inferred_mul_strategy = multiplication_strategy==-1 ?
-                         recommended_mul_strategy : multiplication_strategy;
+                                                  recommended_mul_strategy : multiplication_strategy;
+    static constexpr detail_Q::identity<inferred_mul_strategy> inferred_token{};
 
 private:
     integer _value;
@@ -59,31 +65,33 @@ private:
         return result;
     }
 
-    template<unsigned char S> inline void multiply(const integer val) {}
-    template<> inline void multiply<0>(const integer val) {
+    inline void multiply(const integer val) {
+        _multiply(val, inferred_token);
+    }
+    inline void _multiply(const integer val, detail_Q::identity<0>) {
         inter_integer inter = ((inter_integer)_value)*val;
         _value = shift_right_correctly_by<inter_integer>(inter, P);
     }
-    template<> inline void multiply<1>(const integer val) {
+    inline void _multiply(const integer val, detail_Q::identity<1>) {
         using int_t = inter_integer;
         const int_t fpValue1 = _value;
         const int_t fpValue2 = val;
-        // no need to do non-arithmatic shift because it is part
+        // no need to do non-arithmetic shift because it is part
         // of a big picture
         const int_t intPart1 = fpValue1>>P, intPart2 = fpValue2>>P;
-        const int_t fracPart1 = fpValue1 & MASK_FRAC_BITS;
-        const int_t fracPart2 = fpValue2 & MASK_FRAC_BITS;
-        _value = ((intPart1 * intPart2)<<P) + (intPart1 * fracPart2) +
-                 (fracPart1 * intPart2) + (((fracPart1 * fracPart2)>>P) & MASK_FRAC_BITS);
+        const int_t fracPart1 = fpValue1 & int_t(MASK_FRAC_BITS);
+        const int_t fracPart2 = fpValue2 & int_t(MASK_FRAC_BITS);
+        _value = int_t(((intPart1 * intPart2)<<P) + (intPart1 * fracPart2) +
+                       (fracPart1 * intPart2) + (((fracPart1 * fracPart2)>>P) & int_t(MASK_FRAC_BITS)));
     }
-    template<> inline void multiply<2>(const integer val)
-            { _value = (((inter_integer)_value)*val)>>P; }
+    inline void _multiply(const integer val, detail_Q::identity<2>)
+    { _value = (((inter_integer)_value)*val)>>P; }
 
 public:
 
     template<unsigned from_precision, unsigned to_precision>
     static inline integer convert_compile_time_variant(const integer from_value) {
-        // the constexpr will elliminate the branching at compile time with simple compiler optimization
+        // the constexpr will eliminate the branching at compile time with simple compiler optimization
         constexpr auto delta = from_precision - to_precision;
         if(delta==0) return from_value;
         else if(delta>0) return shift_right_correctly_by<integer>(from_value, delta);
@@ -91,7 +99,7 @@ public:
     }
 
     static inline integer convert_runtime_variant(const integer from_value, precision_t from_precision,
-                                  precision_t to_precision) {
+                                                  precision_t to_precision) {
         const auto delta = from_precision-to_precision;
         if(delta==0) return from_value;
         else if(delta>0) return shift_right_correctly_by<integer>(from_value, delta);
@@ -105,7 +113,7 @@ public:
     template <unsigned P_2, typename c1, typename c2, char s>
     Q(const Q<P_2, c1, c2, s> &q) : _value(convert_compile_time_variant<P_2, P>(q._value)) {}
     Q(const integer & q_val, precision_t q_precision) :
-                _value(convert_runtime_variant(q_val, q_precision, P)) {}
+            _value(convert_runtime_variant(q_val, q_precision, P)) {}
     // this is Q<0>, so we promote it to Q<P>
     Q(const unsigned val) : _value(integer(val)<<P) {}
     Q(const signed val) : _value(val<<P) {}
@@ -115,13 +123,14 @@ public:
     // with assignments operators
     q_ref operator =(const_ref q) { _value = q.value(); return *this; }
     q_ref operator *=(const_ref q) {
-        multiply<inferred_mul_strategy>(q.value()); return *this;
+        multiply(q.value()); return *this;
+//        multiply<inferred_mul_strategy>(q.value()); return *this;
     }
     q_ref operator *=(unsigned val) {_value *= val; return *this;}
     q_ref operator *=(signed val) {_value *= val; return *this;}
     q_ref operator /=(const_ref q) {
         const inter_integer inter=(inter_integer(_value)) << P;
-        _value = inter/(inter_integer)q.value();
+        _value = ((inter_integer(_value)) << P)/(inter_integer)q.value();
         return *this;
     }
     q_ref operator /=(unsigned val) {_value /= val; return *this;}
