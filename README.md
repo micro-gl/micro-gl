@@ -109,3 +109,5 @@ $ ../examples/bin/example_name
 ```text
 Author: Tomer Shalev, tomer.shalev@gmail.com, all rights reserved (2021)
 ```
+
+> 🙏🏻 Thanks to [JetBrains cLion Support Team](https://jb.gg/OpenSourceSupport) for granting this project an **OSS** license of **cLion** <img src="https://resources.jetbrains.com/storage/products/company/brand/logos/CLion_icon.png" height="24" alt="CLion logo.">
