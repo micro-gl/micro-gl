@@ -19,6 +19,114 @@ check out our website at [micro-gl.github.io/docs/microgl](https://micro-gl.gith
 <img src='intro_2.png' style='opacity: 0.75; max-height: 200'/>
 </div>
 
+## Examples
+
+A circle with Texture fill and Gradient stroke
+```cpp
+using number = float;
+
+using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_32_BIT>;
+using Texture24= sampling::texture<bitmap<coder::RGB888_ARRAY>, sampling::texture_filter::NearestNeighboor>;
+
+fast_radial_gradient<number> gradient{0.5, 0.5, 0.75};
+linear_gradient_2_colors<120> gradient2Colors{{255,0,255},
+                                              {255,0,0}};
+flat_color<> flatColor{{133,133,133, 255}};
+
+auto img_2 = Resources::loadImageFromCompressedPath("images/uv_256.png");
+
+Canvas24 canvas(W, H);;
+Texture24 tex_uv{new bitmap<coder::RGB888_ARRAY>(img_2.data, img_2.width, img_2.height)};
+
+gradient.addStop(0.0f, {255,0,0});
+gradient.addStop(0.45f, {255,0,0});
+gradient.addStop(0.50f, {0,255,0});
+gradient.addStop(1.f, {255,0,255});
+
+canvas.clear({255,255,255,255});
+canvas.drawCircle<blendmode::Normal, porterduff::FastSourceOverOnOpaque, true, number>(
+   tex_uv, // fill
+   gradient2Colors, // stroke
+   200+0, 200+0,
+   150+t, 10, 255
+);
+
+```
+
+A Rectangle, that samples a circle
+```cpp
+using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>>;
+using number = float;
+// using number = Q<12>;
+
+circle_sampler<number> sampler{};
+
+sampler.updatePoints({0.50,0.5}, 0.5, 0.10);
+sampler.color_fill= {0, 0, 0, 255};
+sampler.color_background= {255, 255, 255, 0};
+sampler.color_stroke= {255, 255, 255, 255};
+
+Canvas24 canvas(512, 512);
+
+canvas.clear({255,0,255,255});
+canvas.drawRect<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, number>(
+        sampler,
+        0, 0, 300, 300);
+```
+
+A path tessellation with red color
+```cpp
+template <typename number>
+path_t<number> path_arc_animation() {
+  path_t<number> path{};
+
+  int div=32; //4
+
+  path.arc({200,200}, 100,
+           math::deg_to_rad(0.0f),
+           math::deg_to_rad(360.0f),
+           false, div).closePath();
+
+  path.arc({250,200}, 50,
+           math::deg_to_rad(0.0f),
+           math::deg_to_rad(360.0f),
+           true, div).closePath();
+
+  path.moveTo({150,150});
+  path.arc({150+0,150}, 50+t-0,
+           math::deg_to_rad(0.0f),
+           math::deg_to_rad(360.0f),
+           false, div);//.closePath();
+
+  return path;
+}
+
+// Choose your own number format
+// using number = float;
+// using number = double;
+// using number = Q<15, long long>;
+using number = Q<8, microgl::ints::int32_t, microgl::ints::int64_t, 1>;
+// using number = Q<2, microgl::ints::int64_t>;
+// using number = Q<4, microgl::ints::int32_t>;
+// using number = Q<12>;
+
+using Canvas24= canvas<bitmap<RGB888_PACKED_32>>;
+
+sampling::flat_color<> color_red {{ 255, 0, 255, 255}};
+
+Canvas24 canvas(255, 255);
+
+canvas.clear({255, 255, 255, 255});
+canvas.drawPathFill<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false, true>(
+   color_red,
+   matrix_3x3<number>::identity(),
+   path,
+   microtess::fill_rule::even_odd,
+   microtess::tess_quality::prettier_with_extra_vertices,
+   255
+);
+
+```
 ## Features
 
 
