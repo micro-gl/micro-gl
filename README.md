@@ -170,6 +170,7 @@ $ cmake -DCMAKE_BUILD_TYPE=Release ..
 $ cmake --install .
 ```
 2. Copying the `include/microgl` to anywhere you want.
+3. Install via [vcpkg](https://vcpkg.io).
 
 ## Consuming `micro{gl}`
 Following options are available:
@@ -196,6 +197,8 @@ target_link_libraries(your_app microgl::microgl)
 ```
 5. Just copy the `include/microgl` into a sub folder of your project and include the header  
 files you need with relative path in your source files.
+6. If you have vcpkg installed, install the `micro{gl}` using the `vcpkg install microgl` command, and then you can use option 2 (see above)
+to find it. See issue micro-gl/micro-gl#33 for more details.
 
 ## Running Examples
 First make sure you have 
