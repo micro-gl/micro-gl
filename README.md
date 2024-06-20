@@ -152,9 +152,9 @@ canvas.drawPathFill<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false
 
 > **Geometry** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 - fast implementation for common shapes (rect, rounded rectangles, circles, triangles)
-- batch traingles like **GPU** would
+- batch triangles like **GPU** would
 - support polygons of any type convex, simple, and complex polygons 
-- path fills(with even-odd or zero-one fill rule) in any precision
+- path fills (with even-odd or zero-one fill rule) in any precision
 - stroke fills
 - quadrilaterals
 - bezier patches
@@ -174,7 +174,7 @@ $ cmake --install .
 
 ## Consuming `micro{gl}`
 Following options are available:
-1. copy the project to a sub folder of your project. inside your **`CMakeLists.txt`** add
+1. copy the project to a sub folder of your project. Inside your **`CMakeLists.txt`** add
 ```cmake
 add_subdirectory(/path/to/microgl)
 target_link_libraries(your_app microgl)
