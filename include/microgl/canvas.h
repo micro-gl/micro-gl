@@ -290,10 +290,16 @@ public:
      * @return pixel_coder
      */
     const pixel_coder & coder() const;
+
     /**
      * get the underlying bitmap pointer
      */
-    bitmap_type & bitmapCanvas() const;
+    bitmap_type &bitmapCanvas();
+
+    /**
+     * get the underlying bitmap pointer
+     */
+    const bitmap_type &bitmapCanvas() const;
 
     /**
      * clear the canvas with a color intensity
@@ -1315,7 +1321,7 @@ public:
      * @tparam smooth enable font smooth interpolation if font has scaled ?
      * @tparam bitmap_font_type the type of the font bitmap
      *
-     * @param text char array string of text to draw
+     * @param text char   string of text to draw
      * @param font the bitmap font reference
      * @param color the color if tinting was enabled
      * @param format text format

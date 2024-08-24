@@ -17,7 +17,12 @@ auto canvas<bitmap_type, options>::coder() const -> const pixel_coder & {
 }
 
 template<typename bitmap_type, microgl::ints::uint8_t options>
-inline bitmap_type & canvas<bitmap_type, options>::bitmapCanvas() const {
+inline bitmap_type &canvas<bitmap_type, options>::bitmapCanvas() {
+    return _bitmap_canvas;
+}
+
+template<typename bitmap_type, microgl::ints::uint8_t options>
+inline const bitmap_type &canvas<bitmap_type, options>::bitmapCanvas() const {
     return _bitmap_canvas;
 }
 
