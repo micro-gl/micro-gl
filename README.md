@@ -140,10 +140,10 @@ canvas.drawPathFill<blendmode::Normal, porterduff::FastSourceOverOnOpaque, false
 
 > **Graphics** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 - very modular design. if something does not exist, you can implement your own
-- over 10 blending modes impemented, you can wrote your own and supply as well
+- over 10 blending modes implemented, you can wrote your own and supply as well
 - **`porter-duff`** alpha compositing
 - support for 2d sampler
-- can support any pixel coding you need, we implemeted a lot out of the box
+- can support any pixel coding you need, we implemented a lot out of the box
 - can render 3d geometries
 - we support 3d shaders
 - no need for **GPU**, it is all **CPU**
