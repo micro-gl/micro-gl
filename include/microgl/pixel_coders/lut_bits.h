@@ -15,6 +15,7 @@
 
 namespace microgl {
     namespace lut {
+        using ints::uint8_t;
         /**
          * dynamic runtime (stack or heap storage) lookup table generation
          * @tparam bits1 from bits
