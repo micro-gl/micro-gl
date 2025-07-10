@@ -16,9 +16,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(SDL2)
-
+include_directories("/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1")
+include_directories("/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include")
+include_directories("../include")
 if(DEFINED SDL2_FOUND)
-    set(libs ${SDL2_LIBRARY} microgl)
+    set(libs ${SDL2_LIBRARY})
     set(SOURCES
             example_blocks_3d_raster.cpp
             example_blocks_rounded_rect.cpp

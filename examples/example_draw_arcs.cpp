@@ -16,13 +16,13 @@ int main() {
     using number = Q<12>;
 //    using number = float;
 
-    using Canvas24= canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_32_BIT>;
+    using Canvas24 = canvas<bitmap<coder::RGB888_PACKED_32>, CANVAS_OPT_32_BIT>;
 
     fast_radial_gradient<number> gradient{0.5, 0.5, 0.75};
     linear_gradient_2_colors<120> gradient2Colors{{255,0,255},
                                                   {255,0,0}};
     flat_color<> flatColor{{133,133,133, 255}};
-    Canvas24 canvas(W, H);;
+    Canvas24 canvas(W, H);
 
     gradient.addStop(0.0f, {255,0,0});
     gradient.addStop(0.45f, {255,0,0});
