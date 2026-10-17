@@ -9,10 +9,10 @@
 
 **Fast**, Super **Slim**, **Embeddable**, **Headers** only **`C++11`** vector graphics library, that can run on any 32/64 bits computer without **FPU** or **GPU**. **No standard library required**.
 
-* **ZERO Dependencies:** No `std::`, no external libraries.
-* zero heap fragmentation.
-* **Arbitrary Precision:** Native support for Q fixed-point math or any custom number type.
-* **True Vector Tessellation:** Unique trapezoid-decomposition pipeline.
+* Zero dependencies: No `std::`, no external libraries.
+* zero heap allocations.
+* Arbitrary precision: Native support for Q fixed-point math or any custom number type.
+* True Vector Tessellation: Unique trapezoid-decomposition pipeline.
 
 check out our website at [micro-gl.github.io/docs/microgl](https://micro-gl.github.io/docs/microgl)
 
